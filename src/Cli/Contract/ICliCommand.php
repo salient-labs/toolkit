@@ -2,17 +2,15 @@
 
 namespace Lkrms\Cli\Contract;
 
-use Lkrms\Cli\CliCommand;
+use Lkrms\Contract\HasJsonSchema;
 
 /**
  * A runnable CLI command
- *
- * @see CliCommand
  */
-interface ICliCommand extends ICliCommandNode
+interface ICliCommand extends ICliCommandNode, HasJsonSchema
 {
     /**
-     * Parse the arguments and run the command
+     * Parse the given arguments and run the command
      */
     public function __invoke(string ...$args): int;
 }

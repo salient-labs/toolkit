@@ -3,6 +3,7 @@
 namespace Lkrms\Cli\Catalog;
 
 use Lkrms\Concept\ConvertibleEnumeration;
+use LogicException;
 
 /**
  * Command line option value types
@@ -88,4 +89,33 @@ final class CliOptionValueType extends ConvertibleEnumeration
         'PATH_OR_DASH' => self::PATH_OR_DASH,
         'FILE_OR_DASH' => self::FILE_OR_DASH,
     ];
+
+    /**
+     * @var array<CliOptionValueType::*,string>
+     */
+    private static $JsonSchemaTypeMap = [
+        self::BOOLEAN => 'boolean',
+        self::INTEGER => 'integer',
+        self::STRING => 'string',
+        self::DATE => 'string',
+        self::PATH => 'string',
+        self::FILE => 'string',
+        self::DIRECTORY => 'string',
+        self::PATH_OR_DASH => 'string',
+        self::FILE_OR_DASH => 'string',
+    ];
+
+    /**
+     * Convert a value type to a JSON Schema type
+     *
+     * @param CliOptionValueType::* $type
+     */
+    public static function toJsonSchemaType($type): string
+    {
+        $jsonSchemaType = self::$JsonSchemaTypeMap[$type] ?? null;
+        if ($jsonSchemaType === null) {
+            throw new LogicException(sprintf('Invalid CliOptionValueType: %d', $type));
+        }
+        return $jsonSchemaType;
+    }
 }

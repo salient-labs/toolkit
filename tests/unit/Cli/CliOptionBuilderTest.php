@@ -28,6 +28,11 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
         $this->assertSame(false, $option->IsBound);
+        $this->assertSame([
+            'description' => 'Description of flag.',
+            'type' => 'boolean',
+            'default' => false,
+        ], $option->getJsonSchema());
 
         $option = $this
             ->getFlag()
@@ -42,6 +47,11 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
         $this->assertSame(false, $option->IsBound);
+        $this->assertSame([
+            'description' => 'Description of flag.',
+            'type' => 'integer',
+            'default' => 0,
+        ], $option->getJsonSchema());
 
         $_ENV[__METHOD__] = '1';
 
@@ -131,6 +141,8 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
         $this->assertSame(true, $option->Required);
         $this->assertSame(true, $option->WasRequired);
+        $this->assertSame(true, $option->ValueRequired);
+        $this->assertSame(false, $option->ValueOptional);
         $this->assertSame(false, $option->MultipleAllowed);
         $this->assertSame(false, $option->Unique);
         $this->assertSame(null, $option->Delimiter);
@@ -139,6 +151,10 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
         $this->assertSame(false, $option->IsBound);
+        $this->assertSame([
+            'description' => 'Description of <NAME>.',
+            'type' => 'string',
+        ], $option->getJsonSchema());
 
         $option = $this
             ->getValue()
@@ -149,6 +165,8 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
         $this->assertSame(false, $option->Required);
         $this->assertSame(false, $option->WasRequired);
+        $this->assertSame(true, $option->ValueRequired);
+        $this->assertSame(false, $option->ValueOptional);
         $this->assertSame(true, $option->MultipleAllowed);
         $this->assertSame(true, $option->Unique);
         $this->assertSame(':', $option->Delimiter);
@@ -157,6 +175,44 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
         $this->assertSame(false, $option->IsBound);
+        $this->assertSame([
+            'description' => 'Description of <NAME>.',
+            'type' => 'array',
+            'items' => [
+                'type' => 'string',
+            ],
+            'uniqueItems' => true,
+            'default' => ['today'],
+        ], $option->getJsonSchema());
+
+        $option = $this
+            ->getValue()
+            ->optionType(CliOptionType::VALUE_OPTIONAL)
+            ->required(false)
+            ->load();
+        $this->assertIsValue($option, CliOptionType::VALUE_OPTIONAL);
+        $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
+        $this->assertSame(false, $option->Required);
+        $this->assertSame(false, $option->WasRequired);
+        $this->assertSame(false, $option->ValueRequired);
+        $this->assertSame(true, $option->ValueOptional);
+        $this->assertSame(false, $option->MultipleAllowed);
+        $this->assertSame(false, $option->Unique);
+        $this->assertSame(null, $option->Delimiter);
+        $this->assertSame('today', $option->DefaultValue);
+        $this->assertSame('today', $option->OriginalDefaultValue);
+        $this->assertSame(null, $option->EnvVariable);
+        $this->assertSame(null, $option->ValueCallback);
+        $this->assertSame(false, $option->IsBound);
+        $this->assertSame([
+            'description' => 'Description of <NAME>. The name applied if true or null is: today',
+            'type' => [
+                'string',
+                'boolean',
+                'null',
+            ],
+            'default' => false,
+        ], $option->getJsonSchema());
 
         $bound = null;
         $option = $this
@@ -179,7 +235,10 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame([], $bound);
     }
 
-    private function assertIsValue(CliOption $option): void
+    /**
+     * @param CliOptionType::* $type
+     */
+    private function assertIsValue(CliOption $option, int $type = CliOptionType::VALUE): void
     {
         // No assertions for:
         // - ValueType
@@ -199,12 +258,10 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame('v|value', $option->Key);
         $this->assertSame('NAME', $option->ValueName);
         $this->assertSame('--value', $option->DisplayName);
-        $this->assertSame(CliOptionType::VALUE, $option->OptionType);
+        $this->assertSame($type, $option->OptionType);
         $this->assertSame(false, $option->IsFlag);
         $this->assertSame(false, $option->IsOneOf);
         $this->assertSame(false, $option->IsPositional);
-        $this->assertSame(true, $option->ValueRequired);
-        $this->assertSame(false, $option->ValueOptional);
         $this->assertSame('Description of <NAME>', $option->Description);
         $this->assertSame(null, $option->AllowedValues);
         $this->assertSame(true, $option->CaseSensitive);
@@ -241,6 +298,14 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
         $this->assertSame(false, $option->IsBound);
+        $this->assertSame([
+            'description' => 'Description of items.',
+            'type' => 'array',
+            'items' => [
+                'enum' => ['today', 'yesterday', 'tomorrow', 'ALL'],
+            ],
+            'uniqueItems' => true,
+        ], $option->getJsonSchema());
     }
 
     private function assertIsOneOf(CliOption $option): void

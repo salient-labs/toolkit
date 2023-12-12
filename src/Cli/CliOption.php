@@ -13,6 +13,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Contract\Buildable;
+use Lkrms\Contract\HasJsonSchema;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
@@ -22,6 +23,7 @@ use Lkrms\Utility\Assert;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Date;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Format;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
@@ -64,7 +66,7 @@ use LogicException;
  *
  * @implements Buildable<CliOptionBuilder>
  */
-final class CliOption implements IImmutable, IReadable, Buildable
+final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
 {
     use HasBuilder;
     use TFullyReadable;
@@ -528,6 +530,78 @@ final class CliOption implements IImmutable, IReadable, Buildable
     }
 
     /**
+     * Get the option's JSON Schema
+     *
+     * @return array<string,mixed>
+     */
+    public function getJsonSchema(): array
+    {
+        $summary = $this->getSummary();
+        if ($summary !== null) {
+            $schema['description'][] = $summary;
+        }
+
+        if ($this->IsOneOf) {
+            $type['enum'] = $this->normaliseForSchema(array_values($this->AllowedValues));
+        } else {
+            $type['type'][] = CliOptionValueType::toJsonSchemaType($this->ValueType);
+        }
+
+        if ($this->ValueOptional && $this->DefaultValue !== null) {
+            if ($this->ValueType !== CliOptionValueType::BOOLEAN) {
+                if (isset($type['enum'])) {
+                    $type['enum'][] = true;
+                } else {
+                    $type['type'][] = 'boolean';
+                }
+                $types[] = 'true';
+            }
+            if (isset($type['enum'])) {
+                $type['enum'][] = null;
+            } else {
+                $type['type'][] = 'null';
+            }
+            $types[] = 'null';
+            $schema['description'][] = sprintf(
+                'The %s applied if %s is: %s',
+                $this->getValueName(),
+                implode(' or ', $types),
+                Format::value($this->DefaultValue),
+            );
+        }
+
+        if (isset($type['type'])) {
+            $type['type'] = Arr::unwrap($type['type']);
+        }
+
+        if ($this->MultipleAllowed && !$this->IsFlag) {
+            $schema['type'] = 'array';
+            $schema['items'] = $type;
+            if ($this->Unique) {
+                $schema['uniqueItems'] = true;
+            }
+        } else {
+            $schema ??= [];
+            $schema += $type;
+        }
+
+        if (
+            $this->OriginalDefaultValue !== null &&
+            $this->OriginalDefaultValue !== []
+        ) {
+            $schema['default'] = $this->ValueOptional
+                ? false
+                : $this->normaliseForSchema($this->OriginalDefaultValue);
+        }
+
+        if (isset($schema['description'])) {
+            $schema['description'] = implode(' ', $schema['description']);
+        }
+
+        return $schema;
+    }
+
+    /**
      * Get the option's names
      *
      * @return string[]
@@ -626,6 +700,28 @@ final class CliOption implements IImmutable, IReadable, Buildable
     }
 
     /**
+     * Get the first paragraph of the option's description, unwrapping any line
+     * breaks
+     */
+    public function getSummary(bool $withFullStop = true): ?string
+    {
+        if ($this->Description === null) {
+            return null;
+        }
+        $desc = ltrim($this->Description);
+        $desc = Str::setEol($desc);
+        $desc = explode("\n\n", $desc, 2)[0];
+        $desc = rtrim($desc);
+        if ($desc === '') {
+            return null;
+        }
+        if ($withFullStop && $desc[-1] !== '.') {
+            $desc .= '.';
+        }
+        return Pcre::replace('/\s+/', ' ', $desc);
+    }
+
+    /**
      * If a value is a non-empty string, split it on the option's delimiter,
      * otherwise wrap it in an array if needed
      *
@@ -701,7 +797,7 @@ final class CliOption implements IImmutable, IReadable, Buildable
         if ($this->AllowedValues) {
             $value = $this->filterValue($value);
             if ($this->AddAll && in_array('ALL', Arr::wrap($value), true)) {
-                $value = array_diff($this->AllowedValues, ['ALL']);
+                $value = array_values(array_diff($this->AllowedValues, ['ALL']));
             }
         } else {
             if (is_array($value)) {
@@ -802,10 +898,30 @@ final class CliOption implements IImmutable, IReadable, Buildable
     }
 
     /**
+     * @param array<string|int|bool>|string|int|bool $value
+     * @return array<string|int|bool>|string|int|bool
+     */
+    private function normaliseForSchema($value)
+    {
+        if (
+            $this->ValueType === CliOptionValueType::DATE ||
+            $this->ValueCallback
+        ) {
+            return $value;
+        }
+
+        $values = (array) $value;
+        foreach ($values as &$_value) {
+            $_value = $this->normaliseValueType($_value, false);
+        }
+        return is_array($value) ? $values : reset($values);
+    }
+
+    /**
      * @param mixed $value
      * @return mixed
      */
-    private function normaliseValueType($value)
+    private function normaliseValueType($value, bool $checkPathExists = true)
     {
         if (!$this->checkValueType($value)) {
             $this->throwValueTypeException($value);
@@ -828,16 +944,20 @@ final class CliOption implements IImmutable, IReadable, Buildable
 
             case CliOptionValueType::PATH:
                 $dashOk = false;
+                // No break
             case CliOptionValueType::PATH_OR_DASH:
                 $dashOk ??= true;
                 $fileType = 'path';
                 $callable = 'file_exists';
+                // No break
             case CliOptionValueType::FILE:
                 $dashOk ??= false;
+                // No break
             case CliOptionValueType::FILE_OR_DASH:
                 $dashOk ??= true;
                 $fileType ??= 'file';
                 $callable ??= 'is_file';
+                // No break
             case CliOptionValueType::DIRECTORY:
                 $dashOk ??= false;
                 $fileType ??= 'directory';
@@ -845,7 +965,7 @@ final class CliOption implements IImmutable, IReadable, Buildable
                 if ($dashOk && $value === '-') {
                     return $value;
                 }
-                if (!$callable($value)) {
+                if ($checkPathExists && !$callable($value)) {
                     throw new CliInvalidArgumentsException(
                         sprintf('%s not found: %s', $fileType, $value)
                     );

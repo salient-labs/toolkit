@@ -19,6 +19,7 @@ use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Str;
 use LogicException;
 use Throwable;
 
@@ -87,6 +88,17 @@ abstract class CliCommand implements ICliCommand
      * @return int|void
      */
     abstract protected function run(string ...$args);
+
+    /**
+     * Override to modify the command's JSON Schema before it is returned
+     *
+     * @param array{'$schema':string,title?:string,required?:string[],properties?:array<string,mixed>} $schema
+     * @return array<string,mixed>
+     */
+    protected function filterJsonSchema(array $schema): array
+    {
+        return $schema;
+    }
 
     /**
      * @var ICliApplication
@@ -677,6 +689,44 @@ abstract class CliCommand implements ICliCommand
         }
 
         return $description;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    final public function getJsonSchema(?string $title = null): array
+    {
+        $schema = [
+            '$schema' => 'http://json-schema.org/draft-04/schema#',
+        ];
+        if ($title !== null) {
+            $schema['title'] = $title;
+        }
+        $schema['type'] = 'object';
+        $schema['required'] = [];
+
+        foreach ($this->getOptions() as $option) {
+            if (!($option->Visibility & CliOptionVisibility::SCHEMA)) {
+                continue;
+            }
+
+            $name = Str::toCamelCase((string) $option->Name);
+            if ($name === '' || isset($schema['properties'][$name])) {
+                throw new LogicException(sprintf('Schema option names must be unique and non-empty after camelCase conversion: %s', $option->Name));
+            }
+
+            $schema['properties'][$name] = $option->getJsonSchema();
+
+            if ($option->Required) {
+                $schema['required'][] = $name;
+            }
+        }
+
+        if (!$schema['required']) {
+            unset($schema['required']);
+        }
+
+        return $this->filterJsonSchema($schema);
     }
 
     /**
