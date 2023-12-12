@@ -92,7 +92,7 @@ interface ICliApplication extends IApplication
     public function buildHelp(array $sections): string;
 
     /**
-     * Process command-line arguments passed to the script and record a return
+     * Process command line arguments passed to the script and record a return
      * value
      *
      * The first applicable action is taken:
@@ -126,7 +126,7 @@ interface ICliApplication extends IApplication
     public function exit();
 
     /**
-     * Exit after processing command-line arguments passed to the script
+     * Exit after processing command line arguments passed to the script
      *
      * The return value recorded by {@see ICliApplication::run()} is used as the
      * exit status.

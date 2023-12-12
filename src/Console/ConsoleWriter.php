@@ -12,6 +12,7 @@ use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Exception\Contract\ExceptionInterface;
+use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
@@ -837,7 +838,13 @@ final class ConsoleWriter implements ReceivesFacade
                 $msg2 .= sprintf("\nCaused by __%s__: ", $class);
             }
 
-            $message = Formatter::escapeTags($ex->getMessage());
+            if ($ex instanceof MultipleErrorExceptionInterface &&
+                    !$ex->hasUnreportedErrors()) {
+                $message = Formatter::escapeTags($ex->getMessageWithoutErrors());
+            } else {
+                $message = Formatter::escapeTags($ex->getMessage());
+            }
+
             $file = Formatter::escapeTags($ex->getFile());
             $line = $ex->getLine();
             $msg2 .= sprintf('%s ~~in %s:%d~~', $message, $file, $line);

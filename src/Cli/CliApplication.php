@@ -15,6 +15,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
+use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Sys;
@@ -424,25 +425,34 @@ class CliApplication extends Application implements ICliApplication
             $name .= ($name === '' ? '' : ' ') . $arg;
         }
 
-        if (($args[0] ?? null) === '_md') {
+        if ($args && $args[0] === '_md') {
             array_shift($args);
             $this->generateHelp($name, $node, CliHelpType::MARKDOWN, ...$args);
             return $this;
         }
 
-        if (($args[0] ?? null) === '_man') {
+        if ($args && $args[0] === '_man') {
             array_shift($args);
             $this->generateHelp($name, $node, CliHelpType::MAN_PAGE, ...$args);
             return $this;
         }
 
         $command = $this->getNodeCommand($name, $node);
+
         try {
             if (!$command) {
                 throw new CliInvalidArgumentsException(
                     sprintf('no command registered: %s', $name)
                 );
             }
+
+            if ($args && $args[0] === '_json_schema') {
+                array_shift($args);
+                $schema = $command->getJsonSchema($args[0] ?? trim($this->getProgramName() . " $name") . ' options');
+                printf("%s\n", Json::prettyPrint($schema));
+                return $this;
+            }
+
             $this->RunningCommand = $command;
             $this->LastExitStatus = $command(...$args);
             return $this;
