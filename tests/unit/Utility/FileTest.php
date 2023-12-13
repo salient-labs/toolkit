@@ -7,6 +7,56 @@ use Lkrms\Utility\File;
 
 final class FileTest extends \Lkrms\Tests\TestCase
 {
+    /**
+     * @dataProvider isAbsoluteProvider
+     */
+    public function testIsAbsolute(bool $expected, string $path): void
+    {
+        $this->assertSame($expected, File::isAbsolute($path));
+    }
+
+    /**
+     * @return array<array{bool,string}>
+     */
+    public static function isAbsoluteProvider(): array
+    {
+        return [
+            [false, ''],
+            [false, '.'],
+            [true, '/usr/local/Cellar/composer/2.6.5/bin/composer'],
+            [true, 'C:\php\composer\2.6.5\bin\composer'],
+            [false, 'C:bin/composer'],
+            [true, '\\\\.\c$\php\composer\2.6.5\bin\composer'],
+            [false, '\php\composer\2.6.5\bin\composer'],
+            [false, 'bin/composer'],
+            [true, 'c:/php/composer/2.6.5/bin/composer'],
+            [false, 'composer'],
+            [true, 'file:///usr/local/Cellar/composer/2.6.5/bin/composer'],
+            [true, 'file:/usr/local/Cellar/composer/2.6.5/bin/composer'],
+            [true, 'phar:///usr/local/Cellar/composer/2.6.5/bin/composer/bin/composer'],
+        ];
+    }
+
+    /**
+     * @dataProvider isPharUriProvider
+     */
+    public function testIsPharUri(bool $expected, string $path): void
+    {
+        $this->assertSame($expected, File::isPharUri($path));
+    }
+
+    /**
+     * @return array<array{bool,string}>
+     */
+    public static function isPharUriProvider(): array
+    {
+        return [
+            [true, 'phar:///usr/local/Cellar/composer/2.6.5/bin/composer/bin/composer'],
+            [true, 'PHAR:///usr/local/Cellar/composer/2.6.5/bin/composer/bin/composer'],
+            [false, '/usr/local/Cellar/composer/2.6.5/bin/composer'],
+        ];
+    }
+
     public function testRealpath(): void
     {
         $path = $this->getFixturesPath(__CLASS__);

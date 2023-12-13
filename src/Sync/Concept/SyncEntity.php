@@ -414,7 +414,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     }
 
     /**
-     * @param SyncEntity|DeferredEntity<SyncEntity>|DeferredRelationship<SyncEntity>|mixed[] $node
+     * @param SyncEntity|DeferredEntity<SyncEntity>|DeferredRelationship<SyncEntity>|DateTimeInterface|mixed[] $node
      * @param string[] $path
      * @param SerializeRules<static> $rules
      * @param array<int,true> $parents
@@ -428,7 +428,6 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         /** @todo Serialize deferred relationships */
         if ($node instanceof DeferredRelationship) {
             $node = null;
-
             return;
         }
 
@@ -436,14 +435,12 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             $node = $node->toLink($rules->getFlags() & SerializeRules::SYNC_STORE
                 ? LinkType::INTERNAL
                 : LinkType::DEFAULT);
-
             return;
         }
 
         if ($node instanceof SyncEntity) {
             if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
                 $node = $node->toLink(LinkType::INTERNAL);
-
                 return;
             }
 
@@ -499,10 +496,11 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                     }
 
                     if ($key !== $newKey) {
+                        /** @var mixed[] $node */
                         if (array_key_exists($newKey, $node)) {
                             throw new UnexpectedValueException("Cannot rename '$key': '$newKey' already set");
                         }
-                        Convert::arraySpliceAtKey($node, $key, 1, [$newKey => $node[$key]]);
+                        $node = Arr::rename($node, $key, $newKey);
                         $key = $newKey;
                     }
 

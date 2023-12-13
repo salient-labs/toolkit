@@ -12,8 +12,8 @@ use Lkrms\Concept\Builder;
  * Creates CliOption objects via a fluent interface
  *
  * @method $this name(?string $value) The name of the option (see {@see CliOption::$Name})
- * @method $this long(?string $value) The long form of the option, e.g. 'verbose' (see {@see CliOption::$Long})
- * @method $this short(?string $value) The short form of the option, e.g. 'v' (see {@see CliOption::$Short})
+ * @method $this long(?string $value) The long form of the option, e.g. "verbose" (see {@see CliOption::$Long})
+ * @method $this short(?string $value) The short form of the option, e.g. "v" (see {@see CliOption::$Short})
  * @method $this valueName(?string $value) The name of the option's value as it appears in usage information (see {@see CliOption::$ValueName})
  * @method $this description(?string $value) A description of the option
  * @method $this optionType(CliOptionType::* $value) The option's type
@@ -23,7 +23,7 @@ use Lkrms\Concept\Builder;
  * @method $this required(bool $value = true) True if the option is mandatory (default: false)
  * @method $this multipleAllowed(bool $value = true) True if the option may be given more than once (default: false)
  * @method $this unique(bool $value = true) True if the same value may not be given more than once (default: false; see {@see CliOption::$Unique})
- * @method $this addAll(bool $value = true) True if 'ALL' should be added to the list of possible values when the option can be given more than once (default: false; see {@see CliOption::$AddAll})
+ * @method $this addAll(bool $value = true) True if "ALL" should be added to the list of possible values when the option can be given more than once (default: false; see {@see CliOption::$AddAll})
  * @method $this defaultValue(array<string|int|bool>|string|int|bool|null $value) Assigned to the option if no value is given on the command line
  * @method $this envVariable(?string $value) The name of a value in the environment that replaces the option's default value (see {@see CliOption::$EnvVariable})
  * @method $this delimiter(?string $value) The separator between values passed to the option as a single argument (see {@see CliOption::$Delimiter})

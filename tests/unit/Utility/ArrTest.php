@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Utility;
 use Lkrms\Utility\Arr;
 use DateTimeImmutable;
 use DateTimeInterface;
+use OutOfRangeException;
 
 final class ArrTest extends \Lkrms\Tests\TestCase
 {
@@ -486,6 +487,57 @@ final class ArrTest extends \Lkrms\Tests\TestCase
     }
 
     /**
+     * @dataProvider renameProvider
+     *
+     * @param mixed[]|string $expected
+     * @param mixed[] $array
+     * @param array-key $key
+     * @param array-key $newKey
+     */
+    public function testRename($expected, array $array, $key, $newKey): void
+    {
+        $this->assertSame($expected, Arr::rename($array, $key, $newKey));
+    }
+
+    /**
+     * @return array<array{mixed[]|string,mixed[],array-key,array-key}>
+     */
+    public static function renameProvider(): array
+    {
+        $array = [
+            'a' => 'value0',
+            'b' => 'value1',
+            'A' => 'value2',
+            'B' => 'value3',
+        ];
+
+        return [
+            [
+                [
+                    'a' => 'value0',
+                    'b_2' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                $array,
+                'b',
+                'b_2',
+            ],
+            [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    0 => 'value3',
+                ],
+                $array,
+                'B',
+                0,
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider sameValuesProvider
      *
      * @param mixed[] ...$arrays
@@ -605,6 +657,264 @@ final class ArrTest extends \Lkrms\Tests\TestCase
             [[], null, [null]],
             [[], null, []],
             [['b' => 'bar'], 'foo', ['a' => 'foo', 'b' => 'bar']],
+        ];
+    }
+
+    /**
+     * @dataProvider spliceProvider
+     *
+     * @param mixed[]|string $expected
+     * @param mixed[]|null $replaced
+     * @param mixed[] $array
+     * @param mixed[] $replacement
+     */
+    public function testSplice(
+        $expected,
+        $replaced,
+        array $array,
+        int $offset,
+        ?int $length = null,
+        $replacement = []
+    ): void {
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Arr::splice($array, $offset, $length, $replacement, $actualReplaced));
+        $this->assertSame($replaced, $actualReplaced);
+    }
+
+    /**
+     * @return array<array{mixed[]|string,mixed[]|null,mixed[],int,4?:int|null,5?:mixed[]}>
+     */
+    public static function spliceProvider(): array
+    {
+        $array1 = [
+            'a' => 'value0',
+            'b' => 'value1',
+            'A' => 'value2',
+            'B' => 'value3',
+        ];
+
+        $array2 = [
+            'c' => 'value4',
+            'C' => 'value5',
+        ];
+
+        return [
+            'remove all' => [
+                [],
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                $array1,
+                0,
+            ],
+            'remove some' => [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                ],
+                [
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                $array1,
+                2,
+            ],
+            'remove last' => [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                ],
+                [
+                    'B' => 'value3',
+                ],
+                $array1,
+                3,
+            ],
+            'remove none' => [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                [],
+                $array1,
+                1,
+                0,
+            ],
+            'out of range' => [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                [],
+                $array1,
+                10,
+            ],
+            'insert at start' => [
+                [
+                    'value4',
+                    'value5',
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                [],
+                $array1,
+                0,
+                0,
+                $array2,
+            ],
+            'replace middle' => [
+                [
+                    'a' => 'value0',
+                    'value4',
+                    'value5',
+                    'B' => 'value3',
+                ],
+                [
+                    'b' => 'value1',
+                    'A' => 'value2',
+                ],
+                $array1,
+                1,
+                2,
+                $array2,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider spliceByKeyProvider
+     *
+     * @param mixed[]|string $expected
+     * @param mixed[]|null $replaced
+     * @param mixed[] $array
+     * @param array-key $key
+     * @param mixed[] $replacement
+     */
+    public function testSpliceByKey(
+        $expected,
+        $replaced,
+        array $array,
+        $key,
+        ?int $length = null,
+        array $replacement = []
+    ): void {
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Arr::spliceByKey($array, $key, $length, $replacement, $actualReplaced));
+        $this->assertSame($replaced, $actualReplaced);
+    }
+
+    /**
+     * @return array<array{mixed[]|string,mixed[]|null,mixed[],array-key,4?:int|null,5?:mixed[]}>
+     */
+    public static function spliceByKeyProvider(): array
+    {
+        $array1 = [
+            'a' => 'value0',
+            'b' => 'value1',
+            'A' => 'value2',
+            'B' => 'value3',
+        ];
+
+        $array2 = [
+            'c' => 'value4',
+            'C' => 'value5',
+        ];
+
+        return [
+            'remove all' => [
+                [],
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                $array1,
+                'a',
+            ],
+            'remove some' => [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                ],
+                [
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                $array1,
+                'A',
+            ],
+            'remove last' => [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                ],
+                [
+                    'B' => 'value3',
+                ],
+                $array1,
+                'B',
+            ],
+            'remove none' => [
+                [
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                [],
+                $array1,
+                'b',
+                0,
+            ],
+            'out of range' => [
+                OutOfRangeException::class . ',Array key not found: foo',
+                null,
+                $array1,
+                'foo',
+            ],
+            'insert at start' => [
+                [
+                    'c' => 'value4',
+                    'C' => 'value5',
+                    'a' => 'value0',
+                    'b' => 'value1',
+                    'A' => 'value2',
+                    'B' => 'value3',
+                ],
+                [],
+                $array1,
+                'a',
+                0,
+                $array2,
+            ],
+            'replace middle' => [
+                [
+                    'a' => 'value0',
+                    'c' => 'value4',
+                    'C' => 'value5',
+                    'B' => 'value3',
+                ],
+                [
+                    'b' => 'value1',
+                    'A' => 'value2',
+                ],
+                $array1,
+                'b',
+                2,
+                $array2,
+            ],
         ];
     }
 

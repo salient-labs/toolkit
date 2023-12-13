@@ -308,13 +308,6 @@ final class Convert extends Utility
     }
 
     /**
-     * array_splice for associative arrays
-     *
-     * Removes `$length` values from the array, starting with `$array[$key]`,
-     * and replaces the removed portion with the elements of `$replacement`.
-     *
-     * See `array_splice()` for more information.
-     *
      * @template TKey of array-key
      * @template TValue
      *
@@ -322,39 +315,26 @@ final class Convert extends Utility
      * @param TKey $key
      * @param array<TKey,TValue> $replacement
      * @return array<TKey,TValue> The removed portion of the array.
+     * @deprecated Use {@see Arr::spliceByKey()} instead
+     * @codeCoverageIgnore
      */
     public static function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
     {
-        $keys = array_keys($array);
-        $offset = array_flip($keys)[$key] ?? null;
-        if ($offset === null) {
-            throw new LogicException("Array key not found: $key");
-        }
-        // $length can't be null in PHP 7.4
-        if ($length === null) {
-            $length = count($array);
-        }
-        $values = array_values($array);
-        $_keys = array_splice($keys, $offset, $length, array_keys($replacement));
-        $_values = array_splice($values, $offset, $length, array_values($replacement));
-        $array = array_combine($keys, $values);
-
-        return array_combine($_keys, $_values);
+        $array = Arr::spliceByKey($array, $key, $length, $replacement, $replaced);
+        return $replaced;
     }
 
     /**
-     * Rename an array key without changing the order of values in the array
-     *
      * @param string|int $key
      * @param string|int $newKey
      * @param mixed[] $array
      * @return mixed[]
+     * @deprecated Use {@see Arr::rename()} instead
+     * @codeCoverageIgnore
      */
     public static function renameArrayKey($key, $newKey, array $array): array
     {
-        self::arraySpliceAtKey($array, $key, 1, [$newKey => $array[$key] ?? null]);
-
-        return $array;
+        return Arr::rename($array, $key, $newKey);
     }
 
     /**
