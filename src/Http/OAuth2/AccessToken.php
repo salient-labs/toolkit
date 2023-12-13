@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\Auth;
+namespace Lkrms\Http\OAuth2;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;

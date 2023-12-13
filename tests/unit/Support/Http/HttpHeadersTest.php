@@ -4,9 +4,9 @@ namespace Lkrms\Tests\Support\Http;
 
 use Lkrms\Contract\ICollection;
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Http\Auth\AccessToken;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Catalog\HttpHeaderGroup;
+use Lkrms\Http\OAuth2\AccessToken;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Support\Catalog\MimeType;
 use Lkrms\Utility\Arr;
