@@ -14,6 +14,10 @@ use Phar;
  */
 final class File extends Utility
 {
+    private const ABSOLUTE_PATH = <<<'REGEX'
+        /^(?:\/|\\\\|[a-z]:[\/\\]|[a-z][-a-z0-9+.]+:)/i
+        REGEX;
+
     /**
      * Open a file or URL
      *
@@ -208,6 +212,25 @@ final class File extends Utility
     }
 
     /**
+     * True if a path is absolute
+     *
+     * Returns `true` if `$path` starts with `/`, `\\`, `<letter>:\`,
+     * `<letter>:/` or a URI scheme with two or more characters.
+     */
+    public static function isAbsolute(string $path): bool
+    {
+        return (bool) Pcre::match(self::ABSOLUTE_PATH, $path);
+    }
+
+    /**
+     * True if a path is a "phar://" URI
+     */
+    public static function isPharUri(string $path): bool
+    {
+        return strtolower(substr($path, 0, 7)) === 'phar://';
+    }
+
+    /**
      * Create a file if it doesn't exist
      *
      * @param int $permissions Used after creating `$filename` if it doesn't
@@ -378,7 +401,7 @@ final class File extends Utility
         )) {
             return 'php://fd/' . $matches[1];
         }
-        if (Test::isPharUrl($filename) &&
+        if (self::isPharUri($filename) &&
                 extension_loaded('Phar') &&
                 Phar::running()) {
             // @codeCoverageIgnoreStart

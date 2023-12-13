@@ -3,6 +3,7 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use OutOfRangeException;
 
 /**
  * Manipulate arrays
@@ -613,6 +614,88 @@ final class Arr extends Utility
             $upper[$key] = strtoupper((string) $value);
         }
         return $upper ?? [];
+    }
+
+    /**
+     * Rename an array key without changing its offset
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TKey $key
+     * @param TKey $newKey
+     * @return array<TKey,TValue>
+     */
+    public static function rename(array $array, $key, $newKey): array
+    {
+        if ($key === $newKey && isset($array[$key])) {
+            return $array;
+        }
+        return self::spliceByKey($array, $key, 1, [$newKey => $array[$key] ?? null]);
+    }
+
+    /**
+     * Remove and/or replace part of an array by offset (0-based)
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TValue[]|TValue $replacement
+     * @param array<TKey,TValue>|null $replaced
+     *
+     * @return array<TKey|int,TValue>
+     */
+    public static function splice(
+        array $array,
+        int $offset,
+        ?int $length = null,
+        $replacement = [],
+        ?array &$replaced = null
+    ): array {
+        // $length can't be null in PHP 7.4
+        if ($length === null) {
+            $length = count($array);
+        }
+        $replaced = array_splice($array, $offset, $length, $replacement);
+        return $array;
+    }
+
+    /**
+     * Remove and/or replace part of an array by key
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TKey $key
+     * @param array<TKey,TValue> $replacement
+     * @param array<TKey,TValue>|null $replaced
+     *
+     * @return array<TKey,TValue>
+     */
+    public static function spliceByKey(
+        array $array,
+        $key,
+        ?int $length = null,
+        array $replacement = [],
+        ?array &$replaced = null
+    ): array {
+        $keys = array_keys($array);
+        $offset = array_flip($keys)[$key] ?? null;
+        if ($offset === null) {
+            throw new OutOfRangeException(sprintf('Array key not found: %s', $key));
+        }
+        // $length can't be null in PHP 7.4
+        if ($length === null) {
+            $length = count($array);
+        }
+        $replaced = array_combine(
+            array_splice($keys, $offset, $length, array_keys($replacement)),
+            array_splice($array, $offset, $length, $replacement),
+        );
+        return array_combine($keys, $array);
     }
 
     /**

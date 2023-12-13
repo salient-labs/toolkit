@@ -84,7 +84,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     protected ?string $Name;
 
     /**
-     * The long form of the option, e.g. 'verbose'
+     * The long form of the option, e.g. "verbose"
      *
      * Must start with a letter, number or underscore, followed by one or more
      * letters, numbers, underscores or hyphens.
@@ -92,7 +92,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     protected ?string $Long;
 
     /**
-     * The short form of the option, e.g. 'v'
+     * The short form of the option, e.g. "v"
      *
      * Must contain one letter, number or underscore.
      *
@@ -221,7 +221,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     protected ?int $UnknownValuePolicy;
 
     /**
-     * True if 'ALL' should be added to the list of possible values when the
+     * True if "ALL" should be added to the list of possible values when the
      * option can be given more than once
      *
      * Ignored if {@see CliOption::$IsOneOf} or

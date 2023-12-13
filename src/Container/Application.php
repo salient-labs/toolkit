@@ -124,7 +124,7 @@ class Application extends Container implements IApplication
                     sprintf('%s disabled in this environment', $name)
                 );
             }
-            if (!Test::isAbsolutePath($path)) {
+            if (!File::isAbsolute($path)) {
                 $path = "{$this->BasePath}/$path";
             }
             return $this->checkPath($path, $name, $create, $save);
@@ -192,7 +192,7 @@ class Application extends Container implements IApplication
 
     private function checkPath(string $path, string $name, bool $create, ?string &$save): string
     {
-        if (!Test::isAbsolutePath($path)) {
+        if (!File::isAbsolute($path)) {
             throw new InvalidEnvironmentException(
                 sprintf('Absolute path required: %s', $name)
             );

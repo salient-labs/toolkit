@@ -81,22 +81,21 @@ final class Test extends Utility
     }
 
     /**
-     * True if a path starts with 'phar://'
+     * @deprecated Use {@see File::isPharUri()} instead
+     * @codeCoverageIgnore
      */
     public static function isPharUrl(string $path): bool
     {
-        return substr($path, 0, 7) === 'phar://';
+        return File::isPharUri($path);
     }
 
     /**
-     * True if a path is absolute
-     *
-     * Paths that start with `/`, `\\`, or `[a-z]:\` are regarded as absolute
-     * paths.
+     * @deprecated Use {@see File::isAbsolute()} instead
+     * @codeCoverageIgnore
      */
     public static function isAbsolutePath(string $path): bool
     {
-        return (bool) Pcre::match('/^(\/|\\\\\\\\|[a-z]:\\\\)/i', $path);
+        return File::isAbsolute($path);
     }
 
     /**
