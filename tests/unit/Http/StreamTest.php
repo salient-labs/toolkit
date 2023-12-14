@@ -56,6 +56,14 @@ final class StreamTest extends \Lkrms\Tests\TestCase
         ];
     }
 
+    public function testFromContents(): void
+    {
+        $stream = Stream::fromContents('foo');
+        self::assertSame(3, $stream->getSize());
+        self::assertSame('foo', (string) $stream);
+        $stream->close();
+    }
+
     public function testToString(): void
     {
         $stream = $this->getStream();
@@ -314,12 +322,44 @@ final class StreamTest extends \Lkrms\Tests\TestCase
         $stream->write('foo');
         $stream->seek(0);
         $this->expectException(StreamInvalidRequestException::class);
+        $this->expectExceptionMessage('Stream is not open for reading');
         try {
             $stream->getContents();
         } finally {
             $stream->close();
             File::pruneDir($dir);
             rmdir($dir);
+        }
+    }
+
+    public function testUnwritableStream(): void
+    {
+        $dir = File::createTempDir();
+        $file = $dir . '/file';
+        touch($file);
+        $handle = File::open($file, 'r');
+        $stream = new Stream($handle);
+        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectExceptionMessage('Stream is not open for writing');
+        try {
+            $stream->write('foo');
+        } finally {
+            $stream->close();
+            File::pruneDir($dir);
+            rmdir($dir);
+        }
+    }
+
+    public function testUnseekableStream(): void
+    {
+        $stream = $this->getForwardOnlyStream();
+        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectExceptionMessage('Stream is not seekable');
+        try {
+            $stream->seek(0);
+        } finally {
+            $stream->getContents();
+            $stream->close();
         }
     }
 
