@@ -3,9 +3,33 @@
 namespace Lkrms\Tests;
 
 use Lkrms\Utility\Pcre;
+use Closure;
+use Throwable;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * Fail if a callback does not throw a given exception
+     *
+     * @param Closure(): mixed $callback
+     * @param class-string<Throwable> $exception
+     */
+    public function assertThrows(Closure $callback, string $exception, ?string $exceptionMessage = null, string $message = ''): void
+    {
+        try {
+            $callback();
+        } catch (Throwable $ex) {
+            $this->assertInstanceOf($exception, $ex, $message);
+            if ($exceptionMessage !== null) {
+                $this->assertStringContainsString($exceptionMessage, $ex->getMessage(), $message);
+            }
+            return;
+        }
+        $this->fail($message === ''
+            ? sprintf('Failed asserting that exception of type %s is thrown', $exception)
+            : $message);
+    }
+
     /**
      * Expect an exception if a given value is a string
      *

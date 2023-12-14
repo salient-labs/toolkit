@@ -5,9 +5,12 @@ namespace Lkrms\Utility;
 use Lkrms\Concept\Utility;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
+use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Phar;
+use Stringable;
 
 /**
  * Work with files and directories
@@ -21,67 +24,72 @@ final class File extends Utility
     /**
      * Open a file or URL
      *
-     * A wrapper around {@see fopen()} that throws an exception on failure.
-     *
+     * @see fopen()
      * @return resource
+     * @throws FilesystemErrorException on failure.
      */
     public static function open(string $filename, string $mode)
     {
-        $stream = fopen($filename, $mode);
-        if ($stream === false) {
-            throw new FilesystemErrorException(
-                sprintf('Error opening stream: %s', $filename),
-            );
-        }
-        return $stream;
+        $stream = @fopen($filename, $mode);
+        return self::throwOnFailure($stream, 'Error opening stream: %s', $filename);
     }
 
     /**
      * Close an open stream
      *
-     * A wrapper around {@see fclose()} that throws an exception on failure.
-     *
+     * @see fclose()
      * @param resource $stream
+     * @param Stringable|string|null $uri
      */
-    public static function close($stream, ?string $uri = null): void
+    public static function close($stream, $uri = null): void
     {
-        $uri = self::maybeGetStreamUri($stream, $uri);
-        $result = fclose($stream);
-        if ($result === false) {
-            throw new FilesystemErrorException(
-                sprintf('Error closing file: %s', $uri),
-            );
-        }
+        $uri = self::getFriendlyStreamUri($uri, $stream);
+        $result = @fclose($stream);
+        self::throwOnFailure($result, 'Error closing stream: %s', $uri);
+    }
+
+    /**
+     * Read from an open stream
+     *
+     * @see fread()
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function read($stream, int $length, $uri = null): string
+    {
+        $result = @fread($stream, $length);
+        return self::throwOnFailure($result, 'Error reading from stream: %s', $uri, $stream);
     }
 
     /**
      * Write to an open stream
      *
-     * A wrapper around {@see fwrite()} that throws an exception on failure and
-     * when fewer bytes are written than expected.
-     *
+     * @see fwrite()
      * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure and when fewer bytes are
+     * written than expected.
      */
-    public static function write($stream, string $data, ?int $length = null, ?string $uri = null): int
+    public static function write($stream, string $data, ?int $length = null, $uri = null): int
     {
-        $result = fwrite($stream, $data, $length);
-        if ($result === false) {
-            throw new FilesystemErrorException(
-                sprintf(
-                    'Error writing to stream: %s',
-                    self::maybeGetStreamUri($stream, $uri),
-                ),
-            );
+        // $length can't be null in PHP 7.4
+        if ($length === null) {
+            $length = strlen($data);
+            $expected = $length;
+        } else {
+            $expected = min($length, strlen($data));
         }
-        $length = $length === null ? strlen($data) : min($length, strlen($data));
-        if ($result !== $length) {
+        $result = @fwrite($stream, $data, $length);
+        self::throwOnFailure($result, 'Error writing to stream: %s', $uri, $stream);
+        if ($result !== $expected) {
             throw new FilesystemErrorException(
                 sprintf(
                     'Error writing to stream: %d of %d %s written to %s',
                     $result,
                     $length,
                     Convert::plural($length, 'byte'),
-                    self::maybeGetStreamUri($stream, $uri),
+                    self::getFriendlyStreamUri($uri, $stream),
                 ),
             );
         }
@@ -91,43 +99,71 @@ final class File extends Utility
     /**
      * Set the file position indicator for a stream
      *
-     * A wrapper around {@see fseek()} that throws an exception on failure.
-     *
+     * @see fseek()
      * @param resource $stream
      * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
      */
-    public static function seek($stream, int $offset, int $whence = \SEEK_SET, ?string $uri = null): void
+    public static function seek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
     {
-        $result = fseek($stream, $offset, $whence);
-        if ($result === -1) {
-            throw new FilesystemErrorException(
-                sprintf(
-                    'Error setting file position indicator for stream: %s',
-                    self::maybeGetStreamUri($stream, $uri),
-                ),
-            );
-        }
+        $result = @fseek($stream, $offset, $whence);
+        self::throwOnFailure($result, 'Error setting file position indicator for stream: %s', $uri, $stream, -1);
     }
 
     /**
      * Get the file position indicator for a stream
      *
-     * A wrapper around {@see ftell()} that throws an exception on failure.
-     *
+     * @see ftell()
      * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
      */
-    public static function tell($stream, ?string $uri = null): int
+    public static function tell($stream, $uri = null): int
     {
-        $result = ftell($stream);
-        if ($result === false) {
-            throw new FilesystemErrorException(
-                sprintf(
-                    'Error getting file position indicator for stream: %s',
-                    self::maybeGetStreamUri($stream, $uri),
-                ),
-            );
+        $result = @ftell($stream);
+        return self::throwOnFailure($result, 'Error getting file position indicator for stream: %s', $uri, $stream);
+    }
+
+    /**
+     * Get the file status of a stream
+     *
+     * @see fstat()
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @return int[]
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function stat($stream, $uri = null): array
+    {
+        $result = @fstat($stream);
+        return self::throwOnFailure($result, 'Error getting file status of stream: %s', $uri, $stream);
+    }
+
+    /**
+     * Get an entire file or the remaining contents of a stream
+     *
+     * @see file_get_contents()
+     * @see stream_get_contents()
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function getContents($resource, $uri = null): string
+    {
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $result = @stream_get_contents($resource);
+            return self::throwOnFailure($result, 'Error reading stream: %s', $uri, $resource);
         }
-        return $result;
+
+        if (!Test::isStringable($resource)) {
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        }
+
+        $resource = (string) $resource;
+        $result = @file_get_contents($resource);
+        return self::throwOnFailure($result, 'Error reading file: %s', $resource);
     }
 
     /**
@@ -501,14 +537,41 @@ final class File extends Utility
     }
 
     /**
-     * @param resource $stream
+     * @template TSuccess
+     * @template TFailure of false|-1
+     *
+     * @param TSuccess|TFailure $result
+     * @param Stringable|string|null $uri
+     * @param resource|null $stream
+     * @param TFailure $failure
+     * @return ($result is TFailure ? never : TSuccess)
      */
-    private static function maybeGetStreamUri($stream, ?string $uri): string
+    private static function throwOnFailure($result, string $message, $uri, $stream = null, $failure = false)
+    {
+        if ($result === $failure) {
+            $error = error_get_last();
+            if ($error) {
+                throw new FilesystemErrorException($error['message']);
+            }
+            throw new FilesystemErrorException(
+                sprintf($message, self::getFriendlyStreamUri($uri, $stream))
+            );
+        }
+        return $result;
+    }
+
+    /**
+     * @param Stringable|string|null $uri
+     * @param resource|null $stream
+     */
+    private static function getFriendlyStreamUri($uri, $stream): string
     {
         if ($uri !== null) {
-            return $uri;
+            return (string) $uri;
         }
-        $uri = self::getStreamUri($stream);
+        if ($stream !== null) {
+            $uri = self::getStreamUri($stream);
+        }
         if ($uri === null) {
             return '<no URI>';
         }
@@ -549,12 +612,7 @@ final class File extends Utility
         bool $bom = true
     ) {
         if (is_resource($target)) {
-            $type = get_resource_type($target);
-            if ($type !== 'stream') {
-                throw new FilesystemErrorException(
-                    sprintf('Invalid resource type: %s', $type),
-                );
-            }
+            self::assertResourceIsStream($target);
             $handle = $target;
             $targetName = 'stream';
         } elseif (is_string($target)) {
@@ -562,7 +620,7 @@ final class File extends Utility
             $targetName = $target;
         } else {
             $target = 'php://temp';
-            $handle = self::open($target, 'w+b');
+            $handle = self::open($target, 'r+b');
             $targetName = $target;
             $target = null;
         }
@@ -631,6 +689,7 @@ final class File extends Utility
      *
      * @param resource $stream
      * @param mixed[] $fields
+     * @param Stringable|string|null $uri
      */
     private static function fputcsv(
         $stream,
@@ -638,7 +697,7 @@ final class File extends Utility
         string $separator = ',',
         string $enclosure = '"',
         string $eol = "\n",
-        ?string $uri = null
+        $uri = null
     ): int {
         $special = $separator . $enclosure . "\n\r\t ";
         foreach ($fields as &$field) {
@@ -655,6 +714,19 @@ final class File extends Utility
             null,
             $uri,
         );
+    }
+
+    /**
+     * @param resource $resource
+     */
+    private static function assertResourceIsStream($resource): void
+    {
+        $type = get_resource_type($resource);
+        if ($type !== 'stream') {
+            throw new InvalidArgumentException(
+                sprintf('Invalid resource type: %s', $type)
+            );
+        }
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support\Http;
+namespace Lkrms\Tests\Http;
 
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Uri;
@@ -9,10 +9,7 @@ use Lkrms\Utility\Pcre;
 use Generator;
 
 /**
- * Unit tests for \Lkrms\Http\Uri
- *
- * Some of the following tests were adapted from
- * {@link https://github.com/guzzle/psr7/blob/2.6/tests/UriTest.php guzzlehttp/psr7's `UriTest` class}
+ * Some tests are derived from similar guzzlehttp/psr7 tests
  */
 final class UriTest extends \Lkrms\Tests\TestCase
 {
