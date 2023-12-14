@@ -9,7 +9,7 @@ use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
-use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -38,7 +38,7 @@ abstract class HttpSyncProvider extends SyncProvider
     final public function getCurler(
         string $path,
         ?int $expiry = -1,
-        ?IHttpHeaders $headers = null,
+        ?HttpHeadersInterface $headers = null,
         ?ICurlerPager $pager = null,
         ?IDateFormatter $dateFormatter = null
     ): Curler {
@@ -204,7 +204,7 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * Get HTTP headers required by the upstream API
      */
-    protected function getHeaders(?string $path): ?IHttpHeaders
+    protected function getHeaders(?string $path): ?HttpHeadersInterface
     {
         return null;
     }

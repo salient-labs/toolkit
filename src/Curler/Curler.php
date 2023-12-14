@@ -22,7 +22,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Catalog\HttpHeaderGroup;
 use Lkrms\Http\Catalog\HttpRequestMethod;
-use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Iterator\RecursiveCallbackIterator;
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
@@ -44,13 +44,13 @@ use RecursiveIteratorIterator;
  * A (very) lightweight Guzzle alternative.
  *
  * @property-read string $BaseUrl Resource URL (no query or fragment)
- * @property-read IHttpHeaders $Headers Request headers
+ * @property-read HttpHeadersInterface $Headers Request headers
  * @property-read string|null $Method Most recent request method
  * @property-read string|null $QueryString Query string most recently added to request URL
  * @property-read string|mixed[]|null $Body Request body, as passed to cURL
  * @property-read string|mixed[]|object|null $Data Request body, before serialization
  * @property-read ICurlerPager|null $Pager Pagination handler
- * @property-read IHttpHeaders|null $ResponseHeaders Response headers
+ * @property-read HttpHeadersInterface|null $ResponseHeaders Response headers
  * @property-read array<string,string>|null $ResponseHeadersByName An array that maps lowercase response headers to their combined values
  * @property-read int|null $StatusCode Response status code
  * @property-read string|null $ReasonPhrase Response status explanation
@@ -98,7 +98,7 @@ final class Curler implements IReadable, IWritable, Buildable
     /**
      * Request headers
      *
-     * @var IHttpHeaders
+     * @var HttpHeadersInterface
      */
     protected $Headers;
 
@@ -143,7 +143,7 @@ final class Curler implements IReadable, IWritable, Buildable
     /**
      * Response headers
      *
-     * @var IHttpHeaders|null
+     * @var HttpHeadersInterface|null
      */
     protected $ResponseHeaders;
 
@@ -441,7 +441,7 @@ final class Curler implements IReadable, IWritable, Buildable
      */
     public function __construct(
         string $baseUrl,
-        ?IHttpHeaders $headers = null,
+        ?HttpHeadersInterface $headers = null,
         ?ICurlerPager $pager = null,
         bool $cacheResponse = false,
         bool $cachePostResponse = false,
@@ -562,7 +562,7 @@ final class Curler implements IReadable, IWritable, Buildable
      *
      * @return $this
      */
-    public function withHeaders(IHttpHeaders $headers)
+    public function withHeaders(HttpHeadersInterface $headers)
     {
         $clone = $this->clone();
         $clone->Headers = $headers;
@@ -1073,7 +1073,7 @@ final class Curler implements IReadable, IWritable, Buildable
     /**
      * @param mixed[]|null $query
      */
-    public function head(?array $query = null): IHttpHeaders
+    public function head(?array $query = null): HttpHeadersInterface
     {
         return $this->process(HttpRequestMethod::HEAD, $query);
     }

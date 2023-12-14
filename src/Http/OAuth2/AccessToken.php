@@ -6,7 +6,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Http\Contract\IAccessToken;
+use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -20,7 +20,7 @@ use DateTimeInterface;
  * @property-read string[] $Scopes
  * @property-read array<string,mixed> $Claims
  */
-final class AccessToken implements IAccessToken, IImmutable, IReadable
+final class AccessToken implements AccessTokenInterface, IImmutable, IReadable
 {
     use TFullyReadable;
 

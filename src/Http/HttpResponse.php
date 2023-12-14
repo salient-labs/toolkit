@@ -4,16 +4,16 @@ namespace Lkrms\Http;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Utility\Arr;
 
 /**
- * Represents an HTTP response
+ * An HTTP response
  *
  * @property-read string $ProtocolVersion
  * @property-read int $StatusCode
  * @property-read string|null $ReasonPhrase
- * @property-read IHttpHeaders $Headers
+ * @property-read HttpHeadersInterface $Headers
  * @property-read string|null $Body
  */
 final class HttpResponse implements IReadable
@@ -36,7 +36,7 @@ final class HttpResponse implements IReadable
     protected $ReasonPhrase;
 
     /**
-     * @var IHttpHeaders
+     * @var HttpHeadersInterface
      */
     protected $Headers;
 
@@ -49,7 +49,7 @@ final class HttpResponse implements IReadable
         ?string $body,
         int $statusCode = 200,
         ?string $reasonPhrase = null,
-        ?IHttpHeaders $headers = null,
+        ?HttpHeadersInterface $headers = null,
         string $protocolVersion = '1.1'
     ) {
         $headers = $headers ?: new HttpHeaders();

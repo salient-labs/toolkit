@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support\Http;
+namespace Lkrms\Tests\Http;
 
 use Lkrms\Contract\ICollection;
 use Lkrms\Exception\InvalidArgumentException;

@@ -4,7 +4,6 @@ namespace Lkrms\Http\Contract;
 
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Http\Catalog\HttpHeader;
 
 /**
@@ -12,17 +11,18 @@ use Lkrms\Http\Catalog\HttpHeader;
  *
  * @extends ICollection<string,string[]>
  */
-interface IHttpHeaders extends ICollection, IImmutable
+interface HttpHeadersInterface extends ICollection
 {
     /**
      * Parse and apply an HTTP header field or continuation thereof
      *
      * This method should be called once per HTTP header line. Each line must
      * have a trailing CRLF. If an empty line (`"\r\n"`) is given, subsequent
-     * headers applied via {@see IHttpHeaders::addLine()} are flagged as
-     * trailers. Aside from {@see IHttpHeaders::trailers()} and
-     * {@see IHttpHeaders::withoutTrailers()}, {@see IHttpHeaders} methods make
-     * no distinction between trailers and other headers.
+     * headers applied via {@see HttpHeadersInterface::addLine()} are flagged as
+     * trailers. Aside from {@see HttpHeadersInterface::trailers()} and
+     * {@see HttpHeadersInterface::withoutTrailers()},
+     * {@see HttpHeadersInterface} methods make no distinction between trailers
+     * and other headers.
      *
      * @param bool $strict If `true`, throw an exception if `$line` is not
      * \[RFC7230]-compliant.
@@ -65,7 +65,7 @@ interface IHttpHeaders extends ICollection, IImmutable
      * @return static
      */
     public function authorize(
-        IAccessToken $token,
+        AccessTokenInterface $token,
         string $headerName = HttpHeader::AUTHORIZATION
     );
 

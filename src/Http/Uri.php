@@ -13,7 +13,7 @@ use JsonSerializable;
 use Stringable;
 
 /**
- * Represents a valid [RFC3986]-compliant URI reference
+ * An [RFC3986]-compliant URI reference
  */
 class Uri implements JsonSerializable, Stringable, UriInterface
 {

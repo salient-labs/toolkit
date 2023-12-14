@@ -4,15 +4,15 @@ namespace Lkrms\Http;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 
 /**
- * Represents an HTTP request
+ * An HTTP request
  *
  * @property-read string $Method
  * @property-read string $Target
  * @property-read string $ProtocolVersion
- * @property-read IHttpHeaders $Headers
+ * @property-read HttpHeadersInterface $Headers
  * @property-read string|null $Body
  * @property-read string|null $Client
  */
@@ -36,7 +36,7 @@ final class HttpRequest implements IReadable
     protected $ProtocolVersion;
 
     /**
-     * @var IHttpHeaders
+     * @var HttpHeadersInterface
      */
     protected $Headers;
 
@@ -54,7 +54,7 @@ final class HttpRequest implements IReadable
         string $method,
         string $target,
         string $protocolVersion,
-        IHttpHeaders $headers,
+        HttpHeadersInterface $headers,
         ?string $body,
         ?string $client = null
     ) {

@@ -46,7 +46,7 @@ final class ODataPager implements ICurlerPager
         if ($this->MaxPageSize === null) {
             return $curler;
         }
-        /** @todo implement `Prefer` header wrangling in `IHttpHeaders`? */
+        /** @todo wrangle `Prefer` headers in `HttpHeadersInterface`? */
         $preference = sprintf('odata.maxpagesize=%d', $this->MaxPageSize);
         $value = $curler->Headers->getHeader(HttpHeader::PREFER);
         $pattern = '/^odata\.maxpagesize\h*=/i';

@@ -6,13 +6,13 @@ use Lkrms\Concept\Builder;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 
 /**
  * Creates Curler objects via a fluent interface
  *
  * @method $this baseUrl(string $value) Resource URL (no query or fragment)
- * @method $this headers(?IHttpHeaders $value) Request headers
+ * @method $this headers(?HttpHeadersInterface $value) Request headers
  * @method $this pager(?ICurlerPager $value) Pagination handler
  * @method $this cacheResponse(bool $value = true) Cache responses to GET and HEAD requests? (ignored if $expiry is null or >= 0; HTTP caching directives are not honoured) (default: false; see {@see Curler::$CacheResponse})
  * @method $this cachePostResponse(bool $value = true) Cache responses to eligible POST requests? (default: false; see {@see Curler::$CachePostResponse})
@@ -43,7 +43,7 @@ use Lkrms\Http\Contract\IHttpHeaders;
  * @method Curler setContentType(?string $mimeType) Call Curler::setContentType() on a new instance
  * @method Curler with(string&CurlerProperty::* $property, mixed $value) Apply a value to a clone of the instance
  * @method Curler flushCookies() Call Curler::flushCookies() on a new instance
- * @method IHttpHeaders head(mixed[]|null $query = null) Call Curler::head() on a new instance
+ * @method HttpHeadersInterface head(mixed[]|null $query = null) Call Curler::head() on a new instance
  * @method mixed get(mixed[]|null $query = null) Call Curler::get() on a new instance
  * @method mixed post(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::post() on a new instance
  * @method mixed put(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::put() on a new instance

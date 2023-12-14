@@ -7,10 +7,11 @@ use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
+use Lkrms\Contract\IImmutable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
-use Lkrms\Http\Contract\IAccessToken;
-use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\Contract\AccessTokenInterface;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
@@ -20,7 +21,7 @@ use LogicException;
 /**
  * A collection of HTTP headers
  */
-class HttpHeaders implements IHttpHeaders
+class HttpHeaders implements HttpHeadersInterface, IImmutable
 {
     /** @use TReadableCollection<string,string[]> */
     use TReadableCollection;
@@ -254,7 +255,7 @@ class HttpHeaders implements IHttpHeaders
      * @inheritDoc
      */
     public function authorize(
-        IAccessToken $token,
+        AccessTokenInterface $token,
         string $headerName = HttpHeader::AUTHORIZATION
     ) {
         return $this->set(
