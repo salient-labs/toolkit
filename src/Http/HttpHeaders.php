@@ -9,8 +9,8 @@ use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
+use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Http\Contract\IAccessToken;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
@@ -254,7 +254,7 @@ class HttpHeaders implements HttpHeadersInterface
      * @inheritDoc
      */
     public function authorize(
-        IAccessToken $token,
+        AccessTokenInterface $token,
         string $headerName = HttpHeader::AUTHORIZATION
     ) {
         return $this->set(

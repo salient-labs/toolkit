@@ -2,7 +2,7 @@
 
 namespace Lkrms\Http\Contract;
 
-interface IAccessToken
+interface AccessTokenInterface
 {
     /**
      * Get the object's token string

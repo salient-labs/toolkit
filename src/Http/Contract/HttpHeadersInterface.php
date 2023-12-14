@@ -66,7 +66,7 @@ interface HttpHeadersInterface extends ICollection, IImmutable
      * @return static
      */
     public function authorize(
-        IAccessToken $token,
+        AccessTokenInterface $token,
         string $headerName = HttpHeader::AUTHORIZATION
     );
 
