@@ -12,7 +12,7 @@ use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Http\Catalog\HttpRequestMethod;
-use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
@@ -61,7 +61,7 @@ use LogicException;
  *
  * @property-read string[]|string|null $Path The path to the provider endpoint servicing the entity, e.g. "/v1/user"
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
- * @property-read IHttpHeaders|null $Headers HTTP headers applied to the sync operation request
+ * @property-read HttpHeadersInterface|null $Headers HTTP headers applied to the sync operation request
  * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
  * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
  * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap An array that maps sync operations to HTTP request methods
@@ -140,7 +140,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * {@see HttpSyncDefinition::withHeaders()} or
      * {@see HttpSyncDefinition::$Callback}.
      *
-     * @var IHttpHeaders|null
+     * @var HttpHeadersInterface|null
      */
     protected $Headers;
 
@@ -258,7 +258,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
         array $operations = [],
         $path = null,
         ?array $query = null,
-        ?IHttpHeaders $headers = null,
+        ?HttpHeadersInterface $headers = null,
         ?ICurlerPager $pager = null,
         ?callable $callback = null,
         $conformity = ArrayKeyConformity::NONE,
@@ -337,7 +337,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @return $this
      * @see HttpSyncDefinition::$Headers
      */
-    public function withHeaders(?IHttpHeaders $headers)
+    public function withHeaders(?HttpHeadersInterface $headers)
     {
         $clone = clone $this;
         $clone->Headers = $headers;

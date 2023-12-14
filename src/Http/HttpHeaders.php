@@ -9,8 +9,8 @@ use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
+use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\Contract\IAccessToken;
-use Lkrms\Http\Contract\IHttpHeaders;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
@@ -20,7 +20,7 @@ use LogicException;
 /**
  * A collection of HTTP headers
  */
-class HttpHeaders implements IHttpHeaders
+class HttpHeaders implements HttpHeadersInterface
 {
     /** @use TReadableCollection<string,string[]> */
     use TReadableCollection;
