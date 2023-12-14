@@ -7,6 +7,7 @@ use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
+use Lkrms\Contract\IImmutable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Contract\AccessTokenInterface;
@@ -20,7 +21,7 @@ use LogicException;
 /**
  * A collection of HTTP headers
  */
-class HttpHeaders implements HttpHeadersInterface
+class HttpHeaders implements HttpHeadersInterface, IImmutable
 {
     /** @use TReadableCollection<string,string[]> */
     use TReadableCollection;

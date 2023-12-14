@@ -4,7 +4,6 @@ namespace Lkrms\Http\Contract;
 
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Http\Catalog\HttpHeader;
 
 /**
@@ -12,7 +11,7 @@ use Lkrms\Http\Catalog\HttpHeader;
  *
  * @extends ICollection<string,string[]>
  */
-interface HttpHeadersInterface extends ICollection, IImmutable
+interface HttpHeadersInterface extends ICollection
 {
     /**
      * Parse and apply an HTTP header field or continuation thereof

@@ -8,7 +8,7 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Utility\Arr;
 
 /**
- * Represents an HTTP response
+ * An HTTP response
  *
  * @property-read string $ProtocolVersion
  * @property-read int $StatusCode

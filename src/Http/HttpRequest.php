@@ -7,7 +7,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 
 /**
- * Represents an HTTP request
+ * An HTTP request
  *
  * @property-read string $Method
  * @property-read string $Target
