@@ -7,8 +7,8 @@ use Lkrms\Contract\IConvertibleEnumeration;
 use LogicException;
 
 /**
- * Base class for enumerations that use static array properties to convert
- * constants to and from their names
+ * Base class for enumerations that use static arrays to map constants to and
+ * from their names
  *
  * @template TValue of array-key
  *
@@ -70,5 +70,13 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
     final public static function cases(): array
     {
         return static::$ValueMap;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function hasValue($value): bool
+    {
+        return isset(static::$NameMap[$value]);
     }
 }

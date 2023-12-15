@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Lkrms\Concept\Enumeration;
 
 /**
  * HTTP request methods
  *
- * @extends Dictionary<string>
+ * @extends Enumeration<string>
  */
-final class HttpRequestMethod extends Dictionary
+final class HttpRequestMethod extends Enumeration
 {
     public const GET = 'GET';
 

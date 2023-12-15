@@ -8,8 +8,8 @@ use LogicException;
 use ReflectionClass;
 
 /**
- * Base class for enumerations that use reflection to convert constants to and
- * from their names
+ * Base class for enumerations that use reflection to map constants to and from
+ * their names
  *
  * @template TValue of array-key
  *
@@ -110,5 +110,16 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
             self::loadMaps();
         }
         return self::$ValueMaps[static::class];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function hasValue($value): bool
+    {
+        if (!isset(self::$NameMaps[static::class])) {
+            self::loadMaps();
+        }
+        return isset(self::$NameMaps[static::class][$value]);
     }
 }

@@ -17,7 +17,9 @@ use Stringable;
  */
 class Uri implements JsonSerializable, Stringable, UriInterface
 {
-    use Immutable;
+    use Immutable {
+        withPropertyValue as with;
+    }
 
     protected const SCHEME_PORT = [
         'http' => 80,
@@ -292,7 +294,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     public function withScheme(string $scheme): self
     {
         return $this
-            ->withPropertyValue('Scheme', $this->filterScheme($scheme))
+            ->with('Scheme', $this->filterScheme($scheme))
             ->validate();
     }
 
@@ -310,8 +312,8 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         }
 
         return $this
-            ->withPropertyValue('User', $user)
-            ->withPropertyValue('Password', $password)
+            ->with('User', $user)
+            ->with('Password', $password)
             ->validate();
     }
 
@@ -321,7 +323,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     public function withHost(string $host): self
     {
         return $this
-            ->withPropertyValue('Host', $this->filterHost(Str::coalesce($host, null)))
+            ->with('Host', $this->filterHost(Str::coalesce($host, null)))
             ->validate();
     }
 
@@ -331,7 +333,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     public function withPort(?int $port): self
     {
         return $this
-            ->withPropertyValue('Port', $this->filterPort($port))
+            ->with('Port', $this->filterPort($port))
             ->validate();
     }
 
@@ -341,7 +343,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     public function withPath(string $path): self
     {
         return $this
-            ->withPropertyValue('Path', $this->filterPath($path))
+            ->with('Path', $this->filterPath($path))
             ->validate();
     }
 
@@ -351,7 +353,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     public function withQuery(string $query): self
     {
         return $this
-            ->withPropertyValue('Query', $this->filterQueryOrFragment(Str::coalesce($query, null)));
+            ->with('Query', $this->filterQueryOrFragment(Str::coalesce($query, null)));
     }
 
     /**
@@ -360,12 +362,18 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     public function withFragment(string $fragment): self
     {
         return $this
-            ->withPropertyValue('Fragment', $this->filterQueryOrFragment(Str::coalesce($fragment, null)));
+            ->with('Fragment', $this->filterQueryOrFragment(Str::coalesce($fragment, null)));
     }
 
     /**
      * Get a normalised instance
      *
+     * Removes "/./" and "/../" segments from the path. \[RFC3986]-compliant
+     * scheme- and protocol-based normalisation may also be performed.
+     *
+     * Scheme, host and percent-encoded octets in the URI are always normalised.
+     *
+     * @see Uri::removeDotSegments()
      * @return static
      */
     public function normalise(): self
@@ -384,7 +392,9 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     public function follow($reference): self
     {
         if ($this->isReference()) {
-            throw new InvalidArgumentException('Reference cannot be resolved relative to another reference');
+            throw new InvalidArgumentException(
+                'Reference cannot be resolved relative to another reference'
+            );
         }
 
         $reference = static::getUri($reference);
@@ -422,6 +432,18 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         return $target
             ->mergeRelativePath($reference->Path)
             ->removeDotSegments();
+    }
+
+    /**
+     * Get an instance with "/./" and "/../" segments removed from the path
+     *
+     * Compliant with \[RFC3986] Section 5.2.4 ("Remove Dot Segments").
+     *
+     * @return static
+     */
+    public function removeDotSegments(): self
+    {
+        return $this->withPath(File::resolve($this->Path, true));
     }
 
     /**
@@ -480,19 +502,6 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     }
 
     /**
-     * Get an instance with "/./" and "/../" segments in the path of the URI
-     * resolved
-     *
-     * Compliant with \[RFC3986] Section 5.2.4 ("Remove Dot Segments").
-     *
-     * @return static
-     */
-    protected function removeDotSegments(): self
-    {
-        return $this->withPath(File::resolve($this->Path, true));
-    }
-
-    /**
      * Get an instance with a relative path merged into the path of the URI
      *
      * Implements \[RFC3986] Section 5.2.3 ("Merge Paths").
@@ -538,7 +547,9 @@ class Uri implements JsonSerializable, Stringable, UriInterface
             return null;
         }
         if ($validate && !Pcre::match(self::URI_SCHEME, $scheme)) {
-            throw new InvalidArgumentException(sprintf('Invalid scheme: %s', $scheme));
+            throw new InvalidArgumentException(
+                sprintf('Invalid scheme: %s', $scheme)
+            );
         }
         return Str::lower($scheme);
     }
@@ -559,10 +570,16 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ($validate) {
             $host = $this->encode($host);
             if (!Pcre::match(self::URI_HOST, $host)) {
-                throw new InvalidArgumentException(sprintf('Invalid host: %s', $host));
+                throw new InvalidArgumentException(
+                    sprintf('Invalid host: %s', $host)
+                );
             }
         }
-        return $this->normaliseComponent(Str::lower($this->decodeUnreserved($host)), '[#/?@]', false);
+        return $this->normaliseComponent(
+            Str::lower($this->decodeUnreserved($host)),
+            '[#/?@]',
+            false
+        );
     }
 
     /**
@@ -575,7 +592,9 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         }
         $port = (int) $port;
         if ($port < 0 || $port > 65535) {
-            throw new InvalidArgumentException(sprintf('Invalid port: %d', $port));
+            throw new InvalidArgumentException(
+                sprintf('Invalid port: %d', $port)
+            );
         }
         return $port;
     }
@@ -610,6 +629,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ($decodeUnreserved) {
             $part = $this->decodeUnreserved($part);
         }
+
         if ($encodeRegex !== '') {
             $encodeRegex = str_replace('/', '\/', $encodeRegex) . '|';
         }
@@ -617,12 +637,10 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         return Pcre::replaceCallbackArray([
             // Use uppercase hexadecimal digits
             '/%([0-9a-f]{2})/i' =>
-                fn(array $matches) =>
-                    '%' . strtoupper($matches[1]),
+                fn(array $matches) => '%' . Str::upper($matches[1]),
             // Encode everything except reserved and unreserved characters
-            "/(%(?![0-9a-f]{2})|{$encodeRegex}[^]!#\$%&'()*+,\/:;=?@[])+/i" =>
-                fn(array $matches) =>
-                    rawurlencode($matches[0]),
+            "/(?:%(?![0-9a-f]{2})|{$encodeRegex}[^]!#\$%&'()*+,\/:;=?@[])+/i" =>
+                fn(array $matches) => rawurlencode($matches[0]),
         ], $part);
     }
 
@@ -633,8 +651,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     {
         return Pcre::replaceCallback(
             '/%(2[de]|5f|7e|3[0-9]|[46][1-9a-f]|[57][0-9a])/i',
-            fn(array $matches) =>
-                chr(hexdec($matches[1])),
+            fn(array $matches) => chr(hexdec($matches[1])),
             $part
         );
     }
@@ -646,9 +663,8 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     private function encode(string $partOrUri): string
     {
         return Pcre::replaceCallback(
-            '/(%(?![0-9a-f]{2})|[^]!#$%&\'()*+,\/:;=?@[])+/i',
-            fn(array $matches) =>
-                rawurlencode($matches[0]),
+            '/(?:%(?![0-9a-f]{2})|[^]!#$%&\'()*+,\/:;=?@[])+/i',
+            fn(array $matches) => rawurlencode($matches[0]),
             $partOrUri
         );
     }
@@ -660,20 +676,28 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     {
         if ($this->getAuthority() === '') {
             if (substr($this->Path, 0, 2) === '//') {
-                throw new InvalidArgumentException('Path cannot begin with "//" in URI without authority');
+                throw new InvalidArgumentException(
+                    'Path cannot begin with "//" in URI without authority'
+                );
             }
+
             if (
                 $this->Scheme === null &&
                 $this->Path !== '' &&
                 Pcre::match('/^[^\/:]*+:/', $this->Path)
             ) {
-                throw new InvalidArgumentException('Path cannot begin with colon segment in URI without scheme');
+                throw new InvalidArgumentException(
+                    'Path cannot begin with colon segment in URI without scheme'
+                );
             }
+
             return $this;
         }
 
         if ($this->Path !== '' && $this->Path[0] !== '/') {
-            throw new InvalidArgumentException('Path must be empty or begin with "/" in URI with authority');
+            throw new InvalidArgumentException(
+                'Path must be empty or begin with "/" in URI with authority'
+            );
         }
 
         return $this;
