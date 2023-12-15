@@ -18,6 +18,7 @@ return (new PhpCsFixer\Config())
     ->setRules([
         'is_null' => true,
         'native_constant_invocation' => true,
+        'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
         'yoda_style' => ['equal' => false, 'identical' => false],
     ])
     ->setFinder($finder)

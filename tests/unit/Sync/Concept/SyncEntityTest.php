@@ -32,7 +32,6 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
      *
      * @param int|string|false|null $expected
      * @param int|string|null $nameOrId
-     * @param string $entity
      */
     public function testIdFromNameOrId(
         $expected,

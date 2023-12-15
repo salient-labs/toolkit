@@ -149,8 +149,6 @@ abstract class SqliteStore implements ReceivesFacade
 
     /**
      * True if check() is currently running
-     *
-     * @return bool
      */
     final protected function isCheckRunning(): bool
     {

@@ -11,8 +11,6 @@ interface ISyncSerializeRules extends ISerializeRules
 {
     /**
      * Remove CanonicalId from sync entities?
-     *
-     * @return bool
      */
     public function getRemoveCanonicalId(): bool;
 
