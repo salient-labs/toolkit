@@ -343,7 +343,6 @@ final class Convert extends Utility
      * Works with ISO 8601 durations like `PT48M`.
      *
      * @param DateInterval|string $value
-     * @return int
      */
     public static function intervalToSeconds($value): int
     {
@@ -942,7 +941,6 @@ final class Convert extends Utility
      * @param string $size From the PHP FAQ: "The available options are K (for
      * Kilobytes), M (for Megabytes) and G (for Gigabytes), and are all
      * case-insensitive."
-     * @return int
      */
     public static function sizeToBytes(string $size): int
     {

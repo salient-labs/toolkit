@@ -29,9 +29,6 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      */
     private array $EventListeners = [];
 
-    /**
-     * @var int
-     */
     private int $NextListenerId = 0;
 
     /**

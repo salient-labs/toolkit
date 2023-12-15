@@ -81,8 +81,6 @@ final class ErrorHandler implements ReceivesFacade
 
     /**
      * True if error, exception and shutdown handlers are registered
-     *
-     * @return bool
      */
     public function isRegistered(): bool
     {

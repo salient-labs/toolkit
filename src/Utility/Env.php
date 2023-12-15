@@ -536,7 +536,6 @@ final class Env
      * @param string[] $lines
      * @param array<string,string> $queue
      * @param string[] $errors
-     * @param string|null $filename
      */
     private static function parse(array $lines, array &$queue, array &$errors, ?string $filename = null): void
     {

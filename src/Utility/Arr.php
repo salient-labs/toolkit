@@ -534,8 +534,6 @@ final class Arr extends Utility
      * removing empty strings
      *
      * @param array<int|float|string|bool|\Stringable|null> $array
-     *
-     * @return string
      */
     public static function implode(string $separator, array $array): string
     {

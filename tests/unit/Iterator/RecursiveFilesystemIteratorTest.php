@@ -14,7 +14,6 @@ final class RecursiveFilesystemIteratorTest extends \Lkrms\Tests\TestCase
      * @dataProvider iteratorProvider
      *
      * @param string[] $expected
-     * @param RecursiveFilesystemIterator $iterator
      */
     public function testIterator(
         array $expected,

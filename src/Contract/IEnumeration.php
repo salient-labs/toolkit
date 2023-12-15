@@ -15,4 +15,11 @@ interface IEnumeration
      * @return array<string,TValue>
      */
     public static function cases(): array;
+
+    /**
+     * True if the class has a public constant with the given value
+     *
+     * @param TValue $value
+     */
+    public static function hasValue($value): bool;
 }

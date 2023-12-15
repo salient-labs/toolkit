@@ -74,7 +74,6 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param ISyncDefinition<TEntity,TProvider> $definition
-     * @param ISyncContext|null $context
      */
     public function __construct(
         IContainer $container,

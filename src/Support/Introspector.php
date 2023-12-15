@@ -665,12 +665,10 @@ class Introspector
      * static function ($instance, ...$params)
      * ```
      *
-     * @param string $name
      * @param string $action Either {@see IntrospectionClass::ACTION_SET},
      * {@see IntrospectionClass::ACTION_GET},
      * {@see IntrospectionClass::ACTION_ISSET} or
      * {@see IntrospectionClass::ACTION_UNSET}.
-     * @return Closure
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure
     {
