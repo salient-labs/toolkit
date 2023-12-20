@@ -777,7 +777,7 @@ final class UriTest extends \Lkrms\Tests\TestCase
             // 2E
             Pcre::match('@^/?[^/]*@', $in, $matches);
             $out .= $matches[0];
-            $in = substr($in, strlen($matches[0]));
+            $in = (string) substr($in, strlen($matches[0]));
         }
         return $out;
     }
