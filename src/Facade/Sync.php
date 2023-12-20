@@ -3,7 +3,6 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
-use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;

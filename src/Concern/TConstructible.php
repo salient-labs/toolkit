@@ -6,7 +6,6 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
-use Lkrms\Support\IntrospectionClass;
 use Lkrms\Support\Introspector;
 use Generator;
 

@@ -4,7 +4,6 @@ namespace Lkrms\Iterator;
 
 use Lkrms\Iterator\Contract\MutableIterator;
 use LogicException;
-use Traversable;
 
 /**
  * Iterates over the properties or elements of a mutable object or array

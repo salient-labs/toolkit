@@ -13,7 +13,6 @@ use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\RelationshipType;
-use Lkrms\Utility\Arr;
 use Lkrms\Utility\Reflect;
 use DateTimeInterface;
 use ReflectionClass;

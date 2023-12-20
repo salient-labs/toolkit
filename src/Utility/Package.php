@@ -7,7 +7,6 @@ use Composer\InstalledVersions;
 use Lkrms\Concept\Utility;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Utility\File;
 
 /**
  * Get information about the package and its dependencies from Composer's
