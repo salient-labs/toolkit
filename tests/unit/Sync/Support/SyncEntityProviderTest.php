@@ -2,7 +2,6 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;

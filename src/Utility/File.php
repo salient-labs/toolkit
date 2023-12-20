@@ -141,6 +141,32 @@ final class File extends Utility
     }
 
     /**
+     * Open a pipe to a process
+     *
+     * @see popen()
+     * @return resource
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function openPipe(string $command, string $mode)
+    {
+        $pipe = @popen($command, $mode);
+        return self::throwOnFailure($pipe, 'Error opening pipe to process: %s', $command);
+    }
+
+    /**
+     * Close a pipe to a process and return its exit status
+     *
+     * @see pclose()
+     * @param resource $pipe
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function closePipe($pipe, ?string $command = null): int
+    {
+        $result = @pclose($pipe);
+        return self::throwOnFailure($result, 'Error closing pipe to process: %s', $command, null, -1);
+    }
+
+    /**
      * Get an entire file or the remaining contents of a stream
      *
      * @see file_get_contents()
@@ -164,6 +190,19 @@ final class File extends Utility
         $resource = (string) $resource;
         $result = @file_get_contents($resource);
         return self::throwOnFailure($result, 'Error reading file: %s', $resource);
+    }
+
+    /**
+     * Write data to a file
+     *
+     * @see file_put_contents()
+     * @param resource|array<int|float|string|bool|\Stringable|null>|string $data
+     * @param int-mask-of<\FILE_USE_INCLUDE_PATH|\FILE_APPEND|\LOCK_EX> $flags
+     */
+    public static function putContents(string $filename, $data, int $flags = 0): int
+    {
+        $result = @file_put_contents($filename, $data, $flags);
+        return self::throwOnFailure($result, 'Error writing file: %s', $filename);
     }
 
     /**
@@ -573,7 +612,7 @@ final class File extends Utility
             $uri = self::getStreamUri($stream);
         }
         if ($uri === null) {
-            return '<no URI>';
+            return '<stream>';
         }
         return $uri;
     }

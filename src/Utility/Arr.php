@@ -118,11 +118,12 @@ final class Arr extends Utility
      *
      * @template TKey of array-key
      * @template TValue
+     * @template T
      *
      * @param array<TKey,TValue> $array
-     * @param TValue ...$values
+     * @param T ...$values
      *
-     * @return array<TKey,TValue>
+     * @return array<TKey|int,TValue|T>
      */
     public static function extend(array $array, ...$values): array
     {

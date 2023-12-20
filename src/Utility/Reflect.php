@@ -4,7 +4,6 @@ namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Utility\Convert;
 use Closure;
 use LogicException;
 use ReflectionClass;

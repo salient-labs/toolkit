@@ -7,7 +7,6 @@ use Lkrms\Db\DbConnector;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
 use Lkrms\Support\SqlQuery;
-use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;

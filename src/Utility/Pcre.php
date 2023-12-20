@@ -17,7 +17,7 @@ final class Pcre extends Utility
      * @template TValue of int|float|string|bool|\Stringable|null
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask<0,\PREG_GREP_INVERT> $flags
+     * @param int-mask-of<\PREG_GREP_INVERT> $flags
      * @return array<TKey,TValue>
      */
     public static function grep(
@@ -36,13 +36,26 @@ final class Pcre extends Utility
     /**
      * A wrapper for preg_match()
      *
-     * @param mixed[] $matches
-     * @param int-mask<0,\PREG_OFFSET_CAPTURE,\PREG_UNMATCHED_AS_NULL> $flags
+     * @template TFlags of int-mask-of<\PREG_OFFSET_CAPTURE|\PREG_UNMATCHED_AS_NULL>
+     *
+     * @param mixed[]|null $matches
+     * @param-out (
+     *     TFlags is 256
+     *     ? array<array{string,int}>
+     *     : (TFlags is 512
+     *         ? array<string|null>
+     *         : (TFlags is 768
+     *             ? array<array{string|null,int}>
+     *             : array<string>
+     *         )
+     *     )
+     * ) $matches
+     * @param TFlags $flags
      */
     public static function match(
         string $pattern,
         string $subject,
-        array &$matches = null,
+        ?array &$matches = null,
         int $flags = 0,
         int $offset = 0
     ): int {
@@ -57,13 +70,41 @@ final class Pcre extends Utility
     /**
      * A wrapper for preg_match_all()
      *
-     * @param mixed[] $matches
-     * @param int-mask<0,\PREG_PATTERN_ORDER,\PREG_SET_ORDER,\PREG_OFFSET_CAPTURE,\PREG_UNMATCHED_AS_NULL> $flags
+     * @template TFlags of int-mask-of<\PREG_PATTERN_ORDER|\PREG_SET_ORDER|\PREG_OFFSET_CAPTURE|\PREG_UNMATCHED_AS_NULL>
+     *
+     * @param mixed[]|null $matches
+     * @param-out (
+     *     TFlags is 1
+     *     ? array<list<string>>
+     *     : (TFlags is 2
+     *         ? list<array<string>>
+     *         : (TFlags is 256|257
+     *             ? array<list<array{string,int}>>
+     *             : (TFlags is 258
+     *                 ? list<array<array{string,int}>>
+     *                 : (TFlags is 512|513
+     *                     ? array<list<string|null>>
+     *                     : (TFlags is 514
+     *                         ? list<array<string|null>>
+     *                         : (TFlags is 768|769
+     *                             ? array<list<array{string|null,int}>>
+     *                             : (TFlags is 770
+     *                                 ? list<array<array{string|null,int}>>
+     *                                 : array<list<string>>
+     *                             )
+     *                         )
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     )
+     * ) $matches
+     * @param TFlags $flags
      */
     public static function matchAll(
         string $pattern,
         string $subject,
-        array &$matches = null,
+        ?array &$matches = null,
         int $flags = 0,
         int $offset = 0
     ): int {
@@ -150,7 +191,7 @@ final class Pcre extends Utility
     /**
      * A wrapper for preg_split()
      *
-     * @param int-mask<0,\PREG_SPLIT_NO_EMPTY,\PREG_SPLIT_DELIM_CAPTURE,\PREG_SPLIT_OFFSET_CAPTURE> $flags
+     * @param int-mask-of<\PREG_SPLIT_NO_EMPTY|\PREG_SPLIT_DELIM_CAPTURE|\PREG_SPLIT_OFFSET_CAPTURE> $flags
      * @return mixed[]
      */
     public static function split(

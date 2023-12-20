@@ -7,7 +7,6 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
-use LogicException;
 use ReflectionParameter;
 
 final class ConvertTest extends \Lkrms\Tests\TestCase

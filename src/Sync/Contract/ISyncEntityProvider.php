@@ -8,7 +8,6 @@ use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Support\DeferredRelationship;
 
 /**
  * Provides an entity-agnostic interface to an ISyncProvider's implementation of

@@ -5,7 +5,6 @@ namespace Lkrms\Container;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevels;
 use Lkrms\Console\Target\StreamTarget;
-use Lkrms\Container\Container;
 use Lkrms\Contract\IApplication;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\InvalidEnvironmentException;

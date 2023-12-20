@@ -11,7 +11,6 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
-use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;

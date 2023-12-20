@@ -130,9 +130,9 @@ final class GenerateFacade extends GenerateCommand
         $methods = [];
         $toDeclare = [];
         foreach ($_methods as $_method) {
-            $declaring = $this->getTypeAlias($_method->getDeclaringClass()->getName());
+            $declaring = $_method->getDeclaringClass()->getName();
             $methodName = $_method->getName();
-            $methodFqsen = "{$declaring}::{$methodName}()";
+            $getMethodFqsen = fn() => $this->getTypeAlias($declaring) . "::{$methodName}()";
             $_params = $_method->getParameters();
             $docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
             $phpDoc = PhpDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
@@ -201,7 +201,7 @@ final class GenerateFacade extends GenerateCommand
                         break;
                     case '\self':
                     case 'self':
-                        $type = $declaring;
+                        $type = $this->getTypeAlias($declaring);
                         break;
                     case 'void':
                         $returnsVoid = true;
@@ -209,8 +209,8 @@ final class GenerateFacade extends GenerateCommand
                 }
                 $summary = $phpDoc->Summary ?? null;
                 $summary = $summary
-                    ? ($declare || !$link ? $summary : "$summary (see {@see $methodFqsen})")
-                    : ($declare || !$link ? "A facade for $methodFqsen" : "See {@see $methodFqsen}");
+                    ? ($declare || !$link ? $summary : "$summary (see {@see " . $getMethodFqsen() . '})')
+                    : ($declare || !$link ? 'A facade for ' . $getMethodFqsen() : 'See {@see ' . $getMethodFqsen() . '}');
 
                 // Convert "?<type>" to "<type>|null"
                 if (!$declare && strpos($type, '?') === 0) {
@@ -279,7 +279,7 @@ final class GenerateFacade extends GenerateCommand
                     $lines[] = $return;
                 }
                 if ($link) {
-                    $lines[] = "@see $methodFqsen";
+                    $lines[] = '@see ' . $getMethodFqsen();
                 }
 
                 $toDeclare[] = [$_method, implode(\PHP_EOL, $lines), !$returnsVoid];

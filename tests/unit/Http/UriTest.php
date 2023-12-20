@@ -755,7 +755,7 @@ final class UriTest extends \Lkrms\Tests\TestCase
         $out = '';
         while ($in !== '') {
             // 2A
-            $in = Pcre::replace('@^(?:\.\./|\./)@', '', (string) $in, -1, $count);
+            $in = Pcre::replace('@^(?:\.\./|\./)@', '', $in, -1, $count);
             if ($count) {
                 continue;
             }
@@ -777,7 +777,7 @@ final class UriTest extends \Lkrms\Tests\TestCase
             // 2E
             Pcre::match('@^/?[^/]*@', $in, $matches);
             $out .= $matches[0];
-            $in = substr($in, strlen($matches[0]));
+            $in = (string) substr($in, strlen($matches[0]));
         }
         return $out;
     }

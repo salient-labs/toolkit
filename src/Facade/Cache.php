@@ -3,7 +3,6 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
-use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Store\CacheStore;
 use DateTimeInterface;
 

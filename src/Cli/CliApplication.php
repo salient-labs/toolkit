@@ -7,7 +7,6 @@ use Lkrms\Cli\Catalog\CliHelpType;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Support\CliHelpStyle;
-use Lkrms\Cli\CliCommand;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;

@@ -16,9 +16,13 @@ $finder = (new PhpCsFixer\Finder())
 
 return (new PhpCsFixer\Config())
     ->setRules([
+        'fully_qualified_strict_types' => true,
         'is_null' => true,
         'native_constant_invocation' => true,
         'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
+        'no_unneeded_import_alias' => true,
+        'no_unused_imports' => true,
+        'single_import_per_statement' => true,
         'yoda_style' => ['equal' => false, 'identical' => false],
     ])
     ->setFinder($finder)
