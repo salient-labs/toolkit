@@ -13,7 +13,7 @@ use JsonSerializable;
 use Stringable;
 
 /**
- * An [RFC3986]-compliant URI reference
+ * An [RFC3986]-compliant URI
  */
 class Uri implements JsonSerializable, Stringable, UriInterface
 {
@@ -162,12 +162,12 @@ class Uri implements JsonSerializable, Stringable, UriInterface
      * Resolve a URI reference that may be relative to a given base URI to a
      * target URI
      *
-     * @param Stringable|UriInterface|Uri|string $reference
-     * @param Stringable|UriInterface|Uri|string $baseUri
+     * @param UriInterface|Stringable|string $reference
+     * @param UriInterface|Stringable|string $baseUri
      */
     public static function resolveReference($reference, $baseUri): string
     {
-        return (string) static::getUri($baseUri)->follow(static::getUri($reference));
+        return (string) static::from($baseUri)->follow(static::from($reference));
     }
 
     /**
@@ -386,7 +386,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
      *
      * Implements \[RFC3986] Section 5.2.2 ("Transform References").
      *
-     * @param Stringable|UriInterface|Uri|string $reference
+     * @param UriInterface|Stringable|string $reference
      * @return static
      */
     public function follow($reference): self
@@ -397,7 +397,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
             );
         }
 
-        $reference = static::getUri($reference);
+        $reference = static::from($reference);
         if (!$reference->isReference()) {
             return $reference->removeDotSegments();
         }
@@ -490,10 +490,10 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * Resolve a value to a Uri object
      *
-     * @param Stringable|UriInterface|Uri|string $uri
+     * @param UriInterface|Stringable|string $uri
      * @return static
      */
-    protected static function getUri($uri): self
+    public static function from($uri): self
     {
         if ($uri instanceof static) {
             return $uri;

@@ -17,6 +17,8 @@ final class HttpHeader extends Dictionary
 
     public const CONTENT_TYPE = 'Content-Type';
 
+    public const HOST = 'Host';
+
     public const PREFER = 'Prefer';
 
     public const PROXY_AUTHORIZATION = 'Proxy-Authorization';

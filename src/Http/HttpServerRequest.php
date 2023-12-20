@@ -16,7 +16,7 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
  * @property-read string|null $Body
  * @property-read string|null $Client
  */
-final class HttpRequest implements IReadable
+final class HttpServerRequest implements IReadable
 {
     use TFullyReadable;
 
