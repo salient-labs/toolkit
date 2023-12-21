@@ -291,7 +291,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withScheme(string $scheme): self
+    public function withScheme(string $scheme): UriInterface
     {
         return $this
             ->with('Scheme', $this->filterScheme($scheme))
@@ -301,7 +301,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withUserInfo(string $user, ?string $password = null): self
+    public function withUserInfo(string $user, ?string $password = null): UriInterface
     {
         if ($user === '') {
             $user = null;
@@ -320,7 +320,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withHost(string $host): self
+    public function withHost(string $host): UriInterface
     {
         return $this
             ->with('Host', $this->filterHost(Str::coalesce($host, null)))
@@ -330,7 +330,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withPort(?int $port): self
+    public function withPort(?int $port): UriInterface
     {
         return $this
             ->with('Port', $this->filterPort($port))
@@ -340,7 +340,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withPath(string $path): self
+    public function withPath(string $path): UriInterface
     {
         return $this
             ->with('Path', $this->filterPath($path))
@@ -350,7 +350,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withQuery(string $query): self
+    public function withQuery(string $query): UriInterface
     {
         return $this
             ->with('Query', $this->filterQueryOrFragment(Str::coalesce($query, null)));
@@ -359,7 +359,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withFragment(string $fragment): self
+    public function withFragment(string $fragment): UriInterface
     {
         return $this
             ->with('Fragment', $this->filterQueryOrFragment(Str::coalesce($fragment, null)));

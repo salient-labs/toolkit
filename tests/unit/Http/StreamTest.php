@@ -35,13 +35,13 @@ final class StreamTest extends \Lkrms\Tests\TestCase
     public function testStream(string $mode): void
     {
         $stream = $this->getStream($mode);
-        self::assertTrue($stream->isReadable());
-        self::assertTrue($stream->isWritable());
-        self::assertTrue($stream->isSeekable());
-        self::assertSame('php://temp', $stream->getMetadata('uri'));
-        self::assertIsArray($stream->getMetadata());
-        self::assertSame(4, $stream->getSize());
-        self::assertFalse($stream->eof());
+        $this->assertTrue($stream->isReadable());
+        $this->assertTrue($stream->isWritable());
+        $this->assertTrue($stream->isSeekable());
+        $this->assertSame('php://temp', $stream->getMetadata('uri'));
+        $this->assertIsArray($stream->getMetadata());
+        $this->assertSame(4, $stream->getSize());
+        $this->assertFalse($stream->eof());
         $stream->close();
     }
 
@@ -59,51 +59,51 @@ final class StreamTest extends \Lkrms\Tests\TestCase
     public function testFromContents(): void
     {
         $stream = Stream::fromContents('foo');
-        self::assertSame(3, $stream->getSize());
-        self::assertSame('foo', (string) $stream);
+        $this->assertSame(3, $stream->getSize());
+        $this->assertSame('foo', (string) $stream);
         $stream->close();
     }
 
     public function testToString(): void
     {
         $stream = $this->getStream();
-        self::assertSame('data', (string) $stream);
-        self::assertSame('data', (string) $stream);
+        $this->assertSame('data', (string) $stream);
+        $this->assertSame('data', (string) $stream);
         $stream->close();
     }
 
     public function testForwardOnlyStream(): void
     {
         $stream = $this->getForwardOnlyStream();
-        self::assertFalse($stream->isSeekable());
-        self::assertSame('data', trim((string) $stream));
+        $this->assertFalse($stream->isSeekable());
+        $this->assertSame('data', trim((string) $stream));
         $stream->close();
 
         $stream = $this->getForwardOnlyStream();
         $firstLetter = $stream->read(1);
-        self::assertFalse($stream->isSeekable());
-        self::assertSame('d', $firstLetter);
-        self::assertSame('ata', trim((string) $stream));
+        $this->assertFalse($stream->isSeekable());
+        $this->assertSame('d', $firstLetter);
+        $this->assertSame('ata', trim((string) $stream));
         $stream->close();
     }
 
     public function testGetContents(): void
     {
         $stream = $this->getStream();
-        self::assertSame('', $stream->getContents());
+        $this->assertSame('', $stream->getContents());
         $stream->seek(0);
-        self::assertSame('data', $stream->getContents());
-        self::assertSame('', $stream->getContents());
+        $this->assertSame('data', $stream->getContents());
+        $this->assertSame('', $stream->getContents());
         $stream->close();
     }
 
     public function testEof(): void
     {
         $stream = $this->getStream();
-        self::assertSame(4, $stream->tell());
-        self::assertFalse($stream->eof());
-        self::assertSame('', $stream->read(1));
-        self::assertTrue($stream->eof());
+        $this->assertSame(4, $stream->tell());
+        $this->assertFalse($stream->eof());
+        $this->assertSame('', $stream->read(1));
+        $this->assertTrue($stream->eof());
         $stream->close();
     }
 
@@ -112,36 +112,36 @@ final class StreamTest extends \Lkrms\Tests\TestCase
         $size = filesize(__FILE__);
         $handle = fopen(__FILE__, 'r');
         $stream = new Stream($handle);
-        self::assertSame($size, $stream->getSize());
-        self::assertSame($size, $stream->getSize());
+        $this->assertSame($size, $stream->getSize());
+        $this->assertSame($size, $stream->getSize());
         $stream->close();
 
         $stream = $this->getStream();
-        self::assertSame(4, $stream->getSize());
-        self::assertSame(3, $stream->write('123'));
-        self::assertSame(7, $stream->getSize());
-        self::assertSame(7, $stream->getSize());
+        $this->assertSame(4, $stream->getSize());
+        $this->assertSame(3, $stream->write('123'));
+        $this->assertSame(7, $stream->getSize());
+        $this->assertSame(7, $stream->getSize());
         $stream->close();
     }
 
     public function testTell(): void
     {
         $stream = $this->getStream('r+', null);
-        self::assertSame(0, $stream->tell());
+        $this->assertSame(0, $stream->tell());
         $stream->write('foo');
-        self::assertSame(3, $stream->tell());
+        $this->assertSame(3, $stream->tell());
         $stream->seek(1);
-        self::assertSame(1, $stream->tell());
-        self::assertSame(ftell($this->LastHandle), $stream->tell());
+        $this->assertSame(1, $stream->tell());
+        $this->assertSame(ftell($this->LastHandle), $stream->tell());
         $stream->close();
     }
 
     public function testDetach(): void
     {
         $stream = $this->getStream('r', null);
-        self::assertSame($this->LastHandle, $stream->detach());
-        self::assertIsResource($this->LastHandle, 'Underlying PHP stream should not be closed');
-        self::assertNull($stream->detach());
+        $this->assertSame($this->LastHandle, $stream->detach());
+        $this->assertIsResource($this->LastHandle, 'Underlying PHP stream should not be closed');
+        $this->assertNull($stream->detach());
         $this->assertDetached($stream);
         $stream->close();
         fclose($this->LastHandle);
@@ -150,20 +150,20 @@ final class StreamTest extends \Lkrms\Tests\TestCase
     public function testClose(): void
     {
         $stream = $this->getStream('r', null);
-        self::assertIsResource($this->LastHandle);
+        $this->assertIsResource($this->LastHandle);
         $stream->close();
-        self::assertFalse(is_resource($this->LastHandle));
+        $this->assertFalse(is_resource($this->LastHandle));
         $this->assertDetached($stream);
     }
 
     private function assertDetached(Stream $stream): void
     {
-        self::assertFalse($stream->isReadable());
-        self::assertFalse($stream->isWritable());
-        self::assertFalse($stream->isSeekable());
-        self::assertNull($stream->getSize());
-        self::assertSame([], $stream->getMetadata());
-        self::assertNull($stream->getMetadata('mode'));
+        $this->assertFalse($stream->isReadable());
+        $this->assertFalse($stream->isWritable());
+        $this->assertFalse($stream->isSeekable());
+        $this->assertNull($stream->getSize());
+        $this->assertSame([], $stream->getMetadata());
+        $this->assertNull($stream->getMetadata('mode'));
 
         $throws = function (callable $fn): void {
             try {
@@ -199,7 +199,7 @@ final class StreamTest extends \Lkrms\Tests\TestCase
     public function testReadInvalidLength(): void
     {
         $stream = $this->getStream('r', null);
-        self::assertSame('', $stream->read(0));
+        $this->assertSame('', $stream->read(0));
         $stream->close();
 
         $stream = $this->getStream('r', null);
@@ -224,12 +224,12 @@ final class StreamTest extends \Lkrms\Tests\TestCase
         try {
             $stream = $this->getStream($mode, null, $file);
             $actualMode = $stream->getMetadata('mode');
-            self::assertSame(
+            $this->assertSame(
                 $readable,
                 $stream->isReadable(),
                 sprintf('isReadable() should be %s for mode %s (actual mode: %s)', Format::bool($readable), $mode, $actualMode)
             );
-            self::assertSame(
+            $this->assertSame(
                 $writable,
                 $stream->isWritable(),
                 sprintf('isWritable() should be %s for mode %s (actual mode: %s)', Format::bool($writable), $mode, $actualMode)
@@ -296,8 +296,8 @@ final class StreamTest extends \Lkrms\Tests\TestCase
     {
         $handle = gzopen('php://temp', $mode);
         $stream = new Stream($handle);
-        self::assertSame($readable, $stream->isReadable());
-        self::assertSame($writable, $stream->isWritable());
+        $this->assertSame($readable, $stream->isReadable());
+        $this->assertSame($writable, $stream->isWritable());
         $stream->close();
     }
 

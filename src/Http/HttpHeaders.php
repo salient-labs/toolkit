@@ -12,14 +12,13 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
 use Generator;
 use LogicException;
 
 /**
- * A collection of HTTP headers
+ * A collection of [RFC7230]-compliant HTTP headers
  */
 class HttpHeaders implements HttpHeadersInterface, IImmutable
 {
@@ -30,6 +29,25 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
     use Immutable {
         withPropertyValue as with;
     }
+
+    private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
+
+    private const HTTP_HEADER_FIELD_VALUE = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
+
+    private const HTTP_HEADER_FIELD = <<<'REGEX'
+        / ^
+        (?(DEFINE)
+          (?<token> [-0-9a-z!#$%&'*+.^_`|~]++ )
+          (?<field_vchar> [\x21-\x7e\x80-\xff]++ )
+          (?<field_content> (?&field_vchar) (?: \h++ (?&field_vchar) )*+ )
+        )
+        (?:
+          (?<name> (?&token) ) (?<bad_whitespace> \h++ )?+ : \h*+ (?<value> (?&field_content)? ) |
+          \h++ (?<extended> (?&field_content)? )
+        )
+        (?<carry> \h++ )?
+        $ /xiD
+        REGEX;
 
     /**
      * [ [ Name => value ], ... ]
@@ -62,6 +80,31 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
     protected ?string $Carry = null;
 
     /**
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
+     */
+    public function __construct($items = [])
+    {
+        $headers = [];
+        $index = [];
+        $i = -1;
+        foreach ($items as $key => $value) {
+            $values = (array) $value;
+            if (!$values) {
+                continue;
+            }
+            $lower = strtolower($key);
+            $key = $this->filterName($key);
+            foreach ($values as $value) {
+                $headers[++$i] = [$key => $this->filterValue($value)];
+                $index[$lower][] = $i;
+            }
+        }
+        $this->Headers = $headers;
+        $this->Index = $this->filterIndex($index);
+        $this->Items = $this->doGetHeaders();
+    }
+
+    /**
      * @inheritDoc
      */
     public function addLine(string $line, bool $strict = false)
@@ -82,8 +125,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
         $value = null;
         if ($strict) {
             $line = substr($line, 0, -2);
-            $regex = Regex::anchorAndDelimit(Regex::HTTP_HEADER_FIELD);
-            if (!Pcre::match($regex, $line, $matches, \PREG_UNMATCHED_AS_NULL) ||
+            if (!Pcre::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL) ||
                     $matches['bad_whitespace'] !== null) {
                 throw new InvalidArgumentException(sprintf('Invalid HTTP header field: %s', $line));
             }
@@ -134,9 +176,9 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
         $lower = strtolower($key);
         $headers = $this->Headers;
         $index = $this->Index;
-        $key = $this->normaliseName($key);
+        $key = $this->filterName($key);
         foreach ($values as $value) {
-            $headers[] = [$key => $this->normaliseValue($value)];
+            $headers[] = [$key => $this->filterValue($value)];
             $index[$lower][] = array_key_last($headers);
         }
         return $this->replaceHeaders($headers, $index);
@@ -172,9 +214,9 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
             }
             unset($index[$lower]);
         }
-        $key = $this->normaliseName($key);
+        $key = $this->filterName($key);
         foreach ($values as $value) {
-            $headers[] = [$key => $this->normaliseValue($value)];
+            $headers[] = [$key => $this->filterValue($value)];
             $index[$lower][] = array_key_last($headers);
         }
         return $this->replaceHeaders($headers, $index);
@@ -233,10 +275,10 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
                 // Maintain the order of $index for comparison
                 $index[$lower] = [];
             }
-            $key = $this->normaliseName($key);
+            $key = $this->filterName($key);
             foreach ($values as $value) {
                 $applied = true;
-                $headers[] = [$key => $this->normaliseValue($value)];
+                $headers[] = [$key => $this->filterValue($value)];
                 $index[$lower][] = array_key_last($headers);
             }
         }
@@ -486,18 +528,18 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
         return $a <=> $b;
     }
 
-    protected function normaliseName(string $name): string
+    protected function filterName(string $name): string
     {
-        if (!Pcre::match(Regex::anchorAndDelimit(Regex::HTTP_HEADER_FIELD_NAME), $name)) {
+        if (!Pcre::match(self::HTTP_HEADER_FIELD_NAME, $name)) {
             throw new InvalidArgumentException(sprintf('Invalid header name: %s', $name));
         }
         return $name;
     }
 
-    protected function normaliseValue(string $value): string
+    protected function filterValue(string $value): string
     {
-        $value = Pcre::replace('/\r\n\h+/', ' ', trim($value));
-        if (!Pcre::match(Regex::anchorAndDelimit(Regex::HTTP_HEADER_FIELD_VALUE), $value)) {
+        $value = Pcre::replace('/\r\n\h+/', ' ', trim($value, " \t"));
+        if (!Pcre::match(self::HTTP_HEADER_FIELD_VALUE, $value)) {
             throw new InvalidArgumentException(sprintf('Invalid header value: %s', $value));
         }
         return $value;
@@ -534,7 +576,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
 
         $clone = $this->clone();
         $clone->Headers = $headers;
-        $clone->Index = $index;
+        $clone->Index = $clone->filterIndex($index);
         $clone->Items = $clone->doGetHeaders();
         return $clone;
     }
@@ -572,6 +614,20 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
             }
         }
         return array_intersect_key($this->Headers, $headers ?? []);
+    }
+
+    /**
+     * @param array<string,int[]> $index
+     * @return array<string,int[]>
+     */
+    private function filterIndex(array $index): array
+    {
+        // According to [RFC7230] Section 5.4, "a user agent SHOULD generate
+        // Host as the first header field following the request-line"
+        if (isset($index['host'])) {
+            $index = ['host' => $index['host']] + $index;
+        }
+        return $index;
     }
 
     /**

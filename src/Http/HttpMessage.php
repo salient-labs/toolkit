@@ -28,7 +28,7 @@ abstract class HttpMessage implements MessageInterface, IImmutable
 
     /**
      * @param StreamInterface|resource|string|null $body
-     * @param HttpHeadersInterface|array<string,string[]>|null $headers
+     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
      */
     public function __construct(
         $body = null,
@@ -91,7 +91,7 @@ abstract class HttpMessage implements MessageInterface, IImmutable
     /**
      * @inheritDoc
      */
-    public function withProtocolVersion(string $version): self
+    public function withProtocolVersion(string $version): MessageInterface
     {
         return $this->with('ProtocolVersion', $this->filterProtocolVersion($version));
     }
@@ -99,7 +99,7 @@ abstract class HttpMessage implements MessageInterface, IImmutable
     /**
      * @inheritDoc
      */
-    public function withHeader(string $name, $value): self
+    public function withHeader(string $name, $value): MessageInterface
     {
         return $this->with('Headers', $this->Headers->set($name, $value));
     }
@@ -107,7 +107,7 @@ abstract class HttpMessage implements MessageInterface, IImmutable
     /**
      * @inheritDoc
      */
-    public function withAddedHeader(string $name, $value): self
+    public function withAddedHeader(string $name, $value): MessageInterface
     {
         return $this->with('Headers', $this->Headers->add($name, $value));
     }
@@ -115,7 +115,7 @@ abstract class HttpMessage implements MessageInterface, IImmutable
     /**
      * @inheritDoc
      */
-    public function withoutHeader(string $name): self
+    public function withoutHeader(string $name): MessageInterface
     {
         return $this->with('Headers', $this->Headers->unset($name));
     }
@@ -123,7 +123,7 @@ abstract class HttpMessage implements MessageInterface, IImmutable
     /**
      * @inheritDoc
      */
-    public function withBody(StreamInterface $body): self
+    public function withBody(StreamInterface $body): MessageInterface
     {
         return $this->with('Body', $body);
     }

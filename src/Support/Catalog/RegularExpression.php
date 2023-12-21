@@ -45,33 +45,6 @@ final class RegularExpression extends Dictionary
     public const MONGODB_OBJECTID = '(?i)[0-9a-f]{24}';
 
     /**
-     * An [RFC7230]-compliant HTTP header field name
-     */
-    public const HTTP_HEADER_FIELD_NAME = '(?i)[-0-9a-z!#$%&\'*+.^_`|~]++';
-
-    /**
-     * An [RFC7230]-compliant HTTP header field value
-     */
-    public const HTTP_HEADER_FIELD_VALUE = '([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?';
-
-    /**
-     * An [RFC7230]-compliant HTTP header field or continuation thereof
-     */
-    public const HTTP_HEADER_FIELD = <<<'REGEX'
-        (?xi)
-        (?(DEFINE)
-          (?<token> [-0-9a-z!#$%&'*+.^_`|~]++ )
-          (?<field_vchar> [\x21-\x7e\x80-\xff]++ )
-          (?<field_content> (?&field_vchar) (?: \h++ (?&field_vchar) )*+ )
-        )
-        (?:
-          (?<name> (?&token) ) (?<bad_whitespace> \h++ )?+ : \h*+ (?<value> (?&field_content)? ) |
-          \h++ (?<extended> (?&field_content)? )
-        )
-        (?<carry> \h++ )?
-        REGEX;
-
-    /**
      * A valid PHP identifier, e.g. for variable names and classes
      *
      * @link https://www.php.net/manual/en/language.variables.basics.php
