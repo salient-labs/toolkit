@@ -136,7 +136,7 @@ final class IntrospectorKeyTargets implements IReadable
         $this->CustomKeys = $customKeys;
 
         if ($this->Parameters) {
-            $this->LastParameterIndex = max(...array_values($parameters));
+            $this->LastParameterIndex = max(array_values($parameters));
         }
     }
 }
