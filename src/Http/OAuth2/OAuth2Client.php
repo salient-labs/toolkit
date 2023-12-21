@@ -11,9 +11,9 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethod as Method;
-use Lkrms\Http\HttpRequest;
 use Lkrms\Http\HttpResponse;
 use Lkrms\Http\HttpServer;
+use Lkrms\Http\HttpServerRequest;
 use Lkrms\Store\CacheStore;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Env;
@@ -329,7 +329,7 @@ abstract class OAuth2Client
             Console::log('Follow the link to authorize access:', "\n$url");
             Console::info('Waiting for authorization');
             $code = $this->Listener->listen(
-                fn(HttpRequest $request, bool &$continue, &$return): HttpResponse =>
+                fn(HttpServerRequest $request, bool &$continue, &$return): HttpResponse =>
                     $this->receiveAuthorizationCode($request, $continue, $return)
             );
         } finally {
@@ -350,7 +350,7 @@ abstract class OAuth2Client
     /**
      * @param mixed $return
      */
-    private function receiveAuthorizationCode(HttpRequest $request, bool &$continue, &$return): HttpResponse
+    private function receiveAuthorizationCode(HttpServerRequest $request, bool &$continue, &$return): HttpResponse
     {
         $url = parse_url($request->Target);
         $path = $url['path'] ?? null;

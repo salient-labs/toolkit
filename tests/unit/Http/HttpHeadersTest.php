@@ -14,6 +14,45 @@ use LogicException;
 
 final class HttpHeadersTest extends \Lkrms\Tests\TestCase
 {
+    /**
+     * @dataProvider constructProvider
+     *
+     * @param array<string,string[]>|string $expected
+     * @param string[]|null $expectedLines
+     * @param array<string,string[]|string> $items
+     */
+    public function testConstruct($expected, ?array $expectedLines, array $items): void
+    {
+        $this->maybeExpectException($expected);
+        $headers = new HttpHeaders($items);
+        $this->assertSame($expected, $headers->all());
+        $this->assertSame($expectedLines, $headers->getLines());
+    }
+
+    /**
+     * @return array<array{array<string,string[]>|string,string[]|null,array<string,string[]|string>}>
+     */
+    public static function constructProvider(): array
+    {
+        return [
+            [
+                ['foo' => ['bar', 'bar']],
+                ['foo: bar', 'Foo: bar'],
+                ['foo' => 'bar', 'Foo' => 'bar'],
+            ],
+            [
+                InvalidArgumentException::class . ',Invalid header name: foo bar',
+                null,
+                ['foo bar' => 'qux'],
+            ],
+            [
+                InvalidArgumentException::class . ",Invalid header value: bar\v",
+                null,
+                ['foo' => "bar\v"],
+            ],
+        ];
+    }
+
     public function testEmpty(): void
     {
         $headers = new HttpHeaders();

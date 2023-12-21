@@ -5,9 +5,9 @@ namespace Lkrms\Tests\Support;
 
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
-use Lkrms\Http\HttpRequest;
 use Lkrms\Http\HttpResponse;
 use Lkrms\Http\HttpServer;
+use Lkrms\Http\HttpServerRequest;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
@@ -18,7 +18,7 @@ $server->start();
 $baseUrl = $server->getBaseUrl();
 Console::log('Listening at:', implode("\n", [$baseUrl, "$baseUrl/loop", "$baseUrl/return"]));
 $lastClient = $server->listen(
-    function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
+    function (HttpServerRequest $request, bool &$continue, &$return): HttpResponse {
         Console::log($request->Method . ' request from ' . $request->Client . ':', $request->Target);
         switch ($request->Target) {
             case '/loop':

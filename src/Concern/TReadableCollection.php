@@ -297,16 +297,28 @@ trait TReadableCollection
      */
     protected function getItems($items): array
     {
-        if ($items instanceof self) {
+        if ($items instanceof static) {
             return $items->Items;
         }
-        if ($items instanceof Arrayable) {
-            return $items->toArray();
+        if ($items instanceof self) {
+            $items = $items->Items;
+        } elseif ($items instanceof Arrayable) {
+            $items = $items->toArray();
+        } elseif (!is_array($items)) {
+            $items = iterator_to_array($items);
         }
-        if (is_array($items)) {
-            return $items;
-        }
-        return iterator_to_array($items);
+        return $this->filterItems($items);
+    }
+
+    /**
+     * Override to normalise items applied to the collection
+     *
+     * @param array<TKey,TValue> $items
+     * @return array<TKey,TValue>
+     */
+    protected function filterItems(array $items): array
+    {
+        return $items;
     }
 
     /**

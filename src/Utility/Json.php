@@ -44,12 +44,12 @@ final class Json extends Utility
     /**
      * Convert a JSON string to a value
      *
-     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE> $flags
+     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY> $flags
      * @return mixed
      */
     public static function parse(string $json, int $flags = 0)
     {
-        return json_decode($json, false, 512, self::DECODE_FLAGS | $flags);
+        return json_decode($json, null, 512, self::DECODE_FLAGS | $flags);
     }
 
     /**
@@ -59,7 +59,7 @@ final class Json extends Utility
      * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE> $flags
      * @return mixed
      */
-    public static function toArrays(string $json, int $flags = 0)
+    public static function parseObjectAsArray(string $json, int $flags = 0)
     {
         return json_decode($json, true, 512, self::DECODE_FLAGS | $flags);
     }

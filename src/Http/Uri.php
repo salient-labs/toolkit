@@ -13,7 +13,7 @@ use JsonSerializable;
 use Stringable;
 
 /**
- * An [RFC3986]-compliant URI reference
+ * An [RFC3986]-compliant URI
  */
 class Uri implements JsonSerializable, Stringable, UriInterface
 {
@@ -162,12 +162,12 @@ class Uri implements JsonSerializable, Stringable, UriInterface
      * Resolve a URI reference that may be relative to a given base URI to a
      * target URI
      *
-     * @param Stringable|UriInterface|Uri|string $reference
-     * @param Stringable|UriInterface|Uri|string $baseUri
+     * @param UriInterface|Stringable|string $reference
+     * @param UriInterface|Stringable|string $baseUri
      */
     public static function resolveReference($reference, $baseUri): string
     {
-        return (string) static::getUri($baseUri)->follow(static::getUri($reference));
+        return (string) static::from($baseUri)->follow(static::from($reference));
     }
 
     /**
@@ -291,7 +291,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withScheme(string $scheme): self
+    public function withScheme(string $scheme): UriInterface
     {
         return $this
             ->with('Scheme', $this->filterScheme($scheme))
@@ -301,7 +301,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withUserInfo(string $user, ?string $password = null): self
+    public function withUserInfo(string $user, ?string $password = null): UriInterface
     {
         if ($user === '') {
             $user = null;
@@ -320,7 +320,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withHost(string $host): self
+    public function withHost(string $host): UriInterface
     {
         return $this
             ->with('Host', $this->filterHost(Str::coalesce($host, null)))
@@ -330,7 +330,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withPort(?int $port): self
+    public function withPort(?int $port): UriInterface
     {
         return $this
             ->with('Port', $this->filterPort($port))
@@ -340,7 +340,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withPath(string $path): self
+    public function withPath(string $path): UriInterface
     {
         return $this
             ->with('Path', $this->filterPath($path))
@@ -350,7 +350,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withQuery(string $query): self
+    public function withQuery(string $query): UriInterface
     {
         return $this
             ->with('Query', $this->filterQueryOrFragment(Str::coalesce($query, null)));
@@ -359,7 +359,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * @inheritDoc
      */
-    public function withFragment(string $fragment): self
+    public function withFragment(string $fragment): UriInterface
     {
         return $this
             ->with('Fragment', $this->filterQueryOrFragment(Str::coalesce($fragment, null)));
@@ -386,7 +386,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
      *
      * Implements \[RFC3986] Section 5.2.2 ("Transform References").
      *
-     * @param Stringable|UriInterface|Uri|string $reference
+     * @param UriInterface|Stringable|string $reference
      * @return static
      */
     public function follow($reference): self
@@ -397,7 +397,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
             );
         }
 
-        $reference = static::getUri($reference);
+        $reference = static::from($reference);
         if (!$reference->isReference()) {
             return $reference->removeDotSegments();
         }
@@ -490,10 +490,10 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     /**
      * Resolve a value to a Uri object
      *
-     * @param Stringable|UriInterface|Uri|string $uri
+     * @param UriInterface|Stringable|string $uri
      * @return static
      */
-    protected static function getUri($uri): self
+    public static function from($uri): self
     {
         if ($uri instanceof static) {
             return $uri;

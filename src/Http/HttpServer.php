@@ -183,11 +183,11 @@ final class HttpServer implements IReadable, IImmutable
      * Wait for a request and return a response
      *
      * @template T
-     * @param callable(HttpRequest $request, bool &$continue, T &$return): HttpResponse $callback
-     * Receives an {@see HttpRequest} and returns an {@see HttpResponse}. May
-     * also set `$continue = true` to make {@see HttpServer::listen()} wait for
-     * another request, or use `$return = <value>` to pass `<value>` back to the
-     * caller.
+     * @param callable(HttpServerRequest $request, bool &$continue, T &$return): HttpResponse $callback
+     * Receives an {@see HttpServerRequest} and returns an {@see HttpResponse}.
+     * May also set `$continue = true` to make {@see HttpServer::listen()} wait
+     * for another request, or use `$return = <value>` to pass `<value>` back to
+     * the caller.
      * @return T|null
      */
     public function listen(callable $callback, ?int $timeout = null)
@@ -246,7 +246,7 @@ final class HttpServer implements IReadable, IImmutable
 
             [[$method, $target], [1 => $version]] = [$startLine, $version];
             $request =
-                new HttpRequest($method, $target, $version, $headers, $body, $client);
+                new HttpServerRequest($method, $target, $version, $headers, $body, $client);
 
             Console::debug("$method request received from $client:", $target);
 

@@ -90,8 +90,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Override to modify the command's JSON Schema before it is returned
      *
-     * @param array{'$schema':string,title?:string,required?:string[],properties?:array<string,mixed>} $schema
-     * @return array<string,mixed>
+     * @param array{'$schema':string,title:string|null,type:string,required:string[],properties:array<string,mixed>} $schema
+     * @return array{'$schema':string,title:string|null,type:string,required:string[],properties:array<string,mixed>,...}
      */
     protected function filterJsonSchema(array $schema): array
     {
@@ -690,18 +690,17 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * @return array<string,mixed>
+     * @return array{'$schema':string,title?:string,type:string,required?:string[],properties?:array<string,mixed>,...}
      */
     final public function getJsonSchema(?string $title = null): array
     {
         $schema = [
             '$schema' => 'http://json-schema.org/draft-04/schema#',
         ];
-        if ($title !== null) {
-            $schema['title'] = $title;
-        }
+        $schema['title'] = $title;
         $schema['type'] = 'object';
         $schema['required'] = [];
+        $schema['properties'] = [];
 
         foreach ($this->getOptions() as $option) {
             if (!($option->Visibility & CliOptionVisibility::SCHEMA)) {
@@ -720,11 +719,17 @@ abstract class CliCommand implements ICliCommand
             }
         }
 
-        if (!$schema['required']) {
-            unset($schema['required']);
+        // Preserve essential properties in their original order
+        $schema = array_merge($schema, $this->filterJsonSchema($schema));
+
+        foreach (['title', 'required', 'properties'] as $property) {
+            $value = $schema[$property];
+            if ($value === null || $value === []) {
+                unset($schema[$property]);
+            }
         }
 
-        return $this->filterJsonSchema($schema);
+        return $schema;
     }
 
     /**
