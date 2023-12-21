@@ -19,3 +19,7 @@ fce872ecb25b202192c47f2888f63bc67022d214
 78fa7d39618b7a885e6ecd557fc39559b91d1417
 # Update formatting
 f4a62e11068984999612806ec5525dca15d65d08
+# Add initial PHP CS Fixer config, add namespace prefixes to constants
+55ada029c6a7610323284ff3a46332ffee74d2ea
+# Update pretty-php and formatting
+969868ed14bebc451decf297c3adb8d75c9ecb9f

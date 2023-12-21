@@ -12,6 +12,83 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.16] - 2023-12-21
+
+### Fixed
+
+- Fix regression in 2a19c2d1 where builders cannot create objects from arrays that resolve to exactly 1 constructor parameter
+
+## [v0.21.15] - 2023-12-21
+
+### Added
+
+- Add static `Uri::from()` method
+- Add `HttpRequest`
+- Add `TReadableCollection::filterItems()`
+
+### Changed
+
+- Build out `CliCommand::getJsonSchema()` and `CliCommand::filterJsonSchema()`
+- Rename `Json::toArrays()` to `Json::parseObjectAsArray()`
+- Standardise types that can be converted to a `Uri`
+- Rename `HttpRequest` to `HttpServerRequest` and replace with PSR-7 `HttpRequest` class (for outgoing requests)
+- In `HttpHeaders`, move `Host` headers to the top of the index for compliance with \[RFC7230]
+
+### Fixed
+
+- Fix `HttpHeaders` issue where header names and values with trailing newlines are not rejected as invalid
+
+## [v0.21.14] - 2023-12-20
+
+### Added
+
+- Add `File::openPipe()`, `File::closePipe()`, `File::putContents()`
+- Add PHPStan-friendly `@param-out` types to `Pcre::match()` and `Pcre::matchAll()`
+
+### Fixed
+
+- Fix issue where generated facades may import unused classes
+
+## [v0.21.13] - 2023-12-15
+
+### Added
+
+- Add `Stream` class, related exceptions and tests
+- Add `HttpMessage` class
+- Add `HttpProtocolVersion` enumeration
+- Add `InvalidArgumentTypeException`
+- Add `Arr::splice()`
+- Add `File::read()`, `File::stat()`, `File::getContents()`
+- Add `IEnumeration::hasValue()` and implement in `ConvertibleEnumeration`, `ReflectiveEnumeration`, `Enumeration`
+
+### Changed
+
+- Refactor, move and deprecate previous:
+  - `Convert::arraySpliceAtKey()` -> `Arr::spliceByKey()`
+  - `Convert::renameArrayKey()` -> `Arr::rename()`
+  - `Test::isPharUrl()` -> `File::isPharUri()`
+  - `Test::isAbsolutePath()` -> `File::isAbsolute()`
+- Make `Uri::removeDotSegments()` public, improve documentation
+- Change `HttpRequestMethod` from dictionary to enumeration
+- Rename for PSR-7 consistency:
+  - `IHttpHeaders` -> `HttpHeadersInterface`
+  - `IAccessToken` -> `AccessTokenInterface`
+- Move classes in `Http\Auth` to `Http\OAuth2`
+
+### Deprecated
+
+- Deprecate (see above):
+  - `Convert::arraySpliceAtKey()`
+  - `Convert::renameArrayKey()`
+  - `Test::isPharUrl()`
+  - `Test::isAbsolutePath()`
+
+### Fixed
+
+- Fix issue where `File` methods do not throw `FilesystemErrorException` on failure
+- Fix issue where `Test::isAbsolutePath()` does not match URIs or Windows paths with forward slashes, e.g. `C:/path/to/file`
+- Fix issue where `Test::isPharUrl()` only matches when scheme name is lowercase
+
 ## [v0.21.12] - 2023-12-12
 
 ### Added
@@ -1082,6 +1159,10 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.16]: https://github.com/lkrms/php-util/compare/v0.21.15...v0.21.16
+[v0.21.15]: https://github.com/lkrms/php-util/compare/v0.21.14...v0.21.15
+[v0.21.14]: https://github.com/lkrms/php-util/compare/v0.21.13...v0.21.14
+[v0.21.13]: https://github.com/lkrms/php-util/compare/v0.21.12...v0.21.13
 [v0.21.12]: https://github.com/lkrms/php-util/compare/v0.21.11...v0.21.12
 [v0.21.11]: https://github.com/lkrms/php-util/compare/v0.21.10...v0.21.11
 [v0.21.10]: https://github.com/lkrms/php-util/compare/v0.21.9...v0.21.10
