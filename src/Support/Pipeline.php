@@ -413,8 +413,8 @@ final class Pipeline extends FluentInterface implements IPipeline
 
     private function getArrayMapper(int $keyMapKey): ArrayMapper
     {
-        return $this->ArrayMappers[$keyMapKey] ??=
-            new ArrayMapper(
+        return $this->ArrayMappers[$keyMapKey]
+            ??= new ArrayMapper(
                 $this->KeyMaps[$keyMapKey][0],
                 $this->PayloadConformity,
                 $this->KeyMaps[$keyMapKey][1],

@@ -371,7 +371,8 @@ abstract class GenerateCommand extends Command
         while ($tag = $templates[$type] ?? null) {
             $template = $tag;
             // Don't resolve templates that will appear in the output
-            if ($tag->Class === $this->InputClassName && $tag->Member === null &&
+            if ($tag->Class === $this->InputClassName &&
+                    $tag->Member === null &&
                     ($_template = $this->InputClassTemplates[$type] ?? null)) {
                 $inputClassTemplates[$type] = $_template;
                 return $type;

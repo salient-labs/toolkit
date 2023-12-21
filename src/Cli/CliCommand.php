@@ -1159,7 +1159,9 @@ abstract class CliCommand implements ICliCommand
             $value = $this->OptionValues[$option->Key] ?? null;
         }
 
-        if ($value === null || $value === false || $value === 0 ||
+        if ($value === null ||
+                $value === false ||
+                $value === 0 ||
                 ($value === [] && $option->ValueRequired)) {
             return null;
         }
@@ -1175,7 +1177,8 @@ abstract class CliCommand implements ICliCommand
         if (is_array($value)) {
             $value = implode(',', $value);
         }
-        if ($shellEscape && is_string($value) &&
+        if ($shellEscape &&
+                is_string($value) &&
                 ($value !== '' || $option->IsPositional)) {
             $value = Convert::toShellArg($value);
         }

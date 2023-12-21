@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "764c1649efe29c832056cb8402820e20",
+    "content-hash": "9fe1962f45d3e566abfbd56e5518c4c8",
     "packages": [],
     "packages-dev": [
         {
@@ -52,16 +52,16 @@
         },
         {
             "name": "lkrms/pretty-php",
-            "version": "v0.4.43",
+            "version": "v0.4.44",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/pretty-php.git",
-                "reference": "76d446610fec32867692af137db7872f8fd74c8c"
+                "reference": "25fde317a145004f95016873cc7eabaf8a12697a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/pretty-php/zipball/76d446610fec32867692af137db7872f8fd74c8c",
-                "reference": "76d446610fec32867692af137db7872f8fd74c8c",
+                "url": "https://api.github.com/repos/lkrms/pretty-php/zipball/25fde317a145004f95016873cc7eabaf8a12697a",
+                "reference": "25fde317a145004f95016873cc7eabaf8a12697a",
                 "shasum": ""
             },
             "require": {
@@ -69,7 +69,7 @@
                 "ext-json": "*",
                 "ext-mbstring": "*",
                 "ext-tokenizer": "*",
-                "lkrms/util": "^0.20.87",
+                "lkrms/util": "^0.21.16",
                 "php": ">=7.4",
                 "sebastian/diff": "^4 || ^5"
             },
@@ -106,31 +106,36 @@
                 "issues": "https://github.com/lkrms/pretty-php/issues",
                 "source": "https://github.com/lkrms/pretty-php"
             },
-            "time": "2023-11-09T00:18:48+00:00"
+            "time": "2023-12-21T14:50:36+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.89",
+            "version": "v0.21.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "f7aa89587f1bcda27472948225c3595e128baa9d"
+                "reference": "789bbf0a7e61a9c60de61bd31552a6b11fbda6a8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/f7aa89587f1bcda27472948225c3595e128baa9d",
-                "reference": "f7aa89587f1bcda27472948225c3595e128baa9d",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/789bbf0a7e61a9c60de61bd31552a6b11fbda6a8",
+                "reference": "789bbf0a7e61a9c60de61bd31552a6b11fbda6a8",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
-                "lkrms/dice": "^4.1.6",
+                "lkrms/dice": "^4.1.8",
                 "php": ">=7.4",
                 "psr/container": "^2",
+                "psr/event-dispatcher": "^1",
+                "psr/http-message": "^1.1 || ^2",
                 "psr/log": "^1"
             },
+            "provide": {
+                "psr/event-dispatcher-implementation": "^1"
+            },
             "require-dev": {
-                "adodb/adodb-php": "^5.22",
+                "adodb/adodb-php": "^5",
                 "analog/analog": "^1",
                 "clue/phar-composer": "^1",
                 "firebase/php-jwt": "^6",
@@ -170,9 +175,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.89"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.16"
             },
-            "time": "2023-11-06T05:19:54+00:00"
+            "time": "2023-12-21T12:06:07+00:00"
         },
         {
             "name": "psr/container",
@@ -226,6 +231,109 @@
                 "source": "https://github.com/php-fig/container/tree/2.0.2"
             },
             "time": "2021-11-05T16:47:00+00:00"
+        },
+        {
+            "name": "psr/event-dispatcher",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/event-dispatcher.git",
+                "reference": "dbefd12671e8a14ec7f180cab83036ed26714bb0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/event-dispatcher/zipball/dbefd12671e8a14ec7f180cab83036ed26714bb0",
+                "reference": "dbefd12671e8a14ec7f180cab83036ed26714bb0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\EventDispatcher\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Standard interfaces for event handling.",
+            "keywords": [
+                "events",
+                "psr",
+                "psr-14"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/event-dispatcher/issues",
+                "source": "https://github.com/php-fig/event-dispatcher/tree/1.0.0"
+            },
+            "time": "2019-01-08T18:20:26+00:00"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/2.0"
+            },
+            "time": "2023-04-04T09:54:51+00:00"
         },
         {
             "name": "psr/log",
