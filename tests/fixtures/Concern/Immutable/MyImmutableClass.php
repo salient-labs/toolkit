@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Concern\Immutable;
 
 use Lkrms\Concern\Immutable;
 use Lkrms\Support\ImmutableCollection;
+use stdClass;
 
 class MyImmutableClass
 {
@@ -45,7 +46,7 @@ class MyImmutableClass
     public $Arr4;
 
     /**
-     * @var \stdClass
+     * @var stdClass
      */
     public $Obj;
 

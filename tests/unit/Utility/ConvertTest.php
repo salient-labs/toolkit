@@ -193,22 +193,6 @@ final class ConvertTest extends TestCase
         ];
     }
 
-    public function testArrayKeyToOffset(): void
-    {
-        $data = [
-            'a' => 'value0',
-            'b' => 'value1',
-            'A' => 'value2',
-            'B' => 'value3',
-        ];
-
-        $this->assertSame(0, Convert::arrayKeyToOffset('a', $data));
-        $this->assertSame(1, Convert::arrayKeyToOffset('b', $data));
-        $this->assertSame(2, Convert::arrayKeyToOffset('A', $data));
-        $this->assertSame(3, Convert::arrayKeyToOffset('B', $data));
-        $this->assertNull(Convert::arrayKeyToOffset('c', $data));
-    }
-
     public function testParseUrl(): void
     {
         $expected = [

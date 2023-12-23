@@ -7,6 +7,7 @@ use Lkrms\Utility\Arr;
 use DateTimeImmutable;
 use DateTimeInterface;
 use OutOfRangeException;
+use Stringable;
 
 /**
  * @covers \Lkrms\Utility\Arr
@@ -245,6 +246,42 @@ final class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider keyOffsetProvider
+     *
+     * @param int|string $expected
+     * @param mixed[] $array
+     * @param array-key $key
+     */
+    public function testKeyOffset($expected, array $array, $key): void
+    {
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Arr::keyOffset($array, $key));
+    }
+
+    /**
+     * @return array<array{int|string,mixed[],array-key}>
+     */
+    public static function keyOffsetProvider(): array
+    {
+        $data = [
+            'foo' => 'bar',
+            'baz' => 'qux',
+            71 => 'quux',
+            83 => 'quuux',
+        ];
+
+        return [
+            [0, $data, 'foo'],
+            [1, $data, 'baz'],
+            [2, $data, 71],
+            [3, $data, 83],
+            [OutOfRangeException::class . ',Array key not found: 0', $data, 0],
+            [OutOfRangeException::class . ',Array key not found: 1', $data, 1],
+            [OutOfRangeException::class . ',Array key not found: bar', $data, 'bar'],
+        ];
+    }
+
+    /**
      * @dataProvider isListProvider
      *
      * @param mixed $value
@@ -269,6 +306,136 @@ final class ArrTest extends TestCase
             [false, ['a', 3 => 'b', 2 => 'c']],
             [false, ['a' => 'alpha', 2 => 'b', 3 => 'c']],
             [false, ['a' => 'alpha', 'b' => 'bravo', 'c' => 'charlie']],
+        ];
+    }
+
+    /**
+     * @dataProvider lastProvider
+     *
+     * @param mixed $expected
+     * @param mixed[] $array
+     */
+    public function testLast($expected, array $array): void
+    {
+        $this->assertSame($expected, Arr::last($array));
+    }
+
+    /**
+     * @return array<array{mixed,mixed[]}>
+     */
+    public static function lastProvider(): array
+    {
+        $object1 = new \stdClass();
+        $object2 = new \stdClass();
+        return [
+            [null, []],
+            [null, [null]],
+            [false, [true, false]],
+            [true, [false, true]],
+            [2, [0, 1, 2]],
+            [0, [2, 1, 0]],
+            [2, [
+                2 => 0,
+                1 => 1,
+                0 => 2,
+            ]],
+            [$object2, [$object1, $object2]],
+            [$object1, [$object2, $object1]],
+        ];
+    }
+
+    /**
+     * @dataProvider lowerProvider
+     *
+     * @param string[] $expected
+     * @param array<int|float|string|bool|Stringable|null> $array
+     */
+    public function testLower($expected, $array): void
+    {
+        $this->assertSame($expected, Arr::lower($array));
+    }
+
+    /**
+     * @return array<array{string[],array<int|float|string|bool|Stringable|null>}>
+     */
+    public static function lowerProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [
+                    '0',
+                    '3.14',
+                    'null' => '',
+                    '1',
+                    'false' => '',
+                    'string' => 'title',
+                    Stringable::class => "i'm batman.",
+                ],
+                [
+                    0,
+                    3.14,
+                    'null' => null,
+                    true,
+                    'false' => false,
+                    'string' => 'TITLE',
+                    Stringable::class => new class implements Stringable {
+                        public function __toString(): string
+                        {
+                            return "I'm Batman.";
+                        }
+                    },
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider ofProvider
+     *
+     * @param mixed $value
+     */
+    public function testOf(
+        $value,
+        string $class,
+        bool $expected,
+        bool $expectedIfOrEmpty,
+        bool $expectedIfList,
+        bool $expectedIfOrEmptyList
+    ): void {
+        $this->assertSame($expected, Arr::of($value, $class));
+        $this->assertSame($expectedIfOrEmpty, Arr::of($value, $class, true));
+        $this->assertSame($expectedIfList, Arr::isListOf($value, $class));
+        $this->assertSame($expectedIfOrEmptyList, Arr::isListOf($value, $class, true));
+    }
+
+    /**
+     * @return array<string,array{mixed,string,bool,bool,bool,bool}>
+     */
+    public static function ofProvider(): array
+    {
+        $now = fn() => new DateTimeImmutable();
+
+        return [
+            'null' => [null, DateTimeInterface::class, false, false, false, false],
+            'int' => [0, DateTimeInterface::class, false, false, false, false],
+            'string' => ['a', DateTimeInterface::class, false, false, false, false],
+            'empty' => [[], DateTimeInterface::class, false, true, false, true],
+            'ints' => [[0, 1], DateTimeInterface::class, false, false, false, false],
+            'strings' => [['a', 'b'], DateTimeInterface::class, false, false, false, false],
+            'datetimes' => [[$now(), $now()], DateTimeInterface::class, true, true, true, true],
+            'datetimes (indexed)' => [[7 => $now(), 1 => $now()], DateTimeInterface::class, true, true, false, false],
+            'datetimes (associative)' => [['from' => $now(), 'to' => $now()], DateTimeInterface::class, true, true, false, false],
+            'mixed #1' => [[0, 'a', $now()], DateTimeInterface::class, false, false, false, false],
+            'mixed #2' => [[0, 1, true], DateTimeInterface::class, false, false, false, false],
+            'mixed #3' => [[0, 1, null], DateTimeInterface::class, false, false, false, false],
+            'mixed #4' => [['a', 'b', true], DateTimeInterface::class, false, false, false, false],
+            'mixed #5' => [['a', 'b', null], DateTimeInterface::class, false, false, false, false],
+            'mixed #6' => [[$now, $now, true], DateTimeInterface::class, false, false, false, false],
+            'mixed #7' => [[$now, $now, null], DateTimeInterface::class, false, false, false, false],
         ];
     }
 
@@ -391,136 +558,6 @@ final class ArrTest extends TestCase
             'mixed #3' => [[0, 1, null], false, false, false, false],
             'mixed #4' => [['a', 'b', true], false, false, false, false],
             'mixed #5' => [['a', 'b', null], false, false, false, false],
-        ];
-    }
-
-    /**
-     * @dataProvider lastProvider
-     *
-     * @param mixed $expected
-     * @param mixed[] $array
-     */
-    public function testLast($expected, array $array): void
-    {
-        $this->assertSame($expected, Arr::last($array));
-    }
-
-    /**
-     * @return array<array{mixed,mixed[]}>
-     */
-    public static function lastProvider(): array
-    {
-        $object1 = new \stdClass();
-        $object2 = new \stdClass();
-        return [
-            [null, []],
-            [null, [null]],
-            [false, [true, false]],
-            [true, [false, true]],
-            [2, [0, 1, 2]],
-            [0, [2, 1, 0]],
-            [2, [
-                2 => 0,
-                1 => 1,
-                0 => 2,
-            ]],
-            [$object2, [$object1, $object2]],
-            [$object1, [$object2, $object1]],
-        ];
-    }
-
-    /**
-     * @dataProvider lowerProvider
-     *
-     * @param string[] $expected
-     * @param array<int|float|string|bool|\Stringable|null> $array
-     */
-    public function testLower($expected, $array): void
-    {
-        $this->assertSame($expected, Arr::lower($array));
-    }
-
-    /**
-     * @return array<array{string[],array<int|float|string|bool|\Stringable|null>}>
-     */
-    public static function lowerProvider(): array
-    {
-        return [
-            [
-                [],
-                [],
-            ],
-            [
-                [
-                    '0',
-                    '3.14',
-                    'null' => '',
-                    '1',
-                    'false' => '',
-                    'string' => 'title',
-                    \Stringable::class => "i'm batman.",
-                ],
-                [
-                    0,
-                    3.14,
-                    'null' => null,
-                    true,
-                    'false' => false,
-                    'string' => 'TITLE',
-                    \Stringable::class => new class implements \Stringable {
-                        public function __toString(): string
-                        {
-                            return "I'm Batman.";
-                        }
-                    },
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider ofProvider
-     *
-     * @param mixed $value
-     */
-    public function testOf(
-        $value,
-        string $class,
-        bool $expected,
-        bool $expectedIfOrEmpty,
-        bool $expectedIfList,
-        bool $expectedIfOrEmptyList
-    ): void {
-        $this->assertSame($expected, Arr::of($value, $class));
-        $this->assertSame($expectedIfOrEmpty, Arr::of($value, $class, true));
-        $this->assertSame($expectedIfList, Arr::isListOf($value, $class));
-        $this->assertSame($expectedIfOrEmptyList, Arr::isListOf($value, $class, true));
-    }
-
-    /**
-     * @return array<string,array{mixed,string,bool,bool,bool,bool}>
-     */
-    public static function ofProvider(): array
-    {
-        $now = fn() => new DateTimeImmutable();
-
-        return [
-            'null' => [null, DateTimeInterface::class, false, false, false, false],
-            'int' => [0, DateTimeInterface::class, false, false, false, false],
-            'string' => ['a', DateTimeInterface::class, false, false, false, false],
-            'empty' => [[], DateTimeInterface::class, false, true, false, true],
-            'ints' => [[0, 1], DateTimeInterface::class, false, false, false, false],
-            'strings' => [['a', 'b'], DateTimeInterface::class, false, false, false, false],
-            'datetimes' => [[$now(), $now()], DateTimeInterface::class, true, true, true, true],
-            'datetimes (indexed)' => [[7 => $now(), 1 => $now()], DateTimeInterface::class, true, true, false, false],
-            'datetimes (associative)' => [['from' => $now(), 'to' => $now()], DateTimeInterface::class, true, true, false, false],
-            'mixed #1' => [[0, 'a', $now()], DateTimeInterface::class, false, false, false, false],
-            'mixed #2' => [[0, 1, true], DateTimeInterface::class, false, false, false, false],
-            'mixed #3' => [[0, 1, null], DateTimeInterface::class, false, false, false, false],
-            'mixed #4' => [['a', 'b', true], DateTimeInterface::class, false, false, false, false],
-            'mixed #5' => [['a', 'b', null], DateTimeInterface::class, false, false, false, false],
-            'mixed #6' => [[$now, $now, true], DateTimeInterface::class, false, false, false, false],
-            'mixed #7' => [[$now, $now, null], DateTimeInterface::class, false, false, false, false],
         ];
     }
 
@@ -1059,6 +1096,49 @@ final class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider uniqueProvider
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue>|list<TValue> $expected
+     * @param iterable<TKey,TValue> $array
+     */
+    public function testUnique(array $expected, iterable $array, bool $preserveKeys = false): void
+    {
+        $this->assertSame($expected, Arr::unique($array, $preserveKeys));
+    }
+
+    /**
+     * @return array<array{mixed[],iterable<mixed>}>
+     */
+    public static function uniqueProvider(): array
+    {
+        $a = new \stdClass();
+        $b = new \stdClass();
+
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [$a, $b],
+                [$a, $a, $b, $b],
+            ],
+            [
+                [['foo' => 'bar'], '', null, $a, 3.14, '0'],
+                [['foo' => 'bar'], '', ['foo' => 'bar'], '', '', null, $a, 3.14, null, '0', 3.14, 3.14, '0', $a, '0', ['foo' => 'bar'], $a, null],
+            ],
+            [
+                [['foo' => 'bar'], '', 5 => null, 6 => $a, 7 => 3.14, 9 => '0'],
+                [['foo' => 'bar'], '', ['foo' => 'bar'], '', '', null, $a, 3.14, null, '0', 3.14, 3.14, '0', $a, '0', ['foo' => 'bar'], $a, null],
+                true,
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider unshiftProvider
      *
      * @param mixed[] $expected
@@ -1202,7 +1282,7 @@ final class ArrTest extends TestCase
      * @dataProvider upperProvider
      *
      * @param string[] $expected
-     * @param array<int|float|string|bool|\Stringable|null> $array
+     * @param array<int|float|string|bool|Stringable|null> $array
      */
     public function testUpper($expected, $array): void
     {
@@ -1210,7 +1290,7 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @return array<array{string[],array<int|float|string|bool|\Stringable|null>}>
+     * @return array<array{string[],array<int|float|string|bool|Stringable|null>}>
      */
     public static function upperProvider(): array
     {
@@ -1227,7 +1307,7 @@ final class ArrTest extends TestCase
                     '1',
                     'false' => '',
                     'string' => 'TITLE',
-                    \Stringable::class => "I'M BATMAN.",
+                    Stringable::class => "I'M BATMAN.",
                 ],
                 [
                     0,
@@ -1236,7 +1316,7 @@ final class ArrTest extends TestCase
                     true,
                     'false' => false,
                     'string' => 'title',
-                    \Stringable::class => new class implements \Stringable {
+                    Stringable::class => new class implements Stringable {
                         public function __toString(): string
                         {
                             return "I'm Batman.";

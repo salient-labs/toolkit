@@ -1236,7 +1236,7 @@ final class SyncStore extends SqliteStore
             '[' . SyncErrorType::toName($error->ErrorType) . ']',
             sprintf(
                 $error->Message,
-                ...Convert::toScalarArray($error->Values),
+                ...Arr::toScalars($error->Values),
             ),
         );
 

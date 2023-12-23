@@ -7,6 +7,7 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\ArrayMapper;
 use Lkrms\Tests\TestCase;
+use Throwable;
 use ValueError;
 
 final class ArrayMapperTest extends TestCase
@@ -14,7 +15,7 @@ final class ArrayMapperTest extends TestCase
     /**
      * @dataProvider mapProvider
      *
-     * @param array<string,mixed>|class-string<\Throwable>|null $expected
+     * @param array<string,mixed>|class-string<Throwable>|null $expected
      * @param array<array-key,array-key|array-key[]> $keyMap
      * @param array<string,mixed> $in
      * @param ArrayKeyConformity::* $conformity
@@ -45,7 +46,7 @@ final class ArrayMapperTest extends TestCase
     }
 
     /**
-     * @return array<string,array{array<string,mixed>|class-string<\Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:ArrayKeyConformity::*,4?:int-mask-of<ArrayMapperFlag::*>}>
+     * @return array<string,array{array<string,mixed>|class-string<Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:ArrayKeyConformity::*,4?:int-mask-of<ArrayMapperFlag::*>}>
      */
     public static function mapProvider(): array
     {

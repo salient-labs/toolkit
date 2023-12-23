@@ -4,6 +4,7 @@ namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
+use Stringable;
 
 /**
  * Generate values like hashes and secure UUIDs
@@ -53,7 +54,7 @@ final class Compute extends Utility
     /**
      * Get a unique non-crypto hash in raw binary form
      *
-     * @param int|float|string|bool|\Stringable|null ...$value
+     * @param int|float|string|bool|Stringable|null ...$value
      */
     public static function binaryHash(...$value): string
     {
@@ -64,7 +65,7 @@ final class Compute extends Utility
     /**
      * Get a unique non-crypto hash in hexadecimal form
      *
-     * @param int|float|string|bool|\Stringable|null ...$value
+     * @param int|float|string|bool|Stringable|null ...$value
      */
     public static function hash(...$value): string
     {

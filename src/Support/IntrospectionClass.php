@@ -14,6 +14,7 @@ use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Utility\Reflect;
+use Closure;
 use DateTimeInterface;
 use ReflectionClass;
 use ReflectionMethod;
@@ -268,75 +269,75 @@ class IntrospectionClass
     /**
      * Normalises property names
      *
-     * @var (\Closure(string $name, bool $greedy=, string...$hints): string)|null
+     * @var (Closure(string $name, bool $greedy=, string...$hints): string)|null
      */
     public $Normaliser;
 
     /**
      * Normalises property names with $greedy = false
      *
-     * @var (\Closure(string): string)|null
+     * @var (Closure(string): string)|null
      */
     public $GentleNormaliser;
 
     /**
      * Normalises property names with $hints = $this->NormalisedProperties
      *
-     * @var (\Closure(string): string)|null
+     * @var (Closure(string): string)|null
      */
     public $CarefulNormaliser;
 
     /**
      * Signature => closure
      *
-     * @var array<string,\Closure>
+     * @var array<string,Closure>
      */
     public $CreateFromSignatureClosures = [];
 
     /**
      * Signature => (int) $strict => closure
      *
-     * @var array<string,array<int,\Closure>>
+     * @var array<string,array<int,Closure>>
      */
     public $CreateProviderlessFromSignatureClosures = [];
 
     /**
      * Signature => (int) $strict => closure
      *
-     * @var array<string,array<int,\Closure>>
+     * @var array<string,array<int,Closure>>
      */
     public $CreateProvidableFromSignatureClosures = [];
 
     /**
      * (int) $strict => closure
      *
-     * @var array<int,\Closure>
+     * @var array<int,Closure>
      */
     public $CreateProviderlessFromClosures = [];
 
     /**
      * (int) $strict => closure
      *
-     * @var array<int,\Closure>
+     * @var array<int,Closure>
      */
     public $CreateProvidableFromClosures = [];
 
     /**
      * Normalised property name => action => closure
      *
-     * @var array<string,array<string,\Closure>>
+     * @var array<string,array<string,Closure>>
      */
     public $PropertyActionClosures = [];
 
     /**
-     * @var \Closure|null
+     * @var Closure|null
      */
     public $GetNameClosure;
 
     /**
      * Rules signature => closure
      *
-     * @var array<string,\Closure>
+     * @var array<string,Closure>
      */
     public $SerializeClosures = [];
 
@@ -367,7 +368,7 @@ class IntrospectionClass
             if ($class->implementsInterface(ReturnsNormaliser::class)) {
                 $this->Normaliser = $class->getMethod('normaliser')->invoke(null);
             } else {
-                $this->Normaliser = \Closure::fromCallable([$className, 'normalise']);
+                $this->Normaliser = Closure::fromCallable([$className, 'normalise']);
             }
             $this->GentleNormaliser = fn(string $name): string => ($this->Normaliser)($name, false);
             $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedKeys);

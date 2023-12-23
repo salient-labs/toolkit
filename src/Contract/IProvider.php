@@ -3,6 +3,7 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Exception\MethodNotImplementedException;
+use Stringable;
 
 /**
  * Services objects on behalf of a backend
@@ -58,7 +59,7 @@ interface IProvider extends
      * - values that aren't unique to the connected data source
      * - case-insensitive values (unless normalised first)
      *
-     * @return array<int|float|string|bool|\Stringable|null>
+     * @return array<int|float|string|bool|Stringable|null>
      */
     public function getBackendIdentifier(): array;
 

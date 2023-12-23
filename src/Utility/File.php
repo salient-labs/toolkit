@@ -196,7 +196,7 @@ final class File extends Utility
      * Write data to a file
      *
      * @see file_put_contents()
-     * @param resource|array<int|float|string|bool|\Stringable|null>|string $data
+     * @param resource|array<int|float|string|bool|Stringable|null>|string $data
      * @param int-mask-of<\FILE_USE_INCLUDE_PATH|\FILE_APPEND|\LOCK_EX> $flags
      */
     public static function putContents(string $filename, $data, int $flags = 0): int

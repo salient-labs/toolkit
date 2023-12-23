@@ -3,8 +3,10 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Contract\Jsonable;
 use Lkrms\Utility\Catalog\SortTypeFlag;
 use OutOfRangeException;
+use Stringable;
 
 /**
  * Manipulate arrays
@@ -148,8 +150,7 @@ final class Arr extends Utility
      * @param array<TKey,TValue> $array
      * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
      *
-     * @return list<TValue>|array<TKey,TValue>
-     * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
+     * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sort(
         array $array,
@@ -188,8 +189,7 @@ final class Arr extends Utility
      * @param array<TKey,TValue> $array
      * @param int-mask-of<SortTypeFlag::*> $flags
      *
-     * @return list<TValue>|array<TKey,TValue>
-     * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
+     * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sortDesc(
         array $array,
@@ -253,22 +253,29 @@ final class Arr extends Utility
     }
 
     /**
-     * Remove duplicate values from an array without preserving keys
+     * Remove duplicate values from an array
      *
+     * @template TKey of array-key
      * @template TValue
      *
-     * @param iterable<array-key,TValue> $array
+     * @param iterable<TKey,TValue> $array
      *
-     * @return list<TValue>
+     * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
-    public static function unique(iterable $array): array
-    {
+    public static function unique(
+        iterable $array,
+        bool $preserveKeys = false
+    ): array {
         $unique = [];
-        foreach ($array as $value) {
+        foreach ($array as $key => $value) {
             if (in_array($value, $unique, true)) {
                 continue;
             }
-            $unique[] = $value;
+            if ($preserveKeys) {
+                $unique[$key] = $value;
+            } else {
+                $unique[] = $value;
+            }
         }
         return $unique;
     }
@@ -488,7 +495,7 @@ final class Arr extends Utility
      * Remove empty strings from an array of strings and Stringables
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|\Stringable|null
+     * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
      *
@@ -510,7 +517,7 @@ final class Arr extends Utility
      * removing whitespace from the beginning and end of each value and
      * optionally removing empty strings
      *
-     * @param iterable<int|float|string|bool|\Stringable|null> $array
+     * @param iterable<int|float|string|bool|Stringable|null> $array
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
      */
@@ -537,7 +544,7 @@ final class Arr extends Utility
      * Implode values that remain in an array of strings and Stringables after
      * removing empty strings
      *
-     * @param iterable<int|float|string|bool|\Stringable|null> $array
+     * @param iterable<int|float|string|bool|Stringable|null> $array
      */
     public static function implode(string $separator, iterable $array): string
     {
@@ -556,7 +563,7 @@ final class Arr extends Utility
      * of strings and Stringables before optionally removing empty strings
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|\Stringable|null
+     * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
      * @param string|null $characters Optionally specify characters to remove
@@ -586,7 +593,7 @@ final class Arr extends Utility
      * Make an array of strings and Stringables lowercase
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|\Stringable|null
+     * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
      *
@@ -604,7 +611,7 @@ final class Arr extends Utility
      * Make an array of strings and Stringables uppercase
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|\Stringable|null
+     * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
      *
@@ -616,6 +623,53 @@ final class Arr extends Utility
             $upper[$key] = strtoupper((string) $value);
         }
         return $upper ?? [];
+    }
+
+    /**
+     * Replace non-scalar values in an array with equivalent strings
+     *
+     * Objects that implement {@see Stringable} are cast to a string. Other
+     * non-scalar values are JSON-encoded.
+     *
+     * @template TKey of array-key
+     * @template TValue int|float|string|bool|null
+     *
+     * @param iterable<TKey,TValue|mixed[]|object> $array
+     * @return array<TKey,TValue>
+     */
+    public static function toScalars(iterable $array): array
+    {
+        foreach ($array as $key => $value) {
+            if (!is_scalar($value)) {
+                if (Test::isStringable($value)) {
+                    $value = (string) $value;
+                } elseif ($value instanceof Jsonable) {
+                    $value = $value->toJson(Json::ENCODE_FLAGS);
+                } else {
+                    $value = Json::stringify($value);
+                }
+            }
+            $scalars[$key] = $value;
+        }
+        return $scalars ?? [];
+    }
+
+    /**
+     * Get the offset (0-based) of a key in an array
+     *
+     * @template TKey of array-key
+     *
+     * @param array<TKey,mixed> $array
+     * @param TKey $key
+     * @throws OutOfRangeException if `$key` is not found in `$array`.
+     */
+    public static function keyOffset(array $array, $key): int
+    {
+        $offset = array_flip(array_keys($array))[$key] ?? null;
+        if ($offset === null) {
+            throw new OutOfRangeException(sprintf('Array key not found: %s', $key));
+        }
+        return $offset;
     }
 
     /**
@@ -717,25 +771,6 @@ final class Arr extends Utility
             $array,
             array_fill(0, count($array), $value)
         );
-    }
-
-    /**
-     * Apply a callback to the elements of an array
-     *
-     * @template TKey of array-key
-     * @template TValue
-     *
-     * @param callable(TValue, TKey): mixed $callback
-     * @param iterable<TKey,TValue> $array
-     *
-     * @return array<TKey,TValue>
-     */
-    public static function forEach(callable $callback, iterable $array): array
-    {
-        foreach ($array as $key => $value) {
-            $callback($value, $key);
-        }
-        return $array;
     }
 
     /**

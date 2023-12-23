@@ -34,6 +34,7 @@ use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
+use CurlHandle;
 use DateTimeInterface;
 use Generator;
 use LogicException;
@@ -385,7 +386,7 @@ final class Curler implements IReadable, IWritable, Buildable
     protected $ObjectAsArray = true;
 
     /**
-     * @var \CurlHandle|resource|null
+     * @var CurlHandle|resource|null
      */
     private $Handle;
 
@@ -417,7 +418,7 @@ final class Curler implements IReadable, IWritable, Buildable
     private static $DefaultUserAgent;
 
     /**
-     * @var \CurlHandle|resource|null
+     * @var CurlHandle|resource|null
      */
     private static $SharedHandle;
 

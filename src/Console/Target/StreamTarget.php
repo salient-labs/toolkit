@@ -7,6 +7,7 @@ use Lkrms\Support\Catalog\TtyControlSequence;
 use Lkrms\Utility\Date;
 use Lkrms\Utility\File;
 use DateTime;
+use DateTimeZone;
 use LogicException;
 
 /**
@@ -30,7 +31,7 @@ final class StreamTarget extends ConsoleTarget
     private $Timestamp = '[d M y H:i:s.vO] ';
 
     /**
-     * @var \DateTimeZone|null
+     * @var DateTimeZone|null
      */
     private $Timezone;
 
@@ -66,7 +67,7 @@ final class StreamTarget extends ConsoleTarget
      * @param bool|null $addTimestamp If `null`, timestamps are added if
      * `$stream` is not STDOUT or STDERR.
      * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
-     * @param \DateTimeZone|string|null $timezone Default: as per
+     * @param DateTimeZone|string|null $timezone Default: as per
      * `date_default_timezone_set` or INI setting `date.timezone`
      */
     public function __construct(
@@ -140,7 +141,7 @@ final class StreamTarget extends ConsoleTarget
      * @param bool|null $addTimestamp If `null`, timestamps will be added unless
      * `$path` is STDOUT, STDERR, or a TTY
      * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
-     * @param \DateTimeZone|string|null $timezone Default: as per
+     * @param DateTimeZone|string|null $timezone Default: as per
      * `date_default_timezone_set` or INI setting `date.timezone`
      */
     public static function fromPath(

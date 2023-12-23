@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Utility;
 use Lkrms\Exception\PcreErrorException;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Pcre;
+use Stringable;
 
 final class PcreTest extends TestCase
 {
@@ -19,7 +20,7 @@ final class PcreTest extends TestCase
      * @dataProvider grepProvider
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|\Stringable|null
+     * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param array<TKey,TValue>|string $expected
      * @param array<TKey,TValue> $array
@@ -35,7 +36,7 @@ final class PcreTest extends TestCase
      */
     public static function grepProvider(): array
     {
-        $obj = new class implements \Stringable {
+        $obj = new class implements Stringable {
             public function __toString(): string
             {
                 return 'foobar';
@@ -49,7 +50,7 @@ final class PcreTest extends TestCase
                     3.14,
                     true,
                     'string' => 'foobar',
-                    \Stringable::class => $obj,
+                    Stringable::class => $obj,
                 ],
                 '/./',
                 [
@@ -60,7 +61,7 @@ final class PcreTest extends TestCase
                     'false' => false,
                     'string' => 'foobar',
                     '',
-                    \Stringable::class => $obj,
+                    Stringable::class => $obj,
                 ],
             ],
             [
@@ -78,7 +79,7 @@ final class PcreTest extends TestCase
                     'false' => false,
                     'string' => 'foobar',
                     '',
-                    \Stringable::class => $obj,
+                    Stringable::class => $obj,
                 ],
                 \PREG_GREP_INVERT,
             ],

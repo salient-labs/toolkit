@@ -10,6 +10,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Str;
+use Closure;
 use ReflectionClass;
 
 /**
@@ -87,35 +88,35 @@ final class SyncIntrospectionClass extends IntrospectionClass
     /**
      * Signature => closure
      *
-     * @var array<string,\Closure>
+     * @var array<string,Closure>
      */
     public $CreateFromSignatureSyncClosures = [];
 
     /**
      * Signature => (int) $strict => closure
      *
-     * @var array<string,array<int,\Closure>>
+     * @var array<string,array<int,Closure>>
      */
     public $CreateSyncEntityFromSignatureClosures = [];
 
     /**
      * (int) $strict => closure
      *
-     * @var array<int,\Closure>
+     * @var array<int,Closure>
      */
     public $CreateSyncEntityFromClosures = [];
 
     /**
      * Entity => sync operation => closure
      *
-     * @var array<class-string<ISyncEntity>,array<SyncOperation::*,\Closure|null>>
+     * @var array<class-string<ISyncEntity>,array<SyncOperation::*,Closure|null>>
      */
     public $DeclaredSyncOperationClosures = [];
 
     /**
      * Lowercase "magic" sync operation method => closure
      *
-     * @var array<string,\Closure|null>
+     * @var array<string,Closure|null>
      */
     public $MagicSyncOperationClosures = [];
 
