@@ -3,9 +3,10 @@
 namespace Lkrms\Tests\Utility;
 
 use Composer\InstalledVersions;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Package;
 
-final class ComposerTest extends \Lkrms\Tests\TestCase
+final class ComposerTest extends TestCase
 {
     public function testHasDevDependencies(): void
     {

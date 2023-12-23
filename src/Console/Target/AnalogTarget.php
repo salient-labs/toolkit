@@ -2,6 +2,7 @@
 
 namespace Lkrms\Console\Target;
 
+use Analog\Analog;
 use Lkrms\Console\Concept\ConsoleTarget;
 
 /**
@@ -13,6 +14,6 @@ final class AnalogTarget extends ConsoleTarget
     {
         // Analog's level constants have the same values as equivalent
         // ConsoleLevel constants
-        \Analog\Analog::log($message, $level);
+        Analog::log($message, $level);
     }
 }

@@ -6,8 +6,9 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Tests\CommandTestCase;
 
-class CheckSyncProviderHeartbeatTest extends \Lkrms\Tests\CommandTestCase
+class CheckSyncProviderHeartbeatTest extends CommandTestCase
 {
     protected function startApp(CliApplication $app): CliApplication
     {

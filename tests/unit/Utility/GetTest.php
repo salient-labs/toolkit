@@ -2,9 +2,10 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Get;
 
-final class GetTest extends \Lkrms\Tests\TestCase
+final class GetTest extends TestCase
 {
     /**
      * @dataProvider basenameProvider

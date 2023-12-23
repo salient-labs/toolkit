@@ -17,13 +17,13 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Event\SyncStoreLoadedEvent;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
+use Lkrms\Sync\Exception\SyncStoreException;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use LogicException;
 use ReflectionClass;
-use RuntimeException;
 
 /**
  * Tracks the state of entities synced to and from third-party backends in a
@@ -406,7 +406,7 @@ final class SyncStore extends SqliteStore
         $stmt->close();
 
         if ($row === false) {
-            throw new RuntimeException('Error retrieving provider ID');
+            throw new SyncStoreException('Error retrieving provider ID');
         }
 
         $providerId = $row[0];
@@ -546,7 +546,7 @@ final class SyncStore extends SqliteStore
         $stmt->close();
 
         if ($row === false) {
-            throw new RuntimeException('Error retrieving entity type ID');
+            throw new SyncStoreException('Error retrieving entity type ID');
         }
 
         $class->getMethod('setEntityTypeId')->invoke(null, $row[0]);

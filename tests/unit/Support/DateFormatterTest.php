@@ -4,9 +4,10 @@ namespace Lkrms\Tests\Support;
 
 use Lkrms\Support\DateParser\RegexDateParser;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Tests\TestCase;
 use DateTimeInterface;
 
-final class DateFormatterTest extends \Lkrms\Tests\TestCase
+final class DateFormatterTest extends TestCase
 {
     public function testDotNet(): void
     {

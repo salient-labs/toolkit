@@ -3,10 +3,11 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Support\Timekeeper;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Sys;
 use LogicException;
 
-final class SystemTest extends \Lkrms\Tests\TestCase
+final class SystemTest extends TestCase
 {
     public function testStartTimer(): void
     {

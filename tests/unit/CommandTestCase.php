@@ -11,7 +11,7 @@ use Lkrms\Contract\IService;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\File;
 
-abstract class CommandTestCase extends \Lkrms\Tests\TestCase
+abstract class CommandTestCase extends TestCase
 {
     protected function startApp(CliApplication $app): CliApplication
     {

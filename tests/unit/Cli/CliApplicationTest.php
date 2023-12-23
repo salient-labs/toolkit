@@ -4,10 +4,11 @@ namespace Lkrms\Tests\Cli;
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Tests\Cli\Command\TestOptions;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 use LogicException;
 
-class CliApplicationTest extends \Lkrms\Tests\TestCase
+final class CliApplicationTest extends TestCase
 {
     public function testCommandCollision(): void
     {

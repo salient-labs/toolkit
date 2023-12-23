@@ -3,12 +3,13 @@
 namespace Lkrms\Curler\Exception;
 
 use Lkrms\Curler\Curler;
+use Lkrms\Exception\Exception;
 use Lkrms\Utility\Format;
 
 /**
  * Base class for Curler exceptions
  */
-abstract class CurlerException extends \Lkrms\Exception\Exception
+abstract class CurlerException extends Exception
 {
     /**
      * @var Curler

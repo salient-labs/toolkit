@@ -7,9 +7,10 @@ use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IApplication;
 use Lkrms\Contract\IContainer;
+use Lkrms\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 
-final class ContainerTest extends \Lkrms\Tests\TestCase
+final class ContainerTest extends TestCase
 {
     public function testBindContainer(): void
     {

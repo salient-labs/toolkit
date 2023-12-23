@@ -9,6 +9,7 @@ use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
+use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncStore;
@@ -19,7 +20,7 @@ use JsonSerializable;
  *
  * @extends IProviderEntity<ISyncProvider,ISyncContext>
  *
- * @see \Lkrms\Sync\Concept\SyncEntity
+ * @see SyncEntity
  *
  * @extends IProviderEntity<ISyncProvider,ISyncContext>
  */

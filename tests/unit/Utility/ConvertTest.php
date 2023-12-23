@@ -4,12 +4,13 @@ namespace Lkrms\Tests\Utility;
 
 use Lkrms\Http\Uri;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
 use ReflectionParameter;
 
-final class ConvertTest extends \Lkrms\Tests\TestCase
+final class ConvertTest extends TestCase
 {
     /**
      * @dataProvider toBoolProvider

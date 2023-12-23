@@ -3,9 +3,10 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Exception\PcreErrorException;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Pcre;
 
-final class PcreTest extends \Lkrms\Tests\TestCase
+final class PcreTest extends TestCase
 {
     public function testGrepFails(): void
     {

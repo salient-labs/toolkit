@@ -4,8 +4,9 @@ namespace Lkrms\Tests\Console;
 
 use Lkrms\Console\Support\ConsoleTagFormats;
 use Lkrms\Console\ConsoleFormatter;
+use Lkrms\Tests\TestCase;
 
-final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
+final class ConsoleFormatterTest extends TestCase
 {
     /**
      * @dataProvider formatProvider

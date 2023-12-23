@@ -5,4 +5,4 @@ namespace Lkrms\Exception;
 /**
  * Thrown when something is wrong with PHP's runtime environment
  */
-class IncompatibleRuntimeEnvironmentException extends \Lkrms\Exception\Exception {}
+class IncompatibleRuntimeEnvironmentException extends Exception {}

@@ -646,8 +646,8 @@ class IntrospectionClass
      *
      * @return T
      *
-     * @see \Lkrms\Contract\IResolvable::normalise()
-     * @see \Lkrms\Contract\ReturnsNormaliser::normaliser()
+     * @see IResolvable::normalise()
+     * @see ReturnsNormaliser::normaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {

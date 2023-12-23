@@ -18,7 +18,7 @@ use Traversable;
  * @template TKey of array-key
  * @template TValue
  *
- * @see \Lkrms\Contract\ICollection
+ * @see ICollection
  */
 trait TReadableCollection
 {

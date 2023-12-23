@@ -12,10 +12,11 @@ use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\SyncClassResolver;
+use Lkrms\Tests\TestCase;
 use Closure;
 use ReflectionFunction;
 
-final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
+final class SyncIntrospectorTest extends TestCase
 {
     public function testEntityToProvider(): void
     {

@@ -8,6 +8,7 @@ use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Str;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Generates PHPUnit tests
@@ -140,7 +141,7 @@ class GenerateTests extends GenerateCommand
 
         $this->Extends[] = $classPrefix . (
             $extends === null
-                ? \PHPUnit\Framework\TestCase::class
+                ? TestCase::class
                 : $extends
         );
 

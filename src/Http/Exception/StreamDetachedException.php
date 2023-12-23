@@ -2,8 +2,10 @@
 
 namespace Lkrms\Http\Exception;
 
+use Lkrms\Exception\Exception;
+
 /**
  * Thrown when a stream wrapper receives a request it cannot service because it
  * has been detached from the underlying PHP stream
  */
-class StreamDetachedException extends \Lkrms\Exception\Exception {}
+class StreamDetachedException extends Exception {}

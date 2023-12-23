@@ -3,6 +3,7 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Utility\Compute;
 
 /**
  * Text comparison algorithms
@@ -31,28 +32,28 @@ class TextComparisonAlgorithm extends Enumeration
      *
      * String length cannot exceed 255 characters.
      *
-     * @see \levenshtein()
+     * @see levenshtein()
      */
     public const LEVENSHTEIN = 4;
 
     /**
      * Uncertainty is derived from similar_text()
      *
-     * @see \similar_text()
+     * @see similar_text()
      */
     public const SIMILAR_TEXT = 8;
 
     /**
      * Uncertainty is derived from ngramSimilarity()
      *
-     * @see \Lkrms\Utility\Compute::ngramSimilarity()
+     * @see Compute::ngramSimilarity()
      */
     public const NGRAM_SIMILARITY = 16;
 
     /**
      * Uncertainty is derived from ngramIntersection()
      *
-     * @see \Lkrms\Utility\Compute::ngramIntersection()
+     * @see Compute::ngramIntersection()
      */
     public const NGRAM_INTERSECTION = 32;
 }

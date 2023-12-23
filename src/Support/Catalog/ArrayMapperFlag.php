@@ -3,13 +3,14 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Support\ArrayMapper;
 
 /**
  * ArrayMapper flags
  *
  * @extends Enumeration<int>
  *
- * @see \Lkrms\Support\ArrayMapper
+ * @see ArrayMapper
  */
 final class ArrayMapperFlag extends Enumeration
 {

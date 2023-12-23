@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IReadable;
 use Lkrms\Support\Introspector as IS;
 
 /**
@@ -14,7 +15,7 @@ use Lkrms\Support\Introspector as IS;
  * - The existence of `_get<Property>()` implies that `<Property>` is readable,
  *   regardless of {@see TReadable::getReadable()}'s return value.
  *
- * @see \Lkrms\Contract\IReadable
+ * @see IReadable
  */
 trait TReadable
 {

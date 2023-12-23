@@ -5,8 +5,9 @@ namespace Lkrms\Tests\Sync\Support;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Tests\Sync\SyncTestCase;
 
-final class SyncEntityProviderTest extends \Lkrms\Tests\Sync\SyncTestCase
+final class SyncEntityProviderTest extends SyncTestCase
 {
     public function testGetListA(): void
     {

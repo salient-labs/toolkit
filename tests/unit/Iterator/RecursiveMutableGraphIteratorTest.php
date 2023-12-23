@@ -3,10 +3,11 @@
 namespace Lkrms\Tests\Iterator;
 
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
+use Lkrms\Tests\TestCase;
 use RecursiveIteratorIterator;
 use stdClass;
 
-final class RecursiveMutableGraphIteratorTest extends \Lkrms\Tests\TestCase
+final class RecursiveMutableGraphIteratorTest extends TestCase
 {
     public function testRecursion(): void
     {

@@ -5,13 +5,14 @@ namespace Lkrms\Sync\Contract;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Sync\Catalog\FilterPolicy;
+use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Support\SyncStore;
 
 /**
  * Base interface for providers that sync entities to and from third-party
  * backends
  *
- * @see \Lkrms\Sync\Concept\SyncProvider
+ * @see SyncProvider
  *
  * @extends IProvider<ISyncContext>
  */

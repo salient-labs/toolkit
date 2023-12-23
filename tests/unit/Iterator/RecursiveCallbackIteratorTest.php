@@ -4,13 +4,14 @@ namespace Lkrms\Tests\Iterator;
 
 use Lkrms\Iterator\RecursiveCallbackIterator;
 use Lkrms\Iterator\RecursiveGraphIterator;
+use Lkrms\Tests\TestCase;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;
 use RecursiveIteratorIterator;
 use stdClass;
 
-final class RecursiveCallbackIteratorTest extends \Lkrms\Tests\TestCase
+final class RecursiveCallbackIteratorTest extends TestCase
 {
     public function testRecursion(): void
     {

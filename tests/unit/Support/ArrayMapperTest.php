@@ -6,9 +6,10 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\ArrayMapper;
+use Lkrms\Tests\TestCase;
 use ValueError;
 
-final class ArrayMapperTest extends \Lkrms\Tests\TestCase
+final class ArrayMapperTest extends TestCase
 {
     /**
      * @dataProvider mapProvider

@@ -4,11 +4,12 @@ namespace Lkrms\Tests\Store;
 
 use Lkrms\Exception\AssertionFailedException;
 use Lkrms\Store\CacheStore;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 use DateTimeImmutable;
 use stdClass;
 
-final class CacheStoreTest extends \Lkrms\Tests\TestCase
+final class CacheStoreTest extends TestCase
 {
     private ?string $Dir;
 

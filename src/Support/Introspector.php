@@ -12,8 +12,10 @@ use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IRelatable;
+use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\ISerializeRules;
 use Lkrms\Contract\ITreeable;
+use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Utility\Arr;
@@ -200,8 +202,8 @@ class Introspector
      *
      * @return T
      *
-     * @see \Lkrms\Contract\IResolvable::normalise()
-     * @see \Lkrms\Contract\ReturnsNormaliser::normaliser()
+     * @see IResolvable::normalise()
+     * @see ReturnsNormaliser::normaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {

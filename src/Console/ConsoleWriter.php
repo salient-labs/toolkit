@@ -14,6 +14,7 @@ use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
 use Lkrms\Exception\InvalidEnvironmentException;
+use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
@@ -27,8 +28,8 @@ use Throwable;
  * Logs messages to registered targets
  *
  * {@see ConsoleWriter} methods should generally be called via the
- * {@see \Lkrms\Facade\Console} facade. If a {@see ConsoleWriter} instance is
- * required, call {@see \Lkrms\Facade\Console::getInstance()}.
+ * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
+ * {@see Console::getInstance()}.
  */
 final class ConsoleWriter implements ReceivesFacade
 {

@@ -2,12 +2,13 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Arr;
 use DateTimeImmutable;
 use DateTimeInterface;
 use OutOfRangeException;
 
-final class ArrTest extends \Lkrms\Tests\TestCase
+final class ArrTest extends TestCase
 {
     /**
      * @dataProvider extendProvider

@@ -2,9 +2,10 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Compute;
 
-final class ComputeTest extends \Lkrms\Tests\TestCase
+final class ComputeTest extends TestCase
 {
     /**
      * @dataProvider textDistanceProvider

@@ -3,12 +3,13 @@
 namespace Lkrms\Tests\Iterator;
 
 use Lkrms\Iterator\RecursiveFilesystemIterator;
+use Lkrms\Tests\TestCase;
 use FilesystemIterator;
 use LogicException;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-final class RecursiveFilesystemIteratorTest extends \Lkrms\Tests\TestCase
+final class RecursiveFilesystemIteratorTest extends TestCase
 {
     /**
      * @dataProvider iteratorProvider

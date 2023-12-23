@@ -2,9 +2,10 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Test;
 
-final class TestTest extends \Lkrms\Tests\TestCase
+final class TestTest extends TestCase
 {
     /**
      * @dataProvider isBoolValueProvider

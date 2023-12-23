@@ -6,13 +6,14 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Exception\StreamDetachedException;
 use Lkrms\Http\Exception\StreamInvalidRequestException;
 use Lkrms\Http\Stream;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Format;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  */
-final class StreamTest extends \Lkrms\Tests\TestCase
+final class StreamTest extends TestCase
 {
     /**
      * @var resource|null

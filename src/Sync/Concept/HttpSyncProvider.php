@@ -11,6 +11,7 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
+use Lkrms\Store\CacheStore;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
@@ -225,8 +226,7 @@ abstract class HttpSyncProvider extends SyncProvider
      * Called when {@see HttpSyncProvider::getCurler()} is called with a
      * negative `$expiry`.
      *
-     * @see \Lkrms\Store\CacheStore::set() for more information about `$expiry`
-     * values
+     * @see CacheStore::set() for more information about `$expiry` values
      */
     protected function getExpiry(?string $path): ?int
     {

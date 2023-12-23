@@ -8,7 +8,7 @@ use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
 /**
  * Base class for exceptions that represent multiple errors
  */
-abstract class MultipleErrorException extends \Lkrms\Exception\Exception implements MultipleErrorExceptionInterface
+abstract class MultipleErrorException extends Exception implements MultipleErrorExceptionInterface
 {
     use MultipleErrorExceptionTrait;
 }

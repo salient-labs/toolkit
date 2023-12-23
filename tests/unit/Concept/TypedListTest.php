@@ -5,8 +5,9 @@ namespace Lkrms\Tests\Concept;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Tests\Concept\TypedList\MyClass;
 use Lkrms\Tests\Concept\TypedList\MyList;
+use Lkrms\Tests\TestCase;
 
-final class TypedListTest extends \Lkrms\Tests\TestCase
+final class TypedListTest extends TestCase
 {
     public function testTypedList(): void
     {

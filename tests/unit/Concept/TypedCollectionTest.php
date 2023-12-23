@@ -4,8 +4,9 @@ namespace Lkrms\Tests\Concept;
 
 use Lkrms\Tests\Concept\TypedCollection\MyClass;
 use Lkrms\Tests\Concept\TypedCollection\MyCollection;
+use Lkrms\Tests\TestCase;
 
-final class TypedCollectionTest extends \Lkrms\Tests\TestCase
+final class TypedCollectionTest extends TestCase
 {
     public function testTypedCollection(): void
     {

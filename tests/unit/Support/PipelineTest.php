@@ -7,10 +7,11 @@ use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
+use Lkrms\Tests\TestCase;
 use Closure;
 use Throwable;
 
-final class PipelineTest extends \Lkrms\Tests\TestCase
+final class PipelineTest extends TestCase
 {
     public function testStream(): void
     {

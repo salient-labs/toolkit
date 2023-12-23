@@ -2,13 +2,15 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Concept\Facade;
+
 /**
  * Provides a static interface to an instance of an underlying class
  *
  * @template TClass of object
  *
- * @see \Lkrms\Concept\Facade
- * @see \Lkrms\Contract\ReceivesFacade
+ * @see Facade
+ * @see ReceivesFacade
  */
 interface IFacade
 {

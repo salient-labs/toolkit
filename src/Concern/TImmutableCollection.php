@@ -2,6 +2,8 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\ICollection;
+
 /**
  * Implements ICollection for immutable classes
  *
@@ -10,7 +12,7 @@ namespace Lkrms\Concern;
  * @template TKey of array-key
  * @template TValue
  *
- * @see \Lkrms\Contract\ICollection
+ * @see ICollection
  */
 trait TImmutableCollection
 {

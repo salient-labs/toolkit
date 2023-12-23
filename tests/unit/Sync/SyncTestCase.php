@@ -5,9 +5,10 @@ namespace Lkrms\Tests\Sync;
 use Lkrms\Container\Application;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 
-abstract class SyncTestCase extends \Lkrms\Tests\TestCase
+abstract class SyncTestCase extends TestCase
 {
     protected ?string $BasePath;
     protected ?Application $App;
