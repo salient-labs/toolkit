@@ -4,13 +4,14 @@ namespace Lkrms\Iterator;
 
 use Lkrms\Iterator\Contract\RecursiveCallbackIteratorInterface;
 use IteratorIterator;
+use RecursiveCallbackFilterIterator;
 use RecursiveIterator;
 
 /**
  * Iterates over a recursive iterator, using a callback to determine which items
  * with children to descend into
  *
- * Similar to {@see \RecursiveCallbackFilterIterator}, but the callback is only
+ * Similar to {@see RecursiveCallbackFilterIterator}, but the callback is only
  * used to filter the return value of {@see RecursiveIterator::hasChildren()},
  * allowing values to be treated as leaf nodes even if they have children.
  *

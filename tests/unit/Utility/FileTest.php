@@ -3,9 +3,10 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Exception\FilesystemErrorException;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 
-final class FileTest extends \Lkrms\Tests\TestCase
+final class FileTest extends TestCase
 {
     /**
      * @dataProvider isAbsoluteProvider

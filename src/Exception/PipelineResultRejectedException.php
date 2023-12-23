@@ -2,13 +2,15 @@
 
 namespace Lkrms\Exception;
 
+use Lkrms\Contract\IPipeline;
+
 /**
  * Thrown when the result of a pipeline run is rejected by a filter
  *
- * @see \Lkrms\Contract\IPipeline::unless()
- * @see \Lkrms\Contract\IPipeline::unlessIf()
+ * @see IPipeline::unless()
+ * @see IPipeline::unlessIf()
  */
-class PipelineResultRejectedException extends \Lkrms\Exception\Exception
+class PipelineResultRejectedException extends Exception
 {
     /**
      * @var mixed

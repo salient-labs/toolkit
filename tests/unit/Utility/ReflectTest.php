@@ -13,6 +13,7 @@ use Lkrms\Tests\Utility\Reflect\MyOtherInterface;
 use Lkrms\Tests\Utility\Reflect\MyReusedTrait;
 use Lkrms\Tests\Utility\Reflect\MySubclass;
 use Lkrms\Tests\Utility\Reflect\MyTrait;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Reflect;
 use Generator;
 use ReflectionClass;
@@ -21,7 +22,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 
-final class ReflectTest extends \Lkrms\Tests\TestCase
+final class ReflectTest extends TestCase
 {
     public function testGetNames(): void
     {

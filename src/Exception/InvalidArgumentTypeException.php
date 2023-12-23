@@ -7,7 +7,7 @@ use Lkrms\Utility\Get;
 /**
  * Thrown when a function receives an argument that is not of the required type
  */
-class InvalidArgumentTypeException extends \Lkrms\Exception\InvalidArgumentException
+class InvalidArgumentTypeException extends InvalidArgumentException
 {
     /**
      * @param int $position The argument number (1-based).

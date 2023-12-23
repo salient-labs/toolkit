@@ -12,6 +12,8 @@ use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
+use Lkrms\Tests\Sync\CustomEntity\Post as CustomPost;
+use Lkrms\Tests\Sync\CustomEntity\User as CustomUser;
 use Lkrms\Tests\Sync\Entity\Provider\AlbumProvider;
 use Lkrms\Tests\Sync\Entity\Provider\CommentProvider;
 use Lkrms\Tests\Sync\Entity\Provider\PhotoProvider;
@@ -79,8 +81,8 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     public static function getContextualBindings(): array
     {
         return [
-            Post::class => \Lkrms\Tests\Sync\CustomEntity\Post::class,
-            User::class => \Lkrms\Tests\Sync\CustomEntity\User::class,
+            Post::class => CustomPost::class,
+            User::class => CustomUser::class,
         ];
     }
 

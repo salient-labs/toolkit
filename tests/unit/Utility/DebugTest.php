@@ -3,11 +3,12 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Tests\Utility\Debug\GetCallerClass;
+use Lkrms\Tests\TestCase;
 
 use function Lkrms\Tests\Utility\Debug\getCallerViaFunction;
 use function Lkrms\Tests\Utility\Debug\getFunctionCallback;
 
-final class DebugTest extends \Lkrms\Tests\TestCase
+final class DebugTest extends TestCase
 {
     public function testGetCaller(): void
     {

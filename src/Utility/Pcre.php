@@ -4,6 +4,7 @@ namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
 use Lkrms\Exception\PcreErrorException;
+use Stringable;
 
 /**
  * preg_* function wrappers that throw an exception on failure
@@ -14,7 +15,7 @@ final class Pcre extends Utility
      * A wrapper for preg_grep()
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|\Stringable|null
+     * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param array<TKey,TValue> $array
      * @param int-mask-of<\PREG_GREP_INVERT> $flags

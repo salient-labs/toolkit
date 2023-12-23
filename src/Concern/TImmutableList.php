@@ -2,6 +2,8 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IList;
+
 /**
  * Implements IList for immutable classes
  *
@@ -9,7 +11,7 @@ namespace Lkrms\Concern;
  *
  * @template TValue
  *
- * @see \Lkrms\Contract\IList
+ * @see IList
  */
 trait TImmutableList
 {

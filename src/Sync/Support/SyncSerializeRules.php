@@ -10,6 +10,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Lkrms\Utility\Arr;
@@ -51,7 +52,7 @@ use LogicException;
  * 1. the path or key to act upon (`string`; required)
  * 2. a new name for the key (`int|string`; optional)
  * 3. a closure to return a new value for the key (`Closure`; optional; not
- *    required for {@see \Lkrms\Sync\Concept\SyncEntity} objects)
+ *    required for {@see SyncEntity} objects)
  *
  * Optional elements may be omitted.
  *
@@ -154,7 +155,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
      * Remove CanonicalId from sync entities? (default: true)
      *
      * @var bool|null
-     * @see \Lkrms\Sync\Concept\SyncEntity::$CanonicalId
+     * @see SyncEntity::$CanonicalId
      */
     protected $RemoveCanonicalId;
 

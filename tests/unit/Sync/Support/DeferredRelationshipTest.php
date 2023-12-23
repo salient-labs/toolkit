@@ -11,8 +11,9 @@ use Lkrms\Tests\Sync\Entity\Photo;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
+use Lkrms\Tests\Sync\SyncTestCase;
 
-final class DeferredRelationshipTest extends \Lkrms\Tests\Sync\SyncTestCase
+final class DeferredRelationshipTest extends SyncTestCase
 {
     public function testLazyHydration(): void
     {

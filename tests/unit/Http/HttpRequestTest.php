@@ -6,12 +6,13 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\HttpRequest;
 use Lkrms\Http\Uri;
+use Lkrms\Tests\TestCase;
 use Psr\Http\Message\StreamInterface;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  */
-final class HttpRequestTest extends \Lkrms\Tests\TestCase
+final class HttpRequestTest extends TestCase
 {
     private const USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1';
 

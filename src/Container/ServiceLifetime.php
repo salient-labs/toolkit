@@ -3,6 +3,9 @@
 namespace Lkrms\Container;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Contract\IService;
+use Lkrms\Contract\IServiceShared;
+use Lkrms\Contract\IServiceSingleton;
 
 /**
  * Service lifetimes relative to the container
@@ -30,14 +33,13 @@ final class ServiceLifetime extends Enumeration
      * Service interfaces implemented by the class are honoured
      *
      * Specifically:
-     * - If the class only implements {@see \Lkrms\Contract\IService},
+     * - If the class only implements {@see IService},
      *   {@see ServiceLifetime::TRANSIENT} applies
-     * - {@see \Lkrms\Contract\IServiceSingleton} and
-     *   {@see \Lkrms\Contract\IServiceShared} correspond to
+     * - {@see IServiceSingleton} and {@see IServiceShared} correspond to
      *   {@see ServiceLifetime::SINGLETON} and
      *   {@see ServiceLifetime::SERVICE_SINGLETON} respectively.
-     * - Implementing {@see \Lkrms\Contract\IServiceSingleton} AND
-     *   {@see \Lkrms\Contract\IServiceShared} is equivalent to:
+     * - Implementing {@see IServiceSingleton} AND {@see IServiceShared} is
+     *   equivalent to:
      *   ```php
      *   $lifetime = ServiceLifetime::SERVICE_SINGLETON | ServiceLifetime::SINGLETON
      *   ```

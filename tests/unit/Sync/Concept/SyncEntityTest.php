@@ -9,8 +9,9 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Tests\Sync\SyncTestCase;
 
-final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
+final class SyncEntityTest extends SyncTestCase
 {
     public function testDefaultProvider(): void
     {

@@ -7,7 +7,6 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use JsonSerializable;
 
 /**
@@ -64,7 +63,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
         $lines = [];
         $separator = "\n  ";
         foreach ($summary as $error) {
-            $values = Convert::toScalarArray($error['meta']['values']);
+            $values = Arr::toScalars($error['meta']['values']);
 
             if ($withMarkup) {
                 foreach ($values as &$value) {

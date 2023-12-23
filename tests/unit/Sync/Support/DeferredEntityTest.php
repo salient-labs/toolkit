@@ -8,8 +8,9 @@ use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Tests\Sync\SyncTestCase;
 
-final class DeferredEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
+final class DeferredEntityTest extends SyncTestCase
 {
     public function testDoNotResolve(): void
     {

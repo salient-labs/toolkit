@@ -4,11 +4,11 @@ namespace Lkrms\Utility;
 
 use Lkrms\Exception\InvalidDotenvSyntaxException;
 use Lkrms\Exception\InvalidEnvironmentException;
+use Lkrms\Exception\RuntimeException;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Catalog\EnvFlag;
 use LogicException;
-use RuntimeException;
 
 /**
  * Work with .env files and environment variables

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\FilterPolicy;
@@ -39,9 +40,9 @@ interface ISyncContext extends IProviderContext
      *
      * 3. A list of entities (`fn(...$mandatoryArgs, ISyncEntity ...$entities)`)
      *
-     *    - Entities are grouped by snake_case
-     *      {@see \Lkrms\Contract\IProvidable::service()} basename and replaced
-     *      with their IDs, e.g. `['faculty' => [42, 71], 'user' => [101]]`
+     *    - Entities are grouped by snake_case {@see IProvidable::service()}
+     *      basename and replaced with their IDs, e.g. `['faculty' => [42, 71],
+     *      'user' => [101]]`
      *
      * 4. No arguments (`fn(...$mandatoryArgs)`)
      *

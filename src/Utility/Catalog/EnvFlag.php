@@ -3,13 +3,14 @@
 namespace Lkrms\Utility\Catalog;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Utility\Env;
 
 /**
  * Env flags
  *
  * @extends Enumeration<int>
  *
- * @see \Lkrms\Utility\Env
+ * @see Env
  */
 final class EnvFlag extends Enumeration
 {

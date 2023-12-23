@@ -3,7 +3,9 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Container\Container;
+use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
@@ -12,7 +14,7 @@ use Generator;
 /**
  * Implements IConstructible to create instances from associative arrays
  *
- * @see \Lkrms\Contract\IConstructible
+ * @see IConstructible
  */
 trait TConstructible
 {
@@ -21,9 +23,8 @@ trait TConstructible
      *
      * The constructor (if any) is invoked with parameters taken from `$data`.
      * If `$data` values remain, they are assigned to writable properties. If
-     * further values remain and the class implements
-     * {@see \Lkrms\Contract\IExtensible}, they are assigned via
-     * {@see \Lkrms\Contract\IExtensible::setMetaProperty()}.
+     * further values remain and the class implements {@see IExtensible}, they
+     * are assigned via {@see IExtensible::setMetaProperty()}.
      *
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.

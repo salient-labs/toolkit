@@ -26,6 +26,7 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Iterator\RecursiveCallbackIterator;
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
+use Lkrms\Store\CacheStore;
 use Lkrms\Support\Catalog\MimeType;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Arr;
@@ -33,6 +34,7 @@ use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
+use CurlHandle;
 use DateTimeInterface;
 use Generator;
 use LogicException;
@@ -186,9 +188,9 @@ final class Curler implements IReadable, IWritable, Buildable
      * Cache responses to GET and HEAD requests? (HTTP caching directives are
      * not honoured)
      *
-     * If `true`, the shared {@see \Lkrms\Store\CacheStore} instance serviced by
-     * {@see Cache} is used as an HTTP response cache. Set
-     * {@see Curler::$CachePostResponse} to cache `POST` responses too.
+     * If `true`, the shared {@see CacheStore} instance serviced by {@see Cache}
+     * is used as an HTTP response cache. Set {@see Curler::$CachePostResponse}
+     * to cache `POST` responses too.
      *
      * Not compliant with \[RFC9111], obviously. Use responsibly.
      *
@@ -295,8 +297,8 @@ final class Curler implements IReadable, IWritable, Buildable
     /**
      * Send and receive cookies?
      *
-     * If set, the shared {@see \Lkrms\Store\CacheStore} instance serviced by
-     * {@see Cache} will be used for cookie storage.
+     * If set, the shared {@see CacheStore} instance serviced by {@see Cache}
+     * will be used for cookie storage.
      *
      * @var bool
      */
@@ -384,7 +386,7 @@ final class Curler implements IReadable, IWritable, Buildable
     protected $ObjectAsArray = true;
 
     /**
-     * @var \CurlHandle|resource|null
+     * @var CurlHandle|resource|null
      */
     private $Handle;
 
@@ -416,7 +418,7 @@ final class Curler implements IReadable, IWritable, Buildable
     private static $DefaultUserAgent;
 
     /**
-     * @var \CurlHandle|resource|null
+     * @var CurlHandle|resource|null
      */
     private static $SharedHandle;
 

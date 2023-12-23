@@ -3,9 +3,10 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Exception\InvalidEnvironmentException;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Env;
 
-final class EnvTest extends \Lkrms\Tests\TestCase
+final class EnvTest extends TestCase
 {
     /**
      * @dataProvider getProvider

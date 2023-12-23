@@ -3,8 +3,9 @@
 namespace Lkrms\Tests\Concern;
 
 use Lkrms\Tests\Concern\Immutable\MyImmutableClass;
+use Lkrms\Tests\TestCase;
 
-final class ImmutableTest extends \Lkrms\Tests\TestCase
+final class ImmutableTest extends TestCase
 {
     public function testWithPropertyValue(): void
     {

@@ -2,6 +2,8 @@
 
 namespace Lkrms\Contract;
 
+use DateTimeInterface;
+
 /**
  * Has properties that store date and time values
  *
@@ -13,7 +15,7 @@ interface HasDateProperties
      * Get properties that store date and time values, or ["*"] to detect date
      * and time values automatically
      *
-     * Properties should accept values of type {@see \DateTimeInterface}`|null`.
+     * Properties should accept values of type {@see DateTimeInterface}`|null`.
      *
      * @return string[]
      */

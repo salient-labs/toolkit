@@ -3,10 +3,11 @@
 namespace Lkrms\Tests\Container;
 
 use Lkrms\Container\Application;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 
-final class ApplicationTest extends \Lkrms\Tests\TestCase
+final class ApplicationTest extends TestCase
 {
     /**
      * @backupGlobals enabled

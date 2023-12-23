@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Http;
 
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Uri;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
 use Generator;
@@ -11,7 +12,7 @@ use Generator;
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  */
-final class UriTest extends \Lkrms\Tests\TestCase
+final class UriTest extends TestCase
 {
     /**
      * @dataProvider uriProvider

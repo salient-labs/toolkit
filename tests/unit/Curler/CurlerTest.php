@@ -5,8 +5,9 @@ namespace Lkrms\Tests\Curler;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
+use Lkrms\Tests\TestCase;
 
-final class CurlerTest extends \Lkrms\Tests\TestCase
+final class CurlerTest extends TestCase
 {
     public function testCurlError(): void
     {

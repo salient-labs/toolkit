@@ -9,10 +9,11 @@ use Lkrms\Http\Catalog\HttpHeaderGroup;
 use Lkrms\Http\OAuth2\AccessToken;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Support\Catalog\MimeType;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Arr;
 use LogicException;
 
-final class HttpHeadersTest extends \Lkrms\Tests\TestCase
+final class HttpHeadersTest extends TestCase
 {
     /**
      * @dataProvider constructProvider

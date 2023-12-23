@@ -2,4 +2,6 @@
 
 namespace Lkrms\Tests\Sync\CustomEntity;
 
-class Post extends \Lkrms\Tests\Sync\Entity\Post {}
+use Lkrms\Tests\Sync\Entity\Post as BasePost;
+
+class Post extends BasePost {}

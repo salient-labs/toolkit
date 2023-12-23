@@ -6,9 +6,13 @@ use Lkrms\Concept\Utility;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Closure;
 use LogicException;
+use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionClassConstant;
 use ReflectionException;
+use ReflectionExtension;
 use ReflectionFunction;
+use ReflectionFunctionAbstract;
 use ReflectionIntersectionType;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -16,6 +20,7 @@ use ReflectionParameter;
 use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
+use ReflectionZendExtension;
 
 /**
  * Work with PHP's reflection API
@@ -27,7 +32,7 @@ final class Reflect extends Utility
     /**
      * Get a list of names from a list of reflectors
      *
-     * @param array<\ReflectionAttribute<object>|\ReflectionClass<object>|\ReflectionClassConstant|\ReflectionExtension|\ReflectionFunctionAbstract|\ReflectionNamedType|\ReflectionParameter|\ReflectionProperty|\ReflectionZendExtension> $reflectors
+     * @param array<ReflectionAttribute<object>|ReflectionClass<object>|ReflectionClassConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
      * @return string[]
      */
     public static function getNames(array $reflectors): array
@@ -185,7 +190,7 @@ final class Reflect extends Utility
             }
         }
 
-        return Convert::stringsToUnique($comments);
+        return array_unique($comments);
     }
 
     /**
@@ -233,9 +238,11 @@ final class Reflect extends Utility
                     : Str::setEol($comment);
         }
 
-        return $classDocComments === null
-            ? Convert::stringsToUnique($comments)
-            : Convert::columnsToUnique($comments, $classDocComments);
+        $comments = array_unique($comments);
+        if ($classDocComments !== null) {
+            $classDocComments = array_intersect_key($classDocComments, $comments);
+        }
+        return $comments;
     }
 
     /**
@@ -263,9 +270,11 @@ final class Reflect extends Utility
         $name = $property->getName();
         $comments = self::doGetAllPropertyDocComments($property, $name, $classDocComments);
 
-        return $classDocComments === null
-            ? Convert::stringsToUnique($comments)
-            : Convert::columnsToUnique($comments, $classDocComments);
+        $comments = array_unique($comments);
+        if ($classDocComments !== null) {
+            $classDocComments = array_intersect_key($classDocComments, $comments);
+        }
+        return $comments;
     }
 
     /**

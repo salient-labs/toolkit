@@ -5,6 +5,7 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/src',
         __DIR__ . '/stubs',
         __DIR__ . '/tests/unit',
+        __DIR__ . '/tests/fixtures',
         __DIR__ . '/lk-util',
         __DIR__ . '/scripts',
     ])
@@ -22,6 +23,7 @@ return (new PhpCsFixer\Config())
         'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
         'no_unneeded_import_alias' => true,
         'no_unused_imports' => true,
+        'phpdoc_no_useless_inheritdoc' => true,
         'single_import_per_statement' => true,
         'yoda_style' => ['equal' => false, 'identical' => false],
     ])

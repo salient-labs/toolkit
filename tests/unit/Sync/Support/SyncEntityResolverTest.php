@@ -10,8 +10,9 @@ use Lkrms\Sync\Contract\ISyncEntityResolver;
 use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
 use Lkrms\Sync\Support\SyncEntityResolver;
 use Lkrms\Tests\Sync\Entity\User;
+use Lkrms\Tests\Sync\SyncTestCase;
 
-final class SyncEntityResolverTest extends \Lkrms\Tests\Sync\SyncTestCase
+final class SyncEntityResolverTest extends SyncTestCase
 {
     /**
      * @dataProvider getByNameProvider

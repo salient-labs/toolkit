@@ -2,13 +2,16 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Concept\Facade;
+use LogicException;
+
 /**
  * Provides a static interface to an instance of an underlying class
  *
  * @template TClass of object
  *
- * @see \Lkrms\Concept\Facade
- * @see \Lkrms\Contract\ReceivesFacade
+ * @see Facade
+ * @see ReceivesFacade
  */
 interface IFacade
 {
@@ -27,8 +30,7 @@ interface IFacade
      * facade is passed to {@see ReceivesFacade::setFacade()}.
      *
      * @return TClass
-     * @throws \RuntimeException if an underlying instance has already been
-     * loaded.
+     * @throws LogicException if an underlying instance has already been loaded.
      */
     public static function load();
 
@@ -42,11 +44,8 @@ interface IFacade
     /**
      * Get the underlying instance
      *
-     * If an underlying instance has not been loaded, the facade may either:
-     *
-     * 1. call {@see IFacade::load()} and pass the instance it returns to the
-     *    caller (preferred), or
-     * 2. throw a `RuntimeException`.
+     * If an underlying instance has not been loaded, the facade should return
+     * an instance from {@see IFacade::load()}.
      *
      * @return TClass
      */

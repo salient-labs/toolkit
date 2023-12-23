@@ -4,8 +4,9 @@ namespace Lkrms\Tests\Sync\Support;
 
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Tests\Sync\Entity\User;
+use Lkrms\Tests\Sync\SyncTestCase;
 
-final class SyncStoreTest extends \Lkrms\Tests\Sync\SyncTestCase
+final class SyncStoreTest extends SyncTestCase
 {
     public function testRun(): void
     {

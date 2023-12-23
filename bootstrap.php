@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
-if (\Composer\InstalledVersions::isInstalled('adodb/adodb-php')) {
-    require \Composer\InstalledVersions::getInstallPath('adodb/adodb-php') . '/adodb-exceptions.inc.php';
+use Composer\InstalledVersions;
+
+if (InstalledVersions::isInstalled('adodb/adodb-php')) {
+    require InstalledVersions::getInstallPath('adodb/adodb-php') . '/adodb-exceptions.inc.php';
 }

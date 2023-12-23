@@ -3,6 +3,8 @@
 namespace Lkrms\Cli\Catalog;
 
 use Lkrms\Concept\ConvertibleEnumeration;
+use Lkrms\Utility\Test;
+use DateTimeImmutable;
 use LogicException;
 
 /**
@@ -15,8 +17,7 @@ final class CliOptionValueType extends ConvertibleEnumeration
     /**
      * A boolean value
      *
-     * Boolean strings recognised by {@see \Lkrms\Utility\Test::isBoolValue()}
-     * are accepted.
+     * Boolean strings recognised by {@see Test::isBoolValue()} are accepted.
      */
     public const BOOLEAN = 0;
 
@@ -36,7 +37,7 @@ final class CliOptionValueType extends ConvertibleEnumeration
      * A date and/or time
      *
      * Strings understood by {@see strtotime()} are accepted and normalised to
-     * {@see \DateTimeImmutable} instances.
+     * {@see DateTimeImmutable} instances.
      */
     public const DATE = 3;
 

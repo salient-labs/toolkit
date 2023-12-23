@@ -15,6 +15,7 @@ use Lkrms\Contract\IServiceShared;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
+use Lkrms\Facade\DI;
 use Lkrms\Facade\Event;
 use Psr\Container\ContainerInterface;
 use Closure;
@@ -23,8 +24,7 @@ use ReflectionClass;
 /**
  * A simple service container with context-based dependency injection
  *
- * A static interface to the global service container is provided by
- * {@see \Lkrms\Facade\DI}.
+ * A static interface to the global service container is provided by {@see DI}.
  */
 class Container extends FluentInterface implements IContainer
 {

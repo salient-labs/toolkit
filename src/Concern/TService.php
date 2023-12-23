@@ -2,12 +2,16 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IService;
+use Lkrms\Contract\IServiceShared;
+use Lkrms\Contract\IServiceSingleton;
+
 /**
  * Implements IService to provide services that can be bound to a container
  *
- * @see \Lkrms\Contract\IService
- * @see \Lkrms\Contract\IServiceSingleton
- * @see \Lkrms\Contract\IServiceShared
+ * @see IService
+ * @see IServiceSingleton
+ * @see IServiceShared
  */
 trait TService
 {

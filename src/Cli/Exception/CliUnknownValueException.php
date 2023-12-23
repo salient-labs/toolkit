@@ -2,7 +2,9 @@
 
 namespace Lkrms\Cli\Exception;
 
+use Lkrms\Exception\Exception;
+
 /**
  * Thrown when an unknown value is rejected by a command line option
  */
-class CliUnknownValueException extends \Lkrms\Exception\Exception {}
+class CliUnknownValueException extends Exception {}

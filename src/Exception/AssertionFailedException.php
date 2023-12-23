@@ -9,4 +9,4 @@ use Lkrms\Utility\Assert;
  *
  * @see Assert
  */
-class AssertionFailedException extends \Lkrms\Exception\Exception {}
+class AssertionFailedException extends Exception {}

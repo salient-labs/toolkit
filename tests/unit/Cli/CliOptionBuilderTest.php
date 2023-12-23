@@ -10,9 +10,10 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
+use Lkrms\Tests\TestCase;
 use ReflectionClass;
 
-final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
+final class CliOptionBuilderTest extends TestCase
 {
     public function testFlag(): void
     {

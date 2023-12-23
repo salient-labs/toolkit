@@ -11,6 +11,7 @@ use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
+use Closure;
 use LogicException;
 
 /**
@@ -36,7 +37,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private $EntityProvider;
 
     /**
-     * @var string|\Closure(TEntity): (string|null)
+     * @var string|Closure(TEntity): (string|null)
      */
     private $NameProperty;
 

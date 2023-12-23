@@ -3,6 +3,8 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IExtensible;
+use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
@@ -18,7 +20,7 @@ use LogicException;
  * @template TProvider of IProvider
  * @template TContext of IProviderContext
  *
- * @see \Lkrms\Contract\IProvidable
+ * @see IProvidable
  */
 trait TProvidable
 {
@@ -125,9 +127,8 @@ trait TProvidable
      *
      * The constructor (if any) is invoked with values from `$data`. If `$data`
      * values remain, they are assigned to writable properties. If further
-     * values remain and the class implements
-     * {@see \Lkrms\Contract\IExtensible}, they are assigned via
-     * {@see \Lkrms\Contract\IExtensible::setMetaProperty()}.
+     * values remain and the class implements {@see IExtensible}, they are
+     * assigned via {@see IExtensible::setMetaProperty()}.
      *
      * `$data` keys, constructor parameters and writable properties are
      * normalised for comparison.

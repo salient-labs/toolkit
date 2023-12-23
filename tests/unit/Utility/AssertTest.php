@@ -4,13 +4,14 @@ namespace Lkrms\Tests\Utility;
 
 use Lkrms\Exception\AssertionFailedException;
 use Lkrms\Exception\FilesystemErrorException;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Assert;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use stdClass;
 
-final class AssertTest extends \Lkrms\Tests\TestCase
+final class AssertTest extends TestCase
 {
     /**
      * @dataProvider fileExistsProvider

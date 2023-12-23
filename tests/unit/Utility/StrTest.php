@@ -2,10 +2,11 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Str;
 
-final class StrTest extends \Lkrms\Tests\TestCase
+final class StrTest extends TestCase
 {
     /**
      * @dataProvider coalesceProvider

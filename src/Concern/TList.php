@@ -3,6 +3,7 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Contract\Arrayable;
+use Lkrms\Contract\IList;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Utility\Get;
 
@@ -14,7 +15,7 @@ use Lkrms\Utility\Get;
  *
  * @template TValue
  *
- * @see \Lkrms\Contract\IList
+ * @see IList
  */
 trait TList
 {

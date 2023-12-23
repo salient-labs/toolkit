@@ -4,12 +4,13 @@ namespace Lkrms\Tests\Utility;
 
 use Lkrms\Http\Uri;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
 use ReflectionParameter;
 
-final class ConvertTest extends \Lkrms\Tests\TestCase
+final class ConvertTest extends TestCase
 {
     /**
      * @dataProvider toBoolProvider
@@ -190,22 +191,6 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 4,
             ],
         ];
-    }
-
-    public function testArrayKeyToOffset(): void
-    {
-        $data = [
-            'a' => 'value0',
-            'b' => 'value1',
-            'A' => 'value2',
-            'B' => 'value3',
-        ];
-
-        $this->assertSame(0, Convert::arrayKeyToOffset('a', $data));
-        $this->assertSame(1, Convert::arrayKeyToOffset('b', $data));
-        $this->assertSame(2, Convert::arrayKeyToOffset('A', $data));
-        $this->assertSame(3, Convert::arrayKeyToOffset('B', $data));
-        $this->assertNull(Convert::arrayKeyToOffset('c', $data));
     }
 
     public function testParseUrl(): void

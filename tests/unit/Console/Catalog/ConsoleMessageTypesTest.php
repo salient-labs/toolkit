@@ -4,8 +4,9 @@ namespace Lkrms\Tests\Console\Catalog;
 
 use Lkrms\Console\Catalog\ConsoleMessageType;
 use Lkrms\Console\Catalog\ConsoleMessageTypes;
+use Lkrms\Tests\TestCase;
 
-final class ConsoleMessageTypesTest extends \Lkrms\Tests\TestCase
+final class ConsoleMessageTypesTest extends TestCase
 {
     public function testALL(): void
     {

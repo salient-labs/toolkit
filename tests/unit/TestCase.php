@@ -40,7 +40,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * If `$expected` is not a string, no action is taken.
      *
-     * @param class-string<\Throwable>|string|mixed $expected
+     * @param class-string<Throwable>|string|mixed $expected
      */
     public function maybeExpectException($expected): void
     {

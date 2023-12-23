@@ -4,11 +4,12 @@ namespace Lkrms\Contract;
 
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\ServiceLifetime;
+use Psr\Container\ContainerInterface;
 
 /**
  * A simple service container with context-based dependency injection
  */
-interface IContainer extends \Psr\Container\ContainerInterface
+interface IContainer extends ContainerInterface
 {
     /**
      * Creates a new service container object

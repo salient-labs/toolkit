@@ -3,13 +3,23 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliOption;
+use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleWriter;
 use Lkrms\Container\Application;
 use Lkrms\Container\Container;
 use Lkrms\Curler\Support\CurlerPage;
+use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Curler\Curler;
+use Lkrms\Curler\CurlerBuilder;
+use Lkrms\Facade\App;
+use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\DI;
+use Lkrms\Facade\Err;
+use Lkrms\Facade\Event;
+use Lkrms\Facade\Profile;
+use Lkrms\Facade\Sync;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
@@ -21,9 +31,13 @@ use Lkrms\Support\ErrorHandler;
 use Lkrms\Support\EventDispatcher;
 use Lkrms\Support\Timekeeper;
 use Lkrms\Sync\Support\DbSyncDefinition;
+use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use Lkrms\Sync\Support\HttpSyncDefinition;
+use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 use Lkrms\Sync\Support\SyncError;
+use Lkrms\Sync\Support\SyncErrorBuilder;
 use Lkrms\Sync\Support\SyncSerializeRules;
+use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\Entity\Album;
 use Lkrms\Tests\Sync\Entity\Comment;
@@ -38,24 +52,24 @@ use Lkrms\Utility\File;
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
 $facades = [
-    Application::class => \Lkrms\Facade\App::class,
-    CacheStore::class => \Lkrms\Facade\Cache::class,
-    ConsoleWriter::class => \Lkrms\Facade\Console::class,
-    Container::class => \Lkrms\Facade\DI::class,
-    ErrorHandler::class => [\Lkrms\Facade\Err::class, '--skip', 'handleShutdown,handleError,handleException'],
-    EventDispatcher::class => \Lkrms\Facade\Event::class,
-    SyncStore::class => \Lkrms\Facade\Sync::class,
-    Timekeeper::class => \Lkrms\Facade\Profile::class,
+    Application::class => App::class,
+    CacheStore::class => Cache::class,
+    ConsoleWriter::class => Console::class,
+    Container::class => DI::class,
+    ErrorHandler::class => [Err::class, '--skip', 'handleShutdown,handleError,handleException'],
+    EventDispatcher::class => Event::class,
+    SyncStore::class => Sync::class,
+    Timekeeper::class => Profile::class,
 ];
 
 $builders = [
-    CliOption::class => [\Lkrms\Cli\CliOptionBuilder::class, '--forward=load'],
-    Curler::class => [\Lkrms\Curler\CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
-    CurlerPage::class => \Lkrms\Curler\Support\CurlerPageBuilder::class,
-    DbSyncDefinition::class => \Lkrms\Sync\Support\DbSyncDefinitionBuilder::class,
-    HttpSyncDefinition::class => \Lkrms\Sync\Support\HttpSyncDefinitionBuilder::class,
-    SyncError::class => \Lkrms\Sync\Support\SyncErrorBuilder::class,
-    SyncSerializeRules::class => \Lkrms\Sync\Support\SyncSerializeRulesBuilder::class,
+    CliOption::class => [CliOptionBuilder::class, '--forward=load'],
+    Curler::class => [CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
+    CurlerPage::class => CurlerPageBuilder::class,
+    DbSyncDefinition::class => DbSyncDefinitionBuilder::class,
+    HttpSyncDefinition::class => HttpSyncDefinitionBuilder::class,
+    SyncError::class => SyncErrorBuilder::class,
+    SyncSerializeRules::class => SyncSerializeRulesBuilder::class,
 ];
 
 $entities = [

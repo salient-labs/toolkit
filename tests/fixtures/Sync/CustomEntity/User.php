@@ -2,4 +2,6 @@
 
 namespace Lkrms\Tests\Sync\CustomEntity;
 
-class User extends \Lkrms\Tests\Sync\Entity\User {}
+use Lkrms\Tests\Sync\Entity\User as BaseUser;
+
+class User extends BaseUser {}

@@ -14,6 +14,8 @@ use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Sync;
@@ -51,10 +53,10 @@ use ReflectionClass;
 /**
  * Represents the state of an entity in an external system
  *
- * {@see SyncEntity} implements {@see \Lkrms\Contract\IReadable} and
- * {@see \Lkrms\Contract\IWritable}, but `protected` properties are not
- * accessible by default. Override {@see SyncEntity::getReadable()} and/or
- * {@see SyncEntity::getWritable()} to change this.
+ * {@see SyncEntity} implements {@see IReadable} and {@see IWritable}, but
+ * `protected` properties are not accessible by default. Override
+ * {@see SyncEntity::getReadable()} and/or {@see SyncEntity::getWritable()} to
+ * change this.
  *
  * The following "magic" property methods are discovered automatically and don't
  * need to be returned by {@see SyncEntity::getReadable()} or

@@ -3,12 +3,13 @@
 namespace Lkrms\Tests\Polyfill;
 
 use Lkrms\Polyfill\PhpToken;
+use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Str;
 use Throwable;
 use TypeError;
 
-abstract class PhpTokenTestCase extends \Lkrms\Tests\TestCase
+abstract class PhpTokenTestCase extends TestCase
 {
     private const CODE = <<<'PHP'
         <div><?php

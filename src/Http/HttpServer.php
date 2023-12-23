@@ -7,7 +7,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethodGroup;
-use RuntimeException;
+use Lkrms\Http\Exception\HttpServerException;
 
 /**
  * Listens for HTTP requests on a local address
@@ -152,7 +152,7 @@ final class HttpServer implements IReadable, IImmutable
             return $this;
         }
 
-        throw new RuntimeException(sprintf(
+        throw new HttpServerException(sprintf(
             'Unable to start HTTP server at %s:%d (error %d: %s)',
             $this->Host,
             $this->Port,
@@ -193,7 +193,7 @@ final class HttpServer implements IReadable, IImmutable
     public function listen(callable $callback, ?int $timeout = null)
     {
         if (!$this->Server) {
-            throw new RuntimeException('start() must be called first');
+            throw new HttpServerException('start() must be called first');
         }
 
         $timeout = $timeout === null ? $this->Timeout : $timeout;
@@ -204,7 +204,7 @@ final class HttpServer implements IReadable, IImmutable
             $peer = $peer ?: '<unknown>';
 
             if (!$socket) {
-                throw new RuntimeException("Unable to accept connection from $peer");
+                throw new HttpServerException("Unable to accept connection from $peer");
             }
 
             $startLine = null;
@@ -213,7 +213,7 @@ final class HttpServer implements IReadable, IImmutable
             $body = null;
             do {
                 if (($line = fgets($socket)) === false) {
-                    throw new RuntimeException("Error reading request from $peer");
+                    throw new HttpServerException("Error reading request from $peer");
                 }
 
                 if ($startLine === null) {
@@ -225,7 +225,7 @@ final class HttpServer implements IReadable, IImmutable
                                 $startLine[2],
                                 $version
                             )) {
-                        throw new RuntimeException("Invalid HTTP request from $peer");
+                        throw new HttpServerException("Invalid HTTP request from $peer");
                     }
                     continue;
                 }
@@ -240,7 +240,7 @@ final class HttpServer implements IReadable, IImmutable
             /** @todo Add support for Transfer-Encoding */
             if ($length = $headers->getHeaderLine('Content-Length', true)) {
                 if (($body = fread($socket, (int) $length)) === false) {
-                    throw new RuntimeException("Error reading request body from $peer");
+                    throw new HttpServerException("Error reading request body from $peer");
                 }
             }
 

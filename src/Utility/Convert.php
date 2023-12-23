@@ -5,10 +5,9 @@ namespace Lkrms\Utility;
 use Lkrms\Concept\Utility;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Http\Uri;
-use Lkrms\Iterator\Contract\MutableIterator;
-use Lkrms\Iterator\RecursiveGraphIterator;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
+use ArrayAccess;
 use ArrayIterator;
 use Closure;
 use DateInterval;
@@ -18,7 +17,7 @@ use DateTimeZone;
 use Iterator;
 use IteratorIterator;
 use LogicException;
-use RecursiveIteratorIterator;
+use Stringable;
 
 /**
  * Convert data from one type/format/structure to another
@@ -102,119 +101,14 @@ final class Convert extends Utility
     }
 
     /**
-     * array_walk_recursive for a graph of arbitrarily nested objects and arrays
-     *
-     * @param object|mixed[] $graph
-     * @param callable(mixed, array-key, MutableIterator<array-key,mixed>&\RecursiveIterator<array-key,mixed>): bool $callback Return `false` to stop iterating over `$objectOrArray`.
-     */
-    public static function walkRecursive(
-        &$graph,
-        callable $callback,
-        int $mode = RecursiveIteratorIterator::LEAVES_ONLY
-    ): void {
-        $iterator = new RecursiveGraphIterator($graph);
-        $iterator = new RecursiveIteratorIterator($iterator, $mode);
-        foreach ($iterator as $key => $value) {
-            if (!$callback($value, $key, $iterator->getInnerIterator())) {
-                return;
-            }
-        }
-    }
-
-    /**
-     * A type-agnostic multi-column array_unique
-     *
-     * It is assumed that every array provided has the same signature (i.e.
-     * identical lengths and keys).
-     *
-     * Whenever a value is excluded from `$array`, its counterparts in the
-     * `$columns` arrays are also excluded. Only values in `$array` are checked
-     * for uniqueness.
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @param array<TKey,mixed> ...$columns
-     * @return array<TKey,TValue>
-     */
-    public static function columnsToUnique(array $array, array &...$columns): array
-    {
-        $list = [];
-        foreach ($array as $key => $value) {
-            if (in_array($value, $list, true)) {
-                continue;
-            }
-            $list[$key] = $value;
-            foreach ($columns as $columnIndex => $column) {
-                $columns2[$columnIndex][$key] = $column[$key];
-            }
-        }
-        foreach ($columns as $columnIndex => &$column) {
-            $column = $columns2[$columnIndex] ?? [];
-        }
-
-        return $list;
-    }
-
-    /**
-     * A faster array_unique
-     *
-     * @template TKey of array-key
-     * @param array<TKey,string> $array
-     * @return array<TKey,string>
-     */
-    public static function stringsToUnique(array $array): array
-    {
-        $list = [];
-        $seen = [];
-        foreach ($array as $key => $value) {
-            if (isset($seen[$value])) {
-                continue;
-            }
-            $list[$key] = $value;
-            $seen[$value] = true;
-        }
-
-        return $list;
-    }
-
-    /**
-     * A faster array_unique with reindexing
-     *
-     * @param string[] $array
-     * @return string[]
-     */
-    public static function stringsToUniqueList(array $array): array
-    {
-        $list = [];
-        $seen = [];
-        foreach ($array as $value) {
-            if (isset($seen[$value])) {
-                continue;
-            }
-            $list[] = $value;
-            $seen[$value] = true;
-        }
-
-        return $list;
-    }
-
-    /**
-     * JSON-encode non-scalar values in an array
-     *
      * @param mixed[] $array
-     * @return array<int,int|float|string|bool|null>
+     * @return array<int|float|string|bool|null>
+     * @deprecated Use {@see Arr::toScalars()} instead
+     * @codeCoverageIgnore
      */
     public static function toScalarArray(array $array): array
     {
-        foreach ($array as &$value) {
-            if (is_scalar($value) || $value === null) {
-                continue;
-            }
-            $value = json_encode($value);
-        }
-
-        return $array;
+        return Arr::toScalars($array);
     }
 
     /**
@@ -295,15 +189,14 @@ final class Convert extends Utility
     }
 
     /**
-     * Get the offset of a key in an array
-     *
      * @param string|int $key
      * @param mixed[] $array
-     * @return int|null `null` if `$key` is not found in `$array`.
+     * @deprecated Use {@see Arr::toScalars()} instead
+     * @codeCoverageIgnore
      */
-    public static function arrayKeyToOffset($key, array $array): ?int
+    public static function arrayKeyToOffset($key, array $array): int
     {
-        return array_flip(array_keys($array))[$key] ?? null;
+        return Arr::keyOffset($array, $key);
     }
 
     /**
@@ -585,13 +478,13 @@ final class Convert extends Utility
     /**
      * Get the value at $key in $item, where $item is an array or object
      *
-     * @param mixed[]|\ArrayAccess|object $item
+     * @param mixed[]|ArrayAccess|object $item
      * @param int|string $key
      * @return mixed
      */
     public static function valueAtKey($item, $key)
     {
-        return is_array($item) || $item instanceof \ArrayAccess
+        return is_array($item) || $item instanceof ArrayAccess
             ? $item[$key]
             : $item->$key;
     }
@@ -955,7 +848,7 @@ final class Convert extends Utility
     /**
      * Convert the given strings and Stringables to an array of strings
      *
-     * @param int|float|string|bool|\Stringable|null ...$value
+     * @param int|float|string|bool|Stringable|null ...$value
      * @return string[]
      */
     public static function toStrings(...$value): array

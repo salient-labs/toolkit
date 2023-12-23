@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IWritable;
 use Lkrms\Support\Introspector as IS;
 
 /**
@@ -14,7 +15,7 @@ use Lkrms\Support\Introspector as IS;
  * - The existence of `_set<Property>()` implies that `<Property>` is writable,
  *   regardless of {@see TWritable::getWritable()}'s return value.
  *
- * @see \Lkrms\Contract\IWritable
+ * @see IWritable
  */
 trait TWritable
 {

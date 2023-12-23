@@ -3,11 +3,12 @@
 namespace Lkrms\Sync\Exception;
 
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\SyncStore;
 
 /**
  * Thrown when an entity store's provider heartbeat check fails
  *
- * @see \Lkrms\Sync\Support\SyncStore::checkHeartbeats()
+ * @see SyncStore::checkHeartbeats()
  */
 class SyncProviderHeartbeatCheckFailedException extends SyncException
 {

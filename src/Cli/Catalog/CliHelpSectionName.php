@@ -2,6 +2,7 @@
 
 namespace Lkrms\Cli\Catalog;
 
+use Lkrms\Cli\CliCommand;
 use Lkrms\Concept\Dictionary;
 
 /**
@@ -9,7 +10,7 @@ use Lkrms\Concept\Dictionary;
  *
  * @extends Dictionary<string>
  *
- * @see \Lkrms\Cli\CliCommand::getHelpSections()
+ * @see CliCommand::getHelpSections()
  */
 final class CliHelpSectionName extends Dictionary
 {

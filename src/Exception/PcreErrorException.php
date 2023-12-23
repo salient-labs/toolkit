@@ -9,7 +9,7 @@ use Lkrms\Utility\Pcre;
  *
  * @see Pcre
  */
-class PcreErrorException extends \Lkrms\Exception\Exception
+class PcreErrorException extends Exception
 {
     protected int $PcreError;
     protected string $PcreErrorName;

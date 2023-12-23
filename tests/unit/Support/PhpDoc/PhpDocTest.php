@@ -5,8 +5,9 @@ namespace Lkrms\Tests\Support\PhpDoc;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\PhpDoc\PhpDoc;
+use Lkrms\Tests\TestCase;
 
-final class PhpDocTest extends \Lkrms\Tests\TestCase
+final class PhpDocTest extends TestCase
 {
     /**
      * @dataProvider invalidDocBlockProvider
