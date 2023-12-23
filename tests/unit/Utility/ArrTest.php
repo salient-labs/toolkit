@@ -8,6 +8,9 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use OutOfRangeException;
 
+/**
+ * @covers \Lkrms\Utility\Arr
+ */
 final class ArrTest extends TestCase
 {
     /**
@@ -77,6 +80,100 @@ final class ArrTest extends TestCase
             ]],
             [$object1, [$object1, $object2]],
             [$object2, [$object2, $object1]],
+        ];
+    }
+
+    /**
+     * @dataProvider flattenProvider
+     *
+     * @param mixed[] $expected
+     * @param iterable<mixed> $array
+     */
+    public function testFlatten(array $expected, iterable $array, int $limit = -1): void
+    {
+        $this->assertSame($expected, Arr::flatten($array, $limit));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],2?:int}>
+     */
+    public static function flattenProvider(): array
+    {
+        return [
+            [
+                [1],
+                [1],
+            ],
+            [
+                [1],
+                [[1]],
+            ],
+            [
+                [1],
+                [[[1]]],
+            ],
+            [
+                [[[1]]],
+                [[[1]]],
+                0,
+            ],
+            [
+                [[1]],
+                [[[1]]],
+                1,
+            ],
+            [
+                [1],
+                [[[1]]],
+                2,
+            ],
+            [
+                [1],
+                [[[1]]],
+                3,
+            ],
+            [
+                [[1]],
+                [[[[1]]]],
+                2,
+            ],
+            [
+                [1, 'foo', null, true],
+                [1, 'foo', [null, true]],
+            ],
+            [
+                [1, 'foo', null, true],
+                [[1, 'foo', [null, true]]],
+            ],
+            [
+                [1, 'foo', null, true],
+                [[[1, 'foo', [null, true]]]],
+            ],
+            [
+                [[[1, 'foo', [null, true]]]],
+                [[[1, 'foo', [null, true]]]],
+                0,
+            ],
+            [
+                [[1, 'foo', [null, true]]],
+                [[[1, 'foo', [null, true]]]],
+                1,
+            ],
+            [
+                [1, 'foo', [null, true]],
+                [[[1, 'foo', [null, true]]]],
+                2,
+            ],
+            [
+                [1, 'foo', null, true],
+                [[[1, 'foo', [null, true]]]],
+                3,
+            ],
+            [
+                [[1, 'foo', [null, true]]],
+                [[[[1, 'foo', [null, true]]]]],
+                2,
+            ],
         ];
     }
 
@@ -539,19 +636,19 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @dataProvider sameValuesProvider
+     * @dataProvider sameProvider
      *
      * @param mixed[] ...$arrays
      */
-    public function testSameValues(bool $expected, array ...$arrays): void
+    public function testSame(bool $expected, array ...$arrays): void
     {
-        $this->assertSame($expected, Arr::sameValues(...$arrays));
+        $this->assertSame($expected, Arr::same(...$arrays));
     }
 
     /**
      * @return array<array{bool,mixed[],...}>
      */
-    public static function sameValuesProvider(): array
+    public static function sameProvider(): array
     {
         return [
             [

@@ -3,10 +3,13 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Utility\Catalog\SortTypeFlag;
 use OutOfRangeException;
 
 /**
  * Manipulate arrays
+ *
+ * @api
  */
 final class Arr extends Utility
 {
@@ -114,7 +117,7 @@ final class Arr extends Utility
 
     /**
      * Push one or more values onto the end of an array after removing values
-     * already present in the array
+     * already present
      *
      * @template TKey of array-key
      * @template TValue
@@ -143,7 +146,7 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
      *
      * @return list<TValue>|array<TKey,TValue>
      * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
@@ -183,7 +186,7 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $flags
+     * @param int-mask-of<SortTypeFlag::*> $flags
      *
      * @return list<TValue>|array<TKey,TValue>
      * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
@@ -209,7 +212,7 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
      *
      * @return array<TKey,TValue>
      */
@@ -237,7 +240,7 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $flags
+     * @param int-mask-of<SortTypeFlag::*> $flags
      *
      * @return array<TKey,TValue>
      */
@@ -254,11 +257,11 @@ final class Arr extends Utility
      *
      * @template TValue
      *
-     * @param array<array-key,TValue> $array
+     * @param iterable<array-key,TValue> $array
      *
      * @return list<TValue>
      */
-    public static function unique(array $array): array
+    public static function unique(iterable $array): array
     {
         $unique = [];
         foreach ($array as $value) {
@@ -442,7 +445,7 @@ final class Arr extends Utility
      *
      * @param mixed[] ...$arrays
      */
-    public static function sameValues(array ...$arrays): bool
+    public static function same(array ...$arrays): bool
     {
         if (count($arrays) < 2) {
             return false;
@@ -466,11 +469,11 @@ final class Arr extends Utility
      * @template TKey of array-key
      * @template TValue
      *
-     * @param array<TKey,TValue|null> $array
+     * @param iterable<TKey,TValue|null> $array
      *
      * @return array<TKey,TValue>
      */
-    public static function whereNotNull(array $array): array
+    public static function whereNotNull(iterable $array): array
     {
         foreach ($array as $key => $value) {
             if ($value === null) {
@@ -487,11 +490,11 @@ final class Arr extends Utility
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|\Stringable|null
      *
-     * @param array<TKey,TValue> $array
+     * @param iterable<TKey,TValue> $array
      *
      * @return array<TKey,TValue>
      */
-    public static function whereNotEmpty(array $array): array
+    public static function whereNotEmpty(iterable $array): array
     {
         foreach ($array as $key => $value) {
             if ((string) $value === '') {
@@ -507,13 +510,13 @@ final class Arr extends Utility
      * removing whitespace from the beginning and end of each value and
      * optionally removing empty strings
      *
-     * @param array<int|float|string|bool|\Stringable|null> $array
+     * @param iterable<int|float|string|bool|\Stringable|null> $array
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
      */
     public static function trimAndImplode(
         string $separator,
-        array $array,
+        iterable $array,
         ?string $characters = null,
         bool $removeEmpty = true
     ): string {
@@ -534,9 +537,9 @@ final class Arr extends Utility
      * Implode values that remain in an array of strings and Stringables after
      * removing empty strings
      *
-     * @param array<int|float|string|bool|\Stringable|null> $array
+     * @param iterable<int|float|string|bool|\Stringable|null> $array
      */
-    public static function implode(string $separator, array $array): string
+    public static function implode(string $separator, iterable $array): string
     {
         foreach ($array as $value) {
             $value = (string) $value;
@@ -555,14 +558,14 @@ final class Arr extends Utility
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|\Stringable|null
      *
-     * @param array<TKey,TValue> $array
+     * @param iterable<TKey,TValue> $array
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
      *
      * @return array<TKey,string>
      */
     public static function trim(
-        array $array,
+        iterable $array,
         ?string $characters = null,
         bool $removeEmpty = true
     ): array {
@@ -585,11 +588,11 @@ final class Arr extends Utility
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|\Stringable|null
      *
-     * @param array<TKey,TValue> $array
+     * @param iterable<TKey,TValue> $array
      *
      * @return array<TKey,string>
      */
-    public static function lower(array $array): array
+    public static function lower(iterable $array): array
     {
         foreach ($array as $key => $value) {
             $lower[$key] = strtolower((string) $value);
@@ -603,11 +606,11 @@ final class Arr extends Utility
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|\Stringable|null
      *
-     * @param array<TKey,TValue> $array
+     * @param iterable<TKey,TValue> $array
      *
      * @return array<TKey,string>
      */
-    public static function upper(array $array): array
+    public static function upper(iterable $array): array
     {
         foreach ($array as $key => $value) {
             $upper[$key] = strtoupper((string) $value);
@@ -723,11 +726,11 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param callable(TValue, TKey): mixed $callback
-     * @param array<TKey,TValue> $array
+     * @param iterable<TKey,TValue> $array
      *
      * @return array<TKey,TValue>
      */
-    public static function forEach(callable $callback, array $array): array
+    public static function forEach(callable $callback, iterable $array): array
     {
         foreach ($array as $key => $value) {
             $callback($value, $key);
@@ -748,17 +751,45 @@ final class Arr extends Utility
      * @template T
      *
      * @param callable(T, TValue, TKey): T $callback
-     * @param array<TKey,TValue> $array
+     * @param iterable<TKey,TValue> $array
      * @param T $value
      *
      * @return T
      */
-    public static function with(callable $callback, array $array, $value)
+    public static function with(callable $callback, iterable $array, $value)
     {
         foreach ($array as $key => $arrayValue) {
             $value = $callback($value, $arrayValue, $key);
         }
         return $value;
+    }
+
+    /**
+     * Flatten a multi-dimensional array
+     *
+     * @param iterable<mixed> $array
+     * @param int $limit The maximum number of dimensions to flatten. Default:
+     * `-1` (no limit)
+     *
+     * @return mixed[]
+     */
+    public static function flatten(iterable $array, int $limit = -1): array
+    {
+        $flattened = [];
+        foreach ($array as $value) {
+            if (!is_iterable($value) || !$limit) {
+                $flattened[] = $value;
+                continue;
+            }
+            if ($limit - 1) {
+                $value = self::flatten($value, $limit - 1);
+            }
+            foreach ($value as $value) {
+                $flattened[] = $value;
+            }
+        }
+
+        return $flattened;
     }
 
     /**

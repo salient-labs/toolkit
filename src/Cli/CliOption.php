@@ -478,7 +478,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
                 }
                 if (
                     $this->DefaultValue && (
-                        Arr::sameValues($this->DefaultValue, $values) ||
+                        Arr::same($this->DefaultValue, $values) ||
                         in_array('ALL', $this->DefaultValue, true)
                     )
                 ) {
