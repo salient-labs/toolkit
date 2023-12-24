@@ -45,12 +45,12 @@ final class SyncEntityResolver implements ISyncEntityResolver
                     ->nextWithValue($this->NameProperty, $name);
                 break;
             } catch (SyncFilterPolicyViolationException $ex) {
-                $match = false;
+                $match = null;
                 continue;
             }
         }
 
-        if ($match === false) {
+        if ($match === null) {
             $uncertainty = null;
             return null;
         }

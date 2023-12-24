@@ -5,6 +5,7 @@ namespace Lkrms\Utility;
 use Lkrms\Concept\Utility;
 use Lkrms\Contract\Jsonable;
 use Lkrms\Utility\Catalog\SortTypeFlag;
+use ArrayAccess;
 use OutOfRangeException;
 use Stringable;
 
@@ -771,6 +772,27 @@ final class Arr extends Utility
             $array,
             array_fill(0, count($array), $value)
         );
+    }
+
+    /**
+     * Index an array by an identifier unique to each value
+     *
+     * @template TValue of ArrayAccess|array|object
+     *
+     * @param array<TValue> $array
+     * @param array-key $key
+     * @return array<TValue>
+     */
+    public static function toMap(array $array, $key): array
+    {
+        foreach ($array as $item) {
+            $map[
+                is_array($item) || $item instanceof ArrayAccess
+                    ? $item[$key]
+                    : $item->$key
+            ] = $item;
+        }
+        return $map ?? [];
     }
 
     /**

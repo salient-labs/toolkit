@@ -344,7 +344,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                         $this
                             ->getFluentIterator($closure($ctx, ...$args))
                             ->nextWithValue('Id', $id);
-                    if ($entity === false) {
+                    if ($entity === null) {
                         throw new SyncEntityNotFoundException($this->Provider, $this->Entity, $id);
                     }
                     return $entity;

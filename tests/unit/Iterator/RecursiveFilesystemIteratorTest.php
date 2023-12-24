@@ -303,7 +303,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
         $value,
         bool $strict = false
     ): void {
-        if ($expected === null) {
+        if ($expected === false) {
             $this->expectException(LogicException::class);
         }
 
@@ -335,32 +335,32 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                 true,
             ],
             [
-                false,
+                null,
                 $dir,
                 'isLink',
                 true,
                 true,
             ],
             [
-                null,
+                false,
                 $dir,
                 'isDirectory',
                 true,
             ],
             [
-                null,
+                false,
                 $dir,
                 'fileInfo',
                 true,
             ],
             [
-                null,
+                false,
                 $dir,
                 'pathInfo',
                 true,
             ],
             [
-                null,
+                false,
                 $dir,
                 'openFile',
                 true,

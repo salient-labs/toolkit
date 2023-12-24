@@ -3,6 +3,7 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Contract\Arrayable;
 use ReflectionClass;
 
 /**
@@ -10,6 +11,26 @@ use ReflectionClass;
  */
 final class Get extends Utility
 {
+    /**
+     * Resolve a value to an array
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $value
+     * @return array<TKey,TValue>
+     */
+    public static function array($value, bool $preserveKeys = false): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        if ($value instanceof Arrayable) {
+            return $value->toArray();
+        }
+        return iterator_to_array($value, $preserveKeys);
+    }
+
     /**
      * Get the unqualified name of a class, optionally removing a suffix
      *

@@ -368,52 +368,6 @@ final class ConvertTest extends TestCase
         ];
     }
 
-    public function testIterableToItem(): void
-    {
-        $data = [
-            [
-                'id' => 10,
-                'name' => 'A',
-            ],
-            [
-                'id' => 27,
-                'name' => 'B',
-            ],
-            [
-                'id' => 8,
-                'name' => 'C',
-            ],
-            [
-                'id' => 8,
-                'name' => 'D',
-            ],
-            [
-                'id' => 72,
-                'name' => 'E',
-            ],
-            [
-                'id' => 21,
-                'name' => 'F',
-            ],
-        ];
-
-        $iteratorFactory = function () use ($data) {
-            foreach ($data as $record) {
-                yield $record;
-            }
-        };
-
-        $iterator = $iteratorFactory();
-        $this->assertSame(['id' => 27, 'name' => 'B'], Convert::iterableToItem($iterator, 'id', 27));
-        $this->assertSame(['id' => 8, 'name' => 'C'], Convert::iterableToItem($iterator, 'id', 8));
-        $this->assertSame(['id' => 8, 'name' => 'D'], Convert::iterableToItem($iterator, 'id', 8));
-        $this->assertSame(['id' => 21, 'name' => 'F'], Convert::iterableToItem($iterator, 'id', 21));
-        $this->assertSame(false, Convert::iterableToItem($iterator, 'id', 8));
-
-        $iterator = $iteratorFactory();
-        $this->assertSame(['id' => 10, 'name' => 'A'], Convert::iterableToItem($iterator, 'id', 10));
-    }
-
     public function testQueryToData(): void
     {
         $this->assertSame([
