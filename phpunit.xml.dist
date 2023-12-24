@@ -6,7 +6,15 @@
     <testsuite name="unit">
       <directory>tests/unit</directory>
     </testsuite>
+    <testsuite name="3rdparty">
+      <directory>tests/3rdparty</directory>
+    </testsuite>
   </testsuites>
+  <groups>
+    <exclude>
+      <group>internet</group>
+    </exclude>
+  </groups>
   <coverage
       cacheDirectory="build/cache/coverage"
       pathCoverage="false">
@@ -17,4 +25,24 @@
       <html outputDirectory="build/coverage" />
     </report>
   </coverage>
+  <php>
+    <const
+        name="REQUEST_FACTORY"
+        value="Lkrms\Http\HttpFactory" />
+    <const
+        name="RESPONSE_FACTORY"
+        value="Lkrms\Http\HttpFactory" />
+    <const
+        name="SERVER_REQUEST_FACTORY"
+        value="Lkrms\Http\HttpFactory" />
+    <const
+        name="STREAM_FACTORY"
+        value="Lkrms\Http\HttpFactory" />
+    <const
+        name="UPLOADED_FILE_FACTORY"
+        value="Lkrms\Http\HttpFactory" />
+    <const
+        name="URI_FACTORY"
+        value="Lkrms\Http\HttpFactory" />
+  </php>
 </phpunit>

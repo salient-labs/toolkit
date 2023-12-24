@@ -152,10 +152,10 @@ final class HttpRequestTest extends TestCase
     public function testMethodCaseSensitivity(): void
     {
         $r = new HttpRequest('/', 'post');
-        $this->assertSame('POST', $r->getMethod());
+        $this->assertSame('post', $r->getMethod());
 
         $r = new HttpRequest('/');
-        $this->assertSame('PUT', $r->withMethod('put')->getMethod());
+        $this->assertSame('put', $r->withMethod('put')->getMethod());
     }
 
     public function testWithUri(): void

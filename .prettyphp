@@ -5,9 +5,13 @@
         "scripts",
         "src",
         "stubs",
+        "tests/3rdparty",
         "tests/fixtures",
+        "tests/legacy",
         "tests/unit",
+        "tests/phpstan-conditional.php",
         "tools/apigen",
+        ".php-cs-fixer.dist.php",
         "bootstrap.php"
     ],
     "enable": [

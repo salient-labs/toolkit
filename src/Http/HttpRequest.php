@@ -148,8 +148,7 @@ class HttpRequest extends HttpMessage implements RequestInterface
 
     private function filterMethod(string $method): string
     {
-        $method = Str::upper($method);
-        if (!HttpRequestMethod::hasValue($method)) {
+        if (!HttpRequestMethod::hasValue(Str::upper($method))) {
             throw new InvalidArgumentException(
                 sprintf('Invalid HTTP method: %s', $method)
             );
@@ -213,8 +212,8 @@ class HttpRequest extends HttpMessage implements RequestInterface
     {
         // `UriInterface` makes no distinction between empty and undefined URI
         // components, but `/path?` and `/path` are not necessarily equivalent,
-        // so URIs are always converted to instances of `Uri`, which surfaces
-        // empty and undefined queries as `""` and `null` respectively
-        return Uri::from($uri);
+        // so URIs are always converted to instances of `Lkrms\Http\Uri`, which
+        // surfaces empty and undefined queries as `""` and `null` respectively
+        return Uri::from($uri)->normalise();
     }
 }
