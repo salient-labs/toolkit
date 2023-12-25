@@ -10,6 +10,7 @@ use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 
 /**
  * Sends HTTP requests to HTTP sync providers
@@ -147,7 +148,7 @@ final class SendHttpRequest extends Command
 
         if ($this->Paginate) {
             /** @var iterable<array-key,mixed> $result */
-            $array = Convert::iterableToArray($result);
+            $array = Get::array($result);
             $result = $array;
         }
 

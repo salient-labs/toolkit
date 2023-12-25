@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Utility;
 
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Get;
+use stdClass;
 
 final class GetTest extends TestCase
 {
@@ -131,7 +132,7 @@ final class GetTest extends TestCase
             ['array', []],
             ['array', ['foo', 'bar']],
             ['resource (closed)', $f],
-            [\stdClass::class, new \stdClass()],
+            [stdClass::class, new stdClass()],
             ['class@anonymous', new class {}],
         ];
     }

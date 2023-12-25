@@ -90,7 +90,9 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
         foreach ($items as $key => $value) {
             $values = (array) $value;
             if (!$values) {
-                continue;
+                throw new InvalidArgumentException(
+                    sprintf('At least one value must be given for HTTP header: %s', $key)
+                );
             }
             $lower = strtolower($key);
             $key = $this->filterName($key);
@@ -171,7 +173,9 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
     {
         $values = (array) $value;
         if (!$values) {
-            return $this;
+            throw new InvalidArgumentException(
+                sprintf('At least one value must be given for HTTP header: %s', $key)
+            );
         }
         $lower = strtolower($key);
         $headers = $this->Headers;
@@ -189,10 +193,15 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
      */
     public function set($key, $value)
     {
+        $values = (array) $value;
+        if (!$values) {
+            throw new InvalidArgumentException(
+                sprintf('At least one value must be given for HTTP header: %s', $key)
+            );
+        }
         $lower = strtolower($key);
         $headers = $this->Headers;
         $index = $this->Index;
-        $values = (array) $value;
         if (isset($index[$lower])) {
             // Return `$this` if existing values are being reapplied
             if (count($index[$lower]) === count($values)) {
@@ -255,8 +264,13 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
         $index = $this->Index;
         $applied = false;
         foreach ($items as $key => $value) {
-            $lower = strtolower($key);
             $values = (array) $value;
+            if (!$values) {
+                throw new InvalidArgumentException(
+                    sprintf('At least one value must be given for HTTP header: %s', $key)
+                );
+            }
+            $lower = strtolower($key);
             if (
                 !$preserveExisting &&
                 // Checking against $this->Index instead of $index means any
@@ -267,10 +281,6 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
                 $unset[$lower] = true;
                 foreach ($index[$lower] as $i) {
                     unset($headers[$i]);
-                }
-                if (!$values) {
-                    unset($index[$lower]);
-                    continue;
                 }
                 // Maintain the order of $index for comparison
                 $index[$lower] = [];

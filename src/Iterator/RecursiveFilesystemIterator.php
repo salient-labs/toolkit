@@ -479,7 +479,7 @@ class RecursiveFilesystemIterator implements
             }
         }
 
-        return false;
+        return null;
     }
 
     private function getPath(string $path, FilesystemIterator $iterator): string

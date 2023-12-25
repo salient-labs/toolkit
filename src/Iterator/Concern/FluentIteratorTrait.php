@@ -3,6 +3,7 @@
 namespace Lkrms\Iterator\Concern;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
+use ArrayAccess;
 
 /**
  * Implements FluentIteratorInterface
@@ -32,54 +33,42 @@ trait FluentIteratorTrait
     }
 
     /**
-     * @param callable(TValue): mixed $callback
+     * @param callable(TValue, TKey): mixed $callback
      * @return $this
      */
     public function forEach(callable $callback)
     {
-        foreach ($this as $current) {
-            $callback($current);
+        foreach ($this as $key => $value) {
+            $callback($value, $key);
         }
-        return $this;
-    }
-
-    /**
-     * @param callable(TValue): (true|mixed) $callback
-     * @return $this
-     */
-    public function forEachWhile(callable $callback, ?bool &$result = null)
-    {
-        foreach ($this as $current) {
-            if ($callback($current) !== true) {
-                $result = false;
-                return $this;
-            }
-        }
-        $result = true;
         return $this;
     }
 
     /**
      * @param array-key $key
      * @param mixed $value
-     * @return TValue|false
+     * @return TValue|null
      */
     public function nextWithValue($key, $value, bool $strict = false)
     {
         foreach ($this as $current) {
-            if (is_array($current) || $current instanceof \ArrayAccess) {
+            // Move forward-only iterators to the next element
+            if (isset($found)) {
+                break;
+            }
+            if (is_array($current) || $current instanceof ArrayAccess) {
                 $_value = $current[$key];
             } else {
                 $_value = $current->$key;
             }
             if ($strict) {
                 if ($_value === $value) {
-                    return $current;
+                    $found = $current;
                 }
             } elseif ($_value == $value) {
-                return $current;
+                $found = $current;
             }
         }
-        return false;
+        return $found ?? null;
     }
 }

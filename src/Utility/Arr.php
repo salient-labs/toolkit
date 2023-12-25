@@ -5,6 +5,7 @@ namespace Lkrms\Utility;
 use Lkrms\Concept\Utility;
 use Lkrms\Contract\Jsonable;
 use Lkrms\Utility\Catalog\SortTypeFlag;
+use ArrayAccess;
 use OutOfRangeException;
 use Stringable;
 
@@ -196,7 +197,7 @@ final class Arr extends Utility
         bool $preserveKeys = false,
         int $flags = \SORT_REGULAR
     ): array {
-        if (!$preserveKeys) {
+        if ($preserveKeys) {
             arsort($array, $flags);
             return $array;
         }
@@ -559,8 +560,8 @@ final class Arr extends Utility
     }
 
     /**
-     * Remove whitespace from the beginning and end of each value in an array
-     * of strings and Stringables before optionally removing empty strings
+     * Remove whitespace from the beginning and end of each value in an array of
+     * strings and Stringables before optionally removing empty strings
      *
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|Stringable|null
@@ -569,7 +570,7 @@ final class Arr extends Utility
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
      *
-     * @return array<TKey,string>
+     * @return ($removeEmpty is false ? array<TKey,string> : list<string>)
      */
     public static function trim(
         iterable $array,
@@ -581,7 +582,10 @@ final class Arr extends Utility
                 $characters === null
                     ? trim((string) $value)
                     : trim((string) $value, $characters);
-            if ($removeEmpty && $value === '') {
+            if ($removeEmpty) {
+                if ($value !== '') {
+                    $trimmed[] = $value;
+                }
                 continue;
             }
             $trimmed[$key] = $value;
@@ -640,7 +644,7 @@ final class Arr extends Utility
     public static function toScalars(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            if (!is_scalar($value)) {
+            if ($value !== null && !is_scalar($value)) {
                 if (Test::isStringable($value)) {
                     $value = (string) $value;
                 } elseif ($value instanceof Jsonable) {
@@ -771,6 +775,27 @@ final class Arr extends Utility
             $array,
             array_fill(0, count($array), $value)
         );
+    }
+
+    /**
+     * Index an array by an identifier unique to each value
+     *
+     * @template TValue of ArrayAccess|array|object
+     *
+     * @param array<TValue> $array
+     * @param array-key $key
+     * @return array<TValue>
+     */
+    public static function toMap(array $array, $key): array
+    {
+        foreach ($array as $item) {
+            $map[
+                is_array($item) || $item instanceof ArrayAccess
+                    ? $item[$key]
+                    : $item->$key
+            ] = $item;
+        }
+        return $map ?? [];
     }
 
     /**

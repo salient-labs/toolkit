@@ -7,15 +7,10 @@ use Lkrms\Contract\IDateFormatter;
 use Lkrms\Http\Uri;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
-use ArrayAccess;
-use ArrayIterator;
-use Closure;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use Iterator;
-use IteratorIterator;
 use LogicException;
 use Stringable;
 
@@ -275,38 +270,16 @@ final class Convert extends Utility
     }
 
     /**
-     * If an iterable isn't already an array, make it one
-     *
      * @template TKey of array-key
      * @template TValue
-     *
      * @param iterable<TKey,TValue> $iterable
      * @return array<TKey,TValue>
+     * @deprecated Use {@see Get::array()} instead
+     * @codeCoverageIgnore
      */
     public static function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
     {
-        return is_array($iterable) ? $iterable : iterator_to_array($iterable, $preserveKeys);
-    }
-
-    /**
-     * If an iterable isn't already an Iterator, enclose it in one
-     *
-     * @template TKey of array-key
-     * @template TValue
-     *
-     * @param iterable<TKey,TValue> $iterable
-     * @return Iterator<TKey,TValue>
-     */
-    public static function iterableToIterator(iterable $iterable): Iterator
-    {
-        if ($iterable instanceof Iterator) {
-            return $iterable;
-        }
-        if (is_array($iterable)) {
-            return new ArrayIterator($iterable);
-        }
-
-        return new IteratorIterator($iterable);
+        return Get::array($iterable, $preserveKeys);
     }
 
     /**
@@ -385,123 +358,16 @@ final class Convert extends Utility
     }
 
     /**
-     * Create a map from a list
-     *
-     * For example, to map from each array's `id` to the array itself:
-     *
-     * ```php
-     * $list = [
-     *     ['id' => 32, 'name' => 'Greta'],
-     *     ['id' => 71, 'name' => 'Terry'],
-     * ];
-     *
-     * $map = Convert::listToMap($list, 'id');
-     *
-     * print_r($map);
-     * ```
-     *
-     * ```
-     * Array
-     * (
-     *     [32] => Array
-     *         (
-     *             [id] => 32
-     *             [name] => Greta
-     *         )
-     *
-     *     [71] => Array
-     *         (
-     *             [id] => 71
-     *             [name] => Terry
-     *         )
-     *
-     * )
-     * ```
-     *
      * @template T of mixed[]|object
-     *
      * @param array<T> $list
-     * @param int|string|(Closure(T): (int|string)) $key Either the index or
-     * property name to use when retrieving keys from arrays or objects in
-     * `$list`, or a closure that returns a key for each item in `$list`.
+     * @param int|string $key
      * @return array<T>
+     * @deprecated Use {@see Arr::toMap()} instead
+     * @codeCoverageIgnore
      */
     public static function listToMap(array $list, $key): array
     {
-        return array_combine(
-            array_map(self::_keyToClosure($key), $list),
-            $list
-        );
-    }
-
-    /**
-     * Get the first item in $list where the value at $key is $value
-     *
-     * @template T0 of mixed[]|object
-     * @template T1
-     *
-     * @param iterable<array-key,T0> $list
-     * @param int|string|(Closure(T0): T1) $key Either the index or property
-     * name to use when retrieving values from arrays or objects in `$list`, or
-     * a closure that returns a value for each item in `$list`.
-     * @param T1 $value
-     * @return T0|false `false` if no item was found in `$list` with `$value` at
-     * `$key`.
-     */
-    public static function iterableToItem(iterable $list, $key, $value, bool $strict = false)
-    {
-        $list = self::iterableToIterator($list);
-        $closure = self::_keyToClosure($key);
-
-        while ($list->valid()) {
-            $item = $list->current();
-            $list->next();
-            if (($strict && ($closure($item) === $value)) ||
-                    (!$strict && ($closure($item) == $value))) {
-                return $item;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param int|string|Closure $key
-     */
-    private static function _keyToClosure($key): Closure
-    {
-        return $key instanceof Closure
-            ? $key
-            : fn($item) => self::valueAtKey($item, $key);
-    }
-
-    /**
-     * Get the value at $key in $item, where $item is an array or object
-     *
-     * @param mixed[]|ArrayAccess|object $item
-     * @param int|string $key
-     * @return mixed
-     */
-    public static function valueAtKey($item, $key)
-    {
-        return is_array($item) || $item instanceof ArrayAccess
-            ? $item[$key]
-            : $item->$key;
-    }
-
-    /**
-     * Convert a scalar to a string
-     *
-     * @param mixed $value
-     * @return string|false Returns `false` if `$value` is not a scalar
-     */
-    public static function scalarToString($value)
-    {
-        if (is_scalar($value)) {
-            return (string) $value;
-        } else {
-            return false;
-        }
+        return Arr::toMap($list, $key);
     }
 
     /**

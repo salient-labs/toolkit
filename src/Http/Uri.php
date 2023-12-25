@@ -443,6 +443,11 @@ class Uri implements JsonSerializable, Stringable, UriInterface
      */
     public function removeDotSegments(): self
     {
+        // Relative references can only be resolved relative to an absolute URI
+        if ($this->isReference()) {
+            return $this;
+        }
+
         return $this->withPath(File::resolve($this->Path, true));
     }
 

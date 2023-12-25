@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Concern;
 
 use Lkrms\Tests\Concern\Immutable\MyImmutableClass;
 use Lkrms\Tests\TestCase;
+use stdClass;
 
 final class ImmutableTest extends TestCase
 {
@@ -44,7 +45,7 @@ final class ImmutableTest extends TestCase
             ->with('A', 1)  // Changes to $f should be no-ops
             ->with('Obj', $obj);
 
-        $g = $f->with('Coll', $f->Coll->set('g', new \stdClass()));
+        $g = $f->with('Coll', $f->Coll->set('g', new stdClass()));
 
         $this->assertNotSame($a, $b);
         $this->assertNotEquals($a, $b);
@@ -85,7 +86,7 @@ final class ImmutableTest extends TestCase
         ];
         $A->Obj->A = 'aa';
         $A->Obj->B = 'bb';
-        $A->Coll = $A->Coll->set('g', new \stdClass());
+        $A->Coll = $A->Coll->set('g', new stdClass());
 
         $this->assertEquals($A, $g);
     }

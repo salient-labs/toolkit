@@ -17,41 +17,27 @@ use Traversable;
 interface FluentIteratorInterface extends Arrayable, Traversable
 {
     /**
-     * Copy the elements of the iterator to an array
+     * Copy the iterator's elements to an array
      *
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public function toArray(bool $preserveKeys = true): array;
 
     /**
-     * Apply a callback to the elements of the iterator
+     * Apply a callback to the iterator's elements
      *
-     * @param callable(TValue): mixed $callback
+     * @param callable(TValue, TKey): mixed $callback
      * @return $this
      */
     public function forEach(callable $callback);
 
     /**
-     * Apply a callback to the elements of the iterator until cancelled by the
-     * callback
-     *
-     * @param callable(TValue): (true|mixed) $callback Return `true` to continue
-     * iterating over the iterator.
-     * @param bool|null $result If `$result` is provided, `false` is assigned if
-     * iteration is cancelled by the callback, otherwise `true` is assigned.
-     * @return $this
-     */
-    public function forEachWhile(callable $callback, ?bool &$result = null);
-
-    /**
-     * Get the next element with a key or property that matches a value
-     *
-     * If the current element has `$value` at `$key`, it is returned after
-     * moving the iterator forward.
+     * Get the value of the iterator's first element with a key or property
+     * equal to a given value
      *
      * @param array-key $key
      * @param mixed $value
-     * @return TValue|false `false` if no matching element is found.
+     * @return TValue|null `null` if no matching element is found.
      */
     public function nextWithValue($key, $value, bool $strict = false);
 }
