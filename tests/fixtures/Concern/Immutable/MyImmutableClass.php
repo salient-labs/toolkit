@@ -57,7 +57,7 @@ class MyImmutableClass
 
     public function __construct()
     {
-        $this->Obj = new \stdClass();
+        $this->Obj = new stdClass();
         $this->Coll = new ImmutableCollection();
     }
 

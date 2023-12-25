@@ -3,10 +3,12 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Tests\TestCase;
+use Lkrms\Utility\Catalog\SortTypeFlag;
 use Lkrms\Utility\Arr;
 use DateTimeImmutable;
 use DateTimeInterface;
 use OutOfRangeException;
+use stdClass;
 use Stringable;
 
 /**
@@ -14,6 +16,15 @@ use Stringable;
  */
 final class ArrTest extends TestCase
 {
+    private const SORT_DATA = [
+        'fubar',
+        'foo' => 'foobar',
+        'bar' => 'baz',
+        'qux' => 'quux',
+        83,
+        71,
+    ];
+
     /**
      * @dataProvider extendProvider
      *
@@ -65,8 +76,8 @@ final class ArrTest extends TestCase
      */
     public static function firstProvider(): array
     {
-        $object1 = new \stdClass();
-        $object2 = new \stdClass();
+        $object1 = new stdClass();
+        $object2 = new stdClass();
         return [
             [null, []],
             [null, [null]],
@@ -246,6 +257,34 @@ final class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider isListProvider
+     *
+     * @param mixed $value
+     */
+    public function testIsList(bool $expected, $value, bool $allowEmpty = false): void
+    {
+        $this->assertSame($expected, Arr::isList($value, $allowEmpty));
+    }
+
+    /**
+     * @return array<array{bool,mixed,2?:bool}>
+     */
+    public static function isListProvider(): array
+    {
+        return [
+            [false, null],
+            [false, []],
+            [true, [], true],
+            [true, ['a', 'b', 'c']],
+            [false, [1 => 'a', 2 => 'b', 3 => 'c']],
+            [false, ['a', 'b', 5 => 'c']],
+            [false, ['a', 3 => 'b', 2 => 'c']],
+            [false, ['a' => 'alpha', 2 => 'b', 3 => 'c']],
+            [false, ['a' => 'alpha', 'b' => 'bravo', 'c' => 'charlie']],
+        ];
+    }
+
+    /**
      * @dataProvider keyOffsetProvider
      *
      * @param int|string $expected
@@ -282,34 +321,6 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @dataProvider isListProvider
-     *
-     * @param mixed $value
-     */
-    public function testIsList(bool $expected, $value, bool $allowEmpty = false): void
-    {
-        $this->assertSame($expected, Arr::isList($value, $allowEmpty));
-    }
-
-    /**
-     * @return array<array{bool,mixed,2?:bool}>
-     */
-    public static function isListProvider(): array
-    {
-        return [
-            [false, null],
-            [false, []],
-            [true, [], true],
-            [true, ['a', 'b', 'c']],
-            [false, [1 => 'a', 2 => 'b', 3 => 'c']],
-            [false, ['a', 'b', 5 => 'c']],
-            [false, ['a', 3 => 'b', 2 => 'c']],
-            [false, ['a' => 'alpha', 2 => 'b', 3 => 'c']],
-            [false, ['a' => 'alpha', 'b' => 'bravo', 'c' => 'charlie']],
-        ];
-    }
-
-    /**
      * @dataProvider lastProvider
      *
      * @param mixed $expected
@@ -325,8 +336,8 @@ final class ArrTest extends TestCase
      */
     public static function lastProvider(): array
     {
-        $object1 = new \stdClass();
-        $object2 = new \stdClass();
+        $object1 = new stdClass();
+        $object2 = new stdClass();
         return [
             [null, []],
             [null, [null]],
@@ -341,6 +352,42 @@ final class ArrTest extends TestCase
             ]],
             [$object2, [$object1, $object2]],
             [$object1, [$object2, $object1]],
+        ];
+    }
+
+    /**
+     * @dataProvider listWrapProvider
+     *
+     * @param mixed[] $expected
+     * @param mixed $value
+     */
+    public function testListWrap(array $expected, $value): void
+    {
+        $this->assertSame($expected, Arr::listWrap($value));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed}>
+     */
+    public static function listWrapProvider(): array
+    {
+        return [
+            [[], null],
+            [[0], 0],
+            [[0], [0]],
+            [[1], 1],
+            [[1], [1]],
+            [[false], false],
+            [[false], [false]],
+            [[true], true],
+            [[true], [true]],
+            [[''], ''],
+            [[''], ['']],
+            [['a'], 'a'],
+            [['a'], ['a']],
+            [['a', 'b'], ['a', 'b']],
+            [[[7 => 'a', 1 => 'b']], [7 => 'a', 1 => 'b']],
+            [[['a' => 'a', 'b' => 'b']], ['a' => 'a', 'b' => 'b']],
         ];
     }
 
@@ -796,6 +843,144 @@ final class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider sortProvider
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param mixed[] $expected
+     * @param array<TKey,TValue> $array
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
+     */
+    public function testSort(array $expected, array $array, bool $preserveKeys = false, $callbackOrFlags = \SORT_REGULAR): void
+    {
+        $this->assertSame($expected, Arr::sort($array, $preserveKeys, $callbackOrFlags));
+        if (!is_callable($callbackOrFlags)) {
+            $this->assertSame(array_reverse($expected, $preserveKeys), Arr::sortDesc($array, $preserveKeys, $callbackOrFlags));
+        }
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],2?:bool,3?:callable|int}>
+     */
+    public static function sortProvider(): array
+    {
+        return [
+            [
+                [
+                    71,
+                    83,
+                    'baz',
+                    'foobar',
+                    'fubar',
+                    'quux',
+                ],
+                self::SORT_DATA,
+                false,
+                SORT_STRING,
+            ],
+            [
+                [
+                    2 => 71,
+                    1 => 83,
+                    'bar' => 'baz',
+                    'foo' => 'foobar',
+                    0 => 'fubar',
+                    'qux' => 'quux',
+                ],
+                self::SORT_DATA,
+                true,
+                SORT_STRING,
+            ],
+            [
+                [
+                    'foobar',
+                    'fubar',
+                    'quux',
+                    'baz',
+                    71,
+                    83,
+                ],
+                self::SORT_DATA,
+                false,
+                fn($a, $b) =>
+                    strlen((string) $b) <=> strlen((string) $a)
+                        ?: (string) $a <=> (string) $b,
+            ],
+            [
+                [
+                    'foo' => 'foobar',
+                    0 => 'fubar',
+                    'qux' => 'quux',
+                    'bar' => 'baz',
+                    2 => 71,
+                    1 => 83,
+                ],
+                self::SORT_DATA,
+                true,
+                fn($a, $b) =>
+                    strlen((string) $b) <=> strlen((string) $a)
+                        ?: (string) $a <=> (string) $b,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider sortByKeyProvider
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param mixed[] $expected
+     * @param array<TKey,TValue> $array
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
+     */
+    public function testSortByKey(array $expected, array $array, $callbackOrFlags = \SORT_REGULAR): void
+    {
+        $this->assertSame($expected, Arr::sortByKey($array, $callbackOrFlags));
+        if (!is_callable($callbackOrFlags)) {
+            $this->assertSame(array_reverse($expected, true), Arr::sortByKeyDesc($array, $callbackOrFlags));
+        }
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],2?:callable|int}>
+     */
+    public static function sortByKeyProvider(): array
+    {
+        $data = array_flip(self::SORT_DATA);
+
+        return [
+            [
+                [
+                    71 => 2,
+                    83 => 1,
+                    'baz' => 'bar',
+                    'foobar' => 'foo',
+                    'fubar' => 0,
+                    'quux' => 'qux',
+                ],
+                $data,
+                SORT_STRING,
+            ],
+            [
+                [
+                    'foobar' => 'foo',
+                    'fubar' => 0,
+                    'quux' => 'qux',
+                    'baz' => 'bar',
+                    71 => 2,
+                    83 => 1,
+                ],
+                $data,
+                fn($a, $b) =>
+                    strlen((string) $b) <=> strlen((string) $a)
+                        ?: (string) $a <=> (string) $b,
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider spliceProvider
      *
      * @param mixed[]|string $expected
@@ -1096,6 +1281,238 @@ final class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider toMapProvider
+     *
+     * @template TValue of ArrayAccess|array|object
+     *
+     * @param array<TValue> $expected
+     * @param array<TValue> $array
+     * @param array-key $key
+     */
+    public function testToMap(array $expected, array $array, $key): void
+    {
+        $this->assertSame($expected, Arr::toMap($array, $key));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],array-key}>
+     */
+    public static function toMapProvider(): array
+    {
+        $arrays = [
+            ['id' => 32, 'name' => 'Greta'],
+            ['id' => 71, 'name' => 'Terry'],
+            ['id' => 83, 'name' => 'Terry'],
+        ];
+
+        $a = new stdClass();
+        $a->id = 32;
+        $a->name = 'Greta';
+
+        $b = new stdClass();
+        $b->id = 71;
+        $b->name = 'Terry';
+
+        $c = new stdClass();
+        $c->id = 83;
+        $c->name = 'Terry';
+
+        $objects = [$a, $b, $c];
+
+        return [
+            'arrays' => [
+                [
+                    32 => ['id' => 32, 'name' => 'Greta'],
+                    71 => ['id' => 71, 'name' => 'Terry'],
+                    83 => ['id' => 83, 'name' => 'Terry'],
+                ],
+                $arrays,
+                'id',
+            ],
+            'arrays + duplicated key' => [
+                [
+                    'Greta' => ['id' => 32, 'name' => 'Greta'],
+                    'Terry' => ['id' => 83, 'name' => 'Terry'],
+                ],
+                $arrays,
+                'name',
+            ],
+            'objects' => [
+                [
+                    32 => $a,
+                    71 => $b,
+                    83 => $c,
+                ],
+                $objects,
+                'id',
+            ],
+            'objects + duplicated key' => [
+                [
+                    'Greta' => $a,
+                    'Terry' => $c,
+                ],
+                $objects,
+                'name',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider toScalarsProvider
+     *
+     * @template TKey of array-key
+     * @template TValue int|float|string|bool|null
+     *
+     * @param array<TKey,TValue> $expected
+     * @param iterable<TKey,TValue|mixed[]|object> $array
+     */
+    public function testToScalars(array $expected, iterable $array): void
+    {
+        $this->assertSame($expected, Arr::toScalars($array));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[]}>
+     */
+    public static function toScalarsProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}'],
+                [null, 0, 3.14, true, false, '', 'a', [1, 2, 3], ['foo' => 'bar']],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider trimProvider
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|Stringable|null
+     *
+     * @param array<TKey,string>|list<string> $expected
+     * @param iterable<TKey,TValue> $array
+     */
+    public function testTrim(array $expected, iterable $array, ?string $characters = null, bool $removeEmpty = true): void
+    {
+        $this->assertSame($expected, Arr::trim($array, $characters, $removeEmpty));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],2?:string|null,3?:bool}>
+     */
+    public static function trimProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [],
+                [''],
+            ],
+            [
+                [],
+                [' '],
+            ],
+            [
+                [],
+                [' ', "\t"],
+            ],
+            [
+                ['', ''],
+                [' ', "\t"],
+                null,
+                false,
+            ],
+            [
+                ['0', '1', '1', 'a', 'b', 'c'],
+                [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c'],
+            ],
+            [
+                ['0', '1', '1', ' ', 'a', 'b', 'c'],
+                [null, 0, 1, true, false, ' ', '/', 'a' => 'a/', 'b' => '/b/', 'c' => '/c'],
+                '/',
+            ],
+            [
+                ['', '0', '1', '1', '', '', 'a' => 'a', 'b' => 'b', 'c' => 'c'],
+                [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c'],
+                null,
+                false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider trimAndImplodeProvider
+     *
+     * @param iterable<mixed> $array
+     */
+    public function testTrimAndImplode(string $expected, string $separator, iterable $array, ?string $characters = null, bool $removeEmpty = true): void
+    {
+        $this->assertSame($expected, Arr::trimAndImplode($separator, $array, $characters, $removeEmpty));
+    }
+
+    /**
+     * @return array<array{string,string,mixed[],3?:string|null,4?:bool}>
+     */
+    public static function trimAndImplodeProvider(): array
+    {
+        return [
+            [
+                '',
+                ',',
+                [],
+            ],
+            [
+                '',
+                ',',
+                [''],
+            ],
+            [
+                '',
+                ',',
+                [' '],
+            ],
+            [
+                '',
+                ',',
+                [' ', "\t"],
+            ],
+            [
+                ',',
+                ',',
+                [' ', "\t"],
+                null,
+                false,
+            ],
+            [
+                '0,1,1,a,b,c',
+                ',',
+                [null, 0, 1, true, false, ' ', 'a ', ' b ', ' c'],
+            ],
+            [
+                '0,1,1, ,a,b,c',
+                ',',
+                [null, 0, 1, true, false, ' ', '/', 'a/', '/b/', '/c'],
+                '/',
+            ],
+            [
+                ',0,1,1,,,a,b,c',
+                ',',
+                [null, 0, 1, true, false, ' ', 'a ', ' b ', ' c'],
+                null,
+                false,
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider uniqueProvider
      *
      * @template TKey of array-key
@@ -1114,8 +1531,8 @@ final class ArrTest extends TestCase
      */
     public static function uniqueProvider(): array
     {
-        $a = new \stdClass();
-        $b = new \stdClass();
+        $a = new stdClass();
+        $b = new stdClass();
 
         return [
             [
@@ -1324,6 +1741,158 @@ final class ArrTest extends TestCase
                     },
                 ],
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider whereNotEmptyProvider
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|Stringable|null
+     *
+     * @param array<TKey,TValue> $expected
+     * @param iterable<TKey,TValue> $array
+     */
+    public function testWhereNotEmpty(array $expected, iterable $array): void
+    {
+        $this->assertSame($expected, Arr::whereNotEmpty($array));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[]}>
+     */
+    public static function whereNotEmptyProvider(): array
+    {
+        $a = new class { public function __toString(): string { return 'a'; } };
+        $b = new class { public function __toString(): string { return ''; } };
+
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [],
+                [null, '', false, $b],
+            ],
+            [
+                [3 => 0, 4 => 'a', 5 => $a],
+                [null, '', false, 0, 'a', $a, $b],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider whereNotNullProvider
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $expected
+     * @param iterable<TKey,TValue|null> $array
+     */
+    public function testWhereNotNull(array $expected, iterable $array): void
+    {
+        $this->assertSame($expected, Arr::whereNotNull($array));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[]}>
+     */
+    public static function whereNotNullProvider(): array
+    {
+        $a = new stdClass();
+
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [],
+                [null],
+            ],
+            [
+                [1 => '', 2 => false, 3 => 0, 4 => 'a', 5 => $a],
+                [null, '', false, 0, 'a', $a],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider withProvider
+     *
+     * @param mixed $expected
+     * @param iterable<mixed> $array
+     * @param mixed $value
+     */
+    public function testWith($expected, callable $callback, iterable $array, $value): void
+    {
+        $this->assertSame($expected, Arr::with($callback, $array, $value));
+    }
+
+    /**
+     * @return array<array{mixed,callable,iterable<mixed>,mixed}>
+     */
+    public static function withProvider(): array
+    {
+        $a = [1, 2, 3, 4, 5];
+
+        return [
+            [
+                15,
+                fn($carry, $value) => $carry += $value,
+                $a,
+                0,
+            ],
+            [
+                1200,
+                fn($carry, $value) => $carry *= $value,
+                $a,
+                10,
+            ],
+            [
+                null,
+                fn($carry, $value) => $carry += $value,
+                [],
+                null,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider wrapProvider
+     *
+     * @param mixed[] $expected
+     * @param mixed $value
+     */
+    public function testWrap(array $expected, $value): void
+    {
+        $this->assertSame($expected, Arr::wrap($value));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed}>
+     */
+    public static function wrapProvider(): array
+    {
+        return [
+            [[], null],
+            [[0], 0],
+            [[0], [0]],
+            [[1], 1],
+            [[1], [1]],
+            [[false], false],
+            [[false], [false]],
+            [[true], true],
+            [[true], [true]],
+            [[''], ''],
+            [[''], ['']],
+            [['a'], 'a'],
+            [['a'], ['a']],
+            [['a', 'b'], ['a', 'b']],
+            [[7 => 'a', 1 => 'b'], [7 => 'a', 1 => 'b']],
+            [['a' => 'a', 'b' => 'b'], ['a' => 'a', 'b' => 'b']],
         ];
     }
 }
