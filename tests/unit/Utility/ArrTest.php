@@ -2,9 +2,11 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Contract\Jsonable;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Catalog\SortTypeFlag;
 use Lkrms\Utility\Arr;
+use Lkrms\Utility\Json;
 use DateTimeImmutable;
 use DateTimeInterface;
 use OutOfRangeException;
@@ -695,6 +697,12 @@ final class ArrTest extends TestCase
 
         return [
             [
+                $array,
+                $array,
+                'b',
+                'b',
+            ],
+            [
                 [
                     'a' => 'value0',
                     'b_2' => 'value1',
@@ -877,7 +885,7 @@ final class ArrTest extends TestCase
                 ],
                 self::SORT_DATA,
                 false,
-                SORT_STRING,
+                \SORT_STRING,
             ],
             [
                 [
@@ -890,7 +898,7 @@ final class ArrTest extends TestCase
                 ],
                 self::SORT_DATA,
                 true,
-                SORT_STRING,
+                \SORT_STRING,
             ],
             [
                 [
@@ -961,7 +969,7 @@ final class ArrTest extends TestCase
                     'quux' => 'qux',
                 ],
                 $data,
-                SORT_STRING,
+                \SORT_STRING,
             ],
             [
                 [
@@ -1376,14 +1384,28 @@ final class ArrTest extends TestCase
      */
     public static function toScalarsProvider(): array
     {
+        $a = new class {
+            public function __toString()
+            {
+                return Stringable::class;
+            }
+        };
+
+        $b = new class implements Jsonable {
+            public function toJson(int $flags = 0): string
+            {
+                return Json::stringify([Jsonable::class => true], $flags);
+            }
+        };
+
         return [
             [
                 [],
                 [],
             ],
             [
-                [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}'],
-                [null, 0, 3.14, true, false, '', 'a', [1, 2, 3], ['foo' => 'bar']],
+                [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}', Stringable::class, '{"Lkrms\\\\Contract\\\\Jsonable":true}'],
+                [null, 0, 3.14, true, false, '', 'a', [1, 2, 3], ['foo' => 'bar'], $a, $b],
             ],
         ];
     }
