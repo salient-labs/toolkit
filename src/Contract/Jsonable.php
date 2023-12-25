@@ -2,12 +2,15 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Utility\Catalog\JsonEncodeFlag;
+
 interface Jsonable
 {
     /**
      * Get a JSON representation of the object
      *
-     * @param int $flags Passed to {@see json_encode()}.
+     * @param int-mask-of<JsonEncodeFlag::*> $flags Passed to
+     * {@see json_encode()}.
      */
     public function toJson(int $flags = 0): string;
 }

@@ -3,6 +3,8 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Utility\Catalog\JsonDecodeFlag;
+use Lkrms\Utility\Catalog\JsonEncodeFlag;
 
 /**
  * Standardise calls to json_encode() and json_decode()
@@ -23,7 +25,7 @@ final class Json extends Utility
      * Convert a value to a JSON string
      *
      * @param mixed $value
-     * @param int-mask-of<\JSON_FORCE_OBJECT|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_NUMERIC_CHECK|\JSON_PRESERVE_ZERO_FRACTION> $flags
+     * @param int-mask-of<JsonEncodeFlag::*> $flags
      */
     public static function stringify($value, int $flags = 0): string
     {
@@ -34,7 +36,7 @@ final class Json extends Utility
      * Convert a value to a human-readable JSON string
      *
      * @param mixed $value
-     * @param int-mask-of<\JSON_FORCE_OBJECT|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_NUMERIC_CHECK|\JSON_PRESERVE_ZERO_FRACTION> $flags
+     * @param int-mask-of<JsonEncodeFlag::*> $flags
      */
     public static function prettyPrint($value, int $flags = 0): string
     {
@@ -44,7 +46,7 @@ final class Json extends Utility
     /**
      * Convert a JSON string to a value
      *
-     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY> $flags
+     * @param int-mask-of<JsonDecodeFlag::*> $flags
      * @return mixed
      */
     public static function parse(string $json, int $flags = 0)
@@ -56,7 +58,7 @@ final class Json extends Utility
      * Convert a JSON string to a value where JSON objects are represented as
      * associative arrays
      *
-     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE> $flags
+     * @param int-mask-of<JsonDecodeFlag::*> $flags
      * @return mixed
      */
     public static function parseObjectAsArray(string $json, int $flags = 0)
