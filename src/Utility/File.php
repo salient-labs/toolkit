@@ -767,20 +767,7 @@ final class File extends Utility
         $program = basename($path);
         $path = self::realpath($path);
         $hash = Compute::hash($path);
-
-        if (function_exists('posix_geteuid')) {
-            $user = posix_geteuid();
-        } else {
-            $user = Env::getNullable('USERNAME', null);
-            if ($user === null) {
-                $user = Env::getNullable('USER', null);
-                if ($user === null) {
-                    throw new InvalidEnvironmentException(
-                        'Unable to identify user'
-                    );
-                }
-            }
-        }
+        $user = Sys::getUserId();
 
         if ($dir === null) {
             $dir = self::getTempDir();

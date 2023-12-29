@@ -283,8 +283,7 @@ final class FileTest extends TestCase
     {
         $path = File::getStablePath();
         $dir = dirname($path);
-        // $path should be absolute
-        $this->assertMatchesRegularExpression('/^(\/|\\\\\\\\|[a-z]:\\\\)/i', $path);
+        $this->assertTrue(File::isAbsolute($path));
         $this->assertDirectoryExists($dir);
         $this->assertIsWritable($dir);
     }
