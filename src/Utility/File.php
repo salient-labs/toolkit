@@ -525,29 +525,22 @@ final class File extends Utility
     /**
      * Get a path relative to a parent directory
      *
-     * If `$parentDir` is `null`, the path of the root package is used.
+     * Returns `$fallback` if `$filename` does not belong to `$parentDir`.
      *
      * @throws FilesystemErrorException if `$filename` or `$parentDir` do not
-     * exist or if `$filename` does not belong to `$parentDir`.
+     * exist.
      */
     public static function relativeToParent(
         string $filename,
-        ?string $parentDir = null
-    ): string {
-        if ($parentDir === null) {
-            $basePath = Package::path();
-        } else {
-            Assert::fileExists($parentDir);
-            $basePath = self::realpath($parentDir);
-        }
-        Assert::fileExists($filename);
+        string $parentDir,
+        ?string $fallback = null
+    ): ?string {
         $path = self::realpath($filename);
+        $basePath = self::realpath($parentDir);
         if (strpos($path, $basePath) === 0) {
             return substr($path, strlen($basePath) + 1);
         }
-        throw new FilesystemErrorException(
-            sprintf("'%s' does not belong to '%s'", $filename, $parentDir)
-        );
+        return $fallback;
     }
 
     /**

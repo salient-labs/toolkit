@@ -136,11 +136,8 @@ abstract class Command extends CliCommand
                 ));
             }
 
-            if (strpos($file, $this->App->getBasePath()) === 0) {
-                $path = './' . substr($file, strlen($this->App->getBasePath()) + 1);
-            } else {
-                $path = $file;
-            }
+            $relative = File::relativeToParent($file, $this->App->getBasePath());
+            $path = $relative === null ? $file : "./{$relative}";
         }
 
         try {

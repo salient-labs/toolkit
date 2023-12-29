@@ -89,7 +89,6 @@ final class Sys extends Utility
         }
 
         $filename = File::relativeToParent($filename, $basePath);
-        // @phpstan-ignore-next-line
         if ($filename === null) {
             throw new LogicException('SCRIPT_FILENAME is not in $basePath');
         }

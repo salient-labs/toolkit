@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Utility;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Package;
 
 final class FileTest extends TestCase
 {
@@ -221,20 +222,23 @@ final class FileTest extends TestCase
 
     /**
      * @dataProvider relativeToParentProvider
+     *
+     * @param string|int|null $expected
      */
-    public function testRelativeToParent(?string $expected, string $filename, ?string $parentDir = null): void
-    {
-        if ($expected === null) {
+    public function testRelativeToParent(
+        $expected,
+        string $filename,
+        string $parentDir,
+        ?string $fallback = null
+    ): void {
+        if ($expected === -1) {
             $this->expectException(FilesystemErrorException::class);
-            File::relativeToParent($filename, $parentDir);
-            return;
         }
-
-        $this->assertSame($expected, File::relativeToParent($filename, $parentDir));
+        $this->assertSame($expected, File::relativeToParent($filename, $parentDir, $fallback));
     }
 
     /**
-     * @return array<array{string|null,string,2?:string|null}>
+     * @return array<array{string|int|null,string,string,3?:string|null}>
      */
     public static function relativeToParentProvider(): array
     {
@@ -248,17 +252,29 @@ final class FileTest extends TestCase
             ],
             [
                 null,
+                $path,
+                "$path/dir/file",
+            ],
+            [
+                'fallback',
+                $path,
+                "$path/dir/file",
+                'fallback',
+            ],
+            [
+                -1,
                 "$path/dir/does_not_exist",
                 $path,
             ],
             [
-                null,
+                -1,
                 "$path/dir/file",
                 "$path/does_not_exist",
             ],
             [
                 implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Utility', 'File', 'dir', 'file']),
                 "$path/dir/file",
+                Package::path(),
             ],
         ];
     }

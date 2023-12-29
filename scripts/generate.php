@@ -48,6 +48,7 @@ use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Package;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -125,7 +126,7 @@ function generated($commandOrFile): void
         throw new LogicException('No file generated');
     }
 
-    $generated[] = '/' . File::relativeToParent($file);
+    $generated[] = '/' . File::relativeToParent($file, Package::path());
 }
 
 $status = 0;

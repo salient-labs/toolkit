@@ -788,11 +788,7 @@ abstract class GenerateCommand extends Command
                     return;
                 }
                 if ($this->Check || !$this->ReplaceIfExists) {
-                    $basePath = Package::path();
-                    $relative = File::realpath($file);
-                    if (strpos($relative, $basePath) === 0) {
-                        $relative = substr($relative, strlen($basePath) + 1);
-                    }
+                    $relative = File::relativeToParent($file, Package::path(), $file);
                     print (new Differ(new StrictUnifiedDiffOutputBuilder([
                         'fromFile' => "a/$relative",
                         'toFile' => "b/$relative",
