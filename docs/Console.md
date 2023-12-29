@@ -21,10 +21,10 @@ temporary directory, created with mode `0600` if it doesn't already exist:
 sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
 ```
 
-If the value of environment variable `CONSOLE_OUTPUT` is `stderr` or `stdout`,
+If the value of environment variable `CONSOLE_TARGET` is `stderr` or `stdout`,
 [Console][Console] output is also written to `STDERR` or `STDOUT` respectively.
 
-If `CONSOLE_OUTPUT` is not set and the script is running on the command line:
+If `CONSOLE_TARGET` is not set and the script is running on the command line:
 
 - If `STDERR` is a TTY and `STDOUT` is not, console messages are written to
   `STDERR` so output to `STDOUT` isn't tainted
@@ -47,20 +47,21 @@ target, e.g. by calling [registerTarget()][registerTarget], before any other
 
 ### Output methods
 
+<!-- prettier-ignore -->
 | `Console` method | `ConsoleLevel`  | Message prefix | Default output target     |
 | ---------------- | --------------- | -------------- | ------------------------- |
-| `error[Once]()`  | `ERROR` = `3`   | ` !! `         | `STDERR`                  |
-| `warn[Once]()`   | `WARNING` = `4` | `  ! `         | `STDERR`                  |
-| `info[Once]()`   | `NOTICE` = `5`  | `==> `         | `STDOUT`                  |
-| `log[Once]()`    | `INFO` = `6`    | ` -> `         | `STDOUT`                  |
-| `debug[Once]()`  | `DEBUG` = `7`   | `--- `         | `STDOUT` (if `DEBUG` set) |
-| `group()`[^2]    | `NOTICE` = `5`  | `>>> `         | `STDOUT`                  |
-| `logProgress()`  | `INFO` = `6`    | ` -> `         | `STDOUT`                  |
+| `error[Once]()`  | `ERROR` = `3`   | `  !!  `       | `STDERR`                  |
+| `warn[Once]()`   | `WARNING` = `4` | `   !  `       | `STDERR`                  |
+| `info[Once]()`   | `NOTICE` = `5`  | ` ==>  `       | `STDOUT`                  |
+| `log[Once]()`    | `INFO` = `6`    | `  ->  `       | `STDOUT`                  |
+| `debug[Once]()`  | `DEBUG` = `7`   | ` ---  `       | `STDOUT` (if `DEBUG` set) |
+| `group()`[^2]    | `NOTICE` = `5`  | ` >>>  `       | `STDOUT`                  |
+| `logProgress()`  | `INFO` = `6`    | `  ->  `       | `STDOUT`                  |
 
 [^1]: Actually a facade for [ConsoleWriter][ConsoleWriter].
-
-[^2]: `Console::group()` adds a level of indentation to all `Console` output
-    until `Console::groupEnd()` is called.
+[^2]:
+    `Console::group()` adds a level of indentation to all `Console` output until
+    `Console::groupEnd()` is called.
 
 ### Formatting
 
@@ -68,20 +69,22 @@ The following Markdown-like syntax is supported in [Console][Console] messages:
 
 | Style        | Tag                                                    | Typical appearance                    | Example                                                                   |
 | ------------ | ------------------------------------------------------ | ------------------------------------- | ------------------------------------------------------------------------- |
-| Heading      | `___` text `___`<br>`***` text `***`<br>`##` text `##` | ***Bold + primary colour***           | `___NAME___`<br>`***NAME***`<br>`## NAME` (closing delimiter is optional) |
+| Heading      | `___` text `___`<br>`***` text `***`<br>`##` text `##` | **_Bold + primary colour_**           | `___NAME___`<br>`***NAME***`<br>`## NAME` (closing delimiter is optional) |
 | "Bold"       | `__` text `__`<br>`**` text `**`                       | **Bold + default colour**             | `__command__`<br>`**command**`                                            |
-| "Italic"     | `_` text `_`<br>`*` text `*`                           | *Secondary colour*                    | `_argument_`<br>`*argument*`                                              |
-| "Underline"  | `<` text `>`                                           | *<u>Secondary colour + underline</u>* | `<argument>`                                                              |
+| "Italic"     | `_` text `_`<br>`*` text `*`                           | _Secondary colour_                    | `_argument_`<br>`*argument*`                                              |
+| "Underline"  | `<` text `>`                                           | _<u>Secondary colour + underline</u>_ | `<argument>`                                                              |
 | Low priority | `~~` text `~~`                                         | <small>Dim</small>                    | `~~/path/to/script.php:42~~`                                              |
 | Inline code  | `` ` `` text `` ` ``                                   | <code>Bold</code>                     | `` The input format can be specified using the `-f/--from` option. ``     |
 | Code block   | ` ``` `<br>text<br>` ``` `                             | <pre><code>Unchanged</code></pre>     | <pre><code>\`\`\`&#10;$baz = Foo::bar();&#10;\`\`\`</code></pre>          |
 
-
 [Application]: https://lkrms.github.io/php-util/Lkrms.Container.Application.html
 [CliApplication]: https://lkrms.github.io/php-util/Lkrms.Cli.CliApplication.html
 [Console]: https://lkrms.github.io/php-util/Lkrms.Facade.Console.html
-[ConsoleWriter]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html
-[logOutput]: https://lkrms.github.io/php-util/Lkrms.Container.Application.html#_logOutput
-[registerStdioTargets]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerStdioTargets
-[registerTarget]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerTarget
-
+[ConsoleWriter]:
+  https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html
+[logOutput]:
+  https://lkrms.github.io/php-util/Lkrms.Container.Application.html#_logOutput
+[registerStdioTargets]:
+  https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerStdioTargets
+[registerTarget]:
+  https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerTarget
