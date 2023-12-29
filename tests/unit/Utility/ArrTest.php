@@ -1369,14 +1369,15 @@ final class ArrTest extends TestCase
      * @dataProvider toScalarsProvider
      *
      * @template TKey of array-key
-     * @template TValue int|float|string|bool|null
+     * @template TValue of int|float|string|bool|null
      *
      * @param array<TKey,TValue> $expected
      * @param iterable<TKey,TValue|mixed[]|object> $array
+     * @param TValue|null $null
      */
-    public function testToScalars(array $expected, iterable $array): void
+    public function testToScalars(array $expected, iterable $array, $null = null): void
     {
-        $this->assertSame($expected, Arr::toScalars($array));
+        $this->assertSame($expected, Arr::toScalars($array, $null));
     }
 
     /**
@@ -1406,6 +1407,11 @@ final class ArrTest extends TestCase
             [
                 [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}', Stringable::class, '{"Lkrms\\\\Contract\\\\Jsonable":true}'],
                 [null, 0, 3.14, true, false, '', 'a', [1, 2, 3], ['foo' => 'bar'], $a, $b],
+            ],
+            [
+                ['NULL', 0, false, '', '[null,"a",1]'],
+                [null, 0, false, '', [null, 'a', 1]],
+                'NULL',
             ],
         ];
     }

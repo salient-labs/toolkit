@@ -67,7 +67,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
 
             if ($withMarkup) {
                 foreach ($values as &$value) {
-                    $value = Formatter::escapeTags($value);
+                    $value = Formatter::escapeTags((string) $value);
                 }
             }
 
