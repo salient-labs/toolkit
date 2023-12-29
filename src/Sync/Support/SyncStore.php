@@ -22,6 +22,7 @@ use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use LogicException;
 use ReflectionClass;
 
@@ -581,7 +582,7 @@ final class SyncStore extends SqliteStore
         string $namespace,
         ?string $resolver = null
     ) {
-        $prefix = strtolower($prefix);
+        $prefix = Str::lower($prefix);
         if (isset($this->RegisteredNamespaces[$prefix]) ||
             ($this->RunId === null &&
                 isset($this->DeferredNamespaces[$prefix]))) {
@@ -716,12 +717,12 @@ final class SyncStore extends SqliteStore
         ?string &$resolver = null
     ): ?string {
         $class = ltrim($class, '\\');
-        $lower = strtolower($class);
+        $lower = Str::lower($class);
 
         // Don't start a run just to resolve a class to a namespace
         if ($this->RunId === null) {
             foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_resolver]) {
-                $_namespace = strtolower($_namespace);
+                $_namespace = Str::lower($_namespace);
                 if (strpos($lower, $_namespace) === 0) {
                     $uri = $_uri;
                     $namespace = $_namespace;
@@ -1365,7 +1366,7 @@ final class SyncStore extends SqliteStore
         $this->NamespacesByPrefix = [];
         $this->NamespaceUrisByPrefix = [];
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
-            $this->NamespacesByPrefix[$row[0]] = strtolower($row[2]);
+            $this->NamespacesByPrefix[$row[0]] = Str::lower($row[2]);
             $this->NamespaceUrisByPrefix[$row[0]] = $row[1];
         }
         $result->finalize();

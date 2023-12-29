@@ -14,6 +14,7 @@ use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Generator;
 use LogicException;
 
@@ -94,7 +95,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
                     sprintf('At least one value must be given for HTTP header: %s', $key)
                 );
             }
-            $lower = strtolower($key);
+            $lower = Str::lower($key);
             $key = $this->filterName($key);
             foreach ($values as $value) {
                 $headers[++$i] = [$key => $this->filterValue($value)];
@@ -177,7 +178,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
                 sprintf('At least one value must be given for HTTP header: %s', $key)
             );
         }
-        $lower = strtolower($key);
+        $lower = Str::lower($key);
         $headers = $this->Headers;
         $index = $this->Index;
         $key = $this->filterName($key);
@@ -199,7 +200,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
                 sprintf('At least one value must be given for HTTP header: %s', $key)
             );
         }
-        $lower = strtolower($key);
+        $lower = Str::lower($key);
         $headers = $this->Headers;
         $index = $this->Index;
         if (isset($index[$lower])) {
@@ -236,7 +237,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
      */
     public function unset($key)
     {
-        $lower = strtolower($key);
+        $lower = Str::lower($key);
         if (!isset($this->Index[$lower])) {
             return $this;
         }
@@ -270,7 +271,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
                     sprintf('At least one value must be given for HTTP header: %s', $key)
                 );
             }
-            $lower = strtolower($key);
+            $lower = Str::lower($key);
             if (
                 !$preserveExisting &&
                 // Checking against $this->Index instead of $index means any
@@ -491,7 +492,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
      */
     public function hasHeader(string $name): bool
     {
-        return isset($this->Items[strtolower($name)]);
+        return isset($this->Items[Str::lower($name)]);
     }
 
     /**
@@ -499,7 +500,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
      */
     public function getHeader(string $name): array
     {
-        return $this->Items[strtolower($name)] ?? [];
+        return $this->Items[Str::lower($name)] ?? [];
     }
 
     /**
@@ -507,7 +508,7 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
      */
     public function getHeaderLine(string $name, bool $lastValueOnly = false): string
     {
-        $values = $this->Items[strtolower($name)] ?? [];
+        $values = $this->Items[Str::lower($name)] ?? [];
         if (!$values) {
             return '';
         }

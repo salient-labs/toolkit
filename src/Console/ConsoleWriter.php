@@ -22,6 +22,7 @@ use Lkrms\Utility\Debug;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Str;
 use Throwable;
 
 /**
@@ -133,7 +134,7 @@ final class ConsoleWriter implements ReceivesFacade
         $output = Env::get('CONSOLE_OUTPUT', null);
 
         if ($output !== null) {
-            switch (strtolower($output)) {
+            switch (Str::lower($output)) {
                 case 'stderr':
                     return $this->registerStdioTarget(
                         $replace,

@@ -19,6 +19,7 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Closure;
 use LogicException;
 
@@ -268,7 +269,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      */
     final public function __call(string $name, array $arguments)
     {
-        if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false) {
+        if (($closure = $this->MagicMethodClosures[$name = Str::lower($name)] ?? false) === false) {
             $closure = SyncIntrospector::get(static::class)->getMagicSyncOperationClosure($name, $this);
             $this->MagicMethodClosures[$name] = $closure;
         }

@@ -17,6 +17,7 @@ use Lkrms\Utility\Assert;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Lkrms\Utility\Sys;
 use LogicException;
 
@@ -506,7 +507,7 @@ class CliApplication extends Application implements ICliApplication
                 $formats = TagFormats::getManPageFormats();
                 printf(
                     "%% %s(%d) %s | %s\n\n",
-                    strtoupper(str_replace(' ', '-', trim($this->getProgramName() . " $name"))),
+                    Str::upper(str_replace(' ', '-', trim($this->getProgramName() . " $name"))),
                     (int) ($args[0] ?? '1'),
                     $args[1] ?? Package::version(),
                     $args[2] ?? (Package::name() . ' Documentation'),

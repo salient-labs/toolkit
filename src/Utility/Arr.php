@@ -606,7 +606,7 @@ final class Arr extends Utility
     public static function lower(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            $lower[$key] = strtolower((string) $value);
+            $lower[$key] = Str::lower((string) $value);
         }
         return $lower ?? [];
     }
@@ -624,7 +624,7 @@ final class Arr extends Utility
     public static function upper(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            $upper[$key] = strtoupper((string) $value);
+            $upper[$key] = Str::upper((string) $value);
         }
         return $upper ?? [];
     }

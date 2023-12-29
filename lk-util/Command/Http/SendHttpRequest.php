@@ -11,6 +11,7 @@ use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Str;
 
 /**
  * Sends HTTP requests to HTTP sync providers
@@ -43,7 +44,7 @@ final class SendHttpRequest extends Command
     private function getMethod(): string
     {
         return $this->HttpMethod
-            ?? ($this->HttpMethod = strtoupper(Arr::last($this->nameParts())));
+            ?? ($this->HttpMethod = Str::upper(Arr::last($this->nameParts())));
     }
 
     public function description(): string

@@ -14,6 +14,7 @@ use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Utility\Reflect;
+use Lkrms\Utility\Str;
 use Closure;
 use DateTimeInterface;
 use ReflectionClass;
@@ -459,7 +460,7 @@ class IntrospectionClass
                 if (!preg_match($regex, $name = $method->getName(), $match)) {
                     continue;
                 }
-                $action = strtolower($match['action']);
+                $action = Str::lower($match['action']);
                 $property = $this->maybeNormalise($match['property'], NormaliserFlag::LAZY);
                 $this->Actions[$action][$property] = $name;
             }

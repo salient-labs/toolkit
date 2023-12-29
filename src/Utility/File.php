@@ -302,7 +302,7 @@ final class File extends Utility
      */
     public static function isPharUri(string $path): bool
     {
-        return strtolower(substr($path, 0, 7)) === 'phar://';
+        return Str::lower(substr($path, 0, 7)) === 'phar://';
     }
 
     /**

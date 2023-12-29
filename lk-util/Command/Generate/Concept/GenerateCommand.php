@@ -24,6 +24,7 @@ use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Reflect;
+use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
@@ -445,7 +446,7 @@ abstract class GenerateCommand extends Command
     protected function getTypeAlias(string $type, ?string $filename = null, bool $returnFqcn = true): ?string
     {
         $type = ltrim($type, '\\');
-        $lower = strtolower($type);
+        $lower = Str::lower($type);
         if ($filename !== null &&
                 ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null)) {
             return $this->getFqcnAlias($type, $alias, $returnFqcn);
@@ -474,7 +475,7 @@ abstract class GenerateCommand extends Command
     protected function getFqcnAlias(string $fqcn, ?string $alias = null, bool $returnFqcn = true): ?string
     {
         $fqcn = ltrim($fqcn, '\\');
-        $_fqcn = strtolower($fqcn);
+        $_fqcn = Str::lower($fqcn);
 
         // If $fqcn has already been imported, use its alias
         if ($lastAlias = $this->ImportMap[$_fqcn] ?? null) {
@@ -482,7 +483,7 @@ abstract class GenerateCommand extends Command
         }
 
         $alias = $alias === null ? Get::basename($fqcn) : $alias;
-        $_alias = strtolower($alias);
+        $_alias = Str::lower($alias);
 
         // Use $alias if it already maps to $fqcn
         if (($aliasFqcn = $this->AliasMap[$_alias] ?? null) &&
@@ -595,7 +596,7 @@ abstract class GenerateCommand extends Command
     {
         $map = [];
         foreach ($this->ImportMap as $alias) {
-            $import = $this->AliasMap[strtolower($alias)];
+            $import = $this->AliasMap[Str::lower($alias)];
             if (!strcasecmp($alias, Get::basename($import))) {
                 $map[$import] = null;
                 continue;

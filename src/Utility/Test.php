@@ -131,7 +131,7 @@ final class Test extends Utility
      */
     public static function isPhpReservedWord(string $value): bool
     {
-        return in_array(strtolower($value), [
+        return in_array(Str::lower($value), [
             'array',
             'bool',
             'callable',

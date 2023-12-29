@@ -34,6 +34,7 @@ use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Str;
 use CurlHandle;
 use DateTimeInterface;
 use Generator;
@@ -542,7 +543,7 @@ final class Curler implements IReadable, IWritable, Buildable
      */
     public function addSensitiveHeaderName(string $name)
     {
-        $this->SensitiveHeaderIndex[strtolower($name)] = true;
+        $this->SensitiveHeaderIndex[Str::lower($name)] = true;
         return $this;
     }
 

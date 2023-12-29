@@ -12,6 +12,6 @@ class ResolvableB implements IResolvable
         bool $greedy = true,
         string ...$hints
     ): string {
-        return strtoupper(Str::toKebabCase($name));
+        return Str::upper(Str::toKebabCase($name));
     }
 }

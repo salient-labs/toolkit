@@ -624,7 +624,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             return '';
         }
 
-        return strtolower(Str::toWords($this->ValueName));
+        return Str::lower(Str::toWords($this->ValueName));
     }
 
     /**
@@ -658,7 +658,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             strpbrk($this->ValueName, Char::ALPHABETIC_UPPER) !== false &&
             strpbrk($this->ValueName, Char::ALPHABETIC_LOWER) === false
         ) {
-            $name = strtoupper($name);
+            $name = Str::upper($name);
             if (!$withMarkup) {
                 return $name;
             }
@@ -866,7 +866,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         if (!$this->CaseSensitive) {
             $normalised = [];
             foreach ($value as $value) {
-                $lower = strtolower((string) $value);
+                $lower = Str::lower((string) $value);
                 $normalised[] = $this->AllowedValues[$lower] ?? $value;
             }
             $value = $normalised;
