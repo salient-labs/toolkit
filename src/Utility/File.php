@@ -238,17 +238,33 @@ final class File extends Utility
      *
      * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
      *
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
      * @return string|null `null` if there are no recognised line breaks in the
      * file.
      *
      * @see Get::eol()
      * @see Str::setEol()
      */
-    public static function getEol(string $filename): ?string
+    public static function getEol($resource, $uri = null): ?string
     {
-        $handle = self::open($filename, 'r');
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $handle = $resource;
+        } elseif (Test::isStringable($resource)) {
+            $uri = (string) $resource;
+            $handle = self::open($uri, 'r');
+            $close = true;
+        } else {
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        }
+
         $line = fgets($handle);
-        self::close($handle, $filename);
+
+        if ($close) {
+            self::close($handle, $uri);
+        }
 
         if ($line === false) {
             return null;
@@ -601,73 +617,63 @@ final class File extends Utility
     }
 
     /**
-     * Write data to a CSV file or stream
+     * Write CSV-formatted data to a file or stream
      *
      * For maximum interoperability with Excel across all platforms, data is
      * written in UTF-16LE by default.
      *
-     * @param iterable<mixed[]> $data Data to write.
-     * @param string|resource|null $target Either a filename, a stream opened by
-     * `fopen()`, `fsockopen()` or similar, or `null`. If `null`, data is
-     * returned as a string.
+     * @template TValue
+     *
+     * @param Stringable|string|resource $resource
+     * @param iterable<TValue> $data
      * @param bool $headerRow If `true`, write the first record's array keys
      * before the first row.
-     * @param int|string|null $nullValue Optionally replace `null` values before
-     * writing data.
-     * @param callable(mixed): mixed[] $callback Applied to each record before
+     * @param int|float|string|bool|null $nullValue Optionally replace `null`
+     * values before writing data.
+     * @param callable(TValue): mixed[] $callback Applied to each record before
      * it is written.
      * @param int|null $count Receives the number of records written.
      * @param bool $utf16le If `true` (the default), encode output in UTF-16LE.
      * @param bool $bom If `true` (the default), add a BOM (byte order mark) to
      * the output.
-     * @return string|true
+     * @param Stringable|string|null $uri
      */
     public static function writeCsv(
+        $resource,
         iterable $data,
-        $target = null,
         bool $headerRow = true,
         $nullValue = null,
         ?callable $callback = null,
         ?int &$count = null,
         string $eol = "\r\n",
         bool $utf16le = true,
-        bool $bom = true
-    ) {
-        if (is_resource($target)) {
-            self::assertResourceIsStream($target);
-            $handle = $target;
-            $targetName = 'stream';
-        } elseif (is_string($target)) {
-            $handle = self::open($target, 'wb');
-            $targetName = $target;
+        bool $bom = true,
+        $uri = null
+    ): void {
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $handle = $resource;
+        } elseif (Test::isStringable($resource)) {
+            $uri = (string) $resource;
+            $handle = self::open($uri, 'wb');
+            $close = true;
         } else {
-            $target = 'php://temp';
-            $handle = self::open($target, 'r+b');
-            $targetName = $target;
-            $target = null;
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
         }
 
         if ($utf16le) {
             if (!extension_loaded('iconv')) {
                 throw new IncompatibleRuntimeEnvironmentException(
-                    "'iconv' extension required for UTF-16LE encoding",
+                    "'iconv' extension required for UTF-16LE encoding"
                 );
             }
-            $filter = 'convert.iconv.UTF-8.UTF-16LE';
-            $result = stream_filter_append(
-                $handle,
-                $filter,
-                \STREAM_FILTER_WRITE,
-            );
-            if ($result === false) {
-                throw new FilesystemErrorException(
-                    sprintf('Error applying filter to stream: %s', $filter),
-                );
-            }
+            $filter = @stream_filter_append($handle, 'convert.iconv.UTF-8.UTF-16LE', \STREAM_FILTER_WRITE);
+            self::throwOnFailure($filter, 'Error applying UTF-16LE filter to stream: %s', $uri, $handle);
         }
 
         if ($bom) {
-            self::write($handle, '﻿', null, $targetName);
+            self::write($handle, '﻿', null, $uri);
         }
 
         $count = 0;
@@ -676,44 +682,35 @@ final class File extends Utility
                 $row = $callback($row);
             }
 
-            foreach ($row as &$value) {
-                if ($value === null) {
-                    $value = $nullValue;
-                } elseif (!is_scalar($value)) {
-                    $value = json_encode($value);
-                }
-            }
+            $row = Arr::toScalars($row, $nullValue);
 
             if (!$count && $headerRow) {
-                self::fputcsv($handle, array_keys($row), ',', '"', $eol, $targetName);
+                self::fputcsv($handle, array_keys($row), ',', '"', $eol, $uri);
             }
 
-            self::fputcsv($handle, $row, ',', '"', $eol);
+            self::fputcsv($handle, $row, ',', '"', $eol, $uri);
             $count++;
         }
 
-        if ($target === null) {
-            self::seek($handle, 0);
-            $csv = stream_get_contents($handle);
-            self::close($handle, $targetName);
-
-            return $csv;
+        if ($close) {
+            self::close($handle, $uri);
+        } elseif ($utf16le) {
+            $result = @stream_filter_remove($filter);
+            self::throwOnFailure($result, 'Error removing UTF-16LE filter from stream: %s', $uri, $handle);
         }
-        if (is_string($target)) {
-            self::close($handle, $targetName);
-        }
-
-        return true;
     }
 
     /**
-     * A polyfill for PHP 8.1's fputcsv, minus $escape
+     * Write a line of comma-separated values to an open stream
+     *
+     * A shim for {@see fputcsv()} with `$eol` (added in PHP 8.1) and without
+     * `$escape` (which should be removed).
      *
      * @param resource $stream
      * @param mixed[] $fields
      * @param Stringable|string|null $uri
      */
-    private static function fputcsv(
+    public static function fputcsv(
         $stream,
         array $fields,
         string $separator = ',',
@@ -722,6 +719,7 @@ final class File extends Utility
         $uri = null
     ): int {
         $special = $separator . $enclosure . "\n\r\t ";
+
         foreach ($fields as &$field) {
             if (strpbrk((string) $field, $special) !== false) {
                 $field = $enclosure

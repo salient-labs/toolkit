@@ -161,8 +161,8 @@ final class GetSyncEntities extends AbstractSyncCommand
 
             $tty = stream_isatty(\STDOUT);
             File::writeCsv(
-                $result,
                 \STDOUT,
+                $result,
                 true,
                 null,
                 fn(ISyncEntity $entity) => $entity->toArrayWith($rules),
