@@ -13,7 +13,7 @@ use Phar;
 use Stringable;
 
 /**
- * Work with files and directories
+ * Work with streams, files and directories
  */
 final class File extends Utility
 {
@@ -40,6 +40,7 @@ final class File extends Utility
      * @see fclose()
      * @param resource $stream
      * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
      */
     public static function close($stream, $uri = null): void
     {
@@ -141,6 +142,20 @@ final class File extends Utility
     }
 
     /**
+     * True if a stream is seekable
+     *
+     * @param resource $stream
+     */
+    public static function isSeekable($stream): bool
+    {
+        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
+            return false;
+        }
+        // @phpstan-ignore-next-line
+        return stream_get_meta_data($stream)['seekable'] ?? false;
+    }
+
+    /**
      * Open a pipe to a process
      *
      * @see popen()
@@ -167,7 +182,8 @@ final class File extends Utility
     }
 
     /**
-     * Get an entire file or the remaining contents of a stream
+     * Get the entire contents of a file or the remaining contents of an open
+     * stream
      *
      * @see file_get_contents()
      * @see stream_get_contents()
@@ -435,14 +451,7 @@ final class File extends Utility
      */
     public static function createTempDir(): string
     {
-        $tempDir = sys_get_temp_dir();
-        $tmp = realpath($tempDir);
-        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-            throw new FilesystemErrorException(
-                sprintf('Not a writable directory: %s', $tempDir),
-            );
-        }
-
+        $tmp = self::getTempDir();
         $program = Sys::getProgramBasename();
         do {
             $dir = sprintf('%s/%s%s.tmp', $tmp, $program, Compute::randomText(8));
@@ -805,14 +814,7 @@ final class File extends Utility
         }
 
         if ($dir === null) {
-            $tempDir = sys_get_temp_dir();
-            $tmp = realpath($tempDir);
-            if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-                throw new FilesystemErrorException(
-                    sprintf('Not a writable directory: %s', $tempDir)
-                );
-            }
-            $dir = $tmp;
+            $dir = self::getTempDir();
         } else {
             $trimmed = rtrim($dir, '/\\');
             $dir = $trimmed === '' ? $dir : $trimmed;
@@ -828,5 +830,17 @@ final class File extends Utility
             $user,
             $suffix,
         );
+    }
+
+    private static function getTempDir(): string
+    {
+        $tempDir = sys_get_temp_dir();
+        $tmp = realpath($tempDir);
+        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a writable directory: %s', $tempDir),
+            );
+        }
+        return $tmp;
     }
 }
