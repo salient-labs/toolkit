@@ -7,7 +7,6 @@ use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\InvalidArgumentTypeException;
-use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Phar;
 use Stringable;

@@ -5,7 +5,6 @@ namespace Lkrms\Utility;
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
 use Lkrms\Concept\Utility;
-use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\UnexpectedValueException;
 
 /**
