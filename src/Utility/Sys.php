@@ -88,13 +88,12 @@ final class Sys extends Utility
             return $filename;
         }
 
-        if (($basePath = File::realpath($basePath)) !== false &&
-                ($filename = File::realpath($filename)) !== false &&
-                strpos($filename, $basePath . \DIRECTORY_SEPARATOR) === 0) {
-            return substr($filename, strlen($basePath) + 1);
+        $filename = File::relativeToParent($filename, $basePath);
+        // @phpstan-ignore-next-line
+        if ($filename === null) {
+            throw new LogicException('SCRIPT_FILENAME is not in $basePath');
         }
-
-        throw new LogicException('SCRIPT_FILENAME is not in $basePath');
+        return $filename;
     }
 
     /**

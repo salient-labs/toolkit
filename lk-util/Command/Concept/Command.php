@@ -5,6 +5,7 @@ namespace Lkrms\LkUtil\Command\Concept;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Contract\IProvider;
+use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
@@ -126,9 +127,9 @@ abstract class Command extends CliCommand
         if ($file === '-') {
             $file = 'php://stdin';
         } else {
-            $file = File::realpath($file);
-
-            if ($file === false) {
+            try {
+                $file = File::realpath($file);
+            } catch (FilesystemErrorException $ex) {
                 throw new CliInvalidArgumentsException(sprintf(
                     'file not found: %s',
                     $_file,

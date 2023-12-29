@@ -6,7 +6,7 @@ use Composer\InstalledVersions;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Package;
 
-final class ComposerTest extends TestCase
+final class PackageTest extends TestCase
 {
     public function testHasDevDependencies(): void
     {

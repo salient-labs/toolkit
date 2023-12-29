@@ -15,6 +15,7 @@ use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sync;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
+use Lkrms\Utility\Assert;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
@@ -288,22 +289,21 @@ class Application extends Container implements IApplication
         }
 
         $_basePath = $basePath;
-        if (!is_dir($basePath) ||
-                ($basePath = File::realpath($basePath)) === false) {
-            $exception =
-                $explicitBasePath || $defaultBasePath
-                    ? FilesystemErrorException::class
-                    : InvalidEnvironmentException::class;
-            throw new $exception(
-                sprintf('Invalid basePath: %s', $_basePath)
-            );
+        try {
+            Assert::isDir($basePath);
+            $basePath = File::realpath($basePath);
+        } catch (FilesystemErrorException $ex) {
+            $exception = $explicitBasePath || $defaultBasePath
+                ? FilesystemErrorException::class
+                : InvalidEnvironmentException::class;
+            throw new $exception(sprintf('Invalid basePath: %s', $_basePath), $ex);
         }
 
         $this->BasePath = $basePath;
 
         $this->RunningFromSource =
             !extension_loaded('Phar') ||
-            !Phar::running();
+            Phar::running() === '';
 
         if ($this->RunningFromSource) {
             $files = [];

@@ -79,14 +79,7 @@ final class Package extends Utility
      */
     public static function path(): string
     {
-        $path = self::getRootPackageValue('install_path');
-        $realpath = File::realpath($path);
-        if ($realpath === false) {
-            throw new FilesystemErrorException(
-                sprintf('Root package install path not found: %s', $path)
-            );
-        }
-        return $realpath;
+        return File::realpath(self::getRootPackageValue('install_path'));
     }
 
     /**
@@ -204,14 +197,12 @@ final class Package extends Utility
                 continue;
             }
             foreach ((array) $dirs as $dir) {
-                $dir = File::realpath($dir);
-                if ($dir === false || !is_dir($dir)) {
+                if (!is_dir($dir)) {
                     continue;
                 }
+                $dir = File::realpath($dir);
                 $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
-                $path = $subdir === ''
-                    ? $dir
-                    : $dir . '/' . $subdir;
+                $path = Arr::implode('/', [$dir, $subdir]);
                 if (is_dir($path)) {
                     return $path;
                 }

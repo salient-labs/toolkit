@@ -461,41 +461,22 @@ final class File extends Utility
     }
 
     /**
-     * A Phar-friendly, file descriptor-aware realpath()
+     * Resolve symbolic links and relative references in a path or Phar URI
      *
-     * 1. If `$filename` is a file descriptor in `/dev/fd` or `/proc`,
-     *    `php://fd/<DESCRIPTOR>` is returned.
-     *
-     * 2. If a Phar archive is running and `$filename` is a `phar://` URL:
-     *    - relative path segments in `$filename` (e.g. `/../..`) are resolved
-     *      by {@see File::resolve()}
-     *    - if the file or directory exists, the resolved pathname is returned
-     *    - if `$filename` doesn't exist, `false` is returned
-     *
-     * 3. The return value of `realpath($filename)` is returned.
-     *
-     * @return string|false
+     * @throws FilesystemErrorException if `$path` does not exist.
      */
-    public static function realpath(string $filename)
+    public static function realpath(string $path): string
     {
-        if (Pcre::match(
-            '#^/(?:dev|proc/(?:self|[0-9]+))/fd/([0-9]+)$#',
-            $filename,
-            $matches
-        )) {
-            return 'php://fd/' . $matches[1];
-        }
-        if (self::isPharUri($filename) &&
-                extension_loaded('Phar') &&
-                Phar::running()) {
-            // @codeCoverageIgnoreStart
-            $filename = self::resolve($filename);
-
-            return file_exists($filename) ? $filename : false;
-            // @codeCoverageIgnoreEnd
+        if (self::isPharUri($path) && file_exists($path)) {
+            return self::resolve($path, true);
         }
 
-        return realpath($filename);
+        $_path = $path;
+        $path = realpath($path);
+        if ($path === false) {
+            throw new FilesystemErrorException(sprintf('File not found: %s', $_path));
+        }
+        return $path;
     }
 
     /**
@@ -789,14 +770,9 @@ final class File extends Utility
         string $suffix = '',
         ?string $dir = null
     ): string {
-        $program = Sys::getProgramName();
-        $path = self::realpath($program);
-        if ($path === false) {
-            throw new FilesystemErrorException(
-                'Unable to resolve filename used to run the script',
-            );
-        }
-        $program = basename($program);
+        $path = Sys::getProgramName();
+        $program = basename($path);
+        $path = self::realpath($path);
         $hash = Compute::hash($path);
 
         if (function_exists('posix_geteuid')) {
@@ -816,20 +792,10 @@ final class File extends Utility
         if ($dir === null) {
             $dir = self::getTempDir();
         } else {
-            $trimmed = rtrim($dir, '/\\');
-            $dir = $trimmed === '' ? $dir : $trimmed;
+            $dir = Str::coalesce(rtrim($dir, '/\\'), $dir, '.');
         }
 
-        return sprintf(
-            '%s/%s-%s-%s%s',
-            $dir === ''
-                ? '.'
-                : $dir,
-            $program,
-            $hash,
-            $user,
-            $suffix,
-        );
+        return sprintf('%s/%s-%s-%s%s', $dir, $program, $hash, $user, $suffix);
     }
 
     private static function getTempDir(): string

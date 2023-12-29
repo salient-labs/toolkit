@@ -61,13 +61,10 @@ final class FileTest extends TestCase
     public function testRealpath(): void
     {
         $path = $this->getFixturesPath(__CLASS__);
-        $exists = File::realpath("$path/exists");
-        $this->assertIsString($exists);
-        $this->assertSame(realpath("$path/exists"), $exists);
-        $this->assertSame(false, File::realpath("$path/does_not_exist"));
-        $this->assertSame('php://fd/6', File::realpath('/dev/fd/6'));
-        $this->assertSame('php://fd/6', File::realpath('/proc/self/fd/6'));
-        $this->assertSame('php://fd/6', File::realpath('/proc/93698/fd/6'));
+        $this->assertSame(realpath("$path/exists"), File::realpath("$path/exists"));
+        $this->expectException(FilesystemErrorException::class);
+        $this->expectExceptionMessage("File not found: $path/does_not_exist");
+        File::realpath("$path/does_not_exist");
     }
 
     /**
