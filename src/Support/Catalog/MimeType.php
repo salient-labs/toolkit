@@ -3,6 +3,7 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Dictionary;
+use Lkrms\Utility\Str;
 
 /**
  * Frequently-used MIME types
@@ -35,7 +36,7 @@ final class MimeType extends Dictionary
     {
         // Remove charset, boundary, etc.
         [$value] = explode(';', $value);
-        $value = strtolower(rtrim($value));
+        $value = Str::lower(rtrim($value));
 
         if ($value === $mimeType) {
             return true;

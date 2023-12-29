@@ -7,7 +7,7 @@ use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Sys;
 use LogicException;
 
-final class SystemTest extends TestCase
+final class SysTest extends TestCase
 {
     public function testStartTimer(): void
     {
@@ -70,6 +70,7 @@ final class SystemTest extends TestCase
     {
         $command = [
             \PHP_BINARY,
+            '-ddisplay_startup_errors=0',
             $this->getFixturesPath(__CLASS__) . '/unescape.php',
             $arg,
         ];

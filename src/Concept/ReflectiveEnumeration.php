@@ -4,6 +4,7 @@ namespace Lkrms\Concept;
 
 use Lkrms\Concern\IsConvertibleEnumeration;
 use Lkrms\Contract\IConvertibleEnumeration;
+use Lkrms\Utility\Str;
 use LogicException;
 use ReflectionClass;
 
@@ -60,7 +61,7 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
             );
         }
         // Add UPPER_CASE names to $valueMap if not already present
-        $valueMap += array_combine(array_map('strtoupper', array_keys($valueMap)), $valueMap);
+        $valueMap += array_combine(array_map([Str::class, 'upper'], array_keys($valueMap)), $valueMap);
         self::$ValueMaps[static::class] = $valueMap;
         self::$NameMaps[static::class] = $nameMap;
     }
@@ -74,7 +75,7 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
             self::loadMaps();
         }
         $value = self::$ValueMaps[static::class][$name]
-            ?? self::$ValueMaps[static::class][strtoupper($name)]
+            ?? self::$ValueMaps[static::class][Str::upper($name)]
             ?? null;
         if ($value === null) {
             throw new LogicException(

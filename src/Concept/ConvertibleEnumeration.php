@@ -4,6 +4,7 @@ namespace Lkrms\Concept;
 
 use Lkrms\Concern\IsConvertibleEnumeration;
 use Lkrms\Contract\IConvertibleEnumeration;
+use Lkrms\Utility\Str;
 use LogicException;
 
 /**
@@ -40,7 +41,7 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
     final public static function fromName(string $name)
     {
         $value = static::$ValueMap[$name]
-            ?? static::$ValueMap[strtoupper($name)]
+            ?? static::$ValueMap[Str::upper($name)]
             ?? null;
         if ($value === null) {
             throw new LogicException(

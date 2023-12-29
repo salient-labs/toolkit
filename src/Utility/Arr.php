@@ -606,7 +606,7 @@ final class Arr extends Utility
     public static function lower(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            $lower[$key] = strtolower((string) $value);
+            $lower[$key] = Str::lower((string) $value);
         }
         return $lower ?? [];
     }
@@ -624,27 +624,31 @@ final class Arr extends Utility
     public static function upper(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            $upper[$key] = strtoupper((string) $value);
+            $upper[$key] = Str::upper((string) $value);
         }
         return $upper ?? [];
     }
 
     /**
-     * Replace non-scalar values in an array with equivalent strings
+     * Cast non-scalar values in an array to strings
      *
-     * Objects that implement {@see Stringable} are cast to a string. Other
-     * non-scalar values are JSON-encoded.
+     * Objects that implement {@see Stringable} are cast to a string. `null`
+     * values are replaced with `$null`. Other non-scalar values are
+     * JSON-encoded.
      *
      * @template TKey of array-key
-     * @template TValue int|float|string|bool|null
+     * @template TValue of int|float|string|bool|null
      *
      * @param iterable<TKey,TValue|mixed[]|object> $array
+     * @param TValue|null $null
      * @return array<TKey,TValue>
      */
-    public static function toScalars(iterable $array): array
+    public static function toScalars(iterable $array, $null = null): array
     {
         foreach ($array as $key => $value) {
-            if ($value !== null && !is_scalar($value)) {
+            if ($value === null) {
+                $value = $null;
+            } elseif (!is_scalar($value)) {
                 if (Test::isStringable($value)) {
                     $value = (string) $value;
                 } elseif ($value instanceof Jsonable) {

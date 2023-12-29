@@ -2,6 +2,7 @@
 
 namespace Lkrms\Exception;
 
+use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
 
 /**
@@ -59,8 +60,8 @@ class PcreErrorException extends Exception
     {
         return [
             'PcreError' => (string) $this->PcreError,
-            'Pattern' => is_scalar($this->Pattern) ? $this->Pattern : json_encode($this->Pattern),
-            'Subject' => is_scalar($this->Subject) ? $this->Subject : json_encode($this->Subject),
+            'Pattern' => is_scalar($this->Pattern) ? $this->Pattern : Json::prettyPrint($this->Pattern),
+            'Subject' => is_scalar($this->Subject) ? $this->Subject : Json::prettyPrint($this->Subject),
         ];
     }
 }

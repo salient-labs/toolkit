@@ -702,7 +702,7 @@ final class Convert extends Utility
      */
     public static function sizeToBytes(string $size): int
     {
-        if (!Pcre::match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1])) {
+        if (!Pcre::match('/^(.+?)([KMG]?)$/', Str::upper($size), $match) || !is_numeric($match[1])) {
             throw new LogicException("Invalid shorthand: '$size'");
         }
 
@@ -828,7 +828,7 @@ final class Convert extends Utility
             '/[^[:alnum:]]+/u' => ' ',
         ];
 
-        return strtoupper(trim(Pcre::replace(
+        return Str::upper(trim(Pcre::replace(
             array_keys($replace),
             array_values($replace),
             $text

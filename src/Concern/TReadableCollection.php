@@ -7,6 +7,7 @@ use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IComparable;
 use Lkrms\Contract\Jsonable;
 use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Utility\Json;
 use ArrayIterator;
 use JsonSerializable;
 use ReturnTypeWillChange;
@@ -194,7 +195,7 @@ trait TReadableCollection
                 continue;
             }
             if ($value instanceof Jsonable) {
-                $value = json_decode($value->toJson(), true);
+                $value = Json::parseObjectAsArray($value->toJson());
             } elseif ($value instanceof Arrayable) {
                 $value = $value->toArray();
             }
@@ -204,7 +205,7 @@ trait TReadableCollection
 
     public function toJson(int $flags = 0): string
     {
-        return json_encode($this->jsonSerialize(), $flags);
+        return Json::stringify($this->jsonSerialize(), $flags);
     }
 
     /**

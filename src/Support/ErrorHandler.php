@@ -114,17 +114,16 @@ final class ErrorHandler implements ReceivesFacade
      */
     public function silencePath(string $path, int $levels = \E_STRICT | \E_DEPRECATED | \E_USER_DEPRECATED)
     {
-        $path = File::realpath($path);
-
         // Ignore paths that don't exist
-        if ($path === false) {
+        if (!file_exists($path)) {
             return $this;
         }
 
-        if (is_dir($path)) {
-            $path .= '/';
-        }
-        $this->silencePattern('/^' . preg_quote($path, '/') . '/', $levels);
+        $path = File::realpath($path);
+        $this->silencePattern(
+            '@^' . preg_quote($path, '@') . (is_dir($path) ? '/' : '$') . '@',
+            $levels
+        );
         return $this;
     }
 

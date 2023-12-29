@@ -167,7 +167,7 @@ abstract class HttpMessage implements MessageInterface, IImmutable
             return $body;
         }
         if (is_string($body) || $body === null) {
-            return Stream::fromContents((string) $body);
+            return Stream::fromString((string) $body);
         }
         try {
             return new Stream($body);

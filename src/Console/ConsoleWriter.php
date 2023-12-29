@@ -22,6 +22,7 @@ use Lkrms\Utility\Debug;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Str;
 use Throwable;
 
 /**
@@ -111,7 +112,7 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * Register STDOUT and STDERR as targets in their default configuration
      *
-     * If the value of environment variable `CONSOLE_OUTPUT` is `stderr` or
+     * If the value of environment variable `CONSOLE_TARGET` is `stderr` or
      * `stdout`, console output is written to `STDERR` or `STDOUT` respectively.
      *
      * Otherwise, when running on the command line:
@@ -130,10 +131,10 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function registerDefaultStdioTargets(bool $replace = false)
     {
-        $output = Env::get('CONSOLE_OUTPUT', null);
+        $output = Env::get('CONSOLE_TARGET', null);
 
         if ($output !== null) {
-            switch (strtolower($output)) {
+            switch (Str::lower($output)) {
                 case 'stderr':
                     return $this->registerStdioTarget(
                         $replace,
@@ -150,7 +151,7 @@ final class ConsoleWriter implements ReceivesFacade
 
                 default:
                     throw new InvalidEnvironmentException(
-                        sprintf('Invalid CONSOLE_OUTPUT value: %s', $output)
+                        sprintf('Invalid CONSOLE_TARGET value: %s', $output)
                     );
             }
         }

@@ -4,6 +4,7 @@ namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
 use Lkrms\Exception\FilesystemErrorException;
+use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Console;
 use LogicException;
 use SQLite3;
@@ -88,13 +89,11 @@ final class Sys extends Utility
             return $filename;
         }
 
-        if (($basePath = File::realpath($basePath)) !== false &&
-                ($filename = File::realpath($filename)) !== false &&
-                strpos($filename, $basePath . \DIRECTORY_SEPARATOR) === 0) {
-            return substr($filename, strlen($basePath) + 1);
+        $filename = File::relativeToParent($filename, $basePath);
+        if ($filename === null) {
+            throw new LogicException('SCRIPT_FILENAME is not in $basePath');
         }
-
-        throw new LogicException('SCRIPT_FILENAME is not in $basePath');
+        return $filename;
     }
 
     /**
@@ -105,12 +104,42 @@ final class Sys extends Utility
     public static function getProgramBasename(string ...$suffixes): string
     {
         $basename = basename($_SERVER['SCRIPT_FILENAME']);
+
         if (!$suffixes) {
             return $basename;
         }
-        $regex = implode('|', array_map(fn(string $s) => preg_quote($s, '/'), $suffixes));
 
-        return preg_replace("/(?<=.)({$regex})+\$/", '', $basename);
+        foreach ($suffixes as $suffix) {
+            $length = strlen($suffix);
+            if (substr($basename, -$length) === $suffix) {
+                return substr($basename, 0, -$length);
+            }
+        }
+
+        return $basename;
+    }
+
+    /**
+     * Get the user ID or username of the current user
+     *
+     * @return int|string
+     */
+    public static function getUserId()
+    {
+        if (function_exists('posix_geteuid')) {
+            return posix_geteuid();
+        }
+
+        $user = Env::getNullable('USERNAME', null);
+        if ($user !== null) {
+            return $user;
+        }
+
+        $user = Env::getNullable('USER', null);
+        if ($user === null) {
+            throw new InvalidEnvironmentException('Unable to identify user');
+        }
+        return $user;
     }
 
     /**

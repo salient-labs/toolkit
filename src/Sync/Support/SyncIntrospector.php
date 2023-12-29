@@ -19,6 +19,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Closure;
 use LogicException;
 
@@ -328,7 +329,7 @@ final class SyncIntrospector extends Introspector
             return null;
         }
 
-        $method = strtolower($method);
+        $method = Str::lower($method);
         $closure = $this->_Class->MagicSyncOperationClosures[$method] ?? false;
         // Use strict comparison with `false` because null closures are cached
         if ($closure === false) {
@@ -888,8 +889,8 @@ final class SyncIntrospector extends Introspector
     private function getSyncOperationMethod($operation, SyncIntrospector $entity): ?string
     {
         $_entity = $entity->_Class;
-        $noun = strtolower($_entity->EntityNoun);
-        $plural = strtolower($_entity->EntityPlural);
+        $noun = Str::lower($_entity->EntityNoun);
+        $plural = Str::lower($_entity->EntityPlural);
         $methods = [];
 
         if ($plural) {

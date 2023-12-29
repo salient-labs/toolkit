@@ -72,7 +72,7 @@ final class Str extends Utility
      */
     public static function toSnakeCase(string $string, ?string $preserve = null): string
     {
-        return strtolower(self::toWords($string, '_', $preserve));
+        return self::lower(self::toWords($string, '_', $preserve));
     }
 
     /**
@@ -83,7 +83,7 @@ final class Str extends Utility
      */
     public static function toKebabCase(string $string, ?string $preserve = null): string
     {
-        return strtolower(self::toWords($string, '-', $preserve));
+        return self::lower(self::toWords($string, '-', $preserve));
     }
 
     /**
@@ -96,7 +96,7 @@ final class Str extends Utility
     {
         return Pcre::replaceCallback(
             '/(?<![[:alnum:]])[[:alpha:]]/u',
-            fn($matches) => strtolower($matches[0]),
+            fn($matches) => self::lower($matches[0]),
             self::toPascalCase($string, $preserve)
         );
     }
@@ -113,7 +113,7 @@ final class Str extends Utility
             $string,
             '',
             $preserve,
-            fn($word) => ucfirst(strtolower($word))
+            fn($word) => ucfirst(self::lower($word))
         );
     }
 
@@ -189,6 +189,19 @@ final class Str extends Utility
         ], $string);
 
         return $string;
+    }
+
+    /**
+     * Copy a string to a temporary stream
+     *
+     * @return resource
+     */
+    public static function toStream(string $string)
+    {
+        $stream = File::open('php://temp', 'r+');
+        File::write($stream, $string);
+        File::seek($stream, 0);
+        return $stream;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Contract\HasName;
 use Lkrms\Utility\Reflect;
+use Lkrms\Utility\Str;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
@@ -70,7 +71,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
 
         $id = $this->NextListenerId++;
         foreach ((array) $event as $event) {
-            $event = strtolower($event);
+            $event = Str::lower($event);
             $this->Listeners[$id][] = $event;
             $this->EventListeners[$event][$id] = $listener;
         }
@@ -122,7 +123,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
 
         $index = [];
         foreach ($events as $event) {
-            $index[strtolower($event)] = null;
+            $index[Str::lower($event)] = null;
         }
 
         $listenersByEvent = array_intersect_key($this->EventListeners, $index);

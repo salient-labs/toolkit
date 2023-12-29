@@ -15,6 +15,7 @@ use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
+use Lkrms\Utility\Str;
 use ADOConnection;
 use ADODB_Exception;
 
@@ -52,10 +53,10 @@ abstract class DbSyncProvider extends SyncProvider
         }
 
         return Arr::trim([
-            strtolower((string) $connector->Hostname),
+            Str::lower((string) $connector->Hostname),
             (string) $connector->Port,
-            strtolower((string) $connector->Database),
-            strtolower((string) $connector->Schema),
+            Str::lower((string) $connector->Database),
+            Str::lower((string) $connector->Schema),
         ], null, false);
     }
 

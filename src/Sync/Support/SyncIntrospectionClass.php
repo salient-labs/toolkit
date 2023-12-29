@@ -193,8 +193,8 @@ final class SyncIntrospectionClass extends IntrospectionClass
                     $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
                 };
 
-                $noun = strtolower($entity->EntityNoun);
-                $plural = strtolower($entity->EntityPlural);
+                $noun = Str::lower($entity->EntityNoun);
+                $plural = Str::lower($entity->EntityPlural);
 
                 if ($plural) {
                     $fn(SyncOperation::CREATE_LIST, 'create' . $plural);

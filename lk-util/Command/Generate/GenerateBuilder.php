@@ -492,7 +492,7 @@ class GenerateBuilder extends GenerateCommand
                             $T = sprintf('T%s', $i < 0 ? '' : $i);
                             $i++;
                         } while (array_key_exists($T, $this->InputClassTemplates) ||
-                            array_key_exists(strtolower($T), $this->AliasMap));
+                            array_key_exists(Str::lower($T), $this->AliasMap));
                         $templateTag = clone $templateTag;
                         $templateTag->Name = $T;
                         $templateTag->Variance = null;

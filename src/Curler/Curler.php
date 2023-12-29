@@ -33,7 +33,9 @@ use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Str;
 use CurlHandle;
 use DateTimeInterface;
 use Generator;
@@ -542,7 +544,7 @@ final class Curler implements IReadable, IWritable, Buildable
      */
     public function addSensitiveHeaderName(string $name)
     {
-        $this->SensitiveHeaderIndex[strtolower($name)] = true;
+        $this->SensitiveHeaderIndex[Str::lower($name)] = true;
         return $this;
     }
 
@@ -903,7 +905,7 @@ final class Curler implements IReadable, IWritable, Buildable
         if ($this->PostJson) {
             $this->setContentType(MimeType::JSON);
 
-            return json_encode($data);
+            return Json::stringify($data);
         }
 
         $this->setContentType(MimeType::WWW_FORM);
@@ -1246,7 +1248,9 @@ final class Curler implements IReadable, IWritable, Buildable
         }
 
         if ($this->responseContentTypeIs(MimeType::JSON)) {
-            $response = json_decode($this->ResponseBody, $this->ObjectAsArray);
+            $response = $this->ObjectAsArray
+                ? Json::parseObjectAsArray($this->ResponseBody)
+                : Json::parse($this->ResponseBody);
 
             if (isset($pager)) {
                 $response = $pager->getPage($response, $this)->entities();
@@ -1287,7 +1291,9 @@ final class Curler implements IReadable, IWritable, Buildable
             $this->execute(false);
 
             if ($this->responseContentTypeIs(MimeType::JSON)) {
-                $response = json_decode($this->ResponseBody, $this->ObjectAsArray);
+                $response = $this->ObjectAsArray
+                    ? Json::parseObjectAsArray($this->ResponseBody)
+                    : Json::parse($this->ResponseBody);
             } else {
                 throw new CurlerUnexpectedResponseException('Unable to deserialize response', $this);
             }
@@ -1419,7 +1425,7 @@ final class Curler implements IReadable, IWritable, Buildable
             }
 
             // Collect data from response and move on to next page
-            $result = json_decode($this->execute(false), true);
+            $result = Json::parseObjectAsArray($this->execute(false));
             $entities = array_merge($entities, $result);
 
             if (preg_match('/<([^>]+)>;\s*rel=([\'"])next\2/', $this->ResponseHeadersByName['link'] ?? '', $matches)) {
@@ -1452,7 +1458,7 @@ final class Curler implements IReadable, IWritable, Buildable
             }
 
             // Collect data from response and move on to next page
-            $result = json_decode($this->execute(false), true);
+            $result = Json::parseObjectAsArray($this->execute(false));
             $entities = array_merge($entities, $result[$entityName]);
             $nextUrl = $result['links']['next'] ?? null;
         } while ($nextUrl);

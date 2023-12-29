@@ -5,10 +5,12 @@ namespace Lkrms\LkUtil\Command\Concept;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Contract\IProvider;
+use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Json;
 use JsonException;
 
 /**
@@ -126,24 +128,25 @@ abstract class Command extends CliCommand
         if ($file === '-') {
             $file = 'php://stdin';
         } else {
-            $file = File::realpath($file);
-
-            if ($file === false) {
+            try {
+                $file = File::realpath($file);
+            } catch (FilesystemErrorException $ex) {
                 throw new CliInvalidArgumentsException(sprintf(
                     'file not found: %s',
                     $_file,
                 ));
             }
 
-            if (strpos($file, $this->App->getBasePath()) === 0) {
-                $path = './' . substr($file, strlen($this->App->getBasePath()) + 1);
-            } else {
-                $path = $file;
-            }
+            $relative = File::relativeToParent($file, $this->App->getBasePath());
+            $path = $relative === null ? $file : "./{$relative}";
         }
 
+        $json = File::getContents($file);
+
         try {
-            return json_decode(file_get_contents($file), $associative, 512, \JSON_THROW_ON_ERROR);
+            return $associative
+                ? Json::parseObjectAsArray($json)
+                : Json::parse($json);
         } catch (JsonException $ex) {
             throw new CliInvalidArgumentsException(sprintf(
                 "invalid JSON in '%s': %s",

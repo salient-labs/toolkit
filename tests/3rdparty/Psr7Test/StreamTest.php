@@ -14,7 +14,7 @@ class StreamTest extends StreamIntegrationTest
             return $data;
         }
         if (is_string($data)) {
-            return Stream::fromContents($data);
+            return Stream::fromString($data);
         }
         return new Stream($data);
     }

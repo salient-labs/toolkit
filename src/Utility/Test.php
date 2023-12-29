@@ -58,6 +58,7 @@ final class Test extends Utility
      * True if a value is a string or Stringable
      *
      * @param mixed $value
+     * @phpstan-assert-if-true Stringable|string $value
      */
     public static function isStringable($value): bool
     {
@@ -131,7 +132,7 @@ final class Test extends Utility
      */
     public static function isPhpReservedWord(string $value): bool
     {
-        return in_array(strtolower($value), [
+        return in_array(Str::lower($value), [
             'array',
             'bool',
             'callable',

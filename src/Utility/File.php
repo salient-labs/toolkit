@@ -7,13 +7,12 @@ use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\InvalidArgumentTypeException;
-use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
-use Phar;
+use Lkrms\Support\Indentation;
 use Stringable;
 
 /**
- * Work with files and directories
+ * Work with streams, files and directories
  */
 final class File extends Utility
 {
@@ -40,6 +39,7 @@ final class File extends Utility
      * @see fclose()
      * @param resource $stream
      * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
      */
     public static function close($stream, $uri = null): void
     {
@@ -141,6 +141,20 @@ final class File extends Utility
     }
 
     /**
+     * True if a stream is seekable
+     *
+     * @param resource $stream
+     */
+    public static function isSeekable($stream): bool
+    {
+        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
+            return false;
+        }
+        // @phpstan-ignore-next-line
+        return stream_get_meta_data($stream)['seekable'] ?? false;
+    }
+
+    /**
      * Open a pipe to a process
      *
      * @see popen()
@@ -167,7 +181,8 @@ final class File extends Utility
     }
 
     /**
-     * Get an entire file or the remaining contents of a stream
+     * Get the entire contents of a file or the remaining contents of an open
+     * stream
      *
      * @see file_get_contents()
      * @see stream_get_contents()
@@ -222,17 +237,33 @@ final class File extends Utility
      *
      * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
      *
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
      * @return string|null `null` if there are no recognised line breaks in the
      * file.
      *
      * @see Get::eol()
      * @see Str::setEol()
      */
-    public static function getEol(string $filename): ?string
+    public static function getEol($resource, $uri = null): ?string
     {
-        $handle = self::open($filename, 'r');
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $handle = $resource;
+        } elseif (Test::isStringable($resource)) {
+            $uri = (string) $resource;
+            $handle = self::open($uri, 'r');
+            $close = true;
+        } else {
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        }
+
         $line = fgets($handle);
-        self::close($handle, $filename);
+
+        if ($close) {
+            self::close($handle, $uri);
+        }
 
         if ($line === false) {
             return null;
@@ -249,6 +280,171 @@ final class File extends Utility
         }
 
         return null;
+    }
+
+    /**
+     * Guess the indentation used in a file
+     *
+     * Derived from VS Code's `indentationGuesser`.
+     *
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
+     *
+     * @link https://github.com/microsoft/vscode/blob/860d67064a9c1ef8ce0c8de35a78bea01033f76c/src/vs/editor/common/model/indentationGuesser.ts
+     */
+    public static function guessIndentation(
+        $resource,
+        ?Indentation $default = null,
+        bool $alwaysGuessTabSize = false,
+        $uri = null
+    ): Indentation {
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $handle = $resource;
+        } elseif (Test::isStringable($resource)) {
+            $uri = (string) $resource;
+            $handle = self::open($uri, 'r');
+            $close = true;
+        } else {
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        }
+
+        $lines = 0;
+        $linesWithTabs = 0;
+        $linesWithSpaces = 0;
+        $diffSpacesCount = [2 => 0, 0, 0, 0, 0, 0, 0];
+
+        $prevLine = '';
+        $prevOffset = 0;
+        while ($lines < 10000) {
+            $line = fgets($handle);
+            if ($line === false) {
+                break;
+            }
+
+            $lines++;
+
+            $line = rtrim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            $length = strlen($line);
+            $spaces = 0;
+            $tabs = 0;
+            for ($offset = 0; $offset < $length; $offset++) {
+                if ($line[$offset] === "\t") {
+                    $tabs++;
+                } elseif ($line[$offset] === ' ') {
+                    $spaces++;
+                } else {
+                    break;
+                }
+            }
+
+            if ($tabs) {
+                $linesWithTabs++;
+            } elseif ($spaces > 1) {
+                $linesWithSpaces++;
+            }
+
+            $minOffset = $prevOffset < $offset ? $prevOffset : $offset;
+            for ($i = 0; $i < $minOffset; $i++) {
+                if ($prevLine[$i] !== $line[$i]) {
+                    break;
+                }
+            }
+
+            $prevLineSpaces = 0;
+            $prevLineTabs = 0;
+            for ($j = $i; $j < $prevOffset; $j++) {
+                if ($prevLine[$j] === ' ') {
+                    $prevLineSpaces++;
+                } else {
+                    $prevLineTabs++;
+                }
+            }
+
+            $lineSpaces = 0;
+            $lineTabs = 0;
+            for ($j = $i; $j < $offset; $j++) {
+                if ($line[$j] === ' ') {
+                    $lineSpaces++;
+                } else {
+                    $lineTabs++;
+                }
+            }
+
+            $_prevLine = $prevLine;
+            $_prevOffset = $prevOffset;
+            $_line = $line;
+
+            $prevLine = $line;
+            $prevOffset = $offset;
+
+            if (
+                ($prevLineSpaces && $prevLineTabs) ||
+                ($lineSpaces && $lineTabs)
+            ) {
+                continue;
+            }
+
+            $diffSpaces = abs($prevLineSpaces - $lineSpaces);
+            $diffTabs = abs($prevLineTabs - $lineTabs);
+            if (!$diffTabs) {
+                // Skip if the difference could be alignment-related and doesn't
+                // match the file's default indentation
+                if (
+                    $diffSpaces &&
+                    $lineSpaces &&
+                    $lineSpaces - 1 < strlen($_prevLine) &&
+                    $_line[$lineSpaces] !== ' ' &&
+                    $_prevLine[$lineSpaces - 1] === ' ' &&
+                    $_prevLine[-1] === ',' &&
+                    !(
+                        $default &&
+                        $default->InsertSpaces &&
+                        $default->TabSize === $diffSpaces
+                    )
+                ) {
+                    $prevLine = $_prevLine;
+                    $prevOffset = $_prevOffset;
+                    continue;
+                }
+            } elseif ($diffSpaces % $diffTabs === 0) {
+                $diffSpaces /= $diffTabs;
+            } else {
+                continue;
+            }
+
+            if ($diffSpaces > 1 && $diffSpaces <= 8) {
+                $diffSpacesCount[$diffSpaces]++;
+            }
+        }
+
+        $insertSpaces = $linesWithTabs === $linesWithSpaces
+            ? $default->InsertSpaces ?? true
+            : $linesWithTabs < $linesWithSpaces;
+
+        $tabSize = $default->TabSize ?? 4;
+
+        // Only guess tab size if inserting spaces
+        if ($insertSpaces || $alwaysGuessTabSize) {
+            $count = 0;
+            foreach ([2, 4, 6, 8, 3, 5, 7] as $diffSpaces) {
+                if ($diffSpacesCount[$diffSpaces] > $count) {
+                    $tabSize = $diffSpaces;
+                    $count = $diffSpacesCount[$diffSpaces];
+                }
+            }
+        }
+
+        if ($close) {
+            self::close($handle, $uri);
+        }
+
+        return new Indentation($insertSpaces, $tabSize);
     }
 
     /**
@@ -302,7 +498,7 @@ final class File extends Utility
      */
     public static function isPharUri(string $path): bool
     {
-        return strtolower(substr($path, 0, 7)) === 'phar://';
+        return Str::lower(substr($path, 0, 7)) === 'phar://';
     }
 
     /**
@@ -435,14 +631,7 @@ final class File extends Utility
      */
     public static function createTempDir(): string
     {
-        $tempDir = sys_get_temp_dir();
-        $tmp = realpath($tempDir);
-        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-            throw new FilesystemErrorException(
-                sprintf('Not a writable directory: %s', $tempDir),
-            );
-        }
-
+        $tmp = self::getTempDir();
         $program = Sys::getProgramBasename();
         do {
             $dir = sprintf('%s/%s%s.tmp', $tmp, $program, Compute::randomText(8));
@@ -452,41 +641,22 @@ final class File extends Utility
     }
 
     /**
-     * A Phar-friendly, file descriptor-aware realpath()
+     * Resolve symbolic links and relative references in a path or Phar URI
      *
-     * 1. If `$filename` is a file descriptor in `/dev/fd` or `/proc`,
-     *    `php://fd/<DESCRIPTOR>` is returned.
-     *
-     * 2. If a Phar archive is running and `$filename` is a `phar://` URL:
-     *    - relative path segments in `$filename` (e.g. `/../..`) are resolved
-     *      by {@see File::resolve()}
-     *    - if the file or directory exists, the resolved pathname is returned
-     *    - if `$filename` doesn't exist, `false` is returned
-     *
-     * 3. The return value of `realpath($filename)` is returned.
-     *
-     * @return string|false
+     * @throws FilesystemErrorException if `$path` does not exist.
      */
-    public static function realpath(string $filename)
+    public static function realpath(string $path): string
     {
-        if (Pcre::match(
-            '#^/(?:dev|proc/(?:self|[0-9]+))/fd/([0-9]+)$#',
-            $filename,
-            $matches
-        )) {
-            return 'php://fd/' . $matches[1];
-        }
-        if (self::isPharUri($filename) &&
-                extension_loaded('Phar') &&
-                Phar::running()) {
-            // @codeCoverageIgnoreStart
-            $filename = self::resolve($filename);
-
-            return file_exists($filename) ? $filename : false;
-            // @codeCoverageIgnoreEnd
+        if (self::isPharUri($path) && file_exists($path)) {
+            return self::resolve($path, true);
         }
 
-        return realpath($filename);
+        $_path = $path;
+        $path = realpath($path);
+        if ($path === false) {
+            throw new FilesystemErrorException(sprintf('File not found: %s', $_path));
+        }
+        return $path;
     }
 
     /**
@@ -535,29 +705,22 @@ final class File extends Utility
     /**
      * Get a path relative to a parent directory
      *
-     * If `$parentDir` is `null`, the path of the root package is used.
+     * Returns `$fallback` if `$filename` does not belong to `$parentDir`.
      *
      * @throws FilesystemErrorException if `$filename` or `$parentDir` do not
-     * exist or if `$filename` does not belong to `$parentDir`.
+     * exist.
      */
     public static function relativeToParent(
         string $filename,
-        ?string $parentDir = null
-    ): string {
-        if ($parentDir === null) {
-            $basePath = Package::path();
-        } else {
-            Assert::fileExists($parentDir);
-            $basePath = self::realpath($parentDir);
-        }
-        Assert::fileExists($filename);
+        string $parentDir,
+        ?string $fallback = null
+    ): ?string {
         $path = self::realpath($filename);
+        $basePath = self::realpath($parentDir);
         if (strpos($path, $basePath) === 0) {
             return substr($path, strlen($basePath) + 1);
         }
-        throw new FilesystemErrorException(
-            sprintf("'%s' does not belong to '%s'", $filename, $parentDir)
-        );
+        return $fallback;
     }
 
     /**
@@ -618,73 +781,63 @@ final class File extends Utility
     }
 
     /**
-     * Write data to a CSV file or stream
+     * Write CSV-formatted data to a file or stream
      *
      * For maximum interoperability with Excel across all platforms, data is
      * written in UTF-16LE by default.
      *
-     * @param iterable<mixed[]> $data Data to write.
-     * @param string|resource|null $target Either a filename, a stream opened by
-     * `fopen()`, `fsockopen()` or similar, or `null`. If `null`, data is
-     * returned as a string.
+     * @template TValue
+     *
+     * @param Stringable|string|resource $resource
+     * @param iterable<TValue> $data
      * @param bool $headerRow If `true`, write the first record's array keys
      * before the first row.
-     * @param int|string|null $nullValue Optionally replace `null` values before
-     * writing data.
-     * @param callable(mixed): mixed[] $callback Applied to each record before
+     * @param int|float|string|bool|null $nullValue Optionally replace `null`
+     * values before writing data.
+     * @param callable(TValue): mixed[] $callback Applied to each record before
      * it is written.
      * @param int|null $count Receives the number of records written.
      * @param bool $utf16le If `true` (the default), encode output in UTF-16LE.
      * @param bool $bom If `true` (the default), add a BOM (byte order mark) to
      * the output.
-     * @return string|true
+     * @param Stringable|string|null $uri
      */
     public static function writeCsv(
+        $resource,
         iterable $data,
-        $target = null,
         bool $headerRow = true,
         $nullValue = null,
         ?callable $callback = null,
         ?int &$count = null,
         string $eol = "\r\n",
         bool $utf16le = true,
-        bool $bom = true
-    ) {
-        if (is_resource($target)) {
-            self::assertResourceIsStream($target);
-            $handle = $target;
-            $targetName = 'stream';
-        } elseif (is_string($target)) {
-            $handle = self::open($target, 'wb');
-            $targetName = $target;
+        bool $bom = true,
+        $uri = null
+    ): void {
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $handle = $resource;
+        } elseif (Test::isStringable($resource)) {
+            $uri = (string) $resource;
+            $handle = self::open($uri, 'wb');
+            $close = true;
         } else {
-            $target = 'php://temp';
-            $handle = self::open($target, 'r+b');
-            $targetName = $target;
-            $target = null;
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
         }
 
         if ($utf16le) {
             if (!extension_loaded('iconv')) {
                 throw new IncompatibleRuntimeEnvironmentException(
-                    "'iconv' extension required for UTF-16LE encoding",
+                    "'iconv' extension required for UTF-16LE encoding"
                 );
             }
-            $filter = 'convert.iconv.UTF-8.UTF-16LE';
-            $result = stream_filter_append(
-                $handle,
-                $filter,
-                \STREAM_FILTER_WRITE,
-            );
-            if ($result === false) {
-                throw new FilesystemErrorException(
-                    sprintf('Error applying filter to stream: %s', $filter),
-                );
-            }
+            $filter = @stream_filter_append($handle, 'convert.iconv.UTF-8.UTF-16LE', \STREAM_FILTER_WRITE);
+            self::throwOnFailure($filter, 'Error applying UTF-16LE filter to stream: %s', $uri, $handle);
         }
 
         if ($bom) {
-            self::write($handle, '﻿', null, $targetName);
+            self::write($handle, '﻿', null, $uri);
         }
 
         $count = 0;
@@ -693,44 +846,35 @@ final class File extends Utility
                 $row = $callback($row);
             }
 
-            foreach ($row as &$value) {
-                if ($value === null) {
-                    $value = $nullValue;
-                } elseif (!is_scalar($value)) {
-                    $value = json_encode($value);
-                }
-            }
+            $row = Arr::toScalars($row, $nullValue);
 
             if (!$count && $headerRow) {
-                self::fputcsv($handle, array_keys($row), ',', '"', $eol, $targetName);
+                self::fputcsv($handle, array_keys($row), ',', '"', $eol, $uri);
             }
 
-            self::fputcsv($handle, $row, ',', '"', $eol);
+            self::fputcsv($handle, $row, ',', '"', $eol, $uri);
             $count++;
         }
 
-        if ($target === null) {
-            self::seek($handle, 0);
-            $csv = stream_get_contents($handle);
-            self::close($handle, $targetName);
-
-            return $csv;
+        if ($close) {
+            self::close($handle, $uri);
+        } elseif ($utf16le) {
+            $result = @stream_filter_remove($filter);
+            self::throwOnFailure($result, 'Error removing UTF-16LE filter from stream: %s', $uri, $handle);
         }
-        if (is_string($target)) {
-            self::close($handle, $targetName);
-        }
-
-        return true;
     }
 
     /**
-     * A polyfill for PHP 8.1's fputcsv, minus $escape
+     * Write a line of comma-separated values to an open stream
+     *
+     * A shim for {@see fputcsv()} with `$eol` (added in PHP 8.1) and without
+     * `$escape` (which should be removed).
      *
      * @param resource $stream
      * @param mixed[] $fields
      * @param Stringable|string|null $uri
      */
-    private static function fputcsv(
+    public static function fputcsv(
         $stream,
         array $fields,
         string $separator = ',',
@@ -739,6 +883,7 @@ final class File extends Utility
         $uri = null
     ): int {
         $special = $separator . $enclosure . "\n\r\t ";
+
         foreach ($fields as &$field) {
             if (strpbrk((string) $field, $special) !== false) {
                 $field = $enclosure
@@ -780,53 +925,30 @@ final class File extends Utility
         string $suffix = '',
         ?string $dir = null
     ): string {
-        $program = Sys::getProgramName();
-        $path = self::realpath($program);
-        if ($path === false) {
-            throw new FilesystemErrorException(
-                'Unable to resolve filename used to run the script',
-            );
-        }
-        $program = basename($program);
+        $path = Sys::getProgramName();
+        $program = basename($path);
+        $path = self::realpath($path);
         $hash = Compute::hash($path);
-
-        if (function_exists('posix_geteuid')) {
-            $user = posix_geteuid();
-        } else {
-            $user = Env::getNullable('USERNAME', null);
-            if ($user === null) {
-                $user = Env::getNullable('USER', null);
-                if ($user === null) {
-                    throw new InvalidEnvironmentException(
-                        'Unable to identify user'
-                    );
-                }
-            }
-        }
+        $user = Sys::getUserId();
 
         if ($dir === null) {
-            $tempDir = sys_get_temp_dir();
-            $tmp = realpath($tempDir);
-            if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-                throw new FilesystemErrorException(
-                    sprintf('Not a writable directory: %s', $tempDir)
-                );
-            }
-            $dir = $tmp;
+            $dir = self::getTempDir();
         } else {
-            $trimmed = rtrim($dir, '/\\');
-            $dir = $trimmed === '' ? $dir : $trimmed;
+            $dir = Str::coalesce(rtrim($dir, '/\\'), $dir, '.');
         }
 
-        return sprintf(
-            '%s/%s-%s-%s%s',
-            $dir === ''
-                ? '.'
-                : $dir,
-            $program,
-            $hash,
-            $user,
-            $suffix,
-        );
+        return sprintf('%s/%s-%s-%s%s', $dir, $program, $hash, $user, $suffix);
+    }
+
+    private static function getTempDir(): string
+    {
+        $tempDir = sys_get_temp_dir();
+        $tmp = realpath($tempDir);
+        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a writable directory: %s', $tempDir),
+            );
+        }
+        return $tmp;
     }
 }

@@ -57,9 +57,9 @@ final class StreamTest extends TestCase
         ];
     }
 
-    public function testFromContents(): void
+    public function testFromString(): void
     {
-        $stream = Stream::fromContents('foo');
+        $stream = Stream::fromString('foo');
         $this->assertSame(3, $stream->getSize());
         $this->assertSame('foo', (string) $stream);
         $stream->close();
@@ -220,7 +220,7 @@ final class StreamTest extends TestCase
     {
         $file = $temp
             ? File::createTempDir() . '/does_not_exist'
-            : self::getFixturesPath(__CLASS__) . '/file';
+            : $this->getFixturesPath(__CLASS__) . '/file';
 
         try {
             $stream = $this->getStream($mode, null, $file);

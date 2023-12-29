@@ -7,6 +7,7 @@ use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Http\Exception\StreamDetachedException;
 use Lkrms\Http\Exception\StreamInvalidRequestException;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Str;
 use Psr\Http\Message\StreamInterface;
 use Stringable;
 
@@ -52,14 +53,11 @@ class Stream implements StreamInterface, Stringable
     }
 
     /**
-     * Creates a new Stream object backed by the contents of a given string
+     * Creates a new Stream object from a string
      */
-    public static function fromContents(string $data): self
+    public static function fromString(string $content): self
     {
-        $stream = File::open('php://temp', 'r+');
-        File::write($stream, $data);
-        File::seek($stream, 0);
-        return new self($stream);
+        return new self(Str::toStream($content));
     }
 
     /**
