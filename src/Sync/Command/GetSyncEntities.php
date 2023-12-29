@@ -12,6 +12,7 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Json;
 
 /**
  * A generic sync entity retrieval command
@@ -182,11 +183,11 @@ final class GetSyncEntities extends AbstractSyncCommand
                 $result = array_shift($result);
             }
 
-            echo json_encode($result) . "\n";
+            echo Json::prettyPrint($result) . "\n";
         } else {
             $count = 0;
             foreach ($result as $entity) {
-                echo json_encode($entity->toArrayWith($rules)) . "\n";
+                echo Json::prettyPrint($entity->toArrayWith($rules)) . "\n";
                 $count++;
             }
         }

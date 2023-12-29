@@ -5,6 +5,7 @@ namespace Lkrms\Sync\Exception;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Utility\Json;
 
 /**
  * Thrown when there are unclaimed sync operation filters
@@ -37,7 +38,7 @@ class SyncFilterPolicyViolationException extends SyncException
     public function getDetail(): array
     {
         return [
-            'Unclaimed' => json_encode($this->Unclaimed),
+            'Unclaimed' => Json::prettyPrint($this->Unclaimed),
         ];
     }
 }

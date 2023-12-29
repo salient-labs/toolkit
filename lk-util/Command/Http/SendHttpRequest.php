@@ -11,6 +11,7 @@ use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Json;
 use Lkrms\Utility\Str;
 
 /**
@@ -153,6 +154,6 @@ final class SendHttpRequest extends Command
             $result = $array;
         }
 
-        echo json_encode($result) . "\n";
+        echo Json::prettyPrint($result) . "\n";
     }
 }

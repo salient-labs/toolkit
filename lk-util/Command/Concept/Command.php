@@ -10,6 +10,7 @@ use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Json;
 use JsonException;
 
 /**
@@ -140,8 +141,12 @@ abstract class Command extends CliCommand
             $path = $relative === null ? $file : "./{$relative}";
         }
 
+        $json = File::getContents($file);
+
         try {
-            return json_decode(file_get_contents($file), $associative, 512, \JSON_THROW_ON_ERROR);
+            return $associative
+                ? Json::parseObjectAsArray($json)
+                : Json::parse($json);
         } catch (JsonException $ex) {
             throw new CliInvalidArgumentsException(sprintf(
                 "invalid JSON in '%s': %s",

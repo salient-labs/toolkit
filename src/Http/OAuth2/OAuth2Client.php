@@ -18,6 +18,7 @@ use Lkrms\Store\CacheStore;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Json;
 use LogicException;
 use Throwable;
 
@@ -554,7 +555,7 @@ abstract class OAuth2Client
             return null;
         }
 
-        $header = json_decode($header, true);
+        $header = Json::parseObjectAsArray($header);
         return $header['alg'] ?? null;
     }
 

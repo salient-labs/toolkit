@@ -6,6 +6,7 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Json;
 
 class TestOptions extends CliCommand
 {
@@ -174,22 +175,19 @@ class TestOptions extends CliCommand
     protected function run(string ...$args)
     {
         if ($this->App->getRunningCommand() === $this) {
-            echo json_encode(
-                [
-                    'args' => $args,
-                    'options' => $this->getOptionValues(),
-                    'bound' => [
-                        'flag1' => $this->flag1,
-                        'valPos1' => $this->valPos1,
-                        'val1' => $this->val1,
-                        'valOpt1' => $this->valOpt1,
-                        'oneOfPos1' => $this->oneOfPos1,
-                        'oneOf1' => $this->oneOf1,
-                        'oneOfOpt3' => $this->oneOfOpt3,
-                    ]
+            echo Json::prettyPrint([
+                'args' => $args,
+                'options' => $this->getOptionValues(),
+                'bound' => [
+                    'flag1' => $this->flag1,
+                    'valPos1' => $this->valPos1,
+                    'val1' => $this->val1,
+                    'valOpt1' => $this->valOpt1,
+                    'oneOfPos1' => $this->oneOfPos1,
+                    'oneOf1' => $this->oneOf1,
+                    'oneOfOpt3' => $this->oneOfOpt3,
                 ],
-                \JSON_PRETTY_PRINT
-            );
+            ]);
         }
     }
 }
