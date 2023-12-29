@@ -69,7 +69,7 @@ class HttpFactory implements
      */
     public function createStream(string $content = ''): StreamInterface
     {
-        return Stream::fromContents($content);
+        return Stream::fromString($content);
     }
 
     /**

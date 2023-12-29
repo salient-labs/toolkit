@@ -192,6 +192,19 @@ final class Str extends Utility
     }
 
     /**
+     * Copy a string to a temporary stream
+     *
+     * @return resource
+     */
+    public static function toStream(string $string)
+    {
+        $stream = File::open('php://temp', 'r+');
+        File::write($stream, $string);
+        File::seek($stream, 0);
+        return $stream;
+    }
+
+    /**
      * Split a string by a string, remove whitespace from the beginning and end
      * of each substring, remove empty strings
      *
