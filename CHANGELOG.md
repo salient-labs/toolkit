@@ -12,6 +12,94 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.18] - 2023-12-29
+
+### Added
+
+- Add `File::guessIndentation()`
+- Add `File::isSeekable()`
+- Add `Str::toStream()`
+- Add `Sys::getUserId()`
+
+### Changed
+
+- Refactor `File::realpath()`
+  - Remove file descriptor handling
+  - **Throw an exception if the file doesn't exist**
+  - Resolve Phar URIs when a Phar is not running
+- Refactor `File::relativeToParent()`
+  - Require `$parentDir`
+  - Add `$fallback` (`null` by default) and return it if `$filename` does not belong to `$parentDir`
+- Refactor `File::writeCsv()`
+  - **Make `$resource` a required parameter**
+  - **Swap `$data` and `$resource` parameters**
+  - **Change return type to `void`**
+  - Remove UTF-16LE filters applied to streams provided by the caller
+  - Apply `Arr::toScalars()` to each row of data
+- Refactor `Sys::getProgramBasename()`
+  - Only remove the first matched `$suffix`
+- Rename `Stream::fromContents()` to `Stream::fromString()`
+- Rename environment variable `CONSOLE_OUTPUT` to `CONSOLE_TARGET`
+- Add optional `$null` parameter to `Arr::toScalars()`
+- Adopt `Str::lower()` and `Str::upper()` for case comparison
+- Make `File::fputcsv()` public
+
+### Fixed
+
+- Fix `File::realpath()` issue where `//../` segments in Phar URIs are not resolved correctly
+- Fix `ErrorHandler::silencePath()` issue where files and directories that start with the same name as a silenced file are inadvertently silenced
+
+## [v0.21.17] - 2023-12-25
+
+### Added
+
+- Add `Arr::flatten()`
+- Add `HttpFactory` (implements PSR-17 factory interfaces)
+
+### Changed
+
+- **Return `null` instead of `false` when `FluentIteratorInterface::nextWithValue()` finds no matching value**
+- Pass value AND key to `FluentIteratorInterface::forEach()` callback
+- In `HttpRequest`, preserve the original case of the HTTP method
+- In `HttpHeaders`, throw an exception when a header with no values is given
+- In `Uri`, do not resolve dot segments if the URI is a relative reference
+- In `Arr::toScalars()`, preserve `null` values
+- In `Arr::trim()`, remove keys from the array if removing empty values
+- Optionally preserve keys in `Arr::unique()`
+- Rename `Arr::sameValues()` to `same()`
+- Accept `iterable` where possible in `Arr` methods
+- Add `Arr::keyOffset()`, deprecating `Convert::arrayKeyToOffset()`
+- Add `Arr::toMap()`, deprecating `Convert::listToMap()`
+- Add `Arr::toScalars()`, deprecating `Convert::toScalarArray()`
+- Add `Get::array()`, deprecating `Convert::iterableToArray()`
+
+### Deprecated
+
+- Deprecate (see above):
+  - `Convert::arrayKeyToOffset()`
+  - `Convert::listToMap()`
+  - `Convert::toScalarArray()`
+  - `Convert::iterableToArray()`
+
+### Removed
+
+- Remove unused/redundant methods:
+  - `Arr::forEach()`
+  - `Convert::columnsToUnique()`
+  - `Convert::iterableToItem()`
+  - `Convert::iterableToIterator()`
+  - `Convert::scalarToString()`
+  - `Convert::stringsToUnique()`
+  - `Convert::stringsToUniqueList()`
+  - `Convert::valueAtKey()`
+  - `Convert::walkRecursive()`
+  - `FluentIteratorInterface::forEachWhile()`
+  - `FluentIteratorTrait::forEachWhile()`
+
+### Fixed
+
+- Fix bug in `Arr::sortDesc()` where keys are not preserved correctly
+
 ## [v0.21.16] - 2023-12-21
 
 ### Fixed
@@ -1159,6 +1247,8 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.18]: https://github.com/lkrms/php-util/compare/v0.21.17...v0.21.18
+[v0.21.17]: https://github.com/lkrms/php-util/compare/v0.21.16...v0.21.17
 [v0.21.16]: https://github.com/lkrms/php-util/compare/v0.21.15...v0.21.16
 [v0.21.15]: https://github.com/lkrms/php-util/compare/v0.21.14...v0.21.15
 [v0.21.14]: https://github.com/lkrms/php-util/compare/v0.21.13...v0.21.14

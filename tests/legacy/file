@@ -31,7 +31,7 @@ print_r([
     'STDOUT' => File::getStreamUri(\STDOUT),
     'STDERR' => File::getStreamUri(\STDERR),
     'areSame' => array_map(
-        function ($f) { return array_merge($f, [File::is($f[0], $f[1])]); },
+        function ($f) { return array_merge($f, [File::same($f[0], $f[1])]); },
         $compare
     )
 ]);
