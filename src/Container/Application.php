@@ -428,7 +428,7 @@ class Application extends Container implements IApplication
 
         if (Cache::isLoaded()) {
             $file = Cache::getFilename();
-            if (File::is($cacheDb, $file)) {
+            if (File::same($cacheDb, $file)) {
                 return $this;
             }
             throw new LogicException(sprintf('Cache store already started: %s', $file));
@@ -455,7 +455,7 @@ class Application extends Container implements IApplication
     final public function stopCache()
     {
         if (!Cache::isLoaded() ||
-                !File::is($this->getCacheDb(false), Cache::getFilename())) {
+                !File::same($this->getCacheDb(false), Cache::getFilename())) {
             return $this;
         }
         Cache::close();
@@ -496,7 +496,7 @@ class Application extends Container implements IApplication
 
         if (Sync::isLoaded()) {
             $file = Sync::getFilename();
-            if (File::is($syncDb, $file)) {
+            if (File::same($syncDb, $file)) {
                 return $this;
             }
             throw new LogicException(sprintf('Entity store already started: %s', $file));
@@ -536,7 +536,7 @@ class Application extends Container implements IApplication
     final public function stopSync()
     {
         if (!Sync::isLoaded() ||
-                !File::is($this->getSyncDb(false), Sync::getFilename())) {
+                !File::same($this->getSyncDb(false), Sync::getFilename())) {
             return $this;
         }
         Sync::close();

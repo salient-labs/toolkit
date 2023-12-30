@@ -126,18 +126,30 @@ final class File extends Utility
     }
 
     /**
-     * Get the file status of a stream
+     * Get the status of a file or stream
      *
+     * @see stat()
      * @see fstat()
-     * @param resource $stream
+     * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
      * @return int[]
      * @throws FilesystemErrorException on failure.
      */
-    public static function stat($stream, $uri = null): array
+    public static function stat($resource, $uri = null): array
     {
-        $result = @fstat($stream);
-        return self::throwOnFailure($result, 'Error getting file status of stream: %s', $uri, $stream);
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $result = @fstat($resource);
+            return self::throwOnFailure($result, 'Error getting status of stream: %s', $uri, $resource);
+        }
+
+        if (!Test::isStringable($resource)) {
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        }
+
+        $resource = (string) $resource;
+        $result = @stat($resource);
+        return self::throwOnFailure($result, 'Error getting file status: %s', $resource);
     }
 
     /**
@@ -181,8 +193,7 @@ final class File extends Utility
     }
 
     /**
-     * Get the entire contents of a file or the remaining contents of an open
-     * stream
+     * Get the entire contents of a file or the remaining contents of a stream
      *
      * @see file_get_contents()
      * @see stream_get_contents()
@@ -233,7 +244,7 @@ final class File extends Utility
     }
 
     /**
-     * Get the end-of-line sequence used in a file
+     * Get the end-of-line sequence used in a file or stream
      *
      * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
      *
@@ -247,17 +258,7 @@ final class File extends Utility
      */
     public static function getEol($resource, $uri = null): ?string
     {
-        $close = false;
-        if (is_resource($resource)) {
-            self::assertResourceIsStream($resource);
-            $handle = $resource;
-        } elseif (Test::isStringable($resource)) {
-            $uri = (string) $resource;
-            $handle = self::open($uri, 'r');
-            $close = true;
-        } else {
-            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-        }
+        $handle = self::getStream($resource, 'r', $close, $uri);
 
         $line = fgets($handle);
 
@@ -283,7 +284,7 @@ final class File extends Utility
     }
 
     /**
-     * Guess the indentation used in a file
+     * Guess the indentation used in a file or stream
      *
      * Derived from VS Code's `indentationGuesser`.
      *
@@ -298,17 +299,7 @@ final class File extends Utility
         bool $alwaysGuessTabSize = false,
         $uri = null
     ): Indentation {
-        $close = false;
-        if (is_resource($resource)) {
-            self::assertResourceIsStream($resource);
-            $handle = $resource;
-        } elseif (Test::isStringable($resource)) {
-            $uri = (string) $resource;
-            $handle = self::open($uri, 'r');
-            $close = true;
-        } else {
-            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-        }
+        $handle = self::getStream($resource, 'r', $close, $uri);
 
         $lines = 0;
         $linesWithTabs = 0;
@@ -401,8 +392,7 @@ final class File extends Utility
                     $lineSpaces - 1 < strlen($_prevLine) &&
                     $_line[$lineSpaces] !== ' ' &&
                     $_prevLine[$lineSpaces - 1] === ' ' &&
-                    $_prevLine[-1] === ',' &&
-                    !(
+                    $_prevLine[-1] === ',' && !(
                         $default &&
                         $default->InsertSpaces &&
                         $default->TabSize === $diffSpaces
@@ -450,14 +440,16 @@ final class File extends Utility
     /**
      * True if two paths refer to the same filesystem entry
      */
-    public static function is(string $filename1, string $filename2): bool
+    public static function same(string $filename1, string $filename2): bool
     {
         if (!file_exists($filename1) || !file_exists($filename2)) {
             return false;
         }
-        $inode = fileinode($filename1);
-        return $inode !== false &&
-            fileinode($filename2) === $inode;
+        $stat1 = self::stat($filename1);
+        $stat2 = self::stat($filename2);
+        return
+            $stat1['dev'] === $stat2['dev'] &&
+            $stat1['ino'] === $stat2['ino'];
     }
 
     /**
@@ -814,17 +806,7 @@ final class File extends Utility
         bool $bom = true,
         $uri = null
     ): void {
-        $close = false;
-        if (is_resource($resource)) {
-            self::assertResourceIsStream($resource);
-            $handle = $resource;
-        } elseif (Test::isStringable($resource)) {
-            $uri = (string) $resource;
-            $handle = self::open($uri, 'wb');
-            $close = true;
-        } else {
-            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-        }
+        $handle = self::getStream($resource, 'wb', $close, $uri);
 
         if ($utf16le) {
             if (!extension_loaded('iconv')) {
@@ -898,6 +880,28 @@ final class File extends Utility
             null,
             $uri,
         );
+    }
+
+    /**
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
+     * @param-out bool $close
+     * @param-out Stringable|string|null $uri
+     * @return resource
+     */
+    private static function getStream($resource, string $mode, ?bool &$close, &$uri)
+    {
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            return $resource;
+        }
+        if (Test::isStringable($resource)) {
+            $uri = (string) $resource;
+            $close = true;
+            return self::open($uri, $mode);
+        }
+        throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
     }
 
     /**

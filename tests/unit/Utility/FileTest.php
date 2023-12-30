@@ -12,6 +12,37 @@ use Lkrms\Utility\Str;
 final class FileTest extends TestCase
 {
     /**
+     * @dataProvider getEolProvider
+     */
+    public function testGetEol(?string $expected, string $content): void
+    {
+        $stream = Str::toStream($content);
+        $this->assertSame($expected, File::getEol($stream));
+    }
+
+    /**
+     * @return array<array{string|null,string}>
+     */
+    public static function getEolProvider(): array
+    {
+        return [
+            [null, ''],
+            [null, 'x'],
+            ["\r\n", "\r\n"],
+            ["\r\n", "x\r\n"],
+            ["\r\n", "x\r\nx"],
+            ["\n", "\n"],
+            ["\n", "x\n"],
+            ["\n", "x\nx"],
+            ["\r", "\r"],
+            ["\r", "x\r"],
+            ["\r", "x\rx"],
+            ["\n", "x\rx\n"],
+            ["\r\n", "x\rx\r\n"],
+        ];
+    }
+
+    /**
      * Derived from VS Code's textModel tests
      *
      * @dataProvider guessIndentationProvider
@@ -960,5 +991,14 @@ final class FileTest extends TestCase
         $this->assertTrue(File::isAbsolute($path));
         $this->assertDirectoryExists($dir);
         $this->assertIsWritable($dir);
+    }
+
+    public function testSame(): void
+    {
+        $path = $this->getFixturesPath(__CLASS__);
+        $this->assertTrue(File::same("$path/dir/file", "$path/dir/file"));
+        $this->assertTrue(File::same("$path/dir/file", "$path/file_symlink"));
+        $this->assertFalse(File::same("$path/dir/file", "$path/exists"));
+        $this->assertFalse(File::same("$path/dir/file", "$path/broken_symlink"));
     }
 }
