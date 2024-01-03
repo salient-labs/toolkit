@@ -47,6 +47,7 @@ use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Utility\Arr;
+use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
@@ -103,7 +104,7 @@ foreach ($class->getReflectionConstants() as $constant) {
     if (!$constant->isPublic()) {
         continue;
     }
-    $app->env()->unset($constant->getValue());
+    Env::unset($constant->getValue());
 }
 
 $args = [

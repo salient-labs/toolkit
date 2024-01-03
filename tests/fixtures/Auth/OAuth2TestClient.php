@@ -7,25 +7,26 @@ use Lkrms\Http\OAuth2\AccessToken;
 use Lkrms\Http\OAuth2\OAuth2Client;
 use Lkrms\Http\OAuth2\OAuth2Flow;
 use Lkrms\Http\HttpServer;
+use Lkrms\Utility\Env;
 
 class OAuth2TestClient extends OAuth2Client
 {
     protected function getListener(): ?HttpServer
     {
         $listener = new HttpServer(
-            $this->Env->get('app_host', 'localhost'),
-            $this->Env->getInt('app_port', 27755),
+            Env::get('app_host', 'localhost'),
+            Env::getInt('app_port', 27755),
         );
 
-        $proxyHost = $this->Env->getNullable('app_proxy_host', null);
-        $proxyPort = $this->Env->getNullableInt('app_proxy_port', null);
+        $proxyHost = Env::getNullable('app_proxy_host', null);
+        $proxyPort = Env::getNullableInt('app_proxy_port', null);
 
         if ($proxyHost !== null && $proxyPort !== null) {
             return $listener->withProxy(
                 $proxyHost,
                 $proxyPort,
-                $this->Env->getNullableBool('app_proxy_tls', null),
-                $this->Env->getNullable('app_proxy_base_path', null),
+                Env::getNullableBool('app_proxy_tls', null),
+                Env::getNullable('app_proxy_base_path', null),
             );
         }
 
@@ -34,11 +35,11 @@ class OAuth2TestClient extends OAuth2Client
 
     protected function getProvider(): GenericProvider
     {
-        $tenantId = $this->Env->get('microsoft_graph_tenant_id');
+        $tenantId = Env::get('microsoft_graph_tenant_id');
 
         return new GenericProvider([
-            'clientId' => $this->Env->get('microsoft_graph_app_id'),
-            'clientSecret' => $this->Env->get('microsoft_graph_secret'),
+            'clientId' => Env::get('microsoft_graph_app_id'),
+            'clientSecret' => Env::get('microsoft_graph_secret'),
             'redirectUri' => $this->getRedirectUri(),
             'urlAuthorize' => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $tenantId),
             'urlAccessToken' => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $tenantId),

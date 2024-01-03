@@ -15,7 +15,6 @@ use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
-use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Str;
 use LogicException;
@@ -104,11 +103,6 @@ abstract class CliCommand implements ICliCommand
     protected $App;
 
     /**
-     * @var Env
-     */
-    protected $Env;
-
-    /**
      * @var string[]|null
      */
     private $Name;
@@ -187,8 +181,7 @@ abstract class CliCommand implements ICliCommand
 
     public function __construct(ICliApplication $app)
     {
-        $this->App = $app->singletonIf(Env::class);
-        $this->Env = $this->App->get(Env::class);
+        $this->App = $app;
     }
 
     final public function app(): ICliApplication
@@ -199,11 +192,6 @@ abstract class CliCommand implements ICliCommand
     final public function container(): ICliApplication
     {
         return $this->App;
-    }
-
-    final public function env(): Env
-    {
-        return $this->Env;
     }
 
     final public function setName(array $name): void

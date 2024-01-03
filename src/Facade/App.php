@@ -12,7 +12,6 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Utility\Catalog\EnvFlag;
-use Lkrms\Utility\Env;
 
 /**
  * A facade for \Lkrms\Container\Application
@@ -24,7 +23,6 @@ use Lkrms\Utility\Env;
  * @method static Application apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Application bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Application bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
- * @method static Env env() Get a shared instance of Lkrms\Utility\Env
  * @method static mixed get(class-string $id, mixed[] $args = []) Get an object from the container (see {@see Container::get()})
  * @method static string getAppName() Get the name of the application
  * @method static mixed getAs(class-string $id, class-string $service, mixed[] $args = []) Get an object from the container with a given service name (see {@see Container::getAs()})
