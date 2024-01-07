@@ -19,9 +19,9 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method $this entityName(?string $value) The display name of the entity associated with the error (see {@see SyncError::$EntityName})
  * @method $this provider(?ISyncProvider $value) The sync provider associated with the error
  *
- * @uses SyncError
- *
  * @extends Builder<SyncError>
+ *
+ * @generated
  */
 final class SyncErrorBuilder extends Builder
 {

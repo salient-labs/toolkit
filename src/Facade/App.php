@@ -63,9 +63,9 @@ use Lkrms\Utility\Catalog\EnvFlag;
  * @method static Application syncNamespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace with a previously started entity store (see {@see Application::syncNamespace()})
  * @method static Application unbind(class-string $id) Remove a binding from the container
  *
- * @uses Application
- *
  * @extends Facade<Application>
+ *
+ * @generated
  */
 final class App extends Facade
 {

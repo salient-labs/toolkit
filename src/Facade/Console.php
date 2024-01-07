@@ -56,9 +56,9 @@ use Throwable;
  * @method static ConsoleWriter warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING
  * @method static ConsoleWriter warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING once per run
  *
- * @uses ConsoleWriter
- *
  * @extends Facade<ConsoleWriter>
+ *
+ * @generated
  */
 final class Console extends Facade
 {

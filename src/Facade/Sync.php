@@ -49,9 +49,9 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static ISyncEntity[] resolveDeferredEntities(?int $fromCheckpoint = null, class-string<ISyncEntity>|null $entityType = null, ?int $providerId = null) Resolve deferred sync entities from their respective providers and/or the local entity store
  * @method static array<ISyncEntity[]> resolveDeferredRelationships(?int $fromCheckpoint = null, class-string<ISyncEntity>|null $entityType = null, class-string<ISyncEntity>|null $forEntityType = null, ?int $providerId = null) Resolve deferred relationships from their respective providers and/or the local entity store
  *
- * @uses SyncStore
- *
  * @extends Facade<SyncStore>
+ *
+ * @generated
  */
 final class Sync extends Facade
 {

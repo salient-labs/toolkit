@@ -14,5 +14,7 @@ use Lkrms\Tests\Sync\Entity\User;
  * @method User updateUser(ISyncContext $ctx, User $user)
  * @method User deleteUser(ISyncContext $ctx, User $user)
  * @method iterable<User> getUsers(ISyncContext $ctx)
+ *
+ * @generated
  */
 interface UserProvider extends ISyncProvider {}

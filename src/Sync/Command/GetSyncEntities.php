@@ -6,6 +6,7 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
@@ -21,24 +22,26 @@ use Lkrms\Utility\Json;
  */
 final class GetSyncEntities extends AbstractSyncCommand
 {
-    private ?string $Entity;
+    private string $Entity = '';
 
-    private ?string $EntityId;
+    private ?string $EntityId = null;
 
-    private ?string $Provider;
+    private ?string $Provider = null;
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    private ?array $Filter;
+    private array $Filter = [];
 
-    private ?bool $IncludeCanonical;
+    private bool $Shallow = false;
 
-    private ?bool $IncludeMeta;
+    private bool $IncludeCanonical = false;
 
-    private ?bool $Stream;
+    private bool $IncludeMeta = false;
 
-    private ?bool $Csv;
+    private bool $Stream = false;
+
+    private bool $Csv = false;
 
     public function description(): string
     {
@@ -79,6 +82,10 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ->multipleAllowed()
                 ->bindTo($this->Filter),
             CliOption::build()
+                ->long('shallow')
+                ->description('Do not hydrate entity relationships')
+                ->bindTo($this->Shallow),
+            CliOption::build()
                 ->long('include-canonical-id')
                 ->short('I')
                 ->description('Include canonical_id in the output')
@@ -96,7 +103,7 @@ final class GetSyncEntities extends AbstractSyncCommand
             CliOption::build()
                 ->long('csv')
                 ->short('c')
-                ->description('Generate CSV output')
+                ->description('Generate CSV output (implies `--shallow`)')
                 ->bindTo($this->Csv),
         ];
     }
@@ -139,6 +146,9 @@ final class GetSyncEntities extends AbstractSyncCommand
         );
 
         $context = $provider->getContext();
+        if ($this->Shallow || $this->Csv) {
+            $context = $context->withHydrationPolicy(HydrationPolicy::SUPPRESS);
+        }
 
         $result = $this->EntityId !== null
             ? $provider->with($entity, $context)->get($this->EntityId, $filter)
@@ -160,9 +170,10 @@ final class GetSyncEntities extends AbstractSyncCommand
                 $result = [$result];
             }
 
-            $tty = stream_isatty(\STDOUT);
+            $stdout = Console::getStdoutTarget();
+            $tty = $stdout->isTty();
             File::writeCsv(
-                \STDOUT,
+                'php://output',
                 $result,
                 true,
                 null,

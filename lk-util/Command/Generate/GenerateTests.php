@@ -26,14 +26,14 @@ class GenerateTests extends GenerateCommand
         'getHelpSections',
     ];
 
-    private ?string $ClassFqcn;
+    private string $ClassFqcn = '';
 
-    private ?string $TestClassFqcn;
+    private ?string $TestClassFqcn = null;
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    private ?array $Skip;
+    private array $Skip = [];
 
     public function description(): string
     {

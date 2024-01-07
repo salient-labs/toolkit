@@ -56,7 +56,7 @@ abstract class CommandTestCase extends TestCase
             : new MockTarget();
         Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
 
-        $this->expectOutputString(str_replace(\PHP_EOL, "\n", $output));
+        $this->expectOutputString($output);
 
         $basePath = File::createTempDir();
         $app = new CliApplication($basePath);

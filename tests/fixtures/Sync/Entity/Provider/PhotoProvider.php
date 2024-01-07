@@ -14,5 +14,7 @@ use Lkrms\Tests\Sync\Entity\Photo;
  * @method Photo updatePhoto(ISyncContext $ctx, Photo $photo)
  * @method Photo deletePhoto(ISyncContext $ctx, Photo $photo)
  * @method iterable<Photo> getPhotos(ISyncContext $ctx)
+ *
+ * @generated
  */
 interface PhotoProvider extends ISyncProvider {}

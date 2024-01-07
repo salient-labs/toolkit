@@ -31,9 +31,9 @@ use DateTimeInterface;
  * @method static mixed maybeGet(string $key, callable(): mixed $callback, DateTimeInterface|int|null $expires = null) Retrieve an item stored under a given key, or get it from a callback and store it for subsequent retrieval (see {@see CacheStore::maybeGet()})
  * @method static CacheStore set(string $key, mixed $value, DateTimeInterface|int|null $expires = null) Store an item under a given key (see {@see CacheStore::set()})
  *
- * @uses CacheStore
- *
  * @extends Facade<CacheStore>
+ *
+ * @generated
  */
 final class Cache extends Facade
 {

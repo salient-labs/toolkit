@@ -66,7 +66,7 @@ $facades = [
 ];
 
 $builders = [
-    CliOption::class => [CliOptionBuilder::class, '--forward=load'],
+    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--api'],
     Curler::class => [CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
     CurlerPage::class => CurlerPageBuilder::class,
     DbSyncDefinition::class => DbSyncDefinitionBuilder::class,
@@ -109,7 +109,6 @@ foreach ($class->getReflectionConstants() as $constant) {
 
 $args = [
     '--force',
-    '--no-meta',
     ...array_slice($_SERVER['argv'], 1),
 ];
 

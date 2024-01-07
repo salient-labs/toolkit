@@ -14,5 +14,7 @@ use Lkrms\Tests\Sync\Entity\Comment;
  * @method Comment updateComment(ISyncContext $ctx, Comment $comment)
  * @method Comment deleteComment(ISyncContext $ctx, Comment $comment)
  * @method iterable<Comment> getComments(ISyncContext $ctx)
+ *
+ * @generated
  */
 interface CommentProvider extends ISyncProvider {}

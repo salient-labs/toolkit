@@ -7,6 +7,8 @@ use Lkrms\Sync\Concept\SyncEntity;
 
 /**
  * Represents the state of a Comment entity in a backend
+ *
+ * @generated
  */
 class Comment extends SyncEntity
 {

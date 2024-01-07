@@ -66,15 +66,15 @@ abstract class GenerateCommand extends Command
      *
      * Generators should apply a default description if `null`.
      */
-    protected ?string $Description;
+    protected ?string $Description = null;
 
-    protected ?bool $ToStdout;
+    protected bool $ApiTag = false;
 
-    protected ?bool $ReplaceIfExists;
+    protected bool $ToStdout = false;
 
-    protected ?bool $Check;
+    protected bool $Check = false;
 
-    protected ?bool $NoMetaTags;
+    protected bool $ReplaceIfExists = false;
 
     // --
 
@@ -231,6 +231,11 @@ abstract class GenerateCommand extends Command
         return [
             ...$options,
             CliOption::build()
+                ->long('api')
+                ->short('a')
+                ->description("Add an `@api` tag to the $outputType")
+                ->bindTo($this->ApiTag),
+            CliOption::build()
                 ->long('stdout')
                 ->short('s')
                 ->description('Write to standard output')
@@ -244,11 +249,6 @@ abstract class GenerateCommand extends Command
                 ->short('f')
                 ->description('Overwrite the output file if it already exists')
                 ->bindTo($this->ReplaceIfExists),
-            CliOption::build()
-                ->long('no-meta')
-                ->short('m')
-                ->description('Suppress metadata tags')
-                ->bindTo($this->NoMetaTags),
         ];
     }
 
@@ -538,6 +538,8 @@ abstract class GenerateCommand extends Command
         $phpDoc = Arr::trimAndImplode($blank, [
             $this->Description ?? '',
             $this->PhpDoc ?? '',
+            $this->ApiTag ? '@api' : '',
+            '@generated',
         ]);
 
         $lines =

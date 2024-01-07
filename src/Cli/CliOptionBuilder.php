@@ -33,9 +33,11 @@ use Lkrms\Concept\Builder;
  * @method $this hide(bool $value = true) True if the option's visibility should be {@see CliOptionVisibility::NONE} (default: false)
  * @method CliOption load() Prepare the option for use with a command
  *
- * @uses CliOption
+ * @api
  *
  * @extends Builder<CliOption>
+ *
+ * @generated
  */
 final class CliOptionBuilder extends Builder
 {

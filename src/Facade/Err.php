@@ -18,9 +18,9 @@ use Lkrms\Support\ErrorHandler;
  * @method static ErrorHandler silencePath(string $path, int $levels = 26624) Silence errors in a file or directory
  * @method static ErrorHandler silencePattern(string $pattern, int $levels = 26624) Silence errors in paths that match a regular expression
  *
- * @uses ErrorHandler
- *
  * @extends Facade<ErrorHandler>
+ *
+ * @generated
  */
 final class Err extends Facade
 {

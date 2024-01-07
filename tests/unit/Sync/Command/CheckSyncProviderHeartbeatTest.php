@@ -50,7 +50,11 @@ class CheckSyncProviderHeartbeatTest extends CommandTestCase
         ?array $httpRequestCount = null,
         int $runs = 1
     ): void {
-        $output = str_replace("\r" . \PHP_EOL, "\r", $output);
+        $output = str_replace(
+            ["\r" . \PHP_EOL, \PHP_EOL],
+            ["\r", "\n"],
+            $output
+        );
         $this->assertCommandProduces(
             $output,
             $exitStatus,

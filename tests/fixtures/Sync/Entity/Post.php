@@ -7,6 +7,8 @@ use Lkrms\Sync\Concept\SyncEntity;
 
 /**
  * Represents the state of a Post entity in a backend
+ *
+ * @generated
  */
 class Post extends SyncEntity
 {
