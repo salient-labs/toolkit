@@ -862,7 +862,7 @@ abstract class CliCommand implements ICliCommand
                 $saveArgValue($key, $value);
             } elseif ($option->ValueOptional) {
                 // Don't use the default value if `--option=` was given
-                if ($value === null && $option->DefaultValue !== null) {
+                if ($value === null) {
                     $saveArgValue($key, $value);
                     $value = $option->DefaultValue;
                 }

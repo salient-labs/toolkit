@@ -120,6 +120,7 @@ class GenerateBuilder extends GenerateCommand
                     EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->multipleAllowed()
+                ->nullable()
                 ->bindTo($this->Forward),
             CliOption::build()
                 ->long('skip')

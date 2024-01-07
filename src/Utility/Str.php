@@ -45,6 +45,19 @@ final class Str extends Utility
     }
 
     /**
+     * If the first character in a string is an ASCII alphabetic character, make
+     * it uppercase
+     */
+    public static function upperFirst(string $string): string
+    {
+        if ($string === '') {
+            return $string;
+        }
+        $string[0] = self::upper($string[0]);
+        return $string;
+    }
+
+    /**
      * Apply an end-of-line sequence to a string
      */
     public static function setEol(string $string, string $eol = "\n"): string
@@ -113,7 +126,7 @@ final class Str extends Utility
             $string,
             '',
             $preserve,
-            fn($word) => ucfirst(self::lower($word))
+            fn($word) => self::upperFirst(self::lower($word))
         );
     }
 

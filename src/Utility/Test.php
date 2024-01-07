@@ -55,6 +55,16 @@ final class Test extends Utility
     }
 
     /**
+     * True if a value is a valid date string
+     *
+     * @param mixed $value
+     */
+    public static function isDateString($value): bool
+    {
+        return is_string($value) && strtotime($value) !== false;
+    }
+
+    /**
      * True if a value is a string or Stringable
      *
      * @param mixed $value

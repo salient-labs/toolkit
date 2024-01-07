@@ -18,13 +18,14 @@ use Lkrms\Concept\Builder;
  * @method $this description(?string $value) A description of the option
  * @method $this optionType(CliOptionType::* $value) The option's type
  * @method $this valueType(CliOptionValueType::* $value) The data type of the option's value
- * @method $this allowedValues(array<string|int|bool>|null $value) The option's possible values, indexed by lowercase value unless case-sensitive (see {@see CliOption::$AllowedValues})
+ * @method $this allowedValues(array<string|int|bool>|null $value) The option's possible values, indexed by lowercase value if not case-sensitive (see {@see CliOption::$AllowedValues})
  * @method $this unknownValuePolicy(CliOptionValueUnknownPolicy::* $value) The action taken if an unknown value is given (see {@see CliOption::$UnknownValuePolicy})
  * @method $this required(bool $value = true) True if the option is mandatory (default: false)
  * @method $this multipleAllowed(bool $value = true) True if the option may be given more than once (default: false)
  * @method $this unique(bool $value = true) True if the same value may not be given more than once (default: false; see {@see CliOption::$Unique})
  * @method $this addAll(bool $value = true) True if "ALL" should be added to the list of possible values when the option can be given more than once (default: false; see {@see CliOption::$AddAll})
  * @method $this defaultValue(array<string|int|bool>|string|int|bool|null $value) Assigned to the option if no value is given on the command line
+ * @method $this nullable(bool $value = true) True if the option's value should be null if it is not given on the command line (default: false)
  * @method $this envVariable(?string $value) The name of a value in the environment that replaces the option's default value (see {@see CliOption::$EnvVariable})
  * @method $this delimiter(?string $value) The separator between values passed to the option as a single argument (see {@see CliOption::$Delimiter})
  * @method $this valueCallback((callable(array<string|int|bool>|string|int|bool): mixed)|null $value) Applied to the option's value as it is assigned (see {@see CliOption::$ValueCallback})
@@ -57,7 +58,7 @@ final class CliOptionBuilder extends Builder
     }
 
     /**
-     * Assign user-supplied values to a variable before running the command
+     * Bind the option's value to a variable
      *
      * @param mixed $variable
      * @return $this

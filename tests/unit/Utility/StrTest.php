@@ -22,37 +22,40 @@ final class StrTest extends TestCase
     public static function coalesceProvider(): array
     {
         return [
-            [
-                null,
-                null,
-            ],
-            [
-                '',
-                '',
-            ],
-            [
-                null,
-                '',
-                null,
-            ],
-            [
-                '',
-                null,
-                '',
-            ],
-            [
-                'a',
-                '',
-                null,
-                'a',
-                null,
-            ],
-            [
-                '0',
-                '0',
-                '1',
-                null,
-            ],
+            [null, null],
+            ['', ''],
+            [null, '', null],
+            ['', null, ''],
+            ['a', '', null, 'a', null],
+            ['0', '0', '1', null],
+        ];
+    }
+
+    /**
+     * @dataProvider caseConversionProvider
+     */
+    public function testCaseConversion(
+        string $expectedLower,
+        string $expectedUpper,
+        string $expectedUpperFirst,
+        string $string
+    ): void {
+        $this->assertSame($expectedLower, Str::lower($string));
+        $this->assertSame($expectedUpper, Str::upper($string));
+        $this->assertSame($expectedUpperFirst, Str::upperFirst($string));
+    }
+
+    /**
+     * @return array<array{string,string,string,string}>
+     */
+    public static function caseConversionProvider(): array
+    {
+        return [
+            ['', '', '', ''],
+            ['foobar', 'FOOBAR', 'FoObAr', 'foObAr'],
+            ['foo bar', 'FOO BAR', 'FoO bAr', 'foO bAr'],
+            ['123 foo', '123 FOO', '123 foo', '123 foo'],
+            ['äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ'],
         ];
     }
 
@@ -75,55 +78,22 @@ final class StrTest extends TestCase
     public static function toWordsProvider(): array
     {
         return [
-            [
-                'foo bar',
-                'foo bar',
-            ],
-            [
-                'FOO BAR',
-                'FOO_BAR',
-            ],
-            [
-                'foo Bar',
-                'fooBar',
-            ],
-            [
-                'this foo Bar',
-                '$this = fooBar',
-            ],
-            [
-                'this = foo Bar',
-                '$this = fooBar',
-                ' ',
-                '=',
-            ],
-            [
-                'this=foo Bar',
-                '$this=fooBar',
-                ' ',
-                '=',
-            ],
-            [
-                'PHP Doc',
-                'PHPDoc',
-            ],
-            [
-                'PHP8 Doc',
-                'PHP8Doc',
-            ],
-            [
-                'PHP8.3_0 Doc',
-                'PHP8.3_0Doc',
-                ' ',
-                '._',
-            ],
+            ['foo bar', 'foo bar'],
+            ['FOO BAR', 'FOO_BAR'],
+            ['foo Bar', 'fooBar'],
+            ['this foo Bar', '$this = fooBar'],
+            ['this = foo Bar', '$this = fooBar', ' ', '='],
+            ['this=foo Bar', '$this=fooBar', ' ', '='],
+            ['PHP Doc', 'PHPDoc'],
+            ['PHP8 Doc', 'PHP8Doc'],
+            ['PHP8.3_0 Doc', 'PHP8.3_0Doc', ' ', '._'],
         ];
     }
 
     /**
-     * @dataProvider caseConversionProvider
+     * @dataProvider toCaseProvider
      */
-    public function testCaseConversion(
+    public function testToCase(
         string $string,
         ?string $preserve,
         string $expectedSnakeCase,
@@ -139,9 +109,9 @@ final class StrTest extends TestCase
     }
 
     /**
-     * @return array<array<string|null>>
+     * @return array<array{string,string|null,string,string,string,string}>
      */
-    public static function caseConversionProvider(): array
+    public static function toCaseProvider(): array
     {
         return [
             ['**two words**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],

@@ -147,14 +147,15 @@ final class CliOptionBuilderTest extends TestCase
         $this->assertSame(false, $option->MultipleAllowed);
         $this->assertSame(false, $option->Unique);
         $this->assertSame(null, $option->Delimiter);
-        $this->assertSame(null, $option->DefaultValue);
-        $this->assertSame(null, $option->OriginalDefaultValue);
+        $this->assertSame('today', $option->DefaultValue);
+        $this->assertSame('today', $option->OriginalDefaultValue);
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
         $this->assertSame(false, $option->IsBound);
         $this->assertSame([
             'description' => 'Description of <NAME>.',
             'type' => 'string',
+            'default' => 'today',
         ], $option->getJsonSchema());
 
         $option = $this
@@ -294,8 +295,8 @@ final class CliOptionBuilderTest extends TestCase
         $this->assertSame(true, $option->MultipleAllowed);
         $this->assertSame(true, $option->Unique);
         $this->assertSame(':', $option->Delimiter);
-        $this->assertSame(null, $option->DefaultValue);
-        $this->assertSame(null, $option->OriginalDefaultValue);
+        $this->assertSame(['today'], $option->DefaultValue);
+        $this->assertSame(['today'], $option->OriginalDefaultValue);
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
         $this->assertSame(false, $option->IsBound);
@@ -306,6 +307,7 @@ final class CliOptionBuilderTest extends TestCase
                 'enum' => ['today', 'yesterday', 'tomorrow', 'ALL'],
             ],
             'uniqueItems' => true,
+            'default' => ['today'],
         ], $option->getJsonSchema());
     }
 
