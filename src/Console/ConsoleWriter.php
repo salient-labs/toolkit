@@ -3,10 +3,12 @@
 namespace Lkrms\Console;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevels as Levels;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as Levels;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
-use Lkrms\Console\Contract\IConsoleTarget as Target;
-use Lkrms\Console\Contract\IConsoleTargetWithPrefix as TargetWithPrefix;
+use Lkrms\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
+use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
+use Lkrms\Console\Contract\ConsoleTargetPrefixInterface as TargetPrefix;
+use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\IFacade;
@@ -35,12 +37,12 @@ use Throwable;
 final class ConsoleWriter implements ReceivesFacade
 {
     /**
-     * @var array<Level::*,Target[]>
+     * @var array<Level::*,TargetStream[]>
      */
     private array $StdioTargetsByLevel = [];
 
     /**
-     * @var array<Level::*,Target[]>
+     * @var array<Level::*,TargetStream[]>
      */
     private array $TtyTargetsByLevel = [];
 
@@ -50,13 +52,18 @@ final class ConsoleWriter implements ReceivesFacade
     private array $TargetsByLevel = [];
 
     /**
-     * @var Target[]
+     * @var array<int,Target>
      */
     private array $Targets = [];
 
-    private ?Target $StdoutTarget = null;
+    /**
+     * @var array<int,int-mask-of<TargetTypeFlag::*>>
+     */
+    private array $TargetTypeFlags = [];
 
-    private ?Target $StderrTarget = null;
+    private ?TargetStream $StdoutTarget = null;
+
+    private ?TargetStream $StderrTarget = null;
 
     private int $GroupLevel = -1;
 
@@ -211,7 +218,7 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Register a target to receive one or more levels of console messages
+     * Register a target to receive console output
      *
      * @param array<Level::*> $levels
      * @return $this
@@ -220,22 +227,29 @@ final class ConsoleWriter implements ReceivesFacade
         Target $target,
         array $levels = Levels::ALL
     ) {
-        if ($target->isStdout()) {
-            $this->StdoutTarget = $target;
-            $isStdio = true;
-        }
+        $type = 0;
 
-        if ($target->isStderr()) {
-            $this->StderrTarget = $target;
-            $isStdio = true;
-        }
+        if ($target instanceof TargetStream) {
+            $type |= TargetTypeFlag::STREAM;
 
-        if ($isStdio ?? null) {
-            $targetsByLevel[] = &$this->StdioTargetsByLevel;
-        }
+            if ($target->isStdout()) {
+                $type |= TargetTypeFlag::STDIO | TargetTypeFlag::STDOUT;
+                $this->StdoutTarget = $target;
+            }
 
-        if ($target->isTty()) {
-            $targetsByLevel[] = &$this->TtyTargetsByLevel;
+            if ($target->isStderr()) {
+                $type |= TargetTypeFlag::STDIO | TargetTypeFlag::STDERR;
+                $this->StderrTarget = $target;
+            }
+
+            if ($type & TargetTypeFlag::STDIO) {
+                $targetsByLevel[] = &$this->StdioTargetsByLevel;
+            }
+
+            if ($target->isTty()) {
+                $type |= TargetTypeFlag::TTY;
+                $targetsByLevel[] = &$this->TtyTargetsByLevel;
+            }
         }
 
         $targetsByLevel[] = &$this->TargetsByLevel;
@@ -249,6 +263,7 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $this->Targets[$targetId] = $target;
+        $this->TargetTypeFlags[$targetId] = $type;
 
         return $this;
     }
@@ -286,9 +301,14 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         // Reinstate previous STDOUT and STDERR targets if possible
-        if ($this->Targets &&
-                (!$this->StdoutTarget || !$this->StderrTarget)) {
+        if (
+            $this->Targets &&
+            (!$this->StdoutTarget || !$this->StderrTarget)
+        ) {
             foreach (array_reverse($this->Targets) as $target) {
+                if (!($target instanceof TargetStream)) {
+                    continue;
+                }
                 if (!$this->StdoutTarget && $target->isStdout()) {
                     $this->StdoutTarget = $target;
                     if ($this->StderrTarget) {
@@ -308,29 +328,25 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Call setPrefix on registered targets
+     * Set or unset the prefix applied to each line of output by targets that
+     * implement ConsoleTargetPrefixInterface
      *
-     * If `$stdio` is `null` (the default), `$prefix` is applied to every
-     * registered target that implements {@see TargetWithPrefix}.
-     *
-     * If `$stdio` is `false`, targets backed by `STDOUT` or `STDERR` are
-     * excluded. Conversely, if `$stdio` is `true`, targets other than `STDOUT`
-     * and `STDERR` are excluded.
-     *
-     * @param bool $ttyOnly If `true`, {@see TargetWithPrefix::setPrefix()} is
-     * only called on TTY targets.
+     * @param int-mask-of<TargetTypeFlag::*> $flags
      * @return $this
      */
-    public function setTargetPrefix(
-        ?string $prefix,
-        bool $ttyOnly = false,
-        ?bool $stdio = null
-    ) {
-        foreach ($this->Targets as $target) {
-            if (!($target instanceof TargetWithPrefix) ||
-                    ($ttyOnly && !$target->isTty()) ||
-                    ($stdio === false && ($target->isStdout() || $target->isStderr())) ||
-                    ($stdio === true && !($target->isStdout() || $target->isStderr()))) {
+    public function setTargetPrefix(?string $prefix, int $flags = 0)
+    {
+        $invertFlags = false;
+        if ($flags & TargetTypeFlag::INVERT) {
+            $flags &= ~TargetTypeFlag::INVERT;
+            $invertFlags = true;
+        }
+
+        foreach ($this->Targets as $targetId => $target) {
+            if (!($target instanceof TargetPrefix) || (
+                $flags &&
+                !($this->TargetTypeFlags[$targetId] & $flags xor $invertFlags)
+            )) {
                 continue;
             }
             $target->setPrefix($prefix);
@@ -340,7 +356,15 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Get the number of columns available for console output
+     * Get the width of a registered target in columns
+     *
+     * Returns {@see Target::getWidth()} from whichever is found first:
+     *
+     * - the first TTY target registered with the given level
+     * - the first `STDOUT` or `STDERR` target registered with the given level
+     * - the first target registered with the given level
+     * - the target returned by {@see getStderrTarget()} if backed by a TTY
+     * - the target returned by {@see getStdoutTarget()}
      *
      * @param Level::* $level
      */
@@ -352,7 +376,7 @@ final class ConsoleWriter implements ReceivesFacade
             ?? $this->TargetsByLevel[$level]
             ?? [];
 
-        $target = array_shift($targets);
+        $target = reset($targets);
         if (!$target) {
             $target = $this->getStderrTarget();
             if (!$target->isTty()) {
@@ -360,7 +384,29 @@ final class ConsoleWriter implements ReceivesFacade
             }
         }
 
-        return $target->width();
+        return $target->getWidth();
+    }
+
+    /**
+     * Get a target for STDOUT, creating it if necessary
+     */
+    public function getStdoutTarget(): TargetStream
+    {
+        if (!$this->StdoutTarget) {
+            return $this->StdoutTarget = new StreamTarget(\STDOUT);
+        }
+        return $this->StdoutTarget;
+    }
+
+    /**
+     * Get a target for STDERR, creating it if necessary
+     */
+    public function getStderrTarget(): TargetStream
+    {
+        if (!$this->StderrTarget) {
+            return $this->StderrTarget = new StreamTarget(\STDERR);
+        }
+        return $this->StderrTarget;
     }
 
     /**
@@ -507,7 +553,7 @@ final class ConsoleWriter implements ReceivesFacade
         $level,
         string $msg1,
         ?string $msg2 = null,
-        $type = Type::DEFAULT,
+        $type = Type::STANDARD,
         ?Throwable $ex = null,
         bool $count = true
     ) {
@@ -532,7 +578,7 @@ final class ConsoleWriter implements ReceivesFacade
         $level,
         string $msg1,
         ?string $msg2 = null,
-        $type = Type::DEFAULT,
+        $type = Type::STANDARD,
         ?Throwable $ex = null,
         bool $count = true
     ) {
@@ -580,7 +626,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Errors++;
 
-        return $this->write(Level::ERROR, $msg1, $msg2, Type::DEFAULT, $ex);
+        return $this->write(Level::ERROR, $msg1, $msg2, Type::STANDARD, $ex);
     }
 
     /**
@@ -596,7 +642,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Errors++;
 
-        return $this->writeOnce(Level::ERROR, $msg1, $msg2, Type::DEFAULT, $ex);
+        return $this->writeOnce(Level::ERROR, $msg1, $msg2, Type::STANDARD, $ex);
     }
 
     /**
@@ -612,7 +658,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Warnings++;
 
-        return $this->write(Level::WARNING, $msg1, $msg2, Type::DEFAULT, $ex);
+        return $this->write(Level::WARNING, $msg1, $msg2, Type::STANDARD, $ex);
     }
 
     /**
@@ -628,7 +674,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Warnings++;
 
-        return $this->writeOnce(Level::WARNING, $msg1, $msg2, Type::DEFAULT, $ex);
+        return $this->writeOnce(Level::WARNING, $msg1, $msg2, Type::STANDARD, $ex);
     }
 
     /**
@@ -684,12 +730,12 @@ final class ConsoleWriter implements ReceivesFacade
      * the next line
      *
      * The next message sent to TTY targets is written with a leading "clear to
-     * end of line" sequence unless {@see ConsoleWriter::maybeClearLine()} has
-     * been called in the meantime.
+     * end of line" sequence unless {@see maybeClearLine()} has been called in
+     * the meantime.
      *
-     * {@see ConsoleWriter::logProgress()} can be called repeatedly to display
-     * transient progress updates when running interactively, without disrupting
-     * other console messages or bloating output logs.
+     * {@see logProgress()} can be called repeatedly to display transient
+     * progress updates when running interactively, without disrupting other
+     * console messages or bloating output logs.
      *
      * @return $this
      */
@@ -748,7 +794,7 @@ final class ConsoleWriter implements ReceivesFacade
         $caller = implode('', Debug::getCaller($depth));
         $msg1 = $msg1 ? ' __' . $msg1 . '__' : '';
 
-        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, Type::DEFAULT, $ex);
+        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, Type::STANDARD, $ex);
     }
 
     /**
@@ -770,14 +816,14 @@ final class ConsoleWriter implements ReceivesFacade
 
         $caller = implode('', Debug::getCaller($depth));
 
-        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . '__', $msg2, Type::DEFAULT, $ex);
+        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . '__', $msg2, Type::STANDARD, $ex);
     }
 
     /**
      * Create a new message group and print "<<< $msg1 $msg2" with level NOTICE
      *
      * The message group will remain open, and subsequent messages will be
-     * indented, until {@see ConsoleWriter::groupEnd()} is called.
+     * indented, until {@see groupEnd()} is called.
      *
      * @return $this
      */
@@ -859,7 +905,7 @@ final class ConsoleWriter implements ReceivesFacade
             $messageLevel,
             sprintf('__%s__:', $class),
             $msg2,
-            Type::DEFAULT,
+            Type::STANDARD,
             $exception,
             true
         );
@@ -938,22 +984,6 @@ final class ConsoleWriter implements ReceivesFacade
         return $reduced ?? [];
     }
 
-    private function getStdoutTarget(): Target
-    {
-        if (!$this->StdoutTarget) {
-            return $this->StdoutTarget = new StreamTarget(\STDOUT);
-        }
-        return $this->StdoutTarget;
-    }
-
-    private function getStderrTarget(): Target
-    {
-        if (!$this->StderrTarget) {
-            return $this->StderrTarget = new StreamTarget(\STDERR);
-        }
-        return $this->StderrTarget;
-    }
-
     /**
      * Send a message to registered targets
      *
@@ -965,7 +995,7 @@ final class ConsoleWriter implements ReceivesFacade
         $level,
         string $msg1,
         ?string $msg2,
-        $type = Type::DEFAULT,
+        $type = Type::STANDARD,
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
@@ -983,7 +1013,7 @@ final class ConsoleWriter implements ReceivesFacade
         $level,
         string $msg1,
         ?string $msg2,
-        $type = Type::DEFAULT,
+        $type = Type::STANDARD,
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
@@ -1006,7 +1036,7 @@ final class ConsoleWriter implements ReceivesFacade
         $level,
         string $msg1,
         ?string $msg2,
-        $type = Type::DEFAULT,
+        $type = Type::STANDARD,
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {

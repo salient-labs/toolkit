@@ -1282,7 +1282,7 @@ final class SyncStore extends SqliteStore
                     ? ' and ' . Convert::plural($this->WarningCount, 'warning', null, true)
                     : '') . ' recorded:',
             null,
-            MessageType::DEFAULT,
+            MessageType::STANDARD,
             null,
             false,
         );

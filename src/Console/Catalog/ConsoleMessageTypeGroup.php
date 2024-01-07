@@ -8,12 +8,14 @@ use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 /**
  * Groups of console message types
  *
+ * @api
+ *
  * @extends Enumeration<int[]>
  */
-final class ConsoleMessageTypes extends Enumeration
+final class ConsoleMessageTypeGroup extends Enumeration
 {
     public const ALL = [
-        Type::DEFAULT,
+        Type::STANDARD,
         Type::UNDECORATED,
         Type::UNFORMATTED,
         Type::GROUP_START,

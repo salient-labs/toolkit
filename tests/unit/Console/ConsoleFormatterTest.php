@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Console;
 
-use Lkrms\Console\Support\ConsoleTagFormats;
+use Lkrms\Console\Support\ConsoleLoopbackFormat;
 use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Tests\TestCase;
 
@@ -28,7 +28,7 @@ final class ConsoleFormatterTest extends TestCase
     public static function formatProvider(): array
     {
         $default = new ConsoleFormatter();
-        $loopback = new ConsoleFormatter(ConsoleTagFormats::getLoopbackFormats());
+        $loopback = new ConsoleFormatter(ConsoleLoopbackFormat::getTagFormats());
 
         $input = <<<'EOF'
             This is a `_code span_` with _inner tags_ that are ignored.

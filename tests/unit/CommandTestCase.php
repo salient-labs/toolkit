@@ -5,7 +5,7 @@ namespace Lkrms\Tests;
 use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevels as Levels;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as Levels;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Console;
@@ -38,18 +38,22 @@ abstract class CommandTestCase extends TestCase
     /**
      * @param class-string<ICliCommand> $command
      * @param string[] $args
-     * @param array<array{Level::*,string}>|null $consoleOutput
+     * @param string[] $name
+     * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $consoleMessages
      */
     public function assertCommandProduces(
         string $output,
         int $exitStatus,
         string $command,
         array $args,
-        ?array $consoleOutput = null,
+        array $name = [],
+        bool $outputIncludesConsoleMessages = true,
+        ?array $consoleMessages = null,
         int $runs = 1
     ): void {
-        $f = fopen('php://output', '');
-        $target = new MockTarget(true, true, true, 80, $f);
+        $target = $outputIncludesConsoleMessages
+            ? new MockTarget(File::open('php://output', ''))
+            : new MockTarget();
         Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
 
         $this->expectOutputString(str_replace(\PHP_EOL, "\n", $output));
@@ -61,12 +65,13 @@ abstract class CommandTestCase extends TestCase
             $app = $this->startApp($app);
             $app = $app->services($this->getServices());
             $command = $app->get($command);
+            $command->setName($name);
             for ($i = 0; $i < $runs; $i++) {
                 $status = $command(...$args);
                 $this->assertSame($exitStatus, $status, 'exit status');
             }
-            if ($consoleOutput !== null) {
-                $this->assertSame($consoleOutput, $target->getMessages());
+            if ($consoleMessages !== null) {
+                $this->assertSame($consoleMessages, $target->getMessages());
             }
             $this->makeCommandAssertions($app, $command, ...func_get_args());
         } finally {
@@ -76,7 +81,6 @@ abstract class CommandTestCase extends TestCase
             rmdir($basePath);
 
             Console::deregisterTarget($target);
-            fclose($f);
         }
     }
 }

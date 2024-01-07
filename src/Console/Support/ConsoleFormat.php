@@ -2,16 +2,16 @@
 
 namespace Lkrms\Console\Support;
 
-use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\Contract\IConsoleFormat;
+use Lkrms\Console\Contract\ConsoleFormatInterface;
+use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 
 /**
  * Applies formatting to console output by adding inline character sequences
  * defined by the target
  */
-final class ConsoleFormat implements IConsoleFormat
+final class ConsoleFormat implements ConsoleFormatInterface
 {
     /**
      * @var string
@@ -26,12 +26,12 @@ final class ConsoleFormat implements IConsoleFormat
     /**
      * @var string[]
      */
-    private $Replace;
+    private $Search;
 
     /**
      * @var string[]
      */
-    private $ReplaceWith;
+    private $Replace;
 
     private static ConsoleFormat $DefaultFormat;
 
@@ -42,22 +42,27 @@ final class ConsoleFormat implements IConsoleFormat
     {
         $this->Before = $before;
         $this->After = $after;
-        $this->Replace = array_keys($replace);
-        $this->ReplaceWith = array_values($replace);
+        $this->Search = array_keys($replace);
+        $this->Replace = array_values($replace);
     }
 
-    public function apply(?string $text, array $attributes = []): string
+    /**
+     * @inheritDoc
+     */
+    public function apply(?string $text, $attributes = null): string
     {
         if ((string) $text === '') {
             return '';
         }
 
-        // In fenced code blocks:
+        // With fenced code blocks:
         // - remove indentation from the first line of code
         // - add a level of indentation to the block
-        $tagId = $attributes[Attribute::TAG_ID] ?? null;
-        if ($tagId === Tag::CODE_BLOCK) {
-            $indent = $attributes[Attribute::INDENT] ?? '';
+        if (
+            $attributes instanceof TagAttributes &&
+            $attributes->Tag === Tag::CODE_BLOCK
+        ) {
+            $indent = (string) $attributes->Indent;
             if ($indent !== '') {
                 $length = strlen($indent);
                 if (substr($text, 0, $length) === $indent) {
@@ -67,8 +72,8 @@ final class ConsoleFormat implements IConsoleFormat
             $text = '    ' . str_replace("\n", "\n    ", $text);
         }
 
-        if ($this->Replace) {
-            $text = str_replace($this->Replace, $this->ReplaceWith, $text);
+        if ($this->Search) {
+            $text = str_replace($this->Search, $this->Replace, $text);
         }
 
         $text = $this->Before . $text;
@@ -77,7 +82,7 @@ final class ConsoleFormat implements IConsoleFormat
             return $text;
         }
 
-        // Preserve trailing carriage returns
+        // Preserve a trailing carriage return
         if ($text[-1] === "\r") {
             return substr($text, 0, -1) . $this->After . "\r";
         }
@@ -90,8 +95,7 @@ final class ConsoleFormat implements IConsoleFormat
      */
     public static function getDefaultFormat(): self
     {
-        return self::$DefaultFormat
-            ?? (self::$DefaultFormat = new self());
+        return self::$DefaultFormat ??= new self();
     }
 
     /**

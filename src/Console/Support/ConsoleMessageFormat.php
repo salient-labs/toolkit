@@ -2,8 +2,8 @@
 
 namespace Lkrms\Console\Support;
 
-use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
-use Lkrms\Console\Contract\IConsoleFormat as Format;
+use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
+use Lkrms\Console\Support\ConsoleMessageAttributes as MessageAttributes;
 
 /**
  * Applies target-defined formats to the components of a console message
@@ -30,21 +30,13 @@ final class ConsoleMessageFormat
 
     /**
      * Format a message before it is written to the target
-     *
-     * @param array<Attribute::*,mixed> $attributes
      */
-    public function apply(string $msg1, ?string $msg2, string $prefix, array $attributes = []): string
+    public function apply(string $msg1, ?string $msg2, string $prefix, MessageAttributes $attributes): string
     {
         return
-            ($prefix !== '' ? $this->PrefixFormat->apply(
-                $prefix, [Attribute::IS_PREFIX => true] + $attributes
-            ) : '')
-            . ($msg1 !== '' ? $this->Msg1Format->apply(
-                $msg1, [Attribute::IS_MSG1 => true] + $attributes
-            ) : '')
-            . ((string) $msg2 !== '' ? $this->Msg2Format->apply(
-                $msg2, [Attribute::IS_MSG2 => true] + $attributes
-            ) : '');
+            ($prefix !== '' ? $this->PrefixFormat->apply($prefix, $attributes->withIsPrefix()) : '')
+            . ($msg1 !== '' ? $this->Msg1Format->apply($msg1, $attributes->withIsMsg1()) : '')
+            . ((string) $msg2 !== '' ? $this->Msg2Format->apply($msg2, $attributes->withIsMsg2()) : '');
     }
 
     /**
@@ -53,17 +45,10 @@ final class ConsoleMessageFormat
     public static function getDefaultMessageFormat(): self
     {
         return self::$DefaultMessageFormat
-            ?? (self::$DefaultMessageFormat = self::createDefaultMessageFormat());
-    }
-
-    private static function createDefaultMessageFormat(): self
-    {
-        $format = ConsoleFormat::getDefaultFormat();
-
-        return new self(
-            $format,
-            $format,
-            $format,
-        );
+            ??= new self(
+                ConsoleFormat::getDefaultFormat(),
+                ConsoleFormat::getDefaultFormat(),
+                ConsoleFormat::getDefaultFormat(),
+            );
     }
 }

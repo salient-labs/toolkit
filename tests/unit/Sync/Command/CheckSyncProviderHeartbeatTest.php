@@ -23,7 +23,7 @@ class CheckSyncProviderHeartbeatTest extends CommandTestCase
         ICliCommand $command,
         ...$args
     ): void {
-        $httpRequestCount = $args[6] ?? null;
+        $httpRequestCount = $args[8] ?? null;
 
         if ($httpRequestCount === null) {
             return;
@@ -50,11 +50,14 @@ class CheckSyncProviderHeartbeatTest extends CommandTestCase
         ?array $httpRequestCount = null,
         int $runs = 1
     ): void {
+        $output = str_replace("\r" . \PHP_EOL, "\r", $output);
         $this->assertCommandProduces(
             $output,
             $exitStatus,
             CheckSyncProviderHeartbeat::class,
             $args,
+            [],
+            true,
             null,
             $runs,
             $httpRequestCount,

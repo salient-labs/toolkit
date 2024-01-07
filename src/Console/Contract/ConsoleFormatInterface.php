@@ -2,17 +2,18 @@
 
 namespace Lkrms\Console\Contract;
 
-use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
+use Lkrms\Console\Support\ConsoleMessageAttributes as MessageAttributes;
+use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 
 /**
- * Applies a target-defined format to console output
+ * Applies target-defined formatting to console output
  */
-interface IConsoleFormat
+interface ConsoleFormatInterface
 {
     /**
-     * Format a string before it is written to the target
+     * Format text before it is written to the target
      *
-     * @param array<Attribute::*,mixed> $attributes
+     * @param MessageAttributes|TagAttributes $attributes
      */
-    public function apply(?string $text, array $attributes = []): string;
+    public function apply(?string $text, $attributes = null): string;
 }

@@ -10,7 +10,7 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Cli\Support\CliHelpStyle;
-use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Lkrms\Console\Support\ConsoleLoopbackFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
@@ -1333,6 +1333,6 @@ abstract class CliCommand implements ICliCommand
     private function getLoopbackFormatter(): Formatter
     {
         return $this->LoopbackFormatter
-            ?? ($this->LoopbackFormatter = new Formatter(TagFormats::getLoopbackFormats()));
+            ??= new Formatter(ConsoleLoopbackFormat::getTagFormats());
     }
 }

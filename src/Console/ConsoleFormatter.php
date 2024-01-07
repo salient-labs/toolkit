@@ -2,13 +2,14 @@
 
 namespace Lkrms\Console;
 
-use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\Contract\IConsoleFormat as Format;
+use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
+use Lkrms\Console\Support\ConsoleMessageAttributes as MessageAttributes;
 use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
+use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -174,7 +175,7 @@ final class ConsoleFormatter
      * @param Level::* $level
      * @param Type::* $type
      */
-    public function getMessageFormat($level, $type = Type::DEFAULT): MessageFormat
+    public function getMessageFormat($level, $type = Type::STANDARD): MessageFormat
     {
         return $this->MessageFormats->get($level, $type);
     }
@@ -185,7 +186,7 @@ final class ConsoleFormatter
      * @param Level::* $level
      * @param Type::* $type
      */
-    public function getMessagePrefix($level, $type = Type::DEFAULT): string
+    public function getMessagePrefix($level, $type = Type::STANDARD): string
     {
         return
             $type === Type::UNFORMATTED || $type === Type::UNDECORATED
@@ -326,12 +327,15 @@ final class ConsoleFormatter
                     $string[-1] = "\n";
                 }
 
-                $infostring = trim($match['infostring']);
-                $formatted = $this->TagFormats->apply(Tag::CODE_BLOCK, $match['block'], [
-                    Attribute::TAG => $match['fence'],
-                    Attribute::INFO_STRING => Str::coalesce($infostring, null),
-                    Attribute::INDENT => $indent,
-                ]);
+                $formatted = $this->TagFormats->apply(
+                    $match['block'],
+                    new TagAttributes(
+                        Tag::CODE_BLOCK,
+                        $match['fence'],
+                        $indent,
+                        Str::coalesce(trim($match['infostring']), null),
+                    )
+                );
                 $placeholder = '?';
                 $replace[] = [
                     $baseOffset,
@@ -354,9 +358,13 @@ final class ConsoleFormatter
                     '$1',
                     strtr($span, "\n", ' '),
                 );
-                $formatted = $this->TagFormats->apply(Tag::CODE_SPAN, $span, [
-                    Attribute::TAG => $match['backtickstring'],
-                ]);
+                $formatted = $this->TagFormats->apply(
+                    $span,
+                    new TagAttributes(
+                        Tag::CODE_SPAN,
+                        $match['backtickstring'],
+                    )
+                );
                 $placeholder = Pcre::replace('/[^ ]/u', 'x', $span);
                 $replace[] = [
                     $baseOffset,
@@ -464,12 +472,9 @@ final class ConsoleFormatter
         string $msg1,
         ?string $msg2 = null,
         $level = Level::INFO,
-        $type = Type::DEFAULT
+        $type = Type::STANDARD
     ): string {
-        $attributes = [
-            Attribute::LEVEL => $level,
-            Attribute::TYPE => $type,
-        ];
+        $attributes = new MessageAttributes($level, $type);
 
         if ($type === Type::UNFORMATTED) {
             return $this
@@ -551,31 +556,21 @@ final class ConsoleFormatter
             case '___':
             case '***':
             case '##':
-                return $formats->apply(Tag::HEADING, $text, [
-                    Attribute::TAG => $tag,
-                ]);
+                return $formats->apply($text, new TagAttributes(Tag::HEADING, $tag));
 
             case '__':
             case '**':
-                return $formats->apply(Tag::BOLD, $text, [
-                    Attribute::TAG => $tag,
-                ]);
+                return $formats->apply($text, new TagAttributes(Tag::BOLD, $tag));
 
             case '_':
             case '*':
-                return $formats->apply(Tag::ITALIC, $text, [
-                    Attribute::TAG => $tag,
-                ]);
+                return $formats->apply($text, new TagAttributes(Tag::ITALIC, $tag));
 
             case '<':
-                return $formats->apply(Tag::UNDERLINE, $text, [
-                    Attribute::TAG => $tag,
-                ]);
+                return $formats->apply($text, new TagAttributes(Tag::UNDERLINE, $tag));
 
             case '~~':
-                return $formats->apply(Tag::LOW_PRIORITY, $text, [
-                    Attribute::TAG => $tag,
-                ]);
+                return $formats->apply($text, new TagAttributes(Tag::LOW_PRIORITY, $tag));
         }
 
         throw new LogicException(sprintf('Invalid tag: %s', $tag));

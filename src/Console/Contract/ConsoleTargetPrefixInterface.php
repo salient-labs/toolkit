@@ -3,17 +3,19 @@
 namespace Lkrms\Console\Contract;
 
 /**
- * A console target that adds an optional prefix before each line of output
+ * A console target that applies an optional prefix to each line of output
  */
-interface IConsoleTargetWithPrefix extends IConsoleTarget
+interface ConsoleTargetPrefixInterface extends ConsoleTargetInterface
 {
     /**
-     * Add a prefix before each line of output written to the target
+     * Set or unset the prefix applied to each line of output
      *
-     * The prefix is applied to messages subsequently passed to
-     * {@see IConsoleTarget::write()}.
-     *
-     * If `$prefix` is empty or `null`, a previously added prefix is cleared.
+     * @return $this
      */
-    public function setPrefix(?string $prefix): void;
+    public function setPrefix(?string $prefix);
+
+    /**
+     * Get the prefix applied to each line of output
+     */
+    public function getPrefix(): ?string;
 }

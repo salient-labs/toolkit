@@ -2,31 +2,51 @@
 
 namespace Lkrms\Console\Target;
 
-use Lkrms\Console\Catalog\ConsoleLevel;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Concept\ConsoleTarget;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 /**
- * Write console messages to a PSR-3 implementor
+ * Writes console output to a PSR-3 logger
  */
-final class LoggerTarget extends ConsoleTarget
+final class LoggerTarget extends ConsoleTarget implements LoggerAwareInterface
 {
     /**
-     * @var LoggerInterface
+     * @var array<Level::*,LogLevel::*>
      */
-    private $Logger;
+    private const LOG_LEVEL_MAP = [
+        Level::EMERGENCY => LogLevel::EMERGENCY,
+        Level::ALERT => LogLevel::ALERT,
+        Level::CRITICAL => LogLevel::CRITICAL,
+        Level::ERROR => LogLevel::ERROR,
+        Level::WARNING => LogLevel::WARNING,
+        Level::NOTICE => LogLevel::NOTICE,
+        Level::INFO => LogLevel::INFO,
+        Level::DEBUG => LogLevel::DEBUG,
+    ];
+
+    private LoggerInterface $Logger;
 
     public function __construct(LoggerInterface $logger)
+    {
+        $this->setLogger($logger);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setLogger(LoggerInterface $logger)
     {
         $this->Logger = $logger;
     }
 
     /**
-     * @param ConsoleLevel::* $level
-     * @param mixed[] $context
+     * @inheritDoc
      */
-    protected function writeToTarget($level, string $message, array $context): void
+    public function write($level, string $message, array $context = []): void
     {
-        $this->Logger->log(ConsoleLevel::toPsrLogLevel($level), $message, $context);
+        $this->Logger->log(self::LOG_LEVEL_MAP[$level], $message, $context);
     }
 }

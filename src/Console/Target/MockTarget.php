@@ -3,13 +3,14 @@
 namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Contract\IConsoleTarget;
+use Lkrms\Console\Contract\ConsoleTargetStreamInterface;
 use Lkrms\Console\ConsoleFormatter;
+use Lkrms\Utility\File;
 
 /**
- * Test console output
+ * Writes console output to an array
  */
-final class MockTarget implements IConsoleTarget
+final class MockTarget implements ConsoleTargetStreamInterface
 {
     private bool $IsStdout;
 
@@ -17,7 +18,7 @@ final class MockTarget implements IConsoleTarget
 
     private bool $IsTty;
 
-    private int $Width;
+    private ?int $Width;
 
     /**
      * @var resource|null
@@ -27,64 +28,85 @@ final class MockTarget implements IConsoleTarget
     private ConsoleFormatter $Formatter;
 
     /**
-     * @var array<array{Level::*,string}>
+     * @var array<array{Level::*,string,2?:array<string,mixed>}>
      */
     private array $Messages = [];
 
     /**
-     * @param resource|null $stream If provided, console messages are also
-     * written to this stream.
+     * @param resource|null $stream Console messages are also written to
+     * `$stream` if given.
      */
     public function __construct(
+        $stream = null,
         bool $isStdout = true,
         bool $isStderr = true,
         bool $isTty = true,
-        int $width = 80,
-        $stream = null,
+        ?int $width = 80,
         ?ConsoleFormatter $formatter = null
     ) {
+        if ($stream) {
+            stream_set_write_buffer($stream, 0);
+        }
+
         $this->IsStdout = $isStdout;
         $this->IsStderr = $isStderr;
         $this->IsTty = $isTty;
         $this->Width = $width;
         $this->Stream = $stream;
         $this->Formatter = $formatter
-            ?: new ConsoleFormatter(null, null, fn() => $this->width());
-
-        if ($this->Stream) {
-            stream_set_write_buffer($stream, 0);
-        }
+            ?: new ConsoleFormatter(null, null, fn(): ?int => $this->getWidth());
     }
 
+    /**
+     * @inheritDoc
+     */
     public function isStdout(): bool
     {
         return $this->IsStdout;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function isStderr(): bool
     {
         return $this->IsStderr;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function isTty(): bool
     {
         return $this->IsTty;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getFormatter(): ConsoleFormatter
     {
-        return $this->Formatter;
+        return clone $this->Formatter;
     }
 
-    public function width(): ?int
+    /**
+     * @inheritDoc
+     */
+    public function getWidth(): ?int
     {
         return $this->Width;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function write($level, string $message, array $context = []): void
     {
         if ($this->Stream) {
-            fwrite($this->Stream, $message . "\n");
+            $suffix = $message === '' || $message[-1] !== "\r"
+                ? "\n"
+                : '';
+            File::write($this->Stream, $message . $suffix);
         }
 
         $message = [$level, $message];
@@ -95,14 +117,12 @@ final class MockTarget implements IConsoleTarget
     }
 
     /**
-     * @return array<array{Level::*,string}>
+     * @return array<array{Level::*,string,2?:array<string,mixed>}>
      */
     public function getMessages(): array
     {
-        try {
-            return $this->Messages;
-        } finally {
-            $this->Messages = [];
-        }
+        $messages = $this->Messages;
+        $this->Messages = [];
+        return $messages;
     }
 }

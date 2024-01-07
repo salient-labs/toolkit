@@ -2,12 +2,9 @@
 
 namespace Lkrms\Console\Support;
 
-use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\Contract\IConsoleFormat as Format;
-use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
-use Lkrms\Console\Support\ConsoleManPageFormat as ManPageFormat;
-use Lkrms\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
+use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
+use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 
 /**
  * Maps inline formatting tags to target-defined formats
@@ -50,52 +47,11 @@ final class ConsoleTagFormats
     }
 
     /**
-     * Get the format assigned to a tag and use it to format a string before it
-     * is written to the target
-     *
-     * @param Tag::* $tag
-     * @param array<Attribute::*,mixed> $attributes
+     * Format tagged text before it is written to the target
      */
-    public function apply($tag, ?string $text, array $attributes = []): string
+    public function apply(?string $text, TagAttributes $attributes): string
     {
-        $attributes[Attribute::TAG_ID] = $tag;
-        $format = $this->Formats[$tag] ?? $this->FallbackFormat;
+        $format = $this->Formats[$attributes->Tag] ?? $this->FallbackFormat;
         return $format->apply($text, $attributes);
-    }
-
-    public static function getLoopbackFormats(): self
-    {
-        return (new self())
-            ->set(Tag::HEADING, new LoopbackFormat('***', '***'))
-            ->set(Tag::BOLD, new LoopbackFormat('**', '**'))
-            ->set(Tag::ITALIC, new LoopbackFormat('*', '*'))
-            ->set(Tag::UNDERLINE, new LoopbackFormat('<', '>'))
-            ->set(Tag::LOW_PRIORITY, new LoopbackFormat('~~', '~~'))
-            ->set(Tag::CODE_SPAN, new LoopbackFormat('`', '`'))
-            ->set(Tag::CODE_BLOCK, new LoopbackFormat('```', '```'));
-    }
-
-    public static function getMarkdownFormats(): self
-    {
-        return (new self())
-            ->set(Tag::HEADING, new MarkdownFormat('***', '***'))
-            ->set(Tag::BOLD, new MarkdownFormat('**', '**'))
-            ->set(Tag::ITALIC, new MarkdownFormat('*', '*'))
-            ->set(Tag::UNDERLINE, new MarkdownFormat('*<u>', '</u>*'))
-            ->set(Tag::LOW_PRIORITY, new MarkdownFormat('<small>', '</small>'))
-            ->set(Tag::CODE_SPAN, new MarkdownFormat('`', '`'))
-            ->set(Tag::CODE_BLOCK, new MarkdownFormat('```', '```'));
-    }
-
-    public static function getManPageFormats(): self
-    {
-        return (new self())
-            ->set(Tag::HEADING, new ManPageFormat('***', '***'))
-            ->set(Tag::BOLD, new ManPageFormat('**', '**'))
-            ->set(Tag::ITALIC, new ManPageFormat('*', '*'))
-            ->set(Tag::UNDERLINE, new ManPageFormat('*', '*'))
-            ->set(Tag::LOW_PRIORITY, new ManPageFormat('', ''))
-            ->set(Tag::CODE_SPAN, new ManPageFormat('`', '`'))
-            ->set(Tag::CODE_BLOCK, new ManPageFormat('```', '```'));
     }
 }

@@ -4,9 +4,11 @@ namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevels as Levels;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as Levels;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
-use Lkrms\Console\Contract\IConsoleTarget as Target;
+use Lkrms\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
+use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
+use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Lkrms\Console\ConsoleWriter;
 use Throwable;
 
@@ -25,8 +27,10 @@ use Throwable;
  * @method static ConsoleWriter errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print " !! $msg1 $msg2" with level ERROR once per run
  * @method static ConsoleWriter exception(Throwable $exception, Level::* $messageLevel = Level::ERROR, Level::*|null $stackTraceLevel = Level::DEBUG) Report an uncaught exception (see {@see ConsoleWriter::exception()})
  * @method static int getErrors() Get the number of errors reported so far
+ * @method static TargetStream getStderrTarget() Get a target for STDERR, creating it if necessary
+ * @method static TargetStream getStdoutTarget() Get a target for STDOUT, creating it if necessary
  * @method static int getWarnings() Get the number of warnings reported so far
- * @method static int|null getWidth(Level::* $level = Level::INFO) Get the number of columns available for console output
+ * @method static int|null getWidth(Level::* $level = Level::INFO) Get the width of a registered target in columns (see {@see ConsoleWriter::getWidth()})
  * @method static ConsoleWriter group(string $msg1, ?string $msg2 = null) Create a new message group and print "<<< $msg1 $msg2" with level NOTICE (see {@see ConsoleWriter::group()})
  * @method static ConsoleWriter groupEnd(bool $printMessage = false) Close the most recently created message group (see {@see ConsoleWriter::groupEnd()})
  * @method static ConsoleWriter info(string $msg1, ?string $msg2 = null) Print "==> $msg1 $msg2" with level NOTICE
@@ -35,16 +39,16 @@ use Throwable;
  * @method static ConsoleWriter logOnce(string $msg1, ?string $msg2 = null) Print " -> $msg1 $msg2" with level INFO once per run
  * @method static ConsoleWriter logProgress(string $msg1, ?string $msg2 = null) Print " -> $msg1 $msg2" with level INFO to TTY targets without moving to the next line (see {@see ConsoleWriter::logProgress()})
  * @method static ConsoleWriter maybeClearLine() Print a "clear to end of line" control sequence with level INFO to any TTY targets with a pending logProgress() message (see {@see ConsoleWriter::maybeClearLine()})
- * @method static ConsoleWriter message(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::DEFAULT, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level (see {@see ConsoleWriter::message()})
- * @method static ConsoleWriter messageOnce(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::DEFAULT, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level once per run (see {@see ConsoleWriter::messageOnce()})
+ * @method static ConsoleWriter message(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::STANDARD, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level (see {@see ConsoleWriter::message()})
+ * @method static ConsoleWriter messageOnce(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::STANDARD, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level once per run (see {@see ConsoleWriter::messageOnce()})
  * @method static ConsoleWriter out(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNDECORATED) Print "$msg" to I/O stream targets (STDOUT or STDERR)
  * @method static ConsoleWriter print(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNDECORATED) Print "$msg"
  * @method static ConsoleWriter registerDefaultOutputLog() Register the default output log as a target for all console messages (see {@see ConsoleWriter::registerDefaultOutputLog()})
  * @method static ConsoleWriter registerDefaultStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets in their default configuration (see {@see ConsoleWriter::registerDefaultStdioTargets()})
  * @method static ConsoleWriter registerStderrTarget(bool $replace = false) Register STDERR as a target for all console messages if running on the command line (see {@see ConsoleWriter::registerStderrTarget()})
  * @method static ConsoleWriter registerStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets if running on the command line (see {@see ConsoleWriter::registerStdioTargets()})
- * @method static ConsoleWriter registerTarget(Target $target, array<Level::*> $levels = Levels::ALL) Register a target to receive one or more levels of console messages
- * @method static ConsoleWriter setTargetPrefix(?string $prefix, bool $ttyOnly = false, ?bool $stdio = null) Call setPrefix on registered targets (see {@see ConsoleWriter::setTargetPrefix()})
+ * @method static ConsoleWriter registerTarget(Target $target, array<Level::*> $levels = Levels::ALL) Register a target to receive console output
+ * @method static ConsoleWriter setTargetPrefix(?string $prefix, int-mask-of<TargetTypeFlag::*> $flags = 0) Set or unset the prefix applied to each line of output by targets that implement ConsoleTargetPrefixInterface
  * @method static ConsoleWriter stderr(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNFORMATTED) Print "$msg" to STDERR, creating a target for it if necessary
  * @method static ConsoleWriter stdout(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNFORMATTED) Print "$msg" to STDOUT, creating a target for it if necessary
  * @method static ConsoleWriter summary(string $finishedText = 'Command finished', string $successText = 'without errors') Print a "command finished" message with a summary of errors and warnings (see {@see ConsoleWriter::summary()})
