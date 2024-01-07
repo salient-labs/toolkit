@@ -253,15 +253,6 @@ class GenerateSyncEntity extends GenerateCommand
         $data = null;
         $dataUri = null;
 
-        $values = $this->outputOptionValues() + [
-            'json' => null,
-            'provider' => null,
-            'endpoint' => null,
-            'method' => null,
-            'query' => null,
-            'data' => null,
-        ];
-
         if ($json !== null) {
             $entity = $this->getJson($json, $entityUri);
             if (!is_array($entity)) {
@@ -318,9 +309,6 @@ class GenerateSyncEntity extends GenerateCommand
         $skip = [];
         foreach ($this->SkipProperties as $property) {
             $skip[] = $normaliser($property);
-        }
-        if ($skip) {
-            $values['skip'] = $skip;
         }
 
         if ($entity) {
@@ -392,16 +380,16 @@ class GenerateSyncEntity extends GenerateCommand
 
         $count = 0;
         if ($this->ParentProperty !== null) {
-            $this->validateRelationship("{$this->ParentProperty}={$class}", $normaliser, $parent, $values['parent'], true);
-            $this->validateRelationship("{$this->ChildrenProperty}={$class}", $normaliser, $children, $values['children'], true);
+            $this->validateRelationship("{$this->ParentProperty}={$class}", $normaliser, $parent);
+            $this->validateRelationship("{$this->ChildrenProperty}={$class}", $normaliser, $children);
             $count += 2;
         }
         foreach ($this->OneToOneRelationships as $value) {
-            $this->validateRelationship($value, $normaliser, $oneToOne, $values['one']);
+            $this->validateRelationship($value, $normaliser, $oneToOne);
             $count++;
         }
         foreach ($this->OneToManyRelationships as $value) {
-            $this->validateRelationship($value, $normaliser, $oneToMany, $values['many']);
+            $this->validateRelationship($value, $normaliser, $oneToMany);
             $count++;
         }
         if (count($oneToOne + $oneToMany + $parent + $children) !== $count) {
@@ -500,9 +488,7 @@ class GenerateSyncEntity extends GenerateCommand
     private function validateRelationship(
         string $relationship,
         Closure $normaliser,
-        array &$array,
-        ?string &$value = null,
-        bool $isParentOrChildren = false
+        array &$array
     ): void {
         if (!Pcre::match(
             '/^(?<property>[[:alpha:]_][[:alnum:]_]*)=(?<class>[[:alpha:]_][[:alnum:]_]*)$/i',
@@ -518,10 +504,5 @@ class GenerateSyncEntity extends GenerateCommand
         $property = $normaliser($matches['property']);
         $class = $normaliser($matches['class']);
         $array[$property] = $class;
-
-        $value =
-            ($value === null ? '' : "$value,")
-            . $property
-            . ($isParentOrChildren ? '' : "={$class}");
     }
 }

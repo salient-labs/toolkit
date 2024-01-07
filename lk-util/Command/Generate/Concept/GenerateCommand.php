@@ -252,21 +252,6 @@ abstract class GenerateCommand extends Command
         ];
     }
 
-    /**
-     * Get an array of values to use with getEffectiveCommandLine() when
-     * generating repeatable commands
-     *
-     * @return array<string,null>
-     */
-    protected function outputOptionValues(): array
-    {
-        return [
-            'stdout' => null,
-            'check' => null,
-            'force' => null,
-        ];
-    }
-
     protected function reset(): void
     {
         $this->OutputFile = null;
