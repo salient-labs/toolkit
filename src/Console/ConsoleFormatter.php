@@ -3,7 +3,7 @@
 namespace Lkrms\Console;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleMessageType as Type;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
 use Lkrms\Console\Support\ConsoleMessageAttributes as MessageAttributes;
@@ -37,9 +37,9 @@ final class ConsoleFormatter
     ];
 
     public const DEFAULT_TYPE_PREFIX_MAP = [
-        Type::GROUP_START => '>>> ',
-        Type::GROUP_END => '<<< ',
-        Type::SUCCESS => ' // ',
+        MessageType::GROUP_START => '>>> ',
+        MessageType::GROUP_END => '<<< ',
+        MessageType::SUCCESS => ' // ',
     ];
 
     /**
@@ -136,14 +136,14 @@ final class ConsoleFormatter
     private array $LevelPrefixMap;
 
     /**
-     * @var array<Type::*,string>
+     * @var array<MessageType::*,string>
      */
     private array $TypePrefixMap;
 
     /**
      * @param (callable(): (int|null))|null $widthCallback
      * @param array<Level::*,string> $levelPrefixMap
-     * @param array<Type::*,string> $typePrefixMap
+     * @param array<MessageType::*,string> $typePrefixMap
      */
     public function __construct(
         ?TagFormats $tagFormats = null,
@@ -173,9 +173,9 @@ final class ConsoleFormatter
      * Get the format assigned to a message level and type
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      */
-    public function getMessageFormat($level, $type = Type::STANDARD): MessageFormat
+    public function getMessageFormat($level, $type = MessageType::STANDARD): MessageFormat
     {
         return $this->MessageFormats->get($level, $type);
     }
@@ -184,12 +184,12 @@ final class ConsoleFormatter
      * Get the prefix assigned to a message level and type
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      */
-    public function getMessagePrefix($level, $type = Type::STANDARD): string
+    public function getMessagePrefix($level, $type = MessageType::STANDARD): string
     {
         return
-            $type === Type::UNFORMATTED || $type === Type::UNDECORATED
+            $type === MessageType::UNFORMATTED || $type === MessageType::UNDECORATED
                 ? ''
                 : ($this->TypePrefixMap[$type]
                     ?? $this->LevelPrefixMap[$level]
@@ -466,17 +466,17 @@ final class ConsoleFormatter
      * Format a message
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      */
     public function formatMessage(
         string $msg1,
         ?string $msg2 = null,
         $level = Level::INFO,
-        $type = Type::STANDARD
+        $type = MessageType::STANDARD
     ): string {
         $attributes = new MessageAttributes($level, $type);
 
-        if ($type === Type::UNFORMATTED) {
+        if ($type === MessageType::UNFORMATTED) {
             return $this
                 ->getDefaultMessageFormats()
                 ->get($level, $type)

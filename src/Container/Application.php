@@ -3,7 +3,7 @@
 namespace Lkrms\Container;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevelGroup;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Contract\IApplication;
 use Lkrms\Exception\FilesystemErrorException;
@@ -460,14 +460,14 @@ class Application extends Container implements IApplication
 
         if (!isset($this->LogTargets[$name])) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
-            Console::registerTarget($target, ConsoleLevelGroup::ALL_EXCEPT_DEBUG);
+            Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
             $this->LogTargets[$name] = $target;
         }
 
         if (($debug || ($debug === null && Env::debug())) &&
                 !isset($this->DebugLogTargets[$name])) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, ConsoleLevelGroup::ALL);
+            Console::registerTarget($target, LevelGroup::ALL);
             $this->DebugLogTargets[$name] = $target;
         }
 

@@ -756,7 +756,6 @@ abstract class CliCommand implements ICliCommand
                             $option->formatAllowedValues()
                         ));
                     }
-
                     continue;
                 }
 

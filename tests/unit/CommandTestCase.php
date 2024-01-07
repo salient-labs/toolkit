@@ -5,7 +5,7 @@ namespace Lkrms\Tests;
 use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevelGroup as Levels;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Console;
@@ -54,7 +54,7 @@ abstract class CommandTestCase extends TestCase
         $target = $outputIncludesConsoleMessages
             ? new MockTarget(File::open('php://output', ''))
             : new MockTarget();
-        Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
 
         $this->expectOutputString($output);
 

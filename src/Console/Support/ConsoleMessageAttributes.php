@@ -4,7 +4,7 @@ namespace Lkrms\Console\Support;
 
 use Lkrms\Concern\Immutable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleMessageType as Type;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 
 /**
  * Message attributes
@@ -24,7 +24,7 @@ final class ConsoleMessageAttributes
     /**
      * Message type
      *
-     * @var Type::*
+     * @var MessageType::*
      * @readonly
      */
     public int $Type;
@@ -52,7 +52,7 @@ final class ConsoleMessageAttributes
 
     /**
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      */
     public function __construct(
         int $level,

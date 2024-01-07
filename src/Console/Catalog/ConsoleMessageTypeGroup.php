@@ -3,7 +3,7 @@
 namespace Lkrms\Console\Catalog;
 
 use Lkrms\Concept\Enumeration;
-use Lkrms\Console\Catalog\ConsoleMessageType as Type;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 
 /**
  * Groups of console message types
@@ -15,11 +15,11 @@ use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 final class ConsoleMessageTypeGroup extends Enumeration
 {
     public const ALL = [
-        Type::STANDARD,
-        Type::UNDECORATED,
-        Type::UNFORMATTED,
-        Type::GROUP_START,
-        Type::GROUP_END,
-        Type::SUCCESS,
+        MessageType::STANDARD,
+        MessageType::UNDECORATED,
+        MessageType::UNFORMATTED,
+        MessageType::GROUP_START,
+        MessageType::GROUP_END,
+        MessageType::SUCCESS,
     ];
 }

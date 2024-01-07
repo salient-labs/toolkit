@@ -4,8 +4,8 @@ namespace Lkrms\Console\Concept;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
-use Lkrms\Console\Catalog\ConsoleMessageType as Type;
-use Lkrms\Console\Catalog\ConsoleMessageTypeGroup as TypeGroup;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
+use Lkrms\Console\Catalog\ConsoleMessageTypeGroup as MessageTypeGroup;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface;
 use Lkrms\Console\Support\ConsoleFormat as Format;
@@ -83,11 +83,11 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
         $cyan = Format::ttyColour(Colour::CYAN);
 
         return (new MessageFormats())
-            ->set(LevelGroup::ERRORS, TypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))
-            ->set(Level::WARNING, TypeGroup::ALL, new MessageFormat($boldYellow, $default, $boldYellow))
-            ->set(Level::NOTICE, TypeGroup::ALL, new MessageFormat($bold, $cyan, $boldCyan))
-            ->set(Level::INFO, TypeGroup::ALL, new MessageFormat($default, $yellow, $boldYellow))
-            ->set(Level::DEBUG, TypeGroup::ALL, new MessageFormat($dim, $dim, $boldDim))
-            ->set(LevelGroup::INFO, Type::SUCCESS, new MessageFormat($green, $default, $boldGreen));
+            ->set(LevelGroup::ERRORS, MessageTypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))
+            ->set(Level::WARNING, MessageTypeGroup::ALL, new MessageFormat($boldYellow, $default, $boldYellow))
+            ->set(Level::NOTICE, MessageTypeGroup::ALL, new MessageFormat($bold, $cyan, $boldCyan))
+            ->set(Level::INFO, MessageTypeGroup::ALL, new MessageFormat($default, $yellow, $boldYellow))
+            ->set(Level::DEBUG, MessageTypeGroup::ALL, new MessageFormat($dim, $dim, $boldDim))
+            ->set(LevelGroup::INFO, MessageType::SUCCESS, new MessageFormat($green, $default, $boldGreen));
     }
 }

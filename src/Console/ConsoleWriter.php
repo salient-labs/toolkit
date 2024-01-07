@@ -3,8 +3,8 @@
 namespace Lkrms\Console;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevelGroup as Levels;
-use Lkrms\Console\Catalog\ConsoleMessageType as Type;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
 use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
 use Lkrms\Console\Contract\ConsoleTargetPrefixInterface as TargetPrefix;
@@ -112,7 +112,7 @@ final class ConsoleWriter implements ReceivesFacade
     {
         return $this->registerTarget(
             StreamTarget::fromPath(File::getStablePath('.log')),
-            Levels::ALL
+            LevelGroup::ALL
         );
     }
 
@@ -188,12 +188,12 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $stderr = $this->getStderrTarget();
-        $stderrLevels = Levels::ERRORS_AND_WARNINGS;
+        $stderrLevels = LevelGroup::ERRORS_AND_WARNINGS;
 
         $stdout = $this->getStdoutTarget();
         $stdoutLevels = Env::debug()
-            ? Levels::INFO
-            : Levels::INFO_EXCEPT_DEBUG;
+            ? LevelGroup::INFO
+            : LevelGroup::INFO_EXCEPT_DEBUG;
 
         return $this
             ->clearStdioTargets()
@@ -225,7 +225,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function registerTarget(
         Target $target,
-        array $levels = Levels::ALL
+        array $levels = LevelGroup::ALL
     ) {
         $type = 0;
 
@@ -444,7 +444,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         $msg1 = trim($finishedText);
         if ($this->Errors + $this->Warnings === 0) {
-            return $this->write(Level::INFO, "$msg1 $successText", null, Type::SUCCESS);
+            return $this->write(Level::INFO, "$msg1 $successText", null, MessageType::SUCCESS);
         }
 
         $msg2 = 'with ' . Convert::plural($this->Errors, 'error', null, true);
@@ -463,13 +463,13 @@ final class ConsoleWriter implements ReceivesFacade
      * Print "$msg"
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function print(
         string $msg,
         $level = Level::INFO,
-        $type = Type::UNDECORATED
+        $type = MessageType::UNDECORATED
     ) {
         return $this->_write($level, $msg, null, $type, null, $this->TargetsByLevel);
     }
@@ -478,13 +478,13 @@ final class ConsoleWriter implements ReceivesFacade
      * Print "$msg" to I/O stream targets (STDOUT or STDERR)
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function out(
         string $msg,
         $level = Level::INFO,
-        $type = Type::UNDECORATED
+        $type = MessageType::UNDECORATED
     ) {
         return $this->_write($level, $msg, null, $type, null, $this->StdioTargetsByLevel);
     }
@@ -493,13 +493,13 @@ final class ConsoleWriter implements ReceivesFacade
      * Print "$msg" to TTY targets
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function tty(
         string $msg,
         $level = Level::INFO,
-        $type = Type::UNDECORATED
+        $type = MessageType::UNDECORATED
     ) {
         return $this->_write($level, $msg, null, $type, null, $this->TtyTargetsByLevel);
     }
@@ -508,13 +508,13 @@ final class ConsoleWriter implements ReceivesFacade
      * Print "$msg" to STDOUT, creating a target for it if necessary
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function stdout(
         string $msg,
         $level = Level::INFO,
-        $type = Type::UNFORMATTED
+        $type = MessageType::UNFORMATTED
     ) {
         $targets = [$level => [$this->getStdoutTarget()]];
         $this->_write($level, $msg, null, $type, null, $targets);
@@ -526,13 +526,13 @@ final class ConsoleWriter implements ReceivesFacade
      * Print "$msg" to STDERR, creating a target for it if necessary
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function stderr(
         string $msg,
         $level = Level::INFO,
-        $type = Type::UNFORMATTED
+        $type = MessageType::UNFORMATTED
     ) {
         $targets = [$level => [$this->getStderrTarget()]];
         $this->_write($level, $msg, null, $type, null, $targets);
@@ -546,14 +546,14 @@ final class ConsoleWriter implements ReceivesFacade
      * This method increments the message counter for `$level`.
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function message(
         $level,
         string $msg1,
         ?string $msg2 = null,
-        $type = Type::STANDARD,
+        $type = MessageType::STANDARD,
         ?Throwable $ex = null,
         bool $count = true
     ) {
@@ -571,14 +571,14 @@ final class ConsoleWriter implements ReceivesFacade
      * This method increments the message counter for `$level`.
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function messageOnce(
         $level,
         string $msg1,
         ?string $msg2 = null,
-        $type = Type::STANDARD,
+        $type = MessageType::STANDARD,
         ?Throwable $ex = null,
         bool $count = true
     ) {
@@ -626,7 +626,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Errors++;
 
-        return $this->write(Level::ERROR, $msg1, $msg2, Type::STANDARD, $ex);
+        return $this->write(Level::ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -642,7 +642,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Errors++;
 
-        return $this->writeOnce(Level::ERROR, $msg1, $msg2, Type::STANDARD, $ex);
+        return $this->writeOnce(Level::ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -658,7 +658,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Warnings++;
 
-        return $this->write(Level::WARNING, $msg1, $msg2, Type::STANDARD, $ex);
+        return $this->write(Level::WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -674,7 +674,7 @@ final class ConsoleWriter implements ReceivesFacade
     ) {
         !$count || $this->Warnings++;
 
-        return $this->writeOnce(Level::WARNING, $msg1, $msg2, Type::STANDARD, $ex);
+        return $this->writeOnce(Level::WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -771,7 +771,7 @@ final class ConsoleWriter implements ReceivesFacade
             return $this;
         }
 
-        return $this->writeTty(Level::INFO, "\r", null, Type::UNFORMATTED);
+        return $this->writeTty(Level::INFO, "\r", null, MessageType::UNFORMATTED);
     }
 
     /**
@@ -794,7 +794,7 @@ final class ConsoleWriter implements ReceivesFacade
         $caller = implode('', Debug::getCaller($depth));
         $msg1 = $msg1 ? ' __' . $msg1 . '__' : '';
 
-        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, Type::STANDARD, $ex);
+        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -816,7 +816,7 @@ final class ConsoleWriter implements ReceivesFacade
 
         $caller = implode('', Debug::getCaller($depth));
 
-        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . '__', $msg2, Type::STANDARD, $ex);
+        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . '__', $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -834,7 +834,7 @@ final class ConsoleWriter implements ReceivesFacade
         $this->GroupLevel++;
         $this->GroupMessageStack[] = Arr::implode(' ', [$msg1, $msg2]);
 
-        return $this->write(Level::NOTICE, $msg1, $msg2, Type::GROUP_START);
+        return $this->write(Level::NOTICE, $msg1, $msg2, MessageType::GROUP_START);
     }
 
     /**
@@ -849,7 +849,7 @@ final class ConsoleWriter implements ReceivesFacade
         if ($printMessage &&
                 $msg !== '' &&
                 ($msg = Formatter::removeTags($msg)) !== '') {
-            $this->write(Level::NOTICE, '', $msg ? "{ $msg } complete" : null, Type::GROUP_END);
+            $this->write(Level::NOTICE, '', $msg ? "{ $msg } complete" : null, MessageType::GROUP_END);
         }
         $this->out('', Level::NOTICE);
 
@@ -905,7 +905,7 @@ final class ConsoleWriter implements ReceivesFacade
             $messageLevel,
             sprintf('__%s__:', $class),
             $msg2,
-            Type::STANDARD,
+            MessageType::STANDARD,
             $exception,
             true
         );
@@ -946,8 +946,8 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $levels = Env::debug()
-            ? Levels::ALL
-            : Levels::ALL_EXCEPT_DEBUG;
+            ? LevelGroup::ALL
+            : LevelGroup::ALL_EXCEPT_DEBUG;
 
         return $this
             ->clearStdioTargets()
@@ -988,14 +988,14 @@ final class ConsoleWriter implements ReceivesFacade
      * Send a message to registered targets
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     private function write(
         $level,
         string $msg1,
         ?string $msg2,
-        $type = Type::STANDARD,
+        $type = MessageType::STANDARD,
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
@@ -1006,14 +1006,14 @@ final class ConsoleWriter implements ReceivesFacade
      * Send a message to registered targets once per run
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     private function writeOnce(
         $level,
         string $msg1,
         ?string $msg2,
-        $type = Type::STANDARD,
+        $type = MessageType::STANDARD,
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
@@ -1029,14 +1029,14 @@ final class ConsoleWriter implements ReceivesFacade
      * Send a message to registered TTY targets
      *
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     private function writeTty(
         $level,
         string $msg1,
         ?string $msg2,
-        $type = Type::STANDARD,
+        $type = MessageType::STANDARD,
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
@@ -1045,7 +1045,7 @@ final class ConsoleWriter implements ReceivesFacade
 
     /**
      * @param Level::* $level
-     * @param Type::* $type
+     * @param MessageType::* $type
      * @param array<Level::*,Target[]> $targets
      * @return $this
      */

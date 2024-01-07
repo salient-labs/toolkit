@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Console\Catalog\ConsoleLevel;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IComparable;
 use Lkrms\Contract\IImmutable;
@@ -19,7 +19,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @property-read SyncErrorType::* $ErrorType
  * @property-read string $Message An sprintf() format string that explains the error
  * @property-read mixed[] $Values Values passed to sprintf() with the message format string
- * @property-read ConsoleLevel::* $Level
+ * @property-read Level::* $Level
  * @property-read ISyncEntity|null $Entity The entity associated with the error
  * @property-read string|null $EntityName The display name of the entity associated with the error
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
@@ -62,7 +62,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, Buildable
     protected $Values;
 
     /**
-     * @var ConsoleLevel::*
+     * @var Level::*
      */
     protected $Level;
 
@@ -100,13 +100,13 @@ final class SyncError implements IReadable, IComparable, IImmutable, Buildable
     /**
      * @param SyncErrorType::* $errorType
      * @param mixed[] $values
-     * @param ConsoleLevel::* $level
+     * @param Level::* $level
      */
     public function __construct(
         int $errorType,
         string $message,
         array $values = [],
-        int $level = ConsoleLevel::ERROR,
+        int $level = Level::ERROR,
         ?ISyncEntity $entity = null,
         ?string $entityName = null,
         ?ISyncProvider $provider = null
