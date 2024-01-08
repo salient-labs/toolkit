@@ -7,7 +7,7 @@ use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 
 /**
- * Maps inline formatting tags to target-defined formats
+ * Maps inline formatting tags to formats
  */
 final class ConsoleTagFormats
 {

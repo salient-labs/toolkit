@@ -6,6 +6,7 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
+use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
 use Lkrms\Console\Support\ConsoleMessageAttributes as MessageAttributes;
 use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
@@ -21,7 +22,7 @@ use LogicException;
 /**
  * Formats messages for a console output target
  *
- * @see ConsoleTarget::getFormatter()
+ * @see Target::getFormatter()
  */
 final class ConsoleFormatter
 {
@@ -514,20 +515,17 @@ final class ConsoleFormatter
 
     private static function getDefaultFormatter(): self
     {
-        return self::$DefaultFormatter
-            ?? (self::$DefaultFormatter = new self());
+        return self::$DefaultFormatter ??= new self();
     }
 
     private static function getDefaultTagFormats(): TagFormats
     {
-        return self::$DefaultTagFormats
-            ?? (self::$DefaultTagFormats = new TagFormats());
+        return self::$DefaultTagFormats ??= new TagFormats();
     }
 
     private static function getDefaultMessageFormats(): MessageFormats
     {
-        return self::$DefaultMessageFormats
-            ?? (self::$DefaultMessageFormats = new MessageFormats());
+        return self::$DefaultMessageFormats ??= new MessageFormats();
     }
 
     /**

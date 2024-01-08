@@ -5,6 +5,8 @@ namespace Lkrms\Console\Contract;
 /**
  * A console output target that applies an optional prefix to each line of
  * output
+ *
+ * @api
  */
 interface ConsoleTargetPrefixInterface extends ConsoleTargetInterface
 {

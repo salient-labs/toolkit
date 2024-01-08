@@ -7,6 +7,8 @@ use Lkrms\Console\ConsoleFormatter;
 
 /**
  * A console output target
+ *
+ * @api
  */
 interface ConsoleTargetInterface
 {

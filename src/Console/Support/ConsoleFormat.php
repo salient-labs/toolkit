@@ -8,8 +8,7 @@ use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 
 /**
- * Applies formatting to console output by adding inline character sequences
- * defined by the target
+ * Applies inline character sequences to console output
  */
 final class ConsoleFormat implements ConsoleFormatInterface
 {

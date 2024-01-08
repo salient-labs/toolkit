@@ -7,7 +7,7 @@ use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 
 /**
- * Maps message levels and types to target-defined formats
+ * Maps message levels and types to formats
  *
  * If multiple formats are assigned to the same {@see Level} and
  * {@see MessageType}, the format assigned last takes precedence.

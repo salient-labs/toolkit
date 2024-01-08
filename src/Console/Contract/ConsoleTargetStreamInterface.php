@@ -4,6 +4,8 @@ namespace Lkrms\Console\Contract;
 
 /**
  * A console output target with an underlying PHP stream
+ *
+ * @api
  */
 interface ConsoleTargetStreamInterface extends ConsoleTargetInterface
 {
