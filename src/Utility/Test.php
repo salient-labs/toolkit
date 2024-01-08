@@ -92,33 +92,6 @@ final class Test extends Utility
     }
 
     /**
-     * @deprecated Use {@see File::isPharUri()} instead
-     * @codeCoverageIgnore
-     */
-    public static function isPharUrl(string $path): bool
-    {
-        return File::isPharUri($path);
-    }
-
-    /**
-     * @deprecated Use {@see File::isAbsolute()} instead
-     * @codeCoverageIgnore
-     */
-    public static function isAbsolutePath(string $path): bool
-    {
-        return File::isAbsolute($path);
-    }
-
-    /**
-     * @deprecated Use {@see File::same()} instead
-     * @codeCoverageIgnore
-     */
-    public static function areSameFile(string $path1, string $path2): bool
-    {
-        return File::same($path1, $path2);
-    }
-
-    /**
      * True if a directory exists and is writable, or doesn't exist but
      * can be created
      */
