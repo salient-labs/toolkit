@@ -5,7 +5,7 @@ namespace Lkrms\Console\Catalog;
 use Lkrms\Concept\Enumeration;
 
 /**
- * Inline console output formatting tags
+ * Console output formatting tags
  *
  * @extends Enumeration<int>
  */
@@ -59,8 +59,6 @@ final class ConsoleTag extends Enumeration
 
     /**
      * Fenced code block
-     *
-     * Syntax:
      *
      * ` ``` `<br>
      * text<br>

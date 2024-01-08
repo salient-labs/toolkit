@@ -4,13 +4,11 @@ namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
 use Lkrms\Contract\IDateFormatter;
-use Lkrms\Http\Uri;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
-use DateTimeZone;
 use LogicException;
 use Stringable;
 
@@ -96,17 +94,6 @@ final class Convert extends Utility
     }
 
     /**
-     * @param mixed[] $array
-     * @return array<int|float|string|bool|null>
-     * @deprecated Use {@see Arr::toScalars()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toScalarArray(array $array): array
-    {
-        return Arr::toScalars($array);
-    }
-
-    /**
      * Expand tabs to spaces
      */
     public static function expandTabs(
@@ -184,47 +171,6 @@ final class Convert extends Utility
     }
 
     /**
-     * @param string|int $key
-     * @param mixed[] $array
-     * @deprecated Use {@see Arr::toScalars()} instead
-     * @codeCoverageIgnore
-     */
-    public static function arrayKeyToOffset($key, array $array): int
-    {
-        return Arr::keyOffset($array, $key);
-    }
-
-    /**
-     * @template TKey of array-key
-     * @template TValue
-     *
-     * @param array<TKey,TValue> $array
-     * @param TKey $key
-     * @param array<TKey,TValue> $replacement
-     * @return array<TKey,TValue> The removed portion of the array.
-     * @deprecated Use {@see Arr::spliceByKey()} instead
-     * @codeCoverageIgnore
-     */
-    public static function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
-    {
-        $array = Arr::spliceByKey($array, $key, $length, $replacement, $replaced);
-        return $replaced;
-    }
-
-    /**
-     * @param string|int $key
-     * @param string|int $newKey
-     * @param mixed[] $array
-     * @return mixed[]
-     * @deprecated Use {@see Arr::rename()} instead
-     * @codeCoverageIgnore
-     */
-    public static function renameArrayKey($key, $newKey, array $array): array
-    {
-        return Arr::rename($array, $key, $newKey);
-    }
-
-    /**
      * Convert an interval to the equivalent number of seconds
      *
      * Works with ISO 8601 durations like `PT48M`.
@@ -243,16 +189,6 @@ final class Convert extends Utility
     }
 
     /**
-     * @param DateTimeZone|string $value
-     * @deprecated Use {@see Date::timezone()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toTimezone($value): DateTimeZone
-    {
-        return Date::timezone($value);
-    }
-
-    /**
      * Get the first value that is not null
      *
      * @param mixed ...$values
@@ -267,107 +203,6 @@ final class Convert extends Utility
             }
         }
         return null;
-    }
-
-    /**
-     * @template TKey of array-key
-     * @template TValue
-     * @param iterable<TKey,TValue> $iterable
-     * @return array<TKey,TValue>
-     * @deprecated Use {@see Get::array()} instead
-     * @codeCoverageIgnore
-     */
-    public static function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
-    {
-        return Get::array($iterable, $preserveKeys);
-    }
-
-    /**
-     * Remove the directory and up to the given number of extensions from a path
-     *
-     * @param int $extLimit If set, remove extensions matching the regular
-     * expression `\.[^.\s]+$` unless `""`, `"."`, or `".."` would remain:
-     * - `<0`: remove all extensions
-     * - `>0`: remove up to the given number of extensions
-     */
-    public static function pathToBasename(string $path, int $extLimit = 0): string
-    {
-        $path = basename($path);
-        if ($extLimit) {
-            $range = $extLimit > 1 ? "{1,$extLimit}" : ($extLimit < 0 ? '+' : '');
-            $path = Pcre::replace("/(?<=.)(?<!^\.|^\.\.)(\.[^.\s]+){$range}\$/", '', $path);
-        }
-
-        return $path;
-    }
-
-    /**
-     * @deprecated Use {@see File::resolve()} instead
-     * @codeCoverageIgnore
-     */
-    public static function resolvePath(string $path): string
-    {
-        return File::resolve($path);
-    }
-
-    /**
-     * @deprecated Use {@see Uri::resolveReference()} instead
-     * @codeCoverageIgnore
-     */
-    public static function resolveRelativeUrl(string $embeddedUrl, string $baseUrl): string
-    {
-        return Uri::resolveReference($embeddedUrl, $baseUrl);
-    }
-
-    /**
-     * @return array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}
-     * @deprecated Use {@see Uri::parse()} instead
-     * @codeCoverageIgnore
-     */
-    public static function parseUrl(string $url): array
-    {
-        return Uri::parse($url);
-    }
-
-    /**
-     * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $url
-     * @deprecated Use {@see Uri::unparse()} instead
-     * @codeCoverageIgnore
-     */
-    public static function unparseUrl(array $url): string
-    {
-        return Uri::unparse($url);
-    }
-
-    /**
-     * @deprecated Use {@see Get::basename()} instead
-     * @codeCoverageIgnore
-     */
-    public static function classToBasename(string $class, string ...$suffix): string
-    {
-        return Get::basename($class, ...$suffix);
-    }
-
-    /**
-     * @deprecated Use {@see Get::namespace()} instead
-     * @codeCoverageIgnore
-     */
-    public static function classToNamespace(string $class): string
-    {
-        return Get::namespace($class);
-    }
-
-    /**
-     * @template T of mixed[]|object
-     * @param array<T> $list
-     * @param int|string $key
-     * @return array<T>
-     * @deprecated Use {@see Arr::toMap()} instead
-     * @codeCoverageIgnore
-     */
-    public static function listToMap(array $list, $key): array
-    {
-        return Arr::toMap($list, $key);
     }
 
     /**
@@ -760,52 +595,6 @@ final class Convert extends Utility
         }
 
         return $arg;
-    }
-
-    /**
-     * @deprecated Use {@see Str::toSnakeCase()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toSnakeCase(string $text, ?string $preserve = null): string
-    {
-        return Str::toSnakeCase($text, $preserve);
-    }
-
-    /**
-     * @deprecated Use {@see Str::toKebabCase()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toKebabCase(string $text, ?string $preserve = null): string
-    {
-        return Str::toKebabCase($text, $preserve);
-    }
-
-    /**
-     * @deprecated Use {@see Str::toPascalCase()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toPascalCase(string $text, ?string $preserve = null): string
-    {
-        return Str::toPascalCase($text, $preserve);
-    }
-
-    /**
-     * @deprecated Use {@see Str::toCamelCase()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toCamelCase(string $text, ?string $preserve = null): string
-    {
-        return Str::toCamelCase($text, $preserve);
-    }
-
-    /**
-     * @param (callable(string): string)|null $callback
-     * @deprecated Use {@see Str::toWords()} instead
-     * @codeCoverageIgnore
-     */
-    public static function splitWords(string $text, ?string $preserve, string $delimiter, ?callable $callback = null): string
-    {
-        return Str::toWords($text, $delimiter, $preserve, $callback);
     }
 
     /**

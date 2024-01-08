@@ -6,7 +6,7 @@ use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
 use Lkrms\Console\Support\ConsoleMessageAttributes as MessageAttributes;
 
 /**
- * Applies target-defined formats to the components of a console message
+ * Applies formats to the components of a console message
  */
 final class ConsoleMessageFormat
 {
