@@ -47,6 +47,7 @@ use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Utility\Arr;
+use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
@@ -65,7 +66,7 @@ $facades = [
 ];
 
 $builders = [
-    CliOption::class => [CliOptionBuilder::class, '--forward=load'],
+    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--api'],
     Curler::class => [CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
     CurlerPage::class => CurlerPageBuilder::class,
     DbSyncDefinition::class => DbSyncDefinitionBuilder::class,
@@ -103,12 +104,11 @@ foreach ($class->getReflectionConstants() as $constant) {
     if (!$constant->isPublic()) {
         continue;
     }
-    $app->env()->unset($constant->getValue());
+    Env::unset($constant->getValue());
 }
 
 $args = [
     '--force',
-    '--no-meta',
     ...array_slice($_SERVER['argv'], 1),
 ];
 

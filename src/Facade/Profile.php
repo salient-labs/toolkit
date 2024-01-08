@@ -18,9 +18,9 @@ use Lkrms\Support\Timekeeper;
  * @method static void startTimer(string $name, string $type = 'general') Start a timer using the system's high-resolution time (see {@see Timekeeper::startTimer()})
  * @method static float stopTimer(string $name, string $type = 'general') Stop a timer and return the elapsed milliseconds (see {@see Timekeeper::stopTimer()})
  *
- * @uses Timekeeper
- *
  * @extends Facade<Timekeeper>
+ *
+ * @generated
  */
 final class Profile extends Facade
 {

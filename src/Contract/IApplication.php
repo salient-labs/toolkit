@@ -14,7 +14,7 @@ use Lkrms\Utility\Package;
 /**
  * A service container for applications
  */
-interface IApplication extends IContainer, HasEnvironment
+interface IApplication extends IContainer
 {
     /**
      * @inheritDoc

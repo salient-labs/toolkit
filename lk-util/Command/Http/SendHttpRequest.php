@@ -3,6 +3,7 @@
 namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Http\Catalog\HttpRequestMethod;
@@ -20,20 +21,20 @@ use Lkrms\Utility\Str;
 final class SendHttpRequest extends Command
 {
     /**
-     * @var class-string<HttpSyncProvider>|null
+     * @var class-string<HttpSyncProvider>
      */
-    private ?string $Provider;
+    private string $Provider = HttpSyncProvider::class;
 
-    private ?string $HttpEndpoint;
+    private string $HttpEndpoint = '';
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    private ?array $HttpQuery;
+    private array $HttpQuery = [];
 
-    private ?string $HttpDataFile;
+    private ?string $HttpDataFile = null;
 
-    private ?bool $Paginate;
+    private bool $Paginate = false;
 
     // --
 
@@ -93,6 +94,7 @@ final class SendHttpRequest extends Command
                 ->valueName('file')
                 ->description('The path to JSON-serialized data to submit with the request')
                 ->optionType(CliOptionType::VALUE)
+                ->valueType(CliOptionValueType::FILE)
                 ->bindTo($this->HttpDataFile);
         }
 

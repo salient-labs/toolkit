@@ -8,9 +8,11 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 /**
  * Groups of console message levels
  *
+ * @api
+ *
  * @extends Enumeration<int[]>
  */
-final class ConsoleLevels extends Enumeration
+final class ConsoleLevelGroup extends Enumeration
 {
     public const ALL = [
         Level::EMERGENCY,

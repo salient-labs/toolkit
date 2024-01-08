@@ -40,9 +40,9 @@ use Lkrms\Contract\IService;
  * @method static Container singletonIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container if it isn't already registered
  * @method static Container unbind(class-string $id) Remove a binding from the container
  *
- * @uses Container
- *
  * @extends Facade<Container>
+ *
+ * @generated
  */
 final class DI extends Facade
 {

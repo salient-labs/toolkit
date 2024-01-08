@@ -7,6 +7,8 @@ use Lkrms\Sync\Concept\SyncEntity;
 
 /**
  * Represents the state of a Task entity in a backend
+ *
+ * @generated
  */
 class Task extends SyncEntity
 {

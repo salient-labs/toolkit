@@ -19,9 +19,9 @@ use Generator;
  * @method static int listen(callable(object): mixed $listener, string[]|string|null $event = null) Register an event listener with the dispatcher (see {@see EventDispatcher::listen()})
  * @method static void removeListener(int $id) Remove an event listener from the dispatcher (see {@see EventDispatcher::removeListener()})
  *
- * @uses EventDispatcher
- *
  * @extends Facade<EventDispatcher>
+ *
+ * @generated
  */
 final class Event extends Facade
 {

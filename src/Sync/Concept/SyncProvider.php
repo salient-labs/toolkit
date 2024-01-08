@@ -17,7 +17,6 @@ use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
-use Lkrms\Utility\Env;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Closure;
@@ -73,9 +72,9 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      * Creating an instance of the provider registers it with the entity store
      * injected by the container.
      */
-    public function __construct(IContainer $app, Env $env, SyncStore $store)
+    public function __construct(IContainer $app, SyncStore $store)
     {
-        parent::__construct($app, $env);
+        parent::__construct($app);
         $this->Store = $store;
         $this->Store->provider($this);
     }

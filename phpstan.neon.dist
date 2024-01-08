@@ -15,5 +15,3 @@ parameters:
 		- tests/unit
 		- tests/phpstan-conditional.php
 		- bootstrap.php
-	ignoreErrors:
-		- "#^Property Lkrms\\\\.+\\\\Command\\\\.+\\:\\:\\$[a-zA-Z0-9_]+ is never written, only read\\.$#"

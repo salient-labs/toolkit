@@ -43,9 +43,9 @@ use Closure;
  * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see SyncDefinition::$ReadFromReadList})
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
- * @uses HttpSyncDefinition
- *
  * @extends Builder<HttpSyncDefinition<TEntity,TProvider>>
+ *
+ * @generated
  */
 final class HttpSyncDefinitionBuilder extends Builder
 {

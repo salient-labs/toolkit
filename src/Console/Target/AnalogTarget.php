@@ -6,14 +6,15 @@ use Analog\Analog;
 use Lkrms\Console\Concept\ConsoleTarget;
 
 /**
- * Write console messages to Analog
+ * Writes console output to Analog
  */
 final class AnalogTarget extends ConsoleTarget
 {
-    protected function writeToTarget($level, string $message, array $context): void
+    /**
+     * @inheritDoc
+     */
+    public function write($level, string $message, array $context = []): void
     {
-        // Analog's level constants have the same values as equivalent
-        // ConsoleLevel constants
         Analog::log($message, $level);
     }
 }

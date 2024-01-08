@@ -7,7 +7,8 @@ use Lkrms\Cli\Catalog\CliHelpType;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Support\CliHelpStyle;
-use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Lkrms\Console\Support\ConsoleManPageFormat;
+use Lkrms\Console\Support\ConsoleMarkdownFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;
 use Lkrms\Facade\Console;
@@ -500,11 +501,11 @@ class CliApplication extends Application implements ICliApplication
 
         switch ($helpType) {
             case CliHelpType::MARKDOWN:
-                $formats = TagFormats::getMarkdownFormats();
+                $formats = ConsoleMarkdownFormat::getTagFormats();
                 break;
 
             case CliHelpType::MAN_PAGE:
-                $formats = TagFormats::getManPageFormats();
+                $formats = ConsoleManPageFormat::getTagFormats();
                 printf(
                     "%% %s(%d) %s | %s\n\n",
                     Str::upper(str_replace(' ', '-', trim($this->getProgramName() . " $name"))),

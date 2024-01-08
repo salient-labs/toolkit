@@ -126,6 +126,18 @@ final class File extends Utility
     }
 
     /**
+     * Copy a file
+     *
+     * @see copy()
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function copy(string $from, string $to): void
+    {
+        $result = @copy($from, $to);
+        self::throwOnFailure($result, 'Error copying %s to %s', $from, null, false, $to);
+    }
+
+    /**
      * Get the status of a file or stream
      *
      * @see stat()
@@ -738,9 +750,10 @@ final class File extends Utility
      * @param Stringable|string|null $uri
      * @param resource|null $stream
      * @param TFailure $failure
+     * @param string|int|float ...$args
      * @return ($result is TFailure ? never : TSuccess)
      */
-    private static function throwOnFailure($result, string $message, $uri, $stream = null, $failure = false)
+    private static function throwOnFailure($result, string $message, $uri, $stream = null, $failure = false, ...$args)
     {
         if ($result === $failure) {
             $error = error_get_last();
@@ -748,7 +761,7 @@ final class File extends Utility
                 throw new FilesystemErrorException($error['message']);
             }
             throw new FilesystemErrorException(
-                sprintf($message, self::getFriendlyStreamUri($uri, $stream))
+                sprintf($message, self::getFriendlyStreamUri($uri, $stream), ...$args)
             );
         }
         return $result;

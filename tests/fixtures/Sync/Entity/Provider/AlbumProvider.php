@@ -14,5 +14,7 @@ use Lkrms\Tests\Sync\Entity\Album;
  * @method Album updateAlbum(ISyncContext $ctx, Album $album)
  * @method Album deleteAlbum(ISyncContext $ctx, Album $album)
  * @method iterable<Album> getAlbums(ISyncContext $ctx)
+ *
+ * @generated
  */
 interface AlbumProvider extends ISyncProvider {}

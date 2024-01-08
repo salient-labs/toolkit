@@ -12,10 +12,7 @@ use Stringable;
  *
  * @extends HasContainer<IContainer>
  */
-interface IProvider extends
-    HasContainer,
-    HasEnvironment,
-    HasName
+interface IProvider extends HasContainer, HasName
 {
     /**
      * Get the name of the provider

@@ -45,23 +45,34 @@ final class Str extends Utility
     }
 
     /**
+     * If the first character in a string is an ASCII alphabetic character, make
+     * it uppercase
+     */
+    public static function upperFirst(string $string): string
+    {
+        if ($string === '') {
+            return $string;
+        }
+        $string[0] = self::upper($string[0]);
+        return $string;
+    }
+
+    /**
      * Apply an end-of-line sequence to a string
      */
-    public static function setEol(string $string, string $eol = "\n"): string
+    public static function setEol(string $string, string $eol = "\n", ?string $currentEol = null): string
     {
-        switch ($eol) {
-            case "\n":
-                return str_replace(["\r\n", "\r"], $eol, $string);
-
-            case "\r":
-                return str_replace(["\r\n", "\n"], $eol, $string);
-
-            case "\r\n":
-                return str_replace(["\r\n", "\r", "\n"], ["\n", "\n", $eol], $string);
-
-            default:
-                throw new InvalidArgumentException(sprintf('Invalid end-of-line sequence: %s', $eol));
+        if ($currentEol === null) {
+            $currentEol = Get::eol($string);
+            // No end-of-line sequence = no line breaks = nothing to do
+            if ($currentEol === null) {
+                return $string;
+            }
         }
+        if ($eol === $currentEol) {
+            return $string;
+        }
+        return str_replace($currentEol, $eol, $string);
     }
 
     /**
@@ -113,7 +124,7 @@ final class Str extends Utility
             $string,
             '',
             $preserve,
-            fn($word) => ucfirst(self::lower($word))
+            fn($word) => self::upperFirst(self::lower($word))
         );
     }
 

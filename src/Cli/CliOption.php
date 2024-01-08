@@ -19,16 +19,13 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Assert;
 use Lkrms\Utility\Convert;
-use Lkrms\Utility\Date;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Format;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
 use DateTimeImmutable;
-use DateTimeInterface;
 use LogicException;
 
 /**
@@ -53,12 +50,13 @@ use LogicException;
  * @property-read bool $Unique True if the same value may not be given more than once
  * @property-read string|null $Delimiter The separator between values passed to the option as a single argument
  * @property-read string|null $Description A description of the option
- * @property-read array<string|int|bool>|null $AllowedValues The option's possible values, indexed by lowercase value unless case-sensitive
+ * @property-read array<string|int|bool>|null $AllowedValues The option's possible values, indexed by lowercase value if not case-sensitive
  * @property-read bool $CaseSensitive True if the option's values are case-sensitive
  * @property-read CliOptionValueUnknownPolicy::*|null $UnknownValuePolicy The action taken if an unknown value is given
  * @property-read bool $AddAll True if 'ALL' should be added to the list of possible values when the option can be given more than once
  * @property-read array<string|int|bool>|string|int|bool|null $DefaultValue Assigned to the option if no value is given on the command line
  * @property-read array<string|int|bool>|string|int|bool|null $OriginalDefaultValue The option's default value before applying values from the environment
+ * @property-read bool $Nullable True if the option's value should be null if it is not given on the command line
  * @property-read string|null $EnvVariable The name of a value in the environment that replaces the option's default value
  * @property-read (callable(array<string|int|bool>|string|int|bool): mixed)|null $ValueCallback Applied to the option's value as it is assigned
  * @property-read int-mask-of<CliOptionVisibility::*> $Visibility The option's visibility to users
@@ -74,6 +72,29 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/i';
 
     private const SHORT_REGEX = '/^[a-z0-9_]$/i';
+
+    private const ONE_OF_INDEX = [
+        CliOptionType::ONE_OF => true,
+        CliOptionType::ONE_OF_OPTIONAL => true,
+        CliOptionType::ONE_OF_POSITIONAL => true,
+    ];
+
+    private const POSITIONAL_INDEX = [
+        CliOptionType::VALUE_POSITIONAL => true,
+        CliOptionType::ONE_OF_POSITIONAL => true,
+    ];
+
+    private const VALUE_REQUIRED_INDEX = [
+        CliOptionType::VALUE => true,
+        CliOptionType::VALUE_POSITIONAL => true,
+        CliOptionType::ONE_OF => true,
+        CliOptionType::ONE_OF_POSITIONAL => true,
+    ];
+
+    private const VALUE_OPTIONAL_INDEX = [
+        CliOptionType::VALUE_OPTIONAL => true,
+        CliOptionType::ONE_OF_OPTIONAL => true,
+    ];
 
     /**
      * The name of the option
@@ -192,7 +213,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     protected ?string $Description;
 
     /**
-     * The option's possible values, indexed by lowercase value unless
+     * The option's possible values, indexed by lowercase value if not
      * case-sensitive
      *
      * Ignored if {@see CliOption::$IsOneOf} is `false`.
@@ -242,6 +263,12 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
      * @var array<string|int|bool>|string|int|bool|null
      */
     protected $OriginalDefaultValue;
+
+    /**
+     * True if the option's value should be null if it is not given on the
+     * command line
+     */
+    protected bool $Nullable;
 
     /**
      * The name of a value in the environment that replaces the option's default
@@ -294,8 +321,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
      * @param int-mask-of<CliOptionVisibility::*> $visibility
      * @param bool $hide True if the option's visibility should be
      * {@see CliOptionVisibility::NONE}.
-     * @param mixed $bindTo Assign user-supplied values to a variable before
-     * running the command.
+     * @param mixed $bindTo Bind the option's value to a variable.
      */
     public function __construct(
         ?string $name,
@@ -312,6 +338,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         bool $unique = false,
         bool $addAll = false,
         $defaultValue = null,
+        bool $nullable = false,
         ?string $envVariable = null,
         ?string $delimiter = ',',
         ?callable $valueCallback = null,
@@ -321,12 +348,12 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     ) {
         $this->OptionType = $optionType;
         $this->IsFlag = $optionType === CliOptionType::FLAG;
-        $this->IsOneOf = in_array($optionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL, CliOptionType::ONE_OF_POSITIONAL], true);
-        $this->IsPositional = in_array($optionType, [CliOptionType::VALUE_POSITIONAL, CliOptionType::ONE_OF_POSITIONAL], true);
+        $this->IsOneOf = self::ONE_OF_INDEX[$optionType] ?? false;
+        $this->IsPositional = self::POSITIONAL_INDEX[$optionType] ?? false;
         $this->Required = $required && !$this->IsFlag;
         $this->WasRequired = $this->Required;
-        $this->ValueRequired = in_array($optionType, [CliOptionType::VALUE, CliOptionType::VALUE_POSITIONAL, CliOptionType::ONE_OF, CliOptionType::ONE_OF_POSITIONAL], true);
-        $this->ValueOptional = in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL], true);
+        $this->ValueRequired = self::VALUE_REQUIRED_INDEX[$optionType] ?? false;
+        $this->ValueOptional = self::VALUE_OPTIONAL_INDEX[$optionType] ?? false;
         $this->MultipleAllowed = $multipleAllowed;
         $this->Unique = $unique && $multipleAllowed;
         $this->EnvVariable = $this->IsPositional ? null : Str::coalesce($envVariable, null);
@@ -343,8 +370,9 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         $this->AllowedValues = $this->IsOneOf ? $allowedValues : null;
         $this->UnknownValuePolicy = $this->IsOneOf ? $unknownValuePolicy : null;
         $this->AddAll = $this->IsOneOf ? $addAll && $multipleAllowed && $allowedValues : false;
-        $this->DefaultValue = $this->Required ? null : ($this->IsFlag ? ($multipleAllowed ? 0 : false) : ($multipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue));
+        $this->DefaultValue = $this->IsFlag ? ($multipleAllowed ? 0 : false) : ($multipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
         $this->OriginalDefaultValue = $this->DefaultValue;
+        $this->Nullable = $nullable;
         $this->ValueCallback = $valueCallback;
         $this->Visibility = $hide ? CliOptionVisibility::NONE : $visibility;
 
@@ -399,19 +427,21 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             }
         }
 
-        if ($this->Required && !$this->ValueRequired) {
-            throw new LogicException("'required' must be false when value is optional");
+        if (
+            $this->ValueOptional &&
+            ($this->DefaultValue === null || $this->DefaultValue === []) &&
+            !($this->MultipleAllowed && $this->Nullable)
+        ) {
+            throw new LogicException("'defaultValue' cannot be empty when value is optional");
         }
 
-        if ($this->DefaultValue !== null && !$this->IsFlag) {
-            if ($this->MultipleAllowed) {
-                if (!$this->checkValueTypes($this->DefaultValue)) {
-                    throw new LogicException(sprintf("'defaultValue' must be a value, or an array of values, of type %s", $this->getValueTypeName()));
-                }
-            } else {
-                if (!$this->checkValueType($this->DefaultValue)) {
-                    throw new LogicException(sprintf("'defaultValue' must be a value of type %s", $this->getValueTypeName()));
-                }
+        if (is_array($this->DefaultValue)) {
+            if (!$this->checkValueTypes($this->DefaultValue)) {
+                throw new LogicException(sprintf("'defaultValue' must be a value, or an array of values, of type %s", $this->getValueTypeName()));
+            }
+        } elseif ($this->DefaultValue !== null && !$this->IsFlag) {
+            if (!$this->checkValueType($this->DefaultValue)) {
+                throw new LogicException(sprintf("'defaultValue' must be a value of type %s", $this->getValueTypeName()));
             }
         }
 
@@ -443,74 +473,78 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             }
         }
 
-        if ($this->IsOneOf) {
-            if (
-                !$this->AllowedValues ||
-                !$this->checkValueTypes($this->AllowedValues)
-            ) {
-                throw new LogicException(sprintf("'allowedValues' must be an array of values of type %s", $this->getValueTypeName()));
-            }
+        if (!$this->IsOneOf) {
+            return;
+        }
 
-            if (count(Arr::unique($this->AllowedValues)) !== count($this->AllowedValues)) {
-                throw new LogicException("Values in 'allowedValues' must be unique");
-            }
+        if (
+            !$this->AllowedValues ||
+            !$this->checkValueTypes($this->AllowedValues)
+        ) {
+            throw new LogicException(sprintf("'allowedValues' must be an array of values of type %s", $this->getValueTypeName()));
+        }
 
-            if ($this->ValueType === CliOptionValueType::STRING) {
-                $lower = Arr::lower($this->AllowedValues);
-                if (count(Arr::unique($lower)) === count($this->AllowedValues)) {
-                    $this->CaseSensitive = false;
-                    $this->AllowedValues = array_combine($lower, $this->AllowedValues);
+        if (count(Arr::unique($this->AllowedValues)) !== count($this->AllowedValues)) {
+            throw new LogicException("Values in 'allowedValues' must be unique");
+        }
+
+        if ($this->ValueType === CliOptionValueType::STRING) {
+            $lower = Arr::lower($this->AllowedValues);
+            if (count(Arr::unique($lower)) === count($this->AllowedValues)) {
+                $this->CaseSensitive = false;
+                $this->AllowedValues = array_combine($lower, $this->AllowedValues);
+            }
+        }
+
+        if ($this->AddAll) {
+            if ($this->CaseSensitive) {
+                $values = array_diff($this->AllowedValues, ['ALL']);
+                if ($values === $this->AllowedValues) {
+                    $this->AllowedValues[] = 'ALL';
+                }
+            } else {
+                $values = $this->AllowedValues;
+                unset($values['all']);
+                if ($values === $this->AllowedValues) {
+                    $this->AllowedValues['all'] = 'ALL';
                 }
             }
 
-            if ($this->AddAll) {
-                if ($this->CaseSensitive) {
-                    $values = array_diff($this->AllowedValues, ['ALL']);
-                    if ($values === $this->AllowedValues) {
-                        $this->AllowedValues[] = 'ALL';
-                    }
-                } else {
-                    $values = $this->AllowedValues;
-                    unset($values['all']);
-                    if ($values === $this->AllowedValues) {
-                        $this->AllowedValues['all'] = 'ALL';
-                    }
-                }
-                if (
-                    $this->DefaultValue && (
-                        Arr::same($this->DefaultValue, $values) ||
-                        in_array('ALL', $this->DefaultValue, true)
-                    )
-                ) {
-                    $this->DefaultValue = ['ALL'];
-                }
-
-                // allowedValues must have at least one value other than ALL
-                Assert::notEmpty($values, 'allowedValues', LogicException::class);
-            }
-
-            if ($this->OriginalDefaultValue !== null) {
-                try {
-                    $this->filterValue(
-                        $this->OriginalDefaultValue,
-                        "'defaultValue'",
-                        CliOptionValueUnknownPolicy::REJECT
-                    );
-                } catch (CliUnknownValueException $ex) {
-                    throw new LogicException(ucfirst($ex->getMessage()));
-                }
+            if (!$values) {
+                throw new LogicException("'allowedValues' must have at least one value other than 'ALL'");
             }
 
             if (
-                $this->EnvVariable !== null &&
-                $this->DefaultValue !== null &&
-                $this->DefaultValue !== $this->OriginalDefaultValue
+                $this->DefaultValue && (
+                    Arr::same($this->DefaultValue, $values) ||
+                    in_array('ALL', $this->DefaultValue, true)
+                )
             ) {
-                $this->DefaultValue = $this->filterValue(
-                    $this->DefaultValue,
-                    sprintf("environment variable '%s'", $this->EnvVariable)
+                $this->DefaultValue = ['ALL'];
+            }
+        }
+
+        if ($this->OriginalDefaultValue !== null) {
+            try {
+                $this->filterValue(
+                    $this->OriginalDefaultValue,
+                    "'defaultValue'",
+                    CliOptionValueUnknownPolicy::REJECT
                 );
+            } catch (CliUnknownValueException $ex) {
+                throw new LogicException(Str::upperFirst($ex->getMessage()));
             }
+        }
+
+        if (
+            $this->EnvVariable !== null &&
+            $this->DefaultValue !== null &&
+            $this->DefaultValue !== $this->OriginalDefaultValue
+        ) {
+            $this->DefaultValue = $this->filterValue(
+                $this->DefaultValue,
+                sprintf("environment variable '%s'", $this->EnvVariable)
+            );
         }
     }
 
@@ -532,7 +566,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     /**
      * Get the option's JSON Schema
      *
-     * @return array<string,mixed>
+     * @return array{description?:string,type?:string[]|string,enum?:array<string|int|bool|null>,items?:array{type?:string[]|string,enum?:array<string|int|bool|null>},uniqueItems?:bool,default?:array<string|int|bool>|string|int|bool}
      */
     public function getJsonSchema(): array
     {
@@ -547,7 +581,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             $type['type'][] = CliOptionValueType::toJsonSchemaType($this->ValueType);
         }
 
-        if ($this->ValueOptional && $this->DefaultValue !== null) {
+        if ($this->ValueOptional) {
             if ($this->ValueType !== CliOptionValueType::BOOLEAN) {
                 if (isset($type['enum'])) {
                     $type['enum'][] = true;
@@ -727,7 +761,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
      *
      * If `$value` is `null` or an empty string, an empty array is returned.
      *
-     * @template T of string|int|bool|null
+     * @template T of string|int|bool
      *
      * @param T[]|T|null $value
      * @return T[]
@@ -781,7 +815,6 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     {
         if ($expand &&
             $this->ValueOptional &&
-            $this->DefaultValue !== null &&
             ($value === null ||
                 ($this->ValueType !== CliOptionValueType::BOOLEAN &&
                     $value === true))) {
@@ -789,9 +822,11 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         }
 
         if ($value === null) {
-            return $this->OptionType === CliOptionType::FLAG
-                ? ($this->MultipleAllowed ? 0 : false)
-                : null;
+            return $this->Nullable
+                ? null
+                : ($this->OptionType === CliOptionType::FLAG
+                    ? ($this->MultipleAllowed ? 0 : false)
+                    : ($this->MultipleAllowed ? [] : null));
         }
 
         if ($this->AllowedValues) {
@@ -918,8 +953,8 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     }
 
     /**
-     * @param mixed $value
-     * @return mixed
+     * @param string|int|bool $value
+     * @return DateTimeImmutable|string|int|bool
      */
     private function normaliseValueType($value, bool $checkPathExists = true)
     {
@@ -938,44 +973,47 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
                 return (string) $value;
 
             case CliOptionValueType::DATE:
-                return $value instanceof DateTimeInterface
-                    ? Date::immutable($value)
-                    : new DateTimeImmutable($value);
+                return new DateTimeImmutable($value);
 
             case CliOptionValueType::PATH:
-                $dashOk = false;
-                // No break
-            case CliOptionValueType::PATH_OR_DASH:
-                $dashOk ??= true;
-                $fileType = 'path';
-                $callable = 'file_exists';
-                // No break
+                return $this->checkPath($value, $checkPathExists, 'path', 'file_exists');
+
             case CliOptionValueType::FILE:
-                $dashOk ??= false;
-                // No break
-            case CliOptionValueType::FILE_OR_DASH:
-                $dashOk ??= true;
-                $fileType ??= 'file';
-                $callable ??= 'is_file';
-                // No break
+                return $this->checkPath($value, $checkPathExists, 'file', 'is_file');
+
             case CliOptionValueType::DIRECTORY:
-                $dashOk ??= false;
-                $fileType ??= 'directory';
-                $callable ??= 'is_dir';
-                if ($dashOk && $value === '-') {
-                    return $value;
-                }
-                if ($checkPathExists && !$callable($value)) {
-                    throw new CliInvalidArgumentsException(
-                        sprintf('%s not found: %s', $fileType, $value)
-                    );
-                }
-                return $value;
+                return $this->checkPath($value, $checkPathExists, 'directory', 'is_dir');
+
+            case CliOptionValueType::PATH_OR_DASH:
+                return $this->checkPath($value, $checkPathExists, 'path', 'file_exists', true);
+
+            case CliOptionValueType::FILE_OR_DASH:
+                return $this->checkPath($value, $checkPathExists, 'file', 'is_file', true);
         }
     }
 
     /**
-     * @param mixed[] $values
+     * @template T of string|int|bool
+     *
+     * @param T $value
+     * @param callable(string): bool $callback
+     * @return T
+     */
+    private function checkPath($value, bool $checkExists, string $fileType, callable $callback, bool $dashOk = false)
+    {
+        if ($dashOk && $value === '-') {
+            return $value;
+        }
+        if ($checkExists && !$callback((string) $value)) {
+            throw new CliInvalidArgumentsException(
+                sprintf('%s not found: %s', $fileType, $value)
+            );
+        }
+        return $value;
+    }
+
+    /**
+     * @param array<string|int|bool> $values
      */
     private function checkValueTypes(array $values): bool
     {
@@ -988,7 +1026,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     }
 
     /**
-     * @param mixed $value
+     * @param string|int|bool $value
      */
     private function checkValueType($value): bool
     {
@@ -1000,12 +1038,10 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
                 return Test::isIntValue($value);
 
             case CliOptionValueType::STRING:
-                return is_scalar($value) ||
-                    (is_object($value) && method_exists($value, '__toString'));
+                return is_scalar($value);
 
             case CliOptionValueType::DATE:
-                return $value instanceof DateTimeInterface ||
-                    (is_string($value) && strtotime($value) !== false);
+                return Test::isDateString($value);
 
             case CliOptionValueType::PATH:
             case CliOptionValueType::FILE:
@@ -1020,7 +1056,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     }
 
     /**
-     * @param mixed $value
+     * @param array<string|int|bool>|string|int|bool $value
      * @return never
      */
     private function throwValueTypeException($value): void

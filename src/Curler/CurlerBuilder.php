@@ -62,9 +62,9 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
  * @method mixed[] getAllLinkedByEntity(string $entityName, mixed[] $query = null) Follow `$result['links']['next']` to retrieve and merge paged JSON data (see {@see Curler::getAllLinkedByEntity()})
  * @method mixed[] getByGraphQL(string $query, array<string,mixed>|null $variables = null, ?string $entityPath = null, ?string $pagePath = null, ?callable $filter = null, ?int $requestLimit = null) Call Curler::getByGraphQL() on a new instance
  *
- * @uses Curler
- *
  * @extends Builder<Curler>
+ *
+ * @generated
  */
 final class CurlerBuilder extends Builder
 {

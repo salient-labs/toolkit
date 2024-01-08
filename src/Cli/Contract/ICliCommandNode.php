@@ -6,7 +6,6 @@ use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Contract\HasContainer;
 use Lkrms\Contract\HasDescription;
-use Lkrms\Contract\HasEnvironment;
 use LogicException;
 
 /**
@@ -16,7 +15,7 @@ use LogicException;
  *
  * @see CliCommand
  */
-interface ICliCommandNode extends HasContainer, HasEnvironment, HasDescription
+interface ICliCommandNode extends HasContainer, HasDescription
 {
     /**
      * Get the command name as a string of space-delimited subcommands

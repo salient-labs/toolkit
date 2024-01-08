@@ -7,6 +7,8 @@ use Lkrms\Sync\Concept\SyncEntity;
 
 /**
  * Represents the state of an Album entity in a backend
+ *
+ * @generated
  */
 class Album extends SyncEntity
 {

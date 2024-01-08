@@ -7,6 +7,8 @@ use Lkrms\Sync\Concept\SyncEntity;
 
 /**
  * Represents the state of a Photo entity in a backend
+ *
+ * @generated
  */
 class Photo extends SyncEntity
 {

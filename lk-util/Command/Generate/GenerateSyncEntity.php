@@ -3,6 +3,7 @@
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Concern\HasParent;
@@ -30,46 +31,46 @@ class GenerateSyncEntity extends GenerateCommand
      */
     public ?array $Entity;
 
-    private ?string $ClassFqcn;
+    private string $ClassFqcn = '';
 
-    private ?string $MemberVisibility;
-
-    /**
-     * @var string[]|null
-     */
-    private ?array $OneToOneRelationships;
+    private string $MemberVisibility = '';
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    private ?array $OneToManyRelationships;
+    private array $OneToOneRelationships = [];
 
-    private ?string $ParentProperty;
+    /**
+     * @var string[]
+     */
+    private array $OneToManyRelationships = [];
 
-    private ?string $ChildrenProperty;
+    private ?string $ParentProperty = null;
 
-    private ?string $ReferenceEntityFile;
+    private ?string $ChildrenProperty = null;
+
+    private ?string $ReferenceEntityFile = null;
 
     /**
      * @var class-string<HttpSyncProvider>|null
      */
-    private ?string $Provider;
+    private ?string $Provider = null;
 
-    private ?string $HttpEndpoint;
+    private ?string $HttpEndpoint = null;
 
-    private ?string $HttpMethod;
-
-    /**
-     * @var string[]|null
-     */
-    private ?array $HttpQuery;
-
-    private ?string $HttpDataFile;
+    private string $HttpMethod = '';
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    private ?array $SkipProperties;
+    private array $HttpQuery = [];
+
+    private ?string $HttpDataFile = null;
+
+    /**
+     * @var string[]
+     */
+    private array $SkipProperties = [];
 
     public function description(): string
     {
@@ -135,6 +136,7 @@ class GenerateSyncEntity extends GenerateCommand
                 ->valueName('file')
                 ->description('The path to a JSON-serialized reference entity')
                 ->optionType(CliOptionType::VALUE)
+                ->valueType(CliOptionValueType::FILE)
                 ->bindTo($this->ReferenceEntityFile),
             CliOption::build()
                 ->long('provider')
@@ -177,6 +179,7 @@ class GenerateSyncEntity extends GenerateCommand
                 ->valueName('file')
                 ->description('The path to JSON-serialized data to submit when requesting a reference entity')
                 ->optionType(CliOptionType::VALUE)
+                ->valueType(CliOptionValueType::FILE)
                 ->bindTo($this->HttpDataFile),
             CliOption::build()
                 ->long('skip')
@@ -250,15 +253,6 @@ class GenerateSyncEntity extends GenerateCommand
         $data = null;
         $dataUri = null;
 
-        $values = $this->outputOptionValues() + [
-            'json' => null,
-            'provider' => null,
-            'endpoint' => null,
-            'method' => null,
-            'query' => null,
-            'data' => null,
-        ];
-
         if ($json !== null) {
             $entity = $this->getJson($json, $entityUri);
             if (!is_array($entity)) {
@@ -315,9 +309,6 @@ class GenerateSyncEntity extends GenerateCommand
         $skip = [];
         foreach ($this->SkipProperties as $property) {
             $skip[] = $normaliser($property);
-        }
-        if ($skip) {
-            $values['skip'] = $skip;
         }
 
         if ($entity) {
@@ -389,16 +380,16 @@ class GenerateSyncEntity extends GenerateCommand
 
         $count = 0;
         if ($this->ParentProperty !== null) {
-            $this->validateRelationship("{$this->ParentProperty}={$class}", $normaliser, $parent, $values['parent'], true);
-            $this->validateRelationship("{$this->ChildrenProperty}={$class}", $normaliser, $children, $values['children'], true);
+            $this->validateRelationship("{$this->ParentProperty}={$class}", $normaliser, $parent);
+            $this->validateRelationship("{$this->ChildrenProperty}={$class}", $normaliser, $children);
             $count += 2;
         }
         foreach ($this->OneToOneRelationships as $value) {
-            $this->validateRelationship($value, $normaliser, $oneToOne, $values['one']);
+            $this->validateRelationship($value, $normaliser, $oneToOne);
             $count++;
         }
         foreach ($this->OneToManyRelationships as $value) {
-            $this->validateRelationship($value, $normaliser, $oneToMany, $values['many']);
+            $this->validateRelationship($value, $normaliser, $oneToMany);
             $count++;
         }
         if (count($oneToOne + $oneToMany + $parent + $children) !== $count) {
@@ -436,23 +427,6 @@ class GenerateSyncEntity extends GenerateCommand
                 $docBlock[] = "@property $type \$$property";
             }
             $docBlock[] = '';
-        }
-
-        if (!$this->NoMetaTags) {
-            if ($provider) {
-                unset($values['provider']);
-            }
-            if ($json !== null) {
-                $values['json'] = $entityUri ?? $this->ReferenceEntityFile;
-            } elseif ($provider) {
-                unset($values['endpoint'], $values['query']);
-                $values['method'] = $method ?? null;
-                $values['data'] = $dataUri ?? $this->HttpDataFile;
-            }
-            $command = $this->getEffectiveCommandLine(true, $values);
-            $program = array_shift($command);
-            $docBlock[] = '@generated by ' . $program;
-            $docBlock[] = '@salient-generate-command ' . implode(' ', $command);
         }
 
         if ($docBlock) {
@@ -514,9 +488,7 @@ class GenerateSyncEntity extends GenerateCommand
     private function validateRelationship(
         string $relationship,
         Closure $normaliser,
-        array &$array,
-        ?string &$value = null,
-        bool $isParentOrChildren = false
+        array &$array
     ): void {
         if (!Pcre::match(
             '/^(?<property>[[:alpha:]_][[:alnum:]_]*)=(?<class>[[:alpha:]_][[:alnum:]_]*)$/i',
@@ -532,10 +504,5 @@ class GenerateSyncEntity extends GenerateCommand
         $property = $normaliser($matches['property']);
         $class = $normaliser($matches['class']);
         $array[$property] = $class;
-
-        $value =
-            ($value === null ? '' : "$value,")
-            . $property
-            . ($isParentOrChildren ? '' : "={$class}");
     }
 }

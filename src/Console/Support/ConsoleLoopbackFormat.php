@@ -2,13 +2,16 @@
 
 namespace Lkrms\Console\Support;
 
-use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
-use Lkrms\Console\Contract\IConsoleFormat;
+use Lkrms\Console\Catalog\ConsoleTag as Tag;
+use Lkrms\Console\Contract\ConsoleFormatInterface;
+use Lkrms\Console\Contract\ConsoleTagFormatFactory;
+use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
+use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 
 /**
- * Reapplies the output's original Markdown-like inline formatting tags
+ * Reapplies the output's original inline formatting tags
  */
-final class ConsoleLoopbackFormat implements IConsoleFormat
+final class ConsoleLoopbackFormat implements ConsoleFormatInterface, ConsoleTagFormatFactory
 {
     private string $Before;
 
@@ -20,24 +23,56 @@ final class ConsoleLoopbackFormat implements IConsoleFormat
         $this->After = $after;
     }
 
-    public function apply(?string $text, array $attributes = []): string
+    /**
+     * @inheritDoc
+     */
+    public function apply(?string $text, $attributes = null): string
     {
         if ((string) $text === '') {
             return '';
         }
 
-        $tag = $attributes[Attribute::TAG] ?? '';
-        $before = $tag === '' ? $this->Before : $tag;
-        $after = $tag === '' ? $this->After : ($tag === '<' ? '>' : $tag);
+        $before = $this->Before;
+        $after = $this->After;
+
+        if (
+            $attributes instanceof TagAttributes &&
+            $attributes->OpenTag !== null &&
+            $attributes->OpenTag !== ''
+        ) {
+            $before = $attributes->OpenTag;
+            $after = $before === '<' ? '>' : $attributes->OpenTag;
+        }
 
         if ($before === '##') {
-            $before = '## ';
-            $after = ' ##';
-        } elseif ($this->Before === '```') {
-            $before .= ($attributes[Attribute::INFO_STRING] ?? '') . "\n";
-            $after = "\n" . ($attributes[Attribute::INDENT] ?? '') . $after;
+            return '## ' . $text . ' ##';
+        }
+
+        if ($this->Before === '```') {
+            return $attributes instanceof TagAttributes
+                ? $before . $attributes->InfoString . "\n"
+                    . $text . "\n"
+                    . $attributes->Indent . $after
+                : $before . "\n"
+                    . $text . "\n"
+                    . $after;
         }
 
         return $before . $text . $after;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getTagFormats(): TagFormats
+    {
+        return (new TagFormats())
+            ->set(Tag::HEADING, new self('***', '***'))
+            ->set(Tag::BOLD, new self('**', '**'))
+            ->set(Tag::ITALIC, new self('*', '*'))
+            ->set(Tag::UNDERLINE, new self('<', '>'))
+            ->set(Tag::LOW_PRIORITY, new self('~~', '~~'))
+            ->set(Tag::CODE_SPAN, new self('`', '`'))
+            ->set(Tag::CODE_BLOCK, new self('```', '```'));
     }
 }

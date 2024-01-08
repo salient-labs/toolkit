@@ -3,7 +3,7 @@
 namespace Lkrms\Container;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevels;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Contract\IApplication;
 use Lkrms\Exception\FilesystemErrorException;
@@ -35,8 +35,6 @@ class Application extends Container implements IApplication
     private const DIR_CONFIG = 'CONFIG';
     private const DIR_DATA = 'DATA';
     private const DIR_STATE = 'STATE';
-
-    protected Env $Env;
 
     private string $AppName;
 
@@ -117,7 +115,7 @@ class Application extends Container implements IApplication
     ): string {
         $name = "app_{$name}_path";
 
-        $path = $this->Env->get($name, null);
+        $path = Env::get($name, null);
         if ($path !== null) {
             if (trim($path) === '') {
                 throw new InvalidEnvironmentException(
@@ -145,12 +143,12 @@ class Application extends Container implements IApplication
             switch ($parent) {
                 case self::DIR_CONFIG:
                 case self::DIR_DATA:
-                    $path = $this->Env->get('APPDATA');
+                    $path = Env::get('APPDATA');
                     break;
 
                 case self::DIR_STATE:
                 default:
-                    $path = $this->Env->get('LOCALAPPDATA');
+                    $path = Env::get('LOCALAPPDATA');
                     break;
             }
 
@@ -162,23 +160,23 @@ class Application extends Container implements IApplication
             );
         }
 
-        $home = $this->Env->home();
+        $home = Env::home();
         if ($home === null || !is_dir($home)) {
             throw new InvalidEnvironmentException('Home directory not found');
         }
 
         switch ($parent) {
             case self::DIR_CONFIG:
-                $path = $this->Env->get('XDG_CONFIG_HOME', "{$home}/.config");
+                $path = Env::get('XDG_CONFIG_HOME', "{$home}/.config");
                 break;
 
             case self::DIR_DATA:
-                $path = $this->Env->get('XDG_DATA_HOME', "{$home}/.local/share");
+                $path = Env::get('XDG_DATA_HOME', "{$home}/.local/share");
                 break;
 
             case self::DIR_STATE:
             default:
-                $path = $this->Env->get('XDG_CACHE_HOME', "{$home}/.cache");
+                $path = Env::get('XDG_CACHE_HOME', "{$home}/.cache");
                 break;
         }
 
@@ -267,8 +265,6 @@ class Application extends Container implements IApplication
 
         static::setGlobalContainer($this);
 
-        $this->Env = $this->singletonIf(Env::class)->get(Env::class);
-
         $this->AppName = $appName
             ?? Pcre::replace(
                 // Match `git describe --long` and similar formats
@@ -281,7 +277,7 @@ class Application extends Container implements IApplication
         $defaultBasePath = false;
         if ($basePath === null) {
             $explicitBasePath = false;
-            $basePath = $this->Env->get('app_base_path', null);
+            $basePath = Env::get('app_base_path', null);
             if ($basePath === null) {
                 $defaultBasePath = true;
                 $basePath = Package::path();
@@ -307,20 +303,20 @@ class Application extends Container implements IApplication
 
         if ($this->RunningFromSource) {
             $files = [];
-            $env = $this->Env->environment();
+            $env = Env::environment();
             if ($env !== null) {
                 $files[] = "{$this->BasePath}/.env.{$env}";
             }
             $files[] = "{$this->BasePath}/.env";
             foreach ($files as $file) {
                 if (is_file($file)) {
-                    $this->Env->load($file);
+                    Env::load($file);
                     break;
                 }
             }
         }
 
-        $this->Env->apply($envFlags);
+        Env::apply($envFlags);
 
         Console::registerStdioTargets();
 
@@ -338,7 +334,6 @@ class Application extends Container implements IApplication
     public function unload(): void
     {
         $this->stopSync()->stopCache();
-        unset($this->Env);
         parent::unload();
     }
 
@@ -386,7 +381,7 @@ class Application extends Container implements IApplication
      */
     public function isProduction(): bool
     {
-        $env = $this->Env->environment();
+        $env = Env::environment();
 
         return
             $env === 'production' ||
@@ -409,14 +404,6 @@ class Application extends Container implements IApplication
     final public function getAppName(): string
     {
         return $this->AppName;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function env(): Env
-    {
-        return $this->Env;
     }
 
     /**
@@ -473,14 +460,14 @@ class Application extends Container implements IApplication
 
         if (!isset($this->LogTargets[$name])) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
-            Console::registerTarget($target, ConsoleLevels::ALL_EXCEPT_DEBUG);
+            Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
             $this->LogTargets[$name] = $target;
         }
 
-        if (($debug || ($debug === null && $this->Env->debug())) &&
+        if (($debug || ($debug === null && Env::debug())) &&
                 !isset($this->DebugLogTargets[$name])) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, ConsoleLevels::ALL);
+            Console::registerTarget($target, LevelGroup::ALL);
             $this->DebugLogTargets[$name] = $target;
         }
 

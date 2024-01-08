@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Exception\InvalidDotenvSyntaxException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Exception\RuntimeException;
@@ -38,7 +39,7 @@ use LogicException;
  * - Variable expansion and command substitution are not supported.
  * - Comment lines must start with `#`.
  */
-final class Env
+final class Env extends Utility
 {
     /**
      * Load one or more .env files

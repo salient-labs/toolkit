@@ -23,9 +23,9 @@ use Closure;
  * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
  * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
  *
- * @uses SyncSerializeRules
- *
  * @extends Builder<SyncSerializeRules<TEntity>>
+ *
+ * @generated
  */
 final class SyncSerializeRulesBuilder extends Builder
 {

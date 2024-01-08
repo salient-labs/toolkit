@@ -7,7 +7,6 @@ use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\ProviderContext;
-use Lkrms\Utility\Env;
 
 /**
  * Base class for providers
@@ -18,17 +17,14 @@ abstract class Provider implements IProvider
 {
     protected IContainer $App;
 
-    protected Env $Env;
-
     private IDateFormatter $DateFormatter;
 
     /**
      * Creates a new provider object
      */
-    public function __construct(IContainer $app, Env $env)
+    public function __construct(IContainer $app)
     {
         $this->App = $app;
-        $this->Env = $env;
     }
 
     /**
@@ -78,14 +74,6 @@ abstract class Provider implements IProvider
     final public function container(): IContainer
     {
         return $this->App;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function env(): Env
-    {
-        return $this->Env;
     }
 
     /**

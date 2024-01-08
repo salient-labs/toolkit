@@ -14,5 +14,7 @@ use Lkrms\Tests\Sync\Entity\Post;
  * @method Post updatePost(ISyncContext $ctx, Post $post)
  * @method Post deletePost(ISyncContext $ctx, Post $post)
  * @method iterable<Post> getPosts(ISyncContext $ctx)
+ *
+ * @generated
  */
 interface PostProvider extends ISyncProvider {}

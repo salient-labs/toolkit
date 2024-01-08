@@ -18,9 +18,9 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
  * @method $this nextData(mixed[]|null $value) Data to send in the body of the next request
  * @method $this nextHeaders(HttpHeadersInterface|null $value) Replaces the next request's HTTP headers
  *
- * @uses CurlerPage
- *
  * @extends Builder<CurlerPage>
+ *
+ * @generated
  */
 final class CurlerPageBuilder extends Builder
 {

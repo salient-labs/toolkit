@@ -14,5 +14,7 @@ use Lkrms\Tests\Sync\Entity\Task;
  * @method Task updateTask(ISyncContext $ctx, Task $task)
  * @method Task deleteTask(ISyncContext $ctx, Task $task)
  * @method iterable<Task> getTasks(ISyncContext $ctx)
+ *
+ * @generated
  */
 interface TaskProvider extends ISyncProvider {}

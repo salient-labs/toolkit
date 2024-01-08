@@ -10,12 +10,11 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Cli\Support\CliHelpStyle;
-use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Lkrms\Console\Support\ConsoleLoopbackFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
-use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Str;
 use LogicException;
@@ -104,11 +103,6 @@ abstract class CliCommand implements ICliCommand
     protected $App;
 
     /**
-     * @var Env
-     */
-    protected $Env;
-
-    /**
      * @var string[]|null
      */
     private $Name;
@@ -187,8 +181,7 @@ abstract class CliCommand implements ICliCommand
 
     public function __construct(ICliApplication $app)
     {
-        $this->App = $app->singletonIf(Env::class);
-        $this->Env = $this->App->get(Env::class);
+        $this->App = $app;
     }
 
     final public function app(): ICliApplication
@@ -199,11 +192,6 @@ abstract class CliCommand implements ICliCommand
     final public function container(): ICliApplication
     {
         return $this->App;
-    }
-
-    final public function env(): Env
-    {
-        return $this->Env;
     }
 
     final public function setName(array $name): void
@@ -768,7 +756,6 @@ abstract class CliCommand implements ICliCommand
                             $option->formatAllowedValues()
                         ));
                     }
-
                     continue;
                 }
 
@@ -874,7 +861,7 @@ abstract class CliCommand implements ICliCommand
                 $saveArgValue($key, $value);
             } elseif ($option->ValueOptional) {
                 // Don't use the default value if `--option=` was given
-                if ($value === null && $option->DefaultValue !== null) {
+                if ($value === null) {
                     $saveArgValue($key, $value);
                     $value = $option->DefaultValue;
                 }
@@ -1129,108 +1116,6 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * Get the value of an option in its command line form
-     *
-     * Returns `null` if the option is unset, otherwise returns its current
-     * value as it would be given on the command line.
-     *
-     * Set `$value` to override the option's current value.
-     *
-     * @internal
-     * @param string|CliOption $option
-     * @param array<string|int>|string|int|bool|null $value
-     */
-    final protected function getEffectiveArgument(
-        $option,
-        bool $shellEscape = false,
-        $value = null
-    ): ?string {
-        $this->assertHasRun();
-        if (is_string($option)) {
-            $option = $this->getOption($option);
-            if (!$option) {
-                throw new LogicException("No option with name '$option'");
-            }
-        } elseif (($this->Options[$option->Key] ?? null) !== $option) {
-            throw new LogicException('No matching option');
-        }
-
-        if (func_num_args() < 3) {
-            $value = $this->OptionValues[$option->Key] ?? null;
-        }
-
-        if ($value === null ||
-                $value === false ||
-                $value === 0 ||
-                ($value === [] && $option->ValueRequired)) {
-            return null;
-        }
-
-        if (is_int($value)) {
-            if ($option->Short !== null) {
-                return '-' . str_repeat($option->Short, $value);
-            }
-
-            return implode(' ', array_fill(0, $value, "--{$option->Long}"));
-        }
-
-        if (is_array($value)) {
-            $value = implode(',', $value);
-        }
-        if ($shellEscape &&
-                is_string($value) &&
-                ($value !== '' || $option->IsPositional)) {
-            $value = Convert::toShellArg($value);
-        }
-
-        return $option->IsPositional
-            ? $value
-            : ($option->Long
-                ? "--{$option->Long}" . (is_string($value) && ($value !== '' || $option->ValueRequired) ? "=$value" : '')
-                : "-{$option->Short}" . $value);
-    }
-
-    /**
-     * Get a command line that would unambiguously repeat the current invocation
-     *
-     * @internal
-     * @param array<string,array<string|int>|string|int|bool|null> $values
-     * @return string[]
-     */
-    final protected function getEffectiveCommandLine(
-        bool $shellEscape = false,
-        array $values = []
-    ): array {
-        $this->assertHasRun();
-
-        $args = $this->nameParts();
-        array_unshift($args, $this->App->getProgramName());
-        $positional = [];
-        foreach ($this->Options as $option) {
-            $name = null;
-            foreach ($option->getNames() as $key) {
-                if (array_key_exists($key, $values)) {
-                    $name = $key;
-                    break;
-                }
-            }
-
-            $arg = $name === null
-                ? $this->getEffectiveArgument($option, $shellEscape)
-                : $this->getEffectiveArgument($option, $shellEscape, $values[$name]);
-
-            if ($option->IsPositional) {
-                $positional[] = $arg;
-                continue;
-            }
-            $args[] = $arg;
-        }
-        array_push($args, ...$positional);
-
-        return array_values(Arr::whereNotNull($args));
-    }
-
-    /**
      * @return $this
      */
     private function assertHasRun()
@@ -1345,6 +1230,6 @@ abstract class CliCommand implements ICliCommand
     private function getLoopbackFormatter(): Formatter
     {
         return $this->LoopbackFormatter
-            ?? ($this->LoopbackFormatter = new Formatter(TagFormats::getLoopbackFormats()));
+            ??= new Formatter(ConsoleLoopbackFormat::getTagFormats());
     }
 }

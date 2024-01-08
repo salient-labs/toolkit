@@ -3,13 +3,13 @@
 namespace Lkrms\Console\Catalog;
 
 use Lkrms\Concept\ConvertibleEnumeration;
-use Psr\Log\LogLevel;
-use LogicException;
 
 /**
  * Console message levels
  *
- * Constants have the same values as their syslog / journalctl counterparts.
+ * Levels have the same value as their syslog / journalctl counterparts.
+ *
+ * @api
  *
  * @extends ConvertibleEnumeration<int>
  */
@@ -45,32 +45,4 @@ final class ConsoleLevel extends ConvertibleEnumeration
         'INFO' => self::INFO,
         'DEBUG' => self::DEBUG,
     ];
-
-    /**
-     * @var array<ConsoleLevel::*,string>
-     */
-    private static $LogLevelMap = [
-        self::EMERGENCY => LogLevel::EMERGENCY,
-        self::ALERT => LogLevel::ALERT,
-        self::CRITICAL => LogLevel::CRITICAL,
-        self::ERROR => LogLevel::ERROR,
-        self::WARNING => LogLevel::WARNING,
-        self::NOTICE => LogLevel::NOTICE,
-        self::INFO => LogLevel::INFO,
-        self::DEBUG => LogLevel::DEBUG,
-    ];
-
-    /**
-     * Get the PSR log level that corresponds to a console message level
-     *
-     * @param ConsoleLevel::* $level
-     */
-    public static function toPsrLogLevel($level): string
-    {
-        $logLevel = self::$LogLevelMap[$level] ?? null;
-        if ($logLevel === null) {
-            throw new LogicException(sprintf('Invalid ConsoleLevel: %d', $level));
-        }
-        return $logLevel;
-    }
 }

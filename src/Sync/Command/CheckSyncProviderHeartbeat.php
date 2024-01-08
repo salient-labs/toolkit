@@ -18,16 +18,16 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
     /**
      * @var string[]
      */
-    private ?array $ProviderBasename;
+    private array $ProviderBasename = [];
 
     /**
      * @var array<class-string<ISyncProvider>>
      */
-    private ?array $Provider;
+    private array $Provider = [];
 
-    private ?int $Ttl;
+    private int $Ttl = 0;
 
-    private ?bool $FailEarly;
+    private bool $FailEarly = false;
 
     public function description(): string
     {
