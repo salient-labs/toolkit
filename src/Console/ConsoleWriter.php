@@ -96,10 +96,10 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Register the default output log as a target for all console messages
+     * Register a log file to receive console output
      *
-     * Console output is appended to a file in the default temporary directory,
-     * created with mode `0600` if it doesn't already exist:
+     * Output is appended to a file created with mode `0600` in
+     * `sys_get_temp_dir()`:
      *
      * ```php
      * <?php
@@ -108,7 +108,7 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function registerDefaultOutputLog()
+    public function registerLogTarget()
     {
         return $this->registerTarget(
             StreamTarget::fromPath(File::getStablePath('.log')),
@@ -117,26 +117,22 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Register STDOUT and STDERR as targets in their default configuration
+     * Register STDOUT or STDERR to receive console output if a preferred target
+     * is found in the environment and no other standard output targets are
+     * registered
      *
-     * If the value of environment variable `CONSOLE_TARGET` is `stderr` or
-     * `stdout`, console output is written to `STDERR` or `STDOUT` respectively.
+     * Otherwise, register `STDERR` if it is a TTY and `STDOUT` is not, or call
+     * {@see ConsoleWriter::registerStdioTargets()} to register both.
      *
-     * Otherwise, when running on the command line:
+     * If environment variable `CONSOLE_TARGET` is `stderr` or `stdout`, output
+     * is written to the given target whether the script is running on the
+     * command line or not.
      *
-     * - If `STDERR` is a TTY and `STDOUT` is not, console messages are written
-     *   to `STDERR` so output to `STDOUT` isn't tainted
-     * - Otherwise, errors and warnings are written to `STDERR`, and
-     *   informational messages are written to `STDOUT`
-     *
-     * Debug messages are suppressed if environment variable `DEBUG` is empty or
-     * not set.
-     *
-     * @param bool $replace If `false` (the default) and a target backed by
-     * `STDOUT` or `STDERR` has already been registered, no action is taken.
+     * @param bool $replace If `true`, deregister any targets backed by `STDOUT`
+     * or `STDERR` if necessary.
      * @return $this
      */
-    public function registerDefaultStdioTargets(bool $replace = false)
+    public function maybeRegisterStdioTargets(bool $replace = false)
     {
         $output = Env::get('CONSOLE_TARGET', null);
 
@@ -171,14 +167,16 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Register STDOUT and STDERR as targets if running on the command line
+     * Register STDOUT and STDERR to receive console output if running on the
+     * command line and no other standard output targets are registered
      *
-     * Errors and warnings are written to `STDERR`, informational messages are
-     * written to `STDOUT`, and debug messages are suppressed if environment
-     * variable `DEBUG` is empty or not set.
+     * - Errors and warnings are written to `STDERR`
+     * - Informational messages are written to `STDOUT`
+     * - {@see Level::DEBUG} messages are suppressed if environment variable
+     *   `DEBUG` is empty or not set.
      *
-     * @param bool $replace If `false` (the default) and a target backed by
-     * `STDOUT` or `STDERR` has already been registered, no action is taken.
+     * @param bool $replace If `true`, deregister any targets backed by `STDOUT`
+     * or `STDERR` if necessary.
      * @return $this
      */
     public function registerStdioTargets(bool $replace = false)
@@ -202,11 +200,11 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Register STDERR as a target for all console messages if running on the
-     * command line
+     * Register STDERR to receive all console output if running on the command
+     * line and no other standard output targets are registered
      *
-     * @param bool $replace If `false` (the default) and a target backed by
-     * `STDOUT` or `STDERR` has already been registered, no action is taken.
+     * @param bool $replace If `true`, deregister any targets backed by `STDOUT`
+     * or `STDERR` if necessary.
      * @return $this
      */
     public function registerStderrTarget(bool $replace = false)
@@ -215,6 +213,52 @@ final class ConsoleWriter implements ReceivesFacade
             $replace,
             $this->getStderrTarget(),
         );
+    }
+
+    /**
+     * Register a STDOUT or STDERR target to receive all output if running on
+     * the command line and no other standard output targets are registered
+     *
+     * @param bool $replace If `true`, deregister any targets backed by `STDOUT`
+     * or `STDERR` if necessary.
+     * @param bool $force If `true`, register the target even if not running on
+     * the command line.
+     * @return $this
+     */
+    private function registerStdioTarget(
+        bool $replace,
+        Target $target,
+        bool $force = false
+    ) {
+        if (
+            !($force || \PHP_SAPI === 'cli') ||
+            ($this->StdioTargetsByLevel && !$replace)
+        ) {
+            return $this;
+        }
+
+        $levels = Env::debug()
+            ? LevelGroup::ALL
+            : LevelGroup::ALL_EXCEPT_DEBUG;
+
+        return $this
+            ->clearStdioTargets()
+            ->registerTarget($target, $levels);
+    }
+
+    /**
+     * @return $this
+     */
+    private function clearStdioTargets()
+    {
+        if (!$this->StdioTargetsByLevel) {
+            return $this;
+        }
+        $targets = $this->reduceTargets($this->StdioTargetsByLevel);
+        foreach ($targets as $target) {
+            $this->deregisterTarget($target);
+        }
+        return $this;
     }
 
     /**
@@ -325,6 +369,16 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         return $this;
+    }
+
+    /**
+     * Get a list of registered output targets
+     *
+     * @return Target[]
+     */
+    public function getTargets(): array
+    {
+        return array_values($this->Targets);
     }
 
     /**
@@ -931,45 +985,6 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * @param bool $force If `true`, the target is registered even if not
-     * running on the command line.
-     * @return $this
-     */
-    private function registerStdioTarget(
-        bool $replace,
-        Target $target,
-        bool $force = false
-    ) {
-        if (!($force || \PHP_SAPI === 'cli') ||
-                ($this->StdioTargetsByLevel && !$replace)) {
-            return $this;
-        }
-
-        $levels = Env::debug()
-            ? LevelGroup::ALL
-            : LevelGroup::ALL_EXCEPT_DEBUG;
-
-        return $this
-            ->clearStdioTargets()
-            ->registerTarget($target, $levels);
-    }
-
-    /**
-     * @return $this
-     */
-    private function clearStdioTargets()
-    {
-        if (!$this->StdioTargetsByLevel) {
-            return $this;
-        }
-        $targets = $this->reduceTargets($this->StdioTargetsByLevel);
-        foreach ($targets as $target) {
-            $this->deregisterTarget($target);
-        }
-        return $this;
-    }
-
-    /**
      * @param array<Level::*,Target[]> $targets
      * @return Target[]
      */
@@ -1059,8 +1074,8 @@ final class ConsoleWriter implements ReceivesFacade
         bool $msg2HasTags = false
     ) {
         if (!$this->Targets) {
-            $this->registerDefaultOutputLog();
-            $this->registerDefaultStdioTargets();
+            $this->registerLogTarget();
+            $this->maybeRegisterStdioTargets();
         }
 
         // As per PSR-3 Section 1.3
@@ -1070,7 +1085,6 @@ final class ConsoleWriter implements ReceivesFacade
 
         $margin = max(0, $this->GroupLevel * 4);
 
-        /** @var Target $target */
         foreach ($targets[$level] ?? [] as $target) {
             $formatter = $target->getFormatter();
 
@@ -1083,6 +1097,7 @@ final class ConsoleWriter implements ReceivesFacade
                 $_msg1 = str_replace("\n", "\n" . str_repeat(' ', $margin + $indent), $_msg1);
             }
 
+            $_msg2 = null;
             if ((string) $msg2 !== '') {
                 $_msg2 = $msg2HasTags ? $formatter->formatTags($msg2) : $msg2;
                 $_msg2 = strpos($msg2, "\n") !== false
@@ -1090,7 +1105,7 @@ final class ConsoleWriter implements ReceivesFacade
                     : ($_msg1 !== '' ? ' ' : '') . $_msg2;
             }
 
-            $message = $formatter->formatMessage($_msg1, $_msg2 ?? null, $level, $type);
+            $message = $formatter->formatMessage($_msg1, $_msg2, $level, $type);
             $target->write($level, str_repeat(' ', $margin) . $message, $context ?? []);
         }
 

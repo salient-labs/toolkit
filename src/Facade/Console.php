@@ -29,6 +29,7 @@ use Throwable;
  * @method static int getErrors() Get the number of errors reported so far
  * @method static TargetStream getStderrTarget() Get a target for STDERR, creating it if necessary
  * @method static TargetStream getStdoutTarget() Get a target for STDOUT, creating it if necessary
+ * @method static Target[] getTargets() Get a list of registered output targets
  * @method static int getWarnings() Get the number of warnings reported so far
  * @method static int|null getWidth(Level::* $level = Level::INFO) Get the width of a registered target in columns (see {@see ConsoleWriter::getWidth()})
  * @method static ConsoleWriter group(string $msg1, ?string $msg2 = null) Create a new message group and print "<<< $msg1 $msg2" with level NOTICE (see {@see ConsoleWriter::group()})
@@ -39,14 +40,14 @@ use Throwable;
  * @method static ConsoleWriter logOnce(string $msg1, ?string $msg2 = null) Print " -> $msg1 $msg2" with level INFO once per run
  * @method static ConsoleWriter logProgress(string $msg1, ?string $msg2 = null) Print " -> $msg1 $msg2" with level INFO to TTY targets without moving to the next line (see {@see ConsoleWriter::logProgress()})
  * @method static ConsoleWriter maybeClearLine() Print a "clear to end of line" control sequence with level INFO to any TTY targets with a pending logProgress() message (see {@see ConsoleWriter::maybeClearLine()})
+ * @method static ConsoleWriter maybeRegisterStdioTargets(bool $replace = false) Register STDOUT or STDERR to receive console output if a preferred target is found in the environment and no other standard output targets are registered (see {@see ConsoleWriter::maybeRegisterStdioTargets()})
  * @method static ConsoleWriter message(Level::* $level, string $msg1, ?string $msg2 = null, MessageType::* $type = MessageType::STANDARD, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level (see {@see ConsoleWriter::message()})
  * @method static ConsoleWriter messageOnce(Level::* $level, string $msg1, ?string $msg2 = null, MessageType::* $type = MessageType::STANDARD, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level once per run (see {@see ConsoleWriter::messageOnce()})
  * @method static ConsoleWriter out(string $msg, Level::* $level = Level::INFO, MessageType::* $type = MessageType::UNDECORATED) Print "$msg" to I/O stream targets (STDOUT or STDERR)
  * @method static ConsoleWriter print(string $msg, Level::* $level = Level::INFO, MessageType::* $type = MessageType::UNDECORATED) Print "$msg"
- * @method static ConsoleWriter registerDefaultOutputLog() Register the default output log as a target for all console messages (see {@see ConsoleWriter::registerDefaultOutputLog()})
- * @method static ConsoleWriter registerDefaultStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets in their default configuration (see {@see ConsoleWriter::registerDefaultStdioTargets()})
- * @method static ConsoleWriter registerStderrTarget(bool $replace = false) Register STDERR as a target for all console messages if running on the command line (see {@see ConsoleWriter::registerStderrTarget()})
- * @method static ConsoleWriter registerStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets if running on the command line (see {@see ConsoleWriter::registerStdioTargets()})
+ * @method static ConsoleWriter registerLogTarget() Register a log file to receive console output (see {@see ConsoleWriter::registerLogTarget()})
+ * @method static ConsoleWriter registerStderrTarget(bool $replace = false) Register STDERR to receive all console output if running on the command line and no other standard output targets are registered (see {@see ConsoleWriter::registerStderrTarget()})
+ * @method static ConsoleWriter registerStdioTargets(bool $replace = false) Register STDOUT and STDERR to receive console output if running on the command line and no other standard output targets are registered (see {@see ConsoleWriter::registerStdioTargets()})
  * @method static ConsoleWriter registerTarget(Target $target, array<Level::*> $levels = LevelGroup::ALL) Register a target to receive console output
  * @method static ConsoleWriter setTargetPrefix(?string $prefix, int-mask-of<TargetTypeFlag::*> $flags = 0) Set or unset the prefix applied to each line of output by targets that implement ConsoleTargetPrefixInterface
  * @method static ConsoleWriter stderr(string $msg, Level::* $level = Level::INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to STDERR, creating a target for it if necessary

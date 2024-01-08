@@ -3,7 +3,8 @@
 namespace Lkrms\Console\Contract;
 
 /**
- * A console target that applies an optional prefix to each line of output
+ * A console output target that applies an optional prefix to each line of
+ * output
  */
 interface ConsoleTargetPrefixInterface extends ConsoleTargetInterface
 {
