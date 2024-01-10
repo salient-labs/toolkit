@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Support\DateParser\RegexDateParser;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
+use Lkrms\Support\Date\DotNetDateParser;
 use Lkrms\Tests\TestCase;
 use DateTimeInterface;
 
@@ -11,8 +11,8 @@ final class DateFormatterTest extends TestCase
 {
     public function testDotNet(): void
     {
-        $formatter = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, null, RegexDateParser::dotNet());
-        $formatter2 = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, 'Australia/Sydney', RegexDateParser::dotNet());
+        $formatter = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, null, new DotNetDateParser());
+        $formatter2 = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, 'Australia/Sydney', new DotNetDateParser());
 
         $data = [
             '/Date(1530144000000+0530)/',

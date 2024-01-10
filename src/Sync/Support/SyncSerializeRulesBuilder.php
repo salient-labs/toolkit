@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Closure;
 

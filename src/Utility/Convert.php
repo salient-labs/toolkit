@@ -3,9 +3,9 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
-use Lkrms\Contract\IDateFormatter;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
+use Lkrms\Support\Date\DateFormatterInterface;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -643,7 +643,7 @@ final class Convert extends Utility
     private static function _dataToQuery(
         array $data,
         bool $preserveKeys,
-        IDateFormatter $dateFormatter,
+        DateFormatterInterface $dateFormatter,
         ?string &$query = null,
         string $name = '',
         string $format = '%s'
@@ -692,7 +692,7 @@ final class Convert extends Utility
     public static function dataToQuery(
         array $data,
         bool $preserveKeys = false,
-        ?IDateFormatter $dateFormatter = null
+        ?DateFormatterInterface $dateFormatter = null
     ): string {
         return self::_dataToQuery(
             $data,

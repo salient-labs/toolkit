@@ -25,7 +25,7 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Catalog\SyncEntityState;
 use Lkrms\Sync\Contract\ISyncContext;

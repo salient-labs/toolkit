@@ -9,7 +9,7 @@ use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\NormaliserFlag;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;

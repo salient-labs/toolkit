@@ -8,7 +8,7 @@ use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\IntrospectorKeyTargets;
 use Lkrms\Sync\Catalog\HydrationPolicy;

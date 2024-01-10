@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Lkrms\Support\Date;
 
 use DateTimeImmutable;
 use DateTimeInterface;
 
 /**
- * Formats and parses date and time values
+ * @api
  */
-interface IDateFormatter
+interface DateFormatterInterface
 {
     /**
      * Format a date and time
@@ -17,6 +17,8 @@ interface IDateFormatter
 
     /**
      * Convert a string to a date and time, if possible
+     *
+     * Returns `null` if `$value` cannot be parsed.
      */
     public function parse(string $value): ?DateTimeImmutable;
 }

@@ -3,6 +3,7 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Exception\MethodNotImplementedException;
+use Lkrms\Support\Date\DateFormatterInterface;
 use Stringable;
 
 /**
@@ -64,7 +65,7 @@ interface IProvider extends HasContainer, HasName
      * Get a date formatter to work with the backend's date and time format
      * and/or timezone
      */
-    public function dateFormatter(): IDateFormatter;
+    public function dateFormatter(): DateFormatterInterface;
 
     /**
      * Throw an exception if the backend isn't reachable

@@ -2,12 +2,12 @@
 
 namespace Lkrms\Tests\Sync\Provider;
 
-use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
+use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -104,7 +104,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return $user;
     }
 
-    protected function getDateFormatter(?string $path = null): IDateFormatter
+    protected function getDateFormatter(?string $path = null): DateFormatterInterface
     {
         return new DateFormatter();
     }

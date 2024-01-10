@@ -6,7 +6,6 @@ use Lkrms\Concept\Entity;
 use Lkrms\Concept\Provider;
 use Lkrms\Contract\HasName;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
@@ -18,6 +17,8 @@ use Lkrms\Contract\ITreeable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\NormaliserFlag;
+use Lkrms\Support\Date\DateFormatter;
+use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Get;
 use Closure;
@@ -226,7 +227,7 @@ class Introspector
      *
      * @param bool $strict If `true`, the closure will throw an exception if it
      * receives any data that would be discarded.
-     * @return Closure(mixed[], IContainer, IDateFormatter|null=, ITreeable|null=): TClass
+     * @return Closure(mixed[], IContainer, DateFormatterInterface|null=, ITreeable|null=): TClass
      */
     final public function getCreateFromClosure(bool $strict = false): Closure
     {
@@ -242,7 +243,7 @@ class Introspector
             function (
                 array $array,
                 IContainer $container,
-                ?IDateFormatter $dateFormatter = null,
+                ?DateFormatterInterface $dateFormatter = null,
                 ?ITreeable $parent = null
             ) use ($strict) {
                 $keys = array_keys($array);
@@ -262,7 +263,7 @@ class Introspector
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], IContainer, IDateFormatter|null=, ITreeable|null=): TClass
+     * @return Closure(mixed[], IContainer, DateFormatterInterface|null=, ITreeable|null=): TClass
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -290,7 +291,7 @@ class Introspector
             static function (
                 array $array,
                 IContainer $container,
-                ?IDateFormatter $dateFormatter = null,
+                ?DateFormatterInterface $dateFormatter = null,
                 ?ITreeable $parent = null
             ) use ($closure, $service) {
                 return $closure(
@@ -391,7 +392,7 @@ class Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], class-string|null, IContainer, TProvider|null, TContext|null, IDateFormatter|null, ITreeable|null): TClass
+     * @return Closure(mixed[], class-string|null, IContainer, TProvider|null, TContext|null, DateFormatterInterface|null, ITreeable|null): TClass
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -411,7 +412,7 @@ class Introspector
             IContainer $container,
             ?IProvider $provider,
             ?IProviderContext $context,
-            ?IDateFormatter $dateFormatter,
+            ?DateFormatterInterface $dateFormatter,
             ?ITreeable $parent
         ) use ($constructor, $updater, $resolver) {
             $obj = $constructor($array, $service, $container);
@@ -883,7 +884,7 @@ class Introspector
 
     /**
      * @param IntrospectorKeyTargets<covariant static,TClass,TProvider,TContext> $targets
-     * @return Closure(mixed[], TClass, IContainer, TProvider|null, TContext|null, IDateFormatter|null, ITreeable|null): TClass
+     * @return Closure(mixed[], TClass, IContainer, TProvider|null, TContext|null, DateFormatterInterface|null, ITreeable|null): TClass
      */
     final protected function _getUpdater(IntrospectorKeyTargets $targets): Closure
     {
@@ -900,7 +901,7 @@ class Introspector
             IContainer $container,
             ?IProvider $provider,
             ?IProviderContext $context,
-            ?IDateFormatter $dateFormatter,
+            ?DateFormatterInterface $dateFormatter,
             ?ITreeable $parent
         ) use (
             $isProvidable,
