@@ -1,18 +1,26 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\DateParser;
+namespace Lkrms\Support\Date;
 
-use Lkrms\Contract\IDateParser;
 use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * A wrapper around date_create_immutable()
+ * Parses date and time strings understood by strtotime()
+ *
+ * @api
  */
-final class TextualDateParser implements IDateParser
+final class DateParser implements DateParserInterface
 {
+    /**
+     * @inheritDoc
+     */
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
-        return date_create_immutable($value, $timezone) ?: null;
+        $date = date_create_immutable($value, $timezone);
+        if ($date === false) {
+            return null;
+        }
+        return $date;
     }
 }

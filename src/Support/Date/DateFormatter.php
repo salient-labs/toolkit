@@ -1,67 +1,48 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Lkrms\Support\Date;
 
-use Lkrms\Concern\TFullyReadable;
-use Lkrms\Contract\IDateFormatter;
-use Lkrms\Contract\IDateParser;
-use Lkrms\Contract\IImmutable;
-use Lkrms\Contract\IReadable;
-use Lkrms\Support\DateParser\CreateFromFormatDateParser;
 use Lkrms\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * An immutable date formatter and parser that optionally applies a preferred
- * timezone to both operations
+ * Formats and parses dates, optionally applying a preferred timezone to both
+ * operations
  *
- * @property-read string $Format
- * @property-read DateTimeZone|null $Timezone
- * @property-read IDateParser[] $Parsers
+ * @api
  */
-final class DateFormatter implements IDateFormatter, IImmutable, IReadable
+final class DateFormatter implements DateFormatterInterface
 {
-    use TFullyReadable;
+    private string $Format;
+
+    private ?DateTimeZone $Timezone;
 
     /**
-     * @var string
+     * @var DateParserInterface[]
      */
-    protected $Format;
-
-    /**
-     * @var DateTimeZone|null
-     */
-    protected $Timezone;
-
-    /**
-     * @var IDateParser[]
-     */
-    protected $Parsers;
+    private array $Parsers;
 
     /**
      * @param DateTimeZone|string|null $timezone
      */
-    public function __construct(string $format = DateTimeInterface::ATOM, $timezone = null, IDateParser ...$parsers)
+    public function __construct(string $format = DateTimeInterface::ATOM, $timezone = null, DateParserInterface ...$parsers)
     {
         $this->Format = $format;
-        $this->Timezone = $timezone === null ? null : Date::timezone($timezone);
-        $this->Parsers = $parsers ?: [new CreateFromFormatDateParser($format)];
+        $this->Timezone = is_string($timezone) ? new DateTimeZone($timezone) : $timezone;
+        $this->Parsers = $parsers ?: [new DateFormatParser($format)];
     }
 
     /**
-     * Format a date after optionally applying the preferred timezone
-     *
-     * If `$date` is a `DateTime` object, {@see DateFormatter::$Timezone} is
-     * set, and `$date->Timezone` has a different value, `$date` is converted to
-     * a `DateTimeImmutable` before applying the timezone. The original
-     * `DateTime` object is not modified.
+     * @inheritDoc
      */
     public function format(DateTimeInterface $date): string
     {
-        if ($this->Timezone &&
-                $this->Timezone->getName() !== $date->getTimezone()->getName()) {
+        if (
+            $this->Timezone &&
+            $this->Timezone->getName() !== $date->getTimezone()->getName()
+        ) {
             $date = Date::immutable($date)->setTimezone($this->Timezone);
         }
 
@@ -69,15 +50,13 @@ final class DateFormatter implements IDateFormatter, IImmutable, IReadable
     }
 
     /**
-     * Convert a string to a date, if possible
-     *
-     * @return DateTimeImmutable|null a `DateTimeImmutable` object on success or
-     * `null` on failure.
+     * @inheritDoc
      */
     public function parse(string $value): ?DateTimeImmutable
     {
         foreach ($this->Parsers as $parser) {
-            if ($date = $parser->parse($value, $this->Timezone)) {
+            $date = $parser->parse($value, $this->Timezone);
+            if ($date) {
                 return $date;
             }
         }

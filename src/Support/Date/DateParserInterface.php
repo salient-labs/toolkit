@@ -1,20 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Lkrms\Support\Date;
 
 use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * Converts date strings to DateTimeImmutable objects
+ * @api
  */
-interface IDateParser
+interface DateParserInterface
 {
     /**
-     * Convert a string to a date, if possible
+     * Convert a string to a date and time, if possible
      *
-     * @return DateTimeImmutable|null a `DateTimeImmutable` object on success or
-     * `null` on failure.
+     * Returns `null` if `$value` cannot be parsed.
+     *
+     * @param DateTimeZone|null $timezone Applied to the date and time if given,
+     * otherwise timezone information in `$value` should be used if present, or
+     * a default timezone may be used.
      */
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable;
 }

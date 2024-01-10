@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
 
 /**
  * Instructions for serializing nested entities

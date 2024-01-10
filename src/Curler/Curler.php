@@ -8,7 +8,6 @@ use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Curler\Catalog\CurlerProperty;
@@ -28,7 +27,8 @@ use Lkrms\Iterator\RecursiveCallbackIterator;
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
 use Lkrms\Store\CacheStore;
 use Lkrms\Support\Catalog\MimeType;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
+use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
@@ -78,7 +78,7 @@ use RecursiveIteratorIterator;
  * @property bool $ExpectJson Request JSON from upstream?
  * @property bool $PostJson Use JSON to serialize POST/PUT/PATCH/DELETE data?
  * @property bool $PreserveKeys Suppress removal of numeric indices from serialized lists?
- * @property IDateFormatter|null $DateFormatter Specify the date format and timezone used upstream
+ * @property DateFormatterInterface|null $DateFormatter Specify the date format and timezone used upstream
  * @property string|null $UserAgent Override the default User-Agent header
  * @property bool $AlwaysPaginate Pass every response to the pager?
  * @property bool $ObjectAsArray Return deserialized objects as associative arrays?
@@ -359,7 +359,7 @@ final class Curler implements IReadable, IWritable, Buildable
     /**
      * Specify the date format and timezone used upstream
      *
-     * @var IDateFormatter|null
+     * @var DateFormatterInterface|null
      */
     protected $DateFormatter;
 
@@ -465,7 +465,7 @@ final class Curler implements IReadable, IWritable, Buildable
         bool $expectJson = true,
         bool $postJson = true,
         bool $preserveKeys = false,
-        ?IDateFormatter $dateFormatter = null,
+        ?DateFormatterInterface $dateFormatter = null,
         ?string $userAgent = null,
         bool $alwaysPaginate = false,
         bool $objectAsArray = true
@@ -924,7 +924,7 @@ final class Curler implements IReadable, IWritable, Buildable
             : null;
     }
 
-    private function getDateFormatter(): IDateFormatter
+    private function getDateFormatter(): DateFormatterInterface
     {
         return $this->DateFormatter
             ?: ($this->DateFormatter = new DateFormatter());

@@ -1,68 +1,44 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\DateParser;
+namespace Lkrms\Support\Date;
 
-use Lkrms\Contract\IDateParser;
+use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * Returns a DateTimeImmutable from a callback if a regular expression matches
+ * Parses Microsoft JSON and legacy JSON.NET timestamps
+ *
+ * @link https://www.newtonsoft.com/json/help/html/datesinjson.htm
+ *
+ * @api
  */
-final class RegexDateParser implements IDateParser
+final class DotNetDateParser implements DateParserInterface
 {
-    /**
-     * @var string
-     */
-    private $Pattern;
+    private const REGEX = '/^\/Date\((?<seconds>[0-9]*?)(?<milliseconds>[0-9]{1,3})(?<offset>[-+][0-9]{4})?\)\/$/';
 
     /**
-     * @var callable
+     * @inheritDoc
      */
-    private $Callback;
-
-    /**
-     * @param callable $callback
-     * ```php
-     * fn(array $matches, ?DateTimeZone $timezone): DateTimeImmutable
-     * ```
-     */
-    public function __construct(string $pattern, callable $callback)
-    {
-        $this->Pattern = $pattern;
-        $this->Callback = $callback;
-    }
-
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
-        if (preg_match($this->Pattern, $value, $matches)) {
-            return ($this->Callback)($matches, $timezone);
+        if (!Pcre::match(self::REGEX, $value, $matches, \PREG_UNMATCHED_AS_NULL)) {
+            return null;
         }
 
-        return null;
-    }
-
-    public static function dotNet(): IDateParser
-    {
-        return new self(
-            '/^\/Date\((?<seconds>[0-9]+)(?<milliseconds>[0-9]{3})(?<offset>[-+][0-9]{4})?\)\/$/',
-            function (array $matches, ?DateTimeZone $timezone): DateTimeImmutable {
-                $date = new DateTimeImmutable(
-                    // PHP 7.4 requires 6 digits after the decimal point
-                    sprintf(
-                        '@%s.%s000',
-                        $matches['seconds'],
-                        $matches['milliseconds']
-                    )
-                );
-                if (!$timezone && ($matches['offset'] ?? null)) {
-                    $timezone = new DateTimeZone($matches['offset']);
-                }
-
-                return $timezone
-                    ? $date->setTimezone($timezone)
-                    : $date;
-            }
-        );
+        $date = new DateTimeImmutable(sprintf(
+            // PHP 7.4 requires 6 digits after the decimal point
+            '@%d.%03d000',
+            (int) Str::coalesce($matches['seconds'], '0'),
+            (int) $matches['milliseconds'],
+        ));
+        if ($timezone) {
+            return $date->setTimezone($timezone);
+        }
+        if ($matches['offset'] !== null) {
+            return $date->setTimezone(new DateTimeZone($matches['offset']));
+        }
+        return $date;
     }
 }

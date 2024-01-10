@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Http\Uri;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;

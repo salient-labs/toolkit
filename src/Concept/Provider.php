@@ -3,9 +3,9 @@
 namespace Lkrms\Concept;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\MethodNotImplementedException;
+use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Support\ProviderContext;
 
 /**
@@ -17,7 +17,7 @@ abstract class Provider implements IProvider
 {
     protected IContainer $App;
 
-    private IDateFormatter $DateFormatter;
+    private DateFormatterInterface $DateFormatter;
 
     /**
      * Creates a new provider object
@@ -31,10 +31,10 @@ abstract class Provider implements IProvider
      * Get a date formatter to work with the backend's date and time format
      * and/or timezone
      *
-     * The {@see IDateFormatter} returned will be cached for the lifetime of the
-     * {@see Provider} instance.
+     * The {@see DateFormatterInterface} returned will be cached for the
+     * lifetime of the {@see Provider} instance.
      */
-    abstract protected function getDateFormatter(): IDateFormatter;
+    abstract protected function getDateFormatter(): DateFormatterInterface;
 
     /**
      * @inheritDoc
@@ -79,7 +79,7 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    final public function dateFormatter(): IDateFormatter
+    final public function dateFormatter(): DateFormatterInterface
     {
         return $this->DateFormatter
             ?? ($this->DateFormatter = $this->getDateFormatter());
@@ -89,7 +89,7 @@ abstract class Provider implements IProvider
      * Get the date formatter cached by dateFormatter(), or null if it hasn't
      * been cached
      */
-    final protected function getCachedDateFormatter(): ?IDateFormatter
+    final protected function getCachedDateFormatter(): ?DateFormatterInterface
     {
         return $this->DateFormatter ?? null;
     }
@@ -99,7 +99,7 @@ abstract class Provider implements IProvider
      *
      * @return $this
      */
-    final protected function setDateFormatter(?IDateFormatter $formatter)
+    final protected function setDateFormatter(?DateFormatterInterface $formatter)
     {
         if ($formatter === null) {
             unset($this->DateFormatter);

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Lkrms\Contract\IDateFormatter;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Curler;
@@ -12,6 +11,7 @@ use Lkrms\Facade\Cache;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Store\CacheStore;
+use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
@@ -40,7 +40,7 @@ abstract class HttpSyncProvider extends SyncProvider
         ?int $expiry = -1,
         ?HttpHeadersInterface $headers = null,
         ?ICurlerPager $pager = null,
-        ?IDateFormatter $dateFormatter = null
+        ?DateFormatterInterface $dateFormatter = null
     ): Curler {
         $curlerB = $this->buildCurler(
             CurlerBuilder::build()
@@ -236,5 +236,5 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * @inheritDoc
      */
-    abstract protected function getDateFormatter(?string $path = null): IDateFormatter;
+    abstract protected function getDateFormatter(?string $path = null): DateFormatterInterface;
 }

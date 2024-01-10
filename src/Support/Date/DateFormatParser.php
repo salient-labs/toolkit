@@ -1,25 +1,28 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\DateParser;
+namespace Lkrms\Support\Date;
 
-use Lkrms\Contract\IDateParser;
 use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * A wrapper around DateTimeImmutable::createFromFormat()
+ * Parses date and time strings with a given format
+ *
+ * @api
  */
-final class CreateFromFormatDateParser implements IDateParser
+final class DateFormatParser implements DateParserInterface
 {
-    /**
-     * @var string
-     */
-    private $Format;
+    private string $Format;
 
+    /**
+     * Creates a new CreateFromFormatDateParser object
+     *
+     * @see DateTimeImmutable::createFromFormat()
+     */
     public function __construct(string $format)
     {
-        // Reset fields that don't appear in the format string to zero,
-        // otherwise they default to the current time
+        // Reset fields that don't appear in the format string to zero-like
+        // values, otherwise they will be set to the current date and time
         if (strpos($format, '!') === false && strpos($format, '|') === false) {
             $format .= '|';
         }
@@ -27,8 +30,15 @@ final class CreateFromFormatDateParser implements IDateParser
         $this->Format = $format;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
-        return DateTimeImmutable::createFromFormat($this->Format, $value, $timezone) ?: null;
+        $date = DateTimeImmutable::createFromFormat($this->Format, $value, $timezone);
+        if ($date === false) {
+            return null;
+        }
+        return $date;
     }
 }
