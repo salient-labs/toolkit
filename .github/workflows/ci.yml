@@ -45,7 +45,7 @@ jobs:
 
       - name: Install PrettyPHP and its dependencies
         working-directory: tools/pretty-php
-        run: composer install --no-interaction --no-progress
+        run: composer install --no-interaction --no-progress --no-dev
 
       - name: Check generated files
         run: scripts/generate.php --check

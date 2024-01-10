@@ -1,8 +1,6 @@
 {
     "require": {
-        "php": "^8.1"
-    },
-    "require-dev": {
+        "php": "^8.2",
         "apigen/apigen": "^7@alpha"
     },
     "autoload": {
@@ -12,7 +10,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.1.2"
+            "php": "8.2.4"
         }
     }
 }

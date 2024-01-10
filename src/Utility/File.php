@@ -832,7 +832,7 @@ final class File extends Utility
         }
 
         if ($bom) {
-            self::write($handle, '﻿', null, $uri);
+            self::write($handle, "\u{FEFF}", null, $uri);
         }
 
         $count = 0;

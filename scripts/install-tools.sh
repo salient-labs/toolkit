@@ -33,7 +33,7 @@ update-tools.sh)
 esac
 
 for file in tools/*/composer.lock; do
-    run-in-dir "${file%/*}" composer "$subcommand" --no-interaction --no-progress
+    run-in-dir "${file%/*}" composer "$subcommand" --no-interaction --no-progress --no-dev
 done
 
 for file in tools/*/package-lock.json; do

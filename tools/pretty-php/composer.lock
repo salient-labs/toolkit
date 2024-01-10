@@ -4,9 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7ba335f0370a13dcf767d17b5d229a11",
-    "packages": [],
-    "packages-dev": [
+    "content-hash": "42cb88a5966c64a7c897c168439cf057",
+    "packages": [
         {
             "name": "lkrms/dice",
             "version": "v4.1.8",
@@ -52,16 +51,16 @@
         },
         {
             "name": "lkrms/pretty-php",
-            "version": "v0.4.46",
+            "version": "v0.4.47",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/pretty-php.git",
-                "reference": "578e402f76c3d965aca9dc2131ed8bd4c2488d3e"
+                "reference": "7aa6e227d50e3519ae0600ad1971c3b1e90db62e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/pretty-php/zipball/578e402f76c3d965aca9dc2131ed8bd4c2488d3e",
-                "reference": "578e402f76c3d965aca9dc2131ed8bd4c2488d3e",
+                "url": "https://api.github.com/repos/lkrms/pretty-php/zipball/7aa6e227d50e3519ae0600ad1971c3b1e90db62e",
+                "reference": "7aa6e227d50e3519ae0600ad1971c3b1e90db62e",
                 "shasum": ""
             },
             "require": {
@@ -69,7 +68,7 @@
                 "ext-json": "*",
                 "ext-mbstring": "*",
                 "ext-tokenizer": "*",
-                "lkrms/util": "^0.21.18",
+                "lkrms/util": "^0.21.19",
                 "php": ">=7.4",
                 "sebastian/diff": "^4 || ^5"
             },
@@ -106,20 +105,20 @@
                 "issues": "https://github.com/lkrms/pretty-php/issues",
                 "source": "https://github.com/lkrms/pretty-php"
             },
-            "time": "2023-12-29T05:37:34+00:00"
+            "time": "2024-01-08T23:37:03+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.21.18",
+            "version": "v0.21.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "b4a310435b637621db2f174135cad57d5aa91eb1"
+                "reference": "0eab30725304dbfcf9ac8ad0896856184cb1d5a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/b4a310435b637621db2f174135cad57d5aa91eb1",
-                "reference": "b4a310435b637621db2f174135cad57d5aa91eb1",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/0eab30725304dbfcf9ac8ad0896856184cb1d5a9",
+                "reference": "0eab30725304dbfcf9ac8ad0896856184cb1d5a9",
                 "shasum": ""
             },
             "require": {
@@ -177,9 +176,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.21.18"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.19"
             },
-            "time": "2023-12-29T04:39:34+00:00"
+            "time": "2024-01-08T22:54:25+00:00"
         },
         {
             "name": "psr/container",
@@ -510,17 +509,18 @@
             "time": "2023-12-22T10:55:06+00:00"
         }
     ],
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.1"
+        "php": "^8.2"
     },
     "platform-dev": [],
     "platform-overrides": {
-        "php": "8.1.2"
+        "php": "8.2.4"
     },
     "plugin-api-version": "2.6.0"
 }
