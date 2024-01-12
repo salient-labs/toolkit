@@ -40,4 +40,4 @@ for file in tools/*/package-lock.json; do
     run-in-dir "${file%/*}" npm "$subcommand"
 done
 
-run-in-dir . phive "$subcommand"
+run-in-dir . phive --no-progress "$subcommand"

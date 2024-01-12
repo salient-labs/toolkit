@@ -44,7 +44,7 @@ jobs:
       - name: Install PHP dependencies
         run: |
           composer install --no-interaction --no-progress
-          phive install --trust-gpg-keys E82B2FB314E9906E,E8CC5BC780B581F2
+          phive --no-progress install --trust-gpg-keys E82B2FB314E9906E,E8CC5BC780B581F2
 
       - name: Check generated files
         run: scripts/generate.php --check
