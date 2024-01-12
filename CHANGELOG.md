@@ -12,6 +12,75 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.20] - 2024-01-10
+
+### Added
+
+- Add `DotNetDateParser`
+
+### Changed
+
+- Move `DateFormatter` and `*DateParser` classes and interfaces to `Lkrms\Support\Date`
+- Rename:
+  - `IDateFormatter` -> `DateFormatterInterface`
+  - `IDateParser` -> `DateParserInterface`
+  - `TextualDateParser` -> `DateParser`
+  - `CreateFromFormatDateParser` -> `DateFormatParser`
+
+### Removed
+
+- Remove `RegexDateParser`
+
+## [v0.21.19] - 2024-01-08
+
+### Added
+
+- Add `Str::upperFirst()` and use it in favour of `ucfirst()`
+- Add `Test::isDateString()`
+- Add `File::copy()`
+- Add `Console::getTargets()`
+- Add `lk-util` command `sync entity get`
+
+### Changed
+
+- Allow filenames to be passed to `File::stat()`, not just streams
+- Rename `File::is()` to `File::same()`
+- Clean up `Console` classes
+  - Make `Console::getStdoutTarget()` and `Console::getStderrTarget()` public to surface mockable output streams
+  - **Use new `ConsoleTargetTypeFlag` enumeration to simplify `Console::setTargetPrefix()` parameters**
+  - Rename `IConsoleTarget` to `ConsoleTargetInterface` and split into additional `ConsoleTargetStreamInterface`
+  - Rename `IConsoleTargetWithPrefix` to `ConsoleTargetPrefixInterface` and add `getPrefix()` method
+  - Split abstract `ConsoleTarget` class into additional `ConsolePrefixTarget` and `ConsoleStreamTarget` classes
+  - Rename `ConsoleLevels` to `ConsoleLevelGroup`
+  - Rename `ConsoleMessageTypes` to `ConsoleMessageTypeGroup`
+  - Rename `IConsoleFormat` to `ConsoleFormatInterface`
+  - Rename `Console::registerStableOutputLog()` to `registerLogTarget()`
+  - Rename `Console::registerDefaultStdioTargets()` to `maybeRegisterStdioTargets()`
+  - Rename `ConsoleMessageType::DEFAULT` to `ConsoleMessageType::STANDARD`
+- Improve handling of `null`, empty and default `CliOption` values
+  - Add `CliOption::$Nullable` and resolve the value of `nullable` options not given on the command line to `null`
+  - **Allow `required` options to have an optional value**
+  - **Require options with optional values to have a non-empty `defaultValue`**
+  - **Normalise the value of `multipleAllowed` options not given on the command line to an empty array if they are not `nullable`**
+- In `lk-util generate` commands:
+  - Remove custom metadata tags and `@uses` from output
+  - **Remove `--no-meta` option**
+  - Add `@api` to output if `--api` is given
+  - Add `@generated` to output
+- Sync: rename `lk-util` command `heartbeat` to `sync provider check-heartbeat`
+- Sync: add `--shallow` option to generic `GetSyncEntities` command
+
+### Removed
+
+- Remove `HasEnvironment` interface and its implementations
+- Remove unused `Convert::pathToBasename()` method
+- Remove deprecated methods
+
+### Fixed
+
+- Fix an issue where `File::same()` returns `true` for files with the same inode number on different devices
+- Fix an issue where `Str::setEol()` replaces every combination of `CR` and `LF` in a string instead of the string's current EOL sequence
+
 ## [v0.21.18] - 2023-12-29
 
 ### Added
@@ -1247,6 +1316,8 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.20]: https://github.com/lkrms/php-util/compare/v0.21.19...v0.21.20
+[v0.21.19]: https://github.com/lkrms/php-util/compare/v0.21.18...v0.21.19
 [v0.21.18]: https://github.com/lkrms/php-util/compare/v0.21.17...v0.21.18
 [v0.21.17]: https://github.com/lkrms/php-util/compare/v0.21.16...v0.21.17
 [v0.21.16]: https://github.com/lkrms/php-util/compare/v0.21.15...v0.21.16
