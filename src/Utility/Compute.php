@@ -26,9 +26,9 @@ final class Compute extends Utility
         $uuid[] = random_bytes(4);
         $uuid[] = random_bytes(2);
         // Version 4 (most significant 4 bits = 0b0100)
-        $uuid[] = chr(ord(random_bytes(1)) & 0xf | 0x40) . random_bytes(1);
+        $uuid[] = chr(ord(random_bytes(1)) & 0x0F | 0x40) . random_bytes(1);
         // Variant 1 (most significant 2 bits = 0b10)
-        $uuid[] = chr(ord(random_bytes(1)) & 0x3f | 0x80) . random_bytes(1);
+        $uuid[] = chr(ord(random_bytes(1)) & 0x3F | 0x80) . random_bytes(1);
         $uuid[] = random_bytes(6);
 
         if ($binary) {

@@ -331,7 +331,7 @@ final class HttpRequestTest extends TestCase
         ];
 
         for ($i = 0; $i < 0x80; $i++) {
-            if ($i === 0x9 || ($i >= 0x20 && $i <= 0x7e)) {
+            if ($i === 0x09 || ($i >= 0x20 && $i <= 0x7E)) {
                 continue;
             }
             $values[] = ['foo' . chr($i) . 'bar'];
