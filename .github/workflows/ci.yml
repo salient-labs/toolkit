@@ -27,6 +27,7 @@ jobs:
         with:
           php-version: "8.3"
           coverage: none
+          tools: phive
 
       - name: Get Composer cache directory
         id: get-composer-cache
@@ -41,17 +42,15 @@ jobs:
           restore-keys: composer-cache-${{ runner.os }}-
 
       - name: Install PHP dependencies
-        run: composer install --no-interaction --no-progress
-
-      - name: Install PrettyPHP and its dependencies
-        working-directory: tools/pretty-php
-        run: composer install --no-interaction --no-progress --no-dev
+        run: |
+          composer install --no-interaction --no-progress
+          phive install --trust-gpg-keys E82B2FB314E9906E,E8CC5BC780B581F2
 
       - name: Check generated files
         run: scripts/generate.php --check
 
       - name: Run PrettyPHP
-        run: tools/pretty-php/vendor/bin/pretty-php --diff
+        run: tools/pretty-php --diff
 
   phpstan:
     name: PHPStan

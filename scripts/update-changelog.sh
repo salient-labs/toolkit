@@ -21,7 +21,7 @@ function run() {
 [[ ${BASH_SOURCE[0]} -ef scripts/update-changelog.sh ]] ||
     die "must run from root of package folder"
 
-changelog_path=tools/changelog/vendor/bin/changelog
+changelog_path=tools/changelog
 [[ -x $changelog_path ]] ||
     die "salient/changelog is not installed"
 
