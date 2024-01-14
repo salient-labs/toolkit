@@ -26,6 +26,101 @@ use Throwable;
 abstract class CliCommand implements ICliCommand
 {
     /**
+     * @var ICliApplication
+     */
+    protected $App;
+
+    /**
+     * @var string[]|null
+     */
+    private $Name;
+
+    /**
+     * @var array<string,CliOption>|null
+     */
+    private $Options;
+
+    /**
+     * @var array<string,CliOption>
+     */
+    private $OptionsByName = [];
+
+    /**
+     * @var array<string,CliOption>
+     */
+    private $PositionalOptions = [];
+
+    /**
+     * @var string[]
+     */
+    private $DeferredOptionErrors = [];
+
+    /**
+     * @var string[]
+     */
+    private $Arguments = [];
+
+    /**
+     * @var array<string,mixed>
+     */
+    private $ArgumentValues = [];
+
+    /**
+     * @var array<string,mixed>|null
+     */
+    private $OptionValues;
+
+    /**
+     * @var string[]
+     */
+    private $OptionErrors = [];
+
+    /**
+     * @var int|null
+     */
+    private $NextArgumentIndex;
+
+    /**
+     * @var bool
+     */
+    private $HasHelpArgument = false;
+
+    /**
+     * @var bool
+     */
+    private $HasVersionArgument = false;
+
+    /**
+     * @var bool
+     */
+    private $IsRunning = false;
+
+    /**
+     * @var int
+     */
+    private $ExitStatus = 0;
+
+    /**
+     * @var int
+     */
+    private $Runs = 0;
+
+    private Formatter $LoopbackFormatter;
+
+    /**
+     * Run the command
+     *
+     * The command's return value will be:
+     * 1. the return value of this method (if an `int` is returned)
+     * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
+     * 3. `0`, indicating success
+     *
+     * @param string ...$args Non-option arguments passed to the command.
+     * @return int|void
+     */
+    abstract protected function run(string ...$args);
+
+    /**
      * Get a list of options for the command
      *
      * Example:
@@ -74,19 +169,6 @@ abstract class CliCommand implements ICliCommand
     abstract protected function getHelpSections(): ?array;
 
     /**
-     * Run the command
-     *
-     * The command's return value will be:
-     * 1. the return value of this method (if an `int` is returned)
-     * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
-     * 3. `0`, indicating success
-     *
-     * @param string ...$args Non-option arguments passed to the command.
-     * @return int|void
-     */
-    abstract protected function run(string ...$args);
-
-    /**
      * Override to modify the command's JSON Schema before it is returned
      *
      * @param array{'$schema':string,title:string|null,type:string,required:string[],properties:array<string,mixed>} $schema
@@ -97,91 +179,56 @@ abstract class CliCommand implements ICliCommand
         return $schema;
     }
 
-    /**
-     * @var ICliApplication
-     */
-    protected $App;
-
-    /**
-     * @var string[]|null
-     */
-    private $Name;
-
-    /**
-     * @var array<string,CliOption>|null
-     */
-    private $Options;
-
-    /**
-     * @var array<string,CliOption>
-     */
-    private $OptionsByName = [];
-
-    /**
-     * @var array<string,CliOption>
-     */
-    private $PositionalOptions = [];
-
-    /**
-     * @var string[]
-     */
-    private $Arguments = [];
-
-    /**
-     * @var array<string,mixed>
-     */
-    private $ArgumentValues = [];
-
-    /**
-     * @var array<string,mixed>|null
-     */
-    private $OptionValues;
-
-    /**
-     * @var string[]
-     */
-    private $OptionErrors = [];
-
-    /**
-     * @var string[]
-     */
-    private $DeferredOptionErrors = [];
-
-    /**
-     * @var int|null
-     */
-    private $NextArgumentIndex;
-
-    /**
-     * @var bool
-     */
-    private $HasHelpArgument = false;
-
-    /**
-     * @var bool
-     */
-    private $HasVersionArgument = false;
-
-    /**
-     * @var bool
-     */
-    private $IsRunning = false;
-
-    /**
-     * @var int
-     */
-    private $ExitStatus = 0;
-
-    /**
-     * @var int
-     */
-    private $Runs = 0;
-
-    private Formatter $LoopbackFormatter;
-
     public function __construct(ICliApplication $app)
     {
         $this->App = $app;
+    }
+
+    /**
+     * @see CliCommand::run()
+     */
+    final public function __invoke(string ...$args): int
+    {
+        $this->reset();
+
+        $this->Arguments = $args;
+        $this->Runs++;
+
+        $this->loadOptionValues();
+
+        if ($this->HasHelpArgument) {
+            $width = $this->App->getHelpWidth();
+            Console::stdout($this->App->buildHelp($this->getHelp(true, $width)));
+
+            return 0;
+        }
+
+        if ($this->HasVersionArgument) {
+            $appName = $this->App->getAppName();
+            $version = Package::version(true, true);
+            Console::stdout("__{$appName}__ $version");
+
+            return 0;
+        }
+
+        if ($this->DeferredOptionErrors) {
+            throw new CliInvalidArgumentsException(
+                ...$this->DeferredOptionErrors
+            );
+        }
+
+        $this->IsRunning = true;
+        try {
+            $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
+        } finally {
+            $this->IsRunning = false;
+        }
+
+        if (is_int($return)) {
+            return $return;
+        }
+
+        return $this->ExitStatus;
     }
 
     final public function app(): ICliApplication
@@ -194,33 +241,12 @@ abstract class CliCommand implements ICliCommand
         return $this->App;
     }
 
-    final public function setName(array $name): void
-    {
-        if ($this->Name !== null) {
-            throw new LogicException('Name already set');
-        }
-
-        $this->Name = $name;
-    }
-
     /**
      * @inheritDoc
      */
     final public function name(): string
     {
         return implode(' ', $this->Name ?? []);
-    }
-
-    /**
-     * Get the command name, including the name used to run the script, as a
-     * string of space-delimited subcommands
-     */
-    final protected function getNameWithProgram(): string
-    {
-        $name = $this->Name ?? [];
-        array_unshift($name, $this->App->getProgramName());
-
-        return implode(' ', $name);
     }
 
     /**
@@ -231,258 +257,13 @@ abstract class CliCommand implements ICliCommand
         return $this->Name ?: [];
     }
 
-    /**
-     * @param CliOption|CliOptionBuilder $option
-     */
-    private function addOption($option): void
+    final public function setName(array $name): void
     {
-        try {
-            $option = $option->load();
-        } catch (CliUnknownValueException $ex) {
-            // If an exception is thrown over a value found in the environment,
-            // defer it in case we're only loading options for a help message
-            $this->DeferredOptionErrors[] = $ex->getMessage();
+        if ($this->Name !== null) {
+            throw new LogicException('Name already set');
         }
 
-        $names = $option->getNames();
-
-        if (array_intersect_key(array_flip($names), $this->OptionsByName)) {
-            throw new LogicException('Option names must be unique: ' . implode(', ', $names));
-        }
-
-        if ($option->IsPositional) {
-            if ($option->WasRequired &&
-                    array_filter(
-                        $this->PositionalOptions,
-                        fn(CliOption $opt) =>
-                            !$opt->WasRequired && !$opt->MultipleAllowed
-                    )) {
-                throw new LogicException('Required positional options must be added before optional ones');
-            }
-
-            if (!$option->WasRequired &&
-                    array_filter(
-                        $this->PositionalOptions,
-                        fn(CliOption $opt) =>
-                            $opt->MultipleAllowed
-                    )) {
-                throw new LogicException("'multipleAllowed' positional options must be added after optional ones");
-            }
-
-            if ($option->MultipleAllowed &&
-                    array_filter(
-                        $this->PositionalOptions,
-                        fn(CliOption $opt) =>
-                            $opt->MultipleAllowed
-                    )) {
-                throw new LogicException("'multipleAllowed' cannot be set on more than one positional option");
-            }
-
-            $this->PositionalOptions[$option->Key] = $option;
-        }
-
-        $this->Options[$option->Key] = $option;
-
-        foreach ($names as $name) {
-            $this->OptionsByName[$name] = $option;
-        }
-    }
-
-    /**
-     * @return $this
-     */
-    private function loadOptions()
-    {
-        if ($this->Options !== null) {
-            return $this;
-        }
-
-        try {
-            foreach ($this->getOptionList() as $option) {
-                $this->addOption($option);
-            }
-
-            return $this
-                ->maybeAddHiddenOption('help')
-                ->maybeAddHiddenOption('version');
-        } catch (Throwable $ex) {
-            $this->Options = null;
-            $this->OptionsByName = [];
-            $this->PositionalOptions = [];
-            $this->DeferredOptionErrors = [];
-
-            throw $ex;
-        }
-    }
-
-    /**
-     * @return $this
-     */
-    private function maybeAddHiddenOption(string $long)
-    {
-        if (!array_key_exists($long, $this->OptionsByName)) {
-            $this->addOption(CliOption::build()->long($long)->hide());
-        }
-        return $this;
-    }
-
-    /**
-     * @return CliOption[]
-     */
-    final protected function getOptions(): array
-    {
-        return array_values($this->loadOptions()->Options);
-    }
-
-    final protected function hasOption(string $name): bool
-    {
-        return array_key_exists($name, $this->loadOptions()->OptionsByName);
-    }
-
-    final protected function getOption(string $name): ?CliOption
-    {
-        return $this->loadOptions()->OptionsByName[$name] ?? null;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getSynopsis(bool $withMarkup = true, ?int $width = 80, bool $collapse = false): string
-    {
-        $style = $withMarkup
-            ? $this->App->getHelpStyle()
-            : new CliHelpStyle();
-
-        $b = $style->Bold;
-        $prefix = $style->SynopsisPrefix;
-        $newline = $style->SynopsisNewline;
-
-        $name = $b . $this->getNameWithProgram() . $b;
-        $full = $this->getOptionsSynopsis($withMarkup, $style, $collapsed);
-        $synopsis = Arr::implode(' ', [$name, $full]);
-
-        if ($width !== null) {
-            $wrapped = $prefix . str_replace(
-                "\n", $newline, $this
-                    ->getLoopbackFormatter()
-                    ->formatTags($synopsis, false, [$width, $width - 4], !$withMarkup)
-            );
-
-            if (!$collapse || strpos($wrapped, "\n") === false) {
-                return $wrapped;
-            }
-
-            $synopsis = Arr::implode(' ', [$name, $collapsed]);
-        }
-
-        return $prefix . $this
-            ->getLoopbackFormatter()
-            ->formatTags($synopsis, false, null, !$withMarkup);
-    }
-
-    private function getOptionsSynopsis(bool $withMarkup, CliHelpStyle $style, ?string &$collapsed = null): string
-    {
-        $b = $style->Bold;
-
-        // Produce this:
-        //
-        //     [-ny] [--exclude PATTERN] [--verbose] --from SOURCE DEST
-        //
-        // By generating this:
-        //
-        //     $shortFlag = ['n', 'y'];
-        //     $optional = ['[--exclude PATTERN]', '[--verbose]'];
-        //     $required = ['--from SOURCE'];
-        //     $positional = ['DEST'];
-        //
-        $shortFlag = [];
-        $optional = [];
-        $required = [];
-        $positional = [];
-
-        $count = 0;
-        foreach ($this->getOptions() as $option) {
-            if (!($option->Visibility & CliOptionVisibility::SYNOPSIS)) {
-                continue;
-            }
-
-            if ($option->IsFlag || !($option->IsPositional || $option->WasRequired)) {
-                $count++;
-                if ($option->MultipleAllowed) {
-                    $count++;
-                }
-            }
-
-            if ($option->IsFlag) {
-                if ($option->Short !== null) {
-                    $shortFlag[] = $option->Short;
-                    continue;
-                }
-                $optional[] = "\[{$b}--{$option->Long}{$b}]";
-                continue;
-            }
-
-            $valueName = $option->formatValueName();
-            if (!$withMarkup) {
-                $valueName = Formatter::escapeTags($valueName);
-            }
-
-            if ($option->IsPositional) {
-                if ($option->MultipleAllowed) {
-                    $valueName .= '...';
-                }
-                $positional[] = $option->WasRequired ? $valueName : "\[{$valueName}]";
-                continue;
-            }
-
-            $prefix = '';
-            $suffix = '';
-            $ellipsis = '';
-            if ($option->MultipleAllowed) {
-                if ($option->Delimiter) {
-                    $valueName .= "{$option->Delimiter}...";
-                } elseif ($option->ValueRequired) {
-                    if ($option->WasRequired) {
-                        $prefix = '\(';
-                        $suffix = ')...';
-                    } else {
-                        $ellipsis = '...';
-                    }
-                } else {
-                    $ellipsis = '...';
-                }
-            }
-
-            $valueName = $option->Short !== null
-                ? "{$prefix}{$b}-{$option->Short}{$b}"
-                    . ($option->ValueRequired
-                        ? "\ {$valueName}{$suffix}"
-                        : "\[{$valueName}]{$suffix}")
-                : "{$prefix}{$b}--{$option->Long}{$b}"
-                    . ($option->ValueRequired
-                        ? "\ {$valueName}{$suffix}"
-                        : "\[={$valueName}]{$suffix}");
-
-            if ($option->WasRequired) {
-                $required[] = $valueName . $ellipsis;
-            } else {
-                $optional[] = "\[$valueName]" . $ellipsis;
-            }
-        }
-
-        $collapsed = implode(' ', array_filter([
-            $count > 1 ? '\[<option>]...' : '',
-            $count === 1 ? '\[<option>]' : '',
-            $required ? implode(' ', $required) : '',
-            $positional ? "\[{$b}--{$b}] " . implode(' ', $positional) : '',
-        ]));
-
-        return implode(' ', array_filter([
-            $shortFlag ? "\[{$b}-" . implode('', $shortFlag) . "{$b}]" : '',
-            $optional ? implode(' ', $optional) : '',
-            $required ? implode(' ', $required) : '',
-            $positional ? "\[{$b}--{$b}] " . implode(' ', $positional) : '',
-        ]));
+        $this->Name = $name;
     }
 
     /**
@@ -678,6 +459,159 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
+     * @inheritDoc
+     */
+    final public function getSynopsis(bool $withMarkup = true, ?int $width = 80, bool $collapse = false): string
+    {
+        $style = $withMarkup
+            ? $this->App->getHelpStyle()
+            : new CliHelpStyle();
+
+        $b = $style->Bold;
+        $prefix = $style->SynopsisPrefix;
+        $newline = $style->SynopsisNewline;
+
+        $name = $b . $this->getNameWithProgram() . $b;
+        $full = $this->getOptionsSynopsis($withMarkup, $style, $collapsed);
+        $synopsis = Arr::implode(' ', [$name, $full]);
+
+        if ($width !== null) {
+            $wrapped = $prefix . str_replace(
+                "\n", $newline, $this
+                    ->getLoopbackFormatter()
+                    ->formatTags($synopsis, false, [$width, $width - 4], !$withMarkup)
+            );
+
+            if (!$collapse || strpos($wrapped, "\n") === false) {
+                return $wrapped;
+            }
+
+            $synopsis = Arr::implode(' ', [$name, $collapsed]);
+        }
+
+        return $prefix . $this
+            ->getLoopbackFormatter()
+            ->formatTags($synopsis, false, null, !$withMarkup);
+    }
+
+    private function getOptionsSynopsis(bool $withMarkup, CliHelpStyle $style, ?string &$collapsed = null): string
+    {
+        $b = $style->Bold;
+
+        // Produce this:
+        //
+        //     [-ny] [--exclude PATTERN] [--verbose] --from SOURCE DEST
+        //
+        // By generating this:
+        //
+        //     $shortFlag = ['n', 'y'];
+        //     $optional = ['[--exclude PATTERN]', '[--verbose]'];
+        //     $required = ['--from SOURCE'];
+        //     $positional = ['DEST'];
+        //
+        $shortFlag = [];
+        $optional = [];
+        $required = [];
+        $positional = [];
+
+        $count = 0;
+        foreach ($this->getOptions() as $option) {
+            if (!($option->Visibility & CliOptionVisibility::SYNOPSIS)) {
+                continue;
+            }
+
+            if ($option->IsFlag || !($option->IsPositional || $option->WasRequired)) {
+                $count++;
+                if ($option->MultipleAllowed) {
+                    $count++;
+                }
+            }
+
+            if ($option->IsFlag) {
+                if ($option->Short !== null) {
+                    $shortFlag[] = $option->Short;
+                    continue;
+                }
+                $optional[] = "\[{$b}--{$option->Long}{$b}]";
+                continue;
+            }
+
+            $valueName = $option->formatValueName();
+            if (!$withMarkup) {
+                $valueName = Formatter::escapeTags($valueName);
+            }
+
+            if ($option->IsPositional) {
+                if ($option->MultipleAllowed) {
+                    $valueName .= '...';
+                }
+                $positional[] = $option->WasRequired ? $valueName : "\[{$valueName}]";
+                continue;
+            }
+
+            $prefix = '';
+            $suffix = '';
+            $ellipsis = '';
+            if ($option->MultipleAllowed) {
+                if ($option->Delimiter) {
+                    $valueName .= "{$option->Delimiter}...";
+                } elseif ($option->ValueRequired) {
+                    if ($option->WasRequired) {
+                        $prefix = '\(';
+                        $suffix = ')...';
+                    } else {
+                        $ellipsis = '...';
+                    }
+                } else {
+                    $ellipsis = '...';
+                }
+            }
+
+            $valueName = $option->Short !== null
+                ? "{$prefix}{$b}-{$option->Short}{$b}"
+                    . ($option->ValueRequired
+                        ? "\ {$valueName}{$suffix}"
+                        : "\[{$valueName}]{$suffix}")
+                : "{$prefix}{$b}--{$option->Long}{$b}"
+                    . ($option->ValueRequired
+                        ? "\ {$valueName}{$suffix}"
+                        : "\[={$valueName}]{$suffix}");
+
+            if ($option->WasRequired) {
+                $required[] = $valueName . $ellipsis;
+            } else {
+                $optional[] = "\[$valueName]" . $ellipsis;
+            }
+        }
+
+        $collapsed = implode(' ', array_filter([
+            $count > 1 ? '\[<option>]...' : '',
+            $count === 1 ? '\[<option>]' : '',
+            $required ? implode(' ', $required) : '',
+            $positional ? "\[{$b}--{$b}] " . implode(' ', $positional) : '',
+        ]));
+
+        return implode(' ', array_filter([
+            $shortFlag ? "\[{$b}-" . implode('', $shortFlag) . "{$b}]" : '',
+            $optional ? implode(' ', $optional) : '',
+            $required ? implode(' ', $required) : '',
+            $positional ? "\[{$b}--{$b}] " . implode(' ', $positional) : '',
+        ]));
+    }
+
+    /**
+     * Get the command name, including the name used to run the script, as a
+     * string of space-delimited subcommands
+     */
+    final protected function getNameWithProgram(): string
+    {
+        $name = $this->Name ?? [];
+        array_unshift($name, $this->App->getProgramName());
+
+        return implode(' ', $name);
+    }
+
+    /**
      * @return array{'$schema':string,title?:string,type:string,required?:string[],properties?:array<string,mixed>,...}
      */
     final public function getJsonSchema(?string $title = null): array
@@ -721,16 +655,188 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * Record an option-related error
+     * Optionally normalise an array of option values, assign them to the
+     * command, and return them to the caller
      *
-     * @return $this
-     * @phpstan-impure
+     * @param array<string,array<string|int|true>|string|int|bool|null> $values
+     * An array that maps options to values.
+     * @param bool $normalise `false` if `$value` has already been normalised.
+     * @param bool $expand If `true`, replace `null` (or `true`, if the option
+     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
+     * with the default value of the option if it has an optional value. Ignored
+     * if `$normalise` is `false`.
+     * @param bool $asArguments If `true`, assign the values to the command as
+     * if they had been given on the command line.
+     * @return array<string,mixed>
+     * @see CliCommand::normaliseOptionValues()
      */
-    private function optionError(string $message)
-    {
-        $this->OptionErrors[] = $message;
+    final protected function applyOptionValues(
+        array $values,
+        bool $normalise = true,
+        bool $expand = false,
+        bool $asArguments = false
+    ): array {
+        $this->assertHasRun();
 
-        return $this;
+        $_values = [];
+        foreach ($values as $name => $value) {
+            if ($name === '@internal') {
+                $_values[$name] = $value;
+                continue;
+            }
+            $option = $this->OptionsByName[$name] ?? null;
+            if (!$option) {
+                throw new LogicException(sprintf('Option not found: %s', $name));
+            }
+            $value = $option->applyValue($_value = $value, $normalise, $expand);
+            $this->OptionValues[$option->Key] = $_values[$name] = $value;
+            if ($asArguments) {
+                $this->ArgumentValues[$option->Key] = $_value;
+            }
+        }
+
+        return $_values;
+    }
+
+    /**
+     * Normalise an array that maps options to user-supplied values
+     *
+     * @param array<string,array<string|int>|string|int|bool|null> $values
+     * @param bool $expand If `true`, replace `null` (or `true`, if the option
+     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
+     * with the default value of the option if it has an optional value.
+     * @param (callable(string): string)|null $nameCallback
+     * @param array<string,array<string|int>|string|int|bool|null>|null $invalid
+     * @return array<string,mixed>
+     */
+    final protected function normaliseOptionValues(
+        array $values,
+        bool $expand = false,
+        ?callable $nameCallback = null,
+        ?array &$invalid = null
+    ): array {
+        $this->loadOptions();
+
+        $_values = [];
+        foreach ($values as $name => $value) {
+            if ($name === '@internal') {
+                $_values[$name] = $value;
+                continue;
+            }
+            $_name = $nameCallback ? $nameCallback($name) : $name;
+            $option = $this->OptionsByName[$_name] ?? null;
+            if (!$option) {
+                $invalid[$name] = $value;
+                continue;
+            }
+            $_values[$_name] = $option->normaliseValue($value, $expand);
+        }
+
+        return $_values;
+    }
+
+    /**
+     * Get an array that maps options to values
+     *
+     * The long form of the option (e.g. 'verbose') is used if available. The
+     * short form (e.g. 'v') is only used if the option has no long form.
+     *
+     * @param bool $export If `true`, only options with user-supplied values are
+     * returned, otherwise the value of every option is returned.
+     * @param (callable(string): string)|null $nameCallback
+     * @return array<string,array<string|int>|string|int|bool|null>
+     */
+    final protected function getOptionValues(
+        bool $export = false,
+        ?callable $nameCallback = null
+    ): array {
+        $this->assertHasRun();
+
+        $values = [];
+        foreach ($this->Options as $option) {
+            $value = $this->OptionValues[$option->Key] ?? null;
+            $wasArg = array_key_exists($option->Key, $this->ArgumentValues);
+            if ($export &&
+                (!$wasArg ||
+                    // Skip this option if `$value` is empty because
+                    // user-supplied values were discarded
+                    ($value === [] && $option->OriginalDefaultValue === $value)) &&
+                (($option->IsFlag && !$value) ||
+                    ($option->ValueRequired && $option->OriginalDefaultValue === $value) ||
+                    ($option->ValueOptional && $value === null))) {
+                continue;
+            }
+            $name = $option->Name;
+            if ($nameCallback) {
+                $name = $nameCallback($name);
+            }
+            $values[$name] = $export && $wasArg && $option->ValueOptional
+                ? Convert::coalesce(
+                    $this->ArgumentValues[$option->Key],
+                    $option->ValueType !== CliOptionValueType::BOOLEAN ? true : null
+                )
+                : $value;
+        }
+
+        return $values;
+    }
+
+    /**
+     * Get an array that maps options to default values
+     *
+     * The long form of the option (e.g. 'verbose') is used if available. The
+     * short form (e.g. 'v') is only used if the option has no long form.
+     *
+     * @param (callable(string): string)|null $nameCallback
+     * @return array<string,array<string|int>|string|int|bool|null>
+     */
+    final protected function getDefaultOptionValues(?callable $nameCallback = null): array
+    {
+        $this->loadOptions();
+
+        $values = [];
+        foreach ($this->Options as $option) {
+            $value = $option->ValueOptional ? null : $option->OriginalDefaultValue;
+            $name = $option->Name;
+            if ($nameCallback) {
+                $name = $nameCallback($name);
+            }
+            $values[$name] = $value;
+        }
+
+        return $values;
+    }
+
+    /**
+     * Get the value of a command line option
+     *
+     * For values that can be given multiple times, an array of values will be
+     * returned. For flags that can be given multiple times, the number of uses
+     * will be returned.
+     *
+     * @param string $name The value of the option's {@see CliOption::$Name},
+     * {@see CliOption::$Long} or {@see CliOption::$Short} property.
+     * @return array<string|int>|string|int|bool|null
+     */
+    final protected function getOptionValue(string $name)
+    {
+        $this->assertHasRun();
+
+        if (!($option = $this->getOption($name))) {
+            throw new LogicException("No option with name '$name'");
+        }
+
+        return $this->OptionValues[$option->Key] ?? null;
+    }
+
+    final protected function getOption(string $name): ?CliOption
+    {
+        return $this->loadOptions()->OptionsByName[$name] ?? null;
+    }
+
+    final protected function hasOption(string $name): bool
+    {
+        return array_key_exists($name, $this->loadOptions()->OptionsByName);
     }
 
     private function loadOptionValues(): void
@@ -941,178 +1047,119 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * Get the value of a command line option
+     * Record an option-related error
      *
-     * For values that can be given multiple times, an array of values will be
-     * returned. For flags that can be given multiple times, the number of uses
-     * will be returned.
-     *
-     * @param string $name The value of the option's {@see CliOption::$Name},
-     * {@see CliOption::$Long} or {@see CliOption::$Short} property.
-     * @return array<string|int>|string|int|bool|null
+     * @return $this
+     * @phpstan-impure
      */
-    final protected function getOptionValue(string $name)
+    private function optionError(string $message)
     {
-        $this->assertHasRun();
+        $this->OptionErrors[] = $message;
 
-        if (!($option = $this->getOption($name))) {
-            throw new LogicException("No option with name '$name'");
-        }
-
-        return $this->OptionValues[$option->Key] ?? null;
+        return $this;
     }
 
     /**
-     * Get an array that maps options to values
-     *
-     * The long form of the option (e.g. 'verbose') is used if available. The
-     * short form (e.g. 'v') is only used if the option has no long form.
-     *
-     * @param bool $export If `true`, only options with user-supplied values are
-     * returned, otherwise the value of every option is returned.
-     * @param (callable(string): string)|null $nameCallback
-     * @return array<string,array<string|int>|string|int|bool|null>
+     * @return CliOption[]
      */
-    final protected function getOptionValues(
-        bool $export = false,
-        ?callable $nameCallback = null
-    ): array {
-        $this->assertHasRun();
-
-        $values = [];
-        foreach ($this->Options as $option) {
-            $value = $this->OptionValues[$option->Key] ?? null;
-            $wasArg = array_key_exists($option->Key, $this->ArgumentValues);
-            if ($export &&
-                (!$wasArg ||
-                    // Skip this option if `$value` is empty because
-                    // user-supplied values were discarded
-                    ($value === [] && $option->OriginalDefaultValue === $value)) &&
-                (($option->IsFlag && !$value) ||
-                    ($option->ValueRequired && $option->OriginalDefaultValue === $value) ||
-                    ($option->ValueOptional && $value === null))) {
-                continue;
-            }
-            $name = $option->Name;
-            if ($nameCallback) {
-                $name = $nameCallback($name);
-            }
-            $values[$name] = $export && $wasArg && $option->ValueOptional
-                ? Convert::coalesce(
-                    $this->ArgumentValues[$option->Key],
-                    $option->ValueType !== CliOptionValueType::BOOLEAN ? true : null
-                )
-                : $value;
-        }
-
-        return $values;
-    }
-
-    /**
-     * Get an array that maps options to default values
-     *
-     * The long form of the option (e.g. 'verbose') is used if available. The
-     * short form (e.g. 'v') is only used if the option has no long form.
-     *
-     * @param (callable(string): string)|null $nameCallback
-     * @return array<string,array<string|int>|string|int|bool|null>
-     */
-    final protected function getDefaultOptionValues(?callable $nameCallback = null): array
+    final protected function getOptions(): array
     {
-        $this->loadOptions();
-
-        $values = [];
-        foreach ($this->Options as $option) {
-            $value = $option->ValueOptional ? null : $option->OriginalDefaultValue;
-            $name = $option->Name;
-            if ($nameCallback) {
-                $name = $nameCallback($name);
-            }
-            $values[$name] = $value;
-        }
-
-        return $values;
+        return array_values($this->loadOptions()->Options);
     }
 
     /**
-     * Optionally normalise an array of option values, assign them to the
-     * command, and return them to the caller
-     *
-     * @param array<string,array<string|int|true>|string|int|bool|null> $values
-     * An array that maps options to values.
-     * @param bool $normalise `false` if `$value` has already been normalised.
-     * @param bool $expand If `true`, replace `null` (or `true`, if the option
-     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
-     * with the default value of the option if it has an optional value. Ignored
-     * if `$normalise` is `false`.
-     * @param bool $asArguments If `true`, assign the values to the command as
-     * if they had been given on the command line.
-     * @return array<string,mixed>
-     * @see CliCommand::normaliseOptionValues()
+     * @return $this
      */
-    final protected function applyOptionValues(
-        array $values,
-        bool $normalise = true,
-        bool $expand = false,
-        bool $asArguments = false
-    ): array {
-        $this->assertHasRun();
-
-        $_values = [];
-        foreach ($values as $name => $value) {
-            if ($name === '@internal') {
-                $_values[$name] = $value;
-                continue;
-            }
-            $option = $this->OptionsByName[$name] ?? null;
-            if (!$option) {
-                throw new LogicException(sprintf('Option not found: %s', $name));
-            }
-            $value = $option->applyValue($_value = $value, $normalise, $expand);
-            $this->OptionValues[$option->Key] = $_values[$name] = $value;
-            if ($asArguments) {
-                $this->ArgumentValues[$option->Key] = $_value;
-            }
+    private function loadOptions()
+    {
+        if ($this->Options !== null) {
+            return $this;
         }
 
-        return $_values;
+        try {
+            foreach ($this->getOptionList() as $option) {
+                $this->addOption($option);
+            }
+
+            return $this
+                ->maybeAddHiddenOption('help')
+                ->maybeAddHiddenOption('version');
+        } catch (Throwable $ex) {
+            $this->Options = null;
+            $this->OptionsByName = [];
+            $this->PositionalOptions = [];
+            $this->DeferredOptionErrors = [];
+
+            throw $ex;
+        }
     }
 
     /**
-     * Normalise an array that maps options to user-supplied values
-     *
-     * @param array<string,array<string|int>|string|int|bool|null> $values
-     * @param bool $expand If `true`, replace `null` (or `true`, if the option
-     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
-     * with the default value of the option if it has an optional value.
-     * @param (callable(string): string)|null $nameCallback
-     * @param array<string,array<string|int>|string|int|bool|null>|null $invalid
-     * @return array<string,mixed>
+     * @return $this
      */
-    final protected function normaliseOptionValues(
-        array $values,
-        bool $expand = false,
-        ?callable $nameCallback = null,
-        ?array &$invalid = null
-    ): array {
-        $this->loadOptions();
+    private function maybeAddHiddenOption(string $long)
+    {
+        if (!array_key_exists($long, $this->OptionsByName)) {
+            $this->addOption(CliOption::build()->long($long)->hide());
+        }
+        return $this;
+    }
 
-        $_values = [];
-        foreach ($values as $name => $value) {
-            if ($name === '@internal') {
-                $_values[$name] = $value;
-                continue;
-            }
-            $_name = $nameCallback ? $nameCallback($name) : $name;
-            $option = $this->OptionsByName[$_name] ?? null;
-            if (!$option) {
-                $invalid[$name] = $value;
-                continue;
-            }
-            $_values[$_name] = $option->normaliseValue($value, $expand);
+    /**
+     * @param CliOption|CliOptionBuilder $option
+     */
+    private function addOption($option): void
+    {
+        try {
+            $option = $option->load();
+        } catch (CliUnknownValueException $ex) {
+            // If an exception is thrown over a value found in the environment,
+            // defer it in case we're only loading options for a help message
+            $this->DeferredOptionErrors[] = $ex->getMessage();
         }
 
-        return $_values;
+        $names = $option->getNames();
+
+        if (array_intersect_key(array_flip($names), $this->OptionsByName)) {
+            throw new LogicException('Option names must be unique: ' . implode(', ', $names));
+        }
+
+        if ($option->IsPositional) {
+            if ($option->WasRequired &&
+                    array_filter(
+                        $this->PositionalOptions,
+                        fn(CliOption $opt) =>
+                            !$opt->WasRequired && !$opt->MultipleAllowed
+                    )) {
+                throw new LogicException('Required positional options must be added before optional ones');
+            }
+
+            if (!$option->WasRequired &&
+                    array_filter(
+                        $this->PositionalOptions,
+                        fn(CliOption $opt) =>
+                            $opt->MultipleAllowed
+                    )) {
+                throw new LogicException("'multipleAllowed' positional options must be added after optional ones");
+            }
+
+            if ($option->MultipleAllowed &&
+                    array_filter(
+                        $this->PositionalOptions,
+                        fn(CliOption $opt) =>
+                            $opt->MultipleAllowed
+                    )) {
+                throw new LogicException("'multipleAllowed' cannot be set on more than one positional option");
+            }
+
+            $this->PositionalOptions[$option->Key] = $option;
+        }
+
+        $this->Options[$option->Key] = $option;
+
+        foreach ($names as $name) {
+            $this->OptionsByName[$name] = $option;
+        }
     }
 
     /**
@@ -1125,53 +1172,6 @@ abstract class CliCommand implements ICliCommand
         }
 
         return $this;
-    }
-
-    /**
-     * @see CliCommand::run()
-     */
-    final public function __invoke(string ...$args): int
-    {
-        $this->reset();
-
-        $this->Arguments = $args;
-        $this->Runs++;
-
-        $this->loadOptionValues();
-
-        if ($this->HasHelpArgument) {
-            $width = $this->App->getHelpWidth();
-            Console::stdout($this->App->buildHelp($this->getHelp(true, $width)));
-
-            return 0;
-        }
-
-        if ($this->HasVersionArgument) {
-            $appName = $this->App->getAppName();
-            $version = Package::version(true, true);
-            Console::stdout("__{$appName}__ $version");
-
-            return 0;
-        }
-
-        if ($this->DeferredOptionErrors) {
-            throw new CliInvalidArgumentsException(
-                ...$this->DeferredOptionErrors
-            );
-        }
-
-        $this->IsRunning = true;
-        try {
-            $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
-        } finally {
-            $this->IsRunning = false;
-        }
-
-        if (is_int($return)) {
-            return $return;
-        }
-
-        return $this->ExitStatus;
     }
 
     /**
