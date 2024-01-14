@@ -3,9 +3,11 @@
 namespace Lkrms\Cli\Contract;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
+use Lkrms\Cli\Support\CliHelpStyle;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Contract\HasContainer;
 use Lkrms\Contract\HasDescription;
+use Lkrms\Contract\HasName;
 use LogicException;
 
 /**
@@ -15,7 +17,7 @@ use LogicException;
  *
  * @see CliCommand
  */
-interface ICliCommandNode extends HasContainer, HasDescription
+interface ICliCommandNode extends HasContainer, HasName, HasDescription
 {
     /**
      * Get the command name as a string of space-delimited subcommands
@@ -47,25 +49,18 @@ interface ICliCommandNode extends HasContainer, HasDescription
     public function setName(array $name): void;
 
     /**
-     * Get a one-line summary of the command's syntax
+     * Get a one-line summary of the command's options
      *
-     * Returns usage information that includes the command's name, and the name
-     * used to run the script.
-     *
-     * @param bool $collapse If `true` and the synopsis breaks over multiple
-     * lines, collapse non-mandatory options to `[option]...`.
+     * Returns a space-delimited string that includes the name of the command,
+     * and the name used to run the script.
      */
-    public function getSynopsis(bool $withMarkup = true, ?int $width = 80, bool $collapse = false): string;
+    public function getSynopsis(?CliHelpStyle $style = null): string;
 
     /**
      * Get a detailed explanation of the command
      *
-     * @param bool $collapse If `true` and the command's synopsis breaks over
-     * multiple lines, collapse non-mandatory options to `[option]...`. This
-     * behaviour may also be enabled via {@see ICliApplication::getHelpStyle()}.
-     * @return array<string,string> An array that maps help section names to
-     * content. Section names defined in {@see CliHelpSectionName} are
-     * recommended but not required.
+     * @return array<CliHelpSectionName::*|string,string> An array that maps
+     * help section names to content.
      */
-    public function getHelp(bool $withMarkup = true, ?int $width = 80, bool $collapse = false): array;
+    public function getHelp(?CliHelpStyle $style = null): array;
 }

@@ -18,16 +18,6 @@ use JsonException;
  */
 abstract class Command extends CliCommand
 {
-    public function getLongDescription(): ?string
-    {
-        return null;
-    }
-
-    public function getHelpSections(): ?array
-    {
-        return null;
-    }
-
     /**
      * Normalise a user-supplied class name, optionally assigning its base name
      * and/or namespace to variables passed by reference

@@ -2,15 +2,12 @@
 
 namespace Lkrms\Cli\Catalog;
 
-use Lkrms\Cli\CliCommand;
 use Lkrms\Concept\Dictionary;
 
 /**
  * Section names commonly used in help messages / manual pages
  *
  * @extends Dictionary<string>
- *
- * @see CliCommand::getHelpSections()
  */
 final class CliHelpSectionName extends Dictionary
 {

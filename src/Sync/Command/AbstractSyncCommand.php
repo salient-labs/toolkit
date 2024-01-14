@@ -92,14 +92,4 @@ abstract class AbstractSyncCommand extends CliCommand
         $this->Providers = Arr::sort(Arr::whereNotNull($providers), true);
         $this->EntityProviders = Arr::sort(Arr::whereNotNull($entityProviders), true);
     }
-
-    public function getLongDescription(): ?string
-    {
-        return null;
-    }
-
-    public function getHelpSections(): ?array
-    {
-        return null;
-    }
 }

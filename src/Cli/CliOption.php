@@ -933,6 +933,24 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     }
 
     /**
+     * Normalise a value for inclusion in a help message
+     *
+     * @param string|int|bool|null $value
+     */
+    public function normaliseValueForHelp($value): string
+    {
+        if (
+            $this->ValueType === CliOptionValueType::BOOLEAN &&
+            !$this->IsFlag &&
+            $value !== null
+        ) {
+            $value = Convert::toBool($value);
+            return Format::yn($value);
+        }
+        return (string) $value;
+    }
+
+    /**
      * @param array<string|int|bool>|string|int|bool $value
      * @return array<string|int|bool>|string|int|bool
      */
