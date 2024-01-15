@@ -493,6 +493,24 @@ final class ConsoleFormatter
     }
 
     /**
+     * Format a unified diff
+     */
+    public function formatDiff(string $diff): string
+    {
+        $formats = [
+            '+' => $this->TagFormats->get(Tag::DIFF_ADDITION),
+            '-' => $this->TagFormats->get(Tag::DIFF_REMOVAL),
+            '@' => $this->TagFormats->get(Tag::DIFF_HEADER),
+        ];
+
+        return Pcre::replaceCallback(
+            '/^([+\-@]).*/m',
+            fn(array $matches) => $formats[$matches[1]]->apply($matches[0]),
+            $diff,
+        );
+    }
+
+    /**
      * Escape special characters, optionally including newlines, in a string
      */
     public static function escapeTags(string $string, bool $newlines = false): string
