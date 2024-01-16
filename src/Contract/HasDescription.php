@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-interface HasDescription extends HasName
+interface HasDescription
 {
     /**
      * Get a description of the object

@@ -167,11 +167,6 @@ class TestOptions extends CliCommand
             EOF;
     }
 
-    public function getHelpSections(): ?array
-    {
-        return null;
-    }
-
     protected function run(string ...$args)
     {
         if ($this->App->getRunningCommand() === $this) {

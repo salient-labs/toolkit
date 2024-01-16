@@ -3,7 +3,7 @@
 namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
-use Lkrms\Cli\Catalog\CliHelpType;
+use Lkrms\Cli\Catalog\CliHelpTarget;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Support\CliHelpStyle;
@@ -36,16 +36,6 @@ class CliApplication extends Application implements ICliApplication
      * @var CliCommand|null
      */
     private $RunningCommand;
-
-    /**
-     * @var int&CliHelpType::*
-     */
-    private $HelpType = CliHelpType::TTY;
-
-    /**
-     * @var CliHelpStyle|null
-     */
-    private $HelpStyle;
 
     /**
      * @var int
@@ -223,26 +213,58 @@ class CliApplication extends Application implements ICliApplication
     }
 
     /**
-     * Generate usage information or a help message for a command tree node
+     * Get a help message for a command tree node
      *
      * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
      */
-    private function getUsage(string $name, $node, bool $terse = false): ?string
+    private function getHelp(string $name, $node, ?CliHelpStyle $style = null): ?string
     {
-        $width = $this->getHelpWidth($terse);
+        $style ??= new CliHelpStyle(CliHelpTarget::TTY);
 
         $command = $this->getNodeCommand($name, $node);
-        if ($command && !$terse) {
-            return $this->buildHelp($command->getHelp(true, $width));
+        if ($command) {
+            return $style->buildHelp($command->getHelp($style));
+        }
+
+        if (!is_array($node)) {
+            return null;
         }
 
         $progName = $this->getProgramName();
         $fullName = trim("$progName $name");
+        $synopses = [];
+        foreach ($node as $childName => $childNode) {
+            $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
+            if ($command) {
+                $synopses[] = "__{$childName}__ - " . Formatter::escapeTags($command->description());
+            } elseif (is_array($childNode)) {
+                $synopses[] = "__{$childName}__";
+            }
+        }
+
+        return $style->buildHelp([
+            CliHelpSectionName::NAME => $fullName,
+            CliHelpSectionName::SYNOPSIS => '__' . $fullName . '__ <command>',
+            'SUBCOMMANDS' => implode("\n", $synopses),
+        ]);
+    }
+
+    /**
+     * Get usage information for a command tree node
+     *
+     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
+     */
+    private function getUsage(string $name, $node): ?string
+    {
+        $style = new CliHelpStyle(CliHelpTarget::INTERNAL, CliHelpStyle::getConsoleWidth());
+
+        $command = $this->getNodeCommand($name, $node);
+        $progName = $this->getProgramName();
 
         if ($command) {
-            return Formatter::escapeTags($command->getSynopsis(false, $width)
+            return Formatter::escapeTags($command->getSynopsis($style)
                 . "\n\nSee '"
-                . ($name ? "$progName help $name" : "$progName --help")
+                . ($name === '' ? "$progName --help" : "$progName help $name")
                 . "' for more information.");
         }
 
@@ -250,105 +272,22 @@ class CliApplication extends Application implements ICliApplication
             return null;
         }
 
+        $style = $style->withCollapseSynopsis();
+        $fullName = trim("$progName $name");
         $synopses = [];
         foreach ($node as $childName => $childNode) {
-            if ($command = $this->getNodeCommand(trim("$name $childName"), $childNode)) {
-                if ($terse) {
-                    $synopses[] = $command->getSynopsis(false, $width, true);
-                } else {
-                    $synopses[] = "__{$childName}__ - " . $command->description();
-                }
+            $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
+            if ($command) {
+                $synopses[] = $command->getSynopsis($style);
             } elseif (is_array($childNode)) {
-                if ($terse) {
-                    $synopses[] = "$fullName $childName <command>";
-                } else {
-                    $synopses[] = "__{$childName}__";
-                }
+                $synopses[] = "$fullName $childName <command>";
             }
         }
-        $synopses = implode("\n", $synopses);
 
-        if ($terse) {
-            return Formatter::escapeTags("$synopses\n\nSee '"
-                . (Arr::implode(' ', ["$progName help", $name, '<command>']))
-                . "' for more information.");
-        }
-
-        $sections = [
-            CliHelpSectionName::NAME => $fullName,
-            CliHelpSectionName::SYNOPSIS => '__' . $fullName . '__ <command>',
-            'SUBCOMMANDS' => $synopses,
-        ];
-
-        return $this->buildHelp($sections);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHelpType(): int
-    {
-        return $this->HelpType;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHelpStyle(): CliHelpStyle
-    {
-        return $this->HelpStyle
-            ?? ($this->HelpStyle = new CliHelpStyle($this->HelpType));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHelpWidth(bool $terse = false): ?int
-    {
-        $width = Console::getWidth();
-
-        if ($width === null) {
-            return $width;
-        }
-
-        $width = max(76, $width);
-
-        return $terse
-            ? $width
-            : $width - 4;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function buildHelp(array $sections): string
-    {
-        $usage = '';
-        foreach ($sections as $heading => $content) {
-            if (trim($content) === '') {
-                continue;
-            }
-            $content = rtrim($content);
-            if ($this->HelpType === CliHelpType::TTY) {
-                $content = str_replace("\n", "\n    ", $content);
-                $usage .= <<<EOF
-                    ## {$heading}
-                        {$content}
-
-
-                    EOF;
-                continue;
-            }
-            $usage .= <<<EOF
-                ## {$heading}
-
-                {$content}
-
-
-                EOF;
-        }
-
-        return Pcre::replace('/^\s+$/m', '', rtrim($usage));
+        return Formatter::escapeTags(implode("\n", $synopses)
+            . "\n\nSee '"
+            . Arr::implode(' ', ["$progName help", $name, '<command>'])
+            . "' for more information.");
     }
 
     /**
@@ -370,7 +309,7 @@ class CliApplication extends Application implements ICliApplication
 
             // Print usage info if the last remaining $arg is "--help"
             if ($arg === '--help' && !$args) {
-                $usage = $this->getUsage($name, $node);
+                $usage = $this->getHelp($name, $node);
                 Console::stdout($usage);
                 return $this;
             }
@@ -387,9 +326,11 @@ class CliApplication extends Application implements ICliApplication
             //   info and exit without error
             // - If $arg cannot be a valid subcommand, print terse usage info
             //   and return a non-zero exit status
-            if ($arg === null ||
-                    !preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
-                $usage = $this->getUsage($name, $node, true);
+            if (
+                $arg === null ||
+                !Pcre::match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)
+            ) {
+                $usage = $this->getUsage($name, $node);
                 Console::out($usage);
                 $this->LastExitStatus =
                     $arg === null
@@ -428,13 +369,13 @@ class CliApplication extends Application implements ICliApplication
 
         if ($args && $args[0] === '_md') {
             array_shift($args);
-            $this->generateHelp($name, $node, CliHelpType::MARKDOWN, ...$args);
+            $this->generateHelp($name, $node, CliHelpTarget::MARKDOWN, ...$args);
             return $this;
         }
 
         if ($args && $args[0] === '_man') {
             array_shift($args);
-            $this->generateHelp($name, $node, CliHelpType::MAN_PAGE, ...$args);
+            $this->generateHelp($name, $node, CliHelpTarget::MAN_PAGE, ...$args);
             return $this;
         }
 
@@ -463,8 +404,10 @@ class CliApplication extends Application implements ICliApplication
                 $node = $lastNode;
                 $name = $lastName;
             }
-            if ($node &&
-                    ($usage = $this->getUsage($name, $node, true)) !== null) {
+            if (
+                $node &&
+                ($usage = $this->getUsage($name, $node)) !== null
+            ) {
                 Console::out("\n{$usage}");
             }
             $this->LastExitStatus = 1;
@@ -492,35 +435,33 @@ class CliApplication extends Application implements ICliApplication
 
     /**
      * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
-     * @param CliHelpType::* $helpType
+     * @param int&CliHelpTarget::* $target
      */
-    private function generateHelp(string $name, $node, int $helpType, string ...$args): void
+    private function generateHelp(string $name, $node, int $target, string ...$args): void
     {
-        $this->HelpType = $helpType;
-        $this->HelpStyle = null;
-
-        switch ($helpType) {
-            case CliHelpType::MARKDOWN:
+        switch ($target) {
+            case CliHelpTarget::MARKDOWN:
                 $formats = ConsoleMarkdownFormat::getTagFormats();
                 break;
 
-            case CliHelpType::MAN_PAGE:
+            case CliHelpTarget::MAN_PAGE:
                 $formats = ConsoleManPageFormat::getTagFormats();
+                $progName = $this->getProgramName();
                 printf(
                     "%% %s(%d) %s | %s\n\n",
-                    Str::upper(str_replace(' ', '-', trim($this->getProgramName() . " $name"))),
+                    Str::upper(str_replace(' ', '-', trim("$progName $name"))),
                     (int) ($args[0] ?? '1'),
                     $args[1] ?? Package::version(),
-                    $args[2] ?? (Package::name() . ' Documentation'),
+                    $args[2] ?? (($name === '' ? $progName : Package::name()) . ' Documentation'),
                 );
                 break;
 
             default:
-                throw new LogicException(sprintf('Invalid help type: %d', $helpType));
+                throw new LogicException(sprintf('Invalid CliHelpTarget: %d', $target));
         }
 
         $formatter = new Formatter($formats);
-        $usage = $this->getUsage($name, $node);
+        $usage = $this->getHelp($name, $node, new CliHelpStyle($target));
         $usage = $formatter->formatTags($usage, false, null, false);
         printf("%s\n", str_replace('\ ', ' ', $usage));
     }

@@ -2,9 +2,6 @@
 
 namespace Lkrms\Cli\Contract;
 
-use Lkrms\Cli\Catalog\CliHelpSectionName;
-use Lkrms\Cli\Catalog\CliHelpType;
-use Lkrms\Cli\Support\CliHelpStyle;
 use Lkrms\Contract\IApplication;
 use LogicException;
 
@@ -53,43 +50,6 @@ interface ICliApplication extends IApplication
      * @see ICliApplication::command()
      */
     public function oneCommand(string $id);
-
-    /**
-     * Get the help message type requested from the command line
-     *
-     * @return CliHelpType::*
-     */
-    public function getHelpType(): int;
-
-    /**
-     * Get formatting instructions for the help message type requested from the
-     * command line
-     */
-    public function getHelpStyle(): CliHelpStyle;
-
-    /**
-     * Get the number of columns available for help messages / usage information
-     * after adjusting for margins
-     *
-     * If the command is running in a terminal and `$margins` is the total width
-     * of left and right margins applied by {@see ICliApplication::buildHelp()},
-     * the return value might be:
-     *
-     * ```php
-     * <?php
-     * max(76, \Lkrms\Facade\Console::getWidth()) - $margins
-     * ```
-     *
-     * @return int<72,max>|null
-     */
-    public function getHelpWidth(bool $terse = false): ?int;
-
-    /**
-     * Create a help message from an array that maps section names to content
-     *
-     * @param array<CliHelpSectionName::*|string,string> $sections
-     */
-    public function buildHelp(array $sections): string;
 
     /**
      * Process command line arguments passed to the script and record a return
