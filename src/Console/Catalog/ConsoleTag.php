@@ -65,4 +65,19 @@ final class ConsoleTag extends Enumeration
      * ` ``` `
      */
     public const CODE_BLOCK = 6;
+
+    /**
+     * An additional line in unified diff output
+     */
+    public const DIFF_ADDITION = 7;
+
+    /**
+     * A removed line in unified diff output
+     */
+    public const DIFF_REMOVAL = 8;
+
+    /**
+     * A unified diff header
+     */
+    public const DIFF_HEADER = 9;
 }
