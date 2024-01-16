@@ -951,10 +951,22 @@ final class File extends Utility
         if ($dir === null) {
             $dir = self::getTempDir();
         } else {
-            $dir = Str::coalesce(rtrim($dir, '/\\'), $dir, '.');
+            $dir = self::dir($dir);
         }
 
         return sprintf('%s/%s-%s-%s%s', $dir, $program, $hash, $user, $suffix);
+    }
+
+    /**
+     * Sanitise the name of a directory
+     *
+     * Returns `"."` if `$directory` is an empty string, otherwise removes
+     * trailing directory separators unless `$directory` is comprised entirely
+     * of directory separators (e.g. `"/"`).
+     */
+    public static function dir(string $directory): string
+    {
+        return Str::coalesce(rtrim($directory, '/\\'), $directory, '.');
     }
 
     private static function getTempDir(): string
