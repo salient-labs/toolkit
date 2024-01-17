@@ -9,6 +9,7 @@ use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
 use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Console\ConsoleWriter;
 use Throwable;
 
@@ -27,6 +28,7 @@ use Throwable;
  * @method static ConsoleWriter errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print " !! $msg1 $msg2" with level ERROR once per run
  * @method static ConsoleWriter exception(Throwable $exception, Level::* $messageLevel = Level::ERROR, Level::*|null $stackTraceLevel = Level::DEBUG) Report an uncaught exception (see {@see ConsoleWriter::exception()})
  * @method static int getErrors() Get the number of errors reported so far
+ * @method static Formatter getFormatter(Level::* $level = Level::INFO) Get an output formatter for a registered target (see {@see ConsoleWriter::getFormatter()})
  * @method static TargetStream getStderrTarget() Get a target for STDERR, creating it if necessary
  * @method static TargetStream getStdoutTarget() Get a target for STDOUT, creating it if necessary
  * @method static Target[] getTargets() Get a list of registered output targets

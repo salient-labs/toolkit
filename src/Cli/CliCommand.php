@@ -11,11 +11,9 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Cli\Support\CliHelpStyle;
-use Lkrms\Console\Support\ConsoleLoopbackFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
@@ -90,8 +88,6 @@ abstract class CliCommand implements ICliCommand
     private int $ExitStatus = 0;
 
     private int $Runs = 0;
-
-    private Formatter $LoopbackFormatter;
 
     /**
      * Run the command
@@ -297,7 +293,7 @@ abstract class CliCommand implements ICliCommand
         $visibility = $style->Visibility;
         $width = $style->getWidth();
 
-        $formatter = $this->getLoopbackFormatter();
+        $formatter = $style->Formatter;
 
         $options = [];
         foreach ($this->_getOptions() as $option) {
@@ -324,15 +320,17 @@ abstract class CliCommand implements ICliCommand
                     $line[] = $b . '--' . $long . $b;
                 }
             } else {
-                if ($option->AllowedValues) {
-                    foreach ($option->AllowedValues as $optionValue) {
+                if (
+                    $option->AllowedValues ||
+                    $option->ValueType === CliOptionValueType::BOOLEAN
+                ) {
+                    foreach ($option->AllowedValues ?: [true, false] as $optionValue) {
                         $optionValue = $option->normaliseValueForHelp($optionValue);
                         $allowed[] = $em . $formatter->escapeTags($optionValue) . $em;
                     }
-                } elseif ($option->ValueType === CliOptionValueType::BOOLEAN) {
-                    $allowed[] = $option->normaliseValueForHelp(true);
-                    $allowed[] = $option->normaliseValueForHelp(false);
-                    $booleanValue = true;
+                    if (!$option->AllowedValues) {
+                        $booleanValue = true;
+                    }
                 }
 
                 // `{}` is a placeholder for value name / allowed value list
@@ -394,7 +392,9 @@ abstract class CliCommand implements ICliCommand
                     );
                     if (
                         $booleanValue ||
-                        mb_strlen($formatter->removeTags($indent . $_line)) <= ($width ?: 76)
+                        mb_strlen($formatter->getWrapAfterApply()
+                            ? $formatter->formatTags($indent . $_line)
+                            : $formatter->removeTags($indent . $_line)) <= ($width ?: 76)
                     ) {
                         $allowed = null;
                     } else {
@@ -410,7 +410,7 @@ abstract class CliCommand implements ICliCommand
             $lines = [];
             $description = trim((string) $option->Description);
             if ($description !== '') {
-                $lines[] = $this->prepareHelp($description, $formatter, $width, $indent);
+                $lines[] = $this->prepareHelp($style, $description, $indent);
             }
 
             if ($allowed) {
@@ -462,7 +462,7 @@ abstract class CliCommand implements ICliCommand
 
         $description = $this->getLongDescription();
         if ((string) $description !== '') {
-            $description = $this->prepareHelp($description, $formatter, $width);
+            $description = $this->prepareHelp($style, $description);
         }
 
         $help = [
@@ -483,33 +483,22 @@ abstract class CliCommand implements ICliCommand
         }
         foreach ($sections as $name => $section) {
             if ($section !== '') {
-                $help[$name] = $this->prepareHelp($section, $formatter, $width);
+                $help[$name] = $this->prepareHelp($style, $section);
             }
         }
 
         return $help;
     }
 
-    private function prepareHelp(string $description, Formatter $formatter, ?int $width, ?string $indent = null): string
+    private function prepareHelp(CliHelpStyle $style, string $text, string $indent = ''): string
     {
-        $description = str_replace(
+        $text = str_replace(
             ['{{app}}', '{{program}}', '{{command}}'],
             [$this->App->getAppName(), $this->App->getProgramName(), $this->getNameWithProgram()],
-            $description,
+            $text,
         );
 
-        $description = $formatter->formatTags(
-            $description,
-            true,
-            $width === null ? null : $width - ($indent ? strlen($indent) : 0),
-            false
-        );
-
-        if ($indent) {
-            return $indent . str_replace("\n", "\n{$indent}", $description);
-        }
-
-        return $description;
+        return $style->prepareHelp($text, $indent);
     }
 
     /**
@@ -519,13 +508,14 @@ abstract class CliCommand implements ICliCommand
     {
         $style ??= new CliHelpStyle();
 
-        $hasMarkup = $style->HasMarkup;
         $b = $style->Bold;
         $prefix = $style->SynopsisPrefix;
         $newline = $style->SynopsisNewline;
+        $softNewline = $style->SynopsisSoftNewline;
         $width = $style->getWidth();
 
-        $formatter = $this->getLoopbackFormatter();
+        // Synopsis newlines are hard line breaks, so wrap without markup
+        $formatter = $style->Formatter->withWrapAfterApply(false);
 
         $name = $b . $this->getNameWithProgram() . $b;
         $full = $this->getOptionsSynopsis($style, $collapsed);
@@ -536,23 +526,45 @@ abstract class CliCommand implements ICliCommand
                 $synopsis,
                 false,
                 [$width, $width - 4],
-                !$hasMarkup
+                true,
             );
             $wrapped = $prefix . str_replace("\n", $newline, $wrapped, $count);
 
             if (!$style->CollapseSynopsis || !$count) {
+                if ($softNewline !== '') {
+                    $wrapped = $style->Formatter->formatTags(
+                        $wrapped,
+                        false,
+                        $width,
+                        true,
+                        $softNewline,
+                    );
+                }
                 return $wrapped;
             }
 
             $synopsis = Arr::implode(' ', [$name, $collapsed]);
         }
 
-        return $prefix . $formatter->formatTags(
+        $synopsis = $formatter->formatTags(
             $synopsis,
             false,
-            null,
-            !$hasMarkup
+            [$width, $width - 4],
+            true,
         );
+        $synopsis = $prefix . str_replace("\n", $newline, $synopsis);
+
+        if ($width !== null && $softNewline !== '') {
+            $synopsis = $style->Formatter->formatTags(
+                $synopsis,
+                false,
+                $width,
+                true,
+                $softNewline,
+            );
+        }
+
+        return $synopsis;
     }
 
     private function getOptionsSynopsis(CliHelpStyle $style, ?string &$collapsed = null): string
@@ -656,7 +668,7 @@ abstract class CliCommand implements ICliCommand
         }
 
         $collapsed = Arr::implode(' ', [
-            $optionalCount > 1 ? $esc . '[<option>]...' : '',
+            $optionalCount > 1 ? $esc . '[<options>]' : '',
             $optionalCount === 1 ? $esc . '[<option>]' : '',
             $required ? implode(' ', $required) : '',
             $positional ? $esc . '[' . $b . '--' . $b . '] ' . implode(' ', $positional) : '',
@@ -1319,11 +1331,5 @@ abstract class CliCommand implements ICliCommand
         $this->HasHelpArgument = false;
         $this->HasVersionArgument = false;
         $this->ExitStatus = 0;
-    }
-
-    private function getLoopbackFormatter(): Formatter
-    {
-        return $this->LoopbackFormatter
-            ??= new Formatter(ConsoleLoopbackFormat::getTagFormats());
     }
 }

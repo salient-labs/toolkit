@@ -2,11 +2,13 @@
 
 namespace Lkrms\Console;
 
+use Lkrms\Concern\Immutable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
 use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
+use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 use Lkrms\Console\Support\ConsoleMessageAttributes as MessageAttributes;
 use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
@@ -26,6 +28,8 @@ use LogicException;
  */
 final class ConsoleFormatter
 {
+    use Immutable;
+
     public const DEFAULT_LEVEL_PREFIX_MAP = [
         Level::EMERGENCY => ' !! ',
         Level::ALERT => ' !! ',
@@ -41,6 +45,21 @@ final class ConsoleFormatter
         MessageType::GROUP_START => '>>> ',
         MessageType::GROUP_END => '<<< ',
         MessageType::SUCCESS => ' // ',
+    ];
+
+    /**
+     * @var array<string,int&Tag::*>
+     */
+    private const TAG_MAP = [
+        '___' => Tag::HEADING,
+        '***' => Tag::HEADING,
+        '##' => Tag::HEADING,
+        '__' => Tag::BOLD,
+        '**' => Tag::BOLD,
+        '_' => Tag::ITALIC,
+        '*' => Tag::ITALIC,
+        '<' => Tag::UNDERLINE,
+        '~~' => Tag::LOW_PRIORITY,
     ];
 
     /**
@@ -122,6 +141,8 @@ final class ConsoleFormatter
 
     private static MessageFormats $DefaultMessageFormats;
 
+    private static TagFormats $LoopbackTagFormats;
+
     private TagFormats $TagFormats;
 
     private MessageFormats $MessageFormats;
@@ -161,6 +182,22 @@ final class ConsoleFormatter
     }
 
     /**
+     * @return static
+     */
+    public function withUnescape(bool $value = true)
+    {
+        return $this->withPropertyValue('TagFormats', $this->TagFormats->withUnescape($value));
+    }
+
+    /**
+     * @return static
+     */
+    public function withWrapAfterApply(bool $value = true)
+    {
+        return $this->withPropertyValue('TagFormats', $this->TagFormats->withWrapAfterApply($value));
+    }
+
+    /**
      * Get the format assigned to a tag
      *
      * @param Tag::* $tag
@@ -179,6 +216,22 @@ final class ConsoleFormatter
     public function getMessageFormat($level, $type = MessageType::STANDARD): MessageFormat
     {
         return $this->MessageFormats->get($level, $type);
+    }
+
+    /**
+     * True if text should be unescaped for the target
+     */
+    public function getUnescape(): bool
+    {
+        return $this->TagFormats->getUnescape();
+    }
+
+    /**
+     * True if text should be wrapped after formatting
+     */
+    public function getWrapAfterApply(): bool
+    {
+        return $this->TagFormats->getWrapAfterApply();
     }
 
     /**
@@ -224,12 +277,15 @@ final class ConsoleFormatter
      *
      * Widths less than or equal to `0` are added to the width reported by the
      * target, and text is wrapped to the result.
+     * @param bool $unformat If `true`, formatting tags are reapplied after text
+     * is unwrapped and/or wrapped.
      */
     public function formatTags(
         string $string,
         bool $unwrap = false,
         $wrapToWidth = null,
-        bool $unescape = true
+        bool $unformat = false,
+        string $break = "\n"
     ): string {
         if ($string === '' || $string === "\r") {
             return $string;
@@ -242,7 +298,14 @@ final class ConsoleFormatter
          */
         $replace = [];
         $append = '';
-        $plainFormats = $this->getDefaultTagFormats();
+        $unescape = $this->getUnescape();
+        $wrapAfterApply = $this->getWrapAfterApply();
+        $textFormats = $wrapAfterApply
+            ? $this->TagFormats
+            : $this->getDefaultTagFormats();
+        $formattedFormats = $unformat
+            ? $this->getLoopbackTagFormats()
+            : $this->TagFormats;
 
         // Preserve trailing carriage returns
         if ($string[-1] === "\r") {
@@ -291,19 +354,28 @@ final class ConsoleFormatter
                 $text = Pcre::replaceCallback(
                     Regex::delimit(self::TAG_REGEX) . 'u',
                     function (array $match) use (
-                        $unescape,
                         &$replace,
-                        $plainFormats,
+                        $textFormats,
+                        $formattedFormats,
                         $baseOffset,
                         &$adjust
                     ): string {
                         /** @var array<int|string,array{string,int}> $match */
-                        $text = $this->applyTags($match, true, true, $plainFormats);
+                        $text = $this->applyTags(
+                            $match,
+                            true,
+                            $textFormats->getUnescape(),
+                            $textFormats
+                        );
                         $placeholder = Pcre::replace('/[^ ]/u', 'x', $text);
-                        $formatted =
-                            $unescape && $plainFormats === $this->TagFormats
-                                ? $text
-                                : $this->applyTags($match, true, $unescape, $this->TagFormats);
+                        $formatted = $textFormats === $formattedFormats
+                            ? $text
+                            : $this->applyTags(
+                                $match,
+                                true,
+                                $formattedFormats->getUnescape(),
+                                $formattedFormats
+                            );
                         $replace[] = [
                             $baseOffset + $match[0][1] + $adjust,
                             strlen($placeholder),
@@ -328,11 +400,13 @@ final class ConsoleFormatter
                     $string[-1] = "\n";
                 }
 
-                $formatted = $this->TagFormats->apply(
+                $formatted = $formattedFormats->apply(
                     $match['block'],
                     new TagAttributes(
                         Tag::CODE_BLOCK,
                         $match['fence'],
+                        0,
+                        false,
                         $indent,
                         Str::coalesce(trim($match['infostring']), null),
                     )
@@ -359,14 +433,15 @@ final class ConsoleFormatter
                     '$1',
                     strtr($span, "\n", ' '),
                 );
-                $formatted = $this->TagFormats->apply(
-                    $span,
-                    new TagAttributes(
-                        Tag::CODE_SPAN,
-                        $match['backtickstring'],
-                    )
+                $attributes = new TagAttributes(
+                    Tag::CODE_SPAN,
+                    $match['backtickstring'],
                 );
-                $placeholder = Pcre::replace('/[^ ]/u', 'x', $span);
+                $text = $textFormats->apply($span, $attributes);
+                $placeholder = Pcre::replace('/[^ ]/u', 'x', $text);
+                $formatted = $textFormats === $formattedFormats
+                    ? $text
+                    : $formattedFormats->apply($span, $attributes);
                 $replace[] = [
                     $baseOffset,
                     strlen($placeholder),
@@ -388,8 +463,31 @@ final class ConsoleFormatter
         $placeholders = 0;
         $string = Pcre::replaceCallback(
             Regex::delimit(self::UNESCAPE_REGEX) . 'u',
-            function (array $match) use ($unescape, &$replace, &$adjustable, &$adjust, &$placeholders): string {
+            function (array $match) use (
+                $unescape,
+                $wrapAfterApply,
+                &$replace,
+                &$adjustable,
+                &$adjust,
+                &$placeholders
+            ): string {
+                // If the escape character is being wrapped, do nothing other
+                // than temporarily replace "\ " with "\x"
                 /** @var array<int|string,array{string,int}> $match */
+                if ($wrapAfterApply && !$unescape) {
+                    if ($match[1][0] !== ' ') {
+                        return $match[0][0];
+                    }
+                    $placeholder = '\x';
+                    $placeholders++;
+                    $replace[] = [
+                        $match[0][1] + $adjust,
+                        strlen($placeholder),
+                        $match[0][0],
+                    ];
+                    return $placeholder;
+                }
+
                 $delta = strlen($match[1][0]) - strlen($match[0][0]);
                 foreach ($adjustable as $i => $offset) {
                     if ($offset < $match[0][1]) {
@@ -404,7 +502,7 @@ final class ConsoleFormatter
                     $placeholders++;
                 }
 
-                if (!$unescape || $placeholder) {
+                if (!$unescape || $placeholder !== null) {
                     // Use `$replace` to reinstate the escape after wrapping
                     $replace[] = [
                         $match[0][1] + $adjust,
@@ -434,8 +532,10 @@ final class ConsoleFormatter
                     $wrapToWidth[$i] = max(0, $wrapToWidth[$i] + $width);
                 }
             }
-        } elseif (is_int($wrapToWidth) &&
-                $wrapToWidth <= 0) {
+        } elseif (
+            is_int($wrapToWidth) &&
+            $wrapToWidth <= 0
+        ) {
             $width = ($this->WidthCallback)();
             $wrapToWidth =
                 $width === null
@@ -443,15 +543,25 @@ final class ConsoleFormatter
                     : max(0, $wrapToWidth + $width);
         }
         if ($wrapToWidth !== null) {
-            $string = Str::wordwrap($string, $wrapToWidth);
+            if (strlen($break) === 1) {
+                $string = Str::wordwrap($string, $wrapToWidth, $break);
+            } else {
+                if (strpos($string, "\x7f") !== false) {
+                    $string = $this->insertPlaceholders($string, '/\x7f/', $replace, $placeholders);
+                }
+                $string = Str::wordwrap($string, $wrapToWidth, "\x7f");
+                $string = $this->insertPlaceholders($string, '/\x7f/', $replace, $placeholders, "\n", $break);
+            }
         }
 
-        // If `$unescape` is false, entries in `$replace` may be out of order
-        if (!$unescape || $placeholders) {
-            usort($replace, fn(array $a, array $b): int => $a[0] <=> $b[0]);
+        // Get `$replace` in reverse offset order, sorting from scratch if any
+        // substitutions were made in the callbacks above
+        if ((!$unescape && !$wrapAfterApply) || $placeholders) {
+            usort($replace, fn(array $a, array $b): int => $b[0] <=> $a[0]);
+        } else {
+            $replace = array_reverse($replace);
         }
 
-        $replace = array_reverse($replace);
         foreach ($replace as [$offset, $length, $replacement]) {
             $string = substr_replace($string, $replacement, $offset, $length);
         }
@@ -524,6 +634,18 @@ final class ConsoleFormatter
     }
 
     /**
+     * Unescape special characters in a string
+     */
+    public static function unescapeTags(string $string): string
+    {
+        return Pcre::replace(
+            Regex::delimit(self::UNESCAPE_REGEX) . 'u',
+            '$1',
+            $string,
+        );
+    }
+
+    /**
      * Remove inline formatting tags from a string
      */
     public static function removeTags(string $string): string
@@ -546,49 +668,85 @@ final class ConsoleFormatter
         return self::$DefaultMessageFormats ??= new MessageFormats();
     }
 
+    private static function getLoopbackTagFormats(): TagFormats
+    {
+        return self::$LoopbackTagFormats ??= LoopbackFormat::getTagFormats();
+    }
+
     /**
      * @param array<int|string,array{string,int}|string> $match
      */
-    private function applyTags(array $match, bool $matchHasOffset, bool $unescape, TagFormats $formats): string
-    {
+    private function applyTags(
+        array $match,
+        bool $matchHasOffset,
+        bool $unescape,
+        TagFormats $formats,
+        int $depth = 0
+    ): string {
         /** @var string */
         $text = $matchHasOffset ? $match['text'][0] : $match['text'];
+        $tag = $matchHasOffset ? $match['tag'][0] : $match['tag'];
+
         $text = Pcre::replaceCallback(
             Regex::delimit(self::TAG_REGEX) . 'u',
             fn(array $match): string =>
-                $this->applyTags($match, false, $unescape, $formats),
-            $text
+                $this->applyTags($match, false, $unescape, $formats, $depth + 1),
+            $text,
+            -1,
+            $count,
         );
 
         if ($unescape) {
             $text = Pcre::replace(
-                Regex::delimit(self::UNESCAPE_REGEX) . 'u', '$1', $text
+                Regex::delimit(self::UNESCAPE_REGEX) . 'u',
+                '$1',
+                $text,
             );
         }
 
-        /** @var string */
-        $tag = $matchHasOffset ? $match['tag'][0] : $match['tag'];
-        switch ($tag) {
-            case '___':
-            case '***':
-            case '##':
-                return $formats->apply($text, new TagAttributes(Tag::HEADING, $tag));
-
-            case '__':
-            case '**':
-                return $formats->apply($text, new TagAttributes(Tag::BOLD, $tag));
-
-            case '_':
-            case '*':
-                return $formats->apply($text, new TagAttributes(Tag::ITALIC, $tag));
-
-            case '<':
-                return $formats->apply($text, new TagAttributes(Tag::UNDERLINE, $tag));
-
-            case '~~':
-                return $formats->apply($text, new TagAttributes(Tag::LOW_PRIORITY, $tag));
+        $tagId = self::TAG_MAP[$tag] ?? null;
+        if ($tagId === null) {
+            throw new LogicException(sprintf('Invalid tag: %s', $tag));
         }
 
-        throw new LogicException(sprintf('Invalid tag: %s', $tag));
+        return $formats->apply(
+            $text,
+            new TagAttributes($tagId, $tag, $depth, (bool) $count)
+        );
+    }
+
+    /**
+     * @param array<array{int,int,string}> $replace
+     */
+    private function insertPlaceholders(
+        string $string,
+        string $pattern,
+        array &$replace,
+        int &$placeholders,
+        string $placeholder = 'x',
+        ?string $replacement = null
+    ): string {
+        return Pcre::replaceCallback(
+            $pattern,
+            function (array $match) use (
+                $placeholder,
+                $replacement,
+                &$replace,
+                &$placeholders
+            ): string {
+                $replacement ??= $match[0][0];
+                $placeholders++;
+                $replace[] = [
+                    $match[0][1],
+                    strlen($placeholder),
+                    $replacement,
+                ];
+                return $placeholder;
+            },
+            $string,
+            -1,
+            $count,
+            \PREG_OFFSET_CAPTURE
+        );
     }
 }

@@ -424,6 +424,27 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function getWidth($level = Level::INFO): ?int
     {
+        return $this->maybeGetTtyTarget($level)->getWidth();
+    }
+
+    /**
+     * Get an output formatter for a registered target
+     *
+     * Returns {@see Target::getFormatter()} from the same target as
+     * {@see ConsoleWriter::getWidth()}.
+     *
+     * @param Level::* $level
+     */
+    public function getFormatter($level = Level::INFO): Formatter
+    {
+        return $this->maybeGetTtyTarget($level)->getFormatter();
+    }
+
+    /**
+     * @param Level::* $level
+     */
+    private function maybeGetTtyTarget($level): TargetStream
+    {
         /** @var Target[] */
         $targets = $this->TtyTargetsByLevel[$level]
             ?? $this->StdioTargetsByLevel[$level]
@@ -431,14 +452,14 @@ final class ConsoleWriter implements ReceivesFacade
             ?? [];
 
         $target = reset($targets);
-        if (!$target) {
+        if (!$target || !($target instanceof TargetStream)) {
             $target = $this->getStderrTarget();
             if (!$target->isTty()) {
-                $target = $this->getStdoutTarget();
+                return $this->getStdoutTarget();
             }
         }
 
-        return $target->getWidth();
+        return $target;
     }
 
     /**

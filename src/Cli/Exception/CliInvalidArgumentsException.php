@@ -12,5 +12,6 @@ class CliInvalidArgumentsException extends MultipleErrorException
     public function __construct(string ...$errors)
     {
         parent::__construct('Invalid arguments', ...$errors);
+        $this->ExitStatus = 1;
     }
 }

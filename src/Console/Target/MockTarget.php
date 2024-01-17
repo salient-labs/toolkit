@@ -4,7 +4,7 @@ namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface;
-use Lkrms\Console\ConsoleFormatter;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Utility\File;
 
 /**
@@ -25,7 +25,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
      */
     private $Stream;
 
-    private ConsoleFormatter $Formatter;
+    private Formatter $Formatter;
 
     /**
      * @var array<array{Level::*,string,2?:array<string,mixed>}>
@@ -42,7 +42,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
         bool $isStderr = true,
         bool $isTty = true,
         ?int $width = 80,
-        ?ConsoleFormatter $formatter = null
+        ?Formatter $formatter = null
     ) {
         if ($stream) {
             stream_set_write_buffer($stream, 0);
@@ -54,7 +54,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
         $this->Width = $width;
         $this->Stream = $stream;
         $this->Formatter = $formatter
-            ?: new ConsoleFormatter(null, null, fn(): ?int => $this->getWidth());
+            ?: new Formatter(null, null, fn(): ?int => $this->getWidth());
     }
 
     /**
@@ -84,7 +84,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /**
      * @inheritDoc
      */
-    public function getFormatter(): ConsoleFormatter
+    public function getFormatter(): Formatter
     {
         return clone $this->Formatter;
     }

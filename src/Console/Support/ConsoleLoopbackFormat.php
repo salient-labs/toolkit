@@ -4,14 +4,19 @@ namespace Lkrms\Console\Support;
 
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\ConsoleFormatInterface;
+use Lkrms\Console\Contract\ConsoleFormatterFactory;
 use Lkrms\Console\Contract\ConsoleTagFormatFactory;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 
 /**
  * Reapplies the output's original inline formatting tags
  */
-final class ConsoleLoopbackFormat implements ConsoleFormatInterface, ConsoleTagFormatFactory
+final class ConsoleLoopbackFormat implements
+    ConsoleFormatInterface,
+    ConsoleFormatterFactory,
+    ConsoleTagFormatFactory
 {
     private string $Before;
 
@@ -64,9 +69,17 @@ final class ConsoleLoopbackFormat implements ConsoleFormatInterface, ConsoleTagF
     /**
      * @inheritDoc
      */
+    public static function getFormatter(): Formatter
+    {
+        return new Formatter(self::getTagFormats());
+    }
+
+    /**
+     * @inheritDoc
+     */
     public static function getTagFormats(): TagFormats
     {
-        return (new TagFormats())
+        return (new TagFormats(false))
             ->set(Tag::HEADING, new self('***', '***'))
             ->set(Tag::BOLD, new self('**', '**'))
             ->set(Tag::ITALIC, new self('*', '*'))
