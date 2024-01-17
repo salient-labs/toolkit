@@ -2,6 +2,7 @@
 
 namespace Lkrms\Console\Support;
 
+use Lkrms\Concern\Immutable;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
@@ -11,17 +12,60 @@ use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
  */
 final class ConsoleTagFormats
 {
+    use Immutable;
+
     /**
      * @var array<Tag::*,Format>
      */
     private array $Formats = [];
 
+    private bool $Unescape;
+
+    private bool $WrapAfterApply;
+
     private Format $FallbackFormat;
 
-    public function __construct(?Format $fallbackFormat = null)
-    {
+    public function __construct(
+        bool $unescape = true,
+        bool $wrapAfterApply = false,
+        ?Format $fallbackFormat = null
+    ) {
+        $this->Unescape = $unescape;
+        $this->WrapAfterApply = $wrapAfterApply;
         $this->FallbackFormat = $fallbackFormat
             ?: ConsoleFormat::getDefaultFormat();
+    }
+
+    /**
+     * @return static
+     */
+    public function withUnescape(bool $value = true)
+    {
+        return $this->withPropertyValue('Unescape', $value);
+    }
+
+    /**
+     * @return static
+     */
+    public function withWrapAfterApply(bool $value = true)
+    {
+        return $this->withPropertyValue('WrapAfterApply', $value);
+    }
+
+    /**
+     * True if text should be unescaped for the target
+     */
+    public function getUnescape(): bool
+    {
+        return $this->Unescape;
+    }
+
+    /**
+     * True if text should be wrapped after formatting
+     */
+    public function getWrapAfterApply(): bool
+    {
+        return $this->WrapAfterApply;
     }
 
     /**

@@ -6,6 +6,10 @@ use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliHelpTarget;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Concern\Immutable;
+use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
+use Lkrms\Console\Support\ConsoleManPageFormat as ManPageFormat;
+use Lkrms\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Pcre;
 use LogicException;
@@ -28,6 +32,11 @@ final class CliHelpStyle
      * @readonly
      */
     public ?int $Width;
+
+    /**
+     * @readonly
+     */
+    public Formatter $Formatter;
 
     /**
      * @readonly
@@ -60,8 +69,15 @@ final class CliHelpStyle
     public string $SynopsisNewline = "\n    ";
 
     /**
+     * If not empty, soft-wrap the final form of the synopsis
+     *
+     * @readonly
+     */
+    public string $SynopsisSoftNewline = '';
+
+    /**
      * If true and the synopsis breaks over multiple lines, collapse
-     * non-mandatory options to "[option]..."
+     * non-mandatory options to "[options]"
      *
      * @readonly
      */
@@ -92,12 +108,16 @@ final class CliHelpStyle
     /**
      * @param CliHelpTarget::* $target
      */
-    public function __construct(int $target = CliHelpTarget::INTERNAL, ?int $width = null)
-    {
+    public function __construct(
+        int $target = CliHelpTarget::INTERNAL,
+        ?int $width = null,
+        ?Formatter $formatter = null
+    ) {
         $this->Target = $target;
         $this->Width = $width;
 
         if ($target === CliHelpTarget::INTERNAL) {
+            $this->Formatter = $formatter ?: LoopbackFormat::getFormatter();
             return;
         }
 
@@ -110,25 +130,30 @@ final class CliHelpStyle
                 $this->Bold = '__';
                 $this->Width ??= self::getConsoleWidth();
                 $this->Margin = 4;
+                $this->Formatter = $formatter ?: Console::getFormatter();
                 break;
 
             case CliHelpTarget::MARKDOWN:
                 $this->Bold = '`';
                 $this->SynopsisNewline = " \\\n\ \ \ \ ";
-                $this->CollapseSynopsis = true;
+                $this->SynopsisSoftNewline = "\n";
                 $this->OptionIndent = '  ';
                 $this->OptionPrefix = '- ';
                 $this->OptionDescriptionPrefix = "\n\n  ";
                 $this->Visibility = CliOptionVisibility::MARKDOWN;
+                $this->Formatter = $formatter ?: MarkdownFormat::getFormatter();
                 break;
 
             case CliHelpTarget::MAN_PAGE:
                 $this->Bold = '`';
+                // https://pandoc.org/MANUAL.html#line-blocks
                 $this->SynopsisPrefix = '| ';
                 $this->SynopsisNewline = "\n|     ";
-                $this->CollapseSynopsis = true;
+                $this->SynopsisSoftNewline = "\n  ";
+                // https://pandoc.org/MANUAL.html#definition-lists
                 $this->OptionDescriptionPrefix = "\n\n:   ";
                 $this->Visibility = CliOptionVisibility::MAN_PAGE;
+                $this->Formatter = $formatter ?: ManPageFormat::getFormatter();
                 break;
 
             default:
@@ -149,6 +174,24 @@ final class CliHelpStyle
         return $this->Width === null
             ? null
             : $this->Width - $this->Margin;
+    }
+
+    public function prepareHelp(string $text, string $indent = ''): string
+    {
+        $text = $this->Formatter->formatTags(
+            $text,
+            true,
+            $this->Width === null
+                ? null
+                : $this->Width - $this->Margin - strlen($indent),
+            true,
+        );
+
+        if ($indent !== '') {
+            return $indent . str_replace("\n", "\n" . $indent, $text);
+        }
+
+        return $text;
     }
 
     /**

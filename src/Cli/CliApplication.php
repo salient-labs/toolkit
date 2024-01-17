@@ -15,6 +15,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
@@ -236,9 +237,9 @@ class CliApplication extends Application implements ICliApplication
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {
-                $synopses[] = "__{$childName}__ - " . Formatter::escapeTags($command->description());
+                $synopses[] = '__' . $childName . '__ - ' . Formatter::escapeTags($command->description());
             } elseif (is_array($childNode)) {
-                $synopses[] = "__{$childName}__";
+                $synopses[] = '__' . $childName . '__';
             }
         }
 
@@ -318,7 +319,7 @@ class CliApplication extends Application implements ICliApplication
             if ($arg === '--version' && !$args) {
                 $appName = $this->getAppName();
                 $version = Package::version(true, true);
-                Console::stdout("__{$appName}__ $version");
+                Console::stdout('__' . $appName . "__ $version");
                 return $this;
             }
 
@@ -408,7 +409,7 @@ class CliApplication extends Application implements ICliApplication
                 $node &&
                 ($usage = $this->getUsage($name, $node)) !== null
             ) {
-                Console::out("\n{$usage}");
+                Console::out("\n" . $usage);
             }
             $this->LastExitStatus = 1;
             return $this;
@@ -439,9 +440,12 @@ class CliApplication extends Application implements ICliApplication
      */
     private function generateHelp(string $name, $node, int $target, string ...$args): void
     {
+        $collapseSynopsis = null;
+
         switch ($target) {
             case CliHelpTarget::MARKDOWN:
                 $formats = ConsoleMarkdownFormat::getTagFormats();
+                $collapseSynopsis = Convert::toBool($args[0] ?? null);
                 break;
 
             case CliHelpTarget::MAN_PAGE:
@@ -460,9 +464,15 @@ class CliApplication extends Application implements ICliApplication
                 throw new LogicException(sprintf('Invalid CliHelpTarget: %d', $target));
         }
 
-        $formatter = new Formatter($formats);
-        $usage = $this->getHelp($name, $node, new CliHelpStyle($target));
-        $usage = $formatter->formatTags($usage, false, null, false);
+        $formatter = new Formatter($formats, null, fn(): int => 80);
+        $style = new CliHelpStyle($target, 80, $formatter);
+
+        if ($collapseSynopsis !== null) {
+            $style = $style->withCollapseSynopsis($collapseSynopsis);
+        }
+
+        $usage = $this->getHelp($name, $node, $style);
+        $usage = $formatter->formatTags($usage);
         printf("%s\n", str_replace('\ ', ' ', $usage));
     }
 }

@@ -3,7 +3,7 @@
 namespace Lkrms\Console\Contract;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\ConsoleFormatter;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 
 /**
  * A console output target
@@ -15,7 +15,7 @@ interface ConsoleTargetInterface
     /**
      * Get an output formatter for the target
      */
-    public function getFormatter(): ConsoleFormatter;
+    public function getFormatter(): Formatter;
 
     /**
      * Get the width of the target in columns

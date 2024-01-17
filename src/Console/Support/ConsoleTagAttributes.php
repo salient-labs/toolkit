@@ -25,6 +25,20 @@ final class ConsoleTagAttributes
     public string $OpenTag;
 
     /**
+     * Tag depth
+     *
+     * @readonly
+     */
+    public int $Depth;
+
+    /**
+     * True if the tag has nested tags
+     *
+     * @readonly
+     */
+    public ?bool $HasChildren;
+
+    /**
      * Horizontal whitespace before the tag (fenced code blocks only)
      *
      * @readonly
@@ -44,11 +58,15 @@ final class ConsoleTagAttributes
     public function __construct(
         int $tag,
         string $openTag,
+        int $depth = 0,
+        ?bool $hasChildren = null,
         ?string $indent = null,
         ?string $infoString = null
     ) {
         $this->Tag = $tag;
         $this->OpenTag = $openTag;
+        $this->Depth = $depth;
+        $this->HasChildren = $hasChildren;
         $this->Indent = $indent;
         $this->InfoString = $infoString;
     }
