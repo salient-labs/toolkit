@@ -12,9 +12,9 @@ use Lkrms\Concept\Enumeration;
 final class CliHelpTarget extends Enumeration
 {
     /**
-     * Help is used internally
+     * Help is written to a terminal with minimal formatting
      */
-    public const INTERNAL = 0;
+    public const PLAIN = 0;
 
     /**
      * Help is written to a terminal

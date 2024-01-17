@@ -11,7 +11,6 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Cli\Support\CliHelpStyle;
-use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Package;
@@ -213,7 +212,7 @@ abstract class CliCommand implements ICliCommand
         if ($this->HasVersionArgument) {
             $appName = $this->App->getAppName();
             $version = Package::version(true, true);
-            Console::stdout("__{$appName}__ $version");
+            Console::stdout('__' . $appName . '__ ' . $version);
             return 0;
         }
 
@@ -616,11 +615,7 @@ abstract class CliCommand implements ICliCommand
             }
 
             $valueName = $option->formatValueName();
-            // Preserve angle brackets around value names if they won't be
-            // formatted differently
-            if (!$style->HasMarkup) {
-                $valueName = Formatter::escapeTags($valueName);
-            }
+            $valueName = $style->maybeEscapeTags($valueName);
 
             if ($option->IsPositional) {
                 if ($option->MultipleAllowed) {
@@ -655,7 +650,7 @@ abstract class CliCommand implements ICliCommand
                     . ($option->ValueRequired
                         ? $esc . ' ' . $valueName . $suffix
                         : $esc . '[' . $valueName . ']' . $suffix)
-                : $prefix . $b . "--{$option->Long}" . $b
+                : $prefix . $b . '--' . $option->Long . $b
                     . ($option->ValueRequired
                         ? $esc . ' ' . $valueName . $suffix
                         : $esc . '[=' . $valueName . ']' . $suffix);
@@ -668,8 +663,8 @@ abstract class CliCommand implements ICliCommand
         }
 
         $collapsed = Arr::implode(' ', [
-            $optionalCount > 1 ? $esc . '[<options>]' : '',
-            $optionalCount === 1 ? $esc . '[<option>]' : '',
+            $optionalCount > 1 ? $esc . '[' . $style->maybeEscapeTags('<options>') . ']' : '',
+            $optionalCount === 1 ? $esc . '[' . $style->maybeEscapeTags('<option>') . ']' : '',
             $required ? implode(' ', $required) : '',
             $positional ? $esc . '[' . $b . '--' . $b . '] ' . implode(' ', $positional) : '',
         ]);

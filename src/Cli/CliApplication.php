@@ -257,16 +257,16 @@ class CliApplication extends Application implements ICliApplication
      */
     private function getUsage(string $name, $node): ?string
     {
-        $style = new CliHelpStyle(CliHelpTarget::INTERNAL, CliHelpStyle::getConsoleWidth());
+        $style = new CliHelpStyle(CliHelpTarget::PLAIN, CliHelpStyle::getConsoleWidth());
 
         $command = $this->getNodeCommand($name, $node);
         $progName = $this->getProgramName();
 
         if ($command) {
-            return Formatter::escapeTags($command->getSynopsis($style)
-                . "\n\nSee '"
-                . ($name === '' ? "$progName --help" : "$progName help $name")
-                . "' for more information.");
+            return $command->getSynopsis($style)
+                . Formatter::escapeTags("\n\nSee '"
+                    . ($name === '' ? "$progName --help" : "$progName help $name")
+                    . "' for more information.");
         }
 
         if (!is_array($node)) {
@@ -279,16 +279,20 @@ class CliApplication extends Application implements ICliApplication
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {
-                $synopses[] = $command->getSynopsis($style);
+                $synopsis = $command->getSynopsis($style);
             } elseif (is_array($childNode)) {
-                $synopses[] = "$fullName $childName <command>";
+                $synopsis = "$fullName $childName <command>";
+                $synopsis = Formatter::escapeTags($synopsis);
+            } else {
+                continue;
             }
+            $synopses[] = $synopsis;
         }
 
-        return Formatter::escapeTags(implode("\n", $synopses)
-            . "\n\nSee '"
-            . Arr::implode(' ', ["$progName help", $name, '<command>'])
-            . "' for more information.");
+        return implode("\n", $synopses)
+            . Formatter::escapeTags("\n\nSee '"
+                . Arr::implode(' ', ["$progName help", $name, '<command>'])
+                . "' for more information.");
     }
 
     /**
@@ -319,7 +323,7 @@ class CliApplication extends Application implements ICliApplication
             if ($arg === '--version' && !$args) {
                 $appName = $this->getAppName();
                 $version = Package::version(true, true);
-                Console::stdout('__' . $appName . "__ $version");
+                Console::stdout('__' . $appName . '__ ' . $version);
                 return $this;
             }
 

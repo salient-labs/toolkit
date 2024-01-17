@@ -56,7 +56,7 @@ final class CliHelpStyle
     /**
      * @readonly
      */
-    public string $Escape = '';
+    public string $Escape = '\\';
 
     /**
      * @readonly
@@ -109,21 +109,20 @@ final class CliHelpStyle
      * @param CliHelpTarget::* $target
      */
     public function __construct(
-        int $target = CliHelpTarget::INTERNAL,
+        int $target = CliHelpTarget::PLAIN,
         ?int $width = null,
         ?Formatter $formatter = null
     ) {
         $this->Target = $target;
         $this->Width = $width;
 
-        if ($target === CliHelpTarget::INTERNAL) {
+        if ($target === CliHelpTarget::PLAIN) {
             $this->Formatter = $formatter ?: LoopbackFormat::getFormatter();
             return;
         }
 
         $this->HasMarkup = true;
         $this->Italic = '_';
-        $this->Escape = '\\';
 
         switch ($target) {
             case CliHelpTarget::TTY:
@@ -228,6 +227,14 @@ final class CliHelpStyle
         }
 
         return Pcre::replace('/^\h++$/m', '', rtrim($help));
+    }
+
+    public function maybeEscapeTags(string $string): string
+    {
+        if ($this->HasMarkup) {
+            return $string;
+        }
+        return $this->Formatter->escapeTags($string);
     }
 
     public static function getConsoleWidth(): ?int
