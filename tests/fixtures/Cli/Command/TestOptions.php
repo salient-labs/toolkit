@@ -117,6 +117,6 @@ class TestOptions extends CliCommand
                 'RepeatableValue' => $this->RepeatableValue,
                 'RequiredValue' => $this->RequiredValue,
             ],
-        ]) . PHP_EOL;
+        ]) . \PHP_EOL;
     }
 }

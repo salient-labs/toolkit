@@ -396,7 +396,7 @@ class CliApplication extends Application implements ICliApplication
             if ($args && $args[0] === '_json_schema') {
                 array_shift($args);
                 $schema = $command->getJsonSchema($args[0] ?? trim($this->getProgramName() . " $name") . ' options');
-                echo Json::prettyPrint($schema) . PHP_EOL;
+                echo Json::prettyPrint($schema) . \PHP_EOL;
                 return $this;
             }
 
