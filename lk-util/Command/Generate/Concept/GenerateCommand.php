@@ -812,7 +812,7 @@ abstract class GenerateCommand extends Command
      */
     protected function code($value): string
     {
-        return Convert::valueToCode($value, ",\n", ' => ', null, self::TAB);
+        return Convert::valueToCode($value, ',' . \PHP_EOL, ' => ', null, self::TAB);
     }
 
     /**
@@ -834,7 +834,7 @@ abstract class GenerateCommand extends Command
         }
 
         $indent = str_repeat(self::TAB, $levels);
-        return $indent . str_replace("\n", "\n{$indent}", $lines);
+        return $indent . str_replace(\PHP_EOL, \PHP_EOL . $indent, $lines);
     }
 
     /**

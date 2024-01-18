@@ -3,186 +3,120 @@
 namespace Lkrms\Tests\Cli\Command;
 
 use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
-use Lkrms\Utility\Convert;
+use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Utility\Json;
+use DateTimeInterface;
 
 class TestOptions extends CliCommand
 {
-    /**
-     * @var bool
-     */
-    public $flag1;
+    private bool $Flag = false;
 
-    /**
-     * @var string
-     */
-    public $valPos1;
+    private int $RepeatableFlag = 0;
 
-    /**
-     * @var string|null
-     */
-    public $val1;
+    private ?bool $NullableFlag = null;
 
-    /**
-     * @var string|null
-     */
-    public $valOpt1;
-
-    /**
-     * @var string
-     */
-    public $oneOfPos1;
-
-    /**
-     * @var string|null
-     */
-    public $oneOf1;
+    private string $Value = '';
 
     /**
      * @var string[]|null
      */
-    public $oneOfOpt3;
+    private ?array $RepeatableValue = null;
+
+    private ?DateTimeInterface $RequiredValue = null;
 
     public function description(): string
     {
-        return 'Test various permutations of each CliOption type';
+        return 'Test CliCommand options';
     }
 
     protected function getOptionList(): array
     {
-        $short = array_map(
-            fn(int $ord): string => chr($ord),
-            [...range(ord('a'), ord('z')), ...range(ord('A'), ord('Z'))]
-        );
-        natcasesort($short);
-
-        $options = [];
-        $current = 1;
-        foreach (
-            [
-                'FLAG' => CliOptionType::FLAG,
-                'VALUE' => CliOptionType::VALUE,
-                'VALUE_OPTIONAL' => CliOptionType::VALUE_OPTIONAL,
-                'VALUE_POSITIONAL' => CliOptionType::VALUE_POSITIONAL,
-                'ONE_OF' => CliOptionType::ONE_OF,
-                'ONE_OF_OPTIONAL' => CliOptionType::ONE_OF_OPTIONAL,
-                'ONE_OF_POSITIONAL' => CliOptionType::ONE_OF_POSITIONAL,
-            ] as $typeName => $type
-        ) {
-            unset($names);
-            $vary = [];
-            $apply = [];
-
-            switch ($type) {
-                case CliOptionType::FLAG:
-                    $names = ['flag1', 'flag2'];
-                    $vary['multipleAllowed'] = [false, true];
-                    $vary['bindTo'] = [&$this->flag1];
-                    break;
-
-                case CliOptionType::VALUE_POSITIONAL:
-                    $names = ['valPos1'];
-                    $vary['required'] = [true];
-                    $vary['bindTo'] = [&$this->valPos1];
-                case CliOptionType::VALUE:
-                    $names ??= ['val1', 'val2', 'val3', 'val4'];
-                    $vary['required'] ??= [false, true, true, false];
-                    $vary['bindTo'] ??= [&$this->val1];
-                case CliOptionType::VALUE_OPTIONAL:
-                    $names ??= ['valOpt1', 'valOpt2', 'valOpt3', 'valOpt4'];
-                    $vary['valueName'] = ['VAL', 'val', null, null];
-                    $vary['multipleAllowed'] = [false, false, true, true];
-                    $vary['delimiter'] = [',', ',', null, null];
-                    $vary['bindTo'] ??= [&$this->valOpt1];
-                    break;
-
-                case CliOptionType::ONE_OF_POSITIONAL:
-                    $names = ['oneOfPos1', 'oneOfPos2', 'oneOfPos3'];
-                    $vary['defaultValue'] = [];
-                    $vary['required'] = [true];
-                    $vary['bindTo'] = [&$this->oneOfPos1];
-                case CliOptionType::ONE_OF:
-                    $names ??= ['oneOf1', 'oneOf2', 'oneOf3', 'oneOf4'];
-                    $vary['defaultValue'] ??= [null, 'value1', 'value1,value2', ['value4', 'value3']];
-                    $vary['required'] ??= [false, false, true];
-                    $vary['bindTo'] ??= [&$this->oneOf1];
-                case CliOptionType::ONE_OF_OPTIONAL:
-                    $names ??= ['oneOfOpt1', 'oneOfOpt2', 'oneOfOpt3', 'oneOfOpt4'];
-                    $vary['valueName'] = ['ONE_OF', 'one_of', null, 'one_of'];
-                    $vary['multipleAllowed'] = [false, false, true, true];
-                    $vary['addAll'] = [false, false, true, true];
-                    $vary['defaultValue'] ??= [null, 'value2', 'value3,value4', ['value1', 'value4']];
-                    $vary['bindTo'] ??= [null, null, &$this->oneOfOpt3];
-
-                    $apply['allowedValues'] = ['value1', 'value2', 'value3', 'value4'];
-                    break;
-            }
-
-            foreach ($names ?? [$typeName . $current] as $i => $long) {
-                $option = CliOption::build()
-                    ->long($long)
-                    ->short(array_shift($short))
-                    ->optionType($type);
-                $desc = [];
-                foreach ($vary as $property => $values) {
-                    if (!array_key_exists($i, $values)) {
-                        continue;
-                    }
-                    // Preserve references, i.e. bindTo arguments
-                    $value = &$values[$i];
-                    $option = $option->{$property}($value);
-                    $desc[] = "$property=***" . Convert::valueToCode($value) . '***';
-                    unset($value);
-                }
-
-                foreach ($apply as $property => $value) {
-                    $option = $option->{$property}($value);
-                    $desc[] = "~~$property=***" . Convert::valueToCode($value) . '***~~';
-                }
-
-                $option = $option->description(implode(
-                    "  \n",
-                    ["Option $current (CliOptionType::$typeName)  \n", ...$desc]
-                ));
-
-                $options[] = $option;
-                $current++;
-            }
-        }
-
-        return $options;
-    }
-
-    public function getLongDescription(): ?string
-    {
-        return <<<EOF
-            Variations tested:
-
-            - Short option names that vary only by case
-            - UPPER_CASE, lower_case and null `valueName`
-            - Legal combinations of `multipleAllowed` and `required`
-            - Bound to class properties, and unbound
-            EOF;
+        return [
+            // CliOption::build()
+            //     ->name()
+            //     ->long()
+            //     ->short()
+            //     ->valueName()
+            //     ->description()
+            //     ->optionType()
+            //     ->valueType()
+            //     ->allowedValues()
+            //     ->unknownValuePolicy()
+            //     ->required()
+            //     ->multipleAllowed()
+            //     ->unique()
+            //     ->addAll()
+            //     ->defaultValue()
+            //     ->nullable()
+            //     ->envVariable()
+            //     ->delimiter()
+            //     ->valueCallback()
+            //     ->visibility()
+            //     ->hide()
+            //     ->bindTo(),
+            CliOption::build()
+                ->long('flag')
+                ->short('f')
+                ->description('Flag')
+                ->bindTo($this->Flag),
+            CliOption::build()
+                ->long('flags')
+                ->short('F')
+                ->description('Flag with multipleAllowed()')
+                ->multipleAllowed()
+                ->bindTo($this->RepeatableFlag),
+            CliOption::build()
+                ->long('nullable')
+                ->description('Flag with nullable() and no short form')
+                ->nullable()
+                ->bindTo($this->NullableFlag),
+            CliOption::build()
+                ->long('value')
+                ->short('v')
+                ->valueName('entity')
+                ->description('Value with defaultValue() and valueName <entity>')
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue('foo')
+                ->bindTo($this->Value),
+            CliOption::build()
+                ->long('values')
+                ->short('V')
+                ->description('Value with multipleAllowed(), unique() and nullable()')
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()
+                ->unique()
+                ->nullable()
+                ->bindTo($this->RepeatableValue),
+            CliOption::build()
+                ->long('start')
+                ->short('s')
+                ->valueName('date')
+                ->description('Value with required(), valueType DATE and valueName <date>')
+                ->optionType(CliOptionType::VALUE)
+                ->valueType(CliOptionValueType::DATE)
+                ->required()
+                ->bindTo($this->RequiredValue),
+        ];
     }
 
     protected function run(string ...$args)
     {
-        if ($this->App->getRunningCommand() === $this) {
-            echo Json::prettyPrint([
-                'args' => $args,
-                'options' => $this->getOptionValues(),
-                'bound' => [
-                    'flag1' => $this->flag1,
-                    'valPos1' => $this->valPos1,
-                    'val1' => $this->val1,
-                    'valOpt1' => $this->valOpt1,
-                    'oneOfPos1' => $this->oneOfPos1,
-                    'oneOf1' => $this->oneOf1,
-                    'oneOfOpt3' => $this->oneOfOpt3,
-                ],
-            ]);
-        }
+        $dateFormatter = new DateFormatter();
+
+        echo Json::prettyPrint([
+            'args' => $args,
+            'options' => $this->getOptionValues(true),
+            'bound' => [
+                'Flag' => $this->Flag,
+                'RepeatableFlag' => $this->RepeatableFlag,
+                'NullableFlag' => $this->NullableFlag,
+                'Value' => $this->Value,
+                'RepeatableValue' => $this->RepeatableValue,
+                'RequiredValue' => $this->RequiredValue,
+            ],
+        ]) . PHP_EOL;
     }
 }
