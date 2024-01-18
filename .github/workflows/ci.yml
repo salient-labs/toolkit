@@ -49,6 +49,9 @@ jobs:
       - name: Check generated files
         run: scripts/generate.php --check
 
+      - name: Run PHP CS Fixer
+        run: tools/php-cs-fixer check --diff --verbose
+
       - name: Run PrettyPHP
         run: tools/pretty-php --diff
 
