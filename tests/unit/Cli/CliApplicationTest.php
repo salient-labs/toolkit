@@ -33,9 +33,9 @@ final class CliApplicationTest extends TestCase
         $this->ConsoleTarget = new MockTarget();
         Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
 
-        $this->App = new CliApplication(self::$BasePath);
-
         $_SERVER['SCRIPT_FILENAME'] = 'app';
+
+        $this->App = new CliApplication(self::$BasePath);
     }
 
     protected function tearDown(): void

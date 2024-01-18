@@ -49,6 +49,22 @@ final class ReflectTest extends TestCase
         $this->assertSame($expected, $names);
     }
 
+    public function testGetAllProperties(): void
+    {
+        $this->assertSame([
+            'Id',
+            'AltId',
+            'Name',
+            'Parent',
+            'AltParent',
+            'MyPrivateProperty2',
+            'MyDocumentedProperty',
+            'MyPrivateProperty1',
+        ], Reflect::getNames(
+            Reflect::getAllProperties(new ReflectionClass(MyClass::class))
+        ));
+    }
+
     /**
      * @dataProvider getAllTypesProvider
      *

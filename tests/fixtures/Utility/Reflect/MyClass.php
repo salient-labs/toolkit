@@ -37,6 +37,11 @@ class MyClass extends MyBaseClass implements MyInterface
     public $AltParent;
 
     /**
+     * @var mixed
+     */
+    protected $MyPrivateProperty2;
+
+    /**
      * @param int|string $id
      */
     public function __construct($id, ?int $altId, string $name, ?MyClass $parent, MyClass $altParent = null)
