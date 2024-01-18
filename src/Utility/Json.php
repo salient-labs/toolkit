@@ -40,7 +40,10 @@ final class Json extends Utility
      */
     public static function prettyPrint($value, int $flags = 0): string
     {
-        return json_encode($value, self::ENCODE_FLAGS | \JSON_PRETTY_PRINT | $flags);
+        $json = json_encode($value, self::ENCODE_FLAGS | \JSON_PRETTY_PRINT | $flags);
+        return \PHP_EOL === "\n"
+            ? $json
+            : str_replace("\n", \PHP_EOL, $json);
     }
 
     /**

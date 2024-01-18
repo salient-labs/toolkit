@@ -363,7 +363,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         $this->Short = $this->IsPositional ? null : Str::coalesce($short, null);
         $this->Key = $this->IsPositional ? (string) $this->Name : ($short . '|' . $long);
         $this->ValueName = $this->IsFlag ? null : Str::coalesce($valueName, $this->IsPositional ? Str::toKebabCase((string) $this->Name, '=') : null, 'value');
-        $this->DisplayName = $this->IsPositional ? $this->formatValueName(false) : ($this->Long !== null ? "--{$long}" : "-{$short}");
+        $this->DisplayName = $this->IsPositional ? $this->formatValueName(false) : ($this->Long !== null ? '--' . $long : '-' . $short);
         $this->ValueType = $this->IsFlag ? ($multipleAllowed ? CliOptionValueType::INTEGER : CliOptionValueType::BOOLEAN) : $valueType;
         $this->Delimiter = $multipleAllowed && !$this->IsFlag ? Str::coalesce($delimiter, null) : null;
         $this->Description = $description;

@@ -81,6 +81,7 @@ abstract class CommandTestCase extends TestCase
             rmdir($basePath);
 
             Console::deregisterTarget($target);
+            Console::unload();
         }
     }
 }
