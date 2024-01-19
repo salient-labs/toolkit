@@ -243,8 +243,6 @@ abstract class CliCommand implements ICliCommand
         $this->PositionalOptions = [];
         $this->SchemaOptions = [];
         $this->DeferredOptionErrors = [];
-
-        $this->loadOptions();
     }
 
     /**
@@ -764,7 +762,7 @@ abstract class CliCommand implements ICliCommand
         bool $schema = false,
         bool $asArguments = false
     ): array {
-        $this->assertHasRun();
+        $this->assertHasRun()->loadOptions();
         if ($schema) {
             if ($normalise) {
                 $values = $this->filterNormaliseSchemaValues($values);
@@ -829,7 +827,7 @@ abstract class CliCommand implements ICliCommand
         bool $export = false,
         bool $schema = false
     ): array {
-        $this->assertHasRun();
+        $this->assertHasRun()->loadOptions();
         $options = $schema ? $this->SchemaOptions : $this->Options;
         foreach ($options as $key => $option) {
             if ($export && !array_key_exists($option->Key, $this->ArgumentValues)) {
@@ -886,7 +884,7 @@ abstract class CliCommand implements ICliCommand
      */
     final protected function getOptionValue(string $name)
     {
-        $this->assertHasRun();
+        $this->assertHasRun()->loadOptions();
         $option = $this->_getOption($name, false);
         return $this->OptionValues[$option->Key] ?? null;
     }
