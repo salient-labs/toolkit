@@ -208,22 +208,11 @@ final class CliHelpStyle
 
             if ($this->Target === CliHelpTarget::TTY) {
                 $content = str_replace("\n", "\n    ", $content);
-                $help .= <<<EOF
-                    ## $heading
-                        $content
-
-
-                    EOF;
+                $help .= "## $heading\n    $content\n\n";
                 continue;
             }
 
-            $help .= <<<EOF
-                ## $heading
-
-                $content
-
-
-                EOF;
+            $help .= "## $heading\n\n$content\n\n";
         }
 
         return Pcre::replace('/^\h++$/m', '', rtrim($help));

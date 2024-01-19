@@ -749,7 +749,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         if ($desc === '') {
             return null;
         }
-        if ($withFullStop && $desc[-1] !== '.') {
+        if ($withFullStop && strpbrk($desc[-1], '.!?') === false) {
             $desc .= '.';
         }
         return Pcre::replace('/\s+/', ' ', $desc);

@@ -7,6 +7,7 @@ use Lkrms\Console\Support\ConsoleManPageFormat;
 use Lkrms\Console\Support\ConsoleMarkdownFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Tests\TestCase;
+use Lkrms\Utility\Str;
 
 final class ConsoleFormatterTest extends TestCase
 {
@@ -24,7 +25,16 @@ final class ConsoleFormatterTest extends TestCase
         bool $unformat = false,
         string $break = "\n"
     ): void {
-        $this->assertSame($expected, $formatter->formatTags($string, $unwrap, $wrapToWidth, $unformat, $break));
+        $this->assertSame(
+            Str::eolFromNative($expected),
+            $formatter->formatTags(
+                $string,
+                $unwrap,
+                $wrapToWidth,
+                $unformat,
+                $break,
+            )
+        );
     }
 
     /**

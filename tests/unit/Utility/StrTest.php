@@ -32,6 +32,158 @@ final class StrTest extends TestCase
     }
 
     /**
+     * @dataProvider setEolProvider
+     */
+    public function testSetEol(string $expected, string $string, string $eol = "\n"): void
+    {
+        $this->assertSame($expected, Str::setEol($string, $eol));
+    }
+
+    /**
+     * @return array<array{string,string,2?:string}>
+     */
+    public static function setEolProvider(): array
+    {
+        return [
+            [
+                '',
+                '',
+            ],
+            [
+                "\n",
+                "\n",
+            ],
+            [
+                "\n",
+                "\r\n",
+            ],
+            [
+                "\r",
+                "\r\n",
+                "\r",
+            ],
+            [
+                "\r\r",
+                "\n\r",
+                "\r",
+            ],
+            [
+                "line1\nline2\n",
+                "line1\nline2\n",
+            ],
+            [
+                "line1\nline2\n",
+                "line1\r\nline2\r\n",
+            ],
+            [
+                "line1\nline2\n",
+                "line1\rline2\r",
+            ],
+            [
+                "line1\nline2\nline3\nline4\n\n",
+                "line1\r\nline2\nline3\rline4\n\r",
+            ],
+            [
+                "line1\rline2\rline3\rline4\r\r",
+                "line1\r\nline2\nline3\rline4\n\r",
+                "\r",
+            ],
+            [
+                "line1\r\nline2\r\nline3\r\nline4\r\n\r\n",
+                "line1\r\nline2\nline3\rline4\n\r",
+                "\r\n",
+            ],
+            [
+                "line1<br />\nline2<br />\nline3<br />\nline4<br />\n<br />\n",
+                "line1\r\nline2\nline3\rline4\n\r",
+                "<br />\n",
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider eolToNativeProvider
+     */
+    public function testEolToNative(?string $expected, ?string $string): void
+    {
+        $this->assertSame($expected, Str::eolToNative($string));
+    }
+
+    /**
+     * @return array<array{string,string}>
+     */
+    public static function eolToNativeProvider(): array
+    {
+        return [
+            [
+                null,
+                null,
+            ],
+            [
+                '',
+                '',
+            ],
+            [
+                <<<'EOF'
+
+
+                EOF,
+                "\n",
+            ],
+            [
+                <<<'EOF'
+                line1
+                line2
+
+
+                EOF,
+                "line1\nline2\n\n",
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider eolFromNativeProvider
+     */
+    public function testEolFromNative(?string $expected, ?string $string): void
+    {
+        $this->assertSame($expected, Str::eolFromNative($string));
+    }
+
+    /**
+     * @return array<array{string,string}>
+     */
+    public static function eolFromNativeProvider(): array
+    {
+        return [
+            [
+                null,
+                null,
+            ],
+            [
+                '',
+                '',
+            ],
+            [
+                "\n",
+                <<<'EOF'
+
+
+                EOF,
+            ],
+            [
+                "line1\nline2\n\n",
+                <<<'EOF'
+                line1
+                line2
+
+
+                EOF,
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider caseConversionProvider
      */
     public function testCaseConversion(
