@@ -236,6 +236,17 @@ abstract class CliCommand implements ICliCommand
         return $this->ExitStatus;
     }
 
+    final public function __clone()
+    {
+        $this->Options = null;
+        $this->OptionsByName = [];
+        $this->PositionalOptions = [];
+        $this->SchemaOptions = [];
+        $this->DeferredOptionErrors = [];
+
+        $this->loadOptions();
+    }
+
     /**
      * @inheritDoc
      */
@@ -1178,6 +1189,7 @@ abstract class CliCommand implements ICliCommand
             $this->Options = null;
             $this->OptionsByName = [];
             $this->PositionalOptions = [];
+            $this->SchemaOptions = [];
             $this->DeferredOptionErrors = [];
 
             throw $ex;

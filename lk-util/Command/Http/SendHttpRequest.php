@@ -156,6 +156,6 @@ final class SendHttpRequest extends Command
             $result = $array;
         }
 
-        echo Json::prettyPrint($result) . PHP_EOL;
+        echo Json::prettyPrint($result) . \PHP_EOL;
     }
 }

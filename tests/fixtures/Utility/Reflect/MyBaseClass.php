@@ -15,6 +15,18 @@ abstract class MyBaseClass
     public $MyDocumentedProperty;
 
     /**
+     * @var mixed
+     * @phpstan-ignore-next-line
+     */
+    private $MyPrivateProperty1;
+
+    /**
+     * @var mixed
+     * @phpstan-ignore-next-line
+     */
+    private $MyPrivateProperty2;
+
+    /**
      * MyBaseClass::MyDocumentedMethod() PHPDoc
      *
      * @return mixed

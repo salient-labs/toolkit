@@ -103,6 +103,28 @@ final class Reflect extends Utility
     }
 
     /**
+     * Get the properties of a class, including private ancestor properties
+     *
+     * @param ReflectionClass<object> $class
+     * @return ReflectionProperty[]
+     */
+    public static function getAllProperties(ReflectionClass $class): array
+    {
+        do {
+            foreach ($class->getProperties() as $property) {
+                $name = $property->getName();
+                if (isset($seen[$name])) {
+                    continue;
+                }
+                $properties[] = $property;
+                $seen[$name] = true;
+            }
+        } while ($class = $class->getParentClass());
+
+        return $properties ?? [];
+    }
+
+    /**
      * Get the simple types in a ReflectionType
      *
      * {@see ReflectionParameter::getType()} and

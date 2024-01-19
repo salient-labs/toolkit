@@ -194,11 +194,11 @@ final class GetSyncEntities extends AbstractSyncCommand
                 $result = array_shift($result);
             }
 
-            echo Json::prettyPrint($result) . PHP_EOL;
+            echo Json::prettyPrint($result) . \PHP_EOL;
         } else {
             $count = 0;
             foreach ($result as $entity) {
-                echo Json::prettyPrint($entity->toArrayWith($rules)) . PHP_EOL;
+                echo Json::prettyPrint($entity->toArrayWith($rules)) . \PHP_EOL;
                 $count++;
             }
         }
