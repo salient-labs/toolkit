@@ -6,6 +6,7 @@ use Lkrms\Http\Uri;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 use DateTimeImmutable;
 use DateTimeInterface;
 use ReflectionParameter;
@@ -384,7 +385,7 @@ final class ConvertTest extends TestCase
      */
     public function testLinesToLists(string $expected, ...$args): void
     {
-        $this->assertSame($expected, $this->eolToNative(Convert::linesToLists(...$args)));
+        $this->assertSame($expected, Str::eolToNative(Convert::linesToLists(...$args)));
     }
 
     /**

@@ -70,16 +70,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Replace newlines in a string with PHP_EOL
-     */
-    public static function eolToNative(?string $string): ?string
-    {
-        return $string === null
-            ? null
-            : str_replace("\n", \PHP_EOL, $string);
-    }
-
-    /**
      * Replace directory separators in a string with DIRECTORY_SEPARATOR
      */
     public static function directorySeparatorToNative(?string $string): ?string

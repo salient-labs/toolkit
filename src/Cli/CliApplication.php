@@ -456,11 +456,12 @@ class CliApplication extends Application implements ICliApplication
                 $formats = ConsoleManPageFormat::getTagFormats();
                 $progName = $this->getProgramName();
                 printf(
-                    "%% %s(%d) %s | %s\n\n",
+                    '%% %s(%d) %s | %s%s',
                     Str::upper(str_replace(' ', '-', trim("$progName $name"))),
                     (int) ($args[0] ?? '1'),
                     $args[1] ?? Package::version(),
                     $args[2] ?? (($name === '' ? $progName : Package::name()) . ' Documentation'),
+                    \PHP_EOL . \PHP_EOL,
                 );
                 break;
 
@@ -477,6 +478,7 @@ class CliApplication extends Application implements ICliApplication
 
         $usage = $this->getHelp($name, $node, $style);
         $usage = $formatter->formatTags($usage);
-        printf("%s\n", str_replace('\ ', ' ', $usage));
+        $usage = Str::eolToNative($usage);
+        printf('%s%s', str_replace('\ ', ' ', $usage), \PHP_EOL);
     }
 }

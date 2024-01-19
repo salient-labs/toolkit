@@ -15,7 +15,6 @@ use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
@@ -66,8 +65,8 @@ final class ConsoleFormatter
      * Splits the subject into formattable paragraphs, fenced code blocks and
      * code spans
      */
-    private const PARSER_REGEX = <<<'REGEX'
-        (?msx)
+    private const MARKUP = <<<'REGEX'
+        /
         (?(DEFINE)
           (?<endofline> \h*+ \n )
           (?<endofblock> ^ \k<indent> \k<fence> \h*+ $ )
@@ -85,7 +84,7 @@ final class ConsoleFormatter
           (?<breaks> (?&endofline)+ ) |
           # Everything except unescaped backticks until the start of the next
           # paragraph
-          (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! (?&endofline) ) )+ (?&endofline)* ) ) |
+          (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! (?&endofline) ) )+ (?&endofline)* ) ) |
           # CommonMark-compliant fenced code blocks
           (?> (?(indent)
             (?> (?<fence> ```+ ) (?<infostring> [^\n]* ) \n )
@@ -100,17 +99,17 @@ final class ConsoleFormatter
           # Unmatched backticks
           (?<extra> `+ ) |
           \z
-        )
+        ) /mxs
         REGEX;
 
     /**
      * Matches inline formatting tags used outside fenced code blocks and code
      * spans
      */
-    private const TAG_REGEX = <<<'REGEX'
-        (?xm)
+    private const TAG = <<<'REGEX'
+        /
         (?(DEFINE)
-          (?<esc> \\ [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~] | \\ )
+          (?<esc> \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] | \\ )
         )
         (?<! \\ ) (?: \\\\ )* \K (?|
           \b  (?<tag> _ {1,3}+ )  (?! \s ) (?> (?<text> (?: [^_\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> \b ) _ + )* ) ) (?<! \s ) \k<tag> \b |
@@ -118,21 +117,21 @@ final class ConsoleFormatter
               (?<tag> < )         (?! \s ) (?> (?<text> (?: [^>\\]+ |    (?&esc) | (?! (?<! \s ) > ) > + )* ) )          (?<! \s ) >          |
               (?<tag> ~~ )        (?! \s ) (?> (?<text> (?: [^~\\]+ |    (?&esc) | (?! (?<! \s ) ~~ ) ~ + )* ) )         (?<! \s ) ~~         |
           ^   (?<tag> \#\# ) \h+           (?> (?<text> (?: [^\#\s\\]+ | (?&esc) | \#+ (?! \h* $ ) | \h++ (?! (?: \#+ \h* )? $ ) )* ) ) (?: \h+ \#+ | \h* ) $
-        )
+        ) /mx
         REGEX;
 
     /**
-     * A CommonMark-compliant backslash escape, or an escaped line break with an
-     * optional leading space
+     * Matches a CommonMark-compliant backslash escape, or an escaped line break
+     * with an optional leading space
      */
-    private const UNESCAPE_REGEX = <<<'REGEX'
-        (?x)
+    private const ESCAPE = <<<'REGEX'
+        /
         (?|
-          \\ ( [-\\ !"\#$%&'()*+,./:;<=>?@[\]^_`{|}~] ) |
+          \\ ( [-\\ !"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] ) |
           # Lookbehind assertions are unnecessary because the first branch
           # matches escaped spaces and backslashes
           \  ? \\ ( \n )
-        )
+        ) /x
         REGEX;
 
     private static ConsoleFormatter $DefaultFormatter;
@@ -316,7 +315,7 @@ final class ConsoleFormatter
         // Normalise line endings and split the string into formattable text,
         // fenced code blocks and code spans
         if (!Pcre::matchAll(
-            Regex::delimit(self::PARSER_REGEX) . 'u',
+            self::MARKUP,
             Str::setEol($string),
             $matches,
             \PREG_SET_ORDER | \PREG_UNMATCHED_AS_NULL
@@ -352,7 +351,7 @@ final class ConsoleFormatter
 
                 $adjust = 0;
                 $text = Pcre::replaceCallback(
-                    Regex::delimit(self::TAG_REGEX) . 'u',
+                    self::TAG,
                     function (array $match) use (
                         &$replace,
                         $textFormats,
@@ -462,7 +461,7 @@ final class ConsoleFormatter
         $adjust = 0;
         $placeholders = 0;
         $string = Pcre::replaceCallback(
-            Regex::delimit(self::UNESCAPE_REGEX) . 'u',
+            self::ESCAPE,
             function (array $match) use (
                 $unescape,
                 $wrapAfterApply,
@@ -566,10 +565,6 @@ final class ConsoleFormatter
             $string = substr_replace($string, $replacement, $offset, $length);
         }
 
-        if (\PHP_EOL !== "\n") {
-            $string = str_replace("\n", \PHP_EOL, $string);
-        }
-
         return $string . $append;
     }
 
@@ -639,7 +634,7 @@ final class ConsoleFormatter
     public static function unescapeTags(string $string): string
     {
         return Pcre::replace(
-            Regex::delimit(self::UNESCAPE_REGEX) . 'u',
+            self::ESCAPE,
             '$1',
             $string,
         );
@@ -688,7 +683,7 @@ final class ConsoleFormatter
         $tag = $matchHasOffset ? $match['tag'][0] : $match['tag'];
 
         $text = Pcre::replaceCallback(
-            Regex::delimit(self::TAG_REGEX) . 'u',
+            self::TAG,
             fn(array $match): string =>
                 $this->applyTags($match, false, $unescape, $formats, $depth + 1),
             $text,
@@ -698,7 +693,7 @@ final class ConsoleFormatter
 
         if ($unescape) {
             $text = Pcre::replace(
-                Regex::delimit(self::UNESCAPE_REGEX) . 'u',
+                self::ESCAPE,
                 '$1',
                 $text,
             );

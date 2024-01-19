@@ -60,19 +60,55 @@ final class Str extends Utility
     /**
      * Apply an end-of-line sequence to a string
      */
-    public static function setEol(string $string, string $eol = "\n", ?string $currentEol = null): string
+    public static function setEol(string $string, string $eol = "\n"): string
     {
-        if ($currentEol === null) {
-            $currentEol = Get::eol($string);
-            // No end-of-line sequence = no line breaks = nothing to do
-            if ($currentEol === null) {
-                return $string;
-            }
+        switch ($eol) {
+            case "\n":
+                return str_replace(["\r\n", "\r"], $eol, $string);
+
+            case "\r":
+                return str_replace(["\r\n", "\n"], $eol, $string);
+
+            case "\r\n":
+                return str_replace(["\r\n", "\r", "\n"], ["\n", "\n", $eol], $string);
+
+            default:
+                return str_replace("\n", $eol, self::setEol($string));
         }
-        if ($eol === $currentEol) {
-            return $string;
-        }
-        return str_replace($currentEol, $eol, $string);
+    }
+
+    /**
+     * Replace newlines in a string with native end-of-line sequences
+     *
+     * @template T of string|null
+     *
+     * @param T $string
+     * @return T
+     */
+    public static function eolToNative(?string $string): ?string
+    {
+        return $string === null
+            ? null
+            : (\PHP_EOL === "\n"
+                ? $string
+                : str_replace("\n", \PHP_EOL, $string));
+    }
+
+    /**
+     * Replace native end-of-line sequences in a string with newlines
+     *
+     * @template T of string|null
+     *
+     * @param T $string
+     * @return T
+     */
+    public static function eolFromNative(?string $string): ?string
+    {
+        return $string === null
+            ? null
+            : (\PHP_EOL === "\n"
+                ? $string
+                : str_replace(\PHP_EOL, "\n", $string));
     }
 
     /**

@@ -6,6 +6,7 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Tests\TestCase;
+use Lkrms\Utility\Str;
 
 final class PhpDocTest extends TestCase
 {
@@ -80,7 +81,7 @@ final class PhpDocTest extends TestCase
             ```php
             // code here
             ```
-            EOF, $this->eolToNative($phpDoc->Description));
+            EOF, Str::eolToNative($phpDoc->Description));
         $this->assertSame([
             '@param $arg1 Description from ClassC (untyped)',
             '@param string[] $arg3',
@@ -141,7 +142,7 @@ final class PhpDocTest extends TestCase
     ): void {
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
-        $this->assertSame($description, $this->eolToNative($phpDoc->Description));
+        $this->assertSame($description, Str::eolToNative($phpDoc->Description));
         $this->assertCount(count($varKeys), $phpDoc->Vars);
         foreach ($varKeys as $i => $key) {
             $this->assertArrayHasKey($key, $phpDoc->Vars);
@@ -374,7 +375,7 @@ final class PhpDocTest extends TestCase
             ```php
             callback(string $value): string
             ```
-            EOF, $this->eolToNative($phpDoc->Description));
+            EOF, Str::eolToNative($phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
         $this->assertSame(null, $phpDoc->Vars[0]->Name ?? null);
         $this->assertSame('?callable', $phpDoc->Vars[0]->Type ?? null);
