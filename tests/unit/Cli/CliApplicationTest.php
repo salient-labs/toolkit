@@ -57,7 +57,7 @@ final class CliApplicationTest extends TestCase
         $_SERVER['argv'] = ['app.php'];
         $app = $this->App->oneCommand(TestOptions::class);
         $this->assertSame(1, $app->run()->getLastExitStatus());
-        $this->assertSame([
+        $this->assertSameConsoleMessages([
             [Level::ERROR, 'Error: --start required'],
             [Level::INFO, <<<'EOF'
 
@@ -73,7 +73,7 @@ final class CliApplicationTest extends TestCase
         $_SERVER['argv'] = ['app.php', '--help'];
         $app = $this->App->oneCommand(TestOptions::class);
         $this->assertSame(0, $app->run()->getLastExitStatus());
-        $this->assertSame([
+        $this->assertSameConsoleMessages([
             [Level::INFO, <<<'EOF'
                 NAME
                     app - Test CliCommand options

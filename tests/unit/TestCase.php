@@ -2,7 +2,9 @@
 
 namespace Lkrms\Tests;
 
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Closure;
 use Throwable;
 
@@ -14,20 +16,42 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param Closure(): mixed $callback
      * @param class-string<Throwable> $exception
      */
-    public function assertThrows(Closure $callback, string $exception, ?string $exceptionMessage = null, string $message = ''): void
-    {
+    public static function assertThrows(
+        Closure $callback,
+        string $exception,
+        ?string $exceptionMessage = null,
+        string $message = ''
+    ): void {
         try {
             $callback();
         } catch (Throwable $ex) {
-            $this->assertInstanceOf($exception, $ex, $message);
+            static::assertInstanceOf($exception, $ex, $message);
             if ($exceptionMessage !== null) {
-                $this->assertStringContainsString($exceptionMessage, $ex->getMessage(), $message);
+                static::assertStringContainsString($exceptionMessage, $ex->getMessage(), $message);
             }
             return;
         }
-        $this->fail($message === ''
+        static::fail($message === ''
             ? sprintf('Failed asserting that exception of type %s is thrown', $exception)
             : $message);
+    }
+
+    /**
+     * Assert that the given console messages are written, converting line
+     * endings if necessary
+     *
+     * @param array<array{Level::*,string,2?:array<string,mixed>}> $expected
+     * @param mixed[] $actual
+     */
+    public static function assertSameConsoleMessages(array $expected, array $actual, string $message = ''): void
+    {
+        foreach ($expected as $i => &$expectedMessage) {
+            $expectedMessage[1] = Str::eolFromNative($expectedMessage[1]);
+            if (!isset($expectedMessage[2]) && isset($actual[$i][2])) {
+                unset($actual[$i][2]);
+            }
+        }
+        static::assertEquals($expected, $actual, $message);
     }
 
     /**
