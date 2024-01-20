@@ -11,15 +11,24 @@ use LogicException;
 interface ICliApplication extends IApplication
 {
     /**
-     * Get the command started from the command line
+     * Get the command invoked by run()
+     *
+     * This method should only return a command that is currently running.
      */
     public function getRunningCommand(): ?ICliCommand;
 
     /**
+     * Get the command most recently invoked by run()
+     *
+     * This method should only return a command that ran to completion or failed
+     * with an exception.
+     */
+    public function getLastCommand(): ?ICliCommand;
+
+    /**
      * Get the return value most recently recorded by run()
      *
-     * Returns `0` if {@see ICliApplication::run()} has not recorded a return
-     * value.
+     * This method should return `0` if a return value has not been recorded.
      */
     public function getLastExitStatus(): int;
 
@@ -27,10 +36,9 @@ interface ICliApplication extends IApplication
      * Register a command with the container
      *
      * @param string[] $name The name of the command as an array of subcommands.
-     *
      * Valid subcommands start with a letter, followed by any number of letters,
      * numbers, hyphens and underscores.
-     * @param class-string<ICliCommand> $id The name of the class to register.
+     * @param class-string<ICliCommand> $id
      * @return $this
      * @throws LogicException if `$name` is invalid or conflicts with a
      * registered command.
@@ -38,16 +46,14 @@ interface ICliApplication extends IApplication
     public function command(array $name, string $id);
 
     /**
-     * Register one, and only one, ICliCommand for the lifetime of the container
+     * Register one, and only one, command for the lifetime of the container
      *
-     * The command is registered with an empty name, placing it at the root of
-     * the container's subcommand tree.
+     * Calling this method should have the same effect as calling
+     * {@see ICliApplication::command()} with an empty command name.
      *
-     * @param class-string<ICliCommand> $id The name of the class to register.
+     * @param class-string<ICliCommand> $id
      * @return $this
      * @throws LogicException if another command has already been registered.
-     *
-     * @see ICliApplication::command()
      */
     public function oneCommand(string $id);
 
@@ -55,21 +61,23 @@ interface ICliApplication extends IApplication
      * Process command line arguments passed to the script and record a return
      * value
      *
-     * The first applicable action is taken:
+     * This method should take the first applicable action:
      *
      * - If `--help` is the only remaining argument after processing subcommand
-     *   arguments, a help message is printed to `STDOUT` and the return value
-     *   is `0`.
-     * - If `--version` is the only remaining argument, the application's name
-     *   and version number is printed to `STDOUT` and the return value is `0`.
-     * - If subcommand arguments resolve to a registered command, it is invoked
-     *   and the return value is its exit status.
-     * - If, after processing subcommand arguments, there are no further
-     *   arguments but there are further subcommands, a one-line synopsis of
-     *   each registered subcommand is printed and the return value is `0`.
+     *   arguments, print a help message to `STDOUT`. Return value: `0`
      *
-     * Otherwise, an error is reported, a one-line synopsis of each registered
-     * subcommand is printed, and the return value is `1`.
+     * - If `--version` is the only remaining argument, print the application's
+     *   name and version number to `STDOUT`. Return value: `0`
+     *
+     * - If subcommand arguments resolve to a registered command, create an
+     *   instance of the command and run it. Return value: command exit status
+     *
+     * - If, after processing subcommand arguments, there are no further
+     *   arguments but there are further subcommands, print a one-line synopsis
+     *   of each registered subcommand. Return value: `0`
+     *
+     * - Report an error and print a one-line synopsis of each registered
+     *   subcommand. Return value: `1`
      *
      * @return $this
      */
@@ -78,18 +86,18 @@ interface ICliApplication extends IApplication
     /**
      * Exit with the return value most recently recorded by run()
      *
-     * The exit status is `0` if {@see ICliApplication::run()} has not recorded
-     * a return value.
+     * This method should use exit status `0` if a return value has not been
+     * recorded.
      *
      * @return never
      */
     public function exit();
 
     /**
-     * Exit after processing command line arguments passed to the script
+     * Process command line arguments passed to the script and exit with the
+     * recorded return value
      *
-     * The return value recorded by {@see ICliApplication::run()} is used as the
-     * exit status.
+     * See {@see ICliApplication::run()} for details.
      *
      * @return never
      */

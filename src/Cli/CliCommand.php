@@ -890,6 +890,16 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
+     * True if an option was given on the command line
+     */
+    final protected function optionHasArgument(string $name): bool
+    {
+        $this->assertHasRun()->loadOptions();
+        $option = $this->_getOption($name, false);
+        return array_key_exists($option->Key, $this->ArgumentValues);
+    }
+
+    /**
      * Get the given option
      */
     final protected function getOption(string $name): CliOption
@@ -1150,6 +1160,8 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
+     * Get the command's options
+     *
      * @return list<CliOption>
      */
     final protected function getOptions(): array
@@ -1321,7 +1333,7 @@ abstract class CliCommand implements ICliCommand
      * Get the number of times the command has run, including the current run
      * (if applicable)
      */
-    final protected function getRuns(): int
+    final public function getRuns(): int
     {
         return $this->Runs;
     }

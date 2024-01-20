@@ -6,7 +6,6 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
-use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Utility\Json;
 use DateTimeInterface;
 
@@ -104,7 +103,11 @@ class TestOptions extends CliCommand
 
     protected function run(string ...$args)
     {
-        $dateFormatter = new DateFormatter();
+        foreach ($this->getOptions() as $option) {
+            if ($this->optionHasArgument($option->Name)) {
+                $hasArg[$option->Name] = true;
+            }
+        }
 
         echo Json::prettyPrint([
             'args' => $args,
@@ -117,6 +120,7 @@ class TestOptions extends CliCommand
                 'RepeatableValue' => $this->RepeatableValue,
                 'RequiredValue' => $this->RequiredValue,
             ],
+            'hasArg' => $hasArg ?? [],
         ]) . \PHP_EOL;
     }
 }

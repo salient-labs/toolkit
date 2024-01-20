@@ -28,20 +28,18 @@ use LogicException;
  */
 class CliApplication extends Application implements ICliApplication
 {
+    private const COMMAND_REGEX = '/^[a-z][a-z0-9_-]*$/iD';
+
     /**
      * @var array<string,class-string<CliCommand>|mixed[]>
      */
     private $CommandTree = [];
 
-    /**
-     * @var CliCommand|null
-     */
-    private $RunningCommand;
+    private ?CliCommand $RunningCommand = null;
 
-    /**
-     * @var int
-     */
-    private $LastExitStatus = 0;
+    private ?CliCommand $LastCommand = null;
+
+    private int $LastExitStatus = 0;
 
     public function __construct(
         ?string $basePath = null,
@@ -71,6 +69,14 @@ class CliApplication extends Application implements ICliApplication
     public function getRunningCommand(): ?CliCommand
     {
         return $this->RunningCommand;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastCommand(): ?CliCommand
+    {
+        return $this->LastCommand;
     }
 
     /**
@@ -141,14 +147,7 @@ class CliApplication extends Application implements ICliApplication
     }
 
     /**
-     * Register one, and only one, CliCommand for the lifetime of the container
-     *
-     * The command is registered with an empty name, placing it at the root of
-     * the container's subcommand tree.
-     *
-     * @param class-string<CliCommand> $id The name of the class to instantiate.
-     * @return $this
-     * @throws LogicException if another command has already been registered.
+     * @inheritDoc
      */
     public function oneCommand(string $id)
     {
@@ -156,36 +155,17 @@ class CliApplication extends Application implements ICliApplication
     }
 
     /**
-     * Register a CliCommand with the container
-     *
-     * For example, an executable PHP script called `sync-util` could register
-     * `Acme\Canvas\Sync`, a {@see CliCommand} inheritor, as follows:
-     *
-     * ```php
-     * (new CliApplication())
-     *     ->command(['sync', 'canvas'], \Acme\Canvas\Sync::class)
-     *     ->runAndExit();
-     * ```
-     *
-     * Then, `Acme\Canvas\Sync` could be invoked with:
-     *
-     * ```shell
-     * ./sync-util sync canvas
-     * ```
-     *
-     * @param string[] $name The name of the command as an array of subcommands.
-     *
-     * Valid subcommands start with a letter, followed by any number of letters,
-     * numbers, hyphens and underscores.
-     * @param class-string<CliCommand> $id The name of the class to instantiate.
-     * @return $this
-     * @throws LogicException if `$name` is invalid or conflicts with a
-     * registered command.
+     * @inheritDoc
      */
     public function command(array $name, string $id)
     {
-        foreach ($name as $i => $subcommand) {
-            Assert::isMatch($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "\$name[$i]");
+        foreach ($name as $subcommand) {
+            if (!Pcre::match(self::COMMAND_REGEX, $subcommand)) {
+                throw new LogicException(sprintf(
+                    'Subcommand does not start with a letter, followed by zero or more letters, numbers, hyphens or underscores: %s',
+                    $subcommand,
+                ));
+            }
         }
 
         if ($this->getNode($name) !== null) {
@@ -419,6 +399,9 @@ class CliApplication extends Application implements ICliApplication
             return $this;
         } finally {
             $this->RunningCommand = null;
+            if ($command !== null) {
+                $this->LastCommand = $command;
+            }
         }
     }
 
