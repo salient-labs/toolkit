@@ -129,6 +129,9 @@ final class CliApplicationTest extends TestCase
                         "timezone_type": 1,
                         "timezone": "+11:00"
                     }
+                },
+                "hasArg": {
+                    "start": true
                 }
             }
 

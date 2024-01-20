@@ -159,29 +159,6 @@ final class Assert extends Utility
     }
 
     /**
-     * Assert that a value is a string that matches a regular expression
-     *
-     * @template TException of Throwable
-     *
-     * @param mixed $value
-     * @param class-string<TException> $exception
-     * @throws TException if `$value` is not a string or does not match
-     * `$pattern`.
-     * @phpstan-assert string $value
-     */
-    public static function isMatch(
-        $value,
-        string $pattern,
-        ?string $name = null,
-        string $exception = AssertionFailedException::class
-    ): void {
-        if (is_string($value) && Pcre::match($pattern, $value)) {
-            return;
-        }
-        self::throw(sprintf('{} must match regular expression: %s', $pattern), $name, $exception);
-    }
-
-    /**
      * Assert that PHP is running on the command line
      *
      * @template TException of Throwable

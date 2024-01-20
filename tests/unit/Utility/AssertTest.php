@@ -279,41 +279,6 @@ final class AssertTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider isMatchProvider
-     *
-     * @param mixed $value
-     */
-    public function testIsMatch(bool $isMatch, $value, string $pattern, ?string $name = null, ?string $message = null): void
-    {
-        if ($isMatch) {
-            $this->expectNotToPerformAssertions();
-        } else {
-            $this->expectException(AssertionFailedException::class);
-            if ($message !== null) {
-                $this->expectExceptionMessage($message);
-            }
-        }
-        Assert::isMatch($value, $pattern, $name);
-    }
-
-    /**
-     * @return array<array{bool,mixed,string,3?:string|null,4?:string|null}>
-     */
-    public static function isMatchProvider(): array
-    {
-        return [
-            [true, '', '/.*/'],
-            [true, 'Text', '/^t.+t$/i'],
-            [false, '', '/.+/'],
-            [false, null, '/.+/', '$arg', '$arg must match regular expression: /.+/'],
-            [false, 0, '/.*/', null, 'value must match regular expression: /.*/'],
-            [false, 1, '/.*/'],
-            [false, false, '/.*/'],
-            [false, true, '/.*/'],
-        ];
-    }
-
     public function testRunningOnCli(): void
     {
         if (\PHP_SAPI === 'cli') {
