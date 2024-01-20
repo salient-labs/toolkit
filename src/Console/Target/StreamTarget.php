@@ -3,9 +3,11 @@
 namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Concept\ConsoleStreamTarget;
+use Lkrms\Console\Exception\ConsoleInvalidTargetException;
+use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Support\Catalog\TtyControlSequence;
-use Lkrms\Utility\Date;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Str;
 use DateTime;
 use DateTimeZone;
 use LogicException;
@@ -15,16 +17,22 @@ use LogicException;
  */
 final class StreamTarget extends ConsoleStreamTarget
 {
+    public const DEFAULT_TIMESTAMP_FORMAT = '[d M y H:i:s.vO] ';
+
     /**
-     * @var resource
+     * @var resource|null
      */
     private $Stream;
 
-    private bool $AddTimestamp = false;
+    private bool $IsCloseable;
 
-    private string $TimestampFormat = '[d M y H:i:s.vO] ';
+    private ?string $Uri;
 
-    private ?DateTimeZone $Timezone = null;
+    private bool $AddTimestamp;
+
+    private string $TimestampFormat;
+
+    private ?DateTimeZone $Timezone;
 
     private bool $IsStdout;
 
@@ -37,40 +45,53 @@ final class StreamTarget extends ConsoleStreamTarget
     private static bool $HasPendingClearLine = false;
 
     /**
-     * Use an open stream as a console output target
-     *
      * @param resource $stream
-     * @param bool|null $addTimestamp If `null`, timestamps are added if
-     * `$stream` is not STDOUT or STDERR.
-     * @param string|null $timestampFormat Default: `[d M y H:i:s.vO] `
-     * @param DateTimeZone|string|null $timezone Default: as per
-     * `date_default_timezone_set` or INI setting `date.timezone`
+     * @param DateTimeZone|string|null $timezone
      */
-    public function __construct(
+    private function __construct(
         $stream,
-        ?bool $addTimestamp = null,
-        ?string $timestampFormat = null,
-        $timezone = null
+        bool $closeable,
+        ?bool $addTimestamp,
+        ?string $timestampFormat,
+        $timezone
     ) {
-        stream_set_write_buffer($stream, 0);
+        $this->applyStream($stream);
+
+        $this->IsCloseable = $closeable;
+        $this->AddTimestamp = $addTimestamp || (
+            $addTimestamp === null && !$this->IsStdout && !$this->IsStderr
+        );
+
+        if ($this->AddTimestamp) {
+            $this->TimestampFormat = Str::coalesce(
+                $timestampFormat,
+                self::DEFAULT_TIMESTAMP_FORMAT,
+            );
+            $this->Timezone = is_string($timezone)
+                ? new DateTimeZone($timezone)
+                : $timezone;
+        }
+    }
+
+    /**
+     * @param resource $stream
+     */
+    private function applyStream($stream): void
+    {
+        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
+            throw new InvalidArgumentTypeException(1, 'stream', 'resource', $stream);
+        }
+
+        $meta = stream_get_meta_data($stream);
 
         $this->Stream = $stream;
-        $this->IsStdout = File::getStreamUri($stream) === 'php://stdout';
-        $this->IsStderr = File::getStreamUri($stream) === 'php://stderr';
+        // @phpstan-ignore-next-line
+        $this->Uri = $meta['uri'] ?? null;
+        $this->IsStdout = $this->Uri === 'php://stdout';
+        $this->IsStderr = $this->Uri === 'php://stderr';
         $this->IsTty = stream_isatty($stream);
 
-        if ($addTimestamp || (
-            $addTimestamp === null &&
-            !($this->IsStdout || $this->IsStderr)
-        )) {
-            $this->AddTimestamp = true;
-            if ($timestampFormat !== null) {
-                $this->TimestampFormat = $timestampFormat;
-            }
-            if ($timezone !== null) {
-                $this->Timezone = Date::timezone($timezone);
-            }
-        }
+        stream_set_write_buffer($stream, 0);
     }
 
     /**
@@ -98,10 +119,36 @@ final class StreamTarget extends ConsoleStreamTarget
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
-    public function reopen(?string $path = null)
+    public function close(): void
     {
+        if (!$this->Stream) {
+            return;
+        }
+
+        $this->maybeClearLine();
+
+        if ($this->IsCloseable) {
+            File::close($this->Stream, $this->Path);
+        }
+
+        $this->Stream = null;
+        $this->Uri = null;
+        $this->IsStdout = false;
+        $this->IsStderr = false;
+        $this->IsTty = false;
+        $this->Path = null;
+        $this->setPrefix(null);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reopen(?string $path = null): void
+    {
+        $this->assertIsValid();
+
         if ($this->Path === null) {
             throw new LogicException(sprintf(
                 'Only instances created by %s::fromPath() can be reopened',
@@ -114,38 +161,56 @@ final class StreamTarget extends ConsoleStreamTarget
         }
 
         File::close($this->Stream, $this->Path);
-        File::create($path, 0600);
-        $this->Stream = File::open($path, 'a');
-        $this->Path = $path;
 
-        return $this;
+        if (!File::same($path, $this->Path)) {
+            File::create($path, 0600);
+        }
+
+        $stream = File::open($path, 'a');
+        $this->applyStream($stream);
+        $this->Path = $path;
+    }
+
+    /**
+     * Creates a new StreamTarget object backed by an open PHP stream
+     *
+     * @param resource $stream
+     * @param bool $closeable If `true`, call {@see fclose()} to close `$stream`
+     * when the target is closed.
+     * @param bool|null $addTimestamp If `null`, add timestamps if `$stream` is
+     * not `STDOUT` or `STDERR`.
+     * @param DateTimeZone|string|null $timezone If `null`, the timezone
+     * returned by {@see date_default_timezone_get()} is used.
+     */
+    public static function fromStream(
+        $stream,
+        bool $closeable = false,
+        ?bool $addTimestamp = null,
+        ?string $timestampFormat = StreamTarget::DEFAULT_TIMESTAMP_FORMAT,
+        $timezone = null
+    ): self {
+        return new self($stream, $closeable, $addTimestamp, $timestampFormat, $timezone);
     }
 
     /**
      * Open a file in append mode and return a console output target for it
      *
-     * @param bool|null $addTimestamp If `null`, timestamps will be added unless
-     * `$path` is STDOUT, STDERR, or a TTY
-     * @param string|null $timestampFormat Default: `[d M y H:i:s.vO] `
-     * @param DateTimeZone|string|null $timezone Default: as per
-     * `date_default_timezone_set` or INI setting `date.timezone`
+     * @param bool|null $addTimestamp If `null`, add timestamps if `$path` does
+     * not resolve to `STDOUT` or `STDERR`.
+     * @param DateTimeZone|string|null $timezone If `null`, the timezone
+     * returned by {@see date_default_timezone_get()} is used.
      */
     public static function fromPath(
         string $path,
         ?bool $addTimestamp = null,
-        ?string $timestampFormat = null,
+        ?string $timestampFormat = StreamTarget::DEFAULT_TIMESTAMP_FORMAT,
         $timezone = null
     ): self {
         File::create($path, 0600);
-        $stream = new self(
-            File::open($path, 'a'),
-            $addTimestamp,
-            $timestampFormat,
-            $timezone
-        );
-        $stream->Path = $path;
-
-        return $stream;
+        $stream = File::open($path, 'a');
+        $instance = new self($stream, true, $addTimestamp, $timestampFormat, $timezone);
+        $instance->Path = $path;
+        return $instance;
     }
 
     /**
@@ -183,6 +248,18 @@ final class StreamTarget extends ConsoleStreamTarget
     }
 
     public function __destruct()
+    {
+        $this->close();
+    }
+
+    protected function assertIsValid(): void
+    {
+        if (!$this->Stream) {
+            throw new ConsoleInvalidTargetException('Target is closed');
+        }
+    }
+
+    private function maybeClearLine(): void
     {
         if ($this->IsTty && self::$HasPendingClearLine && is_resource($this->Stream)) {
             $this->clearLine();

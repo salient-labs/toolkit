@@ -27,6 +27,8 @@ abstract class ConsolePrefixTarget extends ConsoleTarget implements ConsoleTarge
      */
     final public function write($level, string $message, array $context = []): void
     {
+        $this->assertIsValid();
+
         if ($this->Prefix === null) {
             $this->writeToTarget($level, $message, $context);
             return;
@@ -51,6 +53,8 @@ abstract class ConsolePrefixTarget extends ConsoleTarget implements ConsoleTarge
             return $this;
         }
 
+        $this->assertIsValid();
+
         $this->PrefixLength = strlen($prefix);
         $this->Prefix = $this->getFormatter()->getTagFormat(Tag::LOW_PRIORITY)->apply($prefix);
 
@@ -62,6 +66,8 @@ abstract class ConsolePrefixTarget extends ConsoleTarget implements ConsoleTarge
      */
     final public function getPrefix(): ?string
     {
+        $this->assertIsValid();
+
         return $this->Prefix;
     }
 
@@ -70,6 +76,8 @@ abstract class ConsolePrefixTarget extends ConsoleTarget implements ConsoleTarge
      */
     public function getWidth(): ?int
     {
+        $this->assertIsValid();
+
         return 80 - $this->PrefixLength;
     }
 }

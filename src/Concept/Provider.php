@@ -20,7 +20,7 @@ abstract class Provider implements IProvider
     private DateFormatterInterface $DateFormatter;
 
     /**
-     * Creates a new provider object
+     * Creates a new Provider object
      */
     public function __construct(IContainer $app)
     {

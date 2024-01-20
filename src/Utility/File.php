@@ -454,11 +454,21 @@ final class File extends Utility
      */
     public static function same(string $filename1, string $filename2): bool
     {
-        if (!file_exists($filename1) || !file_exists($filename2)) {
+        if (!file_exists($filename1)) {
             return false;
         }
+
+        if ($filename1 === $filename2) {
+            return true;
+        }
+
+        if (!file_exists($filename2)) {
+            return false;
+        }
+
         $stat1 = self::stat($filename1);
         $stat2 = self::stat($filename2);
+
         return
             $stat1['dev'] === $stat2['dev'] &&
             $stat1['ino'] === $stat2['ino'];

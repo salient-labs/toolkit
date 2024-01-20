@@ -67,7 +67,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     private $MagicMethodClosures = [];
 
     /**
-     * Creates a new provider object
+     * Creates a new SyncProvider object
      *
      * Creating an instance of the provider registers it with the entity store
      * injected by the container.

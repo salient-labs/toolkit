@@ -23,7 +23,8 @@ use Throwable;
  * @method static ConsoleWriter count(Level::* $level) Increment the message counter for $level without printing anything
  * @method static ConsoleWriter debug(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0) Print "--- {CALLER} $msg1 $msg2" with level DEBUG (see {@see ConsoleWriter::debug()})
  * @method static ConsoleWriter debugOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0) Print "--- {CALLER} $msg1 $msg2" with level DEBUG once per run (see {@see ConsoleWriter::debugOnce()})
- * @method static ConsoleWriter deregisterTarget(Target $target) Deregister a previously registered target
+ * @method static ConsoleWriter deregisterAllTargets() Close and deregister all registered targets
+ * @method static ConsoleWriter deregisterTarget(Target $target) Close and deregister a previously registered target
  * @method static ConsoleWriter error(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print " !! $msg1 $msg2" with level ERROR
  * @method static ConsoleWriter errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print " !! $msg1 $msg2" with level ERROR once per run
  * @method static ConsoleWriter exception(Throwable $exception, Level::* $messageLevel = Level::ERROR, Level::*|null $stackTraceLevel = Level::DEBUG) Report an uncaught exception (see {@see ConsoleWriter::exception()})
@@ -31,7 +32,7 @@ use Throwable;
  * @method static Formatter getFormatter(Level::* $level = Level::INFO) Get an output formatter for a registered target (see {@see ConsoleWriter::getFormatter()})
  * @method static TargetStream getStderrTarget() Get a target for STDERR, creating it if necessary
  * @method static TargetStream getStdoutTarget() Get a target for STDOUT, creating it if necessary
- * @method static Target[] getTargets() Get a list of registered output targets
+ * @method static Target[] getTargets() Get a list of registered targets
  * @method static int getWarnings() Get the number of warnings reported so far
  * @method static int|null getWidth(Level::* $level = Level::INFO) Get the width of a registered target in columns (see {@see ConsoleWriter::getWidth()})
  * @method static ConsoleWriter group(string $msg1, ?string $msg2 = null) Create a new message group and print "<<< $msg1 $msg2" with level NOTICE (see {@see ConsoleWriter::group()})
