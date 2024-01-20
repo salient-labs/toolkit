@@ -1333,7 +1333,7 @@ abstract class CliCommand implements ICliCommand
      * Get the number of times the command has run, including the current run
      * (if applicable)
      */
-    final protected function getRuns(): int
+    final public function getRuns(): int
     {
         return $this->Runs;
     }

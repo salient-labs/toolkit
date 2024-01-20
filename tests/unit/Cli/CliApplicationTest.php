@@ -138,6 +138,16 @@ final class CliApplicationTest extends TestCase
             EOF);
         $app = $this->App->oneCommand(TestOptions::class);
         $this->assertSame(0, $app->run()->getLastExitStatus());
+        $this->assertInstanceOf(TestOptions::class, $command = $app->getLastCommand());
+        $this->assertSame(1, $command->getRuns());
+    }
+
+    public function testInvalidSubcommand(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Subcommand does not start with a letter, followed by zero or more letters, numbers, hyphens or underscores: _options');
+
+        $this->App->command(['_options', 'test'], TestOptions::class);
     }
 
     public function testCommandCollision(): void
