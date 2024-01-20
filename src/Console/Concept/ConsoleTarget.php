@@ -19,6 +19,8 @@ abstract class ConsoleTarget implements ConsoleTargetInterface
      */
     public function getFormatter(): Formatter
     {
+        $this->assertIsValid();
+
         return $this->Formatter ??= new Formatter(
             $this->createTagFormats(),
             $this->createMessageFormats(),
@@ -31,8 +33,17 @@ abstract class ConsoleTarget implements ConsoleTargetInterface
      */
     public function getWidth(): ?int
     {
+        $this->assertIsValid();
+
         return null;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function close(): void {}
+
+    protected function assertIsValid(): void {}
 
     protected function createTagFormats(): TagFormats
     {

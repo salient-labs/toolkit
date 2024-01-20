@@ -51,7 +51,7 @@ abstract class Builder extends FluentInterface implements IImmutable
     private array $Data = [];
 
     /**
-     * Creates a new builder
+     * Creates a new Builder object
      */
     final public function __construct(?IContainer $container = null)
     {

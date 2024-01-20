@@ -4,6 +4,7 @@ namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface;
+use Lkrms\Console\Exception\ConsoleInvalidTargetException;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Utility\File;
 
@@ -32,6 +33,8 @@ final class MockTarget implements ConsoleTargetStreamInterface
      */
     private array $Messages = [];
 
+    private bool $IsValid = true;
+
     /**
      * @param resource|null $stream Console messages are also written to
      * `$stream` if given.
@@ -44,10 +47,6 @@ final class MockTarget implements ConsoleTargetStreamInterface
         ?int $width = 80,
         ?Formatter $formatter = null
     ) {
-        if ($stream) {
-            stream_set_write_buffer($stream, 0);
-        }
-
         $this->IsStdout = $isStdout;
         $this->IsStderr = $isStderr;
         $this->IsTty = $isTty;
@@ -84,8 +83,42 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /**
      * @inheritDoc
      */
+    public function close(): void
+    {
+        if (!$this->Stream) {
+            return;
+        }
+
+        $stream = $this->Stream;
+
+        $this->IsStdout = false;
+        $this->IsStderr = false;
+        $this->IsTty = false;
+        $this->Width = null;
+        $this->Stream = null;
+        unset($this->Formatter);
+
+        $this->IsValid = false;
+
+        if ($stream === \STDOUT || $stream === \STDERR) {
+            return;
+        }
+
+        File::close($stream);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reopen(): void {}
+
+    /**
+     * @inheritDoc
+     */
     public function getFormatter(): Formatter
     {
+        $this->assertIsValid();
+
         return clone $this->Formatter;
     }
 
@@ -94,6 +127,8 @@ final class MockTarget implements ConsoleTargetStreamInterface
      */
     public function getWidth(): ?int
     {
+        $this->assertIsValid();
+
         return $this->Width;
     }
 
@@ -102,6 +137,8 @@ final class MockTarget implements ConsoleTargetStreamInterface
      */
     public function write($level, string $message, array $context = []): void
     {
+        $this->assertIsValid();
+
         if ($this->Stream) {
             $suffix = $message === '' || $message[-1] !== "\r"
                 ? "\n"
@@ -117,6 +154,8 @@ final class MockTarget implements ConsoleTargetStreamInterface
     }
 
     /**
+     * Get messages written to the target and flush its message cache
+     *
      * @return array<array{Level::*,string,2?:array<string,mixed>}>
      */
     public function getMessages(): array
@@ -124,5 +163,12 @@ final class MockTarget implements ConsoleTargetStreamInterface
         $messages = $this->Messages;
         $this->Messages = [];
         return $messages;
+    }
+
+    private function assertIsValid(): void
+    {
+        if (!$this->IsValid) {
+            throw new ConsoleInvalidTargetException('Target is closed');
+        }
     }
 }

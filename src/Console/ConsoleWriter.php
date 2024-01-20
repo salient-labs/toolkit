@@ -13,6 +13,7 @@ use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Contract\Unloadable;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
 use Lkrms\Exception\InvalidEnvironmentException;
@@ -34,7 +35,7 @@ use Throwable;
  * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
  * {@see Console::getInstance()}.
  */
-final class ConsoleWriter implements ReceivesFacade
+final class ConsoleWriter implements ReceivesFacade, Unloadable
 {
     /**
      * @var array<Level::*,TargetStream[]>
@@ -55,6 +56,11 @@ final class ConsoleWriter implements ReceivesFacade
      * @var array<int,Target>
      */
     private array $Targets = [];
+
+    /**
+     * @var array<int,Target>
+     */
+    private array $DeregisteredTargets = [];
 
     /**
      * @var array<int,int-mask-of<TargetTypeFlag::*>>
@@ -93,6 +99,14 @@ final class ConsoleWriter implements ReceivesFacade
     {
         $this->Facade = $name;
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function unload(): void
+    {
+        $this->deregisterAllTargets();
     }
 
     /**
@@ -196,7 +210,8 @@ final class ConsoleWriter implements ReceivesFacade
         return $this
             ->clearStdioTargets()
             ->registerTarget($stderr, $stderrLevels)
-            ->registerTarget($stdout, $stdoutLevels);
+            ->registerTarget($stdout, $stdoutLevels)
+            ->closeDeregisteredTargets();
     }
 
     /**
@@ -243,7 +258,8 @@ final class ConsoleWriter implements ReceivesFacade
 
         return $this
             ->clearStdioTargets()
-            ->registerTarget($target, $levels);
+            ->registerTarget($target, $levels)
+            ->closeDeregisteredTargets();
     }
 
     /**
@@ -256,9 +272,22 @@ final class ConsoleWriter implements ReceivesFacade
         }
         $targets = $this->reduceTargets($this->StdioTargetsByLevel);
         foreach ($targets as $target) {
-            $this->deregisterTarget($target);
+            $this->onlyDeregisterTarget($target);
         }
         return $this;
+    }
+
+    /**
+     * Close and deregister all registered targets
+     *
+     * @return $this
+     */
+    public function deregisterAllTargets()
+    {
+        foreach ($this->Targets as $target) {
+            $this->onlyDeregisterTarget($target);
+        }
+        return $this->closeDeregisteredTargets();
     }
 
     /**
@@ -313,11 +342,19 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Deregister a previously registered target
+     * Close and deregister a previously registered target
      *
      * @return $this
      */
     public function deregisterTarget(Target $target)
+    {
+        return $this->onlyDeregisterTarget($target)->closeDeregisteredTargets();
+    }
+
+    /**
+     * @return $this
+     */
+    private function onlyDeregisterTarget(Target $target)
     {
         $targetId = spl_object_id($target);
 
@@ -343,6 +380,8 @@ final class ConsoleWriter implements ReceivesFacade
         if ($this->StdoutTarget === $target) {
             $this->StdoutTarget = null;
         }
+
+        $this->DeregisteredTargets[$targetId] = $target;
 
         // Reinstate previous STDOUT and STDERR targets if possible
         if (
@@ -372,7 +411,24 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * Get a list of registered output targets
+     * @return $this
+     */
+    private function closeDeregisteredTargets()
+    {
+        // Reduce `$this->DeregisteredTargets` to targets not subsequently
+        // re-registered
+        $this->DeregisteredTargets = array_diff_key(
+            $this->DeregisteredTargets, $this->Targets
+        );
+        foreach ($this->DeregisteredTargets as $i => $target) {
+            $target->close();
+            unset($this->DeregisteredTargets[$i]);
+        }
+        return $this;
+    }
+
+    /**
+     * Get a list of registered targets
      *
      * @return Target[]
      */
@@ -468,7 +524,7 @@ final class ConsoleWriter implements ReceivesFacade
     public function getStdoutTarget(): TargetStream
     {
         if (!$this->StdoutTarget) {
-            return $this->StdoutTarget = new StreamTarget(\STDOUT);
+            return $this->StdoutTarget = StreamTarget::fromStream(\STDOUT);
         }
         return $this->StdoutTarget;
     }
@@ -479,7 +535,7 @@ final class ConsoleWriter implements ReceivesFacade
     public function getStderrTarget(): TargetStream
     {
         if (!$this->StderrTarget) {
-            return $this->StderrTarget = new StreamTarget(\STDERR);
+            return $this->StderrTarget = StreamTarget::fromStream(\STDERR);
         }
         return $this->StderrTarget;
     }

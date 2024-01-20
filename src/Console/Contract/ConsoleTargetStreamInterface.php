@@ -23,4 +23,9 @@ interface ConsoleTargetStreamInterface extends ConsoleTargetInterface
      * True if the target writes to a TTY
      */
     public function isTty(): bool;
+
+    /**
+     * Close and reopen the underlying PHP stream if possible
+     */
+    public function reopen(): void;
 }

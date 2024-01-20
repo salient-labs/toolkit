@@ -37,4 +37,9 @@ interface ConsoleTargetInterface
      * @param array<string,mixed> $context
      */
     public function write($level, string $message, array $context = []): void;
+
+    /**
+     * Close the target and any underlying resources
+     */
+    public function close(): void;
 }

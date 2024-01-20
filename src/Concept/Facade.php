@@ -6,6 +6,7 @@ use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Contract\Unloadable;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
 use LogicException;
@@ -42,7 +43,8 @@ abstract class Facade implements IFacade
     {
         $service = static::getServiceName();
 
-        if ($container = Container::maybeGetGlobalContainer()) {
+        $container = Container::maybeGetGlobalContainer();
+        if ($container) {
             $instance = $container
                 ->singletonIf($service)
                 ->get($service, func_get_args());
@@ -96,14 +98,24 @@ abstract class Facade implements IFacade
      */
     final public static function unload(): void
     {
-        if ($id = self::$ListenerIds[static::class] ?? null) {
+        $id = self::$ListenerIds[static::class] ?? null;
+        if ($id !== null) {
             Event::removeListener($id);
             unset(self::$ListenerIds[static::class]);
         }
-        if ($container = Container::maybeGetGlobalContainer()) {
+
+        $container = Container::maybeGetGlobalContainer();
+        if ($container) {
             $container->unbind(static::getServiceName());
         }
-        unset(self::$Instances[static::class]);
+
+        $instance = self::$Instances[static::class] ?? null;
+        if ($instance) {
+            if ($instance instanceof Unloadable) {
+                $instance->unload();
+            }
+            unset(self::$Instances[static::class]);
+        }
     }
 
     /**
@@ -111,7 +123,9 @@ abstract class Facade implements IFacade
      */
     final public static function unloadAll(): void
     {
-        self::$Instances = [];
+        foreach (array_keys(self::$Instances) as $class) {
+            $class::unload();
+        }
     }
 
     /**
