@@ -633,12 +633,14 @@ final class File extends Utility
     /**
      * Create a temporary directory
      */
-    public static function createTempDir(): string
-    {
-        $tmp = self::getTempDir();
-        $program = Sys::getProgramBasename();
+    public static function createTempDir(
+        ?string $directory = null,
+        ?string $prefix = null
+    ): string {
+        $directory ??= self::getTempDir();
+        $prefix ??= Sys::getProgramBasename();
         do {
-            $dir = sprintf('%s/%s%s.tmp', $tmp, $program, Compute::randomText(8));
+            $dir = sprintf('%s/%s%s.tmp', $directory, $prefix, Compute::randomText(8));
         } while (!@mkdir($dir, 0700));
 
         return $dir;
