@@ -753,6 +753,9 @@ abstract class CliCommand implements ICliCommand
      * @param bool $schema If `true`, only apply `$values` to schema options.
      * @param bool $asArguments If `true`, apply `$values` as if they had been
      * given on the command line.
+     * @param bool $forgetArguments If `true` and `$asArguments` is also `true`,
+     * apply `$values` as if any options previously given on the command line
+     * had not been given.
      * @return array<string,mixed>
      */
     final protected function applyOptionValues(
@@ -760,9 +763,19 @@ abstract class CliCommand implements ICliCommand
         bool $normalise = true,
         bool $expand = false,
         bool $schema = false,
-        bool $asArguments = false
+        bool $asArguments = false,
+        bool $forgetArguments = false
     ): array {
         $this->assertHasRun()->loadOptions();
+        if ($asArguments && $forgetArguments) {
+            if (!$schema) {
+                $this->ArgumentValues = [];
+            } else {
+                foreach ($this->SchemaOptions as $option) {
+                    unset($this->ArgumentValues[$option->Key]);
+                }
+            }
+        }
         if ($schema) {
             if ($normalise) {
                 $values = $this->filterNormaliseSchemaValues($values);
