@@ -345,7 +345,7 @@ final class Convert extends Utility
         /** @var array<string,string[]> */
         $sections = [];
         $lastWasItem = false;
-        $lines = preg_split('/\r\n|\n|\r/', $text);
+        $lines = Pcre::split('/\r\n|\n|\r/', $text);
         for ($i = 0; $i < count($lines); $i++) {
             $line = $lines[$i];
 

@@ -13,6 +13,7 @@ use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\RelationshipType;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Str;
 use Closure;
@@ -457,7 +458,7 @@ class IntrospectionClass
             ]);
             $regex = "/^_(?<action>{$regex})(?<property>.+)\$/i";
             foreach ($methods as $method) {
-                if (!preg_match($regex, $name = $method->getName(), $match)) {
+                if (!Pcre::match($regex, $name = $method->getName(), $match)) {
                     continue;
                 }
                 $action = Str::lower($match['action']);

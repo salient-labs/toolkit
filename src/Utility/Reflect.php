@@ -410,7 +410,7 @@ final class Reflect extends Utility
 
         /** @var string */
         $const = $parameter->getDefaultValueConstantName();
-        if (preg_match('/^(self|parent|static)::/i', $const)) {
+        if (Pcre::match('/^(self|parent|static)::/i', $const)) {
             return "$param$const";
         }
         if ($typeNameCallback) {

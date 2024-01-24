@@ -15,6 +15,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use Closure;
 use LogicException;
 
@@ -481,7 +482,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 
     private function normaliseTarget(string $target): string
     {
-        return preg_replace_callback(
+        return Pcre::replaceCallback(
             '/[^].[]+/',
             fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),
             $target

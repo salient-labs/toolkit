@@ -3,6 +3,7 @@
 namespace Lkrms\Support\PhpDoc;
 
 use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 
 /**
@@ -84,14 +85,19 @@ class PhpDocTag
             return null;
         }
 
-        $replace = [
-            '/\bclass-string<(mixed|object)>/i' => 'class-string',
+        $pattern = [
+            '/\bclass-string<(mixed|object)>/i',
+        ];
+        $replacement = [
+            'class-string',
         ];
         $replace =
-            fn(array $types): array =>
-                preg_replace(array_keys($replace), array_values($replace), $types);
+            function (array $types) use ($pattern, $replacement): array {
+                /** @var string[] $types */
+                return Pcre::replace($pattern, $replacement, $types);
+            };
 
-        if (!preg_match(
+        if (!Pcre::match(
             Regex::anchorAndDelimit(Regex::PHPDOC_TYPE),
             trim($type),
             $matches
@@ -124,7 +130,7 @@ class PhpDocTag
             }
             $type = implode('&', $_types = array_unique($replace(explode('&', $type))));
             if ($brackets && (count($_types) > 1 ||
-                    !preg_match($phpTypeRegex, $type))) {
+                    !Pcre::match($phpTypeRegex, $type))) {
                 $type = "($type)";
             }
         }

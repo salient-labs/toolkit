@@ -51,6 +51,7 @@ use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Pcre;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -179,7 +180,7 @@ foreach ($providers as $class => $providerArgs) {
 }
 
 $file = dirname(__DIR__) . '/.gitattributes';
-$attributes = preg_grep(
+$attributes = Pcre::grep(
     '/(^#| linguist-generated$)/',
     Arr::trim(file($file)),
     \PREG_GREP_INVERT

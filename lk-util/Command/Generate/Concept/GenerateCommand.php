@@ -23,6 +23,7 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
@@ -383,7 +384,7 @@ abstract class GenerateCommand extends Command
      */
     protected function getPhpDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
     {
-        return PhpDocTag::normaliseType(preg_replace_callback(
+        return PhpDocTag::normaliseType(Pcre::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
             function ($match) use ($type, $namespace, $templates, $filename, &$inputClassTemplates) {
                 $t = $this->resolveTemplates($match[0], $templates, $template, $inputClassTemplates);
