@@ -11,6 +11,12 @@ use Lkrms\Utility\Str;
 
 final class FileTest extends TestCase
 {
+    public function testGetCwd(): void
+    {
+        $cwd = Sys::getCwd();
+        $this->assertSame(fileinode($cwd), fileinode(getcwd()));
+    }
+
     /**
      * @dataProvider getEolProvider
      */

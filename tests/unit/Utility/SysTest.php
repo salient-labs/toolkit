@@ -132,10 +132,4 @@ final class SysTest extends TestCase
             ],
         ];
     }
-
-    public function testGetCwd(): void
-    {
-        $cwd = Sys::getCwd();
-        $this->assertSame(fileinode($cwd), fileinode(getcwd()));
-    }
 }

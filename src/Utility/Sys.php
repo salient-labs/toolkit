@@ -170,29 +170,6 @@ final class Sys extends Utility
     }
 
     /**
-     * Get the current working directory without resolving symbolic links
-     */
-    public static function getCwd(): string
-    {
-        $handle = popen(\PHP_OS_FAMILY === 'Windows' ? 'cd' : 'pwd', 'rb');
-        $dir = stream_get_contents($handle);
-        $status = pclose($handle);
-
-        if (!$status) {
-            if (substr($dir, -strlen(\PHP_EOL)) === \PHP_EOL) {
-                $dir = substr($dir, 0, -strlen(\PHP_EOL));
-            }
-            return $dir;
-        }
-
-        $dir = getcwd();
-        if ($dir === false) {
-            throw new FilesystemErrorException('Unable to get current working directory');
-        }
-        return $dir;
-    }
-
-    /**
      * True if the SQLite3 library supports UPSERT syntax
      *
      * @link https://www.sqlite.org/lang_UPSERT.html
