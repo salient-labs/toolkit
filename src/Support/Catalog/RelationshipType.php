@@ -12,6 +12,5 @@ use Lkrms\Concept\Enumeration;
 final class RelationshipType extends Enumeration
 {
     public const ONE_TO_ONE = 0;
-
     public const ONE_TO_MANY = 1;
 }

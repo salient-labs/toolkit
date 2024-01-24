@@ -113,7 +113,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      * Register a log file to receive console output
      *
      * Output is appended to a file created with mode `0600` in
-     * `sys_get_temp_dir()`:
+     * {@see sys_get_temp_dir()}:
      *
      * ```php
      * <?php

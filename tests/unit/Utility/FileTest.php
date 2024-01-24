@@ -11,10 +11,9 @@ use Lkrms\Utility\Str;
 
 final class FileTest extends TestCase
 {
-    public function testGetCwd(): void
+    public function testCwd(): void
     {
-        $cwd = Sys::getCwd();
-        $this->assertSame(fileinode($cwd), fileinode(getcwd()));
+        $this->assertTrue(File::same(File::cwd(), getcwd()));
     }
 
     /**

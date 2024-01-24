@@ -153,11 +153,41 @@ final class GetTest extends TestCase
     }
 
     /**
-     * @dataProvider valueToCodeProvider
+     * @dataProvider bytesProvider
+     */
+    public function testBytes(int $expected, string $size): void
+    {
+        $this->assertSame($expected, Get::bytes($size));
+    }
+
+    /**
+     * @return array<array{int,string}>
+     */
+    public static function bytesProvider(): array
+    {
+        return [
+            [-1, '-1'],
+            [0, ''],
+            [0, '.5'],
+            [0, '.5M'],
+            [0, '0.5'],
+            [0, '0.5M'],
+            [1024, '1K'],
+            [1048576, '1M'],
+            [1048576, '1.5M'],
+            [1048576, ' 1 M '],
+            [1048576, ' 1.5 M '],
+            [134217728, '128M'],
+            [2147483648, '2G'],
+        ];
+    }
+
+    /**
+     * @dataProvider codeProvider
      *
      * @param mixed $value
      */
-    public function testValueToCode(
+    public function testCode(
         string $expected,
         $value,
         string $delimiter = ', ',
@@ -165,13 +195,13 @@ final class GetTest extends TestCase
         ?string $escapeCharacters = null,
         string $tab = '    '
     ): void {
-        $this->assertSame($expected, Convert::valueToCode($value, $delimiter, $arrow, $escapeCharacters, $tab));
+        $this->assertSame($expected, Get::code($value, $delimiter, $arrow, $escapeCharacters, $tab));
     }
 
     /**
      * @return array<string,array{string,mixed,2?:string,3?:string,4?:string|null,5?:string}>
      */
-    public static function valueToCodeProvider(): array
+    public static function codeProvider(): array
     {
         $array = [
             'list1' => [1, 2.0, 3.14],

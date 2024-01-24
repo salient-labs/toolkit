@@ -3,7 +3,6 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
-use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Console;
 use LogicException;
@@ -19,7 +18,7 @@ final class Sys extends Utility
      */
     public static function getMemoryLimit(): int
     {
-        return Convert::sizeToBytes(ini_get('memory_limit') ?: '0');
+        return Get::bytes((string) ini_get('memory_limit'));
     }
 
     /**
@@ -61,15 +60,19 @@ final class Sys extends Utility
     {
         $usage = getrusage();
 
-        return
-            $usage === false
-                ? [0, 0]
-                : [
-                    ($usage['ru_utime.tv_sec'] ?? 0) * 1000000
-                        + ($usage['ru_utime.tv_usec'] ?? 0),
-                    ($usage['ru_stime.tv_sec'] ?? 0) * 1000000
-                        + ($usage['ru_stime.tv_usec'] ?? 0),
-                ];
+        if ($usage === false) {
+            return [0, 0];
+        }
+
+        $user_s = $usage['ru_utime.tv_sec'] ?? 0;
+        $user_us = $usage['ru_utime.tv_usec'] ?? 0;
+        $sys_s = $usage['ru_stime.tv_sec'] ?? 0;
+        $sys_us = $usage['ru_stime.tv_usec'] ?? 0;
+
+        return [
+            $user_s * 1000000 + $user_us,
+            $sys_s * 1000000 + $sys_us,
+        ];
     }
 
     /**
@@ -91,7 +94,11 @@ final class Sys extends Utility
 
         $filename = File::relativeToParent($filename, $basePath);
         if ($filename === null) {
-            throw new LogicException('SCRIPT_FILENAME is not in $basePath');
+            throw new LogicException(sprintf(
+                "'%s' is not in '%s'",
+                $_SERVER['SCRIPT_FILENAME'],
+                $basePath,
+            ));
         }
         return $filename;
     }
@@ -145,8 +152,8 @@ final class Sys extends Utility
     /**
      * Get a command string with arguments escaped for this platform's shell
      *
-     * Don't use this method to prepare commands for `proc_open()`. Its quoting
-     * behaviour on Windows is unstable.
+     * Don't use this method to prepare commands for {@see proc_open()}. Its
+     * quoting behaviour on Windows is unstable.
      *
      * @param string[] $args
      */
@@ -182,8 +189,8 @@ final class Sys extends Utility
     /**
      * Handle SIGINT and SIGTERM to make a clean exit from the running script
      *
-     * If `posix_getpgid()` is available, `SIGINT` is propagated to the current
-     * process group just before PHP exits.
+     * If {@see posix_getpgid()} is available, `SIGINT` is propagated to the
+     * current process group just before PHP exits.
      *
      * @return bool `false` if signal handlers can't be installed on this
      * platform, otherwise `true`.

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Utility;
 
-use Lkrms\Support\Timekeeper;
+use Lkrms\Support\MetricCollector;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Sys;
 use LogicException;
@@ -11,7 +11,7 @@ final class SysTest extends TestCase
 {
     public function testStartTimer(): void
     {
-        $system = new Timekeeper();
+        $system = new MetricCollector();
 
         $time0 = hrtime(true) / 1000000;
         $system->startTimer('primary');
@@ -59,7 +59,7 @@ final class SysTest extends TestCase
     public function testStopTimer(): void
     {
         $this->expectException(LogicException::class);
-        $system = new Timekeeper();
+        $system = new MetricCollector();
         $system->stopTimer('primary');
     }
 

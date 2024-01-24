@@ -2,135 +2,254 @@
 
 namespace Lkrms\Support;
 
+use Lkrms\Support\Catalog\Metric;
 use LogicException;
 
 /**
- * Uses the system's high-resolution time for simple profiling
+ * Collects runtime performance metrics
  */
-final class Timekeeper
+final class MetricCollector
 {
     /**
-     * Type => name => start count
+     * Group => name => metric
+     *
+     * @var array<string,array<string,Metric::*>>
+     */
+    private array $Metrics = [];
+
+    /**
+     * Group => name => count
      *
      * @var array<string,array<string,int>>
      */
-    private $TimerRuns = [];
+    private array $Counters = [];
 
     /**
-     * Type => name => start nanoseconds
+     * Group => name => start count
+     *
+     * @var array<string,array<string,int>>
+     */
+    private array $TimerRuns = [];
+
+    /**
+     * Group => name => start nanoseconds
      *
      * @var array<string,array<string,int|float>>
      */
-    private $RunningTimers = [];
+    private array $RunningTimers = [];
 
     /**
-     * Type => name => elapsed nanoseconds
+     * Group => name => elapsed nanoseconds
      *
      * @var array<string,array<string,int|float>>
      */
-    private $ElapsedTime = [];
+    private array $ElapsedTime = [];
 
     /**
-     * @var array<array{array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}>
+     * @var array<array{array<string,array<string,Metric::*>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}>
      */
-    private $TimerStack = [];
+    private array $Stack = [];
 
     /**
-     * Start a timer using the system's high-resolution time
+     * Increment a counter and return its value
      *
-     * @api
+     * @return int<1,max>
      */
-    public function startTimer(string $name, string $type = 'general'): void
+    public function count(string $counter, string $group = 'general'): int
+    {
+        $this->assertMetricIs($counter, $group, Metric::COUNTER);
+        $this->Counters[$group][$counter] ??= 0;
+        return ++$this->Counters[$group][$counter];
+    }
+
+    /**
+     * Start a timer based on the system's high-resolution time
+     */
+    public function startTimer(string $timer, string $group = 'general'): void
     {
         $now = hrtime(true);
-        if (array_key_exists($name, $this->RunningTimers[$type] ?? [])) {
-            throw new LogicException(sprintf('Timer already running: %s', $name));
+        $this->assertMetricIs($timer, $group, Metric::TIMER);
+        if (isset($this->RunningTimers[$group][$timer])) {
+            throw new LogicException(sprintf('Timer already running: %s', $timer));
         }
-        $this->RunningTimers[$type][$name] = $now;
-        $this->TimerRuns[$type][$name] = ($this->TimerRuns[$type][$name] ?? 0) + 1;
+        $this->RunningTimers[$group][$timer] = $now;
+        $this->TimerRuns[$group][$timer] ??= 0;
+        $this->TimerRuns[$group][$timer]++;
     }
 
     /**
      * Stop a timer and return the elapsed milliseconds
-     *
-     * Elapsed time is also added to the totals returned by
-     * {@see Timekeeper::getTimers()}.
-     *
-     * @api
      */
-    public function stopTimer(string $name, string $type = 'general'): float
+    public function stopTimer(string $timer, string $group = 'general'): float
     {
         $now = hrtime(true);
-        if (!array_key_exists($name, $this->RunningTimers[$type] ?? [])) {
-            throw new LogicException(sprintf('Timer not running: %s', $name));
+        if (!isset($this->RunningTimers[$group][$timer])) {
+            throw new LogicException(sprintf('Timer not running: %s', $timer));
         }
-        $elapsed = $now - $this->RunningTimers[$type][$name];
-        unset($this->RunningTimers[$type][$name]);
-        $this->ElapsedTime[$type][$name] = ($this->ElapsedTime[$type][$name] ?? 0) + $elapsed;
+        $elapsed = $now - $this->RunningTimers[$group][$timer];
+        unset($this->RunningTimers[$group][$timer]);
+        $this->ElapsedTime[$group][$timer] ??= 0;
+        $this->ElapsedTime[$group][$timer] += $elapsed;
 
-        return $elapsed / 1000000;
+        return (float) $elapsed / 1000000;
     }
 
     /**
-     * Push timer state onto the stack
-     *
-     * @api
+     * Push the current state of all metrics onto the stack
      */
-    public function pushTimers(): void
+    public function push(): void
     {
-        $this->TimerStack[] =
-            [$this->TimerRuns, $this->RunningTimers, $this->ElapsedTime];
+        $this->Stack[] = [
+            $this->Metrics,
+            $this->Counters,
+            $this->TimerRuns,
+            $this->RunningTimers,
+            $this->ElapsedTime,
+        ];
     }
 
     /**
-     * Pop timer state off the stack
-     *
-     * @api
+     * Pop metrics off the stack
      */
-    public function popTimers(): void
+    public function pop(): void
     {
-        $timers = array_pop($this->TimerStack);
-        if (!$timers) {
-            throw new LogicException('No timer state to pop off the stack');
+        $metrics = array_pop($this->Stack);
+
+        if (!$metrics) {
+            throw new LogicException('Nothing to pop off the stack');
         }
 
-        [$this->TimerRuns, $this->RunningTimers, $this->ElapsedTime] =
-            $timers;
+        [
+            $this->Metrics,
+            $this->Counters,
+            $this->TimerRuns,
+            $this->RunningTimers,
+            $this->ElapsedTime,
+        ] = $metrics;
     }
 
     /**
-     * Get elapsed milliseconds and start counts for timers started in the
-     * current run
+     * Get the value of a counter
+     */
+    public function getCounter(string $counter, string $group = 'general'): int
+    {
+        return $this->Counters[$group][$counter] ?? 0;
+    }
+
+    /**
+     * Get counter values
      *
-     * @api
+     * @param string[]|string|null $groups If `null` or `["*"]`, all counters
+     * are returned, otherwise only counters in the given groups are returned.
+     * @return array<string,array<string,int>> An array that maps groups to
+     * counters as follows:
      *
-     * @param string[]|string|null $types If `null` or `["*"]`, all timers are
-     * returned, otherwise only timers of the given types are returned.
+     * ```
+     * [
+     *   <group> => [
+     *     <counter> => <value>, ...
+     *   ], ...
+     * ]
+     * ```
+     */
+    public function getCounters($groups = null): array
+    {
+        if ($groups === null || $groups === ['*']) {
+            return $this->Counters;
+        } else {
+            return array_intersect_key($this->Counters, array_flip((array) $groups));
+        }
+    }
+
+    /**
+     * Get the start count and elapsed milliseconds of a timer
+     *
+     * @return array{float,int}
+     */
+    public function getTimer(
+        string $timer,
+        string $group = 'general',
+        bool $includeRunning = true
+    ): array {
+        return $this->doGetTimer($timer, $group, $includeRunning) ?: [0.0, 0];
+    }
+
+    /**
+     * Get timer start counts and elapsed milliseconds
+     *
+     * @param string[]|string|null $groups If `null` or `["*"]`, all timers are
+     * returned, otherwise only timers in the given groups are returned.
      * @return array<string,array<string,array{float,int}>> An array that maps
-     * timer types to `<timer_name> => [ <elapsed_ms>, <start_count> ]` arrays.
+     * groups to timers as follows:
+     *
+     * ```
+     * [
+     *   <group> => [
+     *     <timer> => [ <elapsed_ms>, <start_count> ], ...
+     *   ], ...
+     * ]
+     * ```
      */
-    public function getTimers(bool $includeRunning = true, $types = null): array
+    public function getTimers(bool $includeRunning = true, $groups = null): array
     {
-        if ($types === null || $types === ['*']) {
+        if ($groups === null || $groups === ['*']) {
             $timerRuns = $this->TimerRuns;
         } else {
-            $timerRuns = array_intersect_key($this->TimerRuns, array_flip((array) $types));
+            $timerRuns = array_intersect_key($this->TimerRuns, array_flip((array) $groups));
         }
 
-        foreach ($timerRuns as $type => $runs) {
+        foreach ($timerRuns as $group => $runs) {
             foreach ($runs as $name => $count) {
-                $elapsed = $this->ElapsedTime[$type][$name] ?? 0;
-                if ($includeRunning &&
-                        array_key_exists($name, $this->RunningTimers[$type] ?? [])) {
-                    $elapsed += ($now ?? ($now = hrtime(true))) - $this->RunningTimers[$type][$name];
-                }
-                if (!$elapsed) {
+                $timer = $this->doGetTimer($name, $group, $includeRunning, $count, $now);
+                if ($timer === null) {
                     continue;
                 }
-                $timers[$type][$name] = [$elapsed / 1000000, $count];
+                $timers[$group][$name] = $timer;
             }
         }
 
         return $timers ?? [];
+    }
+
+    /**
+     * @param int|float $now
+     * @return array{float,int}|null
+     */
+    private function doGetTimer(
+        string $timer,
+        string $group,
+        bool $includeRunning,
+        ?int $count = null,
+        &$now = null
+    ) {
+        $count ??= $this->TimerRuns[$group][$timer] ?? null;
+        if ($count === null) {
+            return null;
+        }
+        $elapsed = $this->ElapsedTime[$group][$timer] ?? 0;
+        if ($includeRunning && isset($this->RunningTimers[$group][$timer])) {
+            $now ??= hrtime(true);
+            $elapsed += $now - $this->RunningTimers[$group][$timer];
+        }
+        if (!$elapsed) {
+            return null;
+        }
+        return [(float) $elapsed / 1000000, $count];
+    }
+
+    /**
+     * @param Metric::* $metric
+     */
+    private function assertMetricIs(string $name, string $group, int $metric): void
+    {
+        $this->Metrics[$group][$name] ??= $metric;
+        if ($this->Metrics[$group][$name] !== $metric) {
+            throw new LogicException(sprintf(
+                'Not a Metric::%s: %s (group=%s)',
+                Metric::toName($metric),
+                $name,
+                $group,
+            ));
+        }
     }
 }

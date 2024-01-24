@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Str;
 
 final class StrTest extends TestCase
@@ -253,7 +253,7 @@ final class StrTest extends TestCase
         string $expectedCamelCase,
         string $expectedPascalCase
     ): void {
-        $name = Convert::valueToCode([$string, $preserve]);
+        $name = Get::code([$string, $preserve]);
         $this->assertSame($expectedSnakeCase, Str::toSnakeCase($string, $preserve), "snake_case{$name}");
         $this->assertSame($expectedKebabCase, Str::toKebabCase($string, $preserve), "kebab-case{$name}");
         $this->assertSame($expectedCamelCase, Str::toCamelCase($string, $preserve), "camelCase{$name}");

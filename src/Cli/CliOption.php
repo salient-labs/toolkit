@@ -22,6 +22,7 @@ use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Format;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
@@ -1083,7 +1084,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             'invalid %s value (%s expected): %s',
             $this->DisplayName,
             $this->getValueTypeName(),
-            Convert::valueToCode($value),
+            Get::code($value),
         ));
     }
 
