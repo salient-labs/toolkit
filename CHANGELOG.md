@@ -12,6 +12,163 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.29] - 2024-01-24
+
+### Added
+
+- Add counters to metrics collected by `Timekeeper` and its `Profile` facade
+- Add `Arr::keyOf()`
+
+### Changed
+
+- Rename `Timekeeper` to more accurate `MetricCollector`
+- Rename "timer types" to "metric groups"
+- Rename `MetricCollector`/`Profile` methods:
+  - `pushTimers()` => `push()`
+  - `popTimers()` => `pop()`
+- Rename `IApplication::reportTimers()` to `reportMetrics()`
+- Report counters and timers subsequently in `Application` output
+- Improve `Pcre::replaceCallback()` and `Pcre::replaceCallbackArray()` annotations for PHPStan users
+- Move utility methods:
+  - `Convert::coalesce()` => `Get::coalesce()`
+  - `Convert::sizeToBytes()` => `Get::bytes()`
+  - `Convert::valuesToCode()` => `Get::code()`
+  - `Sys::getCwd()` => `File::cwd()`
+
+### Fixed
+
+- Fix `Application` issues where:
+  - All metrics output is bold
+  - Numeric timer names are lost if the number of timers/counters reported is limited
+- Fix issue where `Get::bytes()` is less forgiving than PHP's ini parser
+- Fix issue where `min` and `max` in integer ranges (e.g. `int<1,max>`) are treated as class names
+
+## [v0.21.28] - 2024-01-20
+
+### Added
+
+- Add `Unloadable` interface
+- Add `ConsoleTargetInterface::close()`
+- Add `ConsoleTargetStreamInterface::reopen()`
+- Add `ConsoleInvalidTargetException`
+- Add `Console::deregisterAllTargets()` and call it when the `Console` facade's underlying `ConsoleWriter` is unloaded
+
+### Changed
+
+- If a facade's underlying instance implements `Unloadable`, call its `unload()` method before removing it from the facade
+- In `Console::deregisterTarget()`, call `close()` on deregistered targets
+- In `File::same()`, return earlier if filenames are identical
+
+### Fixed
+
+- Fix issue where the first underlying instance loaded by `Facade` is never completely unloaded because its container event listener is never removed
+- Fix issue where `Facade::unloadAll()` bypasses deregistrations applied in `Facade::unload()`
+
+## [v0.21.27] - 2024-01-20
+
+### Changed
+
+- Add optional `$directory` and `$prefix` arguments to `File::createTempDir()`
+- Add optional `$forgetArguments` parameter to `CliCommand::applyOptionValues()`
+
+## [v0.21.26] - 2024-01-20
+
+### Added
+
+- Add `CliCommand::optionHasArgument()`
+- Add `ICliApplication::getLastCommand()` and implement in `CliApplication`
+
+### Changed
+
+- Make `CliCommand::getRuns()` public
+
+### Removed
+
+- Remove unused `Assert::isMatch()`
+
+## [v0.21.25] - 2024-01-19
+
+### Added
+
+- Add `Str::eolToNative()` and `Str::eolFromNative()`
+
+### Changed
+
+- In `Str::setEol()`, normalise strings with multiple end-of-line sequences, reverting change made in v0.21.19
+- Replace multi-line strings in `Console` and `Cli` to ensure the only end-of-line sequence used internally is "\n"
+- Don't enable PCRE's Unicode flag unnecessarily in `ConsoleFormatter`
+
+## [v0.21.24] - 2024-01-19
+
+### Fixed
+
+- Fix issue where Cli options cannot be applied to cloned commands
+
+## [v0.21.23] - 2024-01-19
+
+### Added
+
+- Add `Get::copy()`, a deep copy implementation similar to `myclabs/deep-copy`
+- Add `Reflect::getAllProperties()`
+- Add `UncloneableObjectException`
+- Add a `UnitEnum` stub for PHP <8.1
+
+### Changed
+
+- Return without declaring stubs that have already been declared
+
+### Fixed
+
+- Fix issue where Cli options are still bound to their original variables /
+  properties after a command is cloned (caveat: commands must be cloned with
+  `Get::copy()`)
+
+## [v0.21.22] - 2024-01-18
+
+### Changed
+
+- Use native line endings in `Json::prettyPrint()` and elsewhere previously overlooked
+
+### Fixed
+
+- Cli: fix regression where terse synopses are double-escaped
+
+## [v0.21.21] - 2024-01-17
+
+### Added
+
+- Add `CliCommand` methods:
+  - `filterGetSchemaValues()`
+  - `filterNormaliseSchemaValues()`
+  - `filterApplySchemaValues()`
+- Add unified diff formatting via `ConsoleFormatter::formatDiff()`
+- Add `Console::getFormatter()`
+- Add `ConsoleFormatterFactory` and implement in:
+  - `ConsoleLoopbackFormat`
+  - `ConsoleMarkdownFormat`
+  - `ConsoleManPageFormat`
+- Add `File::dir()`
+
+### Changed
+
+- Cli: refactor `CliCommand`
+  - Provide default implementations of `getOptionList()`, `getLongDescription()`, `getHelpSections()`
+  - Add explicit schema value handling to `applyOptionValues()`, `normaliseOptionValues()`, `getOptionValues()`, `getDefaultOptionValues()`
+  - Allow schema names to be used with `getOptionValue()`, `getOption()`, `hasOption()`
+
+- Cli: improve help messages, incl. Markdown and man page output
+  - Consolidate formatting code into `CliHelpStyle` where possible
+  - Replace value name with `yes|no` for options with value type `BOOLEAN`
+  - Include syntax when wrapping Markdown and man page output
+  - Always wrap synopses
+
+- Allow `HasDescription` to be implemented without `HasName`
+- Adopt PHIVE for tools
+
+### Removed
+
+- Remove clumsy/redundant `ICliApplication` methods `getHelpType()`, `getHelpStyle()`, `getHelpWidth()`, `buildHelp()` and their implementations
+
 ## [v0.21.20] - 2024-01-10
 
 ### Added
@@ -1316,6 +1473,15 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.29]: https://github.com/lkrms/php-util/compare/v0.21.28...v0.21.29
+[v0.21.28]: https://github.com/lkrms/php-util/compare/v0.21.27...v0.21.28
+[v0.21.27]: https://github.com/lkrms/php-util/compare/v0.21.26...v0.21.27
+[v0.21.26]: https://github.com/lkrms/php-util/compare/v0.21.25...v0.21.26
+[v0.21.25]: https://github.com/lkrms/php-util/compare/v0.21.24...v0.21.25
+[v0.21.24]: https://github.com/lkrms/php-util/compare/v0.21.23...v0.21.24
+[v0.21.23]: https://github.com/lkrms/php-util/compare/v0.21.22...v0.21.23
+[v0.21.22]: https://github.com/lkrms/php-util/compare/v0.21.21...v0.21.22
+[v0.21.21]: https://github.com/lkrms/php-util/compare/v0.21.20...v0.21.21
 [v0.21.20]: https://github.com/lkrms/php-util/compare/v0.21.19...v0.21.20
 [v0.21.19]: https://github.com/lkrms/php-util/compare/v0.21.18...v0.21.19
 [v0.21.18]: https://github.com/lkrms/php-util/compare/v0.21.17...v0.21.18
