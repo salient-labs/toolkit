@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Polyfill;
 
 use Lkrms\Polyfill\PhpToken;
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Str;
 use Throwable;
 use TypeError;
@@ -46,7 +46,7 @@ abstract class PhpTokenTestCase extends TestCase
         foreach ($input as $token) {
             $actual[] = $token->getTokenName();
         }
-        $actualCode = Convert::valueToCode($actual ?? []);
+        $actualCode = Get::code($actual ?? []);
 
         $this->assertSame(
             $expected,
@@ -165,7 +165,7 @@ abstract class PhpTokenTestCase extends TestCase
         foreach ($input as $token) {
             $actual[] = $token->is($kind);
         }
-        $actualCode = Convert::valueToCode($actual ?? []);
+        $actualCode = Get::code($actual ?? []);
 
         $this->assertSame(
             $expected,
@@ -475,7 +475,7 @@ abstract class PhpTokenTestCase extends TestCase
         foreach ($input as $token) {
             $actual[] = $token->isIgnorable();
         }
-        $actualCode = Convert::valueToCode($actual ?? []);
+        $actualCode = Get::code($actual ?? []);
 
         $this->assertSame(
             $expected,
@@ -593,7 +593,7 @@ abstract class PhpTokenTestCase extends TestCase
                 "%s    new static::\$Token(%s, %s, %d, %d),\n",
                 $code,
                 $token->id < 128 ? $token->id : '\\' . $token->getTokenName(),
-                Convert::valueToCode($token->text),
+                Get::code($token->text),
                 $token->line,
                 $token->pos
             ),

@@ -21,6 +21,29 @@ final class File extends Utility
         REGEX;
 
     /**
+     * Get the current working directory without resolving symbolic links
+     */
+    public static function cwd(): string
+    {
+        $pipe = self::openPipe(\PHP_OS_FAMILY === 'Windows' ? 'cd' : 'pwd', 'rb');
+        $dir = self::getContents($pipe);
+        $status = self::closePipe($pipe);
+
+        if (!$status) {
+            if (substr($dir, -strlen(\PHP_EOL)) === \PHP_EOL) {
+                $dir = substr($dir, 0, -strlen(\PHP_EOL));
+            }
+            return $dir;
+        }
+
+        $dir = getcwd();
+        if ($dir === false) {
+            throw new FilesystemErrorException('Unable to get current working directory');
+        }
+        return $dir;
+    }
+
+    /**
      * Open a file or URL
      *
      * @see fopen()
@@ -946,7 +969,8 @@ final class File extends Utility
      * Generate a filename unique to the current user and the path of the
      * running script
      *
-     * If `$dir` is not given, a filename in `sys_get_temp_dir()` is returned.
+     * If `$dir` is not given, a filename in {@see sys_get_temp_dir()} is
+     * returned.
      *
      * No changes are made to the filesystem.
      */

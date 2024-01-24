@@ -35,6 +35,7 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use CurlHandle;
 use DateTimeInterface;
@@ -1321,7 +1322,7 @@ final class Curler implements IReadable, IWritable, Buildable
 
     private function getRetryAfter(): ?int
     {
-        if (preg_match('/^[0-9]+$/', $retryAfter = $this->ResponseHeadersByName['retry-after'] ?? null)) {
+        if (Pcre::match('/^[0-9]+$/', $retryAfter = $this->ResponseHeadersByName['retry-after'] ?? null)) {
             return (int) $retryAfter;
         }
         if (($retryAfter = strtotime($retryAfter)) !== false) {
@@ -1428,7 +1429,7 @@ final class Curler implements IReadable, IWritable, Buildable
             $result = Json::parseObjectAsArray($this->execute(false));
             $entities = array_merge($entities, $result);
 
-            if (preg_match('/<([^>]+)>;\s*rel=([\'"])next\2/', $this->ResponseHeadersByName['link'] ?? '', $matches)) {
+            if (Pcre::match('/<([^>]+)>;\s*rel=([\'"])next\2/', $this->ResponseHeadersByName['link'] ?? '', $matches)) {
                 $nextUrl = $matches[1];
             }
         } while ($nextUrl);

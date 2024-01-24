@@ -189,7 +189,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      *
      * This method can only be called once per pipeline.
      *
-     * Analogous to `array_filter()`, although the effect of the callback's
+     * Analogous to {@see array_filter()}, although the effect of the callback's
      * return value is reversed.
      *
      * If `$filter` returns `false`, `$result` is returned to the caller,

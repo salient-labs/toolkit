@@ -21,6 +21,28 @@ use UnitEnum;
 final class Get extends Utility
 {
     /**
+     * Get the first value that is not null, or return the last value
+     *
+     * @template T
+     *
+     * @param T|null $value
+     * @param T|null ...$values
+     * @return T|null
+     */
+    public static function coalesce($value, ...$values)
+    {
+        array_unshift($values, $value);
+        $last = array_pop($values);
+        foreach ($values as $value) {
+            if ($value === null) {
+                continue;
+            }
+            return $value;
+        }
+        return $last;
+    }
+
+    /**
      * Resolve a value to an array
      *
      * @template TKey of array-key
@@ -103,6 +125,148 @@ final class Get extends Utility
             'double' => 'float',
             'NULL' => 'null',
         ][$type] ?? $type;
+    }
+
+    /**
+     * Get php.ini values like "128M" in bytes
+     *
+     * From the PHP FAQ: "The available options are K (for Kilobytes), M (for
+     * Megabytes) and G (for Gigabytes), and are all case-insensitive. Anything
+     * else assumes bytes. 1M equals one Megabyte or 1048576 bytes. 1K equals
+     * one Kilobyte or 1024 bytes."
+     */
+    public static function bytes(string $size): int
+    {
+        // PHP is very forgiving with the syntax of these values
+        $size = rtrim($size);
+        $exp = [
+            'K' => 1, 'k' => 1, 'M' => 2, 'm' => 2, 'G' => 3, 'g' => 3
+        ][$size[-1] ?? ''] ?? 0;
+        return (int) $size * 1024 ** $exp;
+    }
+
+    /**
+     * Convert a value to PHP code
+     *
+     * Similar to {@see var_export()}, but with more economical output.
+     *
+     * @param mixed $value
+     */
+    public static function code(
+        $value,
+        string $delimiter = ', ',
+        string $arrow = ' => ',
+        ?string $escapeCharacters = null,
+        string $tab = '    '
+    ): string {
+        $eol = (string) self::eol($delimiter);
+        $multiline = (bool) $eol;
+        return self::doCode(
+            $value,
+            $delimiter,
+            $arrow,
+            $escapeCharacters,
+            $tab,
+            $multiline,
+            $eol,
+        );
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private static function doCode(
+        $value,
+        string $delimiter,
+        string $arrow,
+        ?string $escapeCharacters,
+        string $tab,
+        bool $multiline,
+        string $eol,
+        string $indent = ''
+    ): string {
+        if ($value === null) {
+            return 'null';
+        }
+
+        // Escape strings that contain vertical whitespace or characters in
+        // `$escapeCharacters`
+        if (is_string($value) && (
+            Pcre::match('/\v/', $value) || (
+                (string) $escapeCharacters !== '' &&
+                strpbrk($value, $escapeCharacters) !== false
+            )
+        )) {
+            $escaped = addcslashes($value, "\0..\x1f\$\\" . $escapeCharacters);
+
+            // Replace characters in `$escapeCharacters` with the equivalent
+            // hexadecimal escape
+            if ((string) $escapeCharacters !== '') {
+                $search = [];
+                $replace = [];
+                foreach (str_split($escapeCharacters) as $character) {
+                    $regex = preg_quote(addcslashes($character, $character), '/');
+                    $search[] = "/((?<!\\\\)(?:\\\\\\\\)*){$regex}/";
+                    $replace[] = sprintf('$1\x%02x', ord($character));
+                }
+                $escaped = Pcre::replace($search, $replace, $escaped);
+            }
+
+            // Convert octal notation to hexadecimal (e.g. "\177" to "\x7f") and
+            // correct for differences between C and PHP escape sequences:
+            // - recognised by PHP: \0 \e \f \n \r \t \v
+            // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
+            Pcre::replaceCallback(
+                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<NUL>000(?![0-7]))|(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
+                fn(array $matches) =>
+                    $matches[1]
+                    . ($matches['NUL'] !== null
+                        ? '\0'
+                        : ($matches['octal'] !== null
+                            ? (($dec = octdec($matches['octal'])) === 27
+                                ? '\e'
+                                : sprintf('\x%02x', $dec))
+                            : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']]))),
+                $escaped,
+                -1,
+                $count,
+                \PREG_UNMATCHED_AS_NULL,
+            );
+
+            return '"' . $escaped . '"';
+        }
+
+        if (!is_array($value)) {
+            return var_export($value, true);
+        }
+
+        if (!$value) {
+            return '[]';
+        }
+
+        $prefix = '[';
+        $suffix = ']';
+        $glue = $delimiter;
+
+        if ($multiline) {
+            $suffix = $delimiter . $indent . $suffix;
+            $indent .= $tab;
+            $prefix .= $eol . $indent;
+            $glue .= $indent;
+        }
+
+        $isList = Arr::isList($value);
+        foreach ($value as $key => $value) {
+            $value = self::doCode($value, $delimiter, $arrow, $escapeCharacters, $tab, $multiline, $eol, $indent);
+            if ($isList) {
+                $values[] = $value;
+                continue;
+            }
+            $key = self::doCode($key, $delimiter, $arrow, $escapeCharacters, $tab, $multiline, $eol, $indent);
+            $values[] = $key . $arrow . $value;
+        }
+
+        return $prefix . implode($glue, $values) . $suffix;
     }
 
     /**

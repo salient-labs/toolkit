@@ -326,7 +326,6 @@ final class ConsoleFormatter
         }
 
         $string = '';
-        /** @var array<int|string,string|null> $match */
         foreach ($matches as $match) {
             $indent = (string) $match['indent'];
 
@@ -359,7 +358,6 @@ final class ConsoleFormatter
                         $baseOffset,
                         &$adjust
                     ): string {
-                        /** @var array<int|string,array{string,int}> $match */
                         $text = $this->applyTags(
                             $match,
                             true,
@@ -472,7 +470,6 @@ final class ConsoleFormatter
             ): string {
                 // If the escape character is being wrapped, do nothing other
                 // than temporarily replace "\ " with "\x"
-                /** @var array<int|string,array{string,int}> $match */
                 if ($wrapAfterApply && !$unescape) {
                     if ($match[1][0] !== ' ') {
                         return $match[0][0];

@@ -189,23 +189,6 @@ final class Convert extends Utility
     }
 
     /**
-     * Get the first value that is not null
-     *
-     * @param mixed ...$values
-     * @return mixed
-     */
-    public static function coalesce(...$values)
-    {
-        while ($values) {
-            $value = array_shift($values);
-            if ($value !== null) {
-                return $value;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Replace the end of a multi-byte string with an ellipsis ("...") if its
      * length exceeds a limit
      */
@@ -345,7 +328,7 @@ final class Convert extends Utility
         /** @var array<string,string[]> */
         $sections = [];
         $lastWasItem = false;
-        $lines = preg_split('/\r\n|\n|\r/', $text);
+        $lines = Pcre::split('/\r\n|\n|\r/', $text);
         for ($i = 0; $i < count($lines); $i++) {
             $line = $lines[$i];
 
@@ -529,24 +512,6 @@ final class Convert extends Utility
     }
 
     /**
-     * Convert php.ini values like "128M" to bytes
-     *
-     * @param string $size From the PHP FAQ: "The available options are K (for
-     * Kilobytes), M (for Megabytes) and G (for Gigabytes), and are all
-     * case-insensitive."
-     */
-    public static function sizeToBytes(string $size): int
-    {
-        if (!Pcre::match('/^(.+?)([KMG]?)$/', Str::upper($size), $match) || !is_numeric($match[1])) {
-            throw new LogicException("Invalid shorthand: '$size'");
-        }
-
-        $power = ['' => 0, 'K' => 1, 'M' => 2, 'G' => 3];
-
-        return (int) ($match[1] * (1024 ** $power[$match[2]]));
-    }
-
-    /**
      * Convert the given strings and Stringables to an array of strings
      *
      * @param int|float|string|bool|Stringable|null ...$value
@@ -699,155 +664,5 @@ final class Convert extends Utility
             $preserveKeys,
             $dateFormatter ?: new DateFormatter()
         );
-    }
-
-    /**
-     * Like var_export but with more compact output
-     *
-     * Indentation is applied automatically if `$delimiter` contains one or more
-     * newline characters.
-     *
-     * Array keys are suppressed for list arrays.
-     *
-     * @param mixed $value
-     * @param string $delimiter Added between array elements.
-     * @param string $arrow Added between array keys and values.
-     * @param string|null $escapeCharacters Characters to escape in hexadecimal
-     * notation.
-     */
-    public static function valueToCode(
-        $value,
-        string $delimiter = ', ',
-        string $arrow = ' => ',
-        ?string $escapeCharacters = null,
-        string $tab = '    '
-    ): string {
-        $eol = Get::eol($delimiter) ?: '';
-        $multiline = (bool) $eol;
-        return self::doValueToCode(
-            $value,
-            $delimiter,
-            $arrow,
-            $escapeCharacters,
-            $tab,
-            $multiline,
-            $eol,
-        );
-    }
-
-    /**
-     * @param mixed $value
-     */
-    private static function doValueToCode(
-        $value,
-        string $delimiter,
-        string $arrow,
-        ?string $escapeCharacters,
-        string $tab,
-        bool $multiline,
-        string $eol,
-        string $indent = ''
-    ): string {
-        if ($value === null) {
-            return 'null';
-        }
-
-        if (is_string($value) &&
-            (Pcre::match('/\v/', $value) ||
-                ($escapeCharacters !== null &&
-                    strpbrk($value, $escapeCharacters) !== false))) {
-            $characters = "\0..\x1f\$\\" . $escapeCharacters;
-            $escaped = addcslashes($value, $characters);
-
-            // Escape explicitly requested characters in hexadecimal notation
-            if ($escapeCharacters !== null) {
-                $search = [];
-                $replace = [];
-                foreach (str_split($escapeCharacters) as $character) {
-                    $search[] = sprintf('/((?<!\\\\)(?:\\\\\\\\)*)%s/', preg_quote(addcslashes($character, $character), '/'));
-                    $replace[] = sprintf('$1\x%02x', ord($character));
-                }
-                $escaped = Pcre::replace($search, $replace, $escaped);
-            }
-
-            // Convert octal notation to hexadecimal and correct for differences
-            // between C and PHP escape sequences:
-            // - recognised by PHP: \0 \e \f \n \r \t \v
-            // - returned by addcslashes: \000 \033 \a \b \f \n \r \t \v
-            Pcre::replaceCallback(
-                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
-                fn(array $matches) =>
-                    $matches[1]
-                    . ($matches['octal'] !== null
-                        ? (($dec = octdec($matches['octal']))
-                            ? ($dec === 27 ? '\e' : sprintf('\x%02x', $dec))
-                            : '\0')
-                        : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']])),
-                $escaped,
-                -1,
-                $count,
-                \PREG_UNMATCHED_AS_NULL,
-            );
-
-            return '"' . $escaped . '"';
-        }
-
-        if (!is_array($value)) {
-            return var_export($value, true);
-        }
-
-        if (!$value) {
-            return '[]';
-        }
-
-        $prefix = '[';
-        $suffix = ']';
-        $glue = $delimiter;
-
-        if ($multiline) {
-            $suffix = "{$delimiter}{$indent}{$suffix}";
-            $indent .= $tab;
-            $prefix .= "{$eol}{$indent}";
-            $glue .= $indent;
-        }
-
-        if (Arr::isList($value)) {
-            foreach ($value as $value) {
-                $values[] = self::doValueToCode(
-                    $value,
-                    $delimiter,
-                    $arrow,
-                    $escapeCharacters,
-                    $tab,
-                    $multiline,
-                    $eol,
-                    $indent,
-                );
-            }
-        } else {
-            foreach ($value as $key => $value) {
-                $values[] = self::doValueToCode(
-                    $key,
-                    $delimiter,
-                    $arrow,
-                    $escapeCharacters,
-                    $tab,
-                    $multiline,
-                    $eol,
-                    $indent,
-                ) . $arrow . self::doValueToCode(
-                    $value,
-                    $delimiter,
-                    $arrow,
-                    $escapeCharacters,
-                    $tab,
-                    $multiline,
-                    $eol,
-                    $indent,
-                );
-            }
-        }
-
-        return $prefix . implode($glue, $values) . $suffix;
     }
 }

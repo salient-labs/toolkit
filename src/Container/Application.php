@@ -4,6 +4,7 @@ namespace Lkrms\Container;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Contract\IApplication;
 use Lkrms\Exception\FilesystemErrorException;
@@ -80,7 +81,7 @@ class Application extends Container implements IApplication
     /**
      * @var string[]|string|null
      */
-    private static $ShutdownReportTimerTypes;
+    private static $ShutdownReportMetricGroups;
 
     private static bool $ShutdownReportResourceUsage;
 
@@ -350,11 +351,11 @@ class Application extends Container implements IApplication
      */
     final public function registerShutdownReport(
         int $level = Level::INFO,
-        $timerTypes = null,
+        $groups = null,
         bool $resourceUsage = true
     ) {
         self::$ShutdownReportLevel = $level;
-        self::$ShutdownReportTimerTypes = $timerTypes;
+        self::$ShutdownReportMetricGroups = $groups;
         self::$ShutdownReportResourceUsage = $resourceUsage;
 
         if (self::$ShutdownReportIsRegistered) {
@@ -364,7 +365,7 @@ class Application extends Container implements IApplication
         register_shutdown_function(
             static function () {
                 $level = self::$ShutdownReportLevel;
-                self::doReportTimers($level, true, self::$ShutdownReportTimerTypes, 10);
+                self::doReportMetrics($level, true, self::$ShutdownReportMetricGroups, 10);
                 if (self::$ShutdownReportResourceUsage) {
                     self::doReportResourceUsage($level);
                 }
@@ -550,36 +551,84 @@ class Application extends Container implements IApplication
             ...Sys::getCpuUsage(),
         ];
 
-        Console::print("\n" . sprintf(
-            'CPU time: **%.3fs** elapsed, **%.3fs** user, **%.3fs** system; memory: **%s** peak',
-            ($endTime - self::$StartTime) / 1000000000,
-            $userTime / 1000000,
-            $systemTime / 1000000,
-            Format::bytes($peakMemory, 3)
-        ), $level);
+        Console::print(
+            "\n" . sprintf(
+                'CPU time: **%.3fs** elapsed, **%.3fs** user, **%.3fs** system; memory: **%s** peak',
+                ($endTime - self::$StartTime) / 1000000000,
+                $userTime / 1000000,
+                $systemTime / 1000000,
+                Format::bytes($peakMemory, 3)
+            ),
+            $level,
+            MessageType::UNFORMATTED,
+        );
     }
 
     /**
      * @inheritDoc
      */
-    final public function reportTimers(
+    final public function reportMetrics(
         int $level = Level::INFO,
         bool $includeRunning = true,
-        $types = null,
+        $groups = null,
         ?int $limit = 10
     ) {
-        self::doReportTimers($level, $includeRunning, $types, $limit);
+        self::doReportMetrics($level, $includeRunning, $groups, $limit);
         return $this;
     }
 
     /**
      * @param Level::* $level
-     * @param string[]|string|null $types
+     * @param string[]|string|null $groups
      */
-    private static function doReportTimers(int $level, bool $includeRunning, $types, ?int $limit): void
+    private static function doReportMetrics(int $level, bool $includeRunning, $groups, ?int $limit): void
     {
-        $typeTimers = Profile::getTimers($includeRunning, $types);
-        foreach ($typeTimers as $type => $timers) {
+        $groupCounters = Profile::getCounters($groups);
+        foreach ($groupCounters as $group => $counters) {
+            // Sort by counter value, in descending order
+            uasort($counters, fn(int $a, int $b) => $b <=> $a);
+
+            $maxValue = $totalValue = 0;
+            $count = count($counters);
+            foreach ($counters as $value) {
+                $totalValue += $value;
+                $maxValue = max($maxValue, $value);
+            }
+
+            if ($limit !== null && $limit < $count) {
+                $counters = array_slice($counters, 0, $limit, true);
+            }
+
+            $lines = [];
+            $lines[] = sprintf(
+                "Metrics: **%d** %s recorded by **%d** %s in group '**%s**':",
+                $totalValue,
+                Convert::plural($totalValue, 'event'),
+                $count,
+                Convert::plural($count, 'counter'),
+                $group,
+            );
+
+            $valueWidth = strlen((string) $maxValue);
+            $format = "  %{$valueWidth}d ***%s***";
+            foreach ($counters as $name => $value) {
+                $lines[] = sprintf(
+                    $format,
+                    $value,
+                    $name,
+                );
+            }
+
+            if ($hidden = $count - count($counters)) {
+                $width = $valueWidth + 3;
+                $lines[] = sprintf("%{$width}s~~(and %d more)~~", '', $hidden);
+            }
+
+            $report[] = implode("\n", $lines);
+        }
+
+        $groupTimers = Profile::getTimers($includeRunning, $groups);
+        foreach ($groupTimers as $group => $timers) {
             // Sort by milliseconds elapsed, in descending order
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);
 
@@ -592,23 +641,24 @@ class Application extends Container implements IApplication
             }
 
             if ($limit !== null && $limit < $count) {
-                array_splice($timers, $limit);
+                $timers = array_slice($timers, 0, $limit, true);
             }
 
             $lines = [];
             $lines[] = sprintf(
-                "Timing: **%.3fms** recorded by **%d** %s with type '**%s**':",
+                "Metrics: **%.3fms** recorded by **%d** %s in group '**%s**':",
                 $totalTime,
                 $count,
                 Convert::plural($count, 'timer'),
-                $type,
+                $group,
             );
 
             $timeWidth = strlen((string) (int) $maxTime) + 4;
-            $runsWidth = strlen((string) (int) $maxRuns) + 2;
+            $runsWidth = strlen((string) $maxRuns) + 2;
+            $format = "  %{$timeWidth}.3fms ~~{~~%{$runsWidth}s~~}~~ ***%s***";
             foreach ($timers as $name => [$time, $runs]) {
                 $lines[] = sprintf(
-                    "  %{$timeWidth}.3fms ~~{~~%{$runsWidth}s~~}~~ ***%s***",
+                    $format,
                     $time,
                     sprintf('*%d*', $runs),
                     $name,
@@ -624,7 +674,11 @@ class Application extends Container implements IApplication
         }
 
         if (isset($report)) {
-            Console::print("\n" . implode("\n\n", $report), $level);
+            Console::print(
+                "\n" . implode("\n\n", $report),
+                $level,
+                MessageType::UNFORMATTED,
+            );
         }
     }
 

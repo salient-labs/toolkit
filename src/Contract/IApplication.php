@@ -3,8 +3,8 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Facade\Profile;
 use Lkrms\Store\CacheStore;
-use Lkrms\Support\Timekeeper;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Catalog\EnvFlag;
@@ -188,15 +188,15 @@ interface IApplication extends IContainer
     );
 
     /**
-     * Print a summary of the application's timers and system resource usage
-     * when it terminates
+     * Print a summary of the application's runtime performance metrics and
+     * system resource usage when it terminates
      *
-     * Use {@see Timekeeper::startTimer()} and {@see Timekeeper::stopTimer()} to
-     * collect timing information.
+     * Use {@see Profile::startTimer()}, {@see Profile::stopTimer()} and
+     * {@see Profile::count()} to collect performance metrics.
      *
      * @param Level::* $level
-     * @param string[]|string|null $timerTypes If `null` or `["*"]`, all timers
-     * are reported, otherwise only timers of the given types are reported.
+     * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
+     * reported, otherwise only metrics in the given groups are reported.
      * @return $this
      *
      * @see IApplication::reportResourceUsage()
@@ -204,7 +204,7 @@ interface IApplication extends IContainer
      */
     public function registerShutdownReport(
         int $level = Level::INFO,
-        $timerTypes = null,
+        $groups = null,
         bool $resourceUsage = true
     );
 
@@ -217,21 +217,21 @@ interface IApplication extends IContainer
     public function reportResourceUsage(int $level = Level::INFO);
 
     /**
-     * Print a summary of the application's timers
+     * Print a summary of the application's runtime performance metrics
      *
      * @param Level::* $level
-     * @param string[]|string|null $types If `null` or `["*"]`, all timers are
-     * reported, otherwise only timers of the given types are reported.
+     * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
+     * reported, otherwise only metrics in the given groups are reported.
      * @return $this
      *
-     * @see Timekeeper::startTimer()
-     * @see Timekeeper::stopTimer()
-     * @see Timekeeper::getTimers()
+     * @see Profile::startTimer()
+     * @see Profile::stopTimer()
+     * @see Profile::count()
      */
-    public function reportTimers(
+    public function reportMetrics(
         int $level = Level::INFO,
         bool $includeRunning = true,
-        $types = null,
+        $groups = null,
         ?int $limit = 10
     );
 }

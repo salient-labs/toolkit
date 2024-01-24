@@ -14,7 +14,8 @@ use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
+use Lkrms\Utility\Pcre;
 use Closure;
 use LogicException;
 
@@ -329,15 +330,15 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 
         $this->Entity = $merge->Entity;
         $this->DateFormatter = $merge->DateFormatter ?: $base->DateFormatter;
-        $this->IncludeMeta = Convert::coalesce($merge->IncludeMeta, $base->IncludeMeta);
-        $this->SortByKey = Convert::coalesce($merge->SortByKey, $base->SortByKey);
-        $this->MaxDepth = Convert::coalesce($merge->MaxDepth, $base->MaxDepth);
-        $this->DetectRecursion = Convert::coalesce($merge->DetectRecursion, $base->DetectRecursion);
-        $this->RemoveCanonicalId = Convert::coalesce($merge->RemoveCanonicalId, $base->RemoveCanonicalId);
+        $this->IncludeMeta = Get::coalesce($merge->IncludeMeta, $base->IncludeMeta);
+        $this->SortByKey = Get::coalesce($merge->SortByKey, $base->SortByKey);
+        $this->MaxDepth = Get::coalesce($merge->MaxDepth, $base->MaxDepth);
+        $this->DetectRecursion = Get::coalesce($merge->DetectRecursion, $base->DetectRecursion);
+        $this->RemoveCanonicalId = Get::coalesce($merge->RemoveCanonicalId, $base->RemoveCanonicalId);
         $this->Remove = $this->flattenRules($base->Remove, $merge->Remove);
         $this->Replace = $this->flattenRules($base->Replace, $merge->Replace);
-        $this->RecurseRules = Convert::coalesce($merge->RecurseRules, $base->RecurseRules);
-        $this->Flags = Convert::coalesce($merge->Flags, $base->Flags);
+        $this->RecurseRules = Get::coalesce($merge->RecurseRules, $base->RecurseRules);
+        $this->Flags = Get::coalesce($merge->Flags, $base->Flags);
 
         return $this;
     }
@@ -481,7 +482,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 
     private function normaliseTarget(string $target): string
     {
-        return preg_replace_callback(
+        return Pcre::replaceCallback(
             '/[^].[]+/',
             fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),
             $target
@@ -537,37 +538,37 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 
     public function getIncludeMeta(): bool
     {
-        return Convert::coalesce($this->IncludeMeta, true);
+        return Get::coalesce($this->IncludeMeta, true);
     }
 
     public function getSortByKey(): bool
     {
-        return Convert::coalesce($this->SortByKey, false);
+        return Get::coalesce($this->SortByKey, false);
     }
 
     public function getMaxDepth(): ?int
     {
-        return Convert::coalesce($this->MaxDepth, 99);
+        return Get::coalesce($this->MaxDepth, 99);
     }
 
     public function getDetectRecursion(): bool
     {
-        return Convert::coalesce($this->DetectRecursion, true);
+        return Get::coalesce($this->DetectRecursion, true);
     }
 
     public function getRemoveCanonicalId(): bool
     {
-        return Convert::coalesce($this->RemoveCanonicalId, true);
+        return Get::coalesce($this->RemoveCanonicalId, true);
     }
 
     public function getRecurseRules(): bool
     {
-        return Convert::coalesce($this->RecurseRules, true);
+        return Get::coalesce($this->RecurseRules, true);
     }
 
     public function getFlags(): int
     {
-        return Convert::coalesce($this->Flags, 0);
+        return Get::coalesce($this->Flags, 0);
     }
 
     public function withIncludeMeta(?bool $value)

@@ -19,10 +19,10 @@ use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
 use Lkrms\Support\TokenExtractor;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
@@ -383,24 +383,55 @@ abstract class GenerateCommand extends Command
      */
     protected function getPhpDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
     {
-        return PhpDocTag::normaliseType(preg_replace_callback(
+        /** @var string */
+        $subject = $type instanceof PhpDocTag
+            ? Str::coalesce($type->Type, '')
+            : $type;
+
+        return PhpDocTag::normaliseType(Pcre::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
-            function ($match) use ($type, $namespace, $templates, $filename, &$inputClassTemplates) {
-                $t = $this->resolveTemplates($match[0], $templates, $template, $inputClassTemplates);
+            function ($match) use (
+                $type,
+                $templates,
+                $namespace,
+                $filename,
+                &$inputClassTemplates,
+                $subject
+            ) {
+                $t = $this->resolveTemplates($match[0][0], $templates, $template, $inputClassTemplates);
                 $type = $template ?: $type;
-                if ($type instanceof PhpDocTag && $type->Class) {
+                if ($type instanceof PhpDocTag && $type->Class !== null) {
                     $class = new ReflectionClass($type->Class);
                     $namespace = $class->getNamespaceName();
                     $filename = $class->getFileName();
                 }
                 // Recurse if template expansion occurred
-                if ($t !== $match[0]) {
+                if ($t !== $match[0][0]) {
                     return $this->getPhpDocTypeAlias($t, $templates, $namespace, $filename);
                 }
                 // Leave reserved words and PHPDoc types (e.g. `class-string`)
                 // alone
                 if (Test::isPhpReservedWord($t) || strpos($t, '-') !== false) {
                     return $t;
+                }
+                // Leave `min` and `max` (lowercase) alone if they appear
+                // between angle brackets after `int` (not case sensitive)
+                if ($t === 'min' || $t === 'max') {
+                    // - before: `'array < int < 1, max > >'`
+                    // - after: `['array', '<', 'int', '<', '1']`
+                    $before = substr($subject, 0, $match[0][1]);
+                    $before = Pcre::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
+                    $before = Arr::trim($before);
+                    while ($before) {
+                        $last = array_pop($before);
+                        if ($last === 'min' || $last === 'max' || Test::isIntValue($last)) {
+                            continue;
+                        }
+                        if ($last === '<' && $before && Str::lower(array_pop($before)) === 'int') {
+                            return $t;
+                        }
+                        break;
+                    }
                 }
                 // Don't waste time trying to find a FQCN in $InputFileUseMaps
                 if (($t[0] ?? null) === '\\') {
@@ -412,9 +443,10 @@ abstract class GenerateCommand extends Command
                     $filename
                 );
             },
-            $type instanceof PhpDocTag
-                ? ($type->Type ?: '')
-                : $type
+            $subject,
+            -1,
+            $count,
+            \PREG_OFFSET_CAPTURE,
         ));
     }
 
@@ -812,7 +844,7 @@ abstract class GenerateCommand extends Command
      */
     protected function code($value): string
     {
-        return Convert::valueToCode($value, ',' . \PHP_EOL, ' => ', null, self::TAB);
+        return Get::code($value, ',' . \PHP_EOL, ' => ', null, self::TAB);
     }
 
     /**

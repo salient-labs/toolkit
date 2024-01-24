@@ -42,7 +42,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, Buildable
      *
      * Example: `"Contact not returned by provider: %s"`
      *
-     * Values for `sprintf()` specifiers are taken from the
+     * Values for {@see sprintf()} specifiers are taken from the
      * {@see SyncError::$Values} array, which contains
      * {@see SyncError::$EntityName} by default.
      *

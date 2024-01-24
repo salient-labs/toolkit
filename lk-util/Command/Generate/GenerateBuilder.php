@@ -325,7 +325,7 @@ class GenerateBuilder extends GenerateCommand
 
                 $default = '';
                 $defaultText = null;
-                switch (preg_replace('/^(\?|null\|)|\|null$/', '', $type)) {
+                switch (Pcre::replace('/^(\?|null\|)|\|null$/', '', $type)) {
                     case '\static':
                     case 'static':
                     case '$this':
@@ -427,7 +427,7 @@ class GenerateBuilder extends GenerateCommand
 
             $default = '';
             $defaultText = null;
-            switch (preg_replace('/^(\?|null\|)|\|null$/', '', $type)) {
+            switch (Pcre::replace('/^(\?|null\|)|\|null$/', '', $type)) {
                 case '\static':
                 case 'static':
                 case '$this':
@@ -499,7 +499,7 @@ class GenerateBuilder extends GenerateCommand
                         $templateTag->Variance = null;
                         $lines[] = (string) $templateTag;
                         $returnType[$template] = $T;
-                        $param = preg_replace("/(?<!\$|\\\\)\b$template\b/", $T, $param);
+                        $param = Pcre::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
                     }
                     $lines[] = $param;
                     $lines[] = '@return $this<' . implode(',', $returnType) . '>';

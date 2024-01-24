@@ -8,6 +8,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use Lkrms\Http\Exception\HttpServerException;
+use Lkrms\Utility\Pcre;
 
 /**
  * Listens for HTTP requests on a local address
@@ -200,8 +201,10 @@ final class HttpServer implements IReadable, IImmutable
         do {
             $peer = null;
             $socket = stream_socket_accept($this->Server, $timeout, $peer);
-            $client = $peer ? preg_replace('/:[0-9]+$/', '', $peer) : null;
-            $peer = $peer ?: '<unknown>';
+            $client = $peer === null
+                ? null
+                : Pcre::replace('/:[0-9]+$/', '', (string) $peer);
+            $peer ??= '<unknown>';
 
             if (!$socket) {
                 throw new HttpServerException("Unable to accept connection from $peer");
@@ -220,7 +223,7 @@ final class HttpServer implements IReadable, IImmutable
                     $startLine = explode(' ', rtrim($line, "\r\n"));
                     if (count($startLine) !== 3 ||
                             !in_array($startLine[0], HttpRequestMethodGroup::ALL, true) ||
-                            !preg_match(
+                            !Pcre::match(
                                 '/^HTTP\/([0-9]+(?:\.[0-9]+)?)$/',
                                 $startLine[2],
                                 $version

@@ -52,7 +52,7 @@ jobs:
       - name: Run PHP CS Fixer
         run: tools/php-cs-fixer check --diff --verbose
 
-      - name: Run PrettyPHP
+      - name: Run pretty-php
         run: tools/pretty-php --diff
 
   phpstan:

@@ -29,7 +29,7 @@ use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Lkrms\Store\CacheStore;
 use Lkrms\Support\ErrorHandler;
 use Lkrms\Support\EventDispatcher;
-use Lkrms\Support\Timekeeper;
+use Lkrms\Support\MetricCollector;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use Lkrms\Sync\Support\HttpSyncDefinition;
@@ -51,6 +51,7 @@ use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
+use Lkrms\Utility\Pcre;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -62,7 +63,7 @@ $facades = [
     ErrorHandler::class => [Err::class, '--skip', 'handleShutdown,handleError,handleException'],
     EventDispatcher::class => Event::class,
     SyncStore::class => Sync::class,
-    Timekeeper::class => Profile::class,
+    MetricCollector::class => [Profile::class, '--api'],
 ];
 
 $builders = [
@@ -179,7 +180,7 @@ foreach ($providers as $class => $providerArgs) {
 }
 
 $file = dirname(__DIR__) . '/.gitattributes';
-$attributes = preg_grep(
+$attributes = Pcre::grep(
     '/(^#| linguist-generated$)/',
     Arr::trim(file($file)),
     \PREG_GREP_INVERT

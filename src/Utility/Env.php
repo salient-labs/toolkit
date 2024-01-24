@@ -44,8 +44,8 @@ final class Env extends Utility
     /**
      * Load one or more .env files
      *
-     * Values are applied to `$_ENV`, `$_SERVER` and `putenv()` unless already
-     * present.
+     * Values are applied to `$_ENV`, `$_SERVER` and {@see putenv()} unless
+     * already present.
      *
      * Changes are applied after parsing all files in the given order. If a file
      * contains invalid syntax, an exception is thrown and the environment is
@@ -105,7 +105,7 @@ final class Env extends Utility
     /**
      * Set an environment variable
      *
-     * The value is applied to `$_ENV`, `$_SERVER` and `putenv()`.
+     * The value is applied to `$_ENV`, `$_SERVER` and {@see putenv()}.
      */
     public static function set(string $name, string $value): void
     {
@@ -122,7 +122,7 @@ final class Env extends Utility
     /**
      * Unset an environment variable
      *
-     * The change is applied to `$_ENV`, `$_SERVER` and `putenv()`.
+     * The change is applied to `$_ENV`, `$_SERVER` and {@see putenv()}.
      */
     public static function unset(string $name): void
     {
@@ -169,8 +169,8 @@ final class Env extends Utility
     /**
      * Get a value from the environment
      *
-     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
-     * the first value found.
+     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
+     * returns the first value found.
      *
      * If the variable is not found, `$default` is returned if given, otherwise
      * an {@see InvalidEnvironmentException} is thrown.
@@ -196,8 +196,8 @@ final class Env extends Utility
     /**
      * Get an integer value from the environment
      *
-     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
-     * the first value found.
+     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
+     * returns the first value found.
      *
      * If the value is not an integer, an {@see InvalidEnvironmentException} is
      * thrown.
@@ -236,8 +236,8 @@ final class Env extends Utility
     /**
      * Get a boolean value from the environment
      *
-     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
-     * the first value found.
+     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
+     * returns the first value found.
      *
      * If the value is not boolean, an {@see InvalidEnvironmentException} is
      * thrown.
@@ -354,8 +354,8 @@ final class Env extends Utility
     /**
      * Get a value from the environment, returning null if it's empty
      *
-     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
-     * the first value found.
+     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
+     * returns the first value found.
      *
      * If the variable is not found, `$default` is returned if given, otherwise
      * an {@see InvalidEnvironmentException} is thrown.
@@ -378,8 +378,8 @@ final class Env extends Utility
     /**
      * Get an integer value from the environment, returning null if it's empty
      *
-     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
-     * the first value found.
+     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
+     * returns the first value found.
      *
      * If the value is not empty and not an integer, an
      * {@see InvalidEnvironmentException} is thrown.
@@ -418,8 +418,8 @@ final class Env extends Utility
     /**
      * Get a boolean value from the environment, returning null if it's empty
      *
-     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
-     * the first value found.
+     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
+     * returns the first value found.
      *
      * If the value is not empty and not boolean, an
      * {@see InvalidEnvironmentException} is thrown.

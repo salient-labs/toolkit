@@ -462,6 +462,6 @@ class CliApplication extends Application implements ICliApplication
         $usage = $this->getHelp($name, $node, $style);
         $usage = $formatter->formatTags($usage);
         $usage = Str::eolToNative($usage);
-        printf('%s%s', str_replace('\ ', ' ', $usage), \PHP_EOL);
+        printf('%s%s', str_replace('\ ', "\u{00A0}", $usage), \PHP_EOL);
     }
 }

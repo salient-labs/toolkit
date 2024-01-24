@@ -51,6 +51,26 @@ final class Arr extends Utility
     }
 
     /**
+     * Get the key of a value in an array
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param TValue $value
+     * @param array<TKey,TValue> $array
+     * @return TKey
+     * @throws OutOfRangeException if `$value` is not found in `$array`.
+     */
+    public static function keyOf($value, array $array)
+    {
+        $key = array_search($value, $array, true);
+        if ($key === false) {
+            throw new OutOfRangeException('Value not found in array');
+        }
+        return $key;
+    }
+
+    /**
      * Shift an element off the beginning of an array
      *
      * @template TKey of array-key
@@ -808,7 +828,7 @@ final class Arr extends Utility
      * The return value of each call is passed to the next or returned to the
      * caller.
      *
-     * Similar to `array_reduce()`.
+     * Similar to {@see array_reduce()}.
      *
      * @template TKey of array-key
      * @template TValue

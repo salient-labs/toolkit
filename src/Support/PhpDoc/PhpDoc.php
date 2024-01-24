@@ -7,6 +7,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 
 /**
@@ -127,7 +128,7 @@ final class PhpDoc implements IReadable
         bool $legacyNullable = false
     ) {
         // Check for a leading "*" after every newline as per PSR-5
-        if (!preg_match(Regex::anchorAndDelimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
+        if (!Pcre::match(Regex::anchorAndDelimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
             throw new InvalidArgumentException('Invalid DocBlock');
         }
         $this->LegacyNullable = $legacyNullable;
@@ -138,7 +139,7 @@ final class PhpDoc implements IReadable
             // 4. Trim the entire PHPDoc
             trim(
                 // 3. Remove trailing spaces and leading "* " or "*"
-                preg_replace(
+                Pcre::replace(
                     '/(^\h*\* ?|\h+$)/um',
                     '',
                     // 2. Normalise line endings
@@ -152,21 +153,21 @@ final class PhpDoc implements IReadable
         $this->NextLine = reset($this->Lines);
 
         $tagRegex = Regex::delimit('^' . Regex::PHPDOC_TAG);
-        if ($this->NextLine !== false && !preg_match($tagRegex, $this->NextLine)) {
+        if ($this->NextLine !== false && !Pcre::match($tagRegex, $this->NextLine)) {
             $this->Summary = $this->getLinesUntil('/^$/', true, true);
 
-            if ($this->NextLine !== false && !preg_match($tagRegex, $this->NextLine)) {
+            if ($this->NextLine !== false && !Pcre::match($tagRegex, $this->NextLine)) {
                 $this->Description = rtrim($this->getLinesUntil($tagRegex));
             }
         }
 
-        while ($this->Lines && preg_match(
+        while ($this->Lines && Pcre::match(
             $tagRegex, $text = $this->getLinesUntil($tagRegex), $matches
         )) {
             $this->Tags[] = $text;
 
             // Remove the tag name and any subsequent whitespace
-            $text = preg_replace('/^@' . preg_quote($matches['tag'], '/') . '\s*/', '', $text);
+            $text = Pcre::replace('/^@' . preg_quote($matches['tag'], '/') . '\s*/', '', $text);
             $tag = ltrim($matches['tag'], '\\');
             $this->TagsByName[$tag][] = $text;
 
@@ -345,7 +346,7 @@ final class PhpDoc implements IReadable
         $regex = self::$PhpDocTypeRegex
             ?: (self::$PhpDocTypeRegex = Regex::delimit('^' . Regex::PHPDOC_TYPE));
         $type = null;
-        if (preg_match($regex, $text, $matches, \PREG_OFFSET_CAPTURE)) {
+        if (Pcre::match($regex, $text, $matches, \PREG_OFFSET_CAPTURE)) {
             /** @var array<array{0:string,1:int}> $matches */
             $type = $matches[0][0];
             return ltrim(substr_replace($text, '', $matches[0][1], strlen($matches[0][0])));
@@ -359,7 +360,7 @@ final class PhpDoc implements IReadable
      */
     private function getTagDescription(string $text, int $metaCount): ?string
     {
-        return preg_split('/\s+/', $text, $metaCount + 1)[$metaCount] ?? null;
+        return Pcre::split('/\s+/', $text, $metaCount + 1)[$metaCount] ?? null;
     }
 
     /**
@@ -402,7 +403,7 @@ final class PhpDoc implements IReadable
             $lines[] = $line = $this->getLine();
 
             if (!$unwrap) {
-                if ((!$inFence && preg_match('/^(```+|~~~+)/', $line, $fence)) ||
+                if ((!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence)) ||
                         ($inFence && $line == ($fence[0] ?? null))) {
                     $inFence = !$inFence;
                 }
@@ -414,13 +415,13 @@ final class PhpDoc implements IReadable
             if (!$this->Lines) {
                 break;
             }
-            if (!preg_match($pattern, $this->NextLine)) {
+            if (!Pcre::match($pattern, $this->NextLine)) {
                 continue;
             }
             if ($discard) {
                 do {
                     $this->getLine();
-                } while ($this->Lines && preg_match($pattern, $this->NextLine));
+                } while ($this->Lines && Pcre::match($pattern, $this->NextLine));
             }
             break;
         } while ($this->Lines);

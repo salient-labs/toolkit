@@ -145,9 +145,23 @@ final class Pcre extends Utility
      * A wrapper for preg_replace_callback()
      *
      * @template T of string[]|string
+     * @template TFlags of int-mask-of<\PREG_OFFSET_CAPTURE|\PREG_UNMATCHED_AS_NULL>
+     *
      * @param string[]|string $pattern
      * @param callable(array<array-key,string|null>):string $callback
+     * @phpstan-param (
+     *     TFlags is 256
+     *     ? (callable(array<array{string,int}>): string)
+     *     : (TFlags is 512
+     *         ? (callable(array<string|null>): string)
+     *         : (TFlags is 768
+     *             ? (callable(array<array{string|null,int}>): string)
+     *             : (callable(array<string>): string)
+     *         )
+     *     )
+     * ) $callback
      * @param T $subject
+     * @param TFlags $flags
      * @return T
      */
     public static function replaceCallback(
@@ -170,8 +184,22 @@ final class Pcre extends Utility
      * A wrapper for preg_replace_callback_array()
      *
      * @template T of string[]|string
+     * @template TFlags of int-mask-of<\PREG_OFFSET_CAPTURE|\PREG_UNMATCHED_AS_NULL>
+     *
      * @param array<string,callable(array<array-key,string|null>):string> $pattern
+     * @phpstan-param (
+     *     TFlags is 256
+     *     ? array<string,callable(array<array{string,int}>): string>
+     *     : (TFlags is 512
+     *         ? array<string,callable(array<string|null>): string>
+     *         : (TFlags is 768
+     *             ? array<string,callable(array<array{string|null,int}>): string>
+     *             : array<string,callable(array<string>): string>
+     *         )
+     *     )
+     * ) $pattern
      * @param T $subject
+     * @param TFlags $flags
      * @return T
      */
     public static function replaceCallbackArray(

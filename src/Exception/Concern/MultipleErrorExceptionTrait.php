@@ -6,8 +6,8 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
 use Lkrms\Facade\Console;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Format;
+use Lkrms\Utility\Get;
 
 /**
  * Implements MultipleErrorExceptionInterface
@@ -51,7 +51,7 @@ trait MultipleErrorExceptionTrait
 
     public function getMessageWithoutErrors(): string
     {
-        return Convert::coalesce($this->MessageWithoutErrors, $this->message);
+        return Get::coalesce($this->MessageWithoutErrors, $this->message);
     }
 
     /**

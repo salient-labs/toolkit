@@ -404,13 +404,13 @@ final class Reflect extends Utility
             $value = $parameter->getDefaultValue();
             // Escape commas for phpDocumentor
             $escape = $phpDoc ? ',' : null;
-            $param .= Convert::valueToCode($value, ',', '=>', $escape);
+            $param .= Get::code($value, ',', '=>', $escape);
             return $param;
         }
 
         /** @var string */
         $const = $parameter->getDefaultValueConstantName();
-        if (preg_match('/^(self|parent|static)::/i', $const)) {
+        if (Pcre::match('/^(self|parent|static)::/i', $const)) {
             return "$param$const";
         }
         if ($typeNameCallback) {
