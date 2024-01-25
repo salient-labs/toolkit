@@ -9,6 +9,7 @@ use Lkrms\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
 use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
 use Lkrms\Console\Contract\ConsoleTargetPrefixInterface as TargetPrefix;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
+use Lkrms\Console\Support\ConsoleWriterState;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\IFacade;
@@ -37,60 +38,17 @@ use Throwable;
  */
 final class ConsoleWriter implements ReceivesFacade, Unloadable
 {
-    /**
-     * @var array<Level::*,TargetStream[]>
-     */
-    private array $StdioTargetsByLevel = [];
-
-    /**
-     * @var array<Level::*,TargetStream[]>
-     */
-    private array $TtyTargetsByLevel = [];
-
-    /**
-     * @var array<Level::*,Target[]>
-     */
-    private array $TargetsByLevel = [];
-
-    /**
-     * @var array<int,Target>
-     */
-    private array $Targets = [];
-
-    /**
-     * @var array<int,Target>
-     */
-    private array $DeregisteredTargets = [];
-
-    /**
-     * @var array<int,int-mask-of<TargetTypeFlag::*>>
-     */
-    private array $TargetTypeFlags = [];
-
-    private ?TargetStream $StdoutTarget = null;
-
-    private ?TargetStream $StderrTarget = null;
-
-    private int $GroupLevel = -1;
-
-    /**
-     * @var string[]
-     */
-    private array $GroupMessageStack = [];
-
-    private int $Errors = 0;
-
-    private int $Warnings = 0;
-
-    /**
-     * @var array<string,true>
-     */
-    private array $Written = [];
+    private ConsoleWriterState $State;
 
     /**
      * @var class-string<IFacade<static>>|null
      */
     private ?string $Facade = null;
+
+    public function __construct()
+    {
+        $this->State = new ConsoleWriterState($this);
+    }
 
     /**
      * @inheritDoc
@@ -195,7 +153,10 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function registerStdioTargets(bool $replace = false)
     {
-        if (\PHP_SAPI !== 'cli' || ($this->StdioTargetsByLevel && !$replace)) {
+        if (
+            \PHP_SAPI !== 'cli' ||
+            ($this->State->StdioTargetsByLevel && !$replace)
+        ) {
             return $this;
         }
 
@@ -247,7 +208,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
     ) {
         if (
             !($force || \PHP_SAPI === 'cli') ||
-            ($this->StdioTargetsByLevel && !$replace)
+            ($this->State->StdioTargetsByLevel && !$replace)
         ) {
             return $this;
         }
@@ -267,10 +228,10 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     private function clearStdioTargets()
     {
-        if (!$this->StdioTargetsByLevel) {
+        if (!$this->State->StdioTargetsByLevel) {
             return $this;
         }
-        $targets = $this->reduceTargets($this->StdioTargetsByLevel);
+        $targets = $this->reduceTargets($this->State->StdioTargetsByLevel);
         foreach ($targets as $target) {
             $this->onlyDeregisterTarget($target);
         }
@@ -284,7 +245,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function deregisterAllTargets()
     {
-        foreach ($this->Targets as $target) {
+        foreach ($this->State->Targets as $target) {
             $this->onlyDeregisterTarget($target);
         }
         return $this->closeDeregisteredTargets();
@@ -307,25 +268,25 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
 
             if ($target->isStdout()) {
                 $type |= TargetTypeFlag::STDIO | TargetTypeFlag::STDOUT;
-                $this->StdoutTarget = $target;
+                $this->State->StdoutTarget = $target;
             }
 
             if ($target->isStderr()) {
                 $type |= TargetTypeFlag::STDIO | TargetTypeFlag::STDERR;
-                $this->StderrTarget = $target;
+                $this->State->StderrTarget = $target;
             }
 
             if ($type & TargetTypeFlag::STDIO) {
-                $targetsByLevel[] = &$this->StdioTargetsByLevel;
+                $targetsByLevel[] = &$this->State->StdioTargetsByLevel;
             }
 
             if ($target->isTty()) {
                 $type |= TargetTypeFlag::TTY;
-                $targetsByLevel[] = &$this->TtyTargetsByLevel;
+                $targetsByLevel[] = &$this->State->TtyTargetsByLevel;
             }
         }
 
-        $targetsByLevel[] = &$this->TargetsByLevel;
+        $targetsByLevel[] = &$this->State->TargetsByLevel;
 
         $targetId = spl_object_id($target);
 
@@ -335,8 +296,8 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
             }
         }
 
-        $this->Targets[$targetId] = $target;
-        $this->TargetTypeFlags[$targetId] = $type;
+        $this->State->Targets[$targetId] = $target;
+        $this->State->TargetTypeFlags[$targetId] = $type;
 
         return $this;
     }
@@ -358,12 +319,12 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
     {
         $targetId = spl_object_id($target);
 
-        unset($this->Targets[$targetId]);
+        unset($this->State->Targets[$targetId]);
 
         foreach ([
-            &$this->TargetsByLevel,
-            &$this->TtyTargetsByLevel,
-            &$this->StdioTargetsByLevel,
+            &$this->State->TargetsByLevel,
+            &$this->State->TtyTargetsByLevel,
+            &$this->State->StdioTargetsByLevel,
         ] as &$targetsByLevel) {
             foreach ($targetsByLevel as $level => &$targets) {
                 unset($targets[$targetId]);
@@ -373,34 +334,34 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
             }
         }
 
-        if ($this->StderrTarget === $target) {
-            $this->StderrTarget = null;
+        if ($this->State->StderrTarget === $target) {
+            $this->State->StderrTarget = null;
         }
 
-        if ($this->StdoutTarget === $target) {
-            $this->StdoutTarget = null;
+        if ($this->State->StdoutTarget === $target) {
+            $this->State->StdoutTarget = null;
         }
 
-        $this->DeregisteredTargets[$targetId] = $target;
+        $this->State->DeregisteredTargets[$targetId] = $target;
 
         // Reinstate previous STDOUT and STDERR targets if possible
         if (
-            $this->Targets &&
-            (!$this->StdoutTarget || !$this->StderrTarget)
+            $this->State->Targets &&
+            (!$this->State->StdoutTarget || !$this->State->StderrTarget)
         ) {
-            foreach (array_reverse($this->Targets) as $target) {
+            foreach (array_reverse($this->State->Targets) as $target) {
                 if (!($target instanceof TargetStream)) {
                     continue;
                 }
-                if (!$this->StdoutTarget && $target->isStdout()) {
-                    $this->StdoutTarget = $target;
-                    if ($this->StderrTarget) {
+                if (!$this->State->StdoutTarget && $target->isStdout()) {
+                    $this->State->StdoutTarget = $target;
+                    if ($this->State->StderrTarget) {
                         break;
                     }
                 }
-                if (!$this->StderrTarget && $target->isStderr()) {
-                    $this->StderrTarget = $target;
-                    if ($this->StdoutTarget) {
+                if (!$this->State->StderrTarget && $target->isStderr()) {
+                    $this->State->StderrTarget = $target;
+                    if ($this->State->StdoutTarget) {
                         break;
                     }
                 }
@@ -415,14 +376,14 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     private function closeDeregisteredTargets()
     {
-        // Reduce `$this->DeregisteredTargets` to targets not subsequently
-        // re-registered
-        $this->DeregisteredTargets = array_diff_key(
-            $this->DeregisteredTargets, $this->Targets
+        // Reduce `$this->State->DeregisteredTargets` to targets not
+        // subsequently re-registered
+        $this->State->DeregisteredTargets = array_diff_key(
+            $this->State->DeregisteredTargets, $this->State->Targets
         );
-        foreach ($this->DeregisteredTargets as $i => $target) {
+        foreach ($this->State->DeregisteredTargets as $i => $target) {
             $target->close();
-            unset($this->DeregisteredTargets[$i]);
+            unset($this->State->DeregisteredTargets[$i]);
         }
         return $this;
     }
@@ -434,7 +395,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function getTargets(): array
     {
-        return array_values($this->Targets);
+        return array_values($this->State->Targets);
     }
 
     /**
@@ -452,10 +413,10 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
             $invertFlags = true;
         }
 
-        foreach ($this->Targets as $targetId => $target) {
+        foreach ($this->State->Targets as $targetId => $target) {
             if (!($target instanceof TargetPrefix) || (
                 $flags &&
-                !($this->TargetTypeFlags[$targetId] & $flags xor $invertFlags)
+                !($this->State->TargetTypeFlags[$targetId] & $flags xor $invertFlags)
             )) {
                 continue;
             }
@@ -502,9 +463,9 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
     private function maybeGetTtyTarget($level): TargetStream
     {
         /** @var Target[] */
-        $targets = $this->TtyTargetsByLevel[$level]
-            ?? $this->StdioTargetsByLevel[$level]
-            ?? $this->TargetsByLevel[$level]
+        $targets = $this->State->TtyTargetsByLevel[$level]
+            ?? $this->State->StdioTargetsByLevel[$level]
+            ?? $this->State->TargetsByLevel[$level]
             ?? [];
 
         $target = reset($targets);
@@ -523,10 +484,10 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function getStdoutTarget(): TargetStream
     {
-        if (!$this->StdoutTarget) {
-            return $this->StdoutTarget = StreamTarget::fromStream(\STDOUT);
+        if (!$this->State->StdoutTarget) {
+            return $this->State->StdoutTarget = StreamTarget::fromStream(\STDOUT);
         }
-        return $this->StdoutTarget;
+        return $this->State->StdoutTarget;
     }
 
     /**
@@ -534,10 +495,10 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function getStderrTarget(): TargetStream
     {
-        if (!$this->StderrTarget) {
-            return $this->StderrTarget = StreamTarget::fromStream(\STDERR);
+        if (!$this->State->StderrTarget) {
+            return $this->State->StderrTarget = StreamTarget::fromStream(\STDERR);
         }
-        return $this->StderrTarget;
+        return $this->State->StderrTarget;
     }
 
     /**
@@ -545,7 +506,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function getErrors(): int
     {
-        return $this->Errors;
+        return $this->State->Errors;
     }
 
     /**
@@ -553,7 +514,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function getWarnings(): int
     {
-        return $this->Warnings;
+        return $this->State->Warnings;
     }
 
     /**
@@ -574,17 +535,17 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         string $successText = 'without errors'
     ) {
         $msg1 = trim($finishedText);
-        if ($this->Errors + $this->Warnings === 0) {
+        if ($this->State->Errors + $this->State->Warnings === 0) {
             return $this->write(Level::INFO, "$msg1 $successText", null, MessageType::SUCCESS);
         }
 
-        $msg2 = 'with ' . Convert::plural($this->Errors, 'error', null, true);
-        if ($this->Warnings) {
-            $msg2 .= ' and ' . Convert::plural($this->Warnings, 'warning', null, true);
+        $msg2 = 'with ' . Convert::plural($this->State->Errors, 'error', null, true);
+        if ($this->State->Warnings) {
+            $msg2 .= ' and ' . Convert::plural($this->State->Warnings, 'warning', null, true);
         }
 
         return $this->write(
-            $this->Errors ? Level::ERROR : Level::WARNING,
+            $this->State->Errors ? Level::ERROR : Level::WARNING,
             "$msg1 $msg2",
             null
         );
@@ -602,7 +563,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         $level = Level::INFO,
         $type = MessageType::UNDECORATED
     ) {
-        return $this->_write($level, $msg, null, $type, null, $this->TargetsByLevel);
+        return $this->_write($level, $msg, null, $type, null, $this->State->TargetsByLevel);
     }
 
     /**
@@ -617,7 +578,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         $level = Level::INFO,
         $type = MessageType::UNDECORATED
     ) {
-        return $this->_write($level, $msg, null, $type, null, $this->StdioTargetsByLevel);
+        return $this->_write($level, $msg, null, $type, null, $this->State->StdioTargetsByLevel);
     }
 
     /**
@@ -632,7 +593,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         $level = Level::INFO,
         $type = MessageType::UNDECORATED
     ) {
-        return $this->_write($level, $msg, null, $type, null, $this->TtyTargetsByLevel);
+        return $this->_write($level, $msg, null, $type, null, $this->State->TtyTargetsByLevel);
     }
 
     /**
@@ -733,11 +694,11 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
             case Level::ALERT:
             case Level::CRITICAL:
             case Level::ERROR:
-                $this->Errors++;
+                $this->State->Errors++;
                 break;
 
             case Level::WARNING:
-                $this->Warnings++;
+                $this->State->Warnings++;
                 break;
         }
 
@@ -755,7 +716,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->Errors++;
+        !$count || $this->State->Errors++;
 
         return $this->write(Level::ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
@@ -771,7 +732,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->Errors++;
+        !$count || $this->State->Errors++;
 
         return $this->writeOnce(Level::ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
@@ -787,7 +748,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->Warnings++;
+        !$count || $this->State->Warnings++;
 
         return $this->write(Level::WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
@@ -803,7 +764,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->Warnings++;
+        !$count || $this->State->Warnings++;
 
         return $this->writeOnce(Level::WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
@@ -874,7 +835,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         string $msg1,
         ?string $msg2 = null
     ) {
-        if (!($this->TtyTargetsByLevel[Level::INFO] ?? null)) {
+        if (!($this->State->TtyTargetsByLevel[Level::INFO] ?? null)) {
             return $this;
         }
 
@@ -898,7 +859,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function maybeClearLine()
     {
-        if (!($this->TtyTargetsByLevel[Level::INFO] ?? null)) {
+        if (!($this->State->TtyTargetsByLevel[Level::INFO] ?? null)) {
             return $this;
         }
 
@@ -918,7 +879,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         int $depth = 0
     ) {
-        if ($this->Facade) {
+        if ($this->Facade !== null) {
             $depth++;
         }
 
@@ -941,7 +902,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         int $depth = 0
     ) {
-        if ($this->Facade) {
+        if ($this->Facade !== null) {
             $depth++;
         }
 
@@ -962,8 +923,8 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         string $msg1,
         ?string $msg2 = null
     ) {
-        $this->GroupLevel++;
-        $this->GroupMessageStack[] = Arr::implode(' ', [$msg1, $msg2]);
+        $this->State->GroupLevel++;
+        $this->State->GroupMessageStack[] = Arr::implode(' ', [$msg1, $msg2]);
 
         return $this->write(Level::NOTICE, $msg1, $msg2, MessageType::GROUP_START);
     }
@@ -976,7 +937,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
      */
     public function groupEnd(bool $printMessage = false)
     {
-        $msg = array_pop($this->GroupMessageStack);
+        $msg = array_pop($this->State->GroupMessageStack);
         if ($printMessage &&
                 $msg !== '' &&
                 ($msg = Formatter::removeTags($msg)) !== '') {
@@ -984,8 +945,8 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         }
         $this->out('', Level::NOTICE);
 
-        if ($this->GroupLevel > -1) {
-            $this->GroupLevel--;
+        if ($this->State->GroupLevel > -1) {
+            $this->State->GroupLevel--;
         }
 
         return $this;
@@ -1091,7 +1052,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
-        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->TargetsByLevel, $msg2HasTags);
+        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->State->TargetsByLevel, $msg2HasTags);
     }
 
     /**
@@ -1110,11 +1071,11 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         bool $msg2HasTags = false
     ) {
         $hash = Compute::hash($level, $msg1, $msg2, $type, $msg2HasTags);
-        if ($this->Written[$hash] ?? false) {
+        if ($this->State->Written[$hash] ?? false) {
             return $this;
         }
-        $this->Written[$hash] = true;
-        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->TargetsByLevel, $msg2HasTags);
+        $this->State->Written[$hash] = true;
+        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->State->TargetsByLevel, $msg2HasTags);
     }
 
     /**
@@ -1132,7 +1093,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
-        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->TtyTargetsByLevel, $msg2HasTags);
+        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->State->TtyTargetsByLevel, $msg2HasTags);
     }
 
     /**
@@ -1150,7 +1111,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
         array &$targets,
         bool $msg2HasTags = false
     ) {
-        if (!$this->Targets) {
+        if (!$this->State->Targets) {
             $this->registerLogTarget();
             $this->maybeRegisterStdioTargets();
         }
@@ -1160,7 +1121,7 @@ final class ConsoleWriter implements ReceivesFacade, Unloadable
             $context['exception'] = $ex;
         }
 
-        $margin = max(0, $this->GroupLevel * 4);
+        $margin = max(0, $this->State->GroupLevel * 4);
 
         foreach ($targets[$level] ?? [] as $target) {
             $formatter = $target->getFormatter();
