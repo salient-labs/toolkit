@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Lkrms\Concept;
 
 use ReflectionClass;
 
@@ -9,7 +9,7 @@ use ReflectionClass;
  *
  * @template TValue
  */
-trait IsCatalog
+abstract class Catalog
 {
     /**
      * @var array<class-string<static>,array<string,TValue>>
