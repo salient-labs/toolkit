@@ -109,6 +109,41 @@ final class GetTest extends TestCase
     }
 
     /**
+     * @dataProvider fqcnProvider
+     *
+     * @param class-string $class
+     */
+    public function testFqcn(string $expected, string $class): void
+    {
+        $this->assertSame($expected, Get::fqcn($class));
+    }
+
+    /**
+     * @return array<string[]>
+     */
+    public static function fqcnProvider(): array
+    {
+        return [
+            [
+                'acme\sync\provider',
+                'Acme\Sync\Provider',
+            ],
+            [
+                'acme\sync\provider',
+                '\Acme\Sync\Provider',
+            ],
+            [
+                'acmesyncprovider',
+                'AcmeSyncProvider',
+            ],
+            [
+                'acmesyncprovider',
+                '\AcmeSyncProvider',
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider typeProvider
      *
      * @param mixed $value
