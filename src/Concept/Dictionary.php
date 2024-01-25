@@ -2,7 +2,6 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Concern\IsCatalog;
 use Lkrms\Contract\IDictionary;
 
 /**
@@ -10,13 +9,11 @@ use Lkrms\Contract\IDictionary;
  *
  * @template TValue
  *
+ * @extends Catalog<TValue>
  * @implements IDictionary<TValue>
  */
-abstract class Dictionary implements IDictionary
+abstract class Dictionary extends Catalog implements IDictionary
 {
-    /** @use IsCatalog<TValue> */
-    use IsCatalog;
-
     /**
      * @inheritDoc
      */

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Concern\IsCatalog;
 use Lkrms\Contract\IEnumeration;
 
 /**
@@ -10,13 +9,11 @@ use Lkrms\Contract\IEnumeration;
  *
  * @template TValue
  *
+ * @extends Catalog<TValue>
  * @implements IEnumeration<TValue>
  */
-abstract class Enumeration implements IEnumeration
+abstract class Enumeration extends Catalog implements IEnumeration
 {
-    /** @use IsCatalog<TValue> */
-    use IsCatalog;
-
     /**
      * @inheritDoc
      */
