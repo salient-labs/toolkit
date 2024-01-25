@@ -71,7 +71,7 @@ final class Console extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getServiceName(): string
+    protected static function getService(): string
     {
         return ConsoleWriter::class;
     }

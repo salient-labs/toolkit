@@ -23,7 +23,8 @@ final class GenerateFacade extends GenerateCommand
     private const SKIP_METHODS = [
         'getReadable',
         'getWritable',
-        'setFacade',
+        'withFacade',
+        'withoutFacade',
         // These are displaced by Facade
         'isLoaded',
         'load',
@@ -338,7 +339,7 @@ final class GenerateFacade extends GenerateCommand
         array_push(
             $lines,
             ...$this->indent($this->generateGetter(
-                'getServiceName',
+                'getService',
                 "$service::class",
                 '@inheritDoc',
                 'string',

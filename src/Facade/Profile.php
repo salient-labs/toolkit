@@ -33,7 +33,7 @@ final class Profile extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getServiceName(): string
+    protected static function getService(): string
     {
         return MetricCollector::class;
     }

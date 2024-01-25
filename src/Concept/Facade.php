@@ -4,8 +4,8 @@ namespace Lkrms\Concept;
 
 use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IFacade;
-use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Contract\FacadeAwareInterface;
+use Lkrms\Contract\FacadeInterface;
 use Lkrms\Contract\Unloadable;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
@@ -15,16 +15,16 @@ use LogicException;
  * Base class for facades
  *
  * @template TClass of object
- * @implements IFacade<TClass>
+ * @implements FacadeInterface<TClass>
  */
-abstract class Facade implements IFacade
+abstract class Facade implements FacadeInterface
 {
     /**
      * Get the name of the underlying class
      *
      * @return class-string<TClass>
      */
-    abstract protected static function getServiceName(): string;
+    abstract protected static function getService(): string;
 
     /**
      * @var array<string,object>
@@ -41,7 +41,7 @@ abstract class Facade implements IFacade
      */
     private static function _load()
     {
-        $service = static::getServiceName();
+        $service = static::getService();
 
         $container = Container::maybeGetGlobalContainer();
         if ($container) {
@@ -52,8 +52,8 @@ abstract class Facade implements IFacade
             $instance = new $service(...func_get_args());
         }
 
-        if ($instance instanceof ReceivesFacade) {
-            $instance->setFacade(static::class);
+        if ($instance instanceof FacadeAwareInterface) {
+            $instance = $instance->withFacade(static::class);
         }
 
         $dispatcher = $instance instanceof EventDispatcher
@@ -106,11 +106,14 @@ abstract class Facade implements IFacade
 
         $container = Container::maybeGetGlobalContainer();
         if ($container) {
-            $container->unbind(static::getServiceName());
+            $container->unbind(static::getService());
         }
 
         $instance = self::$Instances[static::class] ?? null;
         if ($instance) {
+            if ($instance instanceof FacadeAwareInterface) {
+                $instance = $instance->withoutFacade(static::class, true);
+            }
             if ($instance instanceof Unloadable) {
                 $instance->unload();
             }
@@ -134,7 +137,11 @@ abstract class Facade implements IFacade
      */
     final public static function getInstance()
     {
-        return self::$Instances[static::class] ?? self::_load();
+        $instance = self::$Instances[static::class] ?? self::_load();
+        if ($instance instanceof FacadeAwareInterface) {
+            return $instance->withoutFacade(static::class, false);
+        }
+        return $instance;
     }
 
     /**

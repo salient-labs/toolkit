@@ -11,9 +11,9 @@ use LogicException;
  * @template TClass of object
  *
  * @see Facade
- * @see ReceivesFacade
+ * @see FacadeAwareInterface
  */
-interface IFacade
+interface FacadeInterface
 {
     /**
      * True if an underlying instance has been loaded
@@ -26,8 +26,8 @@ interface IFacade
      * If called with arguments, they are passed to the constructor of the
      * underlying class.
      *
-     * If the underlying class implements {@see ReceivesFacade}, the name of the
-     * facade is passed to {@see ReceivesFacade::setFacade()}.
+     * If the underlying class implements {@see FacadeAwareInterface}, the name
+     * of the facade is passed to {@see FacadeAwareInterface::withFacade()}.
      *
      * @return TClass
      * @throws LogicException if an underlying instance has already been loaded.
@@ -45,7 +45,7 @@ interface IFacade
      * Get the underlying instance
      *
      * If an underlying instance has not been loaded, the facade should return
-     * an instance from {@see IFacade::load()}.
+     * an instance from {@see FacadeInterface::load()}.
      *
      * @return TClass
      */

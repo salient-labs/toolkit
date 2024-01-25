@@ -2,6 +2,7 @@
 
 namespace Lkrms\Console;
 
+use Lkrms\Concern\HasFacade;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
@@ -12,8 +13,7 @@ use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Lkrms\Console\Support\ConsoleWriterState;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
-use Lkrms\Contract\IFacade;
-use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Contract\FacadeAwareInterface;
 use Lkrms\Contract\Unloadable;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
@@ -36,27 +36,15 @@ use Throwable;
  * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
  * {@see Console::getInstance()}.
  */
-final class ConsoleWriter implements ReceivesFacade, Unloadable
+final class ConsoleWriter implements FacadeAwareInterface, Unloadable
 {
-    private ConsoleWriterState $State;
+    use HasFacade;
 
-    /**
-     * @var class-string<IFacade<static>>|null
-     */
-    private ?string $Facade = null;
+    private ConsoleWriterState $State;
 
     public function __construct()
     {
         $this->State = new ConsoleWriterState($this);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setFacade(string $name)
-    {
-        $this->Facade = $name;
-        return $this;
     }
 
     /**

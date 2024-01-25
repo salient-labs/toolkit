@@ -49,7 +49,7 @@ final class DI extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getServiceName(): string
+    protected static function getService(): string
     {
         return Container::class;
     }
