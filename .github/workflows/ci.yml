@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
@@ -35,7 +35,7 @@ jobs:
         run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
 
       - name: Cache PHP dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.get-composer-cache.outputs.cache_dir }}
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
@@ -69,7 +69,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
@@ -83,7 +83,7 @@ jobs:
         run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
 
       - name: Cache PHP dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.get-composer-cache.outputs.cache_dir }}
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
@@ -124,7 +124,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
@@ -139,14 +139,14 @@ jobs:
         run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
 
       - name: Cache PHP dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.get-composer-cache.outputs.cache_dir }}
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
           restore-keys: composer-cache-${{ runner.os }}-
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: npm
@@ -170,7 +170,7 @@ jobs:
         run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
 
       - name: Upload Mockoon CLI log files artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mockoon-cli-logs-${{ matrix.os }}-${{ matrix.php-version }}
           path: ~/.mockoon-cli/logs/*.log
