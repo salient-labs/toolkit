@@ -37,6 +37,88 @@ abstract class Facade implements FacadeInterface
     private static $ListenerIds = [];
 
     /**
+     * @internal
+     */
+    final public static function isLoaded(): bool
+    {
+        return isset(self::$Instances[static::class]);
+    }
+
+    /**
+     * @internal
+     * @return TClass
+     */
+    final public static function load()
+    {
+        if (isset(self::$Instances[static::class])) {
+            throw new LogicException(static::class . ' already loaded');
+        }
+
+        return self::_load(...func_get_args());
+    }
+
+    /**
+     * Clear the underlying instances of all facades
+     */
+    final public static function unloadAll(): void
+    {
+        foreach (array_keys(self::$Instances) as $class) {
+            $class::unload();
+        }
+    }
+
+    /**
+     * @internal
+     */
+    final public static function unload(): void
+    {
+        $id = self::$ListenerIds[static::class] ?? null;
+        if ($id !== null) {
+            Event::removeListener($id);
+            unset(self::$ListenerIds[static::class]);
+        }
+
+        $container = Container::maybeGetGlobalContainer();
+        if ($container) {
+            $container->unbind(static::getService());
+        }
+
+        $instance = self::$Instances[static::class] ?? null;
+        if ($instance) {
+            if ($instance instanceof FacadeAwareInterface) {
+                $instance = $instance->withoutFacade(static::class, true);
+            }
+            if ($instance instanceof Unloadable) {
+                $instance->unload();
+            }
+            unset(self::$Instances[static::class]);
+        }
+    }
+
+    /**
+     * @internal
+     * @return TClass
+     */
+    final public static function getInstance()
+    {
+        $instance = self::$Instances[static::class] ?? self::_load();
+        if ($instance instanceof FacadeAwareInterface) {
+            return $instance->withoutFacade(static::class, false);
+        }
+        return $instance;
+    }
+
+    /**
+     * @internal
+     * @param mixed[] $arguments
+     * @return mixed
+     */
+    final public static function __callStatic(string $name, array $arguments)
+    {
+        return (self::$Instances[static::class] ?? self::_load())->$name(...$arguments);
+    }
+
+    /**
      * @return TClass
      */
     private static function _load()
@@ -70,87 +152,5 @@ abstract class Facade implements FacadeInterface
         self::$ListenerIds[static::class] = $id;
 
         return self::$Instances[static::class] = $instance;
-    }
-
-    /**
-     * @internal
-     */
-    final public static function isLoaded(): bool
-    {
-        return isset(self::$Instances[static::class]);
-    }
-
-    /**
-     * @internal
-     * @return TClass
-     */
-    final public static function load()
-    {
-        if (isset(self::$Instances[static::class])) {
-            throw new LogicException(static::class . ' already loaded');
-        }
-
-        return self::_load(...func_get_args());
-    }
-
-    /**
-     * @internal
-     */
-    final public static function unload(): void
-    {
-        $id = self::$ListenerIds[static::class] ?? null;
-        if ($id !== null) {
-            Event::removeListener($id);
-            unset(self::$ListenerIds[static::class]);
-        }
-
-        $container = Container::maybeGetGlobalContainer();
-        if ($container) {
-            $container->unbind(static::getService());
-        }
-
-        $instance = self::$Instances[static::class] ?? null;
-        if ($instance) {
-            if ($instance instanceof FacadeAwareInterface) {
-                $instance = $instance->withoutFacade(static::class, true);
-            }
-            if ($instance instanceof Unloadable) {
-                $instance->unload();
-            }
-            unset(self::$Instances[static::class]);
-        }
-    }
-
-    /**
-     * Clear the underlying instances of all facades
-     */
-    final public static function unloadAll(): void
-    {
-        foreach (array_keys(self::$Instances) as $class) {
-            $class::unload();
-        }
-    }
-
-    /**
-     * @internal
-     * @return TClass
-     */
-    final public static function getInstance()
-    {
-        $instance = self::$Instances[static::class] ?? self::_load();
-        if ($instance instanceof FacadeAwareInterface) {
-            return $instance->withoutFacade(static::class, false);
-        }
-        return $instance;
-    }
-
-    /**
-     * @internal
-     * @param mixed[] $arguments
-     * @return mixed
-     */
-    final public static function __callStatic(string $name, array $arguments)
-    {
-        return (self::$Instances[static::class] ?? self::_load())->$name(...$arguments);
     }
 }
