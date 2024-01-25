@@ -141,8 +141,8 @@ final class MetricCollector
      *
      * @param string[]|string|null $groups If `null` or `["*"]`, all counters
      * are returned, otherwise only counters in the given groups are returned.
-     * @return array<string,array<string,int>> An array that maps groups to
-     * counters as follows:
+     * @return array<string,array<string,int>>|array<string,int> An array that
+     * maps groups to counters:
      *
      * ```
      * [
@@ -151,13 +151,21 @@ final class MetricCollector
      *   ], ...
      * ]
      * ```
+     *
+     * Or, if `$groups` is a string other than `"*"`:
+     *
+     * ```
+     * [ <counter> => <value>, ... ]
+     * ```
      */
     public function getCounters($groups = null): array
     {
-        if ($groups === null || $groups === ['*']) {
+        if ($groups === null || (array) $groups === ['*']) {
             return $this->Counters;
+        } elseif (is_string($groups)) {
+            return $this->Counters[$groups] ?? [];
         } else {
-            return array_intersect_key($this->Counters, array_flip((array) $groups));
+            return array_intersect_key($this->Counters, array_flip($groups));
         }
     }
 
@@ -179,8 +187,8 @@ final class MetricCollector
      *
      * @param string[]|string|null $groups If `null` or `["*"]`, all timers are
      * returned, otherwise only timers in the given groups are returned.
-     * @return array<string,array<string,array{float,int}>> An array that maps
-     * groups to timers as follows:
+     * @return array<string,array<string,array{float,int}>>|array<string,array{float,int}>
+     * An array that maps groups to timers:
      *
      * ```
      * [
@@ -189,10 +197,16 @@ final class MetricCollector
      *   ], ...
      * ]
      * ```
+     *
+     * Or, if `$groups` is a string other than `"*"`:
+     *
+     * ```
+     * [ <timer> => [ <elapsed_ms>, <start_count> ], ... ]
+     * ```
      */
     public function getTimers(bool $includeRunning = true, $groups = null): array
     {
-        if ($groups === null || $groups === ['*']) {
+        if ($groups === null || (array) $groups === ['*']) {
             $timerRuns = $this->TimerRuns;
         } else {
             $timerRuns = array_intersect_key($this->TimerRuns, array_flip((array) $groups));
@@ -208,7 +222,9 @@ final class MetricCollector
             }
         }
 
-        return $timers ?? [];
+        return is_string($groups) && $groups !== '*'
+            ? ($timers[$groups] ?? [])
+            : ($timers ?? []);
     }
 
     /**
