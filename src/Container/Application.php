@@ -14,6 +14,8 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
 use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sync;
+use Lkrms\Store\CacheStore;
+use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
@@ -422,7 +424,7 @@ class Application extends Container implements IApplication
             throw new LogicException(sprintf('Cache store already started: %s', $file));
         }
 
-        Cache::load($cacheDb);
+        Cache::load(new CacheStore($cacheDb));
 
         return $this;
     }
@@ -490,7 +492,7 @@ class Application extends Container implements IApplication
             throw new LogicException(sprintf('Entity store already started: %s', $file));
         }
 
-        Sync::load(
+        Sync::load(new SyncStore(
             $syncDb,
             $command === null
                 ? Sys::getProgramName($this->BasePath)
@@ -500,7 +502,7 @@ class Application extends Container implements IApplication
                     ? array_slice($_SERVER['argv'], 1)
                     : ['_GET' => $_GET, '_POST' => $_POST])
                 : $arguments)
-        );
+        ));
 
         return $this;
     }

@@ -2,25 +2,10 @@
 
 namespace Lkrms\Tests\Concept\Facade;
 
-use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Concern\UnloadsFacades;
+use Lkrms\Contract\FacadeAwareInterface;
 
-class MyUnderlyingClass implements ReceivesFacade
+class MyUnderlyingClass implements FacadeAwareInterface
 {
-    /**
-     * @var int|null
-     */
-    public $LastFuncNumArgs;
-
-    /**
-     * @var string|null
-     * @phpstan-ignore-next-line
-     */
-    private $Facade;
-
-    public function setFacade(string $name)
-    {
-        $this->Facade = $name;
-
-        return $this;
-    }
+    use UnloadsFacades;
 }

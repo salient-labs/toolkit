@@ -2,8 +2,8 @@
 
 namespace Lkrms\Store\Concept;
 
-use Lkrms\Contract\IFacade;
-use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Concern\UnloadsFacades;
+use Lkrms\Contract\FacadeAwareInterface;
 use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Sys;
@@ -14,8 +14,10 @@ use Throwable;
 /**
  * Base class for SQLite-backed stores
  */
-abstract class SqliteStore implements ReceivesFacade
+abstract class SqliteStore implements FacadeAwareInterface
 {
+    use UnloadsFacades;
+
     /**
      * @var SQLite3|null
      */
@@ -32,24 +34,9 @@ abstract class SqliteStore implements ReceivesFacade
     private $IsTransactionOpen;
 
     /**
-     * @var class-string<IFacade<static>>|null
-     */
-    private $Facade;
-
-    /**
      * @var bool
      */
     private $CheckIsRunning = false;
-
-    /**
-     * @inheritDoc
-     */
-    final public function setFacade(string $name)
-    {
-        $this->Facade = $name;
-
-        return $this;
-    }
 
     /**
      * Create or open a database
@@ -88,7 +75,7 @@ abstract class SqliteStore implements ReceivesFacade
      *
      * @return $this
      */
-    final protected function closeDb(bool $unloadFacade = true)
+    final protected function closeDb(bool $unloadFacades = true)
     {
         try {
             if (!$this->Db) {
@@ -101,9 +88,8 @@ abstract class SqliteStore implements ReceivesFacade
 
             return $this;
         } finally {
-            if ($unloadFacade && $this->Facade) {
-                [$this->Facade, 'unload']();
-                $this->Facade = null;
+            if ($unloadFacades) {
+                $this->unloadFacades();
             }
         }
     }

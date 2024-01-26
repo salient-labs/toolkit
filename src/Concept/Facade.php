@@ -2,75 +2,50 @@
 
 namespace Lkrms\Concept;
 
+use Lkrms\Concern\ResolvesServiceLists;
 use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IFacade;
-use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Contract\FacadeAwareInterface;
+use Lkrms\Contract\FacadeInterface;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\Unloadable;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
+use Lkrms\Utility\Get;
 use LogicException;
 
 /**
  * Base class for facades
  *
- * @template TClass of object
- * @implements IFacade<TClass>
+ * @template TService of object
+ *
+ * @implements FacadeInterface<TService>
  */
-abstract class Facade implements IFacade
+abstract class Facade implements FacadeInterface
 {
+    /** @use ResolvesServiceLists<TService> */
+    use ResolvesServiceLists;
+
     /**
-     * Get the name of the underlying class
+     * Get the facade's underlying class, or an array that maps its underlying
+     * class to compatible implementations
      *
-     * @return class-string<TClass>
+     * At least one of the values returned should be an instantiable class that
+     * is guaranteed to exist.
+     *
+     * @return class-string<TService>|array<class-string<TService>,class-string<TService>|array<class-string<TService>>>
      */
-    abstract protected static function getServiceName(): string;
+    abstract protected static function getService();
 
     /**
-     * @var array<string,object>
+     * @var array<class-string<static>,TService>
      */
-    private static $Instances = [];
+    private static array $Instances = [];
 
     /**
-     * @var array<string,int>
+     * @var array<class-string<static>,int>
      */
-    private static $ListenerIds = [];
-
-    /**
-     * @return TClass
-     */
-    private static function _load()
-    {
-        $service = static::getServiceName();
-
-        $container = Container::maybeGetGlobalContainer();
-        if ($container) {
-            $instance = $container
-                ->singletonIf($service)
-                ->get($service, func_get_args());
-        } else {
-            $instance = new $service(...func_get_args());
-        }
-
-        if ($instance instanceof ReceivesFacade) {
-            $instance->setFacade(static::class);
-        }
-
-        $dispatcher = $instance instanceof EventDispatcher
-            ? $instance
-            : Event::getInstance();
-        $id = $dispatcher->listen(
-            function (GlobalContainerSetEvent $event) use ($service, $instance): void {
-                $container = $event->container();
-                if ($container) {
-                    $container->instanceIf($service, $instance);
-                }
-            }
-        );
-        self::$ListenerIds[static::class] = $id;
-
-        return self::$Instances[static::class] = $instance;
-    }
+    private static array $ListenerIds = [];
 
     /**
      * @internal
@@ -82,15 +57,33 @@ abstract class Facade implements IFacade
 
     /**
      * @internal
-     * @return TClass
      */
-    final public static function load()
+    final public static function load(?object $instance = null): void
     {
         if (isset(self::$Instances[static::class])) {
-            throw new LogicException(static::class . ' already loaded');
+            throw new LogicException(sprintf('Already loaded: %s', static::class));
         }
 
-        return self::_load(...func_get_args());
+        self::$Instances[static::class] = self::doLoad($instance);
+    }
+
+    /**
+     * @internal
+     */
+    final public static function swap(object $instance): void
+    {
+        self::unload();
+        self::$Instances[static::class] = self::doLoad($instance);
+    }
+
+    /**
+     * Remove the underlying instances of all facades
+     */
+    final public static function unloadAll(): void
+    {
+        foreach (array_keys(self::$Instances) as $class) {
+            $class::unload();
+        }
     }
 
     /**
@@ -104,37 +97,46 @@ abstract class Facade implements IFacade
             unset(self::$ListenerIds[static::class]);
         }
 
+        $instance = self::$Instances[static::class] ?? null;
+        if (!$instance) {
+            return;
+        }
+
         $container = Container::maybeGetGlobalContainer();
         if ($container) {
-            $container->unbind(static::getServiceName());
-        }
-
-        $instance = self::$Instances[static::class] ?? null;
-        if ($instance) {
-            if ($instance instanceof Unloadable) {
-                $instance->unload();
+            $serviceName = self::getServiceName();
+            if (
+                $container->hasInstance($serviceName) &&
+                $container->get($serviceName) === $instance
+            ) {
+                $container->unbind($serviceName);
             }
-            unset(self::$Instances[static::class]);
         }
-    }
 
-    /**
-     * Clear the underlying instances of all facades
-     */
-    final public static function unloadAll(): void
-    {
-        foreach (array_keys(self::$Instances) as $class) {
-            $class::unload();
+        if ($instance instanceof FacadeAwareInterface) {
+            $instance = $instance->withoutFacade(static::class, true);
         }
+
+        if ($instance instanceof Unloadable) {
+            $instance->unload();
+        }
+
+        unset(self::$Instances[static::class]);
     }
 
     /**
      * @internal
-     * @return TClass
      */
     final public static function getInstance()
     {
-        return self::$Instances[static::class] ?? self::_load();
+        $instance = self::$Instances[static::class]
+            ??= self::doLoad();
+
+        if ($instance instanceof FacadeAwareInterface) {
+            return $instance->withoutFacade(static::class, false);
+        }
+
+        return $instance;
     }
 
     /**
@@ -144,6 +146,109 @@ abstract class Facade implements IFacade
      */
     final public static function __callStatic(string $name, array $arguments)
     {
-        return (self::$Instances[static::class] ?? self::_load())->$name(...$arguments);
+        return (self::$Instances[static::class]
+            ??= self::doLoad())->$name(...$arguments);
+    }
+
+    /**
+     * @param TService|null $instance
+     * @return TService
+     */
+    private static function doLoad($instance = null)
+    {
+        $serviceName = self::getServiceName();
+
+        if ($instance !== null && (
+            !is_object($instance) || !is_a($instance, $serviceName)
+        )) {
+            throw new LogicException(sprintf(
+                '%s does not inherit %s',
+                Get::type($instance),
+                $serviceName,
+            ));
+        }
+
+        $container = Container::maybeGetGlobalContainer();
+
+        $instance ??= $container
+            ? self::getInstanceFromContainer($container, $serviceName)
+            : self::createInstance();
+
+        if ($container) {
+            $container->instanceIf($serviceName, $instance);
+        }
+
+        $dispatcher = $instance instanceof EventDispatcher
+            ? $instance
+            : Event::getInstance();
+
+        $id = $dispatcher->listen(
+            static function (GlobalContainerSetEvent $event) use ($serviceName, $instance): void {
+                $container = $event->container();
+                if ($container) {
+                    $container->instanceIf($serviceName, $instance);
+                }
+            }
+        );
+        self::$ListenerIds[static::class] = $id;
+
+        if ($instance instanceof FacadeAwareInterface) {
+            $instance = $instance->withFacade(static::class);
+        }
+
+        return $instance;
+    }
+
+    /**
+     * @return TService
+     */
+    private static function getInstanceFromContainer(
+        IContainer $container,
+        string $serviceName
+    ) {
+        // If one of the services returned by the facade has been bound to the
+        // container, resolve it to an instance
+        foreach (self::getServiceList() as $service) {
+            if ($container->has($service)) {
+                $instance = $container->getAs($service, $serviceName);
+                if (!is_a($instance, $serviceName)) {
+                    throw new LogicException(sprintf(
+                        '%s does not inherit %s: %s::getService()',
+                        get_class($instance),
+                        $serviceName,
+                        static::class,
+                    ));
+                }
+                return $instance;
+            }
+        }
+
+        // Otherwise, use the container to resolve the first instantiable class
+        $service = self::getInstantiableService();
+        if ($service !== null) {
+            return $container->getAs($service, $serviceName);
+        }
+
+        throw new LogicException(sprintf(
+            'Service not bound to container: %s::getService()',
+            static::class,
+        ));
+    }
+
+    /**
+     * @return TService
+     */
+    private static function createInstance()
+    {
+        // Create an instance of the first instantiable class
+        $service = self::getInstantiableService();
+        if ($service !== null) {
+            return new $service();
+        }
+
+        throw new LogicException(sprintf(
+            'Service not instantiable: %s::getService()',
+            static::class,
+        ));
     }
 }

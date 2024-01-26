@@ -23,10 +23,12 @@ final class GenerateFacade extends GenerateCommand
     private const SKIP_METHODS = [
         'getReadable',
         'getWritable',
-        'setFacade',
+        'withFacade',
+        'withoutFacade',
         // These are displaced by Facade
         'isLoaded',
         'load',
+        'swap',
         'unload',
         'unloadAll',
         'getInstance',
@@ -123,10 +125,11 @@ final class GenerateFacade extends GenerateCommand
                         : $a->getName() <=> $b->getName())
         );
         $facadeMethods = [
-            " * @method static $service load() Load and return an instance of the underlying $classClass class",
-            " * @method static $service getInstance() Get the underlying $classClass instance",
-            " * @method static bool isLoaded() True if an underlying $classClass instance has been loaded",
-            " * @method static void unload() Clear the underlying $classClass instance",
+            " * @method static bool isLoaded() True if the facade's underlying instance is loaded",
+            " * @method static void load($service|null \$instance = null) Load the facade's underlying instance",
+            " * @method static void swap($service \$instance) Replace the facade's underlying instance",
+            " * @method static void unload() Remove the facade's underlying instance if loaded",
+            " * @method static $service getInstance() Get the facade's underlying instance, loading it if necessary",
         ];
         $methods = [];
         $toDeclare = [];
@@ -153,10 +156,7 @@ final class GenerateFacade extends GenerateCommand
             $returnsVoid = false;
 
             if ($_method->isConstructor()) {
-                $method = 'load';
-                $type = $service;
-                $summary = "Load and return an instance of the underlying $classClass class";
-                unset($facadeMethods[0]);
+                continue;
             } else {
                 if (isset($phpDoc->TagsByName['deprecated'])) {
                     continue;
@@ -251,7 +251,7 @@ final class GenerateFacade extends GenerateCommand
                         );
             }
 
-            if (!$methods && !$_method->isConstructor()) {
+            if (!$methods) {
                 array_push($methods, ...$facadeMethods);
             }
 
@@ -288,10 +288,6 @@ final class GenerateFacade extends GenerateCommand
                 $methods[] = " * @method static $type $method("
                     . str_replace(\PHP_EOL, \PHP_EOL . ' * ', implode(', ', $params)) . ')'
                     . " $summary";
-            }
-
-            if ($_method->isConstructor()) {
-                array_push($methods, ...$facadeMethods);
             }
         }
         $methods = implode(\PHP_EOL, $methods);
@@ -338,7 +334,7 @@ final class GenerateFacade extends GenerateCommand
         array_push(
             $lines,
             ...$this->indent($this->generateGetter(
-                'getServiceName',
+                'getService',
                 "$service::class",
                 '@inheritDoc',
                 'string',

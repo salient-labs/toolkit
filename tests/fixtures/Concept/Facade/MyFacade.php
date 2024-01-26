@@ -9,7 +9,7 @@ use Lkrms\Concept\Facade;
  */
 final class MyFacade extends Facade
 {
-    protected static function getServiceName(): string
+    protected static function getService(): string
     {
         return MyUnderlyingClass::class;
     }

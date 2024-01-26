@@ -102,6 +102,19 @@ final class Get extends Utility
     }
 
     /**
+     * Normalise a class name for comparison
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $class
+     * @return class-string<T>
+     */
+    public static function fqcn(string $class): string
+    {
+        return Str::lower(ltrim($class, '\\'));
+    }
+
+    /**
      * Get the type of a variable
      *
      * @param mixed $value
