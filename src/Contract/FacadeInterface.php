@@ -2,52 +2,61 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Concept\Facade;
 use LogicException;
 
 /**
- * Provides a static interface to an instance of an underlying class
+ * Provides a static interface to an underlying instance
  *
- * @template TClass of object
+ * Underlying instances that implement {@see FacadeAwareInterface} are replaced
+ * with the object returned by {@see FacadeAwareInterface::withFacade()}, and
+ * its {@see FacadeAwareInterface::withoutFacade()} method is used to service
+ * the facade's {@see swap()}, {@see unload()} and {@see getInstance()} methods.
  *
- * @see Facade
- * @see FacadeAwareInterface
+ * @template TService of object
  */
 interface FacadeInterface
 {
     /**
-     * True if an underlying instance has been loaded
+     * True if the facade's underlying instance is loaded
      */
     public static function isLoaded(): bool;
 
     /**
-     * Load and return an instance of the underlying class
+     * Load the facade's underlying instance
      *
-     * If called with arguments, they are passed to the constructor of the
-     * underlying class.
+     * If `$instance` is `null`, the facade creates a new underlying instance.
      *
-     * If the underlying class implements {@see FacadeAwareInterface}, the name
-     * of the facade is passed to {@see FacadeAwareInterface::withFacade()}.
-     *
-     * @return TClass
-     * @throws LogicException if an underlying instance has already been loaded.
+     * @param TService|null $instance
+     * @throws LogicException if the facade's underlying instance is already
+     * loaded.
      */
-    public static function load();
+    public static function load(?object $instance = null): void;
 
     /**
-     * Clear the underlying instance
+     * Replace the facade's underlying instance
      *
-     * If an underlying instance has not been loaded, no action is taken.
+     * @param TService $instance
+     */
+    public static function swap(object $instance): void;
+
+    /**
+     * Remove the facade's underlying instance if loaded
      */
     public static function unload(): void;
 
     /**
-     * Get the underlying instance
+     * Get the facade's underlying instance, loading it if necessary
      *
-     * If an underlying instance has not been loaded, the facade should return
-     * an instance from {@see FacadeInterface::load()}.
-     *
-     * @return TClass
+     * @return TService
      */
     public static function getInstance();
+
+    /**
+     * Forward a static method to the facade's underlying instance, loading it
+     * if necessary
+     *
+     * @param mixed[] $arguments
+     * @return mixed
+     */
+    public static function __callStatic(string $name, array $arguments);
 }

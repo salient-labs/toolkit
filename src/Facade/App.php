@@ -11,15 +11,15 @@ use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Sync\Contract\ISyncClassResolver;
-use Lkrms\Utility\Catalog\EnvFlag;
 
 /**
  * A facade for \Lkrms\Container\Application
  *
- * @method static Application load(string|null $basePath = null, string|null $appName = null, int-mask-of<EnvFlag::*> $envFlags = EnvFlag::ALL) Load and return an instance of the underlying Application class
- * @method static Application getInstance() Get the underlying Application instance
- * @method static bool isLoaded() True if an underlying Application instance has been loaded
- * @method static void unload() Clear the underlying Application instance
+ * @method static bool isLoaded() True if the facade's underlying instance is loaded
+ * @method static void load(Application|null $instance = null) Load the facade's underlying instance
+ * @method static void swap(Application $instance) Replace the facade's underlying instance
+ * @method static void unload() Remove the facade's underlying instance if loaded
+ * @method static Application getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static Application apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Application bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Application bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
@@ -37,8 +37,9 @@ use Lkrms\Utility\Catalog\EnvFlag;
  * @method static string getProgramName() Get the basename of the file used to run the script
  * @method static array<class-string<IService>> getServices() Get a list of classes bound to the container by calling service()
  * @method static string getTempPath(bool $create = true) Get a writable directory for the application's ephemeral data
- * @method static bool has(class-string $id) True if the container can resolve an identifier to an instance (see {@see Container::has()})
+ * @method static bool has(class-string $id) True if an identifier has been bound to the container (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if the global container exists
+ * @method static bool hasInstance(class-string $id) True if the container has a shared instance with a given identifier
  * @method static Application if((callable($this): bool)|bool $condition, (callable($this): $this)|null $then = null, (callable($this): $this)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
  * @method static Application inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
  * @method static Application instance(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding

@@ -9,10 +9,11 @@ use DateTimeInterface;
 /**
  * A facade for \Lkrms\Store\CacheStore
  *
- * @method static CacheStore load(string $filename = ':memory:') Load and return an instance of the underlying CacheStore class
- * @method static CacheStore getInstance() Get the underlying CacheStore instance
- * @method static bool isLoaded() True if an underlying CacheStore instance has been loaded
- * @method static void unload() Clear the underlying CacheStore instance
+ * @method static bool isLoaded() True if the facade's underlying instance is loaded
+ * @method static void load(CacheStore|null $instance = null) Load the facade's underlying instance
+ * @method static void swap(CacheStore $instance) Replace the facade's underlying instance
+ * @method static void unload() Remove the facade's underlying instance if loaded
+ * @method static CacheStore getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static CacheStore asOfNow(int|null $now = null) Get a copy of the store where items do not expire over time (see {@see CacheStore::asOfNow()})
  * @method static CacheStore close() Close the database
  * @method static CacheStore delete(string $key) Delete an item stored under a given key

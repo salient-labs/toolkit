@@ -8,10 +8,11 @@ use Lkrms\Support\ErrorHandler;
 /**
  * A facade for \Lkrms\Support\ErrorHandler
  *
- * @method static ErrorHandler load() Load and return an instance of the underlying ErrorHandler class
- * @method static ErrorHandler getInstance() Get the underlying ErrorHandler instance
- * @method static bool isLoaded() True if an underlying ErrorHandler instance has been loaded
- * @method static void unload() Clear the underlying ErrorHandler instance
+ * @method static bool isLoaded() True if the facade's underlying instance is loaded
+ * @method static void load(ErrorHandler|null $instance = null) Load the facade's underlying instance
+ * @method static void swap(ErrorHandler $instance) Replace the facade's underlying instance
+ * @method static void unload() Remove the facade's underlying instance if loaded
+ * @method static ErrorHandler getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static ErrorHandler deregister(bool $unloadFacades = true) Deregister previously registered error and exception handlers
  * @method static bool isRegistered() True if error, exception and shutdown handlers are registered
  * @method static ErrorHandler register() Register error, exception and shutdown handlers

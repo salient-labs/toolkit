@@ -203,7 +203,12 @@ class Container extends FluentInterface implements IContainer
 
     final public function has(string $id): bool
     {
-        return class_exists($this->getName($id));
+        return $this->Dice->hasRule($id);
+    }
+
+    final public function hasInstance(string $id): bool
+    {
+        return $this->Dice->hasShared($id);
     }
 
     /**

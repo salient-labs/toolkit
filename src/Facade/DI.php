@@ -12,10 +12,11 @@ use Lkrms\Contract\IService;
 /**
  * A facade for \Lkrms\Container\Container
  *
- * @method static Container load() Load and return an instance of the underlying Container class
- * @method static Container getInstance() Get the underlying Container instance
- * @method static bool isLoaded() True if an underlying Container instance has been loaded
- * @method static void unload() Clear the underlying Container instance
+ * @method static bool isLoaded() True if the facade's underlying instance is loaded
+ * @method static void load(Container|null $instance = null) Load the facade's underlying instance
+ * @method static void swap(Container $instance) Replace the facade's underlying instance
+ * @method static void unload() Remove the facade's underlying instance if loaded
+ * @method static Container getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static Container apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Container bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Container bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
@@ -25,8 +26,9 @@ use Lkrms\Contract\IService;
  * @method static IContainer getGlobalContainer() Get the global container, creating it if necessary
  * @method static class-string getName(class-string $id) Resolve a service to a concrete class name (see {@see Container::getName()})
  * @method static array<class-string<IService>> getServices() Get a list of classes bound to the container by calling service()
- * @method static bool has(class-string $id) True if the container can resolve an identifier to an instance (see {@see Container::has()})
+ * @method static bool has(class-string $id) True if an identifier has been bound to the container (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if the global container exists
+ * @method static bool hasInstance(class-string $id) True if the container has a shared instance with a given identifier
  * @method static Container if((callable($this): bool)|bool $condition, (callable($this): $this)|null $then = null, (callable($this): $this)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
  * @method static Container inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
  * @method static Container instance(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding

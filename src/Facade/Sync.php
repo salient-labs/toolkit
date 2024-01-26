@@ -16,10 +16,11 @@ use Lkrms\Sync\Support\SyncStore;
 /**
  * A facade for \Lkrms\Sync\Support\SyncStore
  *
- * @method static SyncStore load(string $filename = ':memory:', string $command = '', string[] $arguments = []) Load and return an instance of the underlying SyncStore class
- * @method static SyncStore getInstance() Get the underlying SyncStore instance
- * @method static bool isLoaded() True if an underlying SyncStore instance has been loaded
- * @method static void unload() Clear the underlying SyncStore instance
+ * @method static bool isLoaded() True if the facade's underlying instance is loaded
+ * @method static void load(SyncStore|null $instance = null) Load the facade's underlying instance
+ * @method static void swap(SyncStore $instance) Replace the facade's underlying instance
+ * @method static void unload() Remove the facade's underlying instance if loaded
+ * @method static SyncStore getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static SyncStore checkHeartbeats(int $ttl = 300, bool $failEarly = true, ISyncProvider ...$providers) Throw an exception if a provider has an unreachable backend (see {@see SyncStore::checkHeartbeats()})
  * @method static SyncStore close(int $exitStatus = 0) Terminate the current run and close the database
  * @method static SyncStore deferredEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, DeferredEntity<ISyncEntity> $deferred) Register a deferred sync entity (see {@see SyncStore::deferredEntity()})

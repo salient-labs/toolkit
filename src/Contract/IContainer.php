@@ -2,7 +2,6 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\ServiceLifetime;
 use Psr\Container\ContainerInterface;
 
@@ -96,14 +95,18 @@ interface IContainer extends ContainerInterface
     public function getName(string $id): string;
 
     /**
-     * True if the container can resolve an identifier to an instance
-     *
-     * If `has($id)` returns `false`, `get($id)` throws a
-     * {@see ContainerServiceNotFoundException}.
+     * True if an identifier has been bound to the container
      *
      * @param class-string $id
      */
     public function has(string $id): bool;
+
+    /**
+     * True if the container has a shared instance with a given identifier
+     *
+     * @param class-string $id
+     */
+    public function hasInstance(string $id): bool;
 
     /**
      * Register a binding with the container
