@@ -6,13 +6,8 @@ use Lkrms\Concept\Facade;
 use Lkrms\Support\MetricCollector;
 
 /**
- * A facade for \Lkrms\Support\MetricCollector
+ * A facade for MetricCollector
  *
- * @method static bool isLoaded() True if the facade's underlying instance is loaded
- * @method static void load(MetricCollector|null $instance = null) Load the facade's underlying instance
- * @method static void swap(MetricCollector $instance) Replace the facade's underlying instance
- * @method static void unload() Remove the facade's underlying instance if loaded
- * @method static MetricCollector getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static int<1,max> count(string $counter, string $group = 'general') Increment a counter and return its value
  * @method static int getCounter(string $counter, string $group = 'general') Get the value of a counter
  * @method static array<string,array<string,int>>|array<string,int> getCounters(string[]|string|null $groups = null) Get counter values (see {@see MetricCollector::getCounters()})
@@ -34,7 +29,7 @@ final class Profile extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getService(): string
+    protected static function getService()
     {
         return MetricCollector::class;
     }

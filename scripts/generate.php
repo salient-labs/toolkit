@@ -39,6 +39,12 @@ use Lkrms\Sync\Support\SyncErrorBuilder;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
+use Lkrms\Tests\Concept\Facade\MyBrokenFacade;
+use Lkrms\Tests\Concept\Facade\MyClassFacade;
+use Lkrms\Tests\Concept\Facade\MyHasFacadeClass;
+use Lkrms\Tests\Concept\Facade\MyInterfaceFacade;
+use Lkrms\Tests\Concept\Facade\MyServiceClass;
+use Lkrms\Tests\Concept\Facade\MyServiceInterface;
 use Lkrms\Tests\Sync\Entity\Album;
 use Lkrms\Tests\Sync\Entity\Comment;
 use Lkrms\Tests\Sync\Entity\Photo;
@@ -56,14 +62,18 @@ use Lkrms\Utility\Pcre;
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
 $facades = [
-    Application::class => App::class,
-    CacheStore::class => Cache::class,
-    ConsoleWriter::class => [Console::class, '--api'],
-    Container::class => DI::class,
-    ErrorHandler::class => [Err::class, '--skip', 'handleShutdown,handleError,handleException'],
-    EventDispatcher::class => Event::class,
-    SyncStore::class => Sync::class,
-    MetricCollector::class => [Profile::class, '--api'],
+    App::class => Application::class,
+    Cache::class => CacheStore::class,
+    Console::class => [ConsoleWriter::class, '--api'],
+    DI::class => Container::class,
+    Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
+    Event::class => EventDispatcher::class,
+    Sync::class => SyncStore::class,
+    Profile::class => [MetricCollector::class, '--api'],
+    // Test fixtures
+    MyBrokenFacade::class => [MyServiceInterface::class, ['Lkrms\Tests\Concept\Facade\MyNonExistentClass']],
+    MyInterfaceFacade::class => [MyServiceInterface::class, ['Lkrms\Tests\Concept\Facade\MyNonExistentClass', MyHasFacadeClass::class]],
+    MyClassFacade::class => [MyServiceClass::class, '--skip', 'withArgs'],
 ];
 
 $builders = [
@@ -134,13 +144,17 @@ function generated($commandOrFile): void
 $status = 0;
 $generated = [];
 
-foreach ($facades as $class => $facade) {
+foreach ($facades as $facade => $class) {
     $facadeArgs = [];
-    if (is_array($facade)) {
-        $facadeArgs = $facade;
-        $facade = array_shift($facadeArgs);
+    $aliases = [];
+    if (is_array($class)) {
+        $facadeArgs = $class;
+        $class = array_shift($facadeArgs);
+        if (is_array(reset($facadeArgs))) {
+            $aliases = array_shift($facadeArgs);
+        }
     }
-    $status |= $generateFacade(...[...$args, ...$facadeArgs, $class, $facade]);
+    $status |= $generateFacade(...[...$args, ...$facadeArgs, $class, ...$aliases, $facade]);
     generated($generateFacade);
 }
 

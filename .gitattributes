@@ -30,6 +30,9 @@
 /tests/data/entity/posts.json linguist-generated
 /tests/data/entity/todos.json linguist-generated
 /tests/data/entity/users.json linguist-generated
+/tests/fixtures/Concept/Facade/MyBrokenFacade.php linguist-generated
+/tests/fixtures/Concept/Facade/MyClassFacade.php linguist-generated
+/tests/fixtures/Concept/Facade/MyInterfaceFacade.php linguist-generated
 /tests/fixtures/Sync/Entity/Album.php linguist-generated
 /tests/fixtures/Sync/Entity/Comment.php linguist-generated
 /tests/fixtures/Sync/Entity/Photo.php linguist-generated

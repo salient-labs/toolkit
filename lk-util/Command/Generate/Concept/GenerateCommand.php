@@ -148,6 +148,13 @@ abstract class GenerateCommand extends Command
     protected array $Methods = self::MEMBER_STUB;
 
     /**
+     * Lowercase alias => alias
+     *
+     * @var array<string,string>
+     */
+    protected array $AliasIndex = [];
+
+    /**
      * Lowercase alias => qualified name
      *
      * @var array<string,class-string>
@@ -161,6 +168,13 @@ abstract class GenerateCommand extends Command
      */
     protected array $ImportMap = [];
 
+    /**
+     * Lowercase qualified name => qualified name
+     *
+     * @var array<class-string,class-string>
+     */
+    protected array $FqcnMap = [];
+
     // --
 
     /**
@@ -173,7 +187,7 @@ abstract class GenerateCommand extends Command
      */
     protected string $InputClassName;
 
-    protected PhpDoc $InputClassPhpDoc;
+    protected ?PhpDoc $InputClassPhpDoc;
 
     /**
      * @var PhpDocTemplateTag[]
@@ -273,6 +287,17 @@ abstract class GenerateCommand extends Command
     /**
      * @param class-string $fqcn
      */
+    protected function assertClassExists(string $fqcn): void
+    {
+        if (class_exists($fqcn) || interface_exists($fqcn)) {
+            return;
+        }
+        throw new CliInvalidArgumentsException(sprintf('class not found: %s', $fqcn));
+    }
+
+    /**
+     * @param class-string $fqcn
+     */
     protected function assertClassIsInstantiable(string $fqcn): void
     {
         try {
@@ -293,7 +318,9 @@ abstract class GenerateCommand extends Command
         $this->InputClass = new ReflectionClass($fqcn);
         $this->InputClassName = $this->InputClass->getName();
         $this->InputClassPhpDoc = PhpDoc::fromDocBlocks(Reflect::getAllClassDocComments($this->InputClass));
-        $this->InputClassTemplates = $this->InputClassPhpDoc->Templates;
+        $this->InputClassTemplates = $this->InputClassPhpDoc
+            ? $this->InputClassPhpDoc->Templates
+            : [];
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
             : '';
@@ -342,7 +369,12 @@ abstract class GenerateCommand extends Command
 
     protected function getClassPrefix(): string
     {
-        return $this->OutputNamespace ? '\\' : '';
+        return $this->OutputNamespace === '' ? '' : '\\';
+    }
+
+    protected function getOutputFqcn(): string
+    {
+        return Arr::implode('\\', [$this->OutputNamespace, $this->OutputClass]);
     }
 
     /**
@@ -495,36 +527,47 @@ abstract class GenerateCommand extends Command
         $_fqcn = Str::lower($fqcn);
 
         // If $fqcn has already been imported, use its alias
-        if ($lastAlias = $this->ImportMap[$_fqcn] ?? null) {
-            return $lastAlias;
+        if (isset($this->ImportMap[$_fqcn])) {
+            return $this->ImportMap[$_fqcn];
         }
 
-        $alias = $alias === null ? Get::basename($fqcn) : $alias;
+        $alias ??= Get::basename($fqcn);
         $_alias = Str::lower($alias);
 
+        // Normalise $alias to the first capitalisation seen
+        $alias = $this->AliasIndex[$_alias] ?? $alias;
+
         // Use $alias if it already maps to $fqcn
-        if (($aliasFqcn = $this->AliasMap[$_alias] ?? null) &&
-                !strcasecmp($aliasFqcn, $fqcn)) {
+        $aliasFqcn = $this->AliasMap[$_alias] ?? null;
+        if ($aliasFqcn !== null && !strcasecmp($aliasFqcn, $fqcn)) {
             return $alias;
         }
 
         // Use the canonical basename of the generated class
-        if (!strcasecmp($fqcn, "{$this->OutputNamespace}\\{$this->OutputClass}")) {
+        if (!strcasecmp($fqcn, $this->getOutputFqcn())) {
             return $this->OutputClass;
         }
 
-        // Don't allow a conflict with the name of the generated class
-        if (!strcasecmp($alias, $this->OutputClass) ||
-                array_key_exists($_alias, $this->AliasMap)) {
-            return $returnFqcn ? $this->getClassPrefix() . $fqcn : null;
+        // Don't allow a conflict with the name of the generated class or an
+        // existing alias
+        if (
+            !strcasecmp($alias, $this->OutputClass) ||
+            isset($this->AliasMap[$_alias])
+        ) {
+            $this->FqcnMap[$_fqcn] ??= $this->getClassPrefix() . $fqcn;
+
+            return $returnFqcn
+                ? $this->FqcnMap[$_fqcn]
+                : null;
         }
 
+        $this->AliasIndex[$_alias] = $alias;
         $this->AliasMap[$_alias] = $fqcn;
 
         // Use $alias without importing $fqcn if:
         // - $fqcn is in the same namespace as the generated class; and
         // - the basename of $fqcn is the same as $alias
-        if (!strcasecmp($fqcn, "{$this->OutputNamespace}\\{$alias}")) {
+        if (!strcasecmp($fqcn, Arr::implode('\\', [$this->OutputNamespace, $alias]))) {
             return $alias;
         }
 
@@ -613,14 +656,33 @@ abstract class GenerateCommand extends Command
      */
     protected function generateImports(): array
     {
-        $map = [];
+        foreach ($this->getImportMap() as $import => $alias) {
+            $imports[] = !strcasecmp($alias, Get::basename($import))
+                ? sprintf('use %s;', $import)
+                : sprintf('use %s as %s;', $import, $alias);
+        }
+
+        return $imports ?? [];
+    }
+
+    /**
+     * Get an array that maps imports to aliases
+     *
+     * @return array<class-string,string|null>
+     */
+    protected function getImportMap(bool $sort = true): array
+    {
+        if (!$this->ImportMap) {
+            return [];
+        }
+
         foreach ($this->ImportMap as $alias) {
             $import = $this->AliasMap[Str::lower($alias)];
-            if (!strcasecmp($alias, Get::basename($import))) {
-                $map[$import] = null;
-                continue;
-            }
             $map[$import] = $alias;
+        }
+
+        if (!$sort) {
+            return $map;
         }
 
         // Sort by FQCN, depth-first
@@ -630,15 +692,26 @@ abstract class GenerateCommand extends Command
                 $this->getSortableFqcn($a) <=> $this->getSortableFqcn($b)
         );
 
-        $imports = [];
-        foreach ($map as $import => $alias) {
-            $imports[] =
-                $alias === null
-                    ? sprintf('use %s;', $import)
-                    : sprintf('use %s as %s;', $import, $alias);
+        return $map;
+    }
+
+    /**
+     * Get an array that maps aliases to qualified names
+     *
+     * @return array<string,class-string>
+     */
+    protected function getAliasMap(): array
+    {
+        if (!$this->AliasMap) {
+            return [];
         }
 
-        return $imports;
+        foreach ($this->AliasMap as $_alias => $fqcn) {
+            $alias = $this->AliasIndex[$_alias];
+            $map[$alias] = $fqcn;
+        }
+
+        return $map;
     }
 
     /**
@@ -651,12 +724,18 @@ abstract class GenerateCommand extends Command
         string $name,
         string $valueCode,
         $phpDoc = '@inheritDoc',
-        string $returnType = 'string',
+        ?string $returnType = 'string',
         string $visibility = GenerateCommand::VISIBILITY_PUBLIC
     ): array {
         return [
             ...$this->generatePhpDocBlock($phpDoc),
-            sprintf('%s static function %s(): %s', $visibility, $name, $returnType),
+            sprintf(
+                '%s static function %s()%s%s',
+                $visibility,
+                $name,
+                $returnType === null ? '' : ': ',
+                $returnType,
+            ),
             '{',
             $this->indent(sprintf('return %s;', $valueCode)),
             '}'
@@ -808,10 +887,12 @@ abstract class GenerateCommand extends Command
                 }
                 if ($this->Check || !$this->ReplaceIfExists) {
                     $relative = File::relativeToParent($file, Package::path(), $file);
-                    print (new Differ(new StrictUnifiedDiffOutputBuilder([
+                    $formatter = Console::getStdoutTarget()->getFormatter();
+                    $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
                         'fromFile' => "a/$relative",
                         'toFile' => "b/$relative",
                     ])))->diff($input, $output);
+                    print $formatter->formatDiff($diff);
                     if (!$this->Check) {
                         Console::info('Out of date:', $file);
                         return;
@@ -844,7 +925,14 @@ abstract class GenerateCommand extends Command
      */
     protected function code($value): string
     {
-        return Get::code($value, ',' . \PHP_EOL, ' => ', null, self::TAB);
+        return Get::code(
+            $value,
+            ',' . \PHP_EOL,
+            ' => ',
+            null,
+            self::TAB,
+            array_merge(array_keys($this->getAliasMap()), $this->FqcnMap),
+        );
     }
 
     /**

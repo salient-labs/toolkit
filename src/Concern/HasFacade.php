@@ -7,23 +7,32 @@ use Lkrms\Contract\FacadeInterface;
 use LogicException;
 
 /**
- * Implements FacadeAwareInterface
+ * Implements FacadeAwareInterface by returning modified instances for use with
+ * and without a facade
  *
  * @see FacadeAwareInterface
+ *
+ * @template TFacade of FacadeInterface
  */
 trait HasFacade
 {
     /**
-     * @var class-string<FacadeInterface<static>>|null
+     * @var class-string<TFacade>|null
      */
     protected ?string $Facade = null;
 
+    /**
+     * @var static|null
+     */
     private ?self $InstanceWithoutFacade = null;
 
+    /**
+     * @var static|null
+     */
     private ?self $InstanceWithFacade = null;
 
     /**
-     * @param class-string<FacadeInterface<static>> $facade
+     * @param class-string<TFacade> $facade
      * @return static
      */
     final public function withFacade(string $facade)
@@ -54,27 +63,15 @@ trait HasFacade
     }
 
     /**
-     * @param class-string<FacadeInterface<static>> $facade
+     * @param class-string<TFacade> $facade
      * @return static
      */
     final public function withoutFacade(string $facade, bool $unloading)
     {
-        if (
-            $this->Facade === null && (
-                !$unloading || (
-                    $this->InstanceWithoutFacade === null &&
-                    $this->InstanceWithFacade === null
-                )
-            )
-        ) {
-            return $this;
-        }
-
         if ($this->Facade !== $facade) {
             throw new LogicException(sprintf(
-                '%s has facade %s, not %s',
+                '%s does not have facade %s',
                 static::class,
-                $this->Facade,
                 $facade,
             ));
         }
@@ -88,6 +85,8 @@ trait HasFacade
         $instance = clone $this;
         $instance->Facade = null;
 
+        // Keep a copy of the cloned instance for future reuse if the facade is
+        // not being unloaded
         if (!$unloading) {
             $instance->InstanceWithoutFacade = $instance;
             $instance->InstanceWithFacade = $this;

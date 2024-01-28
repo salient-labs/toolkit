@@ -85,20 +85,20 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
         !$this->Providers ||
             $description =
                 <<<EOF
-                If no providers are given, all providers are checked.
+If no providers are given, all providers are checked.
 
 
-                EOF;
+EOF;
 
         return
             ($description ?? '') . <<<EOF
-                If a heartbeat request fails, __{{command}}__ continues to the next
-                provider unless `-f/--fail-early` is given, in which case it exits
-                immediately.
+If a heartbeat request fails, __{{command}}__ continues to the next
+provider unless `-f/--fail-early` is given, in which case it exits
+immediately.
 
-                The command exits with a non-zero status if a provider backend is
-                unreachable.
-                EOF;
+The command exits with a non-zero status if a provider backend is
+unreachable.
+EOF;
     }
 
     protected function run(string ...$args)

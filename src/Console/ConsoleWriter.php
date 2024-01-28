@@ -14,6 +14,7 @@ use Lkrms\Console\Support\ConsoleWriterState;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\FacadeAwareInterface;
+use Lkrms\Contract\FacadeInterface;
 use Lkrms\Contract\Unloadable;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
@@ -35,9 +36,12 @@ use Throwable;
  * {@see ConsoleWriter} methods should generally be called via the
  * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
  * {@see Console::getInstance()}.
+ *
+ * @implements FacadeAwareInterface<FacadeInterface<self>>
  */
 final class ConsoleWriter implements FacadeAwareInterface, Unloadable
 {
+    /** @use HasFacade<FacadeInterface<self>> */
     use HasFacade;
 
     private ConsoleWriterState $State;

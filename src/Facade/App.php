@@ -13,13 +13,8 @@ use Lkrms\Contract\IService;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 
 /**
- * A facade for \Lkrms\Container\Application
+ * A facade for Application
  *
- * @method static bool isLoaded() True if the facade's underlying instance is loaded
- * @method static void load(Application|null $instance = null) Load the facade's underlying instance
- * @method static void swap(Application $instance) Replace the facade's underlying instance
- * @method static void unload() Remove the facade's underlying instance if loaded
- * @method static Application getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static Application apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Application bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Application bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
@@ -73,7 +68,7 @@ final class App extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getService(): string
+    protected static function getService()
     {
         return Application::class;
     }

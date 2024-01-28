@@ -8,21 +8,24 @@ use Lkrms\Utility\Get;
 use LogicException;
 
 /**
- * Implements FacadeAwareInterface
+ * Implements FacadeAwareInterface by maintaining a list of facades the instance
+ * is being used by
  *
  * @see FacadeAwareInterface
+ *
+ * @template TFacade of FacadeInterface
  */
 trait UnloadsFacades
 {
     /**
      * Normalised FQCN => given FQCN
      *
-     * @var array<string,class-string<FacadeInterface<static>>>
+     * @var array<class-string<TFacade>,class-string<TFacade>>
      */
     private $Facades = [];
 
     /**
-     * @param class-string<FacadeInterface<static>> $facade
+     * @param class-string<TFacade> $facade
      * @return static
      */
     final public function withFacade(string $facade)
@@ -32,7 +35,7 @@ trait UnloadsFacades
     }
 
     /**
-     * @param class-string<FacadeInterface<static>> $facade
+     * @param class-string<TFacade> $facade
      * @return static
      */
     final public function withoutFacade(string $facade, bool $unloading)

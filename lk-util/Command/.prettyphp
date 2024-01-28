@@ -1,0 +1,7 @@
+{
+    "enable": [
+        "preserve-one-line",
+        "strict-lists"
+    ],
+    "heredocIndent": "none"
+}

@@ -14,13 +14,8 @@ use Lkrms\Console\ConsoleWriter;
 use Throwable;
 
 /**
- * A facade for \Lkrms\Console\ConsoleWriter
+ * A facade for ConsoleWriter
  *
- * @method static bool isLoaded() True if the facade's underlying instance is loaded
- * @method static void load(ConsoleWriter|null $instance = null) Load the facade's underlying instance
- * @method static void swap(ConsoleWriter $instance) Replace the facade's underlying instance
- * @method static void unload() Remove the facade's underlying instance if loaded
- * @method static ConsoleWriter getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static ConsoleWriter count(Level::* $level) Increment the message counter for $level without printing anything
  * @method static ConsoleWriter debug(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0) Print "--- {CALLER} $msg1 $msg2" with level DEBUG (see {@see ConsoleWriter::debug()})
  * @method static ConsoleWriter debugOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0) Print "--- {CALLER} $msg1 $msg2" with level DEBUG once per run (see {@see ConsoleWriter::debugOnce()})
@@ -72,7 +67,7 @@ final class Console extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getService(): string
+    protected static function getService()
     {
         return ConsoleWriter::class;
     }

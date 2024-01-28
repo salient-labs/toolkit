@@ -22,7 +22,7 @@ abstract class Command extends CliCommand
      * Normalise a user-supplied class name, optionally assigning its base name
      * and/or namespace to variables passed by reference
      *
-     * @return class-string<object>
+     * @return class-string|''
      */
     protected function getFqcnOptionValue(
         string $value,
@@ -31,13 +31,13 @@ abstract class Command extends CliCommand
         ?string &$namespace = null
     ): string {
         $namespace = null;
-        if ($namespaceEnvVar) {
+        if ($namespaceEnvVar !== null) {
             $namespace = Env::get($namespaceEnvVar, null);
         }
         if ($namespace === null) {
             $namespace = Env::get(EnvVar::NS_DEFAULT, null);
         }
-        if ($namespace && trim($value) && strpos($value, '\\') === false) {
+        if ($namespace !== null && trim($value) && strpos($value, '\\') === false) {
             $fqcn = trim($namespace, '\\') . "\\$value";
         } else {
             $fqcn = ltrim($value, '\\');
@@ -52,7 +52,7 @@ abstract class Command extends CliCommand
      * Normalise a mandatory user-supplied class name, optionally assigning its
      * base name and/or namespace to variables passed by reference
      *
-     * @return class-string<object>
+     * @return class-string
      */
     protected function getRequiredFqcnOptionValue(
         string $valueName,
@@ -62,7 +62,8 @@ abstract class Command extends CliCommand
         ?string &$namespace = null
     ): string {
         $fqcn = $this->getFqcnOptionValue($value, $namespaceEnvVar, $class, $namespace);
-        if (!$fqcn) {
+
+        if ($fqcn === '') {
             throw new CliInvalidArgumentsException(sprintf('invalid %s: %s', $valueName, $value));
         }
 
@@ -70,18 +71,20 @@ abstract class Command extends CliCommand
     }
 
     /**
-     * Normalise user-supplied class names
+     * Normalise mandatory user-supplied class names
      *
      * @param string[] $values
-     * @return array<class-string<object>>
+     * @return array<class-string>
      */
-    protected function getMultipleFqcnOptionValue(array $values, ?string $namespaceEnvVar = null): array
-    {
+    protected function requireMultipleFqcnValues(
+        string $valueName,
+        array $values,
+        ?string $namespaceEnvVar = null
+    ): array {
         $fqcn = [];
         foreach ($values as $value) {
-            $fqcn[] = $this->getFqcnOptionValue($value, $namespaceEnvVar);
+            $fqcn[] = $this->getRequiredFqcnOptionValue($valueName, $value, $namespaceEnvVar);
         }
-
         return $fqcn;
     }
 

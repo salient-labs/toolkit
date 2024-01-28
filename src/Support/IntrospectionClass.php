@@ -485,7 +485,9 @@ class IntrospectionClass
                 $defaultValue = null;
                 $isOptional = false;
                 if ($param->isOptional()) {
-                    $defaultValue = $param->getDefaultValue();
+                    if ($param->isDefaultValueAvailable()) {
+                        $defaultValue = $param->getDefaultValue();
+                    }
                     $isOptional = true;
                     if (!$param->allowsNull()) {
                         $this->NotNullableParameters[$normalised] = $name;
