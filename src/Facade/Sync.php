@@ -14,13 +14,8 @@ use Lkrms\Sync\Support\SyncErrorCollection;
 use Lkrms\Sync\Support\SyncStore;
 
 /**
- * A facade for \Lkrms\Sync\Support\SyncStore
+ * A facade for SyncStore
  *
- * @method static bool isLoaded() True if the facade's underlying instance is loaded
- * @method static void load(SyncStore|null $instance = null) Load the facade's underlying instance
- * @method static void swap(SyncStore $instance) Replace the facade's underlying instance
- * @method static void unload() Remove the facade's underlying instance if loaded
- * @method static SyncStore getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static SyncStore checkHeartbeats(int $ttl = 300, bool $failEarly = true, ISyncProvider ...$providers) Throw an exception if a provider has an unreachable backend (see {@see SyncStore::checkHeartbeats()})
  * @method static SyncStore close(int $exitStatus = 0) Terminate the current run and close the database
  * @method static SyncStore deferredEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, DeferredEntity<ISyncEntity> $deferred) Register a deferred sync entity (see {@see SyncStore::deferredEntity()})
@@ -59,7 +54,7 @@ final class Sync extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getService(): string
+    protected static function getService()
     {
         return SyncStore::class;
     }

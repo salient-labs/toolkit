@@ -45,6 +45,11 @@ class Container extends FluentInterface implements IContainer
     private array $ContextStack = [];
 
     /**
+     * @var array<class-string,class-string>
+     */
+    private array $GetAsServiceMap = [];
+
+    /**
      * @inheritDoc
      */
     public function __construct()
@@ -96,7 +101,7 @@ class Container extends FluentInterface implements IContainer
         }
 
         if ($instance instanceof ReceivesService) {
-            $instance = $instance->setService($name);
+            $instance = $instance->setService($this->GetAsServiceMap[$name] ?? $name);
         }
 
         return $instance;
@@ -169,6 +174,9 @@ class Container extends FluentInterface implements IContainer
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function getAs(string $id, string $service, array $args = [])
     {
         if ($this->Dice->hasShared($id)) {
@@ -176,23 +184,14 @@ class Container extends FluentInterface implements IContainer
             if ($instance instanceof ReceivesService) {
                 return $instance->setService($service);
             }
-
             return $instance;
         }
 
+        $this->GetAsServiceMap[$id] = $service;
         try {
-            return $this->Dice->addCallback(
-                $id,
-                function (object $instance, string $name, bool &$continue) use ($service): object {
-                    $continue = false;
-
-                    return $this->callback($instance, $service);
-                },
-                null,
-                true
-            )->create($id, $args);
-        } catch (DiceException $ex) {
-            throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
+            return $this->get($id, $args);
+        } finally {
+            unset($this->GetAsServiceMap[$id]);
         }
     }
 

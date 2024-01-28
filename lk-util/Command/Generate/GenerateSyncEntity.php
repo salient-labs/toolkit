@@ -114,20 +114,20 @@ class GenerateSyncEntity extends GenerateCommand
                 ->long('parent')
                 ->valueName('property')
                 ->description(<<<EOF
-                    Add a one-to-one "parent" relationship to the entity
+Add a one-to-one "parent" relationship to the entity
 
-                    `--children` must also be given. The generated class will implement `ITreeable`.
-                    EOF)
+`--children` must also be given. The generated class will implement `ITreeable`.
+EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->ParentProperty),
             CliOption::build()
                 ->long('children')
                 ->valueName('property')
                 ->description(<<<EOF
-                    Add a one-to-many "children" relationship to the entity
+Add a one-to-many "children" relationship to the entity
 
-                    `--parent` must also be given. The generated class will implement `ITreeable`.
-                    EOF)
+`--parent` must also be given. The generated class will implement `ITreeable`.
+EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->ChildrenProperty),
             CliOption::build()
@@ -437,11 +437,11 @@ class GenerateSyncEntity extends GenerateCommand
 
         foreach ($properties as $property => $type) {
             $blocks[] = <<<EOF
-                /**
-                 * @var $type
-                 */
-                $visibility \$$property;
-                EOF;
+/**
+ * @var $type
+ */
+$visibility \$$property;
+EOF;
         }
 
         if ($parent) {

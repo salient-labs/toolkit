@@ -164,22 +164,28 @@ final class Get extends Utility
      * Similar to {@see var_export()}, but with more economical output.
      *
      * @param mixed $value
+     * @param string[] $classes Strings found in this array are output as
+     * `<string>::class` instead of `'<string>'`.
      */
     public static function code(
         $value,
         string $delimiter = ', ',
         string $arrow = ' => ',
         ?string $escapeCharacters = null,
-        string $tab = '    '
+        string $tab = '    ',
+        array $classes = []
     ): string {
         $eol = (string) self::eol($delimiter);
         $multiline = (bool) $eol;
+        /** @var array<string,true> */
+        $classes = Arr::toIndex($classes);
         return self::doCode(
             $value,
             $delimiter,
             $arrow,
             $escapeCharacters,
             $tab,
+            $classes,
             $multiline,
             $eol,
         );
@@ -187,6 +193,7 @@ final class Get extends Utility
 
     /**
      * @param mixed $value
+     * @param array<string,true> $classes
      */
     private static function doCode(
         $value,
@@ -194,12 +201,17 @@ final class Get extends Utility
         string $arrow,
         ?string $escapeCharacters,
         string $tab,
+        array $classes,
         bool $multiline,
         string $eol,
         string $indent = ''
     ): string {
         if ($value === null) {
             return 'null';
+        }
+
+        if ($classes && is_string($value) && ($classes[$value] ?? false)) {
+            return $value . '::class';
         }
 
         // Escape strings that contain vertical whitespace or characters in
@@ -250,7 +262,11 @@ final class Get extends Utility
         }
 
         if (!is_array($value)) {
-            return var_export($value, true);
+            $result = var_export($value, true);
+            if (is_float($value)) {
+                return Str::lower($result);
+            }
+            return $result;
         }
 
         if (!$value) {
@@ -270,12 +286,12 @@ final class Get extends Utility
 
         $isList = Arr::isList($value);
         foreach ($value as $key => $value) {
-            $value = self::doCode($value, $delimiter, $arrow, $escapeCharacters, $tab, $multiline, $eol, $indent);
+            $value = self::doCode($value, $delimiter, $arrow, $escapeCharacters, $tab, $classes, $multiline, $eol, $indent);
             if ($isList) {
                 $values[] = $value;
                 continue;
             }
-            $key = self::doCode($key, $delimiter, $arrow, $escapeCharacters, $tab, $multiline, $eol, $indent);
+            $key = self::doCode($key, $delimiter, $arrow, $escapeCharacters, $tab, $classes, $multiline, $eol, $indent);
             $values[] = $key . $arrow . $value;
         }
 

@@ -116,12 +116,12 @@ trait ResolvesServiceLists
                 $value = $service[$name];
                 if (is_string($value)) {
                     $serviceName = $name;
-                    $serviceList = Arr::extend([$value], $name);
+                    $serviceList = Arr::extend([$name], $value);
                     return;
                 }
                 if (Arr::isListOfString($value)) {
                     $serviceName = $name;
-                    $serviceList = Arr::extend($value, $name);
+                    $serviceList = Arr::extend([$name], ...$value);
                     return;
                 }
             }

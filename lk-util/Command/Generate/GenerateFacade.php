@@ -8,6 +8,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Reflect;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -26,15 +27,21 @@ final class GenerateFacade extends GenerateCommand
         'withFacade',
         'withoutFacade',
         // These are displaced by Facade
+        'getInstance',
+        'getService',
         'isLoaded',
         'load',
         'swap',
         'unload',
         'unloadAll',
-        'getInstance',
     ];
 
     private string $ClassFqcn = '';
+
+    /**
+     * @var string[]
+     */
+    private array $AliasFqcn = [];
 
     private string $FacadeFqcn = '';
 
@@ -45,7 +52,7 @@ final class GenerateFacade extends GenerateCommand
 
     public function description(): string
     {
-        return 'Generate a static interface to a class';
+        return 'Generate a facade';
     }
 
     protected function getOptionList(): array
@@ -58,6 +65,13 @@ final class GenerateFacade extends GenerateCommand
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()
                 ->bindTo($this->ClassFqcn),
+            CliOption::build()
+                ->long('alias')
+                ->valueName('alias_class')
+                ->description('Map <class> to one or more compatible implementations')
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->multipleAllowed()
+                ->bindTo($this->AliasFqcn),
             CliOption::build()
                 ->long('generate')
                 ->valueName('facade_class')
@@ -89,6 +103,8 @@ final class GenerateFacade extends GenerateCommand
             $classClass
         );
 
+        $aliasFqcn = $this->requireMultipleFqcnValues('alias', $this->AliasFqcn);
+
         $this->getRequiredFqcnOptionValue(
             'facade',
             $this->FacadeFqcn,
@@ -97,7 +113,7 @@ final class GenerateFacade extends GenerateCommand
             $facadeNamespace
         );
 
-        $this->assertClassIsInstantiable($classFqcn);
+        $this->assertClassExists($classFqcn);
 
         $this->OutputClass = $facadeClass;
         $this->OutputNamespace = $facadeNamespace;
@@ -109,8 +125,13 @@ final class GenerateFacade extends GenerateCommand
         $service = $this->getFqcnAlias($classFqcn, $classClass);
         $extends = $this->getFqcnAlias(Facade::class);
 
+        $alias = [];
+        foreach ($aliasFqcn as $aliasFqcn) {
+            $alias[] = $this->getFqcnAlias($aliasFqcn);
+        }
+
         $desc = $this->Description === null
-            ? "A facade for $classPrefix$classFqcn"
+            ? "A facade for $service"
             : $this->Description;
 
         $_methods = $this->InputClass->getMethods(ReflectionMethod::IS_PUBLIC);
@@ -124,13 +145,6 @@ final class GenerateFacade extends GenerateCommand
                         ? 1
                         : $a->getName() <=> $b->getName())
         );
-        $facadeMethods = [
-            " * @method static bool isLoaded() True if the facade's underlying instance is loaded",
-            " * @method static void load($service|null \$instance = null) Load the facade's underlying instance",
-            " * @method static void swap($service \$instance) Replace the facade's underlying instance",
-            " * @method static void unload() Remove the facade's underlying instance if loaded",
-            " * @method static $service getInstance() Get the facade's underlying instance, loading it if necessary",
-        ];
         $methods = [];
         $toDeclare = [];
         foreach ($_methods as $_method) {
@@ -211,7 +225,7 @@ final class GenerateFacade extends GenerateCommand
                 $summary = $phpDoc->Summary ?? null;
                 $summary = $summary
                     ? ($declare || !$link ? $summary : "$summary (see {@see " . $getMethodFqsen() . '})')
-                    : ($declare || !$link ? 'A facade for ' . $getMethodFqsen() : 'See {@see ' . $getMethodFqsen() . '}');
+                    : ($declare || !$link ? 'Call ' . $getMethodFqsen() . " on the facade's underlying instance, loading it if necessary" : 'See {@see ' . $getMethodFqsen() . '}');
 
                 // Convert "?<type>" to "<type>|null"
                 if (!$declare && strpos($type, '?') === 0) {
@@ -249,10 +263,6 @@ final class GenerateFacade extends GenerateCommand
                             null,
                             true
                         );
-            }
-
-            if (!$methods) {
-                array_push($methods, ...$facadeMethods);
             }
 
             if ($declare) {
@@ -335,9 +345,11 @@ final class GenerateFacade extends GenerateCommand
             $lines,
             ...$this->indent($this->generateGetter(
                 'getService',
-                "$service::class",
+                $this->code($alias
+                    ? [$service => Arr::unwrap($alias)]
+                    : $service),
                 '@inheritDoc',
-                'string',
+                null,
                 self::VISIBILITY_PROTECTED
             ))
         );

@@ -4,6 +4,7 @@ namespace Lkrms\Store\Concept;
 
 use Lkrms\Concern\UnloadsFacades;
 use Lkrms\Contract\FacadeAwareInterface;
+use Lkrms\Contract\FacadeInterface;
 use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Sys;
@@ -13,9 +14,12 @@ use Throwable;
 
 /**
  * Base class for SQLite-backed stores
+ *
+ * @implements FacadeAwareInterface<FacadeInterface<self>>
  */
 abstract class SqliteStore implements FacadeAwareInterface
 {
+    /** @use UnloadsFacades<FacadeInterface<self>> */
     use UnloadsFacades;
 
     /**

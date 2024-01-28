@@ -7,13 +7,8 @@ use Lkrms\Store\CacheStore;
 use DateTimeInterface;
 
 /**
- * A facade for \Lkrms\Store\CacheStore
+ * A facade for CacheStore
  *
- * @method static bool isLoaded() True if the facade's underlying instance is loaded
- * @method static void load(CacheStore|null $instance = null) Load the facade's underlying instance
- * @method static void swap(CacheStore $instance) Replace the facade's underlying instance
- * @method static void unload() Remove the facade's underlying instance if loaded
- * @method static CacheStore getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static CacheStore asOfNow(int|null $now = null) Get a copy of the store where items do not expire over time (see {@see CacheStore::asOfNow()})
  * @method static CacheStore close() Close the database
  * @method static CacheStore delete(string $key) Delete an item stored under a given key
@@ -41,7 +36,7 @@ final class Cache extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getService(): string
+    protected static function getService()
     {
         return CacheStore::class;
     }

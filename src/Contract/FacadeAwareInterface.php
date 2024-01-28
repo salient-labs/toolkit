@@ -6,13 +6,15 @@ namespace Lkrms\Contract;
  * Returns instances to use with or without a facade
  *
  * @see FacadeInterface
+ *
+ * @template TFacade of FacadeInterface
  */
 interface FacadeAwareInterface
 {
     /**
      * Get an instance to use behind a given facade
      *
-     * @param class-string<FacadeInterface<static>> $facade
+     * @param class-string<TFacade> $facade
      * @return static
      */
     public function withFacade(string $facade);
@@ -27,7 +29,7 @@ interface FacadeAwareInterface
      * - if the instance also implements {@see Unloadable}, the facade will call
      *   its {@see Unloadable::unload()} method before it is removed
      *
-     * @param class-string<FacadeInterface<static>> $facade
+     * @param class-string<TFacade> $facade
      * @return static
      */
     public function withoutFacade(string $facade, bool $unloading);

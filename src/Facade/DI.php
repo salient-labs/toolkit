@@ -10,13 +10,8 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 
 /**
- * A facade for \Lkrms\Container\Container
+ * A facade for Container
  *
- * @method static bool isLoaded() True if the facade's underlying instance is loaded
- * @method static void load(Container|null $instance = null) Load the facade's underlying instance
- * @method static void swap(Container $instance) Replace the facade's underlying instance
- * @method static void unload() Remove the facade's underlying instance if loaded
- * @method static Container getInstance() Get the facade's underlying instance, loading it if necessary
  * @method static Container apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Container bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Container bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
@@ -51,7 +46,7 @@ final class DI extends Facade
     /**
      * @inheritDoc
      */
-    protected static function getService(): string
+    protected static function getService()
     {
         return Container::class;
     }

@@ -221,45 +221,51 @@ final class GetTest extends TestCase
      * @dataProvider codeProvider
      *
      * @param mixed $value
+     * @param string[] $classes
      */
     public function testCode(
         string $expected,
         $value,
+        array $classes = [],
         string $delimiter = ', ',
         string $arrow = ' => ',
         ?string $escapeCharacters = null,
         string $tab = '    '
     ): void {
-        $this->assertSame($expected, Get::code($value, $delimiter, $arrow, $escapeCharacters, $tab));
+        $this->assertSame($expected, Get::code($value, $delimiter, $arrow, $escapeCharacters, $tab, $classes));
     }
 
     /**
-     * @return array<string,array{string,mixed,2?:string,3?:string,4?:string|null,5?:string}>
+     * @return array<string,array{string,mixed,2?:string[],3?:string,4?:string,5?:string|null,6?:string}>
      */
     public static function codeProvider(): array
     {
         $array = [
-            'list1' => [1, 2.0, 3.14],
+            'list1' => [1, 2.0, 3.14, 6.626e-34],
             'list2' => [1],
             'empty' => [],
             'index' => [5 => 'a', 9 => 'b', 2 => 'c'],
             "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.',
             'bool1' => true,
             'bool2' => false,
+            'classes' => [static::class, Get::basename(static::class), 'gettest'],
         ];
+        $classes = [static::class, Get::basename(static::class)];
 
         return [
             'default' => [
                 <<<'EOF'
-                ['list1' => [1, 2.0, 3.14], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.', 'bool1' => true, 'bool2' => false]
+                ['list1' => [1, 2.0, 3.14, 6.626e-34], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.', 'bool1' => true, 'bool2' => false, 'classes' => [Lkrms\Tests\Utility\GetTest::class, GetTest::class, 'gettest']]
                 EOF,
                 $array,
+                $classes,
             ],
             'compact' => [
                 <<<'EOF'
-                ['list1'=>[1,2.0,3.14],'list2'=>[1],'empty'=>[],'index'=>[5=>'a',9=>'b',2=>'c'],"multiline\nkey"=>'This string has "double quotes", \'single quotes\', and commas.','bool1'=>true,'bool2'=>false]
+                ['list1'=>[1,2.0,3.14,6.626e-34],'list2'=>[1],'empty'=>[],'index'=>[5=>'a',9=>'b',2=>'c'],"multiline\nkey"=>'This string has "double quotes", \'single quotes\', and commas.','bool1'=>true,'bool2'=>false,'classes'=>[Lkrms\Tests\Utility\GetTest::class,GetTest::class,'gettest']]
                 EOF,
                 $array,
+                $classes,
                 ',',
                 '=>',
             ],
@@ -270,6 +276,7 @@ final class GetTest extends TestCase
                         1,
                         2.0,
                         3.14,
+                        6.626e-34,
                     ],
                     'list2' => [
                         1,
@@ -283,16 +290,23 @@ final class GetTest extends TestCase
                     "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.',
                     'bool1' => true,
                     'bool2' => false,
+                    'classes' => [
+                        Lkrms\Tests\Utility\GetTest::class,
+                        GetTest::class,
+                        'gettest',
+                    ],
                 ]
                 EOF,
                 $array,
+                $classes,
                 ',' . \PHP_EOL,
             ],
             'escaped commas' => [
                 <<<'EOF'
-                ['list1' => [1, 2.0, 3.14], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => "This string has "double quotes"\x2c 'single quotes'\x2c and commas.", 'bool1' => true, 'bool2' => false]
+                ['list1' => [1, 2.0, 3.14, 6.626e-34], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => "This string has "double quotes"\x2c 'single quotes'\x2c and commas.", 'bool1' => true, 'bool2' => false, 'classes' => [Lkrms\Tests\Utility\GetTest::class, GetTest::class, 'gettest']]
                 EOF,
                 $array,
+                $classes,
                 ', ',
                 ' => ',
                 ',',

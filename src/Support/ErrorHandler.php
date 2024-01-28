@@ -4,6 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\UnloadsFacades;
 use Lkrms\Contract\FacadeAwareInterface;
+use Lkrms\Contract\FacadeInterface;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\File;
@@ -13,9 +14,12 @@ use Throwable;
 
 /**
  * Handle errors and uncaught exceptions
+ *
+ * @implements FacadeAwareInterface<FacadeInterface<self>>
  */
 final class ErrorHandler implements FacadeAwareInterface
 {
+    /** @use UnloadsFacades<FacadeInterface<self>> */
     use UnloadsFacades;
 
     private const FATAL_ERRORS = \E_ERROR

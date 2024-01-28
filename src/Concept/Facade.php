@@ -48,7 +48,7 @@ abstract class Facade implements FacadeInterface
     private static array $ListenerIds = [];
 
     /**
-     * @internal
+     * @inheritDoc
      */
     final public static function isLoaded(): bool
     {
@@ -56,7 +56,7 @@ abstract class Facade implements FacadeInterface
     }
 
     /**
-     * @internal
+     * @inheritDoc
      */
     final public static function load(?object $instance = null): void
     {
@@ -68,7 +68,7 @@ abstract class Facade implements FacadeInterface
     }
 
     /**
-     * @internal
+     * @inheritDoc
      */
     final public static function swap(object $instance): void
     {
@@ -81,16 +81,34 @@ abstract class Facade implements FacadeInterface
      */
     final public static function unloadAll(): void
     {
+        /** @var class-string<static> */
+        $eventFacade = Event::class;
         foreach (array_keys(self::$Instances) as $class) {
+            if ($class === $eventFacade) {
+                continue;
+            }
             $class::unload();
         }
+        Event::unload();
     }
 
     /**
-     * @internal
+     * @inheritDoc
      */
     final public static function unload(): void
     {
+        /** @var class-string<static> */
+        $eventFacade = Event::class;
+        if (static::class === $eventFacade) {
+            $loaded = array_keys(self::$Instances);
+            if ($loaded && $loaded !== [$eventFacade]) {
+                throw new LogicException(sprintf(
+                    '%s cannot be unloaded before other facades',
+                    $eventFacade,
+                ));
+            }
+        }
+
         $id = self::$ListenerIds[static::class] ?? null;
         if ($id !== null) {
             Event::removeListener($id);
@@ -125,7 +143,7 @@ abstract class Facade implements FacadeInterface
     }
 
     /**
-     * @internal
+     * @inheritDoc
      */
     final public static function getInstance()
     {
@@ -140,7 +158,6 @@ abstract class Facade implements FacadeInterface
     }
 
     /**
-     * @internal
      * @param mixed[] $arguments
      * @return mixed
      */
@@ -178,9 +195,13 @@ abstract class Facade implements FacadeInterface
             $container->instanceIf($serviceName, $instance);
         }
 
-        $dispatcher = $instance instanceof EventDispatcher
-            ? $instance
-            : Event::getInstance();
+        /** @var class-string<static> */
+        $eventFacade = Event::class;
+        $dispatcher =
+            $instance instanceof EventDispatcher &&
+            static::class === $eventFacade
+                ? $instance
+                : Event::getInstance();
 
         $id = $dispatcher->listen(
             static function (GlobalContainerSetEvent $event) use ($serviceName, $instance): void {

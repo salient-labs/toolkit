@@ -29,18 +29,18 @@ class GenerateBuilder extends GenerateCommand
      */
     private const SKIP = [
         // These are displaced by Builder
-        'build',
-        'resolve',
-        'getB',
-        'issetB',
-        'unsetB',
-        'go',
         'apply',
-        'if',
+        'build',
+        'getB',
         'getService',
         'getTerminators',
-        'withValueB',
+        'go',
+        'if',
+        'issetB',
+        'resolve',
+        'unsetB',
         'withRefB',
+        'withValueB',
     ];
 
     private string $ClassFqcn = '';
@@ -73,7 +73,7 @@ class GenerateBuilder extends GenerateCommand
 
     public function description(): string
     {
-        return 'Generate a builder that creates instances of a class via a fluent interface';
+        return 'Generate a builder';
     }
 
     protected function getOptionList(): array
@@ -101,23 +101,23 @@ class GenerateBuilder extends GenerateCommand
                 ->long('no-properties')
                 ->short('i')
                 ->description(<<<EOF
-                    Ignore properties of <class> when checking for PHP DocBlocks
+Ignore properties of <class> when checking for PHP DocBlocks
 
-                    By default, if a property with the same name as a constructor parameter has a
-                    DocBlock, its description is used in the absence of a parameter description,
-                    even if `-r/--properties` is not given. Use this option to disable this
-                    behaviour.
-                    EOF)
+By default, if a property with the same name as a constructor parameter has a
+DocBlock, its description is used in the absence of a parameter description,
+even if `-r/--properties` is not given. Use this option to disable this
+behaviour.
+EOF)
                 ->bindTo($this->IgnoreProperties),
             CliOption::build()
                 ->long('forward')
                 ->short('w')
                 ->valueName('method')
                 ->description(<<<EOF
-                    Forward calls to <method> from the builder to a new instance of <class>
+Forward calls to <method> from the builder to a new instance of <class>
 
-                    If no <method> is given, calls to every supported method are forwarded.
-                    EOF)
+If no <method> is given, calls to every supported method are forwarded.
+EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->multipleAllowed()
                 ->nullable()
