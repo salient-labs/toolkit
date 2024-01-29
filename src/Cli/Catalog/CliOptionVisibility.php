@@ -53,6 +53,8 @@ final class CliOptionVisibility extends Enumeration
 
     /**
      * Show the option everywhere
+     *
+     * This is the default.
      */
     public const ALL =
         CliOptionVisibility::SYNOPSIS

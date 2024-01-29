@@ -320,6 +320,8 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
      * @param array<string|int|bool>|string|int|bool|null $defaultValue
      * @param (callable(array<string|int|bool>|string|int|bool): mixed)|null $valueCallback
      * @param int-mask-of<CliOptionVisibility::*> $visibility
+     * @param bool $inSchema True if the option should be included when
+     * generating a JSON Schema.
      * @param bool $hide True if the option's visibility should be
      * {@see CliOptionVisibility::NONE}.
      * @param mixed $bindTo Bind the option's value to a variable.
@@ -344,6 +346,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         ?string $delimiter = ',',
         ?callable $valueCallback = null,
         int $visibility = CliOptionVisibility::ALL,
+        bool $inSchema = false,
         bool $hide = false,
         &$bindTo = null
     ) {
@@ -376,6 +379,10 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
         $this->Nullable = $nullable;
         $this->ValueCallback = $valueCallback;
         $this->Visibility = $hide ? CliOptionVisibility::NONE : $visibility;
+
+        if ($inSchema) {
+            $this->Visibility |= CliOptionVisibility::SCHEMA;
+        }
 
         if (func_num_args() >= 20) {
             $this->BindTo = &$bindTo;

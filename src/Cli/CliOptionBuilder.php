@@ -30,6 +30,7 @@ use Lkrms\Concept\Builder;
  * @method $this delimiter(?string $value) The separator between values passed to the option as a single argument (see {@see CliOption::$Delimiter})
  * @method $this valueCallback((callable(array<string|int|bool>|string|int|bool): mixed)|null $value) Applied to the option's value as it is assigned (see {@see CliOption::$ValueCallback})
  * @method $this visibility(int-mask-of<CliOptionVisibility::*> $value) The option's visibility to users
+ * @method $this inSchema(bool $value = true) True if the option should be included when generating a JSON Schema (default: false)
  * @method $this hide(bool $value = true) True if the option's visibility should be {@see CliOptionVisibility::NONE} (default: false)
  * @method CliOption load() Prepare the option for use with a command
  *

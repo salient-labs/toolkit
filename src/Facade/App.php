@@ -46,6 +46,7 @@ use Lkrms\Sync\Contract\ISyncClassResolver;
  * @method static Application reportMetrics(Level::* $level = Level::INFO, bool $includeRunning = true, string[]|string|null $groups = null, ?int $limit = 10) Print a summary of the application's runtime performance metrics (see {@see Application::reportMetrics()})
  * @method static Application reportResourceUsage(Level::* $level = Level::INFO) Print a summary of the application's system resource usage
  * @method static IContainer requireGlobalContainer() Get the global container if it exists, otherwise throw an exception (see {@see Container::requireGlobalContainer()})
+ * @method static Application restoreWorkingDirectory() Change to the directory in which the application was started
  * @method static Application resumeCache() Start a cache store in the application's cache directory if a backing database was created on a previous run (see {@see Application::resumeCache()})
  * @method static Application service(class-string<IService> $id, class-string[]|null $services = null, class-string[]|null $exceptServices = null, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register an IService with the container, optionally specifying services to include or exclude (see {@see Container::service()})
  * @method static Application services(array<class-string|int,class-string<IService>> $serviceMap, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see Container::services()})
