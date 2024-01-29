@@ -384,7 +384,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             $this->Visibility |= CliOptionVisibility::SCHEMA;
         }
 
-        if (func_num_args() >= 20) {
+        if (func_num_args() >= 22) {
             $this->BindTo = &$bindTo;
             $this->IsBound = true;
         } else {
