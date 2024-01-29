@@ -358,8 +358,18 @@ class Application extends Container implements IApplication
     public function restoreWorkingDirectory()
     {
         if (File::cwd() !== $this->WorkingDirectory) {
-            chdir($this->WorkingDirectory);
+            File::chdir($this->WorkingDirectory);
         }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setWorkingDirectory(?string $directory = null)
+    {
+        $this->WorkingDirectory = $directory ?? File::cwd();
 
         return $this;
     }

@@ -46,11 +46,12 @@ use Lkrms\Sync\Contract\ISyncClassResolver;
  * @method static Application reportMetrics(Level::* $level = Level::INFO, bool $includeRunning = true, string[]|string|null $groups = null, ?int $limit = 10) Print a summary of the application's runtime performance metrics (see {@see Application::reportMetrics()})
  * @method static Application reportResourceUsage(Level::* $level = Level::INFO) Print a summary of the application's system resource usage
  * @method static IContainer requireGlobalContainer() Get the global container if it exists, otherwise throw an exception (see {@see Container::requireGlobalContainer()})
- * @method static Application restoreWorkingDirectory() Change to the directory in which the application was started
+ * @method static Application restoreWorkingDirectory() Change to the application's working directory (see {@see Application::restoreWorkingDirectory()})
  * @method static Application resumeCache() Start a cache store in the application's cache directory if a backing database was created on a previous run (see {@see Application::resumeCache()})
  * @method static Application service(class-string<IService> $id, class-string[]|null $services = null, class-string[]|null $exceptServices = null, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register an IService with the container, optionally specifying services to include or exclude (see {@see Container::service()})
  * @method static Application services(array<class-string|int,class-string<IService>> $serviceMap, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see Container::services()})
  * @method static IContainer|null setGlobalContainer(IContainer|null $container) Set the global container
+ * @method static Application setWorkingDirectory(string|null $directory = null) Set the application's working directory (see {@see Application::setWorkingDirectory()})
  * @method static Application singleton(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container (see {@see Container::singleton()})
  * @method static Application singletonIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container if it isn't already registered
  * @method static Application startCache() Start a cache store in the application's cache directory (see {@see Application::startCache()})

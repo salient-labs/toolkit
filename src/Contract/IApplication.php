@@ -188,11 +188,26 @@ interface IApplication extends IContainer
     );
 
     /**
-     * Change to the directory in which the application was started
+     * Change to the application's working directory
+     *
+     * The application's working directory is either:
+     *
+     * - the directory in which the application was started, or
+     * - the directory most recently set by calling
+     *   {@see IApplication::setWorkingDirectory()}
      *
      * @return $this
      */
     public function restoreWorkingDirectory();
+
+    /**
+     * Set the application's working directory
+     *
+     * @param string|null $directory If `null`, the current working directory is
+     * used.
+     * @return $this
+     */
+    public function setWorkingDirectory(?string $directory = null);
 
     /**
      * Print a summary of the application's runtime performance metrics and
