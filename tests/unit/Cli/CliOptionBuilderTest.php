@@ -8,6 +8,7 @@ use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
+use Lkrms\Concept\Builder;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Tests\TestCase;
@@ -216,6 +217,33 @@ final class CliOptionBuilderTest extends TestCase
             'default' => false,
         ], $option->getJsonSchema());
 
+        $constructor = (new ReflectionClass(CliOption::class))->getConstructor();
+
+        $option = $this->getValue();
+        foreach ($constructor->getParameters() as $param) {
+            $name = $param->getName();
+            if (
+                $param->isPassedByReference() ||
+                $option->issetB($name) ||
+                method_exists(Builder::class, $name)
+            ) {
+                continue;
+            }
+            $value = null;
+            if ($param->isDefaultValueAvailable()) {
+                $value = $param->getDefaultValue();
+            }
+            /** @var CliOptionBuilder */
+            $option = $option->$name($value);
+        }
+        $option = $option->load();
+        $this->assertSame(false, $option->IsBound, sprintf(
+            'Option bound to variable without %s::bindTo(). Check comparison with func_num_args() in %s::__construct() is >= %d',
+            CliOptionBuilder::class,
+            CliOption::class,
+            $constructor->getNumberOfParameters(),
+        ));
+
         $bound = null;
         $option = $this
             ->getValue()
@@ -223,15 +251,12 @@ final class CliOptionBuilderTest extends TestCase
             ->multipleAllowed()
             ->bindTo($bound)
             ->load();
-        $message = sprintf(
+        $this->assertSame(true, $option->IsBound, sprintf(
             '%s::bindTo() failed. Check comparison with func_num_args() in %s::__construct() is >= %d',
             CliOptionBuilder::class,
             CliOption::class,
-            (new ReflectionClass(CliOption::class))
-                ->getConstructor()
-                ->getNumberOfParameters(),
-        );
-        $this->assertSame(true, $option->IsBound, $message);
+            $constructor->getNumberOfParameters(),
+        ));
         $this->assertNull($bound);
         $option->applyValue([]);
         $this->assertSame([], $bound);
