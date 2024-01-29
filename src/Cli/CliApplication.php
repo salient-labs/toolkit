@@ -41,6 +41,9 @@ class CliApplication extends Application implements ICliApplication
 
     private int $LastExitStatus = 0;
 
+    /**
+     * @inheritDoc
+     */
     public function __construct(
         ?string $basePath = null,
         ?string $appName = null,

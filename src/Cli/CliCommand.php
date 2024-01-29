@@ -791,6 +791,15 @@ abstract class CliCommand implements ICliCommand
             $_values[$name] = $_value;
             $this->OptionValues[$option->Key] = $_value;
             if ($asArguments) {
+                // If the option has an optional value and no value was given,
+                // store null to ensure it's not expanded on export
+                if (
+                    $option->ValueOptional &&
+                    $option->ValueType !== CliOptionValueType::BOOLEAN &&
+                    $value === true
+                ) {
+                    $value = null;
+                }
                 $this->ArgumentValues[$option->Key] = $value;
             }
         }
@@ -834,21 +843,29 @@ abstract class CliCommand implements ICliCommand
      * returned.
      * @param bool $schema If `true`, an array that maps schema option names to
      * values is returned.
+     * @param bool $unexpand If `true` and an option has an optional value not
+     * given on the command line, replace its value with `null` or `true`.
      * @return array<string,mixed>
      */
     final protected function getOptionValues(
         bool $export = false,
-        bool $schema = false
+        bool $schema = false,
+        bool $unexpand = false
     ): array {
         $this->assertHasRun()->loadOptions();
         $options = $schema ? $this->SchemaOptions : $this->Options;
         foreach ($options as $key => $option) {
-            if ($export && !array_key_exists($option->Key, $this->ArgumentValues)) {
+            $given = array_key_exists($option->Key, $this->ArgumentValues);
+            if ($export && !$given) {
+                continue;
+            }
+            if ($option->ValueOptional && !$option->Required && !$given) {
                 continue;
             }
             $name = $schema ? $key : $option->Name;
             if (
-                $export &&
+                $unexpand &&
+                $given &&
                 $option->ValueOptional &&
                 $this->ArgumentValues[$option->Key] === null
             ) {

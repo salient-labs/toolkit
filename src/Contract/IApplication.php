@@ -188,6 +188,13 @@ interface IApplication extends IContainer
     );
 
     /**
+     * Change to the directory in which the application was started
+     *
+     * @return $this
+     */
+    public function restoreWorkingDirectory();
+
+    /**
      * Print a summary of the application's runtime performance metrics and
      * system resource usage when it terminates
      *

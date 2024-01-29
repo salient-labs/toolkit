@@ -43,6 +43,8 @@ class Application extends Container implements IApplication
 
     private string $BasePath;
 
+    private string $WorkingDirectory;
+
     private bool $RunningFromSource;
 
     // @phpstan-ignore-next-line
@@ -300,6 +302,8 @@ class Application extends Container implements IApplication
 
         $this->BasePath = $basePath;
 
+        $this->WorkingDirectory = File::cwd();
+
         $this->RunningFromSource =
             !extension_loaded('Phar') ||
             Phar::running() === '';
@@ -346,6 +350,18 @@ class Application extends Container implements IApplication
     final public function getBasePath(): string
     {
         return $this->BasePath;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function restoreWorkingDirectory()
+    {
+        if (File::cwd() !== $this->WorkingDirectory) {
+            chdir($this->WorkingDirectory);
+        }
+
+        return $this;
     }
 
     /**
