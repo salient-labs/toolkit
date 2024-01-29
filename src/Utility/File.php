@@ -22,6 +22,8 @@ final class File extends Utility
 
     /**
      * Get the current working directory without resolving symbolic links
+     *
+     * @throws FilesystemErrorException on failure.
      */
     public static function cwd(): string
     {
@@ -41,6 +43,18 @@ final class File extends Utility
             throw new FilesystemErrorException('Unable to get current working directory');
         }
         return $dir;
+    }
+
+    /**
+     * Change current directory
+     *
+     * @see chdir()
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function chdir(string $directory): void
+    {
+        $result = @chdir($directory);
+        self::throwOnFailure($result, 'Error changing directory to: %s', $directory);
     }
 
     /**
