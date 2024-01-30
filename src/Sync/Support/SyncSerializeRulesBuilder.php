@@ -8,7 +8,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Closure;
 
 /**
- * Creates SyncSerializeRules objects via a fluent interface
+ * A fluent SyncSerializeRules factory
  *
  * @template-covariant TEntity of ISyncEntity
  *

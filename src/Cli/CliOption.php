@@ -30,7 +30,7 @@ use DateTimeImmutable;
 use LogicException;
 
 /**
- * A getopt-style command line option
+ * A getopt-style option for a CLI command
  *
  * @property-read string|null $Name The name of the option
  * @property-read string|null $Long The long form of the option, e.g. 'verbose'
@@ -646,6 +646,8 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     /**
      * Get the option's names
      *
+     * @api
+     *
      * @return string[]
      */
     public function getNames(): array
@@ -744,6 +746,8 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
     /**
      * Get the first paragraph of the option's description, unwrapping any line
      * breaks
+     *
+     * @api
      */
     public function getSummary(bool $withFullStop = true): ?string
     {
@@ -890,7 +894,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
      * unknown value policy if given.
      * @return T
      */
-    public function filterValue($value, ?string $source = null, ?int $policy = null)
+    private function filterValue($value, ?string $source = null, ?int $policy = null)
     {
         $policy ??= $this->UnknownValuePolicy;
 

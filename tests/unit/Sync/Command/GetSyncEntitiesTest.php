@@ -2,15 +2,15 @@
 
 namespace Lkrms\Tests\Sync\Command;
 
-use Lkrms\Cli\Contract\ICliCommand;
-use Lkrms\Cli\CliApplication;
+use Lkrms\Cli\Contract\CliApplicationInterface;
+use Lkrms\Cli\Contract\CliCommandInterface;
 use Lkrms\Sync\Command\GetSyncEntities;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\CommandTestCase;
 
 class GetSyncEntitiesTest extends CommandTestCase
 {
-    protected function startApp(CliApplication $app): CliApplication
+    protected function startApp(CliApplicationInterface $app): CliApplicationInterface
     {
         return $app
             ->startCache()
@@ -19,8 +19,8 @@ class GetSyncEntitiesTest extends CommandTestCase
     }
 
     protected function makeCommandAssertions(
-        CliApplication $app,
-        ICliCommand $command,
+        CliApplicationInterface $app,
+        CliCommandInterface $command,
         ...$args
     ): void {
         $httpRequestCount = $args[8] ?? null;

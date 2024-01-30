@@ -9,7 +9,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
- * Creates SyncError objects via a fluent interface
+ * A fluent SyncError factory
  *
  * @method $this errorType(SyncErrorType::* $value) Set SyncError::$ErrorType
  * @method $this message(string $value) An sprintf() format string that explains the error (see {@see SyncError::$Message})

@@ -20,7 +20,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Closure;
 
 /**
- * Creates HttpSyncDefinition objects via a fluent interface
+ * A fluent HttpSyncDefinition factory
  *
  * @template TEntity of ISyncEntity
  * @template TProvider of HttpSyncProvider

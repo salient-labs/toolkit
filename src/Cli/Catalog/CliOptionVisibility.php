@@ -7,6 +7,8 @@ use Lkrms\Concept\Enumeration;
 /**
  * Command line option visibility flags
  *
+ * @api
+ *
  * @extends Enumeration<int>
  */
 final class CliOptionVisibility extends Enumeration

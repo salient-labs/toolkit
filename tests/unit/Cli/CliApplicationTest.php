@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Cli;
 
+use Lkrms\Cli\Contract\CliApplicationInterface;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
@@ -20,7 +21,7 @@ final class CliApplicationTest extends TestCase
 {
     private static string $BasePath;
 
-    private CliApplication $App;
+    private CliApplicationInterface $App;
 
     private MockTarget $ConsoleTarget;
 
@@ -63,6 +64,7 @@ final class CliApplicationTest extends TestCase
         $_SERVER['argv'] = ['app.php', 'options', 'test'];
         $command = $this->App->run()->getLastCommand();
         $this->assertInstanceOf(TestOptions::class, $command);
+        /** @var TestOptions $command */
         $this->assertSame(1, $command->getRuns());
     }
 

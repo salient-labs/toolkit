@@ -6,11 +6,11 @@ use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliHelpTarget;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
-use Lkrms\Cli\Contract\ICliApplication;
-use Lkrms\Cli\Contract\ICliCommand;
+use Lkrms\Cli\Contract\CliApplicationInterface;
+use Lkrms\Cli\Contract\CliCommandInterface;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
-use Lkrms\Cli\Support\CliHelpStyle;
+use Lkrms\Contract\HasJsonSchema;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Package;
@@ -22,9 +22,12 @@ use Throwable;
 /**
  * Base class for runnable CLI commands
  */
-abstract class CliCommand implements ICliCommand
+abstract class CliCommand implements CliCommandInterface
 {
-    protected ICliApplication $App;
+    /**
+     * @api
+     */
+    protected CliApplicationInterface $App;
 
     /**
      * @var string[]
@@ -97,6 +100,8 @@ abstract class CliCommand implements ICliCommand
      * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
      * 3. `0`, indicating success
      *
+     * @api
+     *
      * @param string ...$args Non-option arguments passed to the command.
      * @return int|void
      */
@@ -104,6 +109,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Override to return a list of options for the command
+     *
+     * @api
      *
      * @return array<CliOption|CliOptionBuilder>
      */
@@ -114,6 +121,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Override to return a detailed description of the command
+     *
+     * @api
      */
     protected function getLongDescription(): ?string
     {
@@ -121,10 +130,12 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * Override to return content for the command's help message / manual page
+     * Override to return content for the command's help message
      *
      * `"NAME"`, `"SYNOPSIS"`, `"OPTIONS"` and `"DESCRIPTION"` sections are
      * generated automatically and must not be returned by this method.
+     *
+     * @api
      *
      * @return array<CliHelpSectionName::*|string,string> An array that maps
      * section names to content.
@@ -137,8 +148,10 @@ abstract class CliCommand implements ICliCommand
     /**
      * Override to modify the command's JSON Schema before it is returned
      *
-     * @param array{'$schema':string,title:string|null,type:string,required:string[],properties:array<string,mixed>} $schema
-     * @return array{'$schema':string,title:string|null,type:string,required:string[],properties:array<string,mixed>,...}
+     * @api
+     *
+     * @param array{'$schema':string,type:string,required:string[],properties:array<string,mixed>} $schema
+     * @return array{'$schema':string,type:string,required:string[],properties:array<string,mixed>,...}
      */
     protected function filterJsonSchema(array $schema): array
     {
@@ -147,6 +160,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Override to modify schema option values before they are returned
+     *
+     * @api
      *
      * @template T of mixed
      *
@@ -161,6 +176,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Override to modify schema option values before they are normalised
      *
+     * @api
+     *
      * @param array<string,array<string|int|bool>|string|int|bool|null> $values
      * @return array<string,array<string|int|bool>|string|int|bool|null>
      */
@@ -172,6 +189,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Override to modify schema option values before they are applied to the
      * command
+     *
+     * @api
      *
      * {@see filterNormaliseSchemaValues()} is always applied to `$values`
      * before {@see filterApplySchemaValues()}.
@@ -186,7 +205,7 @@ abstract class CliCommand implements ICliCommand
         return $values;
     }
 
-    public function __construct(ICliApplication $app)
+    public function __construct(CliApplicationInterface $app)
     {
         $this->App = $app;
     }
@@ -204,7 +223,7 @@ abstract class CliCommand implements ICliCommand
         $this->loadOptionValues();
 
         if ($this->HasHelpArgument) {
-            $style = new CliHelpStyle(CliHelpTarget::TTY);
+            $style = new CliHelpStyle(CliHelpTarget::NORMAL);
             Console::stdout($style->buildHelp($this->getHelp($style)));
             return 0;
         }
@@ -236,6 +255,9 @@ abstract class CliCommand implements ICliCommand
         return $this->ExitStatus;
     }
 
+    /**
+     * @internal
+     */
     final public function __clone()
     {
         $this->Options = null;
@@ -248,7 +270,7 @@ abstract class CliCommand implements ICliCommand
     /**
      * @inheritDoc
      */
-    final public function app(): ICliApplication
+    final public function app(): CliApplicationInterface
     {
         return $this->App;
     }
@@ -256,7 +278,7 @@ abstract class CliCommand implements ICliCommand
     /**
      * @inheritDoc
      */
-    final public function container(): ICliApplication
+    final public function container(): CliApplicationInterface
     {
         return $this->App;
     }
@@ -689,6 +711,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Get the command name, including the name used to run the script, as a
      * string of space-delimited subcommands
+     *
+     * @api
      */
     final protected function getNameWithProgram(): string
     {
@@ -699,14 +723,13 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * @return array{'$schema':string,title?:string,type:string,required?:string[],properties?:array<string,mixed>,...}
+     * @return array{'$schema':string,type:string,required?:string[],properties?:array<string,mixed>,...}
      */
-    final public function getJsonSchema(?string $title = null): array
+    final public function getJsonSchema(): array
     {
         $schema = [
-            '$schema' => 'http://json-schema.org/draft-04/schema#',
+            '$schema' => HasJsonSchema::DRAFT_04_SCHEMA_ID,
         ];
-        $schema['title'] = $title;
         $schema['type'] = 'object';
         $schema['required'] = [];
         $schema['properties'] = [];
@@ -731,9 +754,8 @@ abstract class CliCommand implements ICliCommand
         // Preserve essential properties in their original order
         $schema = array_merge($schema, $this->filterJsonSchema($schema));
 
-        foreach (['title', 'required', 'properties'] as $property) {
-            $value = $schema[$property];
-            if ($value === null || $value === []) {
+        foreach (['required', 'properties'] as $property) {
+            if ($schema[$property] === []) {
                 unset($schema[$property]);
             }
         }
@@ -744,6 +766,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Normalise an array of option values, apply them to the command, and
      * return them to the caller
+     *
+     * @api
      *
      * @param array<string,array<string|int|bool>|string|int|bool|null> $values
      * @param bool $normalise `false` if `$values` have already been normalised.
@@ -810,6 +834,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Normalise an array of option values
      *
+     * @api
+     *
      * @param array<string,array<string|int|bool>|string|int|bool|null> $values
      * @param bool $expand If `true` and an option has an optional value, expand
      * `null` or `true` to the default value of the option.
@@ -838,6 +864,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Get an array that maps option names to values
+     *
+     * @api
      *
      * @param bool $export If `true`, only options given on the command line are
      * returned.
@@ -886,6 +914,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Get an array that maps option names to default values
      *
+     * @api
+     *
      * @param bool $schema If `true`, an array that maps schema option names to
      * default values is returned.
      * @return array<string,array<string|int|bool>|string|int|bool|null>
@@ -910,6 +940,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Get the value of a given option
      *
+     * @api
+     *
      * @return mixed
      */
     final protected function getOptionValue(string $name)
@@ -921,6 +953,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * True if an option was given on the command line
+     *
+     * @api
      */
     final protected function optionHasArgument(string $name): bool
     {
@@ -931,6 +965,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Get the given option
+     *
+     * @api
      */
     final protected function getOption(string $name): CliOption
     {
@@ -940,6 +976,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * True if the command has a given option
+     *
+     * @api
      */
     final protected function hasOption(string $name): bool
     {
@@ -1192,6 +1230,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Get the command's options
      *
+     * @api
+     *
      * @return list<CliOption>
      */
     final protected function getOptions(): array
@@ -1329,6 +1369,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * True if the command is currently running
+     *
+     * @api
      */
     final protected function isRunning(): bool
     {
@@ -1337,6 +1379,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Set the command's return value / exit status
+     *
+     * @api
      *
      * @return $this
      * @see CliCommand::run()
@@ -1350,6 +1394,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Get the current return value / exit status
+     *
+     * @api
      *
      * @see CliCommand::setExitStatus()
      * @see CliCommand::run()

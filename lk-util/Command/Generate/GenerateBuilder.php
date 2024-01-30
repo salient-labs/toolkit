@@ -168,7 +168,7 @@ EOF)
         $extends = $this->getFqcnAlias(Builder::class);
 
         $desc = $this->Description === null
-            ? "Creates $classClass objects via a fluent interface"
+            ? "A fluent $classClass factory"
             : $this->Description;
 
         if ($this->IncludeProperties) {

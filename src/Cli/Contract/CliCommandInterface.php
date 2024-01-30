@@ -6,8 +6,10 @@ use Lkrms\Contract\HasJsonSchema;
 
 /**
  * A runnable CLI command
+ *
+ * @api
  */
-interface ICliCommand extends ICliCommandNode, HasJsonSchema
+interface CliCommandInterface extends CliCommandNodeInterface, HasJsonSchema
 {
     /**
      * Parse the given arguments and run the command
