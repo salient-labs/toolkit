@@ -9,8 +9,8 @@ use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Concept\Builder;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IContainer;
 use Lkrms\Tests\TestCase;
 use ReflectionClass;
 
@@ -394,7 +394,7 @@ final class CliOptionBuilderTest extends TestCase
             ->delimiter(':');
     }
 
-    private function getContainer(): IContainer
+    private function getContainer(): ContainerInterface
     {
         return new Container();
     }

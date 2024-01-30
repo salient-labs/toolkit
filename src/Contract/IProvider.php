@@ -2,6 +2,7 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\Date\DateFormatterInterface;
 use Stringable;
@@ -11,7 +12,7 @@ use Stringable;
  *
  * @template TContext of IProviderContext
  *
- * @extends HasContainer<IContainer>
+ * @extends HasContainer<ContainerInterface>
  */
 interface IProvider extends HasContainer, HasName
 {
@@ -32,7 +33,7 @@ interface IProvider extends HasContainer, HasName
      *
      * @return TContext
      */
-    public function getContext(?IContainer $container = null): IProviderContext;
+    public function getContext(?ContainerInterface $container = null): IProviderContext;
 
     /**
      * Get a stable list of values that, together with the name of the class,

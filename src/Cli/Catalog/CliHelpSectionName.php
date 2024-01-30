@@ -5,7 +5,9 @@ namespace Lkrms\Cli\Catalog;
 use Lkrms\Concept\Dictionary;
 
 /**
- * Section names commonly used in help messages / manual pages
+ * Section names commonly used in help messages
+ *
+ * @api
  *
  * @extends Dictionary<string>
  */

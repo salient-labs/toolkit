@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
@@ -143,7 +143,7 @@ trait TProvidable
         IProvider $provider,
         ?IProviderContext $context = null
     ) {
-        /** @var IContainer */
+        /** @var ContainerInterface */
         $container = $context
             ? $context->container()
             : $provider->container();
@@ -195,7 +195,7 @@ trait TProvidable
         $conformity,
         ?IProviderContext $context
     ): Generator {
-        /** @var IContainer */
+        /** @var ContainerInterface */
         $container = $context
             ? $context->container()
             : $provider->container();

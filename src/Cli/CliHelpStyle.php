@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli\Support;
+namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliHelpTarget;
@@ -16,6 +16,8 @@ use LogicException;
 
 /**
  * Formatting instructions for help messages
+ *
+ * @api
  */
 final class CliHelpStyle
 {
@@ -125,7 +127,7 @@ final class CliHelpStyle
         $this->Italic = '_';
 
         switch ($target) {
-            case CliHelpTarget::TTY:
+            case CliHelpTarget::NORMAL:
                 $this->Bold = '__';
                 $this->Width ??= self::getConsoleWidth();
                 $this->Margin = 4;
@@ -206,7 +208,7 @@ final class CliHelpStyle
                 continue;
             }
 
-            if ($this->Target === CliHelpTarget::TTY) {
+            if ($this->Target === CliHelpTarget::NORMAL) {
                 $content = str_replace("\n", "\n    ", $content);
                 $help .= "## $heading\n    $content\n\n";
                 continue;

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ITreeable;
@@ -102,7 +102,7 @@ final class SyncIntrospector extends Introspector
      *
      * @return static<T>
      */
-    public static function getService(IContainer $container, string $service)
+    public static function getService(ContainerInterface $container, string $service)
     {
         return new static(
             $service,
@@ -351,7 +351,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null): TClass
+     * @return Closure(mixed[], string|null, ContainerInterface, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -379,7 +379,7 @@ final class SyncIntrospector extends Introspector
             $closure = static function (
                 array $array,
                 ?string $service,
-                IContainer $container,
+                ContainerInterface $container,
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
@@ -398,7 +398,7 @@ final class SyncIntrospector extends Introspector
             $closure = static function (
                 array $array,
                 ?string $service,
-                IContainer $container,
+                ContainerInterface $container,
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,

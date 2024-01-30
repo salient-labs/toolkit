@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\HasIdentifier;
 use Lkrms\Contract\HasName;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\IRelatable;
@@ -39,7 +39,7 @@ interface ISyncEntity extends
     /**
      * Get an instance of the entity's default provider
      */
-    public static function defaultProvider(?IContainer $container = null): ISyncProvider;
+    public static function defaultProvider(?ContainerInterface $container = null): ISyncProvider;
 
     /**
      * Get an interface to perform sync operations on the entity with its
@@ -47,14 +47,14 @@ interface ISyncEntity extends
      *
      * @return ISyncEntityProvider<static>
      */
-    public static function withDefaultProvider(?IContainer $container = null, ?ISyncContext $context = null): ISyncEntityProvider;
+    public static function withDefaultProvider(?ContainerInterface $container = null, ?ISyncContext $context = null): ISyncEntityProvider;
 
     /**
      * Get the entity's default serialization rules
      *
      * @return SerializeRules<static>
      */
-    public static function getSerializeRules(?IContainer $container = null): SerializeRules;
+    public static function getSerializeRules(?ContainerInterface $container = null): SerializeRules;
 
     /**
      * Called when the entity is registered with an entity store

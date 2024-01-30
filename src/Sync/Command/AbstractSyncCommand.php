@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Command;
 
-use Lkrms\Cli\Contract\ICliApplication;
+use Lkrms\Cli\Contract\CliApplicationInterface;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -49,7 +49,7 @@ abstract class AbstractSyncCommand extends CliCommand
      */
     protected $EntityProviders = [];
 
-    public function __construct(ICliApplication $container, SyncStore $store)
+    public function __construct(CliApplicationInterface $container, SyncStore $store)
     {
         parent::__construct($container);
 

@@ -10,6 +10,8 @@ use LogicException;
 /**
  * Command line option value types
  *
+ * @api
+ *
  * @extends ConvertibleEnumeration<int>
  */
 final class CliOptionValueType extends ConvertibleEnumeration

@@ -2,7 +2,8 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Cli\Contract\ICliCommand;
+use Lkrms\Cli\Contract\CliApplicationInterface;
+use Lkrms\Cli\Contract\CliCommandInterface;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
@@ -13,7 +14,7 @@ use Lkrms\Utility\File;
 
 abstract class CommandTestCase extends TestCase
 {
-    protected function startApp(CliApplication $app): CliApplication
+    protected function startApp(CliApplicationInterface $app): CliApplicationInterface
     {
         return $app;
     }
@@ -30,13 +31,13 @@ abstract class CommandTestCase extends TestCase
      * @param mixed ...$args
      */
     protected function makeCommandAssertions(
-        CliApplication $app,
-        ICliCommand $command,
+        CliApplicationInterface $app,
+        CliCommandInterface $command,
         ...$args
     ): void {}
 
     /**
-     * @param class-string<ICliCommand> $command
+     * @param class-string<CliCommandInterface> $command
      * @param string[] $args
      * @param string[] $name
      * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $consoleMessages

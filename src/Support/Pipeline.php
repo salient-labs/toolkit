@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Exception\PipelineResultRejectedException;
@@ -26,7 +26,7 @@ use Throwable;
 final class Pipeline extends FluentInterface implements IPipeline
 {
     /**
-     * @var IContainer|null
+     * @var ContainerInterface|null
      */
     private $Container;
 
@@ -93,7 +93,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     /**
      * Creates a new Pipeline object
      */
-    public function __construct(?IContainer $container = null)
+    public function __construct(?ContainerInterface $container = null)
     {
         $this->Container = $container;
     }
@@ -105,7 +105,7 @@ final class Pipeline extends FluentInterface implements IPipeline
      *
      * @return static
      */
-    public static function create(?IContainer $container = null): self
+    public static function create(?ContainerInterface $container = null): self
     {
         return new self($container);
     }

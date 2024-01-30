@@ -5,11 +5,11 @@ namespace Lkrms\Container;
 use Dice\Dice;
 use Dice\DiceException;
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Exception\ContainerNotLocatedException;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Exception\InvalidContainerBindingException;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Contract\IServiceShared;
 use Lkrms\Contract\IServiceSingleton;
@@ -17,7 +17,7 @@ use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
 use Lkrms\Facade\DI;
 use Lkrms\Facade\Event;
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Closure;
 use ReflectionClass;
 
@@ -26,9 +26,9 @@ use ReflectionClass;
  *
  * A static interface to the global service container is provided by {@see DI}.
  */
-class Container extends FluentInterface implements IContainer
+class Container extends FluentInterface implements ContainerInterface
 {
-    private static ?IContainer $GlobalContainer = null;
+    private static ?ContainerInterface $GlobalContainer = null;
 
     private Dice $Dice;
 
@@ -76,7 +76,7 @@ class Container extends FluentInterface implements IContainer
 
         // Bind any interfaces that extend PSR-11's ContainerInterface
         foreach ($class->getInterfaces() as $name => $interface) {
-            if ($interface->implementsInterface(ContainerInterface::class)) {
+            if ($interface->implementsInterface(PsrContainerInterface::class)) {
                 $this->instance($name, $this);
             }
         }
@@ -118,7 +118,7 @@ class Container extends FluentInterface implements IContainer
     /**
      * @inheritDoc
      */
-    final public static function getGlobalContainer(): IContainer
+    final public static function getGlobalContainer(): ContainerInterface
     {
         if (self::$GlobalContainer !== null) {
             return self::$GlobalContainer;
@@ -130,7 +130,7 @@ class Container extends FluentInterface implements IContainer
     /**
      * Get the global container if it exists
      */
-    final public static function maybeGetGlobalContainer(): ?IContainer
+    final public static function maybeGetGlobalContainer(): ?ContainerInterface
     {
         return self::$GlobalContainer;
     }
@@ -141,7 +141,7 @@ class Container extends FluentInterface implements IContainer
      * @throws ContainerNotLocatedException if the global container does not
      * exist.
      */
-    final public static function requireGlobalContainer(): IContainer
+    final public static function requireGlobalContainer(): ContainerInterface
     {
         if (self::$GlobalContainer === null) {
             throw new ContainerNotLocatedException();
@@ -153,7 +153,7 @@ class Container extends FluentInterface implements IContainer
     /**
      * @inheritDoc
      */
-    final public static function setGlobalContainer(?IContainer $container): ?IContainer
+    final public static function setGlobalContainer(?ContainerInterface $container): ?ContainerInterface
     {
         Event::dispatch(new GlobalContainerSetEvent($container));
 

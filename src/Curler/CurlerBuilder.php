@@ -9,7 +9,7 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Support\Date\DateFormatterInterface;
 
 /**
- * Creates Curler objects via a fluent interface
+ * A fluent Curler factory
  *
  * @method $this baseUrl(string $value) Resource URL (no query or fragment)
  * @method $this headers(?HttpHeadersInterface $value) Request headers

@@ -3,8 +3,8 @@
 namespace Lkrms\Cli\Contract;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
-use Lkrms\Cli\Support\CliHelpStyle;
 use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliHelpStyle;
 use Lkrms\Contract\HasContainer;
 use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\HasName;
@@ -13,18 +13,20 @@ use LogicException;
 /**
  * A node in a CLI command tree
  *
- * @extends HasContainer<ICliApplication>
+ * @api
+ *
+ * @extends HasContainer<CliApplicationInterface>
  *
  * @see CliCommand
  */
-interface ICliCommandNode extends HasContainer, HasName, HasDescription
+interface CliCommandNodeInterface extends HasContainer, HasName, HasDescription
 {
     /**
      * Get the command name as a string of space-delimited subcommands
      *
-     * Returns an empty string if {@see ICliCommandNode::setName()} has not been
-     * called, or if an empty array of subcommands was passed to
-     * {@see ICliCommandNode::setName()}.
+     * Returns an empty string if {@see CliCommandNodeInterface::setName()} has
+     * not been called, or if an empty array of subcommands was passed to
+     * {@see CliCommandNodeInterface::setName()}.
      */
     public function name(): string;
 
@@ -41,7 +43,7 @@ interface ICliCommandNode extends HasContainer, HasName, HasDescription
     public function description(): string;
 
     /**
-     * Called immediately after instantiation by an ICliApplication
+     * Called immediately after instantiation by a CliApplicationInterface
      *
      * @param string[] $name
      * @throws LogicException if called more than once per instance.

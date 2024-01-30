@@ -2,6 +2,8 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Contract\ContainerInterface;
+
 /**
  * Provides services that can be bound to a container
  *
@@ -30,8 +32,8 @@ interface IService
      * replacements. Substitutions are applied:
      *
      * - when resolving the class's dependencies, and
-     * - when using {@see IContainer::inContextOf()} to work with a container in
-     *   the context of the class
+     * - when using {@see ContainerInterface::inContextOf()} to work with a
+     *   container in the context of the class
      *
      * @return array<class-string,class-string>
      */

@@ -4,13 +4,14 @@ namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliHelpTarget;
-use Lkrms\Cli\Contract\ICliApplication;
+use Lkrms\Cli\Contract\CliApplicationInterface;
+use Lkrms\Cli\Contract\CliCommandInterface;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Cli\Support\CliHelpStyle;
 use Lkrms\Console\Support\ConsoleManPageFormat;
 use Lkrms\Console\Support\ConsoleMarkdownFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;
+use Lkrms\Contract\HasJsonSchema;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
@@ -26,18 +27,18 @@ use LogicException;
 /**
  * A service container for CLI applications
  */
-class CliApplication extends Application implements ICliApplication
+class CliApplication extends Application implements CliApplicationInterface
 {
     private const COMMAND_REGEX = '/^[a-z][a-z0-9_-]*$/iD';
 
     /**
-     * @var array<string,class-string<CliCommand>|mixed[]>
+     * @var array<string,class-string<CliCommandInterface>|mixed[]>
      */
     private $CommandTree = [];
 
-    private ?CliCommand $RunningCommand = null;
+    private ?CliCommandInterface $RunningCommand = null;
 
-    private ?CliCommand $LastCommand = null;
+    private ?CliCommandInterface $LastCommand = null;
 
     private int $LastExitStatus = 0;
 
@@ -69,7 +70,7 @@ class CliApplication extends Application implements ICliApplication
     /**
      * @inheritDoc
      */
-    public function getRunningCommand(): ?CliCommand
+    public function getRunningCommand(): ?CliCommandInterface
     {
         return $this->RunningCommand;
     }
@@ -77,7 +78,7 @@ class CliApplication extends Application implements ICliApplication
     /**
      * @inheritDoc
      */
-    public function getLastCommand(): ?CliCommand
+    public function getLastCommand(): ?CliCommandInterface
     {
         return $this->LastCommand;
     }
@@ -91,23 +92,26 @@ class CliApplication extends Application implements ICliApplication
     }
 
     /**
-     * Get a CliCommand instance from the given node in the command tree
+     * Get a command instance from the given node in the command tree
      *
      * Returns `null` if no command is registered at the given node.
      *
-     * @internal
      * @param string $name The name of the node as a space-delimited list of
      * subcommands.
-     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand>|false|null $node The node as returned by {@see CliApplication::getNode()}.
+     * @param array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface>|false|null $node The node as returned by {@see CliApplication::getNode()}.
      */
-    protected function getNodeCommand(string $name, $node): ?CliCommand
+    protected function getNodeCommand(string $name, $node): ?CliCommandInterface
     {
         if (!is_string($node)) {
             return null;
         }
 
-        if (!(($command = $this->get($node)) instanceof CliCommand)) {
-            throw new LogicException("Not a subclass of CliCommand: $node");
+        if (!(($command = $this->get($node)) instanceof CliCommandInterface)) {
+            throw new LogicException(sprintf(
+                'Does not implement %s: %s',
+                CliCommandInterface::class,
+                $node,
+            ));
         }
         $command->setName($name ? explode(' ', $name) : []);
 
@@ -119,18 +123,17 @@ class CliApplication extends Application implements ICliApplication
      *
      * Returns one of the following:
      * - `null` if nothing has been added to the tree at `$name`
-     * - the name of the {@see CliCommand} class registered at `$name`
+     * - the name of the {@see CliCommandInterface} class registered at `$name`
      * - an array that maps subcommands of `$name` to their respective nodes
-     * - `false` if a {@see CliCommand} has been registered above `$name`, e.g.
-     *   if `$name` is `["sync", "canvas", "from-sis"]` and a command has been
-     *   registered at `["sync", "canvas"]`
+     * - `false` if a {@see CliCommandInterface} has been registered above
+     *   `$name`, e.g. if `$name` is `["sync", "canvas", "from-sis"]` and a
+     *   command has been registered at `["sync", "canvas"]`
      *
      * Nodes in the command tree are either subcommand arrays (branches) or
-     * {@see CliCommand} class names (leaves).
+     * {@see CliCommandInterface} class names (leaves).
      *
-     * @internal
      * @param string[] $name
-     * @return array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand>|false|null
+     * @return array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface>|false|null
      */
     protected function getNode(array $name = [])
     {
@@ -199,11 +202,11 @@ class CliApplication extends Application implements ICliApplication
     /**
      * Get a help message for a command tree node
      *
-     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
+     * @param array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface> $node
      */
     private function getHelp(string $name, $node, ?CliHelpStyle $style = null): ?string
     {
-        $style ??= new CliHelpStyle(CliHelpTarget::TTY);
+        $style ??= new CliHelpStyle(CliHelpTarget::NORMAL);
 
         $command = $this->getNodeCommand($name, $node);
         if ($command) {
@@ -236,7 +239,7 @@ class CliApplication extends Application implements ICliApplication
     /**
      * Get usage information for a command tree node
      *
-     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
+     * @param array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface> $node
      */
     private function getUsage(string $name, $node): ?string
     {
@@ -378,8 +381,11 @@ class CliApplication extends Application implements ICliApplication
 
             if ($args && $args[0] === '_json_schema') {
                 array_shift($args);
-                $schema = $command->getJsonSchema($args[0] ?? trim($this->getProgramName() . " $name") . ' options');
-                echo Json::prettyPrint($schema) . \PHP_EOL;
+                $schema = $command->getJsonSchema();
+                echo Json::prettyPrint([
+                    '$schema' => $schema['$schema'] ?? HasJsonSchema::DRAFT_04_SCHEMA_ID,
+                    'title' => $args[0] ?? $schema['title'] ?? trim($this->getProgramName() . " $name") . ' options',
+                ] + $schema) . \PHP_EOL;
                 return $this;
             }
 
@@ -425,7 +431,7 @@ class CliApplication extends Application implements ICliApplication
     }
 
     /**
-     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
+     * @param array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface> $node
      * @param int&CliHelpTarget::* $target
      */
     private function generateHelp(string $name, $node, int $target, string ...$args): void

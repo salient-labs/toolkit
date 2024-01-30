@@ -8,7 +8,7 @@ use Lkrms\Curler\Curler;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 
 /**
- * Creates CurlerPage objects via a fluent interface
+ * A fluent CurlerPage factory
  *
  * @method $this entities(mixed[] $value) Data extracted from the upstream response
  * @method $this curler(Curler $value) The Curler instance that retrieved the page

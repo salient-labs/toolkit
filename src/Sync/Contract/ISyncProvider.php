@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\IProvider;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Concept\SyncProvider;
@@ -21,7 +21,7 @@ interface ISyncProvider extends IProvider
     /**
      * @inheritDoc
      */
-    public function getContext(?IContainer $container = null): ISyncContext;
+    public function getContext(?ContainerInterface $container = null): ISyncContext;
 
     /**
      * Called when the provider is registered with an entity store
@@ -72,7 +72,7 @@ interface ISyncProvider extends IProvider
      *
      * @template T of ISyncEntity
      * @param class-string<T> $entity
-     * @param ISyncContext|IContainer|null $context
+     * @param ISyncContext|ContainerInterface|null $context
      * @return ISyncEntityProvider<T>
      */
     public function with(string $entity, $context = null): ISyncEntityProvider;

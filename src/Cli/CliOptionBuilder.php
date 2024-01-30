@@ -9,7 +9,7 @@ use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Concept\Builder;
 
 /**
- * Creates CliOption objects via a fluent interface
+ * A fluent CliOption factory
  *
  * @method $this name(?string $value) The name of the option (see {@see CliOption::$Name})
  * @method $this long(?string $value) The long form of the option, e.g. "verbose" (see {@see CliOption::$Long})

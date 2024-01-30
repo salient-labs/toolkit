@@ -8,7 +8,7 @@ use Lkrms\Contract\IServiceShared;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Utility\Catalog\CopyFlag;
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use DateTimeInterface;
 use DateTimeZone;
 use ReflectionClass;
@@ -382,7 +382,7 @@ final class Get extends Utility
 
         if ((
             !($flags & CopyFlag::COPY_CONTAINERS) &&
-            $var instanceof ContainerInterface
+            $var instanceof PsrContainerInterface
         ) || (
             !($flags & CopyFlag::COPY_SINGLETONS) && (
                 $var instanceof IServiceSingleton ||

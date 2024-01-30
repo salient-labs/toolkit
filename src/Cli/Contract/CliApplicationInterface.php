@@ -2,20 +2,22 @@
 
 namespace Lkrms\Cli\Contract;
 
-use Lkrms\Contract\IApplication;
+use Lkrms\Container\Contract\ApplicationInterface;
 use LogicException;
 
 /**
  * A service container for CLI applications
+ *
+ * @api
  */
-interface ICliApplication extends IApplication
+interface CliApplicationInterface extends ApplicationInterface
 {
     /**
      * Get the command invoked by run()
      *
      * This method should only return a command that is currently running.
      */
-    public function getRunningCommand(): ?ICliCommand;
+    public function getRunningCommand(): ?CliCommandInterface;
 
     /**
      * Get the command most recently invoked by run()
@@ -23,7 +25,7 @@ interface ICliApplication extends IApplication
      * This method should only return a command that ran to completion or failed
      * with an exception.
      */
-    public function getLastCommand(): ?ICliCommand;
+    public function getLastCommand(): ?CliCommandInterface;
 
     /**
      * Get the return value most recently recorded by run()
@@ -38,7 +40,7 @@ interface ICliApplication extends IApplication
      * @param string[] $name The name of the command as an array of subcommands.
      * Valid subcommands start with a letter, followed by any number of letters,
      * numbers, hyphens and underscores.
-     * @param class-string<ICliCommand> $id
+     * @param class-string<CliCommandInterface> $id
      * @return $this
      * @throws LogicException if `$name` is invalid or conflicts with a
      * registered command.
@@ -49,9 +51,9 @@ interface ICliApplication extends IApplication
      * Register one, and only one, command for the lifetime of the container
      *
      * Calling this method should have the same effect as calling
-     * {@see ICliApplication::command()} with an empty command name.
+     * {@see CliApplicationInterface::command()} with an empty command name.
      *
-     * @param class-string<ICliCommand> $id
+     * @param class-string<CliCommandInterface> $id
      * @return $this
      * @throws LogicException if another command has already been registered.
      */
@@ -97,7 +99,7 @@ interface ICliApplication extends IApplication
      * Process command line arguments passed to the script and exit with the
      * recorded return value
      *
-     * See {@see ICliApplication::run()} for details.
+     * See {@see CliApplicationInterface::run()} for details.
      *
      * @return never
      */

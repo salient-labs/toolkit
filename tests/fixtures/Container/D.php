@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Container;
 
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 
 /**
- * @template T of IContainer
+ * @template T of ContainerInterface
  * @extends C<T>
  */
 class D extends C {}

@@ -2,23 +2,23 @@
 
 namespace Lkrms\Tests\Container;
 
+use Lkrms\Container\Contract\ApplicationInterface;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
-use Lkrms\Contract\IApplication;
-use Lkrms\Contract\IContainer;
 use Lkrms\Tests\TestCase;
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 
 final class ContainerTest extends TestCase
 {
     public function testBindContainer(): void
     {
         $container = new Container();
+        $this->assertSame($container, $container->get(PsrContainerInterface::class));
         $this->assertSame($container, $container->get(ContainerInterface::class));
-        $this->assertSame($container, $container->get(IContainer::class));
         $this->expectException(ContainerServiceNotFoundException::class);
-        $container->get(IApplication::class);
+        $container->get(ApplicationInterface::class);
     }
 
     public function testServiceTransient(): void

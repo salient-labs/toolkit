@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Lkrms\Container\Contract;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Facade\Profile;
@@ -14,7 +14,7 @@ use Lkrms\Utility\Package;
 /**
  * A service container for applications
  */
-interface IApplication extends IContainer
+interface ApplicationInterface extends ContainerInterface
 {
     /**
      * @inheritDoc

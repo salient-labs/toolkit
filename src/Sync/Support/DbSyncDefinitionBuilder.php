@@ -16,7 +16,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Closure;
 
 /**
- * Creates DbSyncDefinition objects via a fluent interface
+ * A fluent DbSyncDefinition factory
  *
  * @template TEntity of ISyncEntity
  * @template TProvider of DbSyncProvider

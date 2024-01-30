@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\Date\DateFormatterInterface;
@@ -15,14 +15,14 @@ use Lkrms\Support\ProviderContext;
  */
 abstract class Provider implements IProvider
 {
-    protected IContainer $App;
+    protected ContainerInterface $App;
 
     private DateFormatterInterface $DateFormatter;
 
     /**
      * Creates a new Provider object
      */
-    public function __construct(IContainer $app)
+    public function __construct(ContainerInterface $app)
     {
         $this->App = $app;
     }
@@ -39,7 +39,7 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    public function getContext(?IContainer $container = null): ProviderContext
+    public function getContext(?ContainerInterface $container = null): ProviderContext
     {
         if (!$container) {
             $container = $this->App;
@@ -63,7 +63,7 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    final public function app(): IContainer
+    final public function app(): ContainerInterface
     {
         return $this->App;
     }
@@ -71,7 +71,7 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    final public function container(): IContainer
+    final public function container(): ContainerInterface
     {
         return $this->App;
     }

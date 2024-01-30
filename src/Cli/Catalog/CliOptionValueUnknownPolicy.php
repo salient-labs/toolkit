@@ -8,6 +8,8 @@ use Lkrms\Concept\Enumeration;
  * Unknown value policy for command line options of type ONE_OF, ONE_OF_OPTIONAL
  * and ONE_OF_POSITIONAL
  *
+ * @api
+ *
  * @extends Enumeration<int>
  */
 final class CliOptionValueUnknownPolicy extends Enumeration
