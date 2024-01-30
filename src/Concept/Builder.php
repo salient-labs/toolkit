@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concept;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
@@ -33,7 +33,7 @@ abstract class Builder extends FluentInterface implements IImmutable
         return [];
     }
 
-    protected IContainer $Container;
+    protected ContainerInterface $Container;
 
     /**
      * @var Introspector<object,Provider,Entity,ProviderContext>
@@ -53,7 +53,7 @@ abstract class Builder extends FluentInterface implements IImmutable
     /**
      * Creates a new Builder object
      */
-    final public function __construct(?IContainer $container = null)
+    final public function __construct(?ContainerInterface $container = null)
     {
         $this->Container = $container ?? Container::getGlobalContainer();
         $this->Introspector = Introspector::getService($this->Container, static::getService());
@@ -75,7 +75,7 @@ abstract class Builder extends FluentInterface implements IImmutable
      *
      * @return static
      */
-    final public static function build(?IContainer $container = null)
+    final public static function build(?ContainerInterface $container = null)
     {
         return new static($container);
     }

@@ -3,8 +3,8 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Concept\Builder;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\Buildable;
-use Lkrms\Contract\IContainer;
 
 /**
  * Implements Buildable
@@ -18,7 +18,7 @@ trait HasBuilder
         return static::class . 'Builder';
     }
 
-    final public static function build(?IContainer $container = null): Builder
+    final public static function build(?ContainerInterface $container = null): Builder
     {
         return static::getBuilder()::build($container);
     }

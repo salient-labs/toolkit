@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\Immutable;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\HasIdentifier;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
@@ -22,7 +22,7 @@ class ProviderContext implements IProviderContext
 {
     use Immutable;
 
-    protected IContainer $Container;
+    protected ContainerInterface $Container;
 
     /**
      * @var IProvider<static>
@@ -55,7 +55,7 @@ class ProviderContext implements IProviderContext
      * @param IProvider<static> $provider
      */
     public function __construct(
-        IContainer $container,
+        ContainerInterface $container,
         IProvider $provider
     ) {
         $this->Container = $container;
@@ -65,7 +65,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function app(): IContainer
+    final public function app(): ContainerInterface
     {
         return $this->Container;
     }
@@ -73,7 +73,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function container(): IContainer
+    final public function container(): ContainerInterface
     {
         return $this->Container;
     }
@@ -97,7 +97,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function withContainer(IContainer $container)
+    final public function withContainer(ContainerInterface $container)
     {
         return $this->withPropertyValue('Container', $container);
     }

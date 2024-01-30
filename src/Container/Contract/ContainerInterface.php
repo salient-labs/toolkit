@@ -1,14 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Lkrms\Container\Contract;
 
 use Lkrms\Container\ServiceLifetime;
-use Psr\Container\ContainerInterface;
+use Lkrms\Contract\IService;
+use Lkrms\Contract\IServiceShared;
+use Lkrms\Contract\IServiceSingleton;
+use Lkrms\Contract\ReceivesService;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 
 /**
  * A simple service container with context-based dependency injection
  */
-interface IContainer extends ContainerInterface
+interface ContainerInterface extends PsrContainerInterface
 {
     /**
      * Creates a new service container object
@@ -23,17 +27,17 @@ interface IContainer extends ContainerInterface
     /**
      * Get the global container, creating it if necessary
      */
-    public static function getGlobalContainer(): IContainer;
+    public static function getGlobalContainer(): ContainerInterface;
 
     /**
      * Set the global container
      *
-     * @template T of IContainer|null
+     * @template T of ContainerInterface|null
      *
      * @param T $container
      * @return T
      */
-    public static function setGlobalContainer(?IContainer $container): ?IContainer;
+    public static function setGlobalContainer(?ContainerInterface $container): ?ContainerInterface;
 
     /**
      * Apply the contextual bindings of a service to a copy of the container
@@ -47,7 +51,7 @@ interface IContainer extends ContainerInterface
      * Get services for which contextual bindings have been applied to the
      * container
      *
-     * @see IContainer::inContextOf()
+     * @see ContainerInterface::inContextOf()
      *
      * @return class-string[]
      */
@@ -158,7 +162,7 @@ interface IContainer extends ContainerInterface
      * instance of `$instanceOf` (default: `$id`) that will be created when
      * `$id` is first requested.
      *
-     * See {@see IContainer::bind()} for more information.
+     * See {@see ContainerInterface::bind()} for more information.
      *
      * @template T0
      * @template T1 of T0

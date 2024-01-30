@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
@@ -75,7 +75,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param ISyncDefinition<TEntity,TProvider> $definition
      */
     public function __construct(
-        IContainer $container,
+        ContainerInterface $container,
         string $entity,
         ISyncProvider $provider,
         ISyncDefinition $definition,

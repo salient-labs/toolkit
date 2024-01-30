@@ -2,6 +2,8 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Contract\ContainerInterface;
+
 /**
  * Receives the container that created it
  */
@@ -12,5 +14,5 @@ interface ReceivesContainer
      *
      * @return $this
      */
-    public function setContainer(IContainer $container);
+    public function setContainer(ContainerInterface $container);
 }

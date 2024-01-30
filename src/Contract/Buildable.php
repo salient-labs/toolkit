@@ -4,6 +4,7 @@ namespace Lkrms\Contract;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Concern\HasBuilder;
+use Lkrms\Container\Contract\ContainerInterface;
 
 /**
  * @template TBuilder of Builder
@@ -26,7 +27,7 @@ interface Buildable
      *
      * @return TBuilder
      */
-    public static function build(?IContainer $container = null): Builder;
+    public static function build(?ContainerInterface $container = null): Builder;
 
     /**
      * Get an instance of the class from an optionally terminated builder

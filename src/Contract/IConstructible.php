@@ -2,6 +2,7 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
@@ -15,7 +16,7 @@ interface IConstructible
      */
     public static function construct(
         array $data,
-        ?IContainer $container = null
+        ?ContainerInterface $container = null
     );
 
     /**
@@ -26,6 +27,6 @@ interface IConstructible
     public static function constructList(
         iterable $list,
         $conformity = ArrayKeyConformity::NONE,
-        ?IContainer $container = null
+        ?ContainerInterface $container = null
     ): iterable;
 }

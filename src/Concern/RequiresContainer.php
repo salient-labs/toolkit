@@ -2,12 +2,12 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IContainer;
 
 trait RequiresContainer
 {
-    final protected static function requireContainer(?IContainer $container = null): IContainer
+    final protected static function requireContainer(?ContainerInterface $container = null): ContainerInterface
     {
         return $container ?: Container::requireGlobalContainer();
     }

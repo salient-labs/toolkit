@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concept\Provider;
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -72,7 +72,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      * Creating an instance of the provider registers it with the entity store
      * injected by the container.
      */
-    public function __construct(IContainer $app, SyncStore $store)
+    public function __construct(ContainerInterface $app, SyncStore $store)
     {
         parent::__construct($app);
         $this->Store = $store;
@@ -82,7 +82,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     /**
      * @inheritDoc
      */
-    public function getContext(?IContainer $container = null): SyncContext
+    public function getContext(?ContainerInterface $container = null): SyncContext
     {
         if (!$container) {
             $container = $this->App;
@@ -246,7 +246,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      */
     final public function with(string $entity, $context = null): SyncEntityProvider
     {
-        /** @var IContainer */
+        /** @var ContainerInterface */
         $container = $context instanceof ISyncContext
             ? $context->container()
             : ($context ?: $this->App);

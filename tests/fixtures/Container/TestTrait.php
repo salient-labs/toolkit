@@ -2,13 +2,13 @@
 
 namespace Lkrms\Tests\Container;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IContainer;
 use LogicException;
 
 trait TestTrait
 {
-    protected ?IContainer $Container = null;
+    protected ?ContainerInterface $Container = null;
 
     protected ?string $Service = null;
 
@@ -17,17 +17,17 @@ trait TestTrait
         return $this->Service ?? static::class;
     }
 
-    public function app(): IContainer
+    public function app(): ContainerInterface
     {
         return $this->container();
     }
 
-    public function container(): IContainer
+    public function container(): ContainerInterface
     {
         return $this->Container ?: ($this->Container = new Container());
     }
 
-    public function setContainer(IContainer $container)
+    public function setContainer(ContainerInterface $container)
     {
         if ($this->Container) {
             throw new LogicException('setContainer already called');

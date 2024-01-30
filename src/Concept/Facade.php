@@ -3,11 +3,11 @@
 namespace Lkrms\Concept;
 
 use Lkrms\Concern\ResolvesServiceLists;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Container;
 use Lkrms\Contract\FacadeAwareInterface;
 use Lkrms\Contract\FacadeInterface;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\Unloadable;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
@@ -224,7 +224,7 @@ abstract class Facade implements FacadeInterface
      * @return TService
      */
     private static function getInstanceFromContainer(
-        IContainer $container,
+        ContainerInterface $container,
         string $serviceName
     ) {
         // If one of the services returned by the facade has been bound to the

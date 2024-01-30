@@ -10,8 +10,8 @@ use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\HasDescription;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IReadable;
@@ -219,7 +219,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     /**
      * @inheritDoc
      */
-    final public static function defaultProvider(?IContainer $container = null): ISyncProvider
+    final public static function defaultProvider(?ContainerInterface $container = null): ISyncProvider
     {
         return self::requireContainer($container)->get(
             SyncIntrospector::entityToProvider(static::class)
@@ -229,7 +229,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     /**
      * @inheritDoc
      */
-    final public static function withDefaultProvider(?IContainer $container = null, ?ISyncContext $context = null): ISyncEntityProvider
+    final public static function withDefaultProvider(?ContainerInterface $container = null, ?ISyncContext $context = null): ISyncEntityProvider
     {
         return static::defaultProvider($container)->with(
             static::class, $context
@@ -239,7 +239,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     /**
      * @inheritDoc
      */
-    final public static function getSerializeRules(?IContainer $container = null): SerializeRules
+    final public static function getSerializeRules(?ContainerInterface $container = null): SerializeRules
     {
         $container = self::requireContainer($container);
         $rulesB = SerializeRulesBuilder::build($container)->entity(static::class);

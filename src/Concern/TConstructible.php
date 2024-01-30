@@ -2,9 +2,9 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IConstructible;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -30,13 +30,14 @@ trait TConstructible
      * normalised for comparison.
      *
      * @param mixed[] $data
-     * @param IContainer|null $container Used to create the instance if set.
+     * @param ContainerInterface|null $container Used to create the instance if
+     * set.
      * @param (ITreeable&static)|null $parent If the class implements
      * {@see ITreeable}, pass `$parent` to the instance via
      * {@see ITreeable::setParent()}.
      * @return static
      */
-    final public static function construct(array $data, ?IContainer $container = null, $parent = null)
+    final public static function construct(array $data, ?ContainerInterface $container = null, $parent = null)
     {
         if (!$container) {
             $container = Container::requireGlobalContainer();
@@ -54,7 +55,8 @@ trait TConstructible
      * @param iterable<mixed[]> $list
      * @param ArrayKeyConformity::* $conformity Use `COMPLETE` or `PARTIAL`
      * wherever possible to improve performance.
-     * @param IContainer|null $container Used to create each instance if set.
+     * @param ContainerInterface|null $container Used to create each instance if
+     * set.
      * @param (ITreeable&static)|null $parent If the class implements
      * {@see ITreeable}, pass `$parent` to each instance via
      * {@see ITreeable::setParent()}.
@@ -63,7 +65,7 @@ trait TConstructible
     final public static function constructList(
         iterable $list,
         $conformity = ArrayKeyConformity::NONE,
-        ?IContainer $container = null,
+        ?ContainerInterface $container = null,
         $parent = null
     ): Generator {
         if (!$container) {

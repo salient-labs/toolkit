@@ -2,8 +2,10 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Contract\ContainerInterface;
+
 /**
- * @template T of IContainer
+ * @template T of ContainerInterface
  */
 interface HasContainer
 {
@@ -12,12 +14,12 @@ interface HasContainer
      *
      * @return T
      */
-    public function app(): IContainer;
+    public function app(): ContainerInterface;
 
     /**
      * Get the object's service container
      *
      * @return T
      */
-    public function container(): IContainer;
+    public function container(): ContainerInterface;
 }

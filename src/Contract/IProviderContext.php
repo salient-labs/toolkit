@@ -2,6 +2,7 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
@@ -11,7 +12,7 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
  * @template TProvider of IProvider
  * @template TEntity of IProvidable
  *
- * @extends HasContainer<IContainer>
+ * @extends HasContainer<ContainerInterface>
  * @extends HasProvider<TProvider>
  */
 interface IProviderContext extends
@@ -24,7 +25,7 @@ interface IProviderContext extends
      *
      * @return static
      */
-    public function withContainer(IContainer $container);
+    public function withContainer(ContainerInterface $container);
 
     /**
      * Push the entity propagating the context onto the stack

@@ -2,14 +2,14 @@
 
 namespace Lkrms\Tests\Utility\Get;
 
-use Lkrms\Contract\IContainer;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\IServiceSingleton;
 
 class SingletonWithContainer implements IServiceSingleton
 {
-    public IContainer $Container;
+    public ContainerInterface $Container;
 
-    public function __construct(IContainer $container)
+    public function __construct(ContainerInterface $container)
     {
         $this->Container = $container;
     }

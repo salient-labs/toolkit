@@ -2,7 +2,7 @@
 
 namespace Lkrms\Cli\Contract;
 
-use Lkrms\Contract\IApplication;
+use Lkrms\Container\Contract\ApplicationInterface;
 use LogicException;
 
 /**
@@ -10,7 +10,7 @@ use LogicException;
  *
  * @api
  */
-interface CliApplicationInterface extends IApplication
+interface CliApplicationInterface extends ApplicationInterface
 {
     /**
      * Get the command invoked by run()

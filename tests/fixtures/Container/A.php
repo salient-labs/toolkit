@@ -2,14 +2,14 @@
 
 namespace Lkrms\Tests\Container;
 
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Contract\HasContainer;
 use Lkrms\Contract\HasService;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
 
 /**
- * @template T of IContainer
+ * @template T of ContainerInterface
  * @implements HasContainer<T>
  */
 class A implements ReceivesContainer, ReceivesService, HasContainer, HasService

@@ -5,10 +5,10 @@ namespace Lkrms\Facade;
 use Lkrms\Concept\Facade;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Application;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 
@@ -26,7 +26,7 @@ use Lkrms\Sync\Contract\ISyncClassResolver;
  * @method static string getConfigPath(bool $create = true) Get a writable directory for the application's configuration files
  * @method static class-string[] getContextStack() Get services for which contextual bindings have been applied to the container (see {@see Container::getContextStack()})
  * @method static string getDataPath(bool $create = true) Get a writable data directory for the application (see {@see Application::getDataPath()})
- * @method static IContainer getGlobalContainer() Get the global container, creating it if necessary
+ * @method static ContainerInterface getGlobalContainer() Get the global container, creating it if necessary
  * @method static string getLogPath(bool $create = true) Get a writable directory for the application's log files
  * @method static class-string getName(class-string $id) Resolve a service to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Get the basename of the file used to run the script
@@ -41,16 +41,16 @@ use Lkrms\Sync\Contract\ISyncClassResolver;
  * @method static Application instanceIf(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding if it isn't already registered
  * @method static bool isProduction() Check if the application is running in a production environment (see {@see Application::isProduction()})
  * @method static Application logOutput(string|null $name = null, ?bool $debug = null) Log console output to the application's log directory (see {@see Application::logOutput()})
- * @method static IContainer|null maybeGetGlobalContainer() Get the global container if it exists
+ * @method static ContainerInterface|null maybeGetGlobalContainer() Get the global container if it exists
  * @method static Application registerShutdownReport(Level::* $level = Level::INFO, string[]|string|null $groups = null, bool $resourceUsage = true) Print a summary of the application's runtime performance metrics and system resource usage when it terminates (see {@see Application::registerShutdownReport()})
  * @method static Application reportMetrics(Level::* $level = Level::INFO, bool $includeRunning = true, string[]|string|null $groups = null, ?int $limit = 10) Print a summary of the application's runtime performance metrics (see {@see Application::reportMetrics()})
  * @method static Application reportResourceUsage(Level::* $level = Level::INFO) Print a summary of the application's system resource usage
- * @method static IContainer requireGlobalContainer() Get the global container if it exists, otherwise throw an exception (see {@see Container::requireGlobalContainer()})
+ * @method static ContainerInterface requireGlobalContainer() Get the global container if it exists, otherwise throw an exception (see {@see Container::requireGlobalContainer()})
  * @method static Application restoreWorkingDirectory() Change to the application's working directory (see {@see Application::restoreWorkingDirectory()})
  * @method static Application resumeCache() Start a cache store in the application's cache directory if a backing database was created on a previous run (see {@see Application::resumeCache()})
  * @method static Application service(class-string<IService> $id, class-string[]|null $services = null, class-string[]|null $exceptServices = null, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register an IService with the container, optionally specifying services to include or exclude (see {@see Container::service()})
  * @method static Application services(array<class-string|int,class-string<IService>> $serviceMap, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see Container::services()})
- * @method static IContainer|null setGlobalContainer(IContainer|null $container) Set the global container
+ * @method static ContainerInterface|null setGlobalContainer(ContainerInterface|null $container) Set the global container
  * @method static Application setWorkingDirectory(string|null $directory = null) Set the application's working directory (see {@see Application::setWorkingDirectory()})
  * @method static Application singleton(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container (see {@see Container::singleton()})
  * @method static Application singletonIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container if it isn't already registered
