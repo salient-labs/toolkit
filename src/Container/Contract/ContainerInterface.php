@@ -3,10 +3,6 @@
 namespace Lkrms\Container\Contract;
 
 use Lkrms\Container\ServiceLifetime;
-use Lkrms\Contract\IService;
-use Lkrms\Contract\IServiceShared;
-use Lkrms\Contract\IServiceSingleton;
-use Lkrms\Contract\ReceivesService;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 
 /**
@@ -78,8 +74,9 @@ interface ContainerInterface extends PsrContainerInterface
      *
      * @param class-string<T> $id The service to resolve.
      * @param class-string<TService> $service Passed to
-     * {@see ReceivesService::setService()} if the resolved object implements
-     * {@see ReceivesService}. Plays no role in resolving `$id`.
+     * {@see ServiceAwareInterface::setService()} if the resolved object
+     * implements {@see ServiceAwareInterface}. Plays no role in resolving
+     * `$id`.
      * @param mixed[] $args If the service is resolved by creating a new
      * instance of a class, values in `$args` are passed to its constructor on a
      * best-effort basis.
@@ -199,18 +196,18 @@ interface ContainerInterface extends PsrContainerInterface
     );
 
     /**
-     * Register an IService with the container, optionally specifying services
-     * to include or exclude
+     * Register a service with the container, optionally specifying services to
+     * include or exclude
      *
      * A shared instance of `$id` is created if it implements
-     * {@see IServiceSingleton} or if `$lifetime` is
+     * {@see SingletonInterface} or if `$lifetime` is
      * {@see ServiceLifetime::SINGLETON}.
      *
      * A shared instance of `$id` is created for each service if it implements
-     * {@see IServiceShared} or if `$lifetime` is
+     * {@see ServiceSingletonInterface} or if `$lifetime` is
      * {@see ServiceLifetime::SERVICE_SINGLETON}.
      *
-     * @param class-string<IService> $id
+     * @param class-string<HasServices> $id
      * @param class-string[]|null $services
      * @param class-string[]|null $exceptServices
      * @param int-mask-of<ServiceLifetime::*> $lifetime
@@ -250,7 +247,7 @@ interface ContainerInterface extends PsrContainerInterface
      * This method simplifies bootstrapping, especially when the same class may
      * be configured at runtime to provide multiple services.
      *
-     * @param array<class-string|int,class-string<IService>> $serviceMap An
+     * @param array<class-string|int,class-string<HasServices>> $serviceMap An
      * array that maps service names to concrete class names. Entries with
      * integer keys are registered without any service names. This allows
      * inactive services to be available for ad-hoc use.
@@ -262,7 +259,7 @@ interface ContainerInterface extends PsrContainerInterface
     /**
      * Get a list of classes bound to the container by calling service()
      *
-     * @return array<class-string<IService>>
+     * @return array<class-string<HasServices>>
      */
     public function getServices(): array;
 

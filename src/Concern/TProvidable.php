@@ -93,13 +93,10 @@ trait TProvidable
 
     /**
      * @param class-string $service
-     * @return $this
      */
-    final public function setService(string $service)
+    final public function setService(string $service): void
     {
         $this->Service = $service;
-
-        return $this;
     }
 
     /**

@@ -2,16 +2,18 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IService;
-use Lkrms\Contract\IServiceShared;
-use Lkrms\Contract\IServiceSingleton;
+use Lkrms\Container\Contract\HasContextualBindings;
+use Lkrms\Container\Contract\HasServices;
+use Lkrms\Container\Contract\ServiceSingletonInterface;
+use Lkrms\Container\Contract\SingletonInterface;
 
 /**
- * Implements IService to provide services that can be bound to a container
+ * Implements HasServices and HasContextualBindings
  *
- * @see IService
- * @see IServiceSingleton
- * @see IServiceShared
+ * @see HasServices
+ * @see HasContextualBindings
+ * @see SingletonInterface
+ * @see ServiceSingletonInterface
  */
 trait TService
 {

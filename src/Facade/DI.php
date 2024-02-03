@@ -5,9 +5,9 @@ namespace Lkrms\Facade;
 use Lkrms\Concept\Facade;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\Contract\HasServices;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
-use Lkrms\Contract\IService;
 
 /**
  * A facade for Container
@@ -20,7 +20,7 @@ use Lkrms\Contract\IService;
  * @method static class-string[] getContextStack() Get services for which contextual bindings have been applied to the container (see {@see Container::getContextStack()})
  * @method static ContainerInterface getGlobalContainer() Get the global container, creating it if necessary
  * @method static class-string getName(class-string $id) Resolve a service to a concrete class name (see {@see Container::getName()})
- * @method static array<class-string<IService>> getServices() Get a list of classes bound to the container by calling service()
+ * @method static array<class-string<HasServices>> getServices() Get a list of classes bound to the container by calling service()
  * @method static bool has(class-string $id) True if an identifier has been bound to the container (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if the global container exists
  * @method static bool hasInstance(class-string $id) True if the container has a shared instance with a given identifier
@@ -30,8 +30,8 @@ use Lkrms\Contract\IService;
  * @method static Container instanceIf(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding if it isn't already registered
  * @method static ContainerInterface|null maybeGetGlobalContainer() Get the global container if it exists
  * @method static ContainerInterface requireGlobalContainer() Get the global container if it exists, otherwise throw an exception (see {@see Container::requireGlobalContainer()})
- * @method static Container service(class-string<IService> $id, class-string[]|null $services = null, class-string[]|null $exceptServices = null, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register an IService with the container, optionally specifying services to include or exclude (see {@see Container::service()})
- * @method static Container services(array<class-string|int,class-string<IService>> $serviceMap, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see Container::services()})
+ * @method static Container service(class-string<HasServices> $id, class-string[]|null $services = null, class-string[]|null $exceptServices = null, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register a service with the container, optionally specifying services to include or exclude (see {@see Container::service()})
+ * @method static Container services(array<class-string|int,class-string<HasServices>> $serviceMap, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see Container::services()})
  * @method static ContainerInterface|null setGlobalContainer(ContainerInterface|null $container) Set the global container
  * @method static Container singleton(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container (see {@see Container::singleton()})
  * @method static Container singletonIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container if it isn't already registered

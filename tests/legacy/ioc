@@ -5,7 +5,8 @@ namespace Lkrms\Tests;
 
 use Dice\Dice;
 use Lkrms\Concern\TService;
-use Lkrms\Contract\IService;
+use Lkrms\Container\Contract\HasContextualBindings;
+use Lkrms\Container\Contract\HasServices;
 use Lkrms\Facade\DI;
 use Lkrms\Facade\Err;
 use UnexpectedValueException;
@@ -94,7 +95,7 @@ class Department
     }
 }
 
-class OrgUnit implements IService
+class OrgUnit implements HasServices, HasContextualBindings
 {
     use TService;
 

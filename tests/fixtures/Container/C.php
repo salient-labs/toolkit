@@ -2,17 +2,17 @@
 
 namespace Lkrms\Tests\Container;
 
+use Lkrms\Container\Contract\ContainerAwareInterface;
 use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\Contract\ServiceAwareInterface;
 use Lkrms\Contract\HasContainer;
 use Lkrms\Contract\HasService;
-use Lkrms\Contract\ReceivesContainer;
-use Lkrms\Contract\ReceivesService;
 
 /**
  * @template T of ContainerInterface
  * @implements HasContainer<T>
  */
-class C implements ReceivesContainer, ReceivesService, HasContainer, HasService
+class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer, HasService
 {
     use TestTrait;
 

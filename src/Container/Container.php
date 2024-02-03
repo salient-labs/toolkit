@@ -5,16 +5,17 @@ namespace Lkrms\Container;
 use Dice\Dice;
 use Dice\DiceException;
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Container\Contract\ContainerAwareInterface;
 use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\Contract\HasContextualBindings;
+use Lkrms\Container\Contract\HasServices;
+use Lkrms\Container\Contract\ServiceAwareInterface;
+use Lkrms\Container\Contract\ServiceSingletonInterface;
+use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Exception\ContainerNotLocatedException;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Exception\InvalidContainerBindingException;
-use Lkrms\Contract\IService;
-use Lkrms\Contract\IServiceShared;
-use Lkrms\Contract\IServiceSingleton;
-use Lkrms\Contract\ReceivesContainer;
-use Lkrms\Contract\ReceivesService;
 use Lkrms\Facade\DI;
 use Lkrms\Facade\Event;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
@@ -34,7 +35,7 @@ class Container extends FluentInterface implements ContainerInterface
 
     /**
      * @see Container::service()
-     * @var array<class-string<IService>,true>
+     * @var array<class-string<HasServices>,true>
      */
     private array $Services = [];
 
@@ -96,12 +97,12 @@ class Container extends FluentInterface implements ContainerInterface
 
     private function callback(object $instance, string $name): object
     {
-        if ($instance instanceof ReceivesContainer) {
-            $instance = $instance->setContainer($this);
+        if ($instance instanceof ContainerAwareInterface) {
+            $instance->setContainer($this);
         }
 
-        if ($instance instanceof ReceivesService) {
-            $instance = $instance->setService($this->GetAsServiceMap[$name] ?? $name);
+        if ($instance instanceof ServiceAwareInterface) {
+            $instance->setService($this->GetAsServiceMap[$name] ?? $name);
         }
 
         return $instance;
@@ -181,8 +182,8 @@ class Container extends FluentInterface implements ContainerInterface
     {
         if ($this->Dice->hasShared($id)) {
             $instance = $this->get($id);
-            if ($instance instanceof ReceivesService) {
-                return $instance->setService($service);
+            if ($instance instanceof ServiceAwareInterface) {
+                $instance->setService($service);
             }
             return $instance;
         }
@@ -242,10 +243,10 @@ class Container extends FluentInterface implements ContainerInterface
     {
         $clone = clone $this;
 
-        // If $id implements IService and hasn't been bound to the container
+        // If $id implements HasServices and hasn't been bound to the container
         // yet, add bindings for everything except its services, which may
         // resolve to another provider
-        if (is_subclass_of($id, IService::class) && !isset($this->Services[$id])) {
+        if (is_subclass_of($id, HasServices::class) && !isset($this->Services[$id])) {
             $clone->applyService($id, []);
             $clone->Services[$id] = true;
 
@@ -397,8 +398,8 @@ class Container extends FluentInterface implements ContainerInterface
         ?array $exceptServices = null,
         int $lifetime = ServiceLifetime::INHERIT
     ) {
-        if (!is_subclass_of($id, IService::class)) {
-            throw new InvalidContainerBindingException($id . ' does not implement ' . IService::class);
+        if (!is_subclass_of($id, HasServices::class)) {
+            throw new InvalidContainerBindingException($id . ' does not implement ' . HasServices::class);
         }
         $this->applyService($id, $services, $exceptServices, $lifetime);
         $this->Services[$id] = true;
@@ -419,10 +420,10 @@ class Container extends FluentInterface implements ContainerInterface
     ): void {
         if ($lifetime & ServiceLifetime::INHERIT) {
             $lifetime = 0;
-            if (is_a($id, IServiceSingleton::class, true)) {
+            if (is_a($id, SingletonInterface::class, true)) {
                 $lifetime |= ServiceLifetime::SINGLETON;
             }
-            if (is_a($id, IServiceShared::class, true)) {
+            if (is_a($id, ServiceSingletonInterface::class, true)) {
                 $lifetime |= ServiceLifetime::SERVICE_SINGLETON;
             }
         }
@@ -437,7 +438,10 @@ class Container extends FluentInterface implements ContainerInterface
                 $rule['inherit'] = false;
             }
         }
-        if ($bindings = $id::getContextualBindings()) {
+        if (
+            is_a($id, HasContextualBindings::class, true) &&
+            ($bindings = $id::getContextualBindings())
+        ) {
             $rule['substitutions'] = $bindings;
         }
         if ($rule) {

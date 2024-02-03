@@ -27,23 +27,19 @@ trait TestTrait
         return $this->Container ?: ($this->Container = new Container());
     }
 
-    public function setContainer(ContainerInterface $container)
+    public function setContainer(ContainerInterface $container): void
     {
         if ($this->Container) {
             throw new LogicException('setContainer already called');
         }
         $this->Container = $container;
-
-        return $this;
     }
 
-    public function setService(string $service)
+    public function setService(string $service): void
     {
         if ($this->Service) {
             throw new LogicException('setService already called');
         }
         $this->Service = $service;
-
-        return $this;
     }
 }
