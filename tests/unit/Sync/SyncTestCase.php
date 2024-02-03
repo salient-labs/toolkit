@@ -40,7 +40,7 @@ abstract class SyncTestCase extends TestCase
                     'https://lkrms.github.io/php-util/tests/entity',
                     'Lkrms\Tests\Sync\Entity'
                 )
-                ->service(JsonPlaceholderApi::class);
+                ->provider(JsonPlaceholderApi::class);
 
         $this->Store = $this->App->get(SyncStore::class);
     }

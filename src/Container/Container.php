@@ -392,7 +392,7 @@ class Container extends FluentInterface implements ContainerInterface
         return $this;
     }
 
-    final public function service(
+    final public function provider(
         string $id,
         ?array $services = null,
         ?array $exceptServices = null,
@@ -490,7 +490,7 @@ class Container extends FluentInterface implements ContainerInterface
         return $this;
     }
 
-    final public function services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT)
+    final public function providers(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT)
     {
         $idMap = [];
         foreach ($serviceMap as $id => $instanceOf) {
@@ -502,13 +502,13 @@ class Container extends FluentInterface implements ContainerInterface
         }
 
         foreach ($idMap as $instanceOf => $services) {
-            $this->service($instanceOf, $services, null, $lifetime);
+            $this->provider($instanceOf, $services, null, $lifetime);
         }
 
         return $this;
     }
 
-    final public function getServices(): array
+    final public function getProviders(): array
     {
         return array_keys($this->Services);
     }

@@ -213,12 +213,27 @@ interface ContainerInterface extends PsrContainerInterface
      * @param int-mask-of<ServiceLifetime::*> $lifetime
      * @return $this
      */
-    public function service(
+    public function provider(
         string $id,
         ?array $services = null,
         ?array $exceptServices = null,
         int $lifetime = ServiceLifetime::INHERIT
     );
+
+    /**
+     * Register a service map with the container
+     *
+     * This method simplifies bootstrapping, especially when the same class may
+     * be configured at runtime to provide multiple services.
+     *
+     * @param array<class-string|int,class-string<HasServices>> $serviceMap An
+     * array that maps service names to concrete class names. Entries with
+     * integer keys are registered without any service names. This allows
+     * inactive services to be available for ad-hoc use.
+     * @param int-mask-of<ServiceLifetime::*> $lifetime
+     * @return $this
+     */
+    public function providers(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT);
 
     /**
      * Register an existing instance with the container as a shared binding
@@ -242,26 +257,11 @@ interface ContainerInterface extends PsrContainerInterface
     public function instanceIf(string $id, $instance);
 
     /**
-     * Register a service map with the container
-     *
-     * This method simplifies bootstrapping, especially when the same class may
-     * be configured at runtime to provide multiple services.
-     *
-     * @param array<class-string|int,class-string<HasServices>> $serviceMap An
-     * array that maps service names to concrete class names. Entries with
-     * integer keys are registered without any service names. This allows
-     * inactive services to be available for ad-hoc use.
-     * @param int-mask-of<ServiceLifetime::*> $lifetime
-     * @return $this
-     */
-    public function services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT);
-
-    /**
      * Get a list of classes bound to the container by calling service()
      *
      * @return array<class-string<HasServices>>
      */
-    public function getServices(): array;
+    public function getProviders(): array;
 
     /**
      * Remove a binding from the container

@@ -64,7 +64,7 @@ abstract class CommandTestCase extends TestCase
 
         try {
             $app = $this->startApp($app);
-            $app = $app->services($this->getServices());
+            $app = $app->providers($this->getServices());
             $command = $app->get($command);
             $command->setName($name);
             for ($i = 0; $i < $runs; $i++) {

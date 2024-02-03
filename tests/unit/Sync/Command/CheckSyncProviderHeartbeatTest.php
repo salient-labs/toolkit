@@ -15,7 +15,7 @@ class CheckSyncProviderHeartbeatTest extends CommandTestCase
         return $app
             ->startCache()
             ->startSync(__METHOD__, [])
-            ->service(JsonPlaceholderApi::class);
+            ->provider(JsonPlaceholderApi::class);
     }
 
     protected function makeCommandAssertions(

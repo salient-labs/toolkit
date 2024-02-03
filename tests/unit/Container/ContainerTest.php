@@ -23,46 +23,46 @@ final class ContainerTest extends TestCase
 
     public function testServiceTransient(): void
     {
-        $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::TRANSIENT);
+        $container = (new Container())->provider(TestServiceImplA::class, null, null, ServiceLifetime::TRANSIENT);
         $this->_testServiceTransient($container);
     }
 
     public function testServiceShared(): void
     {
-        $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::SERVICE_SINGLETON);
+        $container = (new Container())->provider(TestServiceImplA::class, null, null, ServiceLifetime::SERVICE_SINGLETON);
         $this->_testServiceShared($container);
     }
 
     public function testServiceSingleton(): void
     {
-        $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::SINGLETON);
+        $container = (new Container())->provider(TestServiceImplA::class, null, null, ServiceLifetime::SINGLETON);
         $this->_testServiceSingleton($container);
     }
 
     public function testServiceSharedSingleton(): void
     {
-        $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::SINGLETON | ServiceLifetime::SERVICE_SINGLETON);
+        $container = (new Container())->provider(TestServiceImplA::class, null, null, ServiceLifetime::SINGLETON | ServiceLifetime::SERVICE_SINGLETON);
         $this->_testServiceSharedSingleton($container);
     }
 
     public function testServiceInherit(): void
     {
-        $container = (new Container())->service(TestServiceImplA::class);
+        $container = (new Container())->provider(TestServiceImplA::class);
         $this->_testServiceTransient($container);
 
-        $container = (new Container())->service(TestServiceImplB::class);
+        $container = (new Container())->provider(TestServiceImplB::class);
         $this->_testServiceSingleton($container, TestServiceImplB::class);
 
-        $container = (new Container())->service(TestServiceImplC::class);
+        $container = (new Container())->provider(TestServiceImplC::class);
         $this->_testServiceShared($container, TestServiceImplC::class);
 
-        $container = (new Container())->service(TestServiceImplD::class);
+        $container = (new Container())->provider(TestServiceImplD::class);
         $this->_testServiceSharedSingleton($container, TestServiceImplD::class);
     }
 
     public function testServiceBindings(): void
     {
-        $container = (new Container())->service(TestServiceImplB::class);
+        $container = (new Container())->provider(TestServiceImplB::class);
         $ts1 = $container->get(ITestService1::class);
         $o1 = $container->get(A::class);
 
@@ -99,7 +99,7 @@ final class ContainerTest extends TestCase
 
     public function testGetAs(): void
     {
-        $container = (new Container())->service(TestServiceImplB::class);
+        $container = (new Container())->provider(TestServiceImplB::class);
 
         $o1 = $container->get(C::class);
         $this->assertInstanceOf(C::class, $o1);
