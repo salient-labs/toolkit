@@ -21,6 +21,23 @@ use UnitEnum;
 final class Get extends Utility
 {
     /**
+     * If a value is callable, get its return value
+     *
+     * @template T
+     *
+     * @param (callable(mixed...): T)|T $value
+     * @param mixed ...$args Passed to `$value` if it is callable.
+     * @return T
+     */
+    public static function value($value, ...$args)
+    {
+        if (is_callable($value)) {
+            return $value(...$args);
+        }
+        return $value;
+    }
+
+    /**
      * Get the first value that is not null, or return the last value
      *
      * @template T
