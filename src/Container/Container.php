@@ -78,7 +78,7 @@ class Container extends FluentInterface implements ContainerInterface
     {
         $class = new ReflectionClass(static::class);
 
-        // Bind any interfaces that extend PSR-11's ContainerInterface
+        // Bind interfaces that extend Psr\Container\ContainerInterface
         foreach ($class->getInterfaces() as $name => $interface) {
             if ($interface->implementsInterface(PsrContainerInterface::class)) {
                 $this->instance($name, $this);
@@ -88,8 +88,10 @@ class Container extends FluentInterface implements ContainerInterface
         // Also bind classes between self and static
         do {
             $this->instance($class->getName(), $this);
-            $class = $class->getParentClass();
-        } while ($class);
+        } while (
+            $class->isSubclassOf(self::class) &&
+            ($class = $class->getParentClass())
+        );
 
         $this->Dice = $this->Dice->addCallback(
             '*',
@@ -206,7 +208,7 @@ class Container extends FluentInterface implements ContainerInterface
 
     final public function has(string $id): bool
     {
-        return $this->Dice->hasRule($id);
+        return $this->Dice->hasRule($id) || $this->Dice->hasShared($id);
     }
 
     final public function hasInstance(string $id): bool

@@ -116,7 +116,11 @@ final class FacadeTest extends TestCase
         $this->assertFalse($container->hasInstance(MyHasFacadeClass::class));
         $this->assertTrue($container->hasInstance(MyServiceInterface::class));
         $this->assertTrue($container->hasInstance(MyServiceClass::class));
+    }
 
+    public function testBrokenFacadeWithContainer(): void
+    {
+        Container::getGlobalContainer();
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Service not bound to container: ');
         MyBrokenFacade::load();

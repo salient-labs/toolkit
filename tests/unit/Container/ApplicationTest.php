@@ -2,13 +2,33 @@
 
 namespace Lkrms\Tests\Container;
 
+use Lkrms\Container\Contract\ApplicationInterface;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Application;
+use Lkrms\Container\Container;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 
 final class ApplicationTest extends TestCase
 {
+    public function testBindContainer(): void
+    {
+        $app = new Application();
+        $this->assertTrue($app->has(PsrContainerInterface::class));
+        $this->assertTrue($app->has(ContainerInterface::class));
+        $this->assertTrue($app->has(ApplicationInterface::class));
+        $this->assertTrue($app->has(Container::class));
+        $this->assertTrue($app->has(Application::class));
+        $this->assertSame($app, $app->get(PsrContainerInterface::class));
+        $this->assertSame($app, $app->get(ContainerInterface::class));
+        $this->assertSame($app, $app->get(ApplicationInterface::class));
+        $this->assertSame($app, $app->get(Container::class));
+        $this->assertSame($app, $app->get(Application::class));
+        $app->unload();
+    }
+
     /**
      * @backupGlobals enabled
      */
