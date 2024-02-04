@@ -196,6 +196,25 @@ interface ContainerInterface extends PsrContainerInterface
     );
 
     /**
+     * Register a contextual binding with the container
+     *
+     * Subsequent requests from `$class` for `$dependency` resolve to `$value`.
+     * If `$value` is a callback, its return value is used.
+     *
+     * @template TValue
+     *
+     * @param class-string $class
+     * @param class-string<TValue>|string $dependency
+     * @param (callable($this): TValue)|class-string<TValue>|TValue $value
+     * @return $this
+     */
+    public function addContextualBinding(
+        string $class,
+        string $dependency,
+        $value
+    );
+
+    /**
      * Register a service with the container, optionally specifying services to
      * include or exclude
      *

@@ -3,16 +3,8 @@
 namespace Lkrms\Container\Contract;
 
 /**
- * Provides services that can be bound to a container
- *
- * Implement {@see SingletonInterface} if a shared instance should be created
- * once per container, {@see ServiceSingletonInterface} if shared instances
- * should be created once per service, or {@see HasServices} if instances of the
- * class should not be shared.
- *
- * If {@see SingletonInterface} and {@see ServiceSingletonInterface} are both
- * implemented, shared instances are created once per service, and an additional
- * shared instance is created to satisfy requests for the class itself.
+ * Implemented by service providers that specify which of their interfaces can
+ * be registered with a container
  */
 interface HasServices
 {

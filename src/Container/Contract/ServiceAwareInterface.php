@@ -3,15 +3,18 @@
 namespace Lkrms\Container\Contract;
 
 /**
- * Receives the name of the class or interface it was resolved from
+ * Implemented by classes that need to know when they are used to resolve a
+ * service from a container
  */
 interface ServiceAwareInterface
 {
     /**
-     * Called immediately after instantiation by a container
+     * Called when the instance is used to resolve a service from a container
      *
-     * @param class-string $service The class or interface the container
-     * resolved by creating the instance.
+     * If the instance also implements {@see ContainerAwareInterface},
+     * {@see ContainerAwareInterface::setContainer()} is called first.
+     *
+     * @param class-string $service
      */
     public function setService(string $service): void;
 }

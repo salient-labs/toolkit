@@ -15,6 +15,7 @@ use Lkrms\Sync\Contract\ISyncClassResolver;
 /**
  * A facade for Application
  *
+ * @method static Application addContextualBinding(class-string $class, class-string|string $dependency, (callable($this): mixed)|class-string|mixed $value) Register a contextual binding with the container (see {@see Container::addContextualBinding()})
  * @method static Application apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Application bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Application bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
@@ -29,7 +30,7 @@ use Lkrms\Sync\Contract\ISyncClassResolver;
  * @method static ContainerInterface getGlobalContainer() Get the global container, creating it if necessary
  * @method static string getLogPath(bool $create = true) Get a writable directory for the application's log files
  * @method static class-string getName(class-string $id) Resolve a service to a concrete class name (see {@see Container::getName()})
- * @method static string getProgramName() Get the basename of the file used to run the script
+ * @method static string getProgramName() Get the name of the file used to run the application
  * @method static array<class-string<HasServices>> getProviders() Get a list of classes bound to the container by calling service()
  * @method static string getTempPath(bool $create = true) Get a writable directory for the application's ephemeral data
  * @method static bool has(class-string $id) True if an identifier has been bound to the container (see {@see Container::has()})

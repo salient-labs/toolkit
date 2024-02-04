@@ -3,12 +3,12 @@
 namespace Lkrms\Container\Contract;
 
 /**
- * Receives the container that created it
+ * Implemented by classes that need to know when they are created by a container
  */
 interface ContainerAwareInterface
 {
     /**
-     * Called immediately after instantiation by a container
+     * Called after the instance is created by a container
      */
     public function setContainer(ContainerInterface $container): void;
 }

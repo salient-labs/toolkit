@@ -12,6 +12,7 @@ use Lkrms\Container\ServiceLifetime;
 /**
  * A facade for Container
  *
+ * @method static Container addContextualBinding(class-string $class, class-string|string $dependency, (callable($this): mixed)|class-string|mixed $value) Register a contextual binding with the container (see {@see Container::addContextualBinding()})
  * @method static Container apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Container bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Container bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered

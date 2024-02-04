@@ -2,15 +2,18 @@
 
 namespace Lkrms\Container\Contract;
 
+/**
+ * Implemented by service providers with container bindings to register in the
+ * context of the class
+ */
 interface HasContextualBindings
 {
     /**
-     * Get a dependency substitution map for the class
+     * Get bindings to register with a container in the context of the class
      *
-     * Return an array that maps class or interface names to compatible
-     * replacements. Substitutions are applied:
+     * Bindings returned by this method apply:
      *
-     * - when resolving the class's dependencies, and
+     * - when resolving the class's dependencies
      * - when using {@see ContainerInterface::inContextOf()} to work with a
      *   container in the context of the class
      *

@@ -16,11 +16,14 @@ use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Exception\ContainerNotLocatedException;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Exception\InvalidContainerBindingException;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Facade\DI;
 use Lkrms\Facade\Event;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Closure;
 use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionParameter;
 
 /**
  * A simple service container with context-based dependency injection
@@ -472,6 +475,43 @@ class Container extends FluentInterface implements ContainerInterface
         foreach ($bind as $service) {
             $this->addRule($service, $rule);
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function addContextualBinding(
+        string $class,
+        string $dependency,
+        $value
+    ) {
+        if ($dependency === '') {
+            throw new InvalidArgumentException('Argument #2 ($dependency) must be a non-empty string');
+        }
+
+        $rule = $this->Dice->hasRule($class)
+            ? $this->Dice->getRule($class)
+            : [];
+
+        if (is_callable($value)) {
+            $value = [Dice::INSTANCE => fn() => $value($this)];
+        }
+
+        if (
+            $dependency[0] === '$' && (
+                !($type = (new ReflectionParameter([$class, '__construct'], substr($dependency, 1)))->getType()) ||
+                !$type instanceof ReflectionNamedType ||
+                $type->isBuiltin()
+            )
+        ) {
+            $rule['constructParams'][] = $value;
+        } else {
+            $rule['substitutions'][$dependency] = $value;
+        }
+
+        $this->addRule($class, $rule);
+
+        return $this;
     }
 
     final public function instance(string $id, $instance)
