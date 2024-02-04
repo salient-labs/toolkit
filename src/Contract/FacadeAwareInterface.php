@@ -3,7 +3,7 @@
 namespace Lkrms\Contract;
 
 /**
- * Returns instances to use with or without a facade
+ * Implemented by classes that need to know when they are used behind a facade
  *
  * @see FacadeInterface
  *

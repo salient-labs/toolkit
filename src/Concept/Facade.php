@@ -145,7 +145,7 @@ abstract class Facade implements FacadeInterface
     /**
      * @inheritDoc
      */
-    final public static function getInstance()
+    final public static function getInstance(): object
     {
         $instance = self::$Instances[static::class]
             ??= self::doLoad();
@@ -171,7 +171,7 @@ abstract class Facade implements FacadeInterface
      * @param TService|null $instance
      * @return TService
      */
-    private static function doLoad($instance = null)
+    private static function doLoad($instance = null): object
     {
         $serviceName = self::getServiceName();
 
@@ -203,7 +203,7 @@ abstract class Facade implements FacadeInterface
                 ? $instance
                 : Event::getInstance();
 
-        $id = $dispatcher->listen(
+        self::$ListenerIds[static::class] = $dispatcher->listen(
             static function (GlobalContainerSetEvent $event) use ($serviceName, $instance): void {
                 $container = $event->container();
                 if ($container) {
@@ -211,7 +211,6 @@ abstract class Facade implements FacadeInterface
                 }
             }
         );
-        self::$ListenerIds[static::class] = $id;
 
         if ($instance instanceof FacadeAwareInterface) {
             $instance = $instance->withFacade(static::class);
@@ -226,7 +225,7 @@ abstract class Facade implements FacadeInterface
     private static function getInstanceFromContainer(
         ContainerInterface $container,
         string $serviceName
-    ) {
+    ): object {
         // If one of the services returned by the facade has been bound to the
         // container, resolve it to an instance
         foreach (self::getServiceList() as $service) {
@@ -259,7 +258,7 @@ abstract class Facade implements FacadeInterface
     /**
      * @return TService
      */
-    private static function createInstance()
+    private static function createInstance(): object
     {
         // Create an instance of the first instantiable class
         $service = self::getInstantiableService();

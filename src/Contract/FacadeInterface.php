@@ -49,7 +49,7 @@ interface FacadeInterface
      *
      * @return TService
      */
-    public static function getInstance();
+    public static function getInstance(): object;
 
     /**
      * Forward a static method to the facade's underlying instance, loading it
