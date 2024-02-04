@@ -246,6 +246,44 @@ final class ContainerTest extends TestCase
         $this->assertNotSame($c1, $ts2a);
     }
 
+    public function testRegisterServiceProvider(): void
+    {
+        $container = new Container();
+        $container->provider(ServiceProviderPlain::class);
+        $this->assertSame([ServiceProviderPlain::class], $container->getProviders());
+        $this->assertFalse($container->has(ServiceProviderPlain::class));
+
+        $container = new Container();
+        $container->provider(ServiceProviderWithBindings::class);
+        $this->assertSame([ServiceProviderWithBindings::class], $container->getProviders());
+        $this->assertFalse($container->has(ServiceProviderWithBindings::class));
+        $this->assertTrue($container->has(User::class));
+        $this->assertTrue($container->has(Staff::class));
+        $this->assertFalse($container->has(DepartmentStaff::class));
+        $this->assertTrue($container->has(IdGenerator::class));
+        $this->assertFalse($container->hasInstance(IdGenerator::class));
+        $generator = $container->get(IdGenerator::class);
+        $this->assertTrue($container->hasInstance(IdGenerator::class));
+        $this->assertSame($generator, $container->get(IdGenerator::class));
+
+        $container = new Container();
+        $container->provider(ServiceProviderWithContextualBindings::class);
+        $this->assertSame([ServiceProviderWithContextualBindings::class], $container->getProviders());
+        $this->assertTrue($container->has(ServiceProviderWithContextualBindings::class));
+        $this->assertFalse($container->has(Office::class));
+        $this->assertFalse($container->has(User::class));
+        $this->assertFalse($container->has(Staff::class));
+        $this->assertFalse($container->has(FancyOffice::class));
+        $this->assertFalse($container->has(DepartmentStaff::class));
+
+        $container = $container->inContextOf(ServiceProviderWithContextualBindings::class);
+        $this->assertTrue($container->has(Office::class));
+        $this->assertTrue($container->has(User::class));
+        $this->assertTrue($container->has(Staff::class));
+        $this->assertFalse($container->has(FancyOffice::class));
+        $this->assertFalse($container->has(DepartmentStaff::class));
+    }
+
     public function testObjectTree(): void
     {
         $container = new Container();

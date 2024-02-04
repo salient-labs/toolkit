@@ -8,7 +8,6 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\MockTarget;
-use Lkrms\Container\Contract\HasServices;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\File;
 
@@ -20,7 +19,7 @@ abstract class CommandTestCase extends TestCase
     }
 
     /**
-     * @return array<class-string|int,class-string<HasServices>>
+     * @return array<class-string,class-string>
      */
     protected function getServices(): array
     {

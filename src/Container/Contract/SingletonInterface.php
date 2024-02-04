@@ -3,6 +3,6 @@
 namespace Lkrms\Container\Contract;
 
 /**
- * Provides services via a shared instance created once per container
+ * Implemented by service providers that are instantiated once per container
  */
 interface SingletonInterface {}
