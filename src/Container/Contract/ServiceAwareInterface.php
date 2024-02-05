@@ -5,6 +5,8 @@ namespace Lkrms\Container\Contract;
 /**
  * Implemented by classes that need to know when they are used to resolve a
  * service from a container
+ *
+ * @api
  */
 interface ServiceAwareInterface
 {

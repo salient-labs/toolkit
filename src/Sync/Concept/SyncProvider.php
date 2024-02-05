@@ -3,9 +3,9 @@
 namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concept\Provider;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Contract\HasContextualBindings;
 use Lkrms\Container\Contract\HasServices;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Pipeline;

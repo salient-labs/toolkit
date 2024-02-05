@@ -7,5 +7,7 @@ use Psr\Container\ContainerExceptionInterface;
 
 /**
  * Base class for container exceptions
+ *
+ * @api
  */
 abstract class ContainerException extends Exception implements ContainerExceptionInterface {}

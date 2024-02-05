@@ -4,5 +4,7 @@ namespace Lkrms\Container\Exception;
 
 /**
  * Thrown when a service container cannot be found
+ *
+ * @api
  */
-class ContainerNotLocatedException extends ContainerException {}
+class ContainerNotFoundException extends ContainerException {}

@@ -6,7 +6,6 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Target\StreamTarget;
-use Lkrms\Container\Contract\ApplicationInterface;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Cache;
@@ -265,6 +264,8 @@ class Application extends Container implements ApplicationInterface
      * is used after removing common PHP file extensions and recognised version
      * numbers.
      *
+     * @api
+     *
      * @param int-mask-of<EnvFlag::*> $envFlags Values to apply from the
      * environment to the running script.
      */
@@ -428,14 +429,6 @@ class Application extends Container implements ApplicationInterface
             ($env === null &&
                 (!$this->RunningFromSource ||
                     !Package::hasDevPackages()));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getProgramName(): string
-    {
-        return Sys::getProgramBasename();
     }
 
     /**
@@ -608,11 +601,11 @@ class Application extends Container implements ApplicationInterface
      */
     final public function reportMetrics(
         int $level = Level::INFO,
-        bool $includeRunning = true,
+        bool $includeRunningTimers = true,
         $groups = null,
         ?int $limit = 10
     ) {
-        self::doReportMetrics($level, $includeRunning, $groups, $limit);
+        self::doReportMetrics($level, $includeRunningTimers, $groups, $limit);
         return $this;
     }
 
@@ -620,8 +613,12 @@ class Application extends Container implements ApplicationInterface
      * @param Level::* $level
      * @param string[]|string|null $groups
      */
-    private static function doReportMetrics(int $level, bool $includeRunning, $groups, ?int $limit): void
-    {
+    private static function doReportMetrics(
+        int $level,
+        bool $includeRunningTimers,
+        $groups,
+        ?int $limit
+    ): void {
         $groupCounters = Profile::getCounters($groups);
         foreach ($groupCounters as $group => $counters) {
             // Sort by counter value, in descending order
@@ -666,7 +663,7 @@ class Application extends Container implements ApplicationInterface
             $report[] = implode("\n", $lines);
         }
 
-        $groupTimers = Profile::getTimers($includeRunning, $groups);
+        $groupTimers = Profile::getTimers($includeRunningTimers, $groups);
         foreach ($groupTimers as $group => $timers) {
             // Sort by milliseconds elapsed, in descending order
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);

@@ -2,12 +2,14 @@
 
 namespace Lkrms\Container\Event;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 
 /**
- * Dispatched when the global container is set or unset
+ * Dispatched before the global container is set or unset
+ *
+ * @api
  */
-class GlobalContainerSetEvent extends ContainerEvent
+class BeforeGlobalContainerSetEvent extends ContainerEvent
 {
     protected ?ContainerInterface $Container;
 

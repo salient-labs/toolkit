@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;

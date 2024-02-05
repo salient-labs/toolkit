@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Container;
 
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use LogicException;
 
 trait TestTrait

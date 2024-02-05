@@ -3,7 +3,7 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\Immutable;
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasIdentifier;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;

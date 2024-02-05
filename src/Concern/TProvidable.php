@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;

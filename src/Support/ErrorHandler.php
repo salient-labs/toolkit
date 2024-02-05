@@ -84,16 +84,14 @@ final class ErrorHandler implements FacadeAwareInterface
      *
      * @return $this
      */
-    public function deregister(bool $unloadFacades = true)
+    public function deregister()
     {
         if ($this->IsRegistered) {
             restore_error_handler();
             restore_exception_handler();
         }
 
-        if ($unloadFacades) {
-            $this->unloadFacades();
-        }
+        $this->unloadFacades();
 
         return $this;
     }

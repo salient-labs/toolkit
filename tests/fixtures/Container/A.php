@@ -3,8 +3,8 @@
 namespace Lkrms\Tests\Container;
 
 use Lkrms\Container\Contract\ContainerAwareInterface;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Contract\ServiceAwareInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasContainer;
 use Lkrms\Contract\HasService;
 

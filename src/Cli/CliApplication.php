@@ -70,6 +70,14 @@ class CliApplication extends Application implements CliApplicationInterface
     /**
      * @inheritDoc
      */
+    public function getProgramName(): string
+    {
+        return Sys::getProgramBasename();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getRunningCommand(): ?CliCommandInterface
     {
         return $this->RunningCommand;

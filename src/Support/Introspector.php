@@ -4,7 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Concept\Entity;
 use Lkrms\Concept\Provider;
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasName;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;

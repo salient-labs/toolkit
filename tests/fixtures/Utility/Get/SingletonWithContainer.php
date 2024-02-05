@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Utility\Get;
 
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Contract\HasContextualBindings;
 use Lkrms\Container\Contract\HasServices;
 use Lkrms\Container\Contract\SingletonInterface;
+use Lkrms\Container\ContainerInterface;
 
 class SingletonWithContainer implements HasServices, HasContextualBindings, SingletonInterface
 {

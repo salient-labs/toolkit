@@ -2,7 +2,7 @@
 
 namespace Lkrms\Cli\Contract;
 
-use Lkrms\Container\Contract\ApplicationInterface;
+use Lkrms\Container\ApplicationInterface;
 use LogicException;
 
 /**
@@ -12,6 +12,11 @@ use LogicException;
  */
 interface CliApplicationInterface extends ApplicationInterface
 {
+    /**
+     * Get the name of the file used to run the application
+     */
+    public function getProgramName(): string;
+
     /**
      * Get the command invoked by run()
      *
