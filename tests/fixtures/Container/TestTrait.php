@@ -12,6 +12,8 @@ trait TestTrait
 
     protected ?string $Service = null;
 
+    protected int $SetServiceCount = 0;
+
     public function service(): string
     {
         return $this->Service ?? static::class;
@@ -24,26 +26,25 @@ trait TestTrait
 
     public function container(): ContainerInterface
     {
-        return $this->Container ?: ($this->Container = new Container());
+        return $this->Container ??= new Container();
     }
 
-    public function setContainer(ContainerInterface $container)
+    public function setContainer(ContainerInterface $container): void
     {
-        if ($this->Container) {
-            throw new LogicException('setContainer already called');
+        if ($this->Container !== null) {
+            throw new LogicException('Container already set');
         }
         $this->Container = $container;
-
-        return $this;
     }
 
-    public function setService(string $service)
+    public function setService(string $service): void
     {
-        if ($this->Service) {
-            throw new LogicException('setService already called');
-        }
         $this->Service = $service;
+        $this->SetServiceCount++;
+    }
 
-        return $this;
+    public function getSetServiceCount(): int
+    {
+        return $this->SetServiceCount;
     }
 }

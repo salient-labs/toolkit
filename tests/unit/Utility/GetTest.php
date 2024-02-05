@@ -17,6 +17,91 @@ use stdClass;
 final class GetTest extends TestCase
 {
     /**
+     * @dataProvider valueProvider
+     *
+     * @param mixed $expected
+     * @param mixed $value
+     * @param mixed ...$args
+     */
+    public function testValue($expected, $value, ...$args): void
+    {
+        $this->assertSame($expected, Get::value($value, ...$args));
+    }
+
+    /**
+     * @return array<array{mixed,mixed,...}>
+     */
+    public static function valueProvider(): array
+    {
+        return [
+            [
+                null,
+                null,
+            ],
+            [
+                0,
+                0,
+            ],
+            [
+                '',
+                '',
+            ],
+            [
+                'foo',
+                'foo',
+            ],
+            [
+                null,
+                fn() => null,
+            ],
+            [
+                0,
+                fn() => 0,
+            ],
+            [
+                '',
+                fn() => '',
+            ],
+            [
+                'foo',
+                fn() => 'foo',
+            ],
+            [
+                [],
+                fn(...$args) => $args,
+            ],
+            [
+                [null],
+                fn(...$args) => $args,
+                null,
+            ],
+            [
+                [0],
+                fn(...$args) => $args,
+                0,
+            ],
+            [
+                [''],
+                fn(...$args) => $args,
+                ''
+            ],
+            [
+                ['foo'],
+                fn(...$args) => $args,
+                'foo',
+            ],
+            [
+                [null, 0, '', 'foo'],
+                fn(...$args) => $args,
+                null,
+                0,
+                '',
+                'foo',
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider basenameProvider
      */
     public function testBasename(string $expected, string $class, string ...$suffixes): void

@@ -7,7 +7,6 @@ use Lkrms\Facade\Profile;
 use Lkrms\Store\CacheStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncStore;
-use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
 
@@ -17,24 +16,7 @@ use Lkrms\Utility\Package;
 interface ApplicationInterface extends ContainerInterface
 {
     /**
-     * @inheritDoc
-     *
-     * @param string|null $basePath If `null`, the value of environment variable
-     * `app_base_path` is used if present, otherwise the path of the root
-     * package is used.
-     * @param string|null $appName If `null`, the value returned by
-     * {@see IApplication::getProgramName()} is used after removing common PHP
-     * file extensions and recognised version numbers.
-     * @param int-mask-of<EnvFlag::*> $envFlags
-     */
-    public function __construct(
-        ?string $basePath = null,
-        ?string $appName = null,
-        int $envFlags = EnvFlag::ALL
-    );
-
-    /**
-     * Get the basename of the file used to run the script
+     * Get the name of the file used to run the application
      */
     public function getProgramName(): string;
 
@@ -46,7 +28,7 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Check if the application is running in a production environment
      *
-     * Returns `true` if:
+     * This method should return `true` if:
      *
      * - {@see Env::environment()} returns `"production"`
      * - a Phar archive is currently executing, or
@@ -104,7 +86,7 @@ interface ApplicationInterface extends ContainerInterface
      * {@see Level::DEBUG} are simultaneously written to `<name>.debug.log`.
      *
      * @param string|null $name If `null`, the name returned by
-     * {@see IApplication::getAppName()} is used.
+     * {@see ApplicationInterface::getAppName()} is used.
      * @return $this
      */
     public function logOutput(?string $name = null, ?bool $debug = null);
@@ -139,8 +121,8 @@ interface ApplicationInterface extends ContainerInterface
      * Start an entity store in the application's data directory
      *
      * If an entity store is started but not stopped by calling
-     * {@see IApplication::stopSync()} or {@see SyncStore::close()}, a failed
-     * run may be recorded.
+     * {@see ApplicationInterface::stopSync()} or {@see SyncStore::close()}, a
+     * failed run may be recorded.
      *
      * @see SyncStore
      *
@@ -172,8 +154,8 @@ interface ApplicationInterface extends ContainerInterface
      * @see SyncStore::namespace()
      *
      * @param string $prefix A short alternative to `$uri`. Case-insensitive.
-     * Must be unique to the application. Must be a scheme name that complies
-     * with Section 3.1 of \[RFC3986], i.e. a match for the regular expression
+     * Must be unique to the application. Must be a scheme name compliant with
+     * Section 3.1 of \[RFC3986], i.e. a match for the regular expression
      * `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
@@ -192,9 +174,9 @@ interface ApplicationInterface extends ContainerInterface
      *
      * The application's working directory is either:
      *
-     * - the directory in which the application was started, or
+     * - the directory in which it was started, or
      * - the directory most recently set by calling
-     *   {@see IApplication::setWorkingDirectory()}
+     *   {@see ApplicationInterface::setWorkingDirectory()}
      *
      * @return $this
      */
@@ -221,8 +203,8 @@ interface ApplicationInterface extends ContainerInterface
      * reported, otherwise only metrics in the given groups are reported.
      * @return $this
      *
-     * @see IApplication::reportResourceUsage()
-     * @see IApplication::reportTimers()
+     * @see ApplicationInterface::reportResourceUsage()
+     * @see ApplicationInterface::reportTimers()
      */
     public function registerShutdownReport(
         int $level = Level::INFO,

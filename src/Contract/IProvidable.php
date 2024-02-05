@@ -2,6 +2,7 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Contract\ServiceAwareInterface;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 
@@ -19,7 +20,7 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 interface IProvidable extends
     ReceivesProvider,
     ReceivesProviderContext,
-    ReceivesService,
+    ServiceAwareInterface,
     HasProvider,
     HasProviderContext,
     HasService

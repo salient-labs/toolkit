@@ -255,7 +255,18 @@ class Application extends Container implements ApplicationInterface
     }
 
     /**
-     * @inheritDoc
+     * Creates a new Application object
+     *
+     * If `$basePath` is `null`, the value of environment variable
+     * `app_base_path` is used if present, otherwise the path of the root
+     * package is used.
+     *
+     * If `$appName` is `null`, the basename of the file used to run the script
+     * is used after removing common PHP file extensions and recognised version
+     * numbers.
+     *
+     * @param int-mask-of<EnvFlag::*> $envFlags Values to apply from the
+     * environment to the running script.
      */
     public function __construct(
         ?string $basePath = null,

@@ -4,8 +4,9 @@ namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concept\Provider;
 use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\Contract\HasContextualBindings;
+use Lkrms\Container\Contract\HasServices;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Contract\IService;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
@@ -25,7 +26,7 @@ use LogicException;
 /**
  * Base class for providers that sync entities to and from third-party backends
  */
-abstract class SyncProvider extends Provider implements ISyncProvider, IService
+abstract class SyncProvider extends Provider implements ISyncProvider, HasServices, HasContextualBindings
 {
     /**
      * Get a dependency substitution map for the provider

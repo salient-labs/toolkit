@@ -2,9 +2,10 @@
 
 namespace Lkrms\Tests\Container;
 
-use Lkrms\Contract\IService;
+use Lkrms\Container\Contract\HasContextualBindings;
+use Lkrms\Container\Contract\HasServices;
 
-class TestServiceImplA implements IService, ITestService1, ITestService2
+class TestServiceImplA implements HasServices, HasContextualBindings, ITestService1, ITestService2
 {
     public static function getServices(): array
     {

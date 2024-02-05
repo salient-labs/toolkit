@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Provider;
 
-use Lkrms\Contract\IServiceSingleton;
+use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Contract\HttpHeadersInterface;
@@ -60,7 +60,7 @@ use Lkrms\Utility\Env;
  * @method iterable<User> getUsers(ISyncContext $ctx)
  */
 class JsonPlaceholderApi extends HttpSyncProvider implements
-    IServiceSingleton,
+    SingletonInterface,
     AlbumProvider,
     CommentProvider,
     PhotoProvider,

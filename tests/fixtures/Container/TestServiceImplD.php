@@ -2,6 +2,6 @@
 
 namespace Lkrms\Tests\Container;
 
-use Lkrms\Contract\IServiceShared;
+use Lkrms\Container\Contract\ServiceSingletonInterface;
 
-class TestServiceImplD extends TestServiceImplB implements IServiceShared {}
+class TestServiceImplD extends TestServiceImplB implements ServiceSingletonInterface {}

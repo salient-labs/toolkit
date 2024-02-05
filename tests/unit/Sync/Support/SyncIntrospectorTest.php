@@ -64,7 +64,7 @@ final class SyncIntrospectorTest extends TestCase
 
     public function testGetSyncOperationMethod(): void
     {
-        $container = (new Container())->service(JsonPlaceholderApi::class);
+        $container = (new Container())->provider(JsonPlaceholderApi::class);
         $provider = $container->get(TaskProvider::class);
 
         $entityIntrospector = SyncIntrospector::get(Task::class);

@@ -3,9 +3,9 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Container\Contract\ServiceSingletonInterface;
+use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
-use Lkrms\Contract\IServiceShared;
-use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Utility\Catalog\CopyFlag;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
@@ -20,6 +20,23 @@ use UnitEnum;
  */
 final class Get extends Utility
 {
+    /**
+     * If a value is callable, get its return value
+     *
+     * @template T
+     *
+     * @param (callable(mixed...): T)|T $value
+     * @param mixed ...$args Passed to `$value` if it is callable.
+     * @return T
+     */
+    public static function value($value, ...$args)
+    {
+        if (is_callable($value)) {
+            return $value(...$args);
+        }
+        return $value;
+    }
+
     /**
      * Get the first value that is not null, or return the last value
      *
@@ -385,8 +402,8 @@ final class Get extends Utility
             $var instanceof PsrContainerInterface
         ) || (
             !($flags & CopyFlag::COPY_SINGLETONS) && (
-                $var instanceof IServiceSingleton ||
-                $var instanceof IServiceShared
+                $var instanceof SingletonInterface ||
+                $var instanceof ServiceSingletonInterface
             )
         )) {
             $map[$id] = $var;

@@ -58,7 +58,7 @@ abstract class AbstractSyncCommand extends CliCommand
         $entities = [];
         $providers = [];
         $entityProviders = [];
-        foreach ($this->App->getServices() as $provider) {
+        foreach ($this->App->getProviders() as $provider) {
             if (!is_a($provider, ISyncProvider::class, true)) {
                 continue;
             }
