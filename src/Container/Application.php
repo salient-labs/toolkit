@@ -6,7 +6,6 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Target\StreamTarget;
-use Lkrms\Container\Contract\ApplicationInterface;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Cache;

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Cli\Contract;
 
-use Lkrms\Container\Contract\ApplicationInterface;
+use Lkrms\Container\ApplicationInterface;
 use LogicException;
 
 /**

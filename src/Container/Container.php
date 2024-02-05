@@ -7,7 +7,6 @@ use Dice\DiceException;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Concern\UnloadsFacades;
 use Lkrms\Container\Contract\ContainerAwareInterface;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Contract\HasBindings;
 use Lkrms\Container\Contract\HasContextualBindings;
 use Lkrms\Container\Contract\HasServices;

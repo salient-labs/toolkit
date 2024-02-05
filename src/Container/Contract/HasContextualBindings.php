@@ -2,6 +2,8 @@
 
 namespace Lkrms\Container\Contract;
 
+use Lkrms\Container\ContainerInterface;
+
 /**
  * Implemented by service providers with container bindings that only apply in
  * the context of the class

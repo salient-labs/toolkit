@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IProvider;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Concept\SyncProvider;

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 
 /**
  * @template T of ContainerInterface

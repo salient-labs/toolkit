@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Container;
 
-use Lkrms\Container\Contract\ApplicationInterface;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Application;
+use Lkrms\Container\ApplicationInterface;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;

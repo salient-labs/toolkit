@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\Date\DateFormatterInterface;

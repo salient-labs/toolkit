@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concept\FluentInterface;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Exception\PipelineResultRejectedException;

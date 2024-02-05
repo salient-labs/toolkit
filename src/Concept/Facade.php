@@ -3,9 +3,9 @@
 namespace Lkrms\Concept;
 
 use Lkrms\Concern\ResolvesServiceLists;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Event\BeforeGlobalContainerSetEvent;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\FacadeAwareInterface;
 use Lkrms\Contract\FacadeInterface;
 use Lkrms\Contract\Unloadable;

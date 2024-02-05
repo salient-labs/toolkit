@@ -2,6 +2,8 @@
 
 namespace Lkrms\Container\Contract;
 
+use Lkrms\Container\ContainerInterface;
+
 /**
  * Implemented by classes that need to know when they are instantiated by a
  * container

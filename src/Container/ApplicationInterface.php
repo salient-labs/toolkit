@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Container\Contract;
+namespace Lkrms\Container;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Facade\Profile;

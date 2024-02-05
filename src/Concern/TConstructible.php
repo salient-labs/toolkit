@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\ITreeable;

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Container\Event;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 
 /**
  * Dispatched before the global container is set or unset

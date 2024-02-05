@@ -1,9 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Container\Contract;
+namespace Lkrms\Container;
 
+use Lkrms\Container\Contract\ContainerAwareInterface;
+use Lkrms\Container\Contract\HasBindings;
+use Lkrms\Container\Contract\HasContextualBindings;
+use Lkrms\Container\Contract\HasServices;
+use Lkrms\Container\Contract\ServiceAwareInterface;
+use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Container\Exception\ContainerUnusableArgumentsException;
-use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\Unloadable;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 

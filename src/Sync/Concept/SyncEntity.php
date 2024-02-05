@@ -10,7 +10,7 @@ use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;

@@ -3,7 +3,7 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\Buildable;
 
 /**

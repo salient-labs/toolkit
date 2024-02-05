@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ITreeable;

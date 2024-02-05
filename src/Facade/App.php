@@ -3,8 +3,8 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Container\ServiceLifetime;
 
 /**

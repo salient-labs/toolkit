@@ -3,11 +3,11 @@
 namespace Lkrms\Tests\Container;
 
 use Lkrms\Concept\FluentInterface;
-use Lkrms\Container\Contract\ApplicationInterface;
-use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Application;
+use Lkrms\Container\ApplicationInterface;
 use Lkrms\Container\Container;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IFluentInterface;
 use Lkrms\Tests\TestCase;

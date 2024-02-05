@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**

@@ -4,7 +4,7 @@ namespace Lkrms\Contract;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Concern\HasBuilder;
-use Lkrms\Container\Contract\ContainerInterface;
+use Lkrms\Container\ContainerInterface;
 
 /**
  * @template TBuilder of Builder
