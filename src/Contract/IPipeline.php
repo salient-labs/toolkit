@@ -128,6 +128,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * {@see IPipeline::collectThen()} is not also called.
      *
      * @template TThenOutput
+     *
      * @param callable(TInput|TOutput $result, static $pipeline, TArgument $arg): TThenOutput $callback
      * @return IPipeline<TInput,TThenOutput,TArgument>
      */
@@ -138,6 +139,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * applied
      *
      * @template TThenOutput
+     *
      * @param callable(TInput|TOutput $result, static $pipeline, TArgument $arg): TThenOutput $callback
      * @return IPipeline<TInput,TThenOutput,TArgument>
      */
@@ -157,6 +159,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * forward-only iterator.
      *
      * @template TThenOutput
+     *
      * @param callable(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TThenOutput> $callback
      * @return IPipeline<TInput,TThenOutput,TArgument>
      */
@@ -167,6 +170,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * if a collectThen() callback hasn't already been applied
      *
      * @template TThenOutput
+     *
      * @param callable(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TThenOutput> $callback
      * @return IPipeline<TInput,TThenOutput,TArgument>
      */
@@ -235,6 +239,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * Get the payload's array key conformity
      *
      * @return ArrayKeyConformity::*
+     *
      * @see IPipeline::withConformity()
      */
     public function getConformity();
@@ -243,6 +248,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * Run the pipeline and pass the result to another pipeline
      *
      * @template TNextOutput
+     *
      * @param IPipeline<TOutput,TNextOutput,TArgument> $next
      * @return IPipeline<TOutput,TNextOutput,TArgument>
      */
@@ -255,6 +261,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * {@see IPipeline::startInto()} can be used to run the pipeline.
      *
      * @template TNextOutput
+     *
      * @param IPipeline<TOutput,TNextOutput,TArgument> $next
      * @return IPipeline<TOutput,TNextOutput,TArgument>
      */

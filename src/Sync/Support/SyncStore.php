@@ -657,6 +657,7 @@ final class SyncStore extends SqliteStore
      * @param class-string<ISyncEntity> $entity
      * @return string|null `null` if `$entity` is not in a registered sync
      * entity namespace.
+     *
      * @see SyncStore::namespace()
      */
     public function getEntityTypeUri(
@@ -680,6 +681,7 @@ final class SyncStore extends SqliteStore
      * @param class-string<ISyncEntity> $entity
      * @return string|null `null` if `$entity` is not in a registered sync
      * entity namespace.
+     *
      * @see SyncStore::namespace()
      */
     public function getEntityTypeNamespace(string $entity): ?string

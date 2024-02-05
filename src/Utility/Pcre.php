@@ -121,6 +121,7 @@ final class Pcre extends Utility
      * A wrapper for preg_replace()
      *
      * @template T of string[]|string
+     *
      * @param string[]|string $pattern
      * @param string[]|string $replacement
      * @param T $subject

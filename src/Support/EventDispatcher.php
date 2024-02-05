@@ -83,6 +83,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      * Dispatch an event to listeners registered to receive it
      *
      * @template T of object
+     *
      * @param T $event
      * @return T
      */

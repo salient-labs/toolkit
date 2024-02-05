@@ -12,8 +12,8 @@ final class ConsoleTagAttributes
     /**
      * Tag identifier
      *
-     * @var Tag::*
      * @readonly
+     * @var Tag::*
      */
     public int $Tag;
 

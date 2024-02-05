@@ -11,6 +11,7 @@ use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
  * Resolves a name to an entity
  *
  * @template TEntity of ISyncEntity
+ *
  * @implements ISyncEntityResolver<TEntity>
  */
 final class SyncEntityResolver implements ISyncEntityResolver

@@ -374,6 +374,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
      * Scheme, host and percent-encoded octets in the URI are always normalised.
      *
      * @see Uri::removeDotSegments()
+     *
      * @return static
      */
     public function normalise(): self

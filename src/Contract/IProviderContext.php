@@ -80,8 +80,6 @@ interface IProviderContext extends
     public function withConformity($conformity);
 
     /**
-     * @inheritDoc
-     *
      * @return TProvider
      */
     public function provider(): IProvider;

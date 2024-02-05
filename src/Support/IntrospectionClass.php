@@ -648,7 +648,6 @@ class IntrospectionClass
      *
      * @param T $value
      * @param int-mask-of<NormaliserFlag::*> $flags
-     *
      * @return T
      *
      * @see IResolvable::normalise()

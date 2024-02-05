@@ -18,6 +18,7 @@ use LogicException;
  * Resolves a name to an entity using one or more text comparison algorithms
  *
  * @template TEntity of ISyncEntity
+ *
  * @implements ISyncEntityResolver<TEntity>
  */
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver

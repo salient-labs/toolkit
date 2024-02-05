@@ -41,6 +41,7 @@ interface ISyncProvider extends IProvider
      * Get the provider's implementation of sync operations for an entity
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $entity
      * @return ISyncDefinition<T,static>
      */
@@ -71,6 +72,7 @@ interface ISyncProvider extends IProvider
      * operations for an entity
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $entity
      * @param ISyncContext|ContainerInterface|null $context
      * @return ISyncEntityProvider<T>

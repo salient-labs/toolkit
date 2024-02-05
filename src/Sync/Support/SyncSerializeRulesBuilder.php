@@ -41,6 +41,7 @@ final class SyncSerializeRulesBuilder extends Builder
      * The class name of the SyncEntity being serialized (required)
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $value
      * @return $this<T>
      */
@@ -53,6 +54,7 @@ final class SyncSerializeRulesBuilder extends Builder
      * Inherit rules from another instance
      *
      * @template T of ISyncEntity
+     *
      * @param SyncSerializeRules<T>|null $value
      * @return $this<T>
      */

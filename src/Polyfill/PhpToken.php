@@ -59,7 +59,7 @@ class PhpToken implements Stringable
     /**
      * Returns the name of the token.
      *
-     * @return null|string An ASCII character for single-char tokens, or one of
+     * @return string|null An ASCII character for single-char tokens, or one of
      * T_* constant names for known tokens (see
      * {@link https://www.php.net/manual/en/tokens.php List of Parser Tokens}),
      * or **`null`** for unknown tokens.

@@ -925,6 +925,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
      * Close the most recently created message group
      *
      * @return $this
+     *
      * @see ConsoleWriter::group()
      */
     public function groupEnd(bool $printMessage = false)

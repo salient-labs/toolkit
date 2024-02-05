@@ -48,8 +48,6 @@ class HttpFactory implements
     }
 
     /**
-     * @inheritDoc
-     *
      * @param array<string,mixed> $serverParams
      */
     public function createServerRequest(

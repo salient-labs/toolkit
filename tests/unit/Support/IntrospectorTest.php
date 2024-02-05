@@ -24,8 +24,8 @@ final class IntrospectorTest extends TestCase
     /**
      * @dataProvider getProvider
      *
-     * @param class-string $class
      * @param array<string,mixed> $expected
+     * @param class-string $class
      */
     public function testGet(array $expected, string $class): void
     {

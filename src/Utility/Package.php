@@ -55,10 +55,10 @@ final class Package extends Utility
      * is added. Otherwise, if `$withReference` is `true` and a commit reference
      * is available, `-<reference>` is added.
      *
+     * @api
+     *
      * @param bool $pretty If `true`, return the original version number, e.g.
      * `v1.2.3` instead of `1.2.3.0`.
-     *
-     * @api
      */
     public static function version(
         bool $pretty = true,
@@ -106,11 +106,11 @@ final class Package extends Utility
      * is added. Otherwise, if `$withReference` is `true` and a commit reference
      * is available, `-<reference>` is added.
      *
+     * @api
+     *
      * @param bool $pretty If `true`, return the original version number, e.g.
      * `v1.2.3` instead of `1.2.3.0`.
      * @return string|null `null` if `$package` is not installed.
-     *
-     * @api
      */
     public static function packageVersion(
         string $package,
@@ -132,9 +132,9 @@ final class Package extends Utility
     /**
      * Get the canonical path of an installed package
      *
-     * @return string|null `null` if `$package` is not installed.
-     *
      * @api
+     *
+     * @return string|null `null` if `$package` is not installed.
      */
     public static function packagePath(string $package): ?string
     {

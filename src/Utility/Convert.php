@@ -62,6 +62,7 @@ final class Convert extends Utility
      * Convert a value to a boolean, preserving null
      *
      * @param mixed $value
+     *
      * @see Test::isBoolValue()
      */
     public static function toBool($value): ?bool

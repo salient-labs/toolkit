@@ -19,6 +19,7 @@ final class MimeType extends Dictionary
 
     /**
      * @var array<string,string>
+     *
      * @link https://www.iana.org/assignments/media-type-structured-suffix/media-type-structured-suffix.xhtml
      */
     private static $SuffixMap = [

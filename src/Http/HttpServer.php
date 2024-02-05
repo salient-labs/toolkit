@@ -82,6 +82,7 @@ final class HttpServer implements IReadable, IImmutable
      * ```
      *
      * @return $this
+     *
      * @see HttpServer::getBaseUrl()
      */
     public function withProxy(
@@ -184,6 +185,7 @@ final class HttpServer implements IReadable, IImmutable
      * Wait for a request and return a response
      *
      * @template T
+     *
      * @param callable(HttpServerRequest $request, bool &$continue, T &$return): HttpResponse $callback
      * Receives an {@see HttpServerRequest} and returns an {@see HttpResponse}.
      * May also set `$continue = true` to make {@see HttpServer::listen()} wait

@@ -94,12 +94,9 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @inheritDoc
-     *
      * @template T of object
      *
      * @param class-string<T> $service
-     *
      * @return static<T>
      */
     public static function getService(ContainerInterface $container, string $service)
@@ -114,12 +111,9 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @inheritDoc
-     *
      * @template T of object
      *
      * @param class-string<T> $class
-     *
      * @return static<T>
      */
     public static function get(string $class)
@@ -277,7 +271,6 @@ final class SyncIntrospector extends Introspector
      * @param SyncOperation::* $operation
      * @param class-string<T>|static<T> $entity
      * @return (Closure(ISyncContext, mixed...): (iterable<T>|T))|null
-     *
      * @throws LogicException if the {@see SyncIntrospector} and `$entity` don't
      * respectively represent an {@see ISyncProvider} and {@see ISyncEntity}.
      */

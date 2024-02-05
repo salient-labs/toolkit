@@ -16,7 +16,6 @@ use Traversable;
  * @template TValue
  *
  * @extends IteratorIterator<TKey,TValue,Traversable<TKey,TValue>>
- *
  * @implements IterableIteratorInterface<TKey,TValue>
  */
 class IterableIterator extends IteratorIterator implements IterableIteratorInterface
@@ -38,7 +37,6 @@ class IterableIterator extends IteratorIterator implements IterableIteratorInter
 
     /**
      * @param iterable<TKey,TValue> $iterable
-     *
      * @return static
      */
     public static function from(iterable $iterable): self

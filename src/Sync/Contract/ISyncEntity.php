@@ -18,8 +18,6 @@ use JsonSerializable;
 /**
  * Represents the state of an entity in an external system
  *
- * @extends IProviderEntity<ISyncProvider,ISyncContext>
- *
  * @see SyncEntity
  *
  * @extends IProviderEntity<ISyncProvider,ISyncContext>
@@ -125,6 +123,7 @@ interface ISyncEntity extends
      * {@see ISyncEntity} encountered during this recursive operation.
      *
      * @return array<string,mixed>
+     *
      * @see ISyncEntity::getSerializeRules()
      */
     public function toArray(): array;

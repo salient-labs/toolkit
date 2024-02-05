@@ -11,7 +11,6 @@ final class EnvTest extends TestCase
     /**
      * @dataProvider getProvider
      * @dataProvider getNullableProvider
-     *
      * @backupGlobals enabled
      *
      * @param string[]|int[]|string|int|bool|null $expected

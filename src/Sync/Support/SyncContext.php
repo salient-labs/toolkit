@@ -285,6 +285,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
 
     /**
      * @template T
+     *
      * @param ISyncEntity|ISyncEntity[]|T $value
      * @return int|string|array<int|string>|T
      */

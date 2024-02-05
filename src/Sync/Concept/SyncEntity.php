@@ -646,8 +646,6 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     }
 
     /**
-     * @inheritDoc
-     *
      * @param ISyncProvider $provider
      * @param ISyncContext|null $context
      */
@@ -673,8 +671,6 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     }
 
     /**
-     * @inheritDoc
-     *
      * @param ISyncProvider $provider
      * @param ISyncContext|null $context
      */

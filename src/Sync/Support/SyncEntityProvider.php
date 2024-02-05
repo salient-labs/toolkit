@@ -39,6 +39,7 @@ use LogicException;
  *
  * @template TEntity of ISyncEntity
  * @template TProvider of ISyncProvider
+ *
  * @implements ISyncEntityProvider<TEntity>
  */
 final class SyncEntityProvider implements ISyncEntityProvider
@@ -49,8 +50,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Entity;
 
     /**
-     * @var ISyncProvider&TProvider
      * @todo Remove `ISyncProvider&` when Intelephense generics issues are fixed
+     *
+     * @var ISyncProvider&TProvider
      */
     private $Provider;
 

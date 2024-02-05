@@ -10,6 +10,7 @@ use Lkrms\Contract\HasService;
 
 /**
  * @template T of ContainerInterface
+ *
  * @implements HasContainer<T>
  */
 class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer, HasService
