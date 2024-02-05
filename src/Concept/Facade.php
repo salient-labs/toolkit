@@ -4,11 +4,12 @@ namespace Lkrms\Concept;
 
 use Lkrms\Concern\ResolvesServiceLists;
 use Lkrms\Container\Contract\ContainerInterface;
-use Lkrms\Container\Event\GlobalContainerSetEvent;
+use Lkrms\Container\Event\BeforeGlobalContainerSetEvent;
 use Lkrms\Container\Container;
 use Lkrms\Contract\FacadeAwareInterface;
 use Lkrms\Contract\FacadeInterface;
 use Lkrms\Contract\Unloadable;
+use Lkrms\Facade\App;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
 use Lkrms\Utility\Get;
@@ -81,10 +82,9 @@ abstract class Facade implements FacadeInterface
      */
     final public static function unloadAll(): void
     {
-        /** @var class-string<static> */
-        $eventFacade = Event::class;
         foreach (array_keys(self::$Instances) as $class) {
-            if ($class === $eventFacade) {
+            // @phpstan-ignore-next-line
+            if ($class === Event::class) {
                 continue;
             }
             $class::unload();
@@ -97,14 +97,13 @@ abstract class Facade implements FacadeInterface
      */
     final public static function unload(): void
     {
-        /** @var class-string<static> */
-        $eventFacade = Event::class;
-        if (static::class === $eventFacade) {
+        // @phpstan-ignore-next-line
+        if (static::class === Event::class) {
             $loaded = array_keys(self::$Instances);
-            if ($loaded && $loaded !== [$eventFacade]) {
+            if ($loaded && $loaded !== [Event::class]) {
                 throw new LogicException(sprintf(
                     '%s cannot be unloaded before other facades',
-                    $eventFacade,
+                    Event::class,
                 ));
             }
         }
@@ -120,14 +119,16 @@ abstract class Facade implements FacadeInterface
             return;
         }
 
-        $container = Container::maybeGetGlobalContainer();
-        if ($container) {
-            $serviceName = self::getServiceName();
-            if (
-                $container->hasInstance($serviceName) &&
-                $container->get($serviceName) === $instance
-            ) {
-                $container->unbind($serviceName);
+        if (static::class !== App::class) {
+            $container = Container::maybeGetGlobalContainer();
+            if ($container) {
+                $serviceName = self::getServiceName();
+                if (
+                    $container->hasInstance($serviceName) &&
+                    $container->get($serviceName) === $instance
+                ) {
+                    $container->unbind($serviceName);
+                }
             }
         }
 
@@ -171,7 +172,7 @@ abstract class Facade implements FacadeInterface
      * @param TService|null $instance
      * @return TService
      */
-    private static function doLoad($instance = null): object
+    private static function doLoad(?object $instance = null): object
     {
         $serviceName = self::getServiceName();
 
@@ -191,26 +192,45 @@ abstract class Facade implements FacadeInterface
             ? self::getInstanceFromContainer($container, $serviceName)
             : self::createInstance();
 
-        if ($container) {
-            $container->instanceIf($serviceName, $instance);
-        }
-
-        /** @var class-string<static> */
-        $eventFacade = Event::class;
         $dispatcher =
+            // @phpstan-ignore-next-line
             $instance instanceof EventDispatcher &&
-            static::class === $eventFacade
+            // @phpstan-ignore-next-line
+            static::class === Event::class
                 ? $instance
                 : Event::getInstance();
 
-        self::$ListenerIds[static::class] = $dispatcher->listen(
-            static function (GlobalContainerSetEvent $event) use ($serviceName, $instance): void {
-                $container = $event->container();
-                if ($container) {
-                    $container->instanceIf($serviceName, $instance);
-                }
+        if (
+            // @phpstan-ignore-next-line
+            $instance instanceof ContainerInterface &&
+            // @phpstan-ignore-next-line
+            static::class === App::class
+        ) {
+            if (!$container) {
+                Container::setGlobalContainer($instance);
             }
-        );
+
+            $listenerId = $dispatcher->listen(
+                static function (BeforeGlobalContainerSetEvent $event): void {
+                    if ($container = $event->container()) {
+                        App::swap($container);
+                    }
+                }
+            );
+        } else {
+            if ($container) {
+                $container->instanceIf($serviceName, $instance);
+            }
+
+            $listenerId = $dispatcher->listen(
+                static function (BeforeGlobalContainerSetEvent $event) use ($serviceName, $instance): void {
+                    if ($container = $event->container()) {
+                        $container->instanceIf($serviceName, $instance);
+                    }
+                }
+            );
+        }
+        self::$ListenerIds[static::class] = $listenerId;
 
         if ($instance instanceof FacadeAwareInterface) {
             $instance = $instance->withFacade(static::class);

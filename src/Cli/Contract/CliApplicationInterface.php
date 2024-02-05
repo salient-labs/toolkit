@@ -13,6 +13,11 @@ use LogicException;
 interface CliApplicationInterface extends ApplicationInterface
 {
     /**
+     * Get the name of the file used to run the application
+     */
+    public function getProgramName(): string;
+
+    /**
      * Get the command invoked by run()
      *
      * This method should only return a command that is currently running.

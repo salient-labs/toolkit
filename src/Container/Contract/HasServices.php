@@ -5,6 +5,8 @@ namespace Lkrms\Container\Contract;
 /**
  * Implemented by service providers that specify which of their interfaces can
  * be registered with a container
+ *
+ * @api
  */
 interface HasServices
 {

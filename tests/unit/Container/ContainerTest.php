@@ -6,7 +6,6 @@ use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Contract\ApplicationInterface;
 use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
-use Lkrms\Container\Exception\InvalidContainerBindingException;
 use Lkrms\Container\Application;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
@@ -60,22 +59,10 @@ final class ContainerTest extends TestCase
         $this->_testServiceTransient($container);
     }
 
-    public function testServiceShared(): void
-    {
-        $container = (new Container())->provider(TestServiceImplA::class, null, [], ServiceLifetime::SERVICE_SINGLETON);
-        $this->_testServiceShared($container);
-    }
-
     public function testServiceSingleton(): void
     {
         $container = (new Container())->provider(TestServiceImplA::class, null, [], ServiceLifetime::SINGLETON);
         $this->_testServiceSingleton($container);
-    }
-
-    public function testServiceSharedSingleton(): void
-    {
-        $container = (new Container())->provider(TestServiceImplA::class, null, [], ServiceLifetime::SINGLETON | ServiceLifetime::SERVICE_SINGLETON);
-        $this->_testServiceSharedSingleton($container);
     }
 
     public function testServiceInherit(): void
@@ -85,12 +72,6 @@ final class ContainerTest extends TestCase
 
         $container = (new Container())->provider(TestServiceImplB::class);
         $this->_testServiceSingleton($container, TestServiceImplB::class);
-
-        $container = (new Container())->provider(TestServiceImplC::class);
-        $this->_testServiceShared($container, TestServiceImplC::class);
-
-        $container = (new Container())->provider(TestServiceImplD::class);
-        $this->_testServiceSharedSingleton($container, TestServiceImplD::class);
     }
 
     public function testServiceBindings(): void
@@ -197,24 +178,6 @@ final class ContainerTest extends TestCase
         $this->assertNotSame($c2, $ts2a);
     }
 
-    private function _testServiceShared(Container $container, string $concrete = TestServiceImplA::class): void
-    {
-        $c1 = $container->get($concrete);
-        $c2 = $container->get($concrete);
-        $ts1a = $container->get(ITestService1::class);
-        $ts1b = $container->get(ITestService1::class);
-        $ts2a = $container->get(ITestService2::class);
-        $ts2b = $container->get(ITestService2::class);
-        $this->assertSame($ts1a, $ts1b);
-        $this->assertSame($ts2a, $ts2b);
-        $this->assertNotSame($ts1a, $ts2a);
-        $this->assertNotSame($c1, $c2);
-        $this->assertNotSame($c1, $ts1a);
-        $this->assertNotSame($c2, $ts1a);
-        $this->assertNotSame($c1, $ts2a);
-        $this->assertNotSame($c2, $ts2a);
-    }
-
     private function _testServiceSingleton(Container $container, string $concrete = TestServiceImplA::class): void
     {
         $c1 = $container->get($concrete);
@@ -230,26 +193,12 @@ final class ContainerTest extends TestCase
         $this->assertSame($c1, $ts2a);
     }
 
-    private function _testServiceSharedSingleton(Container $container, string $concrete = TestServiceImplA::class): void
-    {
-        $c1 = $container->get($concrete);
-        $c2 = $container->get($concrete);
-        $ts1a = $container->get(ITestService1::class);
-        $ts1b = $container->get(ITestService1::class);
-        $ts2a = $container->get(ITestService2::class);
-        $ts2b = $container->get(ITestService2::class);
-        $this->assertSame($ts1a, $ts1b);
-        $this->assertSame($ts2a, $ts2b);
-        $this->assertNotSame($ts1a, $ts2a);
-        $this->assertSame($c1, $c2);
-        $this->assertNotSame($c1, $ts1a);
-        $this->assertNotSame($c1, $ts2a);
-    }
-
     public function testRegisterServiceProvider(): void
     {
         $container = new Container();
+        $this->assertFalse($container->hasProvider(ServiceProviderPlain::class));
         $container->provider(ServiceProviderPlain::class);
+        $this->assertTrue($container->hasProvider(ServiceProviderPlain::class));
         $this->assertSame([ServiceProviderPlain::class], $container->getProviders());
         $this->assertFalse($container->has(ServiceProviderPlain::class));
 
@@ -300,8 +249,15 @@ final class ContainerTest extends TestCase
             },
         );
 
-        // Create one `Office` per `User`
-        $container->bind(User::class, null, [], [Office::class]);
+        // Create one `Office` per `User` and `Department`
+        $office = null;
+        $container->addContextualBinding(
+            [User::class, Department::class],
+            Office::class,
+            function (ContainerInterface $container) use (&$office): Office {
+                return $office ??= $container->get(Office::class);
+            }
+        );
 
         // Give each `Department` the same name
         $container->bind(Department::class, null, ['They Who Shall Not Be Named']);
@@ -309,8 +265,15 @@ final class ContainerTest extends TestCase
         // Register `OrgUnit` bindings
         $container->provider(OrgUnit::class);
 
-        // Create one `Department` per `OrgUnit`
-        $container->bind(OrgUnit::class, null, [], [Department::class]);
+        // Create one `Department` per `OrgUnit` and `User`
+        $department = null;
+        $container->addContextualBinding(
+            [OrgUnit::class, User::class],
+            Department::class,
+            function (ContainerInterface $container) use (&$department): Department {
+                return $department ??= $container->get(Department::class);
+            }
+        );
 
         $user = $container->get(User::class);
         $this->assertSame(User::class, get_class($user));
@@ -318,6 +281,7 @@ final class ContainerTest extends TestCase
         $this->assertSame('Office #1', $user->Office->Name);
         $this->assertSame(200, $user->Id);
 
+        $office = null;
         $user = $container->inContextOf(OrgUnit::class)->get(User::class);
         $this->assertSame(DepartmentStaff::class, get_class($user));
         /** @var DepartmentStaff $user */
@@ -329,13 +293,18 @@ final class ContainerTest extends TestCase
         $this->assertSame(201, $user->Id);
         $this->assertSame(400, $user->StaffId);
 
+        $office = null;
         $user = $container->get(User::class);
         $this->assertSame(User::class, get_class($user));
         $this->assertSame(102, $user->Office->Id);
         $this->assertSame('Office #3', $user->Office->Name);
         $this->assertSame(202, $user->Id);
 
+        $office = null;
+        $department = null;
         $user = $container->get(DepartmentStaff::class);
+        $office = null;
+        $department = null;
         $user = $container->get(DepartmentStaff::class);
         $this->assertSame(DepartmentStaff::class, get_class($user));
         /** @var DepartmentStaff $user */
@@ -347,6 +316,7 @@ final class ContainerTest extends TestCase
         $this->assertSame(204, $user->Id);
         $this->assertSame(402, $user->StaffId);
 
+        $office = null;
         $dept1 = $container->get(Department::class, ['English']);
         $dept2 = $container->get(Department::class, ['Mathematics', $dept1->MainOffice]);
         $this->assertInstanceOf(Department::class, $dept1);
@@ -360,6 +330,8 @@ final class ContainerTest extends TestCase
         $this->assertSame(304, $dept2->Id);
         $this->assertSame('Mathematics', $dept2->Name);
 
+        $office = null;
+        $department = null;
         $orgUnit = $container->get(OrgUnit::class);
         $manager = $orgUnit->Manager;
         $admin = $orgUnit->Admin;
@@ -372,11 +344,6 @@ final class ContainerTest extends TestCase
         $this->assertSame($orgUnit->Department, $admin->Department);
         $this->assertInstanceOf(FancyOffice::class, $orgUnit->MainOffice);
         $this->assertNotInstanceOf(FancyOffice::class, $manager->Office);
-        $this->assertNotInstanceOf(FancyOffice::class, $admin->Office);
-        $this->assertNotSame($manager->Office, $admin->Office);
-
-        $this->expectException(InvalidContainerBindingException::class);
-        $this->expectExceptionMessage("Dependencies in 'shareInstances' cannot be substituted: ");
-        $container->bind(OrgUnit::class, null, [], [Office::class]);
+        $this->assertSame($manager->Office, $admin->Office);
     }
 }

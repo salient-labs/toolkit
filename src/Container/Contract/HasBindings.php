@@ -4,6 +4,8 @@ namespace Lkrms\Container\Contract;
 
 /**
  * Implemented by service providers with container bindings
+ *
+ * @api
  */
 interface HasBindings
 {

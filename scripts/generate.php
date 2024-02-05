@@ -6,7 +6,7 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleWriter;
-use Lkrms\Container\Application;
+use Lkrms\Container\Contract\ContainerInterface;
 use Lkrms\Container\Container;
 use Lkrms\Curler\Support\CurlerPage;
 use Lkrms\Curler\Support\CurlerPageBuilder;
@@ -15,7 +15,6 @@ use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Facade\App;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\DI;
 use Lkrms\Facade\Err;
 use Lkrms\Facade\Event;
 use Lkrms\Facade\Profile;
@@ -62,10 +61,9 @@ use Lkrms\Utility\Pcre;
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
 $facades = [
-    App::class => Application::class,
+    App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
     Cache::class => CacheStore::class,
     Console::class => [ConsoleWriter::class, '--api'],
-    DI::class => Container::class,
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
     Event::class => EventDispatcher::class,
     Sync::class => SyncStore::class,

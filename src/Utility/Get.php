@@ -3,7 +3,6 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
-use Lkrms\Container\Contract\ServiceSingletonInterface;
 use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\UncloneableObjectException;
@@ -401,10 +400,8 @@ final class Get extends Utility
             !($flags & CopyFlag::COPY_CONTAINERS) &&
             $var instanceof PsrContainerInterface
         ) || (
-            !($flags & CopyFlag::COPY_SINGLETONS) && (
-                $var instanceof SingletonInterface ||
-                $var instanceof ServiceSingletonInterface
-            )
+            !($flags & CopyFlag::COPY_SINGLETONS) &&
+            $var instanceof SingletonInterface
         )) {
             $map[$id] = $var;
             return $var;

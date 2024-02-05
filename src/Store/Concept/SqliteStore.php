@@ -79,7 +79,7 @@ abstract class SqliteStore implements FacadeAwareInterface
      *
      * @return $this
      */
-    final protected function closeDb(bool $unloadFacades = true)
+    final protected function closeDb()
     {
         try {
             if (!$this->Db) {
@@ -92,9 +92,7 @@ abstract class SqliteStore implements FacadeAwareInterface
 
             return $this;
         } finally {
-            if ($unloadFacades) {
-                $this->unloadFacades();
-            }
+            $this->unloadFacades();
         }
     }
 

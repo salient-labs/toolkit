@@ -12,14 +12,11 @@ use Lkrms\Utility\Package;
 
 /**
  * A service container for applications
+ *
+ * @api
  */
 interface ApplicationInterface extends ContainerInterface
 {
-    /**
-     * Get the name of the file used to run the application
-     */
-    public function getProgramName(): string;
-
     /**
      * Get the name of the application
      */
@@ -234,7 +231,7 @@ interface ApplicationInterface extends ContainerInterface
      */
     public function reportMetrics(
         int $level = Level::INFO,
-        bool $includeRunning = true,
+        bool $includeRunningTimers = true,
         $groups = null,
         ?int $limit = 10
     );
