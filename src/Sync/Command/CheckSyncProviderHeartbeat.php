@@ -8,7 +8,7 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Inflect;
 
 /**
  * A generic sync provider heartbeat check command
@@ -139,13 +139,10 @@ EOF;
 
         $count = count($providers);
 
-        Console::info(
-            sprintf(
-                'Sending heartbeat request to %d %s',
-                $count,
-                Convert::plural($count, 'provider')
-            ),
-        );
+        Console::info(Inflect::format(
+            'Sending heartbeat request to {{#}} {{#:provider}}',
+            $count,
+        ));
 
         $this->Store->checkHeartbeats(
             max(1, $this->Ttl),
@@ -153,8 +150,9 @@ EOF;
             ...array_values($providers)
         );
 
-        Console::summary(
-            Convert::plural($count, 'provider', null, true) . ' checked',
-        );
+        Console::summary(Inflect::format(
+            '{{#}} {{#:provider}} checked',
+            $count,
+        ));
     }
 }

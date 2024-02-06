@@ -40,8 +40,8 @@ use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Closure;
@@ -130,7 +130,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     public static function plural(): string
     {
-        return Convert::nounToPlural(Get::basename(static::class));
+        return Inflect::plural(Get::basename(static::class));
     }
 
     /**

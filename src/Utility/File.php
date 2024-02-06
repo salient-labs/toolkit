@@ -125,15 +125,12 @@ final class File extends Utility
         $result = @fwrite($stream, $data, $length);
         self::throwOnFailure($result, 'Error writing to stream: %s', $uri, $stream);
         if ($result !== $expected) {
-            throw new FilesystemErrorException(
-                sprintf(
-                    'Error writing to stream: %d of %d %s written to %s',
-                    $result,
-                    $length,
-                    Convert::plural($length, 'byte'),
-                    self::getFriendlyStreamUri($uri, $stream),
-                ),
-            );
+            throw new FilesystemErrorException(Inflect::format(
+                'Error writing to stream: %d of {{#}} {{#:byte}} written to %s',
+                $length,
+                $result,
+                self::getFriendlyStreamUri($uri, $stream),
+            ));
         }
         return $result;
     }
@@ -955,6 +952,31 @@ final class File extends Utility
             null,
             $uri,
         );
+    }
+
+    /**
+     * Read CSV-formatted data from a file or stream
+     *
+     * @todo Implement file encoding detection
+     *
+     * @param Stringable|string|resource $resource
+     * @return array<mixed[]>
+     */
+    public static function readCsv($resource): array
+    {
+        $handle = self::getStream($resource, 'rb', $close, $uri);
+
+        while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
+            $data[] = $row;
+        }
+
+        self::throwOnFailure(feof($handle), 'Error reading from stream: %s', $uri, $handle);
+
+        if ($close) {
+            self::close($handle, $uri);
+        }
+
+        return $data ?? [];
     }
 
     /**

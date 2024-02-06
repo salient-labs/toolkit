@@ -3,6 +3,8 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Exception\InvalidArgumentException;
+use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -39,6 +41,32 @@ final class Date extends Utility
             $timezone = date_default_timezone_get();
         }
         return new DateTimeZone($timezone);
+    }
+
+    /**
+     * Get the duration of a DateInterval or ISO 8601 duration in seconds
+     *
+     * @param DateInterval|string $interval
+     */
+    public static function duration($interval): int
+    {
+        if (!($interval instanceof DateInterval)) {
+            if (
+                \PHP_VERSION_ID < 80000 &&
+                Pcre::match('/W.+D/', $interval)
+            ) {
+                throw new InvalidArgumentException(sprintf(
+                    'Invalid $interval: %s',
+                    $interval,
+                ));
+            }
+            $interval = new DateInterval($interval);
+        }
+
+        $then = new DateTimeImmutable();
+        $now = $then->add($interval);
+
+        return $now->getTimestamp() - $then->getTimestamp();
     }
 
     /**

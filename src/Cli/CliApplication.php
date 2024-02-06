@@ -16,7 +16,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
@@ -449,7 +449,7 @@ class CliApplication extends Application implements CliApplicationInterface
         switch ($target) {
             case CliHelpTarget::MARKDOWN:
                 $formats = ConsoleMarkdownFormat::getTagFormats();
-                $collapseSynopsis = Convert::toBool($args[0] ?? null);
+                $collapseSynopsis = Get::boolean($args[0] ?? null);
                 break;
 
             case CliHelpTarget::MAN_PAGE:

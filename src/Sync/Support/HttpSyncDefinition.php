@@ -577,7 +577,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
             try {
                 $path = Pcre::replaceCallback(
                     '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
-                    function (array $matches) use (
+                    function (array $match) use (
                         $operation,
                         $ctx,
                         $id,
@@ -585,7 +585,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                         &$idApplied,
                         $path
                     ): string {
-                        $name = $matches['name'];
+                        $name = $match['name'];
                         if ($id !== null &&
                                 Str::toSnakeCase($name) === 'id') {
                             $idApplied = true;

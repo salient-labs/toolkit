@@ -6,6 +6,7 @@ use Lkrms\Concept\Utility;
 use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\UncloneableObjectException;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Catalog\CopyFlag;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use DateTimeInterface;
@@ -19,6 +20,32 @@ use UnitEnum;
  */
 final class Get extends Utility
 {
+    /**
+     * Convert a value to boolean, preserving null
+     *
+     * @see Test::isBoolValue()
+     *
+     * @param mixed $value
+     * @return ($value is null ? null : bool)
+     */
+    public static function boolean($value): ?bool
+    {
+        if ($value === null || is_bool($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && Pcre::match(
+            '/^' . Regex::BOOLEAN_STRING . '$/',
+            $value,
+            $match,
+            \PREG_UNMATCHED_AS_NULL
+        )) {
+            return $match['true'] !== null;
+        }
+
+        return (bool) $value;
+    }
+
     /**
      * If a value is callable, get its return value
      *

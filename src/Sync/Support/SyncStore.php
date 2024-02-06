@@ -21,6 +21,7 @@ use Lkrms\Sync\Exception\SyncStoreException;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
@@ -1279,10 +1280,13 @@ final class SyncStore extends SqliteStore
         // Console recording an additional error or warning
         Console::message(
             $level,
-            Convert::plural($this->ErrorCount, 'sync error', null, true)
-                . ($this->WarningCount
-                    ? ' and ' . Convert::plural($this->WarningCount, 'warning', null, true)
-                    : '') . ' recorded:',
+            Inflect::format(
+                '{{#}} sync {{#:error}}%s recorded:',
+                $this->ErrorCount,
+                $this->WarningCount
+                    ? Inflect::format(' and {{#}} {{#:warning}}', $this->WarningCount)
+                    : ''
+            ),
             null,
             MessageType::STANDARD,
             null,

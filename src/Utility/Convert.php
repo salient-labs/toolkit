@@ -6,8 +6,6 @@ use Lkrms\Concept\Utility;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
-use DateInterval;
-use DateTimeImmutable;
 use DateTimeInterface;
 use LogicException;
 use Stringable;
@@ -56,29 +54,6 @@ final class Convert extends Utility
             return $match['true'] !== null;
         }
         return $value;
-    }
-
-    /**
-     * Convert a value to a boolean, preserving null
-     *
-     * @param mixed $value
-     *
-     * @see Test::isBoolValue()
-     */
-    public static function toBool($value): ?bool
-    {
-        if ($value === null || is_bool($value)) {
-            return $value;
-        }
-        if (is_string($value) && Pcre::match(
-            '/^' . Regex::BOOLEAN_STRING . '$/',
-            $value,
-            $match,
-            \PREG_UNMATCHED_AS_NULL
-        )) {
-            return $match['true'] !== null;
-        }
-        return (bool) $value;
     }
 
     /**
@@ -172,24 +147,6 @@ final class Convert extends Utility
     }
 
     /**
-     * Convert an interval to the equivalent number of seconds
-     *
-     * Works with ISO 8601 durations like `PT48M`.
-     *
-     * @param DateInterval|string $value
-     */
-    public static function intervalToSeconds($value): int
-    {
-        if (!($value instanceof DateInterval)) {
-            $value = new DateInterval($value);
-        }
-        $then = new DateTimeImmutable();
-        $now = $then->add($value);
-
-        return $now->getTimestamp() - $then->getTimestamp();
-    }
-
-    /**
      * Replace the end of a multi-byte string with an ellipsis ("...") if its
      * length exceeds a limit
      */
@@ -200,25 +157,6 @@ final class Convert extends Utility
         }
 
         return $value;
-    }
-
-    /**
-     * If $number is 1, return $singular, otherwise return $plural
-     *
-     * @param string|null $plural `"{$singular}s"` is used if `$plural` is
-     * `null`.
-     * @param bool $includeNumber If `true`, `"$number $noun"` is returned
-     * instead of `"$noun"`.
-     */
-    public static function plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
-    {
-        $noun = $number == 1
-            ? $singular
-            : ($plural === null ? $singular . 's' : $plural);
-
-        return $includeNumber
-            ? "$number $noun"
-            : $noun;
     }
 
     /**
@@ -237,26 +175,6 @@ final class Convert extends Utility
         return $to - $from
             ? sprintf('between %s %d and %d', $plural === null ? $singular . 's' : $plural, $from, $to)
             : sprintf('%s %s %d', $preposition, $singular, $from);
-    }
-
-    /**
-     * Get the plural of a singular noun
-     */
-    public static function nounToPlural(string $noun): string
-    {
-        if (Pcre::match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches)) {
-            if ($matches[1]) {
-                return $noun . 'es';
-            } elseif ($matches[2]) {
-                return substr_replace($noun, 'ies', -1);
-            } elseif ($matches[3]) {
-                return substr_replace($noun, 'es', -2);
-            } elseif ($matches[4]) {
-                return substr_replace($noun, 'a', -2);
-            }
-        }
-
-        return $noun . 's';
     }
 
     /**

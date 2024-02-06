@@ -501,6 +501,7 @@ EOF)
                         $returnType[$template] = $T;
                         $param = Pcre::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
                     }
+                    $lines[] = '';
                     $lines[] = $param;
                     $lines[] = '@return $this<' . implode(',', $returnType) . '>';
                 } else {
@@ -715,7 +716,13 @@ EOF)
             $docBlock[] = " * $desc";
             $docBlock[] = ' *';
         }
+        $docBlock[] = $methods;
+        if ($this->ApiTag) {
+            $docBlock[] = ' *';
+            $docBlock[] = ' * @api';
+        }
         if ($this->InputClassTemplates) {
+            $docBlock[] = ' *';
             foreach ($this->InputClassTemplates as $template => $tag) {
                 $tag = clone $tag;
                 if (!Test::isPhpReservedWord($tag->Type) &&
@@ -729,12 +736,6 @@ EOF)
                 }
                 $docBlock[] = " * $tag";
             }
-            $docBlock[] = ' *';
-        }
-        $docBlock[] = $methods;
-        if ($this->ApiTag) {
-            $docBlock[] = ' *';
-            $docBlock[] = ' * @api';
         }
         $docBlock[] = ' *';
         $docBlock[] = " * @extends $extends<$service{$this->InputClassType}>";

@@ -19,10 +19,10 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Format;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
@@ -459,7 +459,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
                 if ($this->MultipleAllowed && Test::isIntValue($value) && (int) $value >= 0) {
                     $this->DefaultValue = (int) $value;
                 } elseif (Test::isBoolValue($value)) {
-                    $value = Convert::toBool($value);
+                    $value = Get::boolean($value);
                     $this->DefaultValue = $this->MultipleAllowed ? (int) $value : $value;
                 } else {
                     $this->throwEnvVariableException($value);
@@ -862,7 +862,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
                 if (is_array($value)) {
                     $value = count($value);
                 } elseif (Test::isBoolValue($value)) {
-                    $value = Convert::toBool($value) ? 1 : 0;
+                    $value = Get::boolean($value) ? 1 : 0;
                 }
             }
         }
@@ -923,10 +923,10 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             $invalid = array_diff($value, $this->AllowedValues);
             if ($invalid) {
                 // "invalid --field values 'title','name' (expected one of: first,last)"
-                $message = sprintf(
-                    'invalid %s %s %s%s%s',
+                $message = Inflect::format(
+                    'invalid %s {{#:value}} %s%s%s',
+                    count($invalid),
                     $this->DisplayName,
-                    Convert::plural(count($invalid), 'value'),
                     "'" . implode("','", $invalid) . "'",
                     $source !== null ? " in $source" : '',
                     $this->formatAllowedValues(' (expected one? of: {})'),
@@ -956,7 +956,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
             !$this->IsFlag &&
             $value !== null
         ) {
-            $value = Convert::toBool($value);
+            $value = Get::boolean($value);
             return Format::yn($value);
         }
         return (string) $value;
@@ -994,7 +994,7 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
 
         switch ($this->ValueType) {
             case CliOptionValueType::BOOLEAN:
-                return Convert::toBool($value);
+                return Get::boolean($value);
 
             case CliOptionValueType::INTEGER:
                 return (int) $value;

@@ -22,11 +22,11 @@ use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Debug;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Str;
 use Throwable;
 
@@ -531,9 +531,9 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             return $this->write(Level::INFO, "$msg1 $successText", null, MessageType::SUCCESS);
         }
 
-        $msg2 = 'with ' . Convert::plural($this->State->Errors, 'error', null, true);
+        $msg2 = 'with ' . Inflect::format('{{#}} {{#:error}}', $this->State->Errors);
         if ($this->State->Warnings) {
-            $msg2 .= ' and ' . Convert::plural($this->State->Warnings, 'warning', null, true);
+            $msg2 .= ' and ' . Inflect::format('{{#}} {{#:warning}}', $this->State->Warnings);
         }
 
         return $this->write(
