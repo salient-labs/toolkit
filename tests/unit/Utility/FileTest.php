@@ -8,6 +8,7 @@ use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Str;
+use Stringable;
 
 final class FileTest extends TestCase
 {
@@ -926,6 +927,57 @@ final class FileTest extends TestCase
                 '/',
                 '///dir/subdir/../../../../',
                 true,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider readCsvProvider
+     *
+     * @param array<mixed[]> $expected
+     * @param Stringable|string|resource $resource
+     */
+    public function testReadCsv($expected, $resource): void
+    {
+        $this->assertSame($expected, File::readCsv($resource));
+    }
+
+    /**
+     * @return array<array{array<mixed[]>,Stringable|string|resource}>
+     */
+    public static function readCsvProvider(): array
+    {
+        $dir = self::getFixturesPath(__CLASS__) . '/csv';
+
+        return [
+            [
+                [
+                    [
+                        'id',
+                        'name',
+                        'email',
+                        'notes',
+                    ],
+                    [
+                        '71',
+                        'King, Terry',
+                        '',
+                        'Likes "everybody wants to rule the world"',
+                    ],
+                    [
+                        '38',
+                        'Amir',
+                        'amir@domain.test',
+                        'Website: https://domain.test/~amir',
+                    ],
+                    [
+                        '32',
+                        'Greta',
+                        'greta@domain.test',
+                        'Has a \backslash \"and escaped quotes\"',
+                    ],
+                ],
+                $dir . '/utf8.csv',
             ],
         ];
     }

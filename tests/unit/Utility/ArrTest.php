@@ -287,6 +287,88 @@ final class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider keyOfProvider
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param TKey|null $expected
+     * @param TValue $value
+     * @param array<TKey,TValue> $array
+     */
+    public function testKeyOf($expected, $value, array $array): void
+    {
+        if ($expected === null) {
+            $this->expectException(OutOfRangeException::class);
+            $this->expectExceptionMessage('Value not found in array');
+        }
+        $this->assertSame($expected, Arr::keyOf($value, $array));
+    }
+
+    /**
+     * @return array<array{array-key,mixed,mixed[]}>
+     */
+    public static function keyOfProvider(): array
+    {
+        $a = new stdClass();
+        $b = new stdClass();
+        $objects = [
+            'foo' => $a,
+            'bar' => $b,
+            'qux' => $b,
+        ];
+        $falsey = [
+            'foo' => null,
+            'bar' => false,
+            'qux' => 0,
+            '',
+        ];
+
+        return [
+            [
+                'foo',
+                null,
+                $falsey,
+            ],
+            [
+                'bar',
+                false,
+                $falsey,
+            ],
+            [
+                'qux',
+                0,
+                $falsey,
+            ],
+            [
+                0,
+                '',
+                $falsey,
+            ],
+            [
+                'foo',
+                $a,
+                $objects,
+            ],
+            [
+                'bar',
+                $b,
+                $objects,
+            ],
+            [
+                0,
+                $a,
+                [$a],
+            ],
+            [
+                null,
+                $a,
+                [],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider keyOffsetProvider
      *
      * @param int|string $expected
