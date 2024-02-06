@@ -22,7 +22,6 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param array<array-key,TValue> $array
-     *
      * @return TValue|null
      */
     public static function first(array $array)
@@ -39,7 +38,6 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param array<array-key,TValue> $array
-     *
      * @return TValue|null
      */
     public static function last(array $array)
@@ -78,7 +76,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param TValue|null $shifted
-     *
      * @return array<TKey,TValue>
      */
     public static function shift(array $array, &$shifted = null): array
@@ -95,7 +92,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param TValue ...$values
-     *
      * @return array<TKey,TValue>
      */
     public static function unshift(array $array, ...$values): array
@@ -112,7 +108,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param TValue|null $popped
-     *
      * @return array<TKey,TValue>
      */
     public static function pop(array $array, &$popped = null): array
@@ -129,7 +124,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param TValue ...$values
-     *
      * @return array<TKey,TValue>
      */
     public static function push(array $array, ...$values): array
@@ -148,7 +142,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param T ...$values
-     *
      * @return array<TKey|int,TValue|T>
      */
     public static function extend(array $array, ...$values): array
@@ -170,7 +163,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
-     *
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sort(
@@ -209,7 +201,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param int-mask-of<SortTypeFlag::*> $flags
-     *
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sortDesc(
@@ -234,7 +225,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
-     *
      * @return array<TKey,TValue>
      */
     public static function sortByKey(
@@ -262,7 +252,6 @@ final class Arr extends Utility
      *
      * @param array<TKey,TValue> $array
      * @param int-mask-of<SortTypeFlag::*> $flags
-     *
      * @return array<TKey,TValue>
      */
     public static function sortByKeyDesc(
@@ -280,7 +269,6 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param iterable<TKey,TValue> $array
-     *
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function unique(
@@ -498,7 +486,6 @@ final class Arr extends Utility
      * @template TValue
      *
      * @param iterable<TKey,TValue|null> $array
-     *
      * @return array<TKey,TValue>
      */
     public static function whereNotNull(iterable $array): array
@@ -519,7 +506,6 @@ final class Arr extends Utility
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     *
      * @return array<TKey,TValue>
      */
     public static function whereNotEmpty(iterable $array): array
@@ -589,7 +575,6 @@ final class Arr extends Utility
      * @param iterable<TKey,TValue> $array
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
-     *
      * @return ($removeEmpty is false ? array<TKey,string> : list<string>)
      */
     public static function trim(
@@ -620,7 +605,6 @@ final class Arr extends Utility
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     *
      * @return array<TKey,string>
      */
     public static function lower(iterable $array): array
@@ -638,7 +622,6 @@ final class Arr extends Utility
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     *
      * @return array<TKey,string>
      */
     public static function upper(iterable $array): array
@@ -728,7 +711,6 @@ final class Arr extends Utility
      * @param array<TKey,TValue> $array
      * @param TValue[]|TValue $replacement
      * @param array<TKey,TValue>|null $replaced
-     *
      * @return array<TKey|int,TValue>
      */
     public static function splice(
@@ -756,7 +738,6 @@ final class Arr extends Utility
      * @param TKey $key
      * @param array<TKey,TValue> $replacement
      * @param array<TKey,TValue>|null $replaced
-     *
      * @return array<TKey,TValue>
      */
     public static function spliceByKey(
@@ -790,7 +771,6 @@ final class Arr extends Utility
      *
      * @param array<array-key,TKey> $array
      * @param TValue $value
-     *
      * @return array<TKey,TValue>
      */
     public static function toIndex(array $array, $value = true): array
@@ -837,7 +817,6 @@ final class Arr extends Utility
      * @param callable(T, TValue, TKey): T $callback
      * @param iterable<TKey,TValue> $array
      * @param T $value
-     *
      * @return T
      */
     public static function with(callable $callback, iterable $array, $value)
@@ -854,7 +833,6 @@ final class Arr extends Utility
      * @param iterable<mixed> $array
      * @param int $limit The maximum number of dimensions to flatten. Default:
      * `-1` (no limit)
-     *
      * @return mixed[]
      */
     public static function flatten(iterable $array, int $limit = -1): array
@@ -880,7 +858,6 @@ final class Arr extends Utility
      * If a value is not an array, wrap it in one
      *
      * @param mixed $value
-     *
      * @return mixed[]
      */
     public static function wrap($value): array
@@ -895,7 +872,6 @@ final class Arr extends Utility
      * If a value is not a list, wrap it in one
      *
      * @param mixed $value
-     *
      * @return mixed[]
      */
     public static function listWrap($value): array
@@ -912,7 +888,6 @@ final class Arr extends Utility
      * @param mixed $value
      * @param int $limit The maximum number of arrays to remove. Default: `-1`
      * (no limit)
-     *
      * @return mixed
      */
     public static function unwrap($value, int $limit = -1)

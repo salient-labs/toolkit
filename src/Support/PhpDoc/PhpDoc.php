@@ -468,6 +468,7 @@ final class PhpDoc implements IReadable
 
     /**
      * @internal
+     *
      * @param PhpDocTag|string|null $ours
      * @param PhpDocTag|string|null $theirs
      */

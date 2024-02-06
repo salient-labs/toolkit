@@ -30,6 +30,7 @@ interface ISyncEntityProvider extends HasProvider
      * Perform an arbitrary sync operation on one or more backend entities
      *
      * @internal
+     *
      * @param SyncOperation::* $operation
      * @param mixed ...$args
      * @return FluentIteratorInterface<array-key,TEntity>|TEntity
@@ -117,6 +118,7 @@ interface ISyncEntityProvider extends HasProvider
      * return an array
      *
      * @internal
+     *
      * @param SyncOperation::*_LIST $operation
      * @param mixed ...$args
      * @return array<TEntity>

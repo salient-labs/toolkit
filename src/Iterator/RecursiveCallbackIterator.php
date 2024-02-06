@@ -19,7 +19,6 @@ use RecursiveIterator;
  * @template TValue
  *
  * @extends IteratorIterator<TKey,TValue,RecursiveIterator<TKey,TValue>>
- *
  * @implements RecursiveCallbackIteratorInterface<TKey,TValue>
  */
 class RecursiveCallbackIterator extends IteratorIterator implements RecursiveCallbackIteratorInterface

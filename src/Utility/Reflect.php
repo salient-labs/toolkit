@@ -47,7 +47,6 @@ final class Reflect extends Utility
      * Get a list of classes accepted by the first parameter of a callback
      *
      * @return class-string[]
-     *
      * @throws LogicException if `$callback` resolves to a closure with no
      * parameters.
      */

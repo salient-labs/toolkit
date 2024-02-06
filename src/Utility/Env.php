@@ -176,6 +176,7 @@ final class Env extends Utility
      * an {@see InvalidEnvironmentException} is thrown.
      *
      * @template T of string|null
+     *
      * @param T $default
      * @return T|string
      * @throws InvalidEnvironmentException if `$name` is not present in the
@@ -206,6 +207,7 @@ final class Env extends Utility
      * an {@see InvalidEnvironmentException} is thrown.
      *
      * @template T of int|null
+     *
      * @param T $default
      * @return T|int
      * @throws InvalidEnvironmentException if `$name` is not present in the
@@ -251,6 +253,7 @@ final class Env extends Utility
      *   `"enable"`, `"enabled"`
      *
      * @template T of bool|null
+     *
      * @param T $default
      * @return T|bool
      * @throws InvalidEnvironmentException if `$name` is not present in the
@@ -287,6 +290,7 @@ final class Env extends Utility
      * otherwise splits its value on `$delimiter` before returning.
      *
      * @template T of string[]|null
+     *
      * @param T $default
      * @return T|string[]
      * @throws InvalidEnvironmentException if `$name` is not present in the
@@ -315,6 +319,7 @@ final class Env extends Utility
      * before returning.
      *
      * @template T of int[]|null
+     *
      * @param T $default
      * @return T|int[]
      * @throws InvalidEnvironmentException if `$name` is not present in the

@@ -16,16 +16,16 @@ final class ConsoleMessageAttributes
     /**
      * Message level
      *
-     * @var Level::*
      * @readonly
+     * @var Level::*
      */
     public int $Level;
 
     /**
      * Message type
      *
-     * @var MessageType::*
      * @readonly
+     * @var MessageType::*
      */
     public int $Type;
 

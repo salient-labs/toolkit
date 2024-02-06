@@ -22,9 +22,6 @@ use Closure;
 /**
  * A fluent HttpSyncDefinition factory
  *
- * @template TEntity of ISyncEntity
- * @template TProvider of HttpSyncProvider
- *
  * @method $this operations(array<OP::*> $value) A list of supported sync operations
  * @method $this path(string[]|string|null $value) The path to the provider endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
@@ -42,6 +39,9 @@ use Closure;
  * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Passed to the array mapper if `$keyMap` is provided
  * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see SyncDefinition::$ReadFromReadList})
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of HttpSyncProvider
  *
  * @extends Builder<HttpSyncDefinition<TEntity,TProvider>>
  *
@@ -61,6 +61,7 @@ final class HttpSyncDefinitionBuilder extends Builder
      * The ISyncEntity being serviced
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $value
      * @return $this<T,TProvider>
      */
@@ -73,6 +74,7 @@ final class HttpSyncDefinitionBuilder extends Builder
      * The ISyncProvider servicing the entity
      *
      * @template T of HttpSyncProvider
+     *
      * @param T $value
      * @return $this<TEntity,T>
      */
@@ -85,6 +87,7 @@ final class HttpSyncDefinitionBuilder extends Builder
      * A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
      *
      * @template T of ISyncEntity
+     *
      * @param IPipeline<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */
@@ -97,6 +100,7 @@ final class HttpSyncDefinitionBuilder extends Builder
      * A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
      *
      * @template T of ISyncEntity
+     *
      * @param IPipeline<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */

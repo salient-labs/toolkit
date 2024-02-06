@@ -196,6 +196,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
      * Get a new pipeline for mapping provider data to entities
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $entity
      * @return IPipeline<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
      */
@@ -208,6 +209,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
      * Get a new pipeline for mapping entities to provider data
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $entity
      * @return IPipeline<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
      */
@@ -221,6 +223,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
      * for an entity
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $entity
      * @return SerializeRulesBuilder<T>
      */
@@ -239,9 +242,8 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
     }
 
     /**
-     * @inheritDoc
-     *
      * @template TEntity of ISyncEntity
+     *
      * @param class-string<TEntity> $entity
      * @return SyncEntityProvider<TEntity,static>
      */

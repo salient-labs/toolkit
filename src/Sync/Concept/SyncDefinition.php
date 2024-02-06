@@ -196,12 +196,14 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
 
     /**
      * @internal
+     *
      * @var SyncIntrospector<TEntity>
      */
     protected $EntityIntrospector;
 
     /**
      * @internal
+     *
      * @var SyncIntrospector<TProvider>
      */
     protected $ProviderIntrospector;

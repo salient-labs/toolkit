@@ -17,6 +17,43 @@ use stdClass;
 final class GetTest extends TestCase
 {
     /**
+     * @dataProvider booleanProvider
+     *
+     * @param mixed $value
+     */
+    public function testBoolean(?bool $expected, $value): void
+    {
+        $this->assertSame($expected, Get::boolean($value));
+    }
+
+    /**
+     * @return array<string,array{bool|null,mixed}>
+     */
+    public static function booleanProvider(): array
+    {
+        return [
+            'null' => [null, null],
+            'false' => [false, false],
+            'true' => [true, true],
+            '0' => [false, 0],
+            '1' => [true, 1],
+            "''" => [false, ''],
+            "'0'" => [false, '0'],
+            "'1'" => [true, '1'],
+            "'f'" => [true, 'f'],
+            "'false'" => [false, 'false'],
+            "'n'" => [false, 'n'],
+            "'no'" => [false, 'no'],
+            "'off'" => [false, 'off'],
+            "'on'" => [true, 'on'],
+            "'t'" => [true, 't'],
+            "'true'" => [true, 'true'],
+            "'y'" => [true, 'y'],
+            "'yes'" => [true, 'yes'],
+        ];
+    }
+
+    /**
      * @dataProvider valueProvider
      *
      * @param mixed $expected

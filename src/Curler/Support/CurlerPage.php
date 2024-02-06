@@ -45,10 +45,10 @@ final class CurlerPage implements ICurlerPage
     /**
      * @param mixed[] $entities Data extracted from the upstream response
      * @param Curler $curler The Curler instance that retrieved the page
-     * @param null|string $nextUrl The URL of the next page, including the query component (if any)
-     * @param null|bool $isLastPage Set if no more data is available
-     * @param null|mixed[] $nextData Data to send in the body of the next request
-     * @param null|HttpHeadersInterface $nextHeaders Replaces the next request's HTTP headers
+     * @param string|null $nextUrl The URL of the next page, including the query component (if any)
+     * @param bool|null $isLastPage Set if no more data is available
+     * @param mixed[]|null $nextData Data to send in the body of the next request
+     * @param HttpHeadersInterface|null $nextHeaders Replaces the next request's HTTP headers
      */
     public function __construct(
         array $entities,

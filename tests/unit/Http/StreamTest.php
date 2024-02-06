@@ -290,7 +290,6 @@ final class StreamTest extends TestCase
 
     /**
      * @requires extension zlib
-     *
      * @dataProvider gzipStreamModeProvider
      */
     public function testGzipStreamMode(string $mode, bool $readable, bool $writable): void

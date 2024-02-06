@@ -156,6 +156,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
      * Remove CanonicalId from sync entities? (default: true)
      *
      * @var bool|null
+     *
      * @see SyncEntity::$CanonicalId
      */
     protected $RemoveCanonicalId;
@@ -280,6 +281,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
      * given to incoming rules if there are duplicates.
      *
      * @template T of TEntity
+     *
      * @param SyncSerializeRules<T> $rules
      * @return SyncSerializeRules<TEntity>
      */
@@ -491,6 +493,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 
     /**
      * @template T of array{string,...}|string
+     *
      * @param T $rule
      * @return T
      */

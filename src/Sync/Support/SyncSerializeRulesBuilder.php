@@ -10,8 +10,6 @@ use Closure;
 /**
  * A fluent SyncSerializeRules factory
  *
- * @template-covariant TEntity of ISyncEntity
- *
  * @method $this dateFormatter(?DateFormatter $value) Override the default date formatter (default: null)
  * @method $this includeMeta(?bool $value = true) Include undeclared property values? (default: true)
  * @method $this sortByKey(?bool $value = true) Sort arrays by key? (default: false)
@@ -22,6 +20,8 @@ use Closure;
  * @method $this replace(array<array<array<string|Closure>|string>|array<string|Closure>|string> $value) Values to replace with IDs (see {@see SyncSerializeRules::$Replace})
  * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
  * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
+ *
+ * @template-covariant TEntity of ISyncEntity
  *
  * @extends Builder<SyncSerializeRules<TEntity>>
  *
@@ -41,6 +41,7 @@ final class SyncSerializeRulesBuilder extends Builder
      * The class name of the SyncEntity being serialized (required)
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $value
      * @return $this<T>
      */
@@ -53,6 +54,7 @@ final class SyncSerializeRulesBuilder extends Builder
      * Inherit rules from another instance
      *
      * @template T of ISyncEntity
+     *
      * @param SyncSerializeRules<T>|null $value
      * @return $this<T>
      */

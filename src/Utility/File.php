@@ -49,6 +49,7 @@ final class File extends Utility
      * Change current directory
      *
      * @see chdir()
+     *
      * @throws FilesystemErrorException on failure.
      */
     public static function chdir(string $directory): void
@@ -61,6 +62,7 @@ final class File extends Utility
      * Open a file or URL
      *
      * @see fopen()
+     *
      * @return resource
      * @throws FilesystemErrorException on failure.
      */
@@ -74,6 +76,7 @@ final class File extends Utility
      * Close an open stream
      *
      * @see fclose()
+     *
      * @param resource $stream
      * @param Stringable|string|null $uri
      * @throws FilesystemErrorException on failure.
@@ -89,6 +92,7 @@ final class File extends Utility
      * Read from an open stream
      *
      * @see fread()
+     *
      * @param resource $stream
      * @param Stringable|string|null $uri
      * @throws FilesystemErrorException on failure.
@@ -103,6 +107,7 @@ final class File extends Utility
      * Write to an open stream
      *
      * @see fwrite()
+     *
      * @param resource $stream
      * @param Stringable|string|null $uri
      * @throws FilesystemErrorException on failure and when fewer bytes are
@@ -120,15 +125,12 @@ final class File extends Utility
         $result = @fwrite($stream, $data, $length);
         self::throwOnFailure($result, 'Error writing to stream: %s', $uri, $stream);
         if ($result !== $expected) {
-            throw new FilesystemErrorException(
-                sprintf(
-                    'Error writing to stream: %d of %d %s written to %s',
-                    $result,
-                    $length,
-                    Convert::plural($length, 'byte'),
-                    self::getFriendlyStreamUri($uri, $stream),
-                ),
-            );
+            throw new FilesystemErrorException(Inflect::format(
+                'Error writing to stream: %d of {{#}} {{#:byte}} written to %s',
+                $length,
+                $result,
+                self::getFriendlyStreamUri($uri, $stream),
+            ));
         }
         return $result;
     }
@@ -137,6 +139,7 @@ final class File extends Utility
      * Set the file position indicator for a stream
      *
      * @see fseek()
+     *
      * @param resource $stream
      * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
      * @param Stringable|string|null $uri
@@ -152,6 +155,7 @@ final class File extends Utility
      * Get the file position indicator for a stream
      *
      * @see ftell()
+     *
      * @param resource $stream
      * @param Stringable|string|null $uri
      * @throws FilesystemErrorException on failure.
@@ -166,6 +170,7 @@ final class File extends Utility
      * Copy a file
      *
      * @see copy()
+     *
      * @throws FilesystemErrorException on failure.
      */
     public static function copy(string $from, string $to): void
@@ -179,6 +184,7 @@ final class File extends Utility
      *
      * @see stat()
      * @see fstat()
+     *
      * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
      * @return int[]
@@ -219,6 +225,7 @@ final class File extends Utility
      * Open a pipe to a process
      *
      * @see popen()
+     *
      * @return resource
      * @throws FilesystemErrorException on failure.
      */
@@ -232,6 +239,7 @@ final class File extends Utility
      * Close a pipe to a process and return its exit status
      *
      * @see pclose()
+     *
      * @param resource $pipe
      * @throws FilesystemErrorException on failure.
      */
@@ -246,6 +254,7 @@ final class File extends Utility
      *
      * @see file_get_contents()
      * @see stream_get_contents()
+     *
      * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
      * @throws FilesystemErrorException on failure.
@@ -271,6 +280,7 @@ final class File extends Utility
      * Write data to a file
      *
      * @see file_put_contents()
+     *
      * @param resource|array<int|float|string|bool|Stringable|null>|string $data
      * @param int-mask-of<\FILE_USE_INCLUDE_PATH|\FILE_APPEND|\LOCK_EX> $flags
      */
@@ -942,6 +952,31 @@ final class File extends Utility
             null,
             $uri,
         );
+    }
+
+    /**
+     * Read CSV-formatted data from a file or stream
+     *
+     * @todo Implement file encoding detection
+     *
+     * @param Stringable|string|resource $resource
+     * @return array<mixed[]>
+     */
+    public static function readCsv($resource): array
+    {
+        $handle = self::getStream($resource, 'rb', $close, $uri);
+
+        while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
+            $data[] = $row;
+        }
+
+        self::throwOnFailure(feof($handle), 'Error reading from stream: %s', $uri, $handle);
+
+        if ($close) {
+            self::close($handle, $uri);
+        }
+
+        return $data ?? [];
     }
 
     /**

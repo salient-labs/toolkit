@@ -93,6 +93,7 @@ abstract class Command extends CliCommand
      *
      * @template TBaseProvider of IProvider
      * @template TProvider of TBaseProvider
+     *
      * @param class-string<TProvider> $provider
      * @param class-string<TBaseProvider> $class
      * @return TProvider

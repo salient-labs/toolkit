@@ -13,6 +13,7 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Json;
 
 /**
@@ -203,10 +204,9 @@ final class GetSyncEntities extends AbstractSyncCommand
             }
         }
 
-        Console::summary(
-            Convert::plural(
-                $count, 'entity', 'entities', true
-            ) . ' retrieved'
-        );
+        Console::summary(Inflect::format(
+            '{{#}} {{#:entity}} retrieved',
+            $count,
+        ));
     }
 }

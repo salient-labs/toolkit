@@ -1,0 +1,4 @@
+id,name,email,notes
+71,"King, Terry",,"Likes ""everybody wants to rule the world"""
+38,Amir,amir@domain.test,Website: https://domain.test/~amir
+32,Greta,greta@domain.test,"Has a \backslash \""and escaped quotes\"""

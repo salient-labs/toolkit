@@ -10,6 +10,138 @@ use Lkrms\Concept\Utility;
 class Inflect extends Utility
 {
     /**
+     * Inflect placeholders in a string in the singular if a count is 1, or in
+     * the plural otherwise
+     *
+     * For example:
+     *
+     * ```php
+     * <?php
+     * $message = Inflect::format('{{#}} {{#:entry}} {{#:was}} processed', $count);
+     * ```
+     *
+     * The following verbs are recognised:
+     *
+     * - `no` (replaced with a number if `$count` is not `0`)
+     * - `a`, `an` (replaced with a number if `$count` is plural, `no` if
+     *   `$count` is `0`)
+     * - `are` / `is` (inflected)
+     * - `has` / `have` (inflected)
+     * - `was` / `were` (inflected)
+     *
+     * Other words are inflected by {@see Inflect::plural()} if `$count` is a
+     * value other than `1`, or used without inflection otherwise.
+     *
+     * The plural form of a word can be given explicitly using the following
+     * syntax:
+     *
+     * ```php
+     * <?php
+     * '{{#:matrix:matrices}}';
+     * ```
+     *
+     * @param mixed ...$values Passed to {@see sprintf()} with the inflected string
+     * if given.
+     */
+    public static function format(string $format, int $count, ...$values): string
+    {
+        return self::doFormat($format, $count, false, ...$values);
+    }
+
+    /**
+     * Inflect placeholders in a string in the singular if a count is 0 or 1, or
+     * in the plural otherwise
+     *
+     * @param mixed ...$values Passed to {@see sprintf()} with the inflected string
+     * if given.
+     */
+    public static function formatWithSingularZero(string $format, int $count, ...$values): string
+    {
+        return self::doFormat($format, $count, true, ...$values);
+    }
+
+    /**
+     * @param mixed ...$values
+     */
+    private static function doFormat(string $format, int $count, bool $zeroIsSingular, ...$values): string
+    {
+        $zero = $count === 0;
+        $singular = $count === 1 || ($zero && $zeroIsSingular);
+
+        if ($zero) {
+            $no = 'no';
+        }
+
+        $replace = $singular
+            ? [
+                '' => $no ?? (string) $count,
+                'no' => $no ?? (string) $count,
+                'a' => $no ?? 'a',
+                'an' => $no ?? 'an',
+                'are' => 'is',
+                'is' => 'is',
+                'has' => 'has',
+                'have' => 'has',
+                'was' => 'was',
+                'were' => 'was',
+            ]
+            : [
+                '' => (string) $count,
+                'no' => $no ?? (string) $count,
+                'a' => $no ?? (string) $count,
+                'an' => $no ?? (string) $count,
+                'are' => 'are',
+                'is' => 'are',
+                'has' => 'have',
+                'have' => 'have',
+                'was' => 'were',
+                'were' => 'were',
+            ];
+
+        $format = Pcre::replaceCallback(
+            '/\{\{#(?::(?<word>[a-z]++(?:(?:\h++|-)[a-z]++)*+)(?::(?<plural_word>[a-z]++(?:(?:\h++|-)[a-z]++)*+))?)?\}\}/i',
+            function (array $match) use ($singular, $replace): string {
+                $word = $match['word'] ?? '';
+                return $replace[Str::lower($word)]
+                    ?? ($singular
+                        ? $word
+                        : $match['plural_word'] ?? self::plural($word));
+            },
+            $format,
+        );
+
+        if ($values) {
+            return sprintf($format, ...$values);
+        }
+
+        return $format;
+    }
+
+    /**
+     * Get the plural form of a singular noun
+     *
+     * @todo Implement https://users.monash.edu/~damian/papers/HTML/Plurals.html
+     */
+    public static function plural(string $word): string
+    {
+        foreach ([
+            '/(sh?|ch|x|z| (?<! \A phot | \A pian | \A hal ) o) \Z/ix' => ['es', 0],
+            '/[^aeiou] y \Z/ix' => ['ies', -1],
+            '/is \Z/ix' => ['es', -2],
+            '/on \Z/ix' => ['a', -2],
+        ] as $pattern => [$replace, $offset]) {
+            if (Pcre::match($pattern, $word)) {
+                if ($offset) {
+                    return substr_replace($word, $replace, $offset);
+                }
+                return $word . $replace;
+            }
+        }
+
+        return $word . 's';
+    }
+
+    /**
      * Get the indefinite article ("a" or "an") to use before a word
      *
      * Ported from PERL module `Lingua::EN::Inflexion`.

@@ -6,6 +6,7 @@ use Lkrms\Container\ContainerInterface;
 
 /**
  * @template T of ContainerInterface
+ *
  * @extends A<T>
  */
 class B extends A {}

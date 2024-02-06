@@ -239,18 +239,18 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @param TProvider $provider
      * @param array<OP::*> $operations
      * @param string[]|string|null $path
+     * @param mixed[]|null $query
+     * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param ArrayKeyConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
+     * @param array<OP::*,HttpRequestMethod::*> $methodMap
+     * @param array<CurlerProperty::*,mixed> $curlerProperties
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
      * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
-     * @param mixed[]|null $query
-     * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param array<OP::*,HttpRequestMethod::*> $methodMap
-     * @param array<CurlerProperty::*,mixed> $curlerProperties
      */
     public function __construct(
         string $entity,
@@ -306,6 +306,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      *
      * @param string[]|string|null $path
      * @return $this
+     *
      * @see HttpSyncDefinition::$Path
      */
     public function withPath($path)
@@ -321,6 +322,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      *
      * @param mixed[]|null $query
      * @return $this
+     *
      * @see HttpSyncDefinition::$Query
      */
     public function withQuery(?array $query)
@@ -335,6 +337,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * Set the HTTP headers applied to the sync operation request
      *
      * @return $this
+     *
      * @see HttpSyncDefinition::$Headers
      */
     public function withHeaders(?HttpHeadersInterface $headers)
@@ -349,6 +352,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * Set the pagination handler for the endpoint servicing the entity
      *
      * @return $this
+     *
      * @see HttpSyncDefinition::$Pager
      */
     public function withPager(?ICurlerPager $pager)
@@ -363,6 +367,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * Set the time, in seconds, before responses from the provider expire
      *
      * @return $this
+     *
      * @see HttpSyncDefinition::$Expiry
      */
     public function withExpiry(?int $expiry)
@@ -572,7 +577,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
             try {
                 $path = Pcre::replaceCallback(
                     '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
-                    function (array $matches) use (
+                    function (array $match) use (
                         $operation,
                         $ctx,
                         $id,
@@ -580,7 +585,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                         &$idApplied,
                         $path
                     ): string {
-                        $name = $matches['name'];
+                        $name = $match['name'];
                         if ($id !== null &&
                                 Str::toSnakeCase($name) === 'id') {
                             $idApplied = true;

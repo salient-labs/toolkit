@@ -205,8 +205,6 @@ class Stream implements StreamInterface, Stringable
     }
 
     /**
-     * @inheritDoc
-     *
      * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
      */
     public function seek(int $offset, int $whence = \SEEK_SET): void

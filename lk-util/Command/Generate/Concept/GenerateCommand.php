@@ -652,6 +652,7 @@ abstract class GenerateCommand extends Command
      * Generate a list of `use $fqcn[ as $alias];` statements
      *
      * @return string[]
+     *
      * @see GenerateCommand::getFqcnAlias()
      */
     protected function generateImports(): array

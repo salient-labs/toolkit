@@ -78,9 +78,8 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
-     * @inheritDoc
-     *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $entity
      * @return ISyncDefinition<T,static>
      */
@@ -183,6 +182,7 @@ abstract class HttpSyncProvider extends SyncProvider
      * Return `$defB` if no sync operations are implemented for the entity.
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $entity
      * @param HttpSyncDefinitionBuilder<T,static> $defB A definition builder
      * with `entity()` and `provider()` already applied.

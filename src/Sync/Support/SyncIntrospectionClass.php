@@ -17,6 +17,7 @@ use ReflectionClass;
  * Cacheable class data shared between SyncIntrospectors
  *
  * @template TClass of object
+ *
  * @extends IntrospectionClass<TClass>
  */
 final class SyncIntrospectionClass extends IntrospectionClass

@@ -21,6 +21,7 @@ use Throwable;
  * @template TInput
  * @template TOutput
  * @template TArgument
+ *
  * @implements IPipeline<TInput,TOutput,TArgument>
  */
 final class Pipeline extends FluentInterface implements IPipeline

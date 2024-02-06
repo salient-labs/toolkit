@@ -18,10 +18,10 @@ use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Format;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Sys;
@@ -636,12 +636,10 @@ class Application extends Container implements ApplicationInterface
             }
 
             $lines = [];
-            $lines[] = sprintf(
-                "Metrics: **%d** %s recorded by **%d** %s in group '**%s**':",
+            $lines[] = Inflect::format(
+                "Metrics: **{{#}}** {{#:event}} recorded by %s in group '**%s**':",
                 $totalValue,
-                Convert::plural($totalValue, 'event'),
-                $count,
-                Convert::plural($count, 'counter'),
+                Inflect::format('**{{#}}** {{#:counter}}', $count),
                 $group,
             );
 
@@ -681,11 +679,10 @@ class Application extends Container implements ApplicationInterface
             }
 
             $lines = [];
-            $lines[] = sprintf(
-                "Metrics: **%.3fms** recorded by **%d** %s in group '**%s**':",
-                $totalTime,
+            $lines[] = Inflect::format(
+                "Metrics: **%.3fms** recorded by **{{#}}** {{#:timer}} in group '**%s**':",
                 $count,
-                Convert::plural($count, 'timer'),
+                $totalTime,
                 $group,
             );
 

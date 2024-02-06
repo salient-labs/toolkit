@@ -18,9 +18,6 @@ use Closure;
 /**
  * A fluent DbSyncDefinition factory
  *
- * @template TEntity of ISyncEntity
- * @template TProvider of DbSyncProvider
- *
  * @method $this operations(array<OP::*> $value) A list of supported sync operations
  * @method $this table(?string $value) Set DbSyncDefinition::$Table
  * @method $this conformity(ArrayKeyConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
@@ -30,6 +27,9 @@ use Closure;
  * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Passed to the array mapper if `$keyMap` is provided
  * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see SyncDefinition::$ReadFromReadList})
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of DbSyncProvider
  *
  * @extends Builder<DbSyncDefinition<TEntity,TProvider>>
  *
@@ -49,6 +49,7 @@ final class DbSyncDefinitionBuilder extends Builder
      * The ISyncEntity being serviced
      *
      * @template T of ISyncEntity
+     *
      * @param class-string<T> $value
      * @return $this<T,TProvider>
      */
@@ -61,6 +62,7 @@ final class DbSyncDefinitionBuilder extends Builder
      * The ISyncProvider servicing the entity
      *
      * @template T of DbSyncProvider
+     *
      * @param T $value
      * @return $this<TEntity,T>
      */
@@ -73,6 +75,7 @@ final class DbSyncDefinitionBuilder extends Builder
      * A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
      *
      * @template T of ISyncEntity
+     *
      * @param IPipeline<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */
@@ -85,6 +88,7 @@ final class DbSyncDefinitionBuilder extends Builder
      * A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
      *
      * @template T of ISyncEntity
+     *
      * @param IPipeline<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */

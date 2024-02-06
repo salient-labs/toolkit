@@ -24,9 +24,8 @@ final class CliHelpStyle
     use Immutable;
 
     /**
-     * @var CliHelpTarget::*
-     *
      * @readonly
+     * @var CliHelpTarget::*
      */
     public int $Target;
 

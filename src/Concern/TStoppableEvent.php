@@ -22,8 +22,6 @@ trait TStoppableEvent
     }
 
     /**
-     * @inheritDoc
-     *
      * @return $this
      */
     public function stopPropagation()

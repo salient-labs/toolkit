@@ -56,6 +56,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, Buildable
      * Default: `[ "<EntityName>" ]`
      *
      * @var mixed[]
+     *
      * @see SyncError::$Message
      * @see SyncError::$EntityName
      */
@@ -79,6 +80,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, Buildable
      * Used in messages and summaries. Default: `<Entity>->uri()`
      *
      * @var string|null
+     *
      * @see ISyncEntity::uri()
      */
     protected $EntityName;

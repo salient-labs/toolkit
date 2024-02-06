@@ -107,7 +107,6 @@ class Introspector
      * @template T of object
      *
      * @param class-string<T> $service
-     *
      * @return static<T,Provider,Entity,ProviderContext>
      */
     public static function getService(ContainerInterface $container, string $service)
@@ -127,7 +126,6 @@ class Introspector
      * @template T of object
      *
      * @param class-string<T> $class
-     *
      * @return static<T,Provider,Entity,ProviderContext>
      */
     public static function get(string $class)
@@ -200,7 +198,6 @@ class Introspector
      *
      * @param T $value
      * @param int-mask-of<NormaliserFlag::*> $flags
-     *
      * @return T
      *
      * @see IResolvable::normalise()
