@@ -521,6 +521,22 @@ final class ConsoleFormatterTest extends TestCase
                 false,
                 "\n  ",
             ],
+            [
+                <<<EOF
+                text without backticks at the end of the line
+
+                text with `backticks` at the end of the line
+                EOF,
+                $loopback,
+                <<<EOF
+                text without backticks
+                at the end of the line
+
+                text with `backticks`
+                at the end of the line
+                EOF,
+                true,
+            ],
         ];
     }
 

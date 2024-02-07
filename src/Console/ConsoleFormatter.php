@@ -92,7 +92,7 @@ final class ConsoleFormatter
             # empty line by making the subsequent newline conditional on inblock
             (?<block> (?> (?<inblock> (?: (?! (?&endofblock) ) (?: \k<indent> | (?= (?&endofline) ) ) [^\n]* (?: (?= \n (?&endofblock) ) | \n | \z ) )+ )? ) )
             # Allow code fences to terminate at the end of the subject
-            (?: (?(inblock) \n ) (?&endofblock) | \z )
+            (?: (?(inblock) \n ) (?&endofblock) | \z ) | \z
           ) ) |
           # CommonMark-compliant code spans
           (?<backtickstring> (?> `+ ) ) (?<span> (?> (?: [^`]+ | (?! (?&endofspan) ) `+ )* ) ) (?&endofspan) |
@@ -330,7 +330,11 @@ final class ConsoleFormatter
             $indent = (string) $match['indent'];
 
             if ($match['breaks'] !== null) {
-                $string .= $indent . $match['breaks'];
+                $breaks = $match['breaks'];
+                if ($unwrap && strpos($breaks, "\n") !== false) {
+                    $breaks = Convert::unwrap($breaks, "\n", false, true, true);
+                }
+                $string .= $indent . $breaks;
                 continue;
             }
 
