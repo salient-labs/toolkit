@@ -167,13 +167,18 @@ interface ApplicationInterface extends ContainerInterface
     );
 
     /**
-     * Change to the application's working directory
+     * Get the application's working directory
      *
      * The application's working directory is either:
      *
      * - the directory in which it was started, or
      * - the directory most recently set by calling
      *   {@see ApplicationInterface::setWorkingDirectory()}
+     */
+    public function getWorkingDirectory(): string;
+
+    /**
+     * Change to the application's working directory
      *
      * @return $this
      */

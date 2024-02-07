@@ -367,7 +367,15 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    public function restoreWorkingDirectory()
+    final public function getWorkingDirectory(): string
+    {
+        return $this->WorkingDirectory;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function restoreWorkingDirectory()
     {
         if (File::cwd() !== $this->WorkingDirectory) {
             File::chdir($this->WorkingDirectory);
@@ -379,7 +387,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    public function setWorkingDirectory(?string $directory = null)
+    final public function setWorkingDirectory(?string $directory = null)
     {
         $this->WorkingDirectory = $directory ?? File::cwd();
 
