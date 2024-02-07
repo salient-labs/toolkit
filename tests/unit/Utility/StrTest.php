@@ -212,6 +212,36 @@ final class StrTest extends TestCase
     }
 
     /**
+     * @dataProvider matchCaseProvider
+     */
+    public function testMatchCase(string $expected, string $string, string $match): void
+    {
+        $this->assertSame($expected, Str::matchCase($string, $match));
+    }
+
+    /**
+     * @return array<string,array{string,string,string}>
+     */
+    public static function matchCaseProvider(): array
+    {
+        return [
+            'uppercase' => ['HELLO', 'hElLo', 'WORLD'],
+            'lowercase' => ['hello', 'hElLo', 'world'],
+            'title case' => ['Hello', 'hElLo', 'World'],
+            'uppercase char' => ['Hello', 'hElLo', 'A'],
+            'lowercase char' => ['hello', 'hElLo', 'a'],
+            'uppercase + space' => ['HELLO', 'hElLo', ' WORLD '],
+            'lowercase + space' => ['hello', 'hElLo', ' world '],
+            'title case + space' => ['Hello', 'hElLo', ' World '],
+            'uppercase char + space' => ['Hello', 'hElLo', ' A '],
+            'lowercase char + space' => ['hello', 'hElLo', ' a '],
+            'empty' => ['hElLo', 'hElLo', ''],
+            'mixed case' => ['hElLo', 'hElLo', 'wORLD'],
+            'numeric' => ['hElLo', 'hElLo', '12345'],
+        ];
+    }
+
+    /**
      * @dataProvider toWordsProvider
      */
     public function testToWords(

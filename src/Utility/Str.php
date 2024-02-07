@@ -58,6 +58,40 @@ final class Str extends Utility
     }
 
     /**
+     * Match an ASCII string's case to another string
+     */
+    public static function matchCase(string $string, string $match): string
+    {
+        $match = trim($match);
+
+        if ($match === '') {
+            return $string;
+        }
+
+        $upper = strpbrk($match, Char::ALPHABETIC_UPPER);
+        $hasUpper = $upper !== false;
+        $hasLower = strpbrk($match, Char::ALPHABETIC_LOWER) !== false;
+
+        if ($hasUpper && !$hasLower && strlen($match) > 1) {
+            return self::upper($string);
+        }
+
+        if (!$hasUpper && $hasLower) {
+            return self::lower($string);
+        }
+
+        if (
+            // @phpstan-ignore-next-line
+            (!$hasUpper && !$hasLower) ||
+            $upper !== $match
+        ) {
+            return $string;
+        }
+
+        return self::upperFirst(self::lower($string));
+    }
+
+    /**
      * Apply an end-of-line sequence to a string
      */
     public static function setEol(string $string, string $eol = "\n"): string

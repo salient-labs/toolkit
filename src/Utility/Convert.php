@@ -21,19 +21,6 @@ use Stringable;
 final class Convert extends Utility
 {
     /**
-     * Convert a value to an integer, preserving null
-     *
-     * @param mixed $value
-     */
-    public static function toInt($value): ?int
-    {
-        if ($value === null) {
-            return null;
-        }
-        return (int) $value;
-    }
-
-    /**
      * Expand tabs to spaces
      */
     public static function expandTabs(
@@ -121,24 +108,6 @@ final class Convert extends Utility
         }
 
         return $value;
-    }
-
-    /**
-     * Get a phrase like "between lines 3 and 11" or "on platform 23"
-     *
-     * @param string|null $plural `"{$singular}s"` is used if `$plural` is
-     * `null`.
-     */
-    public static function pluralRange(
-        int $from,
-        int $to,
-        string $singular,
-        ?string $plural = null,
-        string $preposition = 'on'
-    ): string {
-        return $to - $from
-            ? sprintf('between %s %d and %d', $plural === null ? $singular . 's' : $plural, $from, $to)
-            : sprintf('%s %s %d', $preposition, $singular, $from);
     }
 
     /**

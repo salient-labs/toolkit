@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Inflect;
@@ -52,16 +53,16 @@ final class InflectTest extends TestCase
                 true,
             ],
             [
-                'no events have been updated',
-                'an event has been updated',
+                'No events have been updated',
+                'An event has been updated',
                 '71 events have been updated',
-                '{{#:an}} {{#:event}} {{#:has}} been updated',
+                '{{#:An}} {{#:event}} {{#:has}} been updated',
             ],
             [
-                'no event has been updated',
-                'an event has been updated',
+                'No event has been updated',
+                'An event has been updated',
                 '71 events have been updated',
-                '{{#:an}} {{#:event}} {{#:has}} been updated',
+                '{{#:An}} {{#:event}} {{#:has}} been updated',
                 true,
             ],
             [
@@ -78,23 +79,23 @@ final class InflectTest extends TestCase
                 true,
             ],
             [
-                'no chickens crossed the road',
-                'a chicken crossed the road',
+                'No chickens crossed the road',
+                'A chicken crossed the road',
                 '71 chickens crossed the road',
-                '{{#:a}} {{#:chicken}} crossed the road',
+                '{{#:A}} {{#:chicken}} crossed the road',
             ],
             [
-                'no chicken crossed the road',
-                'a chicken crossed the road',
+                'No chicken crossed the road',
+                'A chicken crossed the road',
                 '71 chickens crossed the road',
-                '{{#:a}} {{#:chicken}} crossed the road',
+                '{{#:A}} {{#:chicken}} crossed the road',
                 true,
             ],
             [
-                'no lines found in: ' . __METHOD__,
+                'No lines found in: ' . __METHOD__,
                 '1 line found in: ' . __METHOD__,
                 '71 lines found in: ' . __METHOD__,
-                '{{#:no}} {{#:line}} found in: %s',
+                '{{#:No}} {{#:line}} found in: %s',
                 false,
                 __METHOD__,
             ],
@@ -105,6 +106,12 @@ final class InflectTest extends TestCase
                 '{{#}} {{#:line}} found in: %s',
                 true,
                 __METHOD__,
+            ],
+            [
+                '0 matrixes generated',
+                '1 matrix generated',
+                '71 matrixes generated',
+                '{{#}} {{#:matrix}} generated',
             ],
             [
                 '0 matrices generated',
@@ -119,7 +126,108 @@ final class InflectTest extends TestCase
                 '{{#}} {{#:matrix:matrices}} generated',
                 true,
             ],
+            [
+                '0 matrix generated',
+                '1 matrix generated',
+                '71 matrices generated',
+                '{{#:#}} {{#:matrix:matrices}} generated',
+                true,
+            ],
         ];
+    }
+
+    /**
+     * @dataProvider formatRangeProvider
+     *
+     * @param int|float $from
+     * @param int|float $to
+     * @param mixed ...$values
+     */
+    public function testFormatRange(
+        string $expected1,
+        ?string $expected2,
+        string $format,
+        $from,
+        $to,
+        ...$values
+    ): void {
+        $this->assertSame($expected1, Inflect::formatRange($format, $from, $from, ...$values));
+        if ($from !== $to) {
+            $this->assertSame($expected2, Inflect::formatRange($format, $from, $to, ...$values));
+        }
+    }
+
+    /**
+     * @return array<array{string,string,string,int|float,int|float,...}>
+     */
+    public static function formatRangeProvider(): array
+    {
+        return [
+            [
+                'on line 71',
+                'from lines 71 to 83',
+                '{{#:on:from}} {{#:line}} {{#}}',
+                71,
+                83,
+            ],
+            [
+                'on line 71',
+                'on lines between 71 and 83',
+                'on {{#:line}} {{#::between }}{{#:#:and}}',
+                71,
+                83,
+            ],
+            [
+                'on line 71 in: ' . __METHOD__,
+                'on lines between 71 and 83 in: ' . __METHOD__,
+                'on {{#:line}} {{#::between }}{{#:#:and}} in: %s',
+                71,
+                83,
+                __METHOD__,
+            ],
+            [
+                'at value 3.14',
+                'between values 3.14 and 6.626E-34',
+                '{{#:at:between}} {{#:value}} {{#:#:and}}',
+                3.14,
+                6.626e-34,
+            ],
+            [
+                'No consecutive days are available',
+                null,
+                '{{#:No}} consecutive {{#:day}} {{#:is}} available',
+                0,
+                0,
+            ],
+            [
+                '1 consecutive day is available',
+                '1 to 7 consecutive days are available',
+                '{{#:No}} consecutive {{#:day}} {{#:is}} available',
+                1,
+                7,
+            ],
+            [
+                'No ensuites are available',
+                null,
+                '{{#:An}} {{#:ensuite}} {{#:is}} available',
+                0,
+                0,
+            ],
+            [
+                'An ensuite is available',
+                '1 to 3 ensuites are available',
+                '{{#:An}} {{#:ensuite}} {{#:is}} available',
+                1,
+                3,
+            ],
+        ];
+    }
+
+    public function testFormatRangeWithInvalidTypes(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$from and $to must be of the same type');
+        Inflect::formatRange('{{#}}', 71, 3.14);
     }
 
     /**

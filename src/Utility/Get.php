@@ -10,6 +10,7 @@ use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Catalog\CopyFlag;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Closure;
 use DateTimeInterface;
 use DateTimeZone;
 use ReflectionClass;
@@ -48,6 +49,21 @@ final class Get extends Utility
     }
 
     /**
+     * Cast a value to integer, preserving null
+     *
+     * @param mixed $value
+     * @return ($value is null ? null : int)
+     */
+    public static function integer($value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return (int) $value;
+    }
+
+    /**
      * Convert a scalar to the type it appears to be
      *
      * @param int|float|string|bool|null $value
@@ -65,13 +81,14 @@ final class Get extends Utility
         if (!is_string($value)) {
             throw new InvalidArgumentTypeException(1, 'value', 'int|float|string|bool|null', $value);
         }
-        if (Str::lower(trim($value)) === 'null') {
+        $trimmed = trim($value);
+        if (Str::lower($trimmed) === 'null') {
             return null;
         }
         if (Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
             return (int) $value;
         }
-        if ($toFloat && is_numeric($value)) {
+        if ($toFloat && is_numeric($trimmed)) {
             return (float) $value;
         }
         if ($toBool && Pcre::match(
@@ -86,17 +103,17 @@ final class Get extends Utility
     }
 
     /**
-     * Resolve a callable to its return value
+     * Resolve a closure to its return value
      *
      * @template T
      *
-     * @param (callable(mixed...): T)|T $value
-     * @param mixed ...$args Passed to `$value` if it is callable.
+     * @param (Closure(mixed...): T)|T $value
+     * @param mixed ...$args Passed to `$value` if it is a closure.
      * @return T
      */
     public static function value($value, ...$args)
     {
-        if (is_callable($value)) {
+        if ($value instanceof Closure) {
             return $value(...$args);
         }
         return $value;

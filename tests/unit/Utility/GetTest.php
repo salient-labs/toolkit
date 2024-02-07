@@ -55,6 +55,33 @@ final class GetTest extends TestCase
     }
 
     /**
+     * @dataProvider integerProvider
+     *
+     * @param mixed $value
+     */
+    public function testInteger(?int $expected, $value): void
+    {
+        $this->assertSame($expected, Get::integer($value));
+    }
+
+    /**
+     * @return array<string,array{int|null,mixed}>
+     */
+    public static function integerProvider(): array
+    {
+        return [
+            'null' => [null, null],
+            'false' => [0, false],
+            'true' => [1, true],
+            '5' => [5, 5],
+            '5.5' => [5, 5.5],
+            "'5'" => [5, '5'],
+            "'5.5'" => [5, '5.5'],
+            "'foo'" => [0, 'foo'],
+        ];
+    }
+
+    /**
      * @dataProvider apparentProvider
      *
      * @param int|float|string|bool|null $expected
@@ -99,6 +126,7 @@ final class GetTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($value) must be of type int|float|string|bool|null, stdClass given');
+        // @phpstan-ignore-next-line
         Get::apparent(new stdClass());
     }
 
