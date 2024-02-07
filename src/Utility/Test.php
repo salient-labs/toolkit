@@ -51,7 +51,7 @@ final class Test extends Utility
     public static function isFloatValue($value): bool
     {
         return is_float($value) ||
-            (is_string($value) && is_numeric($value) && !self::isIntValue($value));
+            (is_string($value) && is_numeric(trim($value)) && !self::isIntValue($value));
     }
 
     /**
