@@ -12,6 +12,194 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.37] - 2024-02-07
+
+### Added
+
+- Add `ApplicationInterface::getWorkingDirectory()`
+
+### Fixed
+
+- Fix `ConsoleFormatter` bug where trailing code spans do not unwrap
+- Fix inconsistent `float` detection in `Test::isFloatValue()` on PHP 7.4
+
+## [v0.21.36] - 2024-02-07
+
+### Added
+
+- Add `Str::matchCase()`
+- Add `Inflect::formatRange()`
+
+### Changed
+
+- Move `Convert::toValue()` to `Get::apparent()`
+- Move `Convert::toInt()` to `Get::integer()`
+- Move `Convert::linesToLists()` to `Str::mergeLists()`
+- Move `ellipsize()`, `expandTabs()` and `expandLeadingTabs()` from `Convert` to `Str`
+- In `Inflect::format()`:
+  - Allow arbitrary placement of whitespace and hyphens in words
+  - Allow words to be empty
+  - Add `#` as a recognised word
+  - Match the case of the placeholder
+
+### Removed
+
+- Remove `Convert::pluralRange()` in favour of `Inflect::formatRange()`
+  - To replace a `Convert::pluralRange()` call with the equivalent `Inflect::formatRange()` call:
+
+    ```php
+    <?php
+    // Before:
+    Convert::pluralRange($from, $to, '<noun>');
+
+    // After:
+    Inflect::formatRange('{{#:on:between}} {{#:<noun>}} {{#:#:and}}', $from, $to);
+    ```
+
+### Security
+
+- Fix issue where `Get::value()` may inadvertently call an arbitrary function by limiting callables to `Closure` instances
+
+## [v0.21.35] - 2024-02-06
+
+### Added
+
+- Add `Inflect::format()`
+- Add `File::readCsv()`
+
+### Changed
+
+- Move `Convert::intervalToSeconds()` to `Date::duration()`
+- Move `Convert::toBool()` to `Get::boolean()`
+- Move `Convert::nounToPlural()` to `Inflect::plural()`
+- Remove `Convert::plural()` in favour of `Inflect::format()`
+
+### Fixed
+
+- Fix issue where `Date::duration()` silently discards weeks in durations like `'P1W2D'` on PHP 7.4
+
+## [v0.21.34] - 2024-02-05
+
+### Added
+
+- Add `ContainerInterface::addContextualBinding()`
+- Add `ContainerInterface::hasProvider()`
+- Add `HasBindings` interface
+- Add `Get::value()`
+
+### Changed
+
+- Rename `IServiceSingleton` to `SingletonInterface` and do not extend `IService`
+- Split `IService` into `HasServices` and `HasContextualBindings`
+- Rename `ReceivesContainer` to `ContainerAwareInterface` and change return type of `setContainer()` to `void`
+- Rename `ReceivesService` to `ServiceAwareInterface` and change return type of `setService()` to `void`
+- Rename container `service` methods to `provider` equivalents
+- In `ContainerInterface` / `Container`:
+  - Return `void` from `setGlobalContainer()`
+  - Throw `ContainerUnusableArgumentsException` when arguments are given but cannot be passed to a constructor
+  - Remove `$shared` parameter from `bind()`, `singleton()`, etc., and make `$args` parameter non-nullable
+  - Make `provider()` parameter `$exceptServices` non-nullable
+  - In `providers()`, require service providers to be mapped (they can be mapped to themselves if otherwise unbound), and allow any class to be a service provider, not just `HasServices` (formerly `IService`) implementors
+- Use `ServiceLifetime` as a standard enumeration, not a bitmask
+- Rename `ContainerNotLocatedException` to `ContainerNotFoundException`
+- Rename `GlobalContainerSetEvent` to `BeforeGlobalContainerSetEvent`
+- Move `ApplicationInterface::getProgramName()` to `CliApplicationInterface`
+- Remove `App` facade
+- Rename `DI` facade to `App`
+- Replace underlying instance of `App` with global container on `BeforeGlobalContainerSetEvent`
+- Always unload facades in `ErrorHandler` and `SqliteStore`
+- Move `ContainerInterface` and `ApplicationInterface` to `Lkrms\Container`
+- Finalise Container API for v1.0
+
+### Removed
+
+- Remove unused `ContainerInterface::getContextStack()`
+- Remove unused `ServiceSingletonInterface` and `ServiceLifetime::SERVICE_SINGLETON` and their respective implementations
+- Remove unused `TService` trait
+
+### Fixed
+
+- Fix issue where `Container` binds itself to `FluentInterface`
+- Fix issue where `Container::has()` returns `false` when it has a shared instance with the given identifier
+- Fix issue where conditional bindings (e.g. `bindIf()`) are registered with containers that already have a shared instance with the given identifier
+- Fix issue where `BeforeGlobalContainerSetEvent` is not dispatched when a container is created via `Container::getGlobalContainer()`
+- Fix issue where the global container is unbound from itself after it is unloaded from a facade
+
+## [v0.21.33] - 2024-01-30
+
+### Changed
+
+- Rename `IContainer` to `ContainerInterface` and move to `Lkrms\Container\Contract`
+- Rename `IApplication` to `ApplicationInterface` and move to `Lkrms\Container\Contract`
+- Rename Cli interfaces:
+  - `ICliApplication` -> `CliApplicationInterface`
+  - `ICliCommand` -> `CliCommandInterface`
+  - `ICliCommandNode` -> `CliCommandNodeInterface`
+- Move `CliHelpStyle` from `Lkrms\Cli\Support` to `Lkrms\Cli`, removing unnecessary `Lkrms\Cli\Support` namespace
+- Finalise v1.0 Cli API
+
+### Fixed
+
+- Cli: fix issue where `IsBound` may be true for unbound options
+
+## [v0.21.32] - 2024-01-29
+
+### Added
+
+- Add `Application::setWorkingDirectory()`
+- Add `File::chdir()`
+
+### Fixed
+
+- Throw an exception when `Application::restoreWorkingDirectory()` fails
+
+## [v0.21.31] - 2024-01-29
+
+### Added
+
+- Add `Application::restoreWorkingDirectory()`
+- Add `$inSchema` parameter to `CliOption::__construct()`
+
+### Changed
+
+- **In `CliCommand::getOptionValues()`, add optional `$unexpand` parameter, and suppress value-optional options not given on the command line**
+
+### Fixed
+
+- Fix `CliCommand::applyOptionValues()` issue where value-optional options are expanded on export after they are applied
+
+## [v0.21.30] - 2024-01-28
+
+### Added
+
+- Add `IContainer::hasInstance()`
+- Add `FacadeInterface::swap()`
+- Add `HasFacade` and `UnloadsFacades` traits and adopt where possible
+- Allow `Facade::getService()` to return a service/alias list
+- Add optional `alias` option to `lk-util generate facade` command
+- Add `ResolvesServiceLists` trait and use in `Facade` to normalise service lists
+- Add `Get::fqcn()`
+
+### Changed
+
+- Rename `IFacade` to `FacadeInterface`
+- Replace forwarded constructor parameters in `FacadeInterface::load()` with an optional `$instance` parameter, and change return type to `void`
+- Rename `ReceivesFacade` to `FacadeAwareInterface`
+- Remove `FacadeAwareInterface` method `setFacade()` in favour of immutable-friendly `withFacade()` and `withoutFacade()` methods
+- Rename `Facade` method `getServiceName()` to `getService()` for consistency with other classes
+- In `Facade::unload()`, check the global container resolves the facade's service name to the underlying instance before unbinding it
+- **In `Container::has()`, only return `true` if the container has an explicit binding for `$id`**
+- Add optional `$classes` parameter to `Get::code()` for output like `<class>::class` instead of `"<class>"`
+- In `Get::code()`, convert `float` values with an exponent to lowercase
+- Decouple `ConsoleWriter` state from the `ConsoleWriter` class to take advantage of the new facade API
+
+### Fixed
+
+- Work around "Private methods cannot be final as they are never overridden by other classes" bug in PHP 8.3.2 by replacing `IsCatalog` trait with equivalent class `Catalog`
+- Fix `Container` issue where shared instances are discarded when created via `getAs()`
+- Fix `Introspector` issue where an exception is thrown if a constructor has a variadic parameter
+- Fix issue where `Facade::unloadAll()` fails with "No listener with that ID"
+
 ## [v0.21.29] - 2024-01-24
 
 ### Added
@@ -1473,6 +1661,14 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.37]: https://github.com/lkrms/php-util/compare/v0.21.36...v0.21.37
+[v0.21.36]: https://github.com/lkrms/php-util/compare/v0.21.35...v0.21.36
+[v0.21.35]: https://github.com/lkrms/php-util/compare/v0.21.34...v0.21.35
+[v0.21.34]: https://github.com/lkrms/php-util/compare/v0.21.33...v0.21.34
+[v0.21.33]: https://github.com/lkrms/php-util/compare/v0.21.32...v0.21.33
+[v0.21.32]: https://github.com/lkrms/php-util/compare/v0.21.31...v0.21.32
+[v0.21.31]: https://github.com/lkrms/php-util/compare/v0.21.30...v0.21.31
+[v0.21.30]: https://github.com/lkrms/php-util/compare/v0.21.29...v0.21.30
 [v0.21.29]: https://github.com/lkrms/php-util/compare/v0.21.28...v0.21.29
 [v0.21.28]: https://github.com/lkrms/php-util/compare/v0.21.27...v0.21.28
 [v0.21.27]: https://github.com/lkrms/php-util/compare/v0.21.26...v0.21.27
