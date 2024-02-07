@@ -3,12 +3,83 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Exception\InvalidArgumentException;
+use Closure;
 
 /**
  * Inflect English words
  */
-class Inflect extends Utility
+final class Inflect extends Utility
 {
+    /**
+     * Inflect placeholders in a string in the singular if a range covers 1
+     * value, or in the plural otherwise
+     *
+     * For example:
+     *
+     * ```php
+     * <?php
+     * $message = Inflect::formatRange('{{#:on:from}} {{#:line}} {{#}}', $from, $to);
+     * ```
+     *
+     * The word used between `$from` and `$to` (default: `to`) can be given
+     * explicitly using the following syntax:
+     *
+     * ```php
+     * <?php
+     * $message = Inflect::formatRange('{{#:at:between}} {{#:value}} {{#:#:and}}', $from, $to);
+     * ```
+     *
+     * @see Inflect::format()
+     *
+     * @param int|float $from
+     * @param int|float $to
+     * @param mixed ...$values Passed to {@see sprintf()} with the inflected
+     * string if given.
+     */
+    public static function formatRange(string $format, $from, $to, ...$values): string
+    {
+        if (is_float($from) xor is_float($to)) {
+            throw new InvalidArgumentException('$from and $to must be of the same type');
+        }
+
+        $singular = $from === $to;
+        $zero = $singular && $from === 0;
+        $one = $singular && $from === 1;
+        $count = $singular ? ($zero ? 0 : 1) : 2;
+
+        $callback = $singular
+            ? fn(): string =>
+                (string) $from
+            : fn(?string $pluralWord): string =>
+                sprintf('%s %s %s', $from, $pluralWord ?? 'to', $to);
+
+        if ($zero) {
+            $no = 'no';
+        }
+
+        $replace = [
+            '#' => $callback,
+            '' => $callback,
+        ];
+
+        if ($zero || $one) {
+            $replace += [
+                'no' => $no ?? $callback,
+                'a' => $no ?? 'a',
+                'an' => $no ?? 'an',
+            ];
+        } else {
+            $replace += [
+                'no' => $callback,
+                'a' => $callback,
+                'an' => $callback,
+            ];
+        }
+
+        return self::doFormat($format, $count, $replace, false, ...$values);
+    }
+
     /**
      * Inflect placeholders in a string in the singular if a count is 1, or in
      * the plural otherwise
@@ -20,8 +91,9 @@ class Inflect extends Utility
      * $message = Inflect::format('{{#}} {{#:entry}} {{#:was}} processed', $count);
      * ```
      *
-     * The following verbs are recognised:
+     * The following words are recognised:
      *
+     * - `#` (unconditionally replaced with a number)
      * - `no` (replaced with a number if `$count` is not `0`)
      * - `a`, `an` (replaced with a number if `$count` is plural, `no` if
      *   `$count` is `0`)
@@ -40,30 +112,31 @@ class Inflect extends Utility
      * '{{#:matrix:matrices}}';
      * ```
      *
-     * @param mixed ...$values Passed to {@see sprintf()} with the inflected string
-     * if given.
+     * @param mixed ...$values Passed to {@see sprintf()} with the inflected
+     * string if given.
      */
     public static function format(string $format, int $count, ...$values): string
     {
-        return self::doFormat($format, $count, false, ...$values);
+        return self::doFormat($format, $count, [], false, ...$values);
     }
 
     /**
      * Inflect placeholders in a string in the singular if a count is 0 or 1, or
      * in the plural otherwise
      *
-     * @param mixed ...$values Passed to {@see sprintf()} with the inflected string
-     * if given.
+     * @param mixed ...$values Passed to {@see sprintf()} with the inflected
+     * string if given.
      */
     public static function formatWithSingularZero(string $format, int $count, ...$values): string
     {
-        return self::doFormat($format, $count, true, ...$values);
+        return self::doFormat($format, $count, [], true, ...$values);
     }
 
     /**
+     * @param array<string,(Closure(string|null): string)|string> $replace
      * @param mixed ...$values
      */
-    private static function doFormat(string $format, int $count, bool $zeroIsSingular, ...$values): string
+    private static function doFormat(string $format, int $count, array $replace, bool $zeroIsSingular, ...$values): string
     {
         $zero = $count === 0;
         $singular = $count === 1 || ($zero && $zeroIsSingular);
@@ -72,8 +145,9 @@ class Inflect extends Utility
             $no = 'no';
         }
 
-        $replace = $singular
+        $replace = array_replace($singular
             ? [
+                '#' => (string) $count,
                 '' => $no ?? (string) $count,
                 'no' => $no ?? (string) $count,
                 'a' => $no ?? 'a',
@@ -86,6 +160,7 @@ class Inflect extends Utility
                 'were' => 'was',
             ]
             : [
+                '#' => (string) $count,
                 '' => (string) $count,
                 'no' => $no ?? (string) $count,
                 'a' => $no ?? (string) $count,
@@ -96,18 +171,29 @@ class Inflect extends Utility
                 'have' => 'have',
                 'was' => 'were',
                 'were' => 'were',
-            ];
+            ], $replace);
 
         $format = Pcre::replaceCallback(
-            '/\{\{#(?::(?<word>[a-z]++(?:(?:\h++|-)[a-z]++)*+)(?::(?<plural_word>[a-z]++(?:(?:\h++|-)[a-z]++)*+))?)?\}\}/i',
+            '/\{\{#(?::(?<word>[-a-z0-9_\h]*+|#)(?::(?<plural_word>[-a-z0-9_\h]*+))?)?\}\}/i',
             function (array $match) use ($singular, $replace): string {
-                $word = $match['word'] ?? '';
-                return $replace[Str::lower($word)]
+                $word = $match['word'];
+                $plural = $match['plural_word'];
+                if ($word === '') {
+                    return $singular ? '' : (string) $plural;
+                }
+                $word ??= (string) $word;
+                $word = Get::value($replace[Str::lower($word)]
                     ?? ($singular
                         ? $word
-                        : $match['plural_word'] ?? self::plural($word));
+                        : ($plural ?? self::plural($word))), $plural);
+                return $word === $match['word'] || $match['word'] === null
+                    ? $word
+                    : Str::matchCase($word, $match['word']);
             },
             $format,
+            -1,
+            $count,
+            \PREG_UNMATCHED_AS_NULL,
         );
 
         if ($values) {

@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Container\Container;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Tests\Utility\Get\ClassWithCloneMethod;
 use Lkrms\Tests\Utility\Get\ClassWithRefs;
@@ -51,6 +52,82 @@ final class GetTest extends TestCase
             "'y'" => [true, 'y'],
             "'yes'" => [true, 'yes'],
         ];
+    }
+
+    /**
+     * @dataProvider integerProvider
+     *
+     * @param mixed $value
+     */
+    public function testInteger(?int $expected, $value): void
+    {
+        $this->assertSame($expected, Get::integer($value));
+    }
+
+    /**
+     * @return array<string,array{int|null,mixed}>
+     */
+    public static function integerProvider(): array
+    {
+        return [
+            'null' => [null, null],
+            'false' => [0, false],
+            'true' => [1, true],
+            '5' => [5, 5],
+            '5.5' => [5, 5.5],
+            "'5'" => [5, '5'],
+            "'5.5'" => [5, '5.5'],
+            "'foo'" => [0, 'foo'],
+        ];
+    }
+
+    /**
+     * @dataProvider apparentProvider
+     *
+     * @param int|float|string|bool|null $expected
+     * @param int|float|string|bool|null $value
+     */
+    public function testApparent($expected, $value, bool $toFloat = true, bool $toBool = true): void
+    {
+        $this->assertSame($expected, Get::apparent($value, $toFloat, $toBool));
+    }
+
+    /**
+     * @return array<array{int|float|string|bool|null,int|float|string|bool|null,2?:bool,3?:bool}>
+     */
+    public static function apparentProvider(): array
+    {
+        return [
+            [null, null],
+            ['', ''],
+            [0, 0],
+            [1, 1],
+            [3.14, 3.14],
+            [false, false],
+            [true, true],
+            [null, 'null'],
+            [null, ' NULL '],
+            [0, '0'],
+            [0, ' 0 '],
+            [1, '1'],
+            [1, ' 1 '],
+            [3.14, '3.14'],
+            [3.14, ' 3.14 '],
+            [false, 'false'],
+            [false, ' no '],
+            [true, 'true'],
+            [true, ' YES '],
+            ['3.14', '3.14', false],
+            ['false', 'false', true, false],
+        ];
+    }
+
+    public function testApparentWithInvalidValue(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Argument #1 ($value) must be of type int|float|string|bool|null, stdClass given');
+        // @phpstan-ignore-next-line
+        Get::apparent(new stdClass());
     }
 
     /**

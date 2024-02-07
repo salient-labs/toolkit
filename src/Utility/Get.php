@@ -5,10 +5,12 @@ namespace Lkrms\Utility;
 use Lkrms\Concept\Utility;
 use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
+use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Catalog\CopyFlag;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Closure;
 use DateTimeInterface;
 use DateTimeZone;
 use ReflectionClass;
@@ -21,7 +23,7 @@ use UnitEnum;
 final class Get extends Utility
 {
     /**
-     * Convert a value to boolean, preserving null
+     * Cast a value to boolean, converting boolean strings and preserving null
      *
      * @see Test::isBoolValue()
      *
@@ -47,17 +49,71 @@ final class Get extends Utility
     }
 
     /**
-     * If a value is callable, get its return value
+     * Cast a value to integer, preserving null
+     *
+     * @param mixed $value
+     * @return ($value is null ? null : int)
+     */
+    public static function integer($value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return (int) $value;
+    }
+
+    /**
+     * Convert a scalar to the type it appears to be
+     *
+     * @param int|float|string|bool|null $value
+     * @param bool $toFloat If `true` (the default), convert float strings to
+     * `float`s.
+     * @param bool $toBool If `true` (the default), convert boolean strings to
+     * `bool`s.
+     * @return int|float|string|bool|null
+     */
+    public static function apparent($value, bool $toFloat = true, bool $toBool = true)
+    {
+        if ($value === null || is_bool($value) || is_int($value) || is_float($value)) {
+            return $value;
+        }
+        if (!is_string($value)) {
+            throw new InvalidArgumentTypeException(1, 'value', 'int|float|string|bool|null', $value);
+        }
+        $trimmed = trim($value);
+        if (Str::lower($trimmed) === 'null') {
+            return null;
+        }
+        if (Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+            return (int) $value;
+        }
+        if ($toFloat && is_numeric($trimmed)) {
+            return (float) $value;
+        }
+        if ($toBool && Pcre::match(
+            '/^' . Regex::BOOLEAN_STRING . '$/',
+            $value,
+            $match,
+            \PREG_UNMATCHED_AS_NULL
+        )) {
+            return $match['true'] !== null;
+        }
+        return $value;
+    }
+
+    /**
+     * Resolve a closure to its return value
      *
      * @template T
      *
-     * @param (callable(mixed...): T)|T $value
-     * @param mixed ...$args Passed to `$value` if it is callable.
+     * @param (Closure(mixed...): T)|T $value
+     * @param mixed ...$args Passed to `$value` if it is a closure.
      * @return T
      */
     public static function value($value, ...$args)
     {
-        if (is_callable($value)) {
+        if ($value instanceof Closure) {
             return $value(...$args);
         }
         return $value;
