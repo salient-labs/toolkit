@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Container\Container;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Tests\Utility\Get\ClassWithCloneMethod;
 use Lkrms\Tests\Utility\Get\ClassWithRefs;
@@ -51,6 +52,54 @@ final class GetTest extends TestCase
             "'y'" => [true, 'y'],
             "'yes'" => [true, 'yes'],
         ];
+    }
+
+    /**
+     * @dataProvider apparentProvider
+     *
+     * @param int|float|string|bool|null $expected
+     * @param int|float|string|bool|null $value
+     */
+    public function testApparent($expected, $value, bool $toFloat = true, bool $toBool = true): void
+    {
+        $this->assertSame($expected, Get::apparent($value, $toFloat, $toBool));
+    }
+
+    /**
+     * @return array<array{int|float|string|bool|null,int|float|string|bool|null,2?:bool,3?:bool}>
+     */
+    public static function apparentProvider(): array
+    {
+        return [
+            [null, null],
+            ['', ''],
+            [0, 0],
+            [1, 1],
+            [3.14, 3.14],
+            [false, false],
+            [true, true],
+            [null, 'null'],
+            [null, ' NULL '],
+            [0, '0'],
+            [0, ' 0 '],
+            [1, '1'],
+            [1, ' 1 '],
+            [3.14, '3.14'],
+            [3.14, ' 3.14 '],
+            [false, 'false'],
+            [false, ' no '],
+            [true, 'true'],
+            [true, ' YES '],
+            ['3.14', '3.14', false],
+            ['false', 'false', true, false],
+        ];
+    }
+
+    public function testApparentWithInvalidValue(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Argument #1 ($value) must be of type int|float|string|bool|null, stdClass given');
+        Get::apparent(new stdClass());
     }
 
     /**

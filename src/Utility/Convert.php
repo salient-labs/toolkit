@@ -7,7 +7,6 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
 use DateTimeInterface;
-use LogicException;
 use Stringable;
 
 /**
@@ -21,41 +20,6 @@ use Stringable;
  */
 final class Convert extends Utility
 {
-    /**
-     * Convert a scalar to the type it appears to be
-     *
-     * @param mixed $value
-     * @param bool $toFloat If `true` (the default), convert float strings to
-     * `float`s.
-     * @param bool $toBool If `true` (the default), convert boolean strings to
-     * `bool`s.
-     * @return int|float|string|bool|null
-     */
-    public static function toValue($value, bool $toFloat = true, bool $toBool = true)
-    {
-        if ($value === null || is_bool($value) || is_int($value) || is_float($value)) {
-            return $value;
-        }
-        if (!is_string($value)) {
-            throw new LogicException('$value must be a scalar');
-        }
-        if (Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
-            return (int) $value;
-        }
-        if ($toFloat && is_numeric($value)) {
-            return (float) $value;
-        }
-        if ($toBool && Pcre::match(
-            '/^' . Regex::BOOLEAN_STRING . '$/',
-            $value,
-            $match,
-            \PREG_UNMATCHED_AS_NULL
-        )) {
-            return $match['true'] !== null;
-        }
-        return $value;
-    }
-
     /**
      * Convert a value to an integer, preserving null
      *

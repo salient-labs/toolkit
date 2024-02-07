@@ -5,9 +5,9 @@ namespace Lkrms\Db;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Format;
+use Lkrms\Utility\Get;
 use ADOConnection;
 
 /**
@@ -96,7 +96,7 @@ final class DbConnector implements IReadable
     public function __construct(string $name, int $driver = null)
     {
         $driver = $driver === null
-            ? Convert::toValue(Env::get("{$name}_driver"), false, false)
+            ? Get::apparent(Env::get("{$name}_driver"), false, false)
             : $driver;
 
         $this->Name = $name;
