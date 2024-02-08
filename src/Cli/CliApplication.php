@@ -427,7 +427,7 @@ class CliApplication extends Application implements CliApplicationInterface
      */
     public function exit()
     {
-        exit ($this->LastExitStatus);
+        exit($this->LastExitStatus);
     }
 
     /**

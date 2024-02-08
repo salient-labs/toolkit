@@ -218,4 +218,4 @@ if (file_get_contents($file) !== $attributes) {
 
 Console::summary('Code generation completed');
 
-exit ($status);
+exit($status);

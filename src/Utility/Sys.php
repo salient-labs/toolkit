@@ -216,7 +216,7 @@ final class Sys extends Utility
                         }
                     );
                 }
-                exit (64 + $signal);
+                exit(64 + $signal);
             };
 
         pcntl_async_signals(true);

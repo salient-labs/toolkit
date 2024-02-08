@@ -187,10 +187,10 @@ final class ErrorHandler implements FacadeAwareInterface
             if ($exception instanceof ExceptionInterface) {
                 $exitStatus = $exception->getExitStatus();
                 if ($exitStatus !== null) {
-                    exit ($exitStatus);
+                    exit($exitStatus);
                 }
             }
-            exit ($this->ExitStatus);
+            exit($this->ExitStatus);
         }
     }
 }
