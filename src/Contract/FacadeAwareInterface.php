@@ -7,6 +7,8 @@ namespace Lkrms\Contract;
  *
  * @see FacadeInterface
  *
+ * @api
+ *
  * @template TFacade of FacadeInterface
  */
 interface FacadeAwareInterface

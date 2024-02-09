@@ -2,6 +2,9 @@
 
 namespace Lkrms\Contract;
 
+/**
+ * @api
+ */
 interface Unloadable
 {
     /**

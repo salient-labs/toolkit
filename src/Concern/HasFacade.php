@@ -12,6 +12,8 @@ use LogicException;
  *
  * @see FacadeAwareInterface
  *
+ * @api
+ *
  * @template TFacade of FacadeInterface
  */
 trait HasFacade

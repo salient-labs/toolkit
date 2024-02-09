@@ -12,6 +12,8 @@ use LogicException;
  * its {@see FacadeAwareInterface::withoutFacade()} method is used to service
  * the facade's {@see swap()}, {@see unload()} and {@see getInstance()} methods.
  *
+ * @api
+ *
  * @template TService of object
  */
 interface FacadeInterface
