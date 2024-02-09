@@ -48,7 +48,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
 
     public function __construct()
     {
-        $this->State = new ConsoleWriterState($this);
+        $this->State = new ConsoleWriterState();
     }
 
     /**
