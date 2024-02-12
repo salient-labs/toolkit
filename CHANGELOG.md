@@ -12,6 +12,30 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.39] - 2024-02-12
+
+### Added
+
+- Add collection methods `only()`, `onlyIn()`, `except()`, `exceptIn()`
+- Add `Curler::getPublicHeaders()`
+- Add `Get::count()`
+
+### Changed
+
+- **Move `$count` / `$from` / `$to` to the start of `Inflect::format*()` method signatures**
+- In `Inflect::format()` and `Inflect::formatWithSingularZero()`, allow `$count` to be an array, `Countable`, `Arrayable` or `Traversable`, not just an `int`
+
+## [v0.21.38] - 2024-02-12
+
+### Changed
+
+- Move `Facade` and related interfaces and traits to `Salient\Core`
+- Rename `IReadable` and `IWritable` to `Readable` and `Writable` and move to `Salient\Core\Contract`
+- Rename `Readable::getReadable()` to `getReadableProperties()`
+- Rename `Writable::getWritable()` to `getWritableProperties()`
+- Rename `TReadable` and `TWritable` to `HasReadableProperties` and `HasWritableProperties` and move to `Salient\Core\Concern`
+- Rename `TFullyReadable` and `TFullyWritable` to `ReadsProtectedProperties` and `WritesProtectedProperties` and move to `Salient\Core\Concern`
+
 ## [v0.21.37] - 2024-02-07
 
 ### Added
@@ -1661,6 +1685,8 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.39]: https://github.com/lkrms/php-util/compare/v0.21.38...v0.21.39
+[v0.21.38]: https://github.com/lkrms/php-util/compare/v0.21.37...v0.21.38
 [v0.21.37]: https://github.com/lkrms/php-util/compare/v0.21.36...v0.21.37
 [v0.21.36]: https://github.com/lkrms/php-util/compare/v0.21.35...v0.21.36
 [v0.21.35]: https://github.com/lkrms/php-util/compare/v0.21.34...v0.21.35
