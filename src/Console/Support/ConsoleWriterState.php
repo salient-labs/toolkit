@@ -14,11 +14,6 @@ use Lkrms\Console\ConsoleWriter;
 final class ConsoleWriterState
 {
     /**
-     * @readonly
-     */
-    public ConsoleWriter $Instance;
-
-    /**
      * @var array<Level::*,TargetStream[]>
      */
     public array $StdioTargetsByLevel = [];
@@ -67,9 +62,4 @@ final class ConsoleWriterState
      * @var array<string,true>
      */
     public array $Written = [];
-
-    public function __construct(ConsoleWriter $instance)
-    {
-        $this->Instance = $instance;
-    }
 }

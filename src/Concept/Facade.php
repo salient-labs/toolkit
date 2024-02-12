@@ -18,6 +18,8 @@ use LogicException;
 /**
  * Base class for facades
  *
+ * @api
+ *
  * @template TService of object
  *
  * @implements FacadeInterface<TService>

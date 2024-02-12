@@ -13,6 +13,8 @@ use LogicException;
  *
  * @see FacadeAwareInterface
  *
+ * @api
+ *
  * @template TFacade of FacadeInterface
  */
 trait UnloadsFacades
@@ -57,8 +59,10 @@ trait UnloadsFacades
 
         foreach ($this->Facades as $fqcn => $facade) {
             if (!$facade::isLoaded() || $facade::getInstance() !== $this) {
+                // @codeCoverageIgnoreStart
                 unset($this->Facades[$fqcn]);
                 continue;
+                // @codeCoverageIgnoreEnd
             }
 
             $facade::unload();
@@ -68,6 +72,7 @@ trait UnloadsFacades
             return;
         }
 
+        // @codeCoverageIgnore
         throw new LogicException(sprintf(
             'Underlying %s not unloaded: %s',
             static::class,
