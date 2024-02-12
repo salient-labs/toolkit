@@ -2,7 +2,6 @@
 
 namespace Lkrms\Console;
 
-use Lkrms\Concern\HasFacade;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
@@ -13,9 +12,6 @@ use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Lkrms\Console\Support\ConsoleWriterState;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
-use Lkrms\Contract\FacadeAwareInterface;
-use Lkrms\Contract\FacadeInterface;
-use Lkrms\Contract\Unloadable;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
 use Lkrms\Exception\InvalidEnvironmentException;
@@ -28,6 +24,10 @@ use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Str;
+use Salient\Core\Concern\HasFacade;
+use Salient\Core\Contract\FacadeAwareInterface;
+use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Contract\Unloadable;
 use Throwable;
 
 /**

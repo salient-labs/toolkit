@@ -110,10 +110,10 @@ final class DbSyncDefinition extends SyncDefinition implements Buildable
         return $closure;
     }
 
-    public static function getReadable(): array
+    public static function getReadableProperties(): array
     {
         return [
-            ...parent::getReadable(),
+            ...parent::getReadableProperties(),
             'Table',
         ];
     }

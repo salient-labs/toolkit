@@ -9,13 +9,11 @@ use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Concern\HasBuilder;
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\HasJsonSchema;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Utility\Arr;
@@ -26,6 +24,8 @@ use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 use DateTimeImmutable;
 use LogicException;
 
@@ -65,10 +65,10 @@ use LogicException;
  *
  * @implements Buildable<CliOptionBuilder>
  */
-final class CliOption implements Buildable, HasJsonSchema, IImmutable, IReadable
+final class CliOption implements Buildable, HasJsonSchema, IImmutable, Readable
 {
     use HasBuilder;
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/i';
 

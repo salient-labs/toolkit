@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
-use Lkrms\Contract\FacadeAwareInterface;
-use Lkrms\Contract\FacadeInterface;
 use Lkrms\Utility\Get;
+use Salient\Core\Contract\FacadeAwareInterface;
+use Salient\Core\Contract\FacadeInterface;
 use LogicException;
 
 /**

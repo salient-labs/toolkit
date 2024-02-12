@@ -2,7 +2,6 @@
 
 namespace Lkrms\Facade;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -12,6 +11,7 @@ use Lkrms\Sync\Support\SyncError;
 use Lkrms\Sync\Support\SyncErrorBuilder;
 use Lkrms\Sync\Support\SyncErrorCollection;
 use Lkrms\Sync\Support\SyncStore;
+use Salient\Core\Facade;
 
 /**
  * A facade for SyncStore

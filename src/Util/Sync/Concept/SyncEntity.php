@@ -8,14 +8,10 @@ use Lkrms\Concern\RequiresContainer;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TProvidable;
-use Lkrms\Concern\TReadable;
-use Lkrms\Concern\TWritable;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Sync;
@@ -44,6 +40,10 @@ use Lkrms\Utility\Get;
 use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
+use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\Writable;
 use Closure;
 use DateTimeInterface;
 use Generator;
@@ -53,14 +53,14 @@ use ReflectionClass;
 /**
  * Represents the state of an entity in an external system
  *
- * {@see SyncEntity} implements {@see IReadable} and {@see IWritable}, but
+ * {@see SyncEntity} implements {@see Readable} and {@see Writable}, but
  * `protected` properties are not accessible by default. Override
- * {@see SyncEntity::getReadable()} and/or {@see SyncEntity::getWritable()} to
- * change this.
+ * {@see SyncEntity::getReadableProperties()} and/or
+ * {@see SyncEntity::getWritableProperties()} to change this.
  *
  * The following "magic" property methods are discovered automatically and don't
- * need to be returned by {@see SyncEntity::getReadable()} or
- * {@see SyncEntity::getWritable()}:
+ * need to be returned by {@see SyncEntity::getReadableProperties()} or
+ * {@see SyncEntity::getWritableProperties()}:
  * - `protected function _get<PropertyName>()`
  * - `protected function _isset<PropertyName>()` (optional; falls back to
  *   `_get<PropertyName>()` if not declared)
@@ -76,7 +76,7 @@ use ReflectionClass;
 abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormaliser
 {
     /** @use TProvidable<ISyncProvider,ISyncContext> */
-    use TConstructible, TReadable, TWritable, TExtensible, TProvidable, HasNormaliser, RequiresContainer;
+    use TConstructible, HasReadableProperties, HasWritableProperties, TExtensible, TProvidable, HasNormaliser, RequiresContainer;
 
     /**
      * The unique identifier assigned to the entity by its provider

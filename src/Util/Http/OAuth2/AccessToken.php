@@ -2,12 +2,12 @@
 
 namespace Lkrms\Http\OAuth2;
 
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Utility\Date;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 use DateTimeImmutable;
 use DateTimeInterface;
 
@@ -20,9 +20,9 @@ use DateTimeInterface;
  * @property-read string[] $Scopes
  * @property-read array<string,mixed> $Claims
  */
-final class AccessToken implements AccessTokenInterface, IImmutable, IReadable
+final class AccessToken implements AccessTokenInterface, IImmutable, Readable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     protected string $Token;
 

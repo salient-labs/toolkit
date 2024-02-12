@@ -2,8 +2,8 @@
 
 namespace Lkrms\Facade;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Support\EventDispatcher;
+use Salient\Core\Facade;
 use Generator;
 
 /**

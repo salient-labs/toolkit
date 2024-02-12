@@ -4,12 +4,12 @@ namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
-use Lkrms\Concept\Facade;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Reflect;
+use Salient\Core\Facade;
 use ReflectionMethod;
 use ReflectionParameter;
 
@@ -22,8 +22,8 @@ final class GenerateFacade extends GenerateCommand
      * Methods that shouldn't be surfaced by the Facade
      */
     private const SKIP_METHODS = [
-        'getReadable',
-        'getWritable',
+        'getReadableProperties',
+        'getWritableProperties',
         'withFacade',
         'withoutFacade',
         // These are displaced by Facade

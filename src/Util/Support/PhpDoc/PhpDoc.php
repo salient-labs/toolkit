@@ -2,13 +2,13 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use Lkrms\Concern\TFullyReadable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 
 /**
  * Parses PSR-5 PHPDocs
@@ -25,9 +25,9 @@ use Lkrms\Utility\Str;
  * @property-read PhpDocVarTag[] $Vars
  * @property-read array<string,PhpDocTemplateTag> $Templates
  */
-final class PhpDoc implements IReadable
+final class PhpDoc implements Readable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     /**
      * The summary

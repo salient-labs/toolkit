@@ -2,8 +2,8 @@
 
 namespace Lkrms\Facade;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Support\MetricCollector;
+use Salient\Core\Facade;
 
 /**
  * A facade for MetricCollector

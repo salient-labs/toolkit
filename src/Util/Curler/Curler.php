@@ -4,12 +4,8 @@ namespace Lkrms\Curler;
 
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\Immutable;
-use Lkrms\Concern\TReadable;
-use Lkrms\Concern\TWritable;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IWritable;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
@@ -37,6 +33,10 @@ use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
+use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\Writable;
 use CurlHandle;
 use DateTimeInterface;
 use Generator;
@@ -86,10 +86,10 @@ use RecursiveIteratorIterator;
  *
  * @implements Buildable<CurlerBuilder>
  */
-final class Curler implements IReadable, IWritable, Buildable
+final class Curler implements Readable, Writable, Buildable
 {
-    use TReadable;
-    use TWritable;
+    use HasReadableProperties;
+    use HasWritableProperties;
     use HasBuilder;
     use Immutable;
 
@@ -595,7 +595,7 @@ final class Curler implements IReadable, IWritable, Buildable
      */
     public function with(string $property, $value)
     {
-        if (!in_array($property, $this->getWritable(), true)) {
+        if (!in_array($property, $this->getWritableProperties(), true)) {
             throw new LogicException(sprintf('Invalid property: %s', $property));
         }
         return $this->withPropertyValue($property, $value);
@@ -1335,7 +1335,7 @@ final class Curler implements IReadable, IWritable, Buildable
     /**
      * @internal
      */
-    public static function getReadable(): array
+    public static function getReadableProperties(): array
     {
         return [
             'BaseUrl',
@@ -1378,7 +1378,7 @@ final class Curler implements IReadable, IWritable, Buildable
     /**
      * @internal
      */
-    public static function getWritable(): array
+    public static function getWritableProperties(): array
     {
         return [
             'CacheResponse',

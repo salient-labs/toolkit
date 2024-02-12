@@ -2,9 +2,9 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Concern\TFullyReadable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Http\Contract\HttpHeadersInterface;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 
 /**
  * An HTTP request
@@ -16,9 +16,9 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
  * @property-read string|null $Body
  * @property-read string|null $Client
  */
-final class HttpServerRequest implements IReadable
+final class HttpServerRequest implements Readable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     /**
      * @var string

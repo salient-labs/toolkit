@@ -28,8 +28,8 @@ use LogicException;
  * Generates closures that perform operations on a class
  *
  * @property-read class-string<TClass> $Class The name of the class under introspection
- * @property-read bool $IsReadable True if the class implements IReadable
- * @property-read bool $IsWritable True if the class implements IWritable
+ * @property-read bool $IsReadable True if the class implements Readable
+ * @property-read bool $IsWritable True if the class implements Writable
  * @property-read bool $IsExtensible True if the class implements IExtensible
  * @property-read bool $IsProvidable True if the class implements IProvidable
  * @property-read bool $IsRelatable True if the class implements IRelatable

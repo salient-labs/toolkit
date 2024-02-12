@@ -2,7 +2,6 @@
 
 namespace Lkrms\Tests\Concept;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Container\Container;
 use Lkrms\Facade\Event;
 use Lkrms\Tests\Concept\Facade\MyBrokenFacade;
@@ -13,6 +12,7 @@ use Lkrms\Tests\Concept\Facade\MyServiceClass;
 use Lkrms\Tests\Concept\Facade\MyServiceInterface;
 use Lkrms\Tests\Concept\Facade\MyUnloadsFacadesClass;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Facade;
 use LogicException;
 
 /**

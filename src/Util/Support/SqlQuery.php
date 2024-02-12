@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concept\FluentInterface;
-use Lkrms\Concern\TReadable;
-use Lkrms\Contract\IReadable;
+use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Contract\Readable;
 use LogicException;
 
 /**
@@ -12,9 +12,9 @@ use LogicException;
  *
  * @property-read array<string,mixed> $Values Parameter name => value
  */
-final class SqlQuery extends FluentInterface implements IReadable
+final class SqlQuery extends FluentInterface implements Readable
 {
-    use TReadable;
+    use HasReadableProperties;
 
     public const AND = 'AND';
     public const OR = 'OR';
@@ -67,7 +67,7 @@ final class SqlQuery extends FluentInterface implements IReadable
     /**
      * @inheritDoc
      */
-    public static function getReadable(): array
+    public static function getReadableProperties(): array
     {
         return ['Values'];
     }

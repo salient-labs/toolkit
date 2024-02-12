@@ -2,8 +2,8 @@
 
 namespace Lkrms\Facade;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Store\CacheStore;
+use Salient\Core\Facade;
 use DateTimeInterface;
 
 /**

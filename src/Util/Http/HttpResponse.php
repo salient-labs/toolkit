@@ -2,10 +2,10 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Concern\TFullyReadable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Utility\Arr;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 
 /**
  * An HTTP response
@@ -16,9 +16,9 @@ use Lkrms\Utility\Arr;
  * @property-read HttpHeadersInterface $Headers
  * @property-read string|null $Body
  */
-final class HttpResponse implements IReadable
+final class HttpResponse implements Readable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     /**
      * @var string

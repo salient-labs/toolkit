@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
 use Lkrms\Concern\ResolvesServiceLists;
 use Lkrms\Container\Event\BeforeGlobalContainerSetEvent;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
-use Lkrms\Contract\FacadeAwareInterface;
-use Lkrms\Contract\FacadeInterface;
-use Lkrms\Contract\Unloadable;
 use Lkrms\Facade\App;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
 use Lkrms\Utility\Get;
+use Salient\Core\Contract\FacadeAwareInterface;
+use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Contract\Unloadable;
 use LogicException;
 
 /**
