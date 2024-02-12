@@ -1034,7 +1034,7 @@ final class FileTest extends TestCase
                 "$path/does_not_exist",
             ],
             [
-                implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Utility', 'File', 'dir', 'file']),
+                implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Util', 'Utility', 'File', 'dir', 'file']),
                 "$path/dir/file",
                 Package::path(),
             ],

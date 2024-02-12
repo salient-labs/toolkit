@@ -23,7 +23,7 @@ final class Debug extends Utility
      *
      * The return values below, for example, would implode to:
      * - `Lkrms\Tests\Utility\Debug\GetCallerClass->getCallerViaMethod:23`
-     * - `/path/to/tests/fixtures/Utility/Debug/GetCallerFile1.php::{closure}:29`
+     * - `/path/to/tests/fixtures/Util/Utility/Debug/GetCallerFile1.php::{closure}:29`
      *
      * ```
      * <?php
@@ -37,7 +37,7 @@ final class Debug extends Utility
      * ];
      *
      * $caller2 = [
-     *     'file' => '/path/to/tests/fixtures/Utility/Debug/GetCallerFile1.php',
+     *     'file' => '/path/to/tests/fixtures/Util/Utility/Debug/GetCallerFile1.php',
      *     '::',
      *     'function' => '{closure}',
      *     ':',

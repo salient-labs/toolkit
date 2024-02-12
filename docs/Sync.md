@@ -88,4 +88,4 @@ arguments may be accepted after mandatory parameters.
   https://lkrms.github.io/php-util/Lkrms.Sync.Contract.ISyncContext.html#_withArgs
 [namespace]:
   https://lkrms.github.io/php-util/Lkrms.Sync.Support.SyncStore.html#_namespace
-[SyncClassResolver.php]: ../tests/fixtures/Sync/SyncClassResolver.php
+[SyncClassResolver.php]: ../tests/fixtures/Util/Sync/SyncClassResolver.php

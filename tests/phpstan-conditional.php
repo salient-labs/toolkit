@@ -5,8 +5,8 @@ if (\PHP_VERSION_ID < 80000) {
         'parameters' => [
             'excludePaths' => [
                 'analyseAndScan' => [
-                    'tests/fixtures/Utility/Reflect/MyClassWithDnfTypes.php',
-                    'tests/fixtures/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
+                    'tests/fixtures/Util/Utility/Reflect/MyClassWithDnfTypes.php',
+                    'tests/fixtures/Util/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
                 ],
             ],
             'ignoreErrors' => [],
@@ -20,7 +20,7 @@ return [
             [
                 'message' => '#^Strict comparison using \=\=\= between array and false will always evaluate to false\.$#',
                 'count' => 1,
-                'path' => '../src/Support/ArrayMapper.php',
+                'path' => '../src/Util/Support/ArrayMapper.php',
             ],
         ],
     ]

@@ -16,7 +16,7 @@ final class PackageTest extends TestCase
         'version' => 'dev-main',
         'reference' => 'aee6e2bfc8c3c8daa5b04bc26e5b2ae9f51b036f',
         'type' => 'library',
-        'install_path' => __DIR__ . '/../../../',
+        'install_path' => __DIR__ . '/../../../../',
         'aliases' => [],
         'dev' => true,
     ];
@@ -27,7 +27,7 @@ final class PackageTest extends TestCase
         'version' => '0.21.34.0',
         'reference' => 'b0a4391f5feb5cf10a3ba2b018f3110da6d915d9',
         'type' => 'library',
-        'install_path' => __DIR__ . '/../../../',
+        'install_path' => __DIR__ . '/../../../../',
         'aliases' => [],
         'dev' => false,
     ];
@@ -121,7 +121,7 @@ final class PackageTest extends TestCase
 
     public function testGetRootPackagePath(): void
     {
-        $this->assertSame(realpath(dirname(__DIR__, 3)), Package::path());
+        $this->assertSame(realpath(dirname(__DIR__, 4)), Package::path());
     }
 
     public function testGetPackageVersion(): void
