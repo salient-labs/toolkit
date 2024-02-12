@@ -5,7 +5,6 @@ namespace Lkrms\Curler;
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\Immutable;
 use Lkrms\Contract\Buildable;
-use Lkrms\Contract\ICollection;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
@@ -506,9 +505,7 @@ final class Curler implements Readable, Writable, Buildable
         $this->AlwaysPaginate = $alwaysPaginate;
         $this->ObjectAsArray = $objectAsArray;
 
-        /** @var array<string,true> */
-        $index = Arr::toIndex(Arr::lower(HttpHeaderGroup::SENSITIVE));
-        $this->SensitiveHeaderIndex = $index;
+        $this->SensitiveHeaderIndex = Arr::toIndex(Arr::lower(HttpHeaderGroup::SENSITIVE));
     }
 
     /**
@@ -599,6 +596,14 @@ final class Curler implements Readable, Writable, Buildable
             throw new LogicException(sprintf('Invalid property: %s', $property));
         }
         return $this->withPropertyValue($property, $value);
+    }
+
+    /**
+     * Get request headers that are not considered sensitive
+     */
+    public function getPublicHeaders(): HttpHeadersInterface
+    {
+        return $this->Headers->exceptIn($this->SensitiveHeaderIndex);
     }
 
     /**
@@ -1058,10 +1063,7 @@ final class Curler implements Readable, Writable, Buildable
 
         $key = $this->ResponseCacheKeyCallback
             ? ($this->ResponseCacheKeyCallback)($this)
-            : $this->Headers->filter(
-                fn(string $key) => !($this->SensitiveHeaderIndex[$key] ?? false),
-                ICollection::CALLBACK_USE_KEY
-            )->getLines('%s:%s');
+            : $this->getPublicHeaders()->getLines('%s:%s');
         if ($this->Method === HttpRequestMethod::POST) {
             $key[] = $this->Body;
         }

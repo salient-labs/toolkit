@@ -387,6 +387,50 @@ class HttpHeaders implements HttpHeadersInterface, IImmutable
     /**
      * @inheritDoc
      */
+    public function only(array $keys)
+    {
+        return $this->onlyIn(Arr::toIndex($keys));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function onlyIn(array $index)
+    {
+        return $this->maybeReplaceHeaders(
+            null,
+            array_intersect_key(
+                $this->Index,
+                array_change_key_case($index, \CASE_LOWER)
+            )
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function except(array $keys)
+    {
+        return $this->exceptIn(Arr::toIndex($keys));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function exceptIn(array $index)
+    {
+        return $this->maybeReplaceHeaders(
+            null,
+            array_diff_key(
+                $this->Index,
+                array_change_key_case($index, \CASE_LOWER)
+            )
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function slice(int $offset, ?int $length = null)
     {
         return $this->maybeReplaceHeaders(

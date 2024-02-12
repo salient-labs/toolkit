@@ -223,7 +223,6 @@ final class GetTest extends TestCase
     /**
      * @dataProvider countProvider
      *
-     * @param int $expected
      * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $value
      */
     public function testCount(int $expected, $value): void

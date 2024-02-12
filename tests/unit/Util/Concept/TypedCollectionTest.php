@@ -68,6 +68,22 @@ final class TypedCollectionTest extends TestCase
         $this->assertSame([$e2, $e1, null], $arrNext);
         $this->assertSame([null, $e0, $e2], $arrPrev);
 
+        $coll = $collection->only([0, 71, 'n']);
+        $this->assertSame([0 => $e0, 'n' => $e1], $coll->all());
+        $this->assertSame($coll, $coll->only([0, 71, 'n']));
+
+        $coll = $collection->onlyIn([2 => true, 'm' => true]);
+        $this->assertSame([2 => $e2], $coll->all());
+        $this->assertSame($coll, $coll->onlyIn([2 => true, 'm' => true]));
+
+        $coll = $collection->except([0, 71, 'n']);
+        $this->assertSame([2 => $e2], $coll->all());
+        $this->assertSame($coll, $coll->except([0, 71, 'n']));
+
+        $coll = $collection->exceptIn([0 => true, 1 => true, 2 => true]);
+        $this->assertSame(['n' => $e1], $coll->all());
+        $this->assertSame($coll, $coll->exceptIn([0 => true, 1 => true, 2 => true]));
+
         $arr = $arrNext = $arrPrev = [];
         $found = $collection->find(
             function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
@@ -134,6 +150,18 @@ final class TypedCollectionTest extends TestCase
         $this->assertSame(0, $count);
 
         $coll = $collection->filter(fn() => true);
+        $this->assertSame($collection, $coll);
+
+        $coll = $collection->only([]);
+        $this->assertSame($collection, $coll);
+
+        $coll = $collection->onlyIn([]);
+        $this->assertSame($collection, $coll);
+
+        $coll = $collection->except([]);
+        $this->assertSame($collection, $coll);
+
+        $coll = $collection->exceptIn([]);
         $this->assertSame($collection, $coll);
 
         $this->assertNull($collection->find(fn() => true));

@@ -114,6 +114,38 @@ interface ICollection extends ArrayAccess, Arrayable, Countable, IteratorAggrega
     public function find(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE);
 
     /**
+     * Reduce the collection to items with keys in an array
+     *
+     * @param TKey[] $keys
+     * @return static
+     */
+    public function only(array $keys);
+
+    /**
+     * Reduce the collection to items with keys in an index
+     *
+     * @param array<TKey,true> $index
+     * @return static
+     */
+    public function onlyIn(array $index);
+
+    /**
+     * Reduce the collection to items with keys not in an array
+     *
+     * @param TKey[] $keys
+     * @return static
+     */
+    public function except(array $keys);
+
+    /**
+     * Reduce the collection to items with keys not in an index
+     *
+     * @param array<TKey,true> $index
+     * @return static
+     */
+    public function exceptIn(array $index);
+
+    /**
      * Extract a slice of the collection
      *
      * @return static

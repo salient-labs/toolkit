@@ -323,6 +323,107 @@ final class HttpHeadersTest extends TestCase
         ], $headers->getHeaders());
     }
 
+    /**
+     * @dataProvider onlyProvider
+     *
+     * @param array<string,string[]> $expected
+     * @param array<string,string[]|string> $items
+     * @param string[] $keys
+     */
+    public function testOnly(array $expected, array $items, array $keys): void
+    {
+        $headers = new HttpHeaders($items);
+        $headers1 = $headers->only($keys);
+        $headers2 = $headers1->only($keys);
+        $this->assertNotSame($headers, $headers1);
+        $this->assertInstanceOf(HttpHeaders::class, $headers1);
+        $this->assertSame($expected, $headers1->all());
+        $this->assertSame($headers1, $headers2);
+
+        $index = Arr::toIndex($keys);
+        $headers3 = $headers->onlyIn($index);
+        $headers4 = $headers1->onlyIn($index);
+        $this->assertNotSame($headers, $headers3);
+        $this->assertNotSame($headers1, $headers3);
+        $this->assertEquals($headers1, $headers3);
+        $this->assertSame($expected, $headers3->all());
+        $this->assertSame($headers1, $headers4);
+    }
+
+    /**
+     * @return array<array{array<string,string[]>,array<string,string[]|string>,string[]}>
+     */
+    public static function onlyProvider(): array
+    {
+        return [
+            [
+                [
+                    'foo' => ['bar'],
+                ],
+                [
+                    'Foo' => 'bar',
+                    'Baz' => 'qux',
+                    'Abc' => 'def',
+                ],
+                [
+                    'FOO',
+                    'XYZ',
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider exceptProvider
+     *
+     * @param array<string,string[]> $expected
+     * @param array<string,string[]|string> $items
+     * @param string[] $keys
+     */
+    public function testExcept(array $expected, array $items, array $keys): void
+    {
+        $headers = new HttpHeaders($items);
+        $headers1 = $headers->except($keys);
+        $headers2 = $headers1->except($keys);
+        $this->assertNotSame($headers, $headers1);
+        $this->assertInstanceOf(HttpHeaders::class, $headers1);
+        $this->assertSame($expected, $headers1->all());
+        $this->assertSame($headers1, $headers2);
+
+        $index = Arr::toIndex($keys);
+        $headers3 = $headers->exceptIn($index);
+        $headers4 = $headers1->exceptIn($index);
+        $this->assertNotSame($headers, $headers3);
+        $this->assertNotSame($headers1, $headers3);
+        $this->assertEquals($headers1, $headers3);
+        $this->assertSame($expected, $headers3->all());
+        $this->assertSame($headers1, $headers4);
+    }
+
+    /**
+     * @return array<array{array<string,string[]>,array<string,string[]|string>,string[]}>
+     */
+    public static function exceptProvider(): array
+    {
+        return [
+            [
+                [
+                    'baz' => ['qux'],
+                    'abc' => ['def'],
+                ],
+                [
+                    'Foo' => 'bar',
+                    'Baz' => 'qux',
+                    'Abc' => 'def',
+                ],
+                [
+                    'FOO',
+                    'XYZ',
+                ]
+            ]
+        ];
+    }
+
     public function testOffsetSet(): void
     {
         $headers = new HttpHeaders();

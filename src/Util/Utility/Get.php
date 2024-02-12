@@ -297,7 +297,6 @@ final class Get extends Utility
     ): string {
         $eol = (string) self::eol($delimiter);
         $multiline = (bool) $eol;
-        /** @var array<string,true> */
         $classes = Arr::toIndex($classes);
         return self::doCode(
             $value,
