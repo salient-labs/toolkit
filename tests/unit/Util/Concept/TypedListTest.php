@@ -69,6 +69,22 @@ final class TypedListTest extends TestCase
         $this->assertSame([$e1, $e2, null], $arrNext);
         $this->assertSame([null, $e0, $e1], $arrPrev);
 
+        $l = $list->only([2, 3, 4]);
+        $this->assertSame([$e2], $l->all());
+        $this->assertSame($l, $l->only([0, 1, 2]));
+
+        $l = $list->onlyIn([0 => true, 1 => true]);
+        $this->assertSame([$e0, $e1], $l->all());
+        $this->assertSame($l, $l->onlyIn([0 => true, 1 => true]));
+
+        $l = $list->except([2, 3, 4]);
+        $this->assertSame([$e0, $e1], $l->all());
+        $this->assertSame($l, $l->except([2, 3, 4]));
+
+        $l = $list->exceptIn([0 => true, 1 => true]);
+        $this->assertSame([$e2], $l->all());
+        $this->assertSame($l, $l->exceptIn([1 => true, 2 => true]));
+
         $arr = $arrNext = $arrPrev = [];
         $found = $list->find(
             function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
@@ -135,6 +151,18 @@ final class TypedListTest extends TestCase
         $this->assertSame(0, $count);
 
         $l = $list->filter(fn() => true);
+        $this->assertSame($list, $l);
+
+        $l = $list->only([]);
+        $this->assertSame($list, $l);
+
+        $l = $list->onlyIn([]);
+        $this->assertSame($list, $l);
+
+        $l = $list->except([]);
+        $this->assertSame($list, $l);
+
+        $l = $list->exceptIn([]);
         $this->assertSame($list, $l);
 
         $this->assertNull($list->find(fn() => true));

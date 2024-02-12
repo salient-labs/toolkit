@@ -42,6 +42,7 @@ use Lkrms\Support\Date\DateFormatterInterface;
  * @method Curler addSensitiveHeaderName(string $name) Call Curler::addSensitiveHeaderName() on a new instance
  * @method Curler setContentType(?string $mimeType) Call Curler::setContentType() on a new instance
  * @method Curler with(string&CurlerProperty::* $property, mixed $value) Apply a value to a clone of the instance
+ * @method HttpHeadersInterface getPublicHeaders() Get request headers that are not considered sensitive
  * @method Curler flushCookies() Call Curler::flushCookies() on a new instance
  * @method HttpHeadersInterface head(mixed[]|null $query = null) Call Curler::head() on a new instance
  * @method mixed get(mixed[]|null $query = null) Call Curler::get() on a new instance
@@ -88,6 +89,7 @@ final class CurlerBuilder extends Builder
             'addSensitiveHeaderName',
             'setContentType',
             'with',
+            'getPublicHeaders',
             'flushCookies',
             'head',
             'get',

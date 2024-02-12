@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Container\Container;
+use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Tests\Utility\Get\ClassWithCloneMethod;
@@ -12,8 +13,12 @@ use Lkrms\Tests\Utility\Get\UncloneableClass;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Catalog\CopyFlag;
 use Lkrms\Utility\Get;
+use ArrayIterator;
+use ArrayObject;
+use Countable;
 use DateTimeImmutable;
 use stdClass;
+use Traversable;
 
 final class GetTest extends TestCase
 {
@@ -211,6 +216,50 @@ final class GetTest extends TestCase
                 0,
                 '',
                 'foo',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider countProvider
+     *
+     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $value
+     */
+    public function testCount(int $expected, $value): void
+    {
+        $this->assertSame($expected, Get::count($value));
+    }
+
+    /**
+     * @return array<string,array{int,Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int}>
+     */
+    public static function countProvider(): array
+    {
+        return [
+            'integer' => [
+                5,
+                5,
+            ],
+            'array' => [
+                3,
+                ['a', 'b', 'c'],
+            ],
+            'Countable' => [
+                2,
+                new ArrayObject(['x', 'y']),
+            ],
+            'Arrayable' => [
+                4,
+                new class implements Arrayable {
+                    public function toArray(): array
+                    {
+                        return ['i', 'j', 'k', 'l'];
+                    }
+                },
+            ],
+            'Traversable' => [
+                2,
+                new ArrayIterator(['m', 'n']),
             ],
         ];
     }

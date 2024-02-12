@@ -771,7 +771,7 @@ final class Arr extends Utility
      *
      * @param array<array-key,TKey> $array
      * @param TValue $value
-     * @return array<TKey,TValue>
+     * @return ($value is true ? array<TKey,true> : array<TKey,TValue>)
      */
     public static function toIndex(array $array, $value = true): array
     {

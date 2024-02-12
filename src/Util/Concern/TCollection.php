@@ -120,6 +120,58 @@ trait TCollection
     }
 
     /**
+     * @param TKey[] $keys
+     * @return static A copy of the collection with items that have keys in
+     * `$keys`.
+     */
+    public function only(array $keys)
+    {
+        return $this->maybeReplaceItems(
+            array_intersect_key($this->Items, array_flip($keys)),
+            true
+        );
+    }
+
+    /**
+     * @param array<TKey,true> $index
+     * @return static A copy of the collection with items that have keys in
+     * `$index`.
+     */
+    public function onlyIn(array $index)
+    {
+        return $this->maybeReplaceItems(
+            array_intersect_key($this->Items, $index),
+            true
+        );
+    }
+
+    /**
+     * @param TKey[] $keys
+     * @return static A copy of the collection with items that have keys not in
+     * `$keys`.
+     */
+    public function except(array $keys)
+    {
+        return $this->maybeReplaceItems(
+            array_diff_key($this->Items, array_flip($keys)),
+            true
+        );
+    }
+
+    /**
+     * @param array<TKey,true> $index
+     * @return static A copy of the collection with items that have keys not in
+     * `$index`.
+     */
+    public function exceptIn(array $index)
+    {
+        return $this->maybeReplaceItems(
+            array_diff_key($this->Items, $index),
+            true
+        );
+    }
+
+    /**
      * @return static A copy of the collection with items starting from
      * `$offset`.
      */

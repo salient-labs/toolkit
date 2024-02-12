@@ -140,8 +140,8 @@ EOF;
         $count = count($providers);
 
         Console::info(Inflect::format(
-            'Sending heartbeat request to {{#}} {{#:provider}}',
             $count,
+            'Sending heartbeat request to {{#}} {{#:provider}}',
         ));
 
         $this->Store->checkHeartbeats(
@@ -151,8 +151,8 @@ EOF;
         );
 
         Console::summary(Inflect::format(
-            '{{#}} {{#:provider}} checked',
             $count,
+            '{{#}} {{#:provider}} checked',
         ));
     }
 }

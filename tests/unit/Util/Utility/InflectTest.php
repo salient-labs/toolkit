@@ -23,14 +23,14 @@ final class InflectTest extends TestCase
         ...$values
     ): void {
         if ($withSingularZero) {
-            $this->assertSame($expected0, Inflect::formatWithSingularZero($format, 0, ...$values));
-            $this->assertSame($expected1, Inflect::formatWithSingularZero($format, 1, ...$values));
-            $this->assertSame($expected71, Inflect::formatWithSingularZero($format, 71, ...$values));
+            $this->assertSame($expected0, Inflect::formatWithSingularZero(0, $format, ...$values));
+            $this->assertSame($expected1, Inflect::formatWithSingularZero(1, $format, ...$values));
+            $this->assertSame($expected71, Inflect::formatWithSingularZero(71, $format, ...$values));
             return;
         }
-        $this->assertSame($expected0, Inflect::format($format, 0, ...$values));
-        $this->assertSame($expected1, Inflect::format($format, 1, ...$values));
-        $this->assertSame($expected71, Inflect::format($format, 71, ...$values));
+        $this->assertSame($expected0, Inflect::format(0, $format, ...$values));
+        $this->assertSame($expected1, Inflect::format(1, $format, ...$values));
+        $this->assertSame($expected71, Inflect::format(71, $format, ...$values));
     }
 
     /**
@@ -146,19 +146,19 @@ final class InflectTest extends TestCase
     public function testFormatRange(
         string $expected1,
         ?string $expected2,
-        string $format,
         $from,
         $to,
+        string $format,
         ...$values
     ): void {
-        $this->assertSame($expected1, Inflect::formatRange($format, $from, $from, ...$values));
+        $this->assertSame($expected1, Inflect::formatRange($from, $from, $format, ...$values));
         if ($from !== $to) {
-            $this->assertSame($expected2, Inflect::formatRange($format, $from, $to, ...$values));
+            $this->assertSame($expected2, Inflect::formatRange($from, $to, $format, ...$values));
         }
     }
 
     /**
-     * @return array<array{string,string,string,int|float,int|float,...}>
+     * @return array<array{string,string,int|float,int|float,string,...}>
      */
     public static function formatRangeProvider(): array
     {
@@ -166,59 +166,59 @@ final class InflectTest extends TestCase
             [
                 'on line 71',
                 'from lines 71 to 83',
-                '{{#:on:from}} {{#:line}} {{#}}',
                 71,
                 83,
+                '{{#:on:from}} {{#:line}} {{#}}',
             ],
             [
                 'on line 71',
                 'on lines between 71 and 83',
-                'on {{#:line}} {{#::between }}{{#:#:and}}',
                 71,
                 83,
+                'on {{#:line}} {{#::between }}{{#:#:and}}',
             ],
             [
                 'on line 71 in: ' . __METHOD__,
                 'on lines between 71 and 83 in: ' . __METHOD__,
-                'on {{#:line}} {{#::between }}{{#:#:and}} in: %s',
                 71,
                 83,
+                'on {{#:line}} {{#::between }}{{#:#:and}} in: %s',
                 __METHOD__,
             ],
             [
                 'at value 3.14',
                 'between values 3.14 and 6.626E-34',
-                '{{#:at:between}} {{#:value}} {{#:#:and}}',
                 3.14,
                 6.626e-34,
+                '{{#:at:between}} {{#:value}} {{#:#:and}}',
             ],
             [
                 'No consecutive days are available',
                 null,
+                0,
+                0,
                 '{{#:No}} consecutive {{#:day}} {{#:is}} available',
-                0,
-                0,
             ],
             [
                 '1 consecutive day is available',
                 '1 to 7 consecutive days are available',
-                '{{#:No}} consecutive {{#:day}} {{#:is}} available',
                 1,
                 7,
+                '{{#:No}} consecutive {{#:day}} {{#:is}} available',
             ],
             [
                 'No ensuites are available',
                 null,
+                0,
+                0,
                 '{{#:An}} {{#:ensuite}} {{#:is}} available',
-                0,
-                0,
             ],
             [
                 'An ensuite is available',
                 '1 to 3 ensuites are available',
-                '{{#:An}} {{#:ensuite}} {{#:is}} available',
                 1,
                 3,
+                '{{#:An}} {{#:ensuite}} {{#:is}} available',
             ],
         ];
     }
@@ -227,7 +227,7 @@ final class InflectTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('$from and $to must be of the same type');
-        Inflect::formatRange('{{#}}', 71, 3.14);
+        Inflect::formatRange(71, 3.14, '{{#}}');
     }
 
     /**

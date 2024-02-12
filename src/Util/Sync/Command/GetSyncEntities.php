@@ -205,8 +205,8 @@ final class GetSyncEntities extends AbstractSyncCommand
         }
 
         Console::summary(Inflect::format(
-            '{{#}} {{#:entity}} retrieved',
             $count,
+            '{{#}} {{#:entity}} retrieved',
         ));
     }
 }

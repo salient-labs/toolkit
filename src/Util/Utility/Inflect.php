@@ -3,11 +3,16 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
+use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\InvalidArgumentException;
 use Closure;
+use Countable;
+use Traversable;
 
 /**
  * Inflect English words
+ *
+ * @api
  */
 final class Inflect extends Utility
 {
@@ -19,7 +24,7 @@ final class Inflect extends Utility
      *
      * ```php
      * <?php
-     * $message = Inflect::formatRange('{{#:on:from}} {{#:line}} {{#}}', $from, $to);
+     * $message = Inflect::formatRange($from, $to, '{{#:on:from}} {{#:line}} {{#}}');
      * ```
      *
      * The word used between `$from` and `$to` (default: `to`) can be given
@@ -27,7 +32,7 @@ final class Inflect extends Utility
      *
      * ```php
      * <?php
-     * $message = Inflect::formatRange('{{#:at:between}} {{#:value}} {{#:#:and}}', $from, $to);
+     * $message = Inflect::formatRange($from, $to, '{{#:at:between}} {{#:value}} {{#:#:and}}');
      * ```
      *
      * @see Inflect::format()
@@ -37,7 +42,7 @@ final class Inflect extends Utility
      * @param mixed ...$values Passed to {@see sprintf()} with the inflected
      * string if given.
      */
-    public static function formatRange(string $format, $from, $to, ...$values): string
+    public static function formatRange($from, $to, string $format, ...$values): string
     {
         if (is_float($from) xor is_float($to)) {
             throw new InvalidArgumentException('$from and $to must be of the same type');
@@ -77,7 +82,7 @@ final class Inflect extends Utility
             ];
         }
 
-        return self::doFormat($format, $count, $replace, false, ...$values);
+        return self::doFormat($count, $format, $replace, false, ...$values);
     }
 
     /**
@@ -88,7 +93,7 @@ final class Inflect extends Utility
      *
      * ```php
      * <?php
-     * $message = Inflect::format('{{#}} {{#:entry}} {{#:was}} processed', $count);
+     * $message = Inflect::format($count, '{{#}} {{#:entry}} {{#:was}} processed');
      * ```
      *
      * The following words are recognised:
@@ -112,31 +117,33 @@ final class Inflect extends Utility
      * '{{#:matrix:matrices}}';
      * ```
      *
+     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $count
      * @param mixed ...$values Passed to {@see sprintf()} with the inflected
      * string if given.
      */
-    public static function format(string $format, int $count, ...$values): string
+    public static function format($count, string $format, ...$values): string
     {
-        return self::doFormat($format, $count, [], false, ...$values);
+        return self::doFormat(Get::count($count), $format, [], false, ...$values);
     }
 
     /**
      * Inflect placeholders in a string in the singular if a count is 0 or 1, or
      * in the plural otherwise
      *
+     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $count
      * @param mixed ...$values Passed to {@see sprintf()} with the inflected
      * string if given.
      */
-    public static function formatWithSingularZero(string $format, int $count, ...$values): string
+    public static function formatWithSingularZero($count, string $format, ...$values): string
     {
-        return self::doFormat($format, $count, [], true, ...$values);
+        return self::doFormat(Get::count($count), $format, [], true, ...$values);
     }
 
     /**
      * @param array<string,(Closure(string|null): string)|string> $replace
      * @param mixed ...$values
      */
-    private static function doFormat(string $format, int $count, array $replace, bool $zeroIsSingular, ...$values): string
+    private static function doFormat(int $count, string $format, array $replace, bool $zeroIsSingular, ...$values): string
     {
         $zero = $count === 0;
         $singular = $count === 1 || ($zero && $zeroIsSingular);

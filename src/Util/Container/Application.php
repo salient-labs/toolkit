@@ -645,9 +645,9 @@ class Application extends Container implements ApplicationInterface
 
             $lines = [];
             $lines[] = Inflect::format(
-                "Metrics: **{{#}}** {{#:event}} recorded by %s in group '**%s**':",
                 $totalValue,
-                Inflect::format('**{{#}}** {{#:counter}}', $count),
+                "Metrics: **{{#}}** {{#:event}} recorded by %s in group '**%s**':",
+                Inflect::format($count, '**{{#}}** {{#:counter}}'),
                 $group,
             );
 
@@ -688,8 +688,8 @@ class Application extends Container implements ApplicationInterface
 
             $lines = [];
             $lines[] = Inflect::format(
-                "Metrics: **%.3fms** recorded by **{{#}}** {{#:timer}} in group '**%s**':",
                 $count,
+                "Metrics: **%.3fms** recorded by **{{#}}** {{#:timer}} in group '**%s**':",
                 $totalTime,
                 $group,
             );

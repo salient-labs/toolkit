@@ -924,8 +924,8 @@ final class CliOption implements Buildable, HasJsonSchema, IImmutable, Readable
             if ($invalid) {
                 // "invalid --field values 'title','name' (expected one of: first,last)"
                 $message = Inflect::format(
+                    $invalid,
                     'invalid %s {{#:value}} %s%s%s',
-                    count($invalid),
                     $this->DisplayName,
                     "'" . implode("','", $invalid) . "'",
                     $source !== null ? " in $source" : '',
