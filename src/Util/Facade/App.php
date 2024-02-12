@@ -2,10 +2,10 @@
 
 namespace Lkrms\Facade;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Container\ServiceLifetime;
+use Salient\Core\Facade;
 
 /**
  * A facade for the global service container

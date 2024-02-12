@@ -2,7 +2,6 @@
 
 namespace Lkrms\Facade;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
@@ -11,6 +10,7 @@ use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Console\ConsoleWriter;
+use Salient\Core\Facade;
 use Throwable;
 
 /**

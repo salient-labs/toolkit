@@ -9,8 +9,8 @@ use Lkrms\Container\Contract\HasServices;
 use Lkrms\Container\Contract\ServiceAwareInterface;
 use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Container\Exception\ContainerUnusableArgumentsException;
-use Lkrms\Contract\Unloadable;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Contract\Unloadable;
 
 /**
  * A service container with contextual bindings

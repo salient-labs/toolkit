@@ -2,8 +2,8 @@
 
 namespace Lkrms\Facade;
 
-use Lkrms\Concept\Facade;
 use Lkrms\Support\ErrorHandler;
+use Salient\Core\Facade;
 
 /**
  * A facade for ErrorHandler

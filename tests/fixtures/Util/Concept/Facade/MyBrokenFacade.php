@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Concept\Facade;
 
-use Lkrms\Concept\Facade;
+use Salient\Core\Facade;
 
 /**
  * A facade for MyServiceInterface

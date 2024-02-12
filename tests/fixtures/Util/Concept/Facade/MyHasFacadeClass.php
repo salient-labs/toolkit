@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Concept\Facade;
 
-use Lkrms\Concern\HasFacade;
-use Lkrms\Contract\FacadeAwareInterface;
-use Lkrms\Contract\FacadeInterface;
-use Lkrms\Contract\Unloadable;
+use Salient\Core\Concern\HasFacade;
+use Salient\Core\Contract\FacadeAwareInterface;
+use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Contract\Unloadable;
 
 /**
  * @implements FacadeAwareInterface<FacadeInterface<self>>

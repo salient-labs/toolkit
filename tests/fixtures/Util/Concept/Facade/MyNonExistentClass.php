@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Concept\Facade;
 
-use Lkrms\Contract\Unloadable;
+use Salient\Core\Contract\Unloadable;
 
 // The declaration is only to satisfy static analysis
 //
