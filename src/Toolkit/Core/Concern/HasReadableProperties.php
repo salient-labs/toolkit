@@ -1,25 +1,26 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
-use Lkrms\Contract\IReadable;
 use Lkrms\Support\Introspector as IS;
+use Salient\Core\Contract\Readable;
 
 /**
- * Implements IReadable
+ * Implements Readable
  *
  * - If `_get<Property>()` is defined, `__get` will use its return value instead
  *   of returning the value of `<Property>`.
  * - If `_isset<Property>()` is defined, `__isset` will use its return value
  *   instead of returning the value of `isset(<Property>)`.
  * - The existence of `_get<Property>()` implies that `<Property>` is readable,
- *   regardless of {@see TReadable::getReadable()}'s return value.
+ *   regardless of {@see HasReadableProperties::getReadableProperties()}'s
+ *   return value.
  *
- * @see IReadable
+ * @see Readable
  */
-trait TReadable
+trait HasReadableProperties
 {
-    public static function getReadable(): array
+    public static function getReadableProperties(): array
     {
         return [];
     }

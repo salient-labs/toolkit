@@ -2,13 +2,13 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use Lkrms\Http\Exception\HttpServerException;
 use Lkrms\Utility\Pcre;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 
 /**
  * Listens for HTTP requests on a local address
@@ -20,9 +20,9 @@ use Lkrms\Utility\Pcre;
  * @property-read int|null $ProxyPort
  * @property-read bool|null $ProxyTls
  */
-final class HttpServer implements IReadable, IImmutable
+final class HttpServer implements Readable, IImmutable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     /**
      * @var string

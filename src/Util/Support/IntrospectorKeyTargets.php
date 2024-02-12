@@ -2,10 +2,10 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Contract\IReadable;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 use Closure;
 
 /**
@@ -29,9 +29,9 @@ use Closure;
  * @template TProvider of IProvider
  * @template TContext of IProviderContext
  */
-final class IntrospectorKeyTargets implements IReadable
+final class IntrospectorKeyTargets implements Readable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     /**
      * Key => constructor parameter index

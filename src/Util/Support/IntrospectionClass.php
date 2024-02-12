@@ -5,17 +5,17 @@ namespace Lkrms\Support;
 use Lkrms\Contract\HasDateProperties;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\ITreeable;
-use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Str;
+use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\Writable;
 use Closure;
 use DateTimeInterface;
 use ReflectionClass;
@@ -43,14 +43,14 @@ class IntrospectionClass
     public $Class;
 
     /**
-     * True if the class implements IReadable
+     * True if the class implements Readable
      *
      * @var bool
      */
     public $IsReadable;
 
     /**
-     * True if the class implements IWritable
+     * True if the class implements Writable
      *
      * @var bool
      */
@@ -95,8 +95,8 @@ class IntrospectionClass
      * Properties (normalised name => declared name)
      *
      * - `public` properties
-     * - `protected` properties if the class implements {@see IReadable} or
-     *   {@see IWritable}
+     * - `protected` properties if the class implements {@see Readable} or
+     *   {@see Writable}
      *
      * @var array<string,string>
      */
@@ -112,9 +112,10 @@ class IntrospectionClass
     /**
      * Readable properties (normalised name => declared name)
      *
-     * Empty if the class does not implement {@see IReadable}, otherwise:
+     * Empty if the class does not implement {@see Readable}, otherwise:
      * - `public` properties
-     * - `protected` properties returned by {@see IReadable::getReadable()}
+     * - `protected` properties returned by
+     *   {@see Readable::getReadableProperties()}
      *
      * Does not include "magic" properties.
      *
@@ -125,9 +126,10 @@ class IntrospectionClass
     /**
      * Writable properties (normalised name => declared name)
      *
-     * Empty if the class does not implement {@see IWritable}, otherwise:
+     * Empty if the class does not implement {@see Writable}, otherwise:
      * - `public` properties
-     * - `protected` properties returned by {@see IWritable::getWritable()}
+     * - `protected` properties returned by
+     *   {@see Writable::getWritableProperties()}
      *
      * Does not include "magic" properties.
      *
@@ -357,8 +359,8 @@ class IntrospectionClass
         $className = $class->getName();
         $this->Reflector = $class;
         $this->Class = $className;
-        $this->IsReadable = $class->implementsInterface(IReadable::class);
-        $this->IsWritable = $class->implementsInterface(IWritable::class);
+        $this->IsReadable = $class->implementsInterface(Readable::class);
+        $this->IsWritable = $class->implementsInterface(Writable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
         $this->IsTreeable = $class->implementsInterface(ITreeable::class);
@@ -379,7 +381,7 @@ class IntrospectionClass
         $propertyFilter = ReflectionProperty::IS_PUBLIC;
         $methodFilter = 0;
 
-        // IReadable and IWritable provide access to protected and "magic"
+        // Readable and Writable provide access to protected and "magic"
         // property methods
         if ($this->IsReadable || $this->IsWritable) {
             $propertyFilter |= ReflectionProperty::IS_PROTECTED;
@@ -424,7 +426,7 @@ class IntrospectionClass
                 : $this->Properties;
 
         if ($this->IsReadable) {
-            $readable = $class->getMethod('getReadable')->invoke(null);
+            $readable = $class->getMethod('getReadableProperties')->invoke(null);
             $readable = array_merge(
                 ['*'] === $readable
                     ? $this->Properties
@@ -435,7 +437,7 @@ class IntrospectionClass
         }
 
         if ($this->IsWritable) {
-            $writable = $class->getMethod('getWritable')->invoke(null);
+            $writable = $class->getMethod('getWritableProperties')->invoke(null);
             $writable = array_merge(
                 ['*'] === $writable
                     ? $this->Properties

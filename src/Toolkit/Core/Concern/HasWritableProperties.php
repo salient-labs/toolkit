@@ -1,25 +1,26 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
-use Lkrms\Contract\IWritable;
 use Lkrms\Support\Introspector as IS;
+use Salient\Core\Contract\Writable;
 
 /**
- * Implements IWritable
+ * Implements Writable
  *
  * - If `_set<Property>($value)` is defined, it will be called instead of
  *   assigning `$value` to `<Property>`.
  * - If `_unset<Property>()` is defined, it will be called to unset `<Property>`
  *   instead of assigning `null`.
  * - The existence of `_set<Property>()` implies that `<Property>` is writable,
- *   regardless of {@see TWritable::getWritable()}'s return value.
+ *   regardless of {@see HasWritableProperties::getWritableProperties()}'s
+ *   return value.
  *
- * @see IWritable
+ * @see Writable
  */
-trait TWritable
+trait HasWritableProperties
 {
-    public static function getWritable(): array
+    public static function getWritableProperties(): array
     {
         return [];
     }

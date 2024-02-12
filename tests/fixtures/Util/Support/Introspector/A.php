@@ -4,21 +4,21 @@ namespace Lkrms\Tests\Support\Introspector;
 
 use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\TExtensible;
-use Lkrms\Concern\TFullyReadable;
-use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
+use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\Writable;
 
-class A implements IReadable, IWritable, IExtensible, ReturnsNormaliser
+class A implements Readable, Writable, IExtensible, ReturnsNormaliser
 {
-    use TFullyReadable, TWritable, TExtensible, HasNormaliser;
+    use ReadsProtectedProperties, HasWritableProperties, TExtensible, HasNormaliser;
 
     /**
      * @inheritDoc
      */
-    public static function getWritable(): array
+    public static function getWritableProperties(): array
     {
         return [
             'Id',

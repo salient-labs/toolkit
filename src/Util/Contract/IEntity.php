@@ -2,14 +2,17 @@
 
 namespace Lkrms\Contract;
 
+use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\Writable;
+
 /**
  * A generic entity
  */
 interface IEntity extends
     IResolvable,
     IConstructible,
-    IReadable,
-    IWritable,
+    Readable,
+    Writable,
     IExtensible,
     HasDateProperties
 {

@@ -6,14 +6,14 @@ namespace Lkrms\Tests\Template;
 use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
-use Lkrms\Concern\TReadable;
-use Lkrms\Concern\TWritable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Err;
+use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\Writable;
 use Throwable;
 use UnexpectedValueException;
 
@@ -21,9 +21,9 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 Err::register();
 
-class A implements IReadable, IWritable, ReturnsNormaliser
+class A implements Readable, Writable, ReturnsNormaliser
 {
-    use TConstructible, TReadable, TWritable, TExtensible, HasNormaliser;
+    use TConstructible, HasReadableProperties, HasWritableProperties, TExtensible, HasNormaliser;
 
     public $Id;
 

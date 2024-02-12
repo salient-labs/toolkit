@@ -2,12 +2,12 @@
 
 namespace Lkrms\Db;
 
-use Lkrms\Concern\TFullyReadable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Format;
 use Lkrms\Utility\Get;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 use ADOConnection;
 
 /**
@@ -23,9 +23,9 @@ use ADOConnection;
  * @property-read string|null $Database
  * @property-read string|null $Schema
  */
-final class DbConnector implements IReadable
+final class DbConnector implements Readable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
 
     /**
      * @var string

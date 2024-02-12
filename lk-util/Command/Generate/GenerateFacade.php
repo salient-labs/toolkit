@@ -22,8 +22,8 @@ final class GenerateFacade extends GenerateCommand
      * Methods that shouldn't be surfaced by the Facade
      */
     private const SKIP_METHODS = [
-        'getReadable',
-        'getWritable',
+        'getReadableProperties',
+        'getWritableProperties',
         'withFacade',
         'withoutFacade',
         // These are displaced by Facade

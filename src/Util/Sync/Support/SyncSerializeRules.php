@@ -4,10 +4,8 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\Immutable;
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Concept\SyncEntity;
@@ -16,6 +14,8 @@ use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Pcre;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 use Closure;
 use LogicException;
 
@@ -92,9 +92,9 @@ use LogicException;
  *
  * @implements Buildable<SyncSerializeRulesBuilder<TEntity>>
  */
-final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmutable, Buildable
+final class SyncSerializeRules implements ISyncSerializeRules, Readable, IImmutable, Buildable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
     use HasBuilder;
     use Immutable;
 

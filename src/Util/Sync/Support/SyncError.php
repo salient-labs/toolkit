@@ -3,15 +3,15 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IComparable;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Readable;
 
 /**
  * An error that occurred during a sync operation
@@ -27,9 +27,9 @@ use Lkrms\Sync\Contract\ISyncProvider;
  *
  * @implements Buildable<SyncErrorBuilder>
  */
-final class SyncError implements IReadable, IComparable, IImmutable, Buildable
+final class SyncError implements Readable, IComparable, IImmutable, Buildable
 {
-    use TFullyReadable;
+    use ReadsProtectedProperties;
     use HasBuilder;
 
     /**

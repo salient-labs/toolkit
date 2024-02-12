@@ -3,9 +3,7 @@
 namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concept\FluentInterface;
-use Lkrms\Concern\TReadable;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Contract\IReadable;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -22,6 +20,8 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Lkrms\Sync\Support\SyncIntrospector;
+use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Contract\Readable;
 use Closure;
 use LogicException;
 
@@ -47,9 +47,9 @@ use LogicException;
  *
  * @implements ISyncDefinition<TEntity,TProvider>
  */
-abstract class SyncDefinition extends FluentInterface implements ISyncDefinition, IReadable
+abstract class SyncDefinition extends FluentInterface implements ISyncDefinition, Readable
 {
-    use TReadable;
+    use HasReadableProperties;
 
     /**
      * Return a closure to perform a sync operation on the entity
@@ -550,7 +550,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         return $result;
     }
 
-    public static function getReadable(): array
+    public static function getReadableProperties(): array
     {
         return [
             'Entity',

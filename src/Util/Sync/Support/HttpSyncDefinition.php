@@ -755,10 +755,10 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
     /**
      * @inheritDoc
      */
-    public static function getReadable(): array
+    public static function getReadableProperties(): array
     {
         return [
-            ...parent::getReadable(),
+            ...parent::getReadableProperties(),
             'Path',
             'Query',
             'Headers',
