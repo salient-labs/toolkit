@@ -11,10 +11,12 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Catalog\CopyFlag;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Closure;
+use Countable;
 use DateTimeInterface;
 use DateTimeZone;
 use ReflectionClass;
 use ReflectionObject;
+use Traversable;
 use UnitEnum;
 
 /**
@@ -159,6 +161,25 @@ final class Get extends Utility
             return $value->toArray();
         }
         return iterator_to_array($value, $preserveKeys);
+    }
+
+    /**
+     * Resolve a value to an item count
+     *
+     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $value
+     */
+    public static function count($value): int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+        if (is_array($value) || $value instanceof Countable) {
+            return count($value);
+        }
+        if ($value instanceof Arrayable) {
+            return count($value->toArray());
+        }
+        return iterator_count($value);
     }
 
     /**

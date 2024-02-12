@@ -1281,10 +1281,10 @@ final class SyncStore extends SqliteStore
         Console::message(
             $level,
             Inflect::format(
-                '{{#}} sync {{#:error}}%s recorded:',
                 $this->ErrorCount,
+                '{{#}} sync {{#:error}}%s recorded:',
                 $this->WarningCount
-                    ? Inflect::format(' and {{#}} {{#:warning}}', $this->WarningCount)
+                    ? Inflect::format($this->WarningCount, ' and {{#}} {{#:warning}}')
                     : ''
             ),
             null,

@@ -531,9 +531,9 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             return $this->write(Level::INFO, "$msg1 $successText", null, MessageType::SUCCESS);
         }
 
-        $msg2 = 'with ' . Inflect::format('{{#}} {{#:error}}', $this->State->Errors);
+        $msg2 = 'with ' . Inflect::format($this->State->Errors, '{{#}} {{#:error}}');
         if ($this->State->Warnings) {
-            $msg2 .= ' and ' . Inflect::format('{{#}} {{#:warning}}', $this->State->Warnings);
+            $msg2 .= ' and ' . Inflect::format($this->State->Warnings, '{{#}} {{#:warning}}');
         }
 
         return $this->write(

@@ -126,8 +126,8 @@ final class File extends Utility
         self::throwOnFailure($result, 'Error writing to stream: %s', $uri, $stream);
         if ($result !== $expected) {
             throw new FilesystemErrorException(Inflect::format(
-                'Error writing to stream: %d of {{#}} {{#:byte}} written to %s',
                 $length,
+                'Error writing to stream: %d of {{#}} {{#:byte}} written to %s',
                 $result,
                 self::getFriendlyStreamUri($uri, $stream),
             ));
