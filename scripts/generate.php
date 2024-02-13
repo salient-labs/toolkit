@@ -58,7 +58,7 @@ use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 
-$loader = require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
