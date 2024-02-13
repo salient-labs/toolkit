@@ -17,6 +17,48 @@ use Stringable;
 final class Arr extends Utility
 {
     /**
+     * Get a value from an array, descending into nested arrays if the given key
+     * uses dot notation
+     *
+     * @param array<array-key,mixed> $array
+     * @param mixed $default
+     * @return mixed
+     * @throws OutOfRangeException if `$key` is not found in `$array` and no
+     * `$default` is given.
+     */
+    public static function get(string $key, array $array, $default = null)
+    {
+        foreach (explode('.', $key) as $part) {
+            if (is_array($array) && array_key_exists($part, $array)) {
+                $array = $array[$part];
+                continue;
+            }
+            if (func_num_args() < 3) {
+                throw new OutOfRangeException(sprintf('Array key not found: %s', $key));
+            }
+            return $default;
+        }
+        return $array;
+    }
+
+    /**
+     * Check if a value exists in an array, descending into nested arrays if the
+     * given key uses dot notation
+     *
+     * @param array<array-key,mixed> $array
+     */
+    public static function has(string $key, array $array): bool
+    {
+        foreach (explode('.', $key) as $part) {
+            if (!is_array($array) || !array_key_exists($part, $array)) {
+                return false;
+            }
+            $array = $array[$part];
+        }
+        return true;
+    }
+
+    /**
      * Get the first value in an array
      *
      * @template TValue
