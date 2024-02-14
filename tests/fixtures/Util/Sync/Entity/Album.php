@@ -4,6 +4,8 @@ namespace Lkrms\Tests\Sync\Entity;
 
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Support\DeferredEntity;
+use Lkrms\Sync\Support\DeferredRelationship;
 
 /**
  * Represents the state of an Album entity in a backend
@@ -18,7 +20,7 @@ class Album extends SyncEntity
     public $Id;
 
     /**
-     * @var User|null
+     * @var User|DeferredEntity<User>|null
      */
     public $User;
 
@@ -28,7 +30,7 @@ class Album extends SyncEntity
     public $Title;
 
     /**
-     * @var Photo[]|null
+     * @var array<Photo|DeferredEntity<Photo>>|DeferredRelationship<Photo>|null
      */
     public $Photos;
 

@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Sync\Entity;
 
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Support\DeferredEntity;
 
 /**
  * Represents the state of a Task entity in a backend
@@ -18,7 +19,7 @@ class Task extends SyncEntity
     public $Id;
 
     /**
-     * @var User|null
+     * @var User|DeferredEntity<User>|null
      */
     public $User;
 
