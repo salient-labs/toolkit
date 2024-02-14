@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Cli;
 
 use Lkrms\Cli\Contract\CliApplicationInterface;
+use Lkrms\Cli\Contract\CliCommandInterface;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
@@ -12,7 +13,9 @@ use Lkrms\Tests\Cli\Command\TestOptions;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
+use Closure;
 use LogicException;
+use stdClass;
 
 /**
  * @backupGlobals enabled
@@ -36,7 +39,6 @@ final class CliApplicationTest extends TestCase
         Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
 
         $_SERVER['SCRIPT_FILENAME'] = 'app';
-        $_ENV['required'] = 'start';
 
         $this->App = new CliApplication(self::$BasePath);
     }
@@ -74,13 +76,15 @@ final class CliApplicationTest extends TestCase
      * @param string[] $args
      * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $consoleMessages
      * @param array<string,string>|null $env
+     * @param (Closure(TestOptions): mixed)|null $callback
      */
     public function testCommand(
         ?string $output,
         int $exitStatus,
         array $args = [],
         ?array $consoleMessages = null,
-        ?array $env = null
+        ?array $env = null,
+        ?Closure $callback = null
     ): void {
         $_SERVER['argv'] = ['app.php', ...$args];
         if ($env !== null) {
@@ -96,10 +100,15 @@ final class CliApplicationTest extends TestCase
         if ($consoleMessages !== null) {
             $this->assertSameConsoleMessages($consoleMessages, $this->ConsoleTarget->getMessages());
         }
+        if ($callback) {
+            /** @var TestOptions */
+            $command = $this->App->getLastCommand();
+            $callback($command);
+        }
     }
 
     /**
-     * @return array<array{string|null,int,2?:string[],3?:array<array{Level::*,string,2?:array<string,mixed>}>|null}>
+     * @return array<array{string|null,int,2?:string[],3?:array<array{Level::*,string,2?:array<string,mixed>}>|null,4?:array<string,string>|null,5?:(Closure(TestOptions): mixed)|null}>
      */
     public static function commandProvider(): array
     {
@@ -112,11 +121,12 @@ final class CliApplicationTest extends TestCase
                     [Level::ERROR, 'Error: --start required'],
                     [Level::INFO, <<<'EOF'
 
-                        app [-fF] [--nullable] [-v <entity>] [-V <value>,...] [-r[<pattern>]] -s <date>
+app [-fF] [--nullable] [-v <entity>] [-V <value>,...] [-r[<pattern>]] -s <date>
 
-                        See 'app --help' for more information.
-                        EOF],
+See 'app --help' for more information.
+EOF],
                 ],
+                ['required' => 'start'],
             ],
             'help' => [
                 null,
@@ -124,158 +134,157 @@ final class CliApplicationTest extends TestCase
                 ['--help'],
                 [
                     [Level::INFO, <<<'EOF'
-                        NAME
-                            app - Test CliCommand options
+NAME
+    app - Test CliCommand options
 
-                        SYNOPSIS
-                            app [-fF] [--nullable] [-v entity] [-V value,...] [-r[pattern]] -s date
+SYNOPSIS
+    app [-fF] [--nullable] [-v entity] [-V value,...] [-r[pattern]] -s date
 
-                        OPTIONS
-                            -f, --flag
-                                Flag
+OPTIONS
+    -f, --flag
+        Flag
 
-                            -F, --flags
-                                Flag with multipleAllowed()
+    -F, --flags
+        Flag with multipleAllowed()
 
-                            --nullable
-                                Flag with nullable() and no short form
+    --nullable
+        Flag with nullable() and no short form
 
-                            -v, --value entity
-                                Value with defaultValue() and valueName entity
+    -v, --value entity
+        Value with defaultValue() and valueName entity
 
-                                The default entity is: foo
+        The default entity is: foo
 
-                            -V, --values value,...
-                                Value with multipleAllowed(), unique() and nullable()
+    -V, --values value,...
+        Value with multipleAllowed(), unique() and nullable()
 
-                            -s, --start date
-                                Value with conditional required(), valueType DATE and valueName date
+    -s, --start date
+        Value with conditional required(), valueType DATE and valueName date
 
-                            -r, --filter-regex[=pattern]
-                                VALUE_OPTIONAL with valueName pattern and a default value
+    -r, --filter-regex[=pattern]
+        VALUE_OPTIONAL with valueName pattern and a default value
 
-                                The default pattern is: /./
-                        EOF],
+        The default pattern is: /./
+EOF],
                 ],
+                ['required' => 'start'],
             ],
             'with required arguments' => [
                 <<<'EOF'
-                {
-                    "args": [],
-                    "allOptions": {
-                        "flag": false,
-                        "flags": 0,
-                        "nullable": null,
-                        "value": "foo",
-                        "values": [],
-                        "start": {
-                            "date": "2024-01-18 10:00:00.000000",
-                            "timezone_type": 1,
-                            "timezone": "+11:00"
-                        },
-                        "help": false,
-                        "version": false
-                    },
-                    "options": {
-                        "start": {
-                            "date": "2024-01-18 10:00:00.000000",
-                            "timezone_type": 1,
-                            "timezone": "+11:00"
-                        }
-                    },
-                    "schemaOptions": {
-                        "start": {
-                            "date": "2024-01-18 10:00:00.000000",
-                            "timezone_type": 1,
-                            "timezone": "+11:00"
-                        }
-                    },
-                    "hasArg": {
-                        "start": true
-                    },
-                    "bound": {
-                        "Flag": false,
-                        "RepeatableFlag": 0,
-                        "NullableFlag": null,
-                        "Value": "foo",
-                        "RepeatableValue": [],
-                        "RequiredValue": {
-                            "date": "2024-01-18 10:00:00.000000",
-                            "timezone_type": 1,
-                            "timezone": "+11:00"
-                        },
-                        "OptionalValue": null
-                    }
-                }
+{
+    "args": [],
+    "allOptions": {
+        "flag": false,
+        "flags": 0,
+        "nullable": null,
+        "value": "foo",
+        "values": [],
+        "start": {
+            "date": "2024-01-18 10:00:00.000000",
+            "timezone_type": 1,
+            "timezone": "+11:00"
+        },
+        "help": false,
+        "version": false
+    },
+    "options": {
+        "start": {
+            "date": "2024-01-18 10:00:00.000000",
+            "timezone_type": 1,
+            "timezone": "+11:00"
+        }
+    },
+    "schemaOptions": {
+        "start": {
+            "date": "2024-01-18 10:00:00.000000",
+            "timezone_type": 1,
+            "timezone": "+11:00"
+        }
+    },
+    "hasArg": {
+        "start": true
+    },
+    "bound": {
+        "Flag": false,
+        "RepeatableFlag": 0,
+        "NullableFlag": null,
+        "Value": "foo",
+        "RepeatableValue": [],
+        "RequiredValue": {
+            "date": "2024-01-18 10:00:00.000000",
+            "timezone_type": 1,
+            "timezone": "+11:00"
+        },
+        "OptionalValue": null
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 ['--start', '2024-01-18T10:00:00+11:00', '--print=args,allOptions,options,schemaOptions,hasArg,bound'],
                 [],
+                ['required' => 'start'],
             ],
             'export optional value (no value given)' => [
                 <<<'EOF'
-                {
-                    "options": {
-                        "filter-regex": "/./"
-                    },
-                    "schemaOptions": {
-                        "filterRegex": true
-                    }
-                }
+{
+    "options": {
+        "filter-regex": "/./"
+    },
+    "schemaOptions": {
+        "filterRegex": true
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 ['--filter-regex', '--print=options,schemaOptions'],
                 [],
-                ['required' => ''],
             ],
             'export optional value (value given)' => [
                 <<<'EOF'
-                {
-                    "options": {
-                        "filter-regex": "/\\.php/"
-                    },
-                    "schemaOptions": {
-                        "filterRegex": "/\\.php/"
-                    }
-                }
+{
+    "options": {
+        "filter-regex": "/\\.php/"
+    },
+    "schemaOptions": {
+        "filterRegex": "/\\.php/"
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 ['--filter-regex=/\.php/', '--print=options,schemaOptions'],
                 [],
-                ['required' => ''],
             ],
             'export optional value (default value given explicitly)' => [
                 <<<'EOF'
-                {
-                    "options": {
-                        "filter-regex": "/./"
-                    },
-                    "schemaOptions": {
-                        "filterRegex": "/./"
-                    }
-                }
+{
+    "options": {
+        "filter-regex": "/./"
+    },
+    "schemaOptions": {
+        "filterRegex": "/./"
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 ['--filter-regex=/./', '--print=options,schemaOptions'],
                 [],
-                ['required' => ''],
             ],
             'apply optional value (no value given)' => [
                 <<<'EOF'
-                {
-                    "options": {
-                        "filter-regex": "/./"
-                    },
-                    "schemaOptions": {
-                        "filterRegex": true
-                    }
-                }
+{
+    "options": {
+        "filter-regex": "/./"
+    },
+    "schemaOptions": {
+        "filterRegex": true
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 [
                     '--action=apply-values',
@@ -283,20 +292,19 @@ final class CliApplicationTest extends TestCase
                     '--print=options,schemaOptions',
                 ],
                 [],
-                ['required' => ''],
             ],
             'apply optional value (value given)' => [
                 <<<'EOF'
-                {
-                    "options": {
-                        "filter-regex": "/\\.php/"
-                    },
-                    "schemaOptions": {
-                        "filterRegex": "/\\.php/"
-                    }
-                }
+{
+    "options": {
+        "filter-regex": "/\\.php/"
+    },
+    "schemaOptions": {
+        "filterRegex": "/\\.php/"
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 [
                     '--action=apply-values',
@@ -304,20 +312,19 @@ final class CliApplicationTest extends TestCase
                     '--print=options,schemaOptions',
                 ],
                 [],
-                ['required' => ''],
             ],
             'apply optional value (no value given, schema)' => [
                 <<<'EOF'
-                {
-                    "options": {
-                        "filter-regex": "/./"
-                    },
-                    "schemaOptions": {
-                        "filterRegex": true
-                    }
-                }
+{
+    "options": {
+        "filter-regex": "/./"
+    },
+    "schemaOptions": {
+        "filterRegex": true
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 [
                     '--action=apply-schema-values',
@@ -325,20 +332,19 @@ final class CliApplicationTest extends TestCase
                     '--print=options,schemaOptions',
                 ],
                 [],
-                ['required' => ''],
             ],
             'apply optional value (value given, schema)' => [
                 <<<'EOF'
-                {
-                    "options": {
-                        "filter-regex": "/\\.php/"
-                    },
-                    "schemaOptions": {
-                        "filterRegex": "/\\.php/"
-                    }
-                }
+{
+    "options": {
+        "filter-regex": "/\\.php/"
+    },
+    "schemaOptions": {
+        "filterRegex": "/\\.php/"
+    }
+}
 
-                EOF,
+EOF,
                 0,
                 [
                     '--action=apply-schema-values',
@@ -346,9 +352,28 @@ final class CliApplicationTest extends TestCase
                     '--print=options,schemaOptions',
                 ],
                 [],
-                ['required' => ''],
+            ],
+            'get running command' => [
+                null,
+                0,
+                [
+                    '--action=get-running-command',
+                ],
+                [],
+                null,
+                fn(TestOptions $command) =>
+                    static::assertSame($command, $command->Result),
             ],
         ];
+    }
+
+    public function testInvalidCommand(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Does not implement ' . CliCommandInterface::class . ': ' . stdClass::class);
+        $_SERVER['argv'] = ['app.php'];
+        // @phpstan-ignore-next-line
+        $this->App->oneCommand(stdClass::class)->run();
     }
 
     public function testInvalidSubcommand(): void

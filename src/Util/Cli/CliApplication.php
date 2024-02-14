@@ -424,6 +424,8 @@ class CliApplication extends Application implements CliApplicationInterface
 
     /**
      * @inheritDoc
+     *
+     * @codeCoverageIgnore
      */
     public function exit()
     {
@@ -432,6 +434,8 @@ class CliApplication extends Application implements CliApplicationInterface
 
     /**
      * @inheritDoc
+     *
+     * @codeCoverageIgnore
      */
     public function runAndExit()
     {
