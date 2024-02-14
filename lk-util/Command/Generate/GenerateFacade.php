@@ -24,6 +24,10 @@ final class GenerateFacade extends GenerateCommand
     private const SKIP_METHODS = [
         'getReadableProperties',
         'getWritableProperties',
+        'offsetExists',
+        'offsetGet',
+        'offsetSet',
+        'offsetUnset',
         'withFacade',
         'withoutFacade',
         // These are displaced by Facade

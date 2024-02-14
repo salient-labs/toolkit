@@ -85,12 +85,16 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     public static function getFixturesPath(string $class): string
     {
         return dirname(__DIR__, 2)
-            . '/fixtures/Util/'
-            . Pcre::replace(
-                ['/^Lkrms\\\\(?|Tests\\\\(.+)Test$|(.+))/', '/\\\\/'],
-                ['$1', '/'],
-                $class
-            );
+            . '/fixtures/'
+            . Pcre::replace([
+                '/^Lkrms\\\\(?|Tests\\\\(.+)Test$|(.+))/',
+                '/^Salient\\\\(?|Tests\\\\(.+)Test$|(.+))/',
+                '/\\\\/',
+            ], [
+                'Util/$1',
+                'Toolkit/$1',
+                '/',
+            ], $class);
     }
 
     /**

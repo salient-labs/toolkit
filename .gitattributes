@@ -13,6 +13,7 @@
 /src/Util/Curler/Support/CurlerPageBuilder.php linguist-generated
 /src/Util/Facade/App.php linguist-generated
 /src/Util/Facade/Cache.php linguist-generated
+/src/Util/Facade/Config.php linguist-generated
 /src/Util/Facade/Console.php linguist-generated
 /src/Util/Facade/Err.php linguist-generated
 /src/Util/Facade/Event.php linguist-generated
