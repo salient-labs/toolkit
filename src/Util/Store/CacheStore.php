@@ -116,6 +116,8 @@ final class CacheStore extends SqliteStore
      *
      * - its age in seconds is less than or equal to `$maxAge`, or
      * - `$maxAge` is `0`
+     *
+     * @phpstan-impure
      */
     public function has(string $key, ?int $maxAge = null): bool
     {
@@ -148,6 +150,8 @@ final class CacheStore extends SqliteStore
      * - `$maxAge` is `0`
      *
      * @return mixed|null `null` if the item has expired or doesn't exist.
+     *
+     * @phpstan-impure
      */
     public function get(string $key, ?int $maxAge = null)
     {
@@ -182,6 +186,8 @@ final class CacheStore extends SqliteStore
      * @return T|null `null` if the item has expired or doesn't exist.
      * @throws AssertionFailedException if the item stored under `$key` is not
      * an instance of `$class`.
+     *
+     * @phpstan-impure
      */
     public function getInstanceOf(string $key, string $class, ?int $maxAge = null): ?object
     {
@@ -200,6 +206,8 @@ final class CacheStore extends SqliteStore
      * @return mixed[]|null `null` if the item has expired or doesn't exist.
      * @throws AssertionFailedException if the item stored under `$key` is not
      * an array.
+     *
+     * @phpstan-impure
      */
     public function getArray(string $key, ?int $maxAge = null): ?array
     {
@@ -218,6 +226,8 @@ final class CacheStore extends SqliteStore
      * @return int|null `null` if the item has expired or doesn't exist.
      * @throws AssertionFailedException if the item stored under `$key` is not
      * an integer.
+     *
+     * @phpstan-impure
      */
     public function getInt(string $key, ?int $maxAge = null): ?int
     {
@@ -236,6 +246,8 @@ final class CacheStore extends SqliteStore
      * @return string|null `null` if the item has expired or doesn't exist.
      * @throws AssertionFailedException if the item stored under `$key` is not a
      * string.
+     *
+     * @phpstan-impure
      */
     public function getString(string $key, ?int $maxAge = null): ?string
     {
@@ -319,6 +331,8 @@ final class CacheStore extends SqliteStore
      * Unix timestamp representing its expiration time, or an integer
      * representing its lifetime in seconds.
      * @return T
+     *
+     * @phpstan-impure
      */
     public function maybeGet(string $key, callable $callback, $expires = null)
     {
@@ -341,6 +355,8 @@ final class CacheStore extends SqliteStore
      *
      * - their age in seconds is less than or equal to `$maxAge`, or
      * - `$maxAge` is `0`
+     *
+     * @phpstan-impure
      */
     public function getItemCount(?int $maxAge = null): int
     {
@@ -373,6 +389,8 @@ final class CacheStore extends SqliteStore
      * - `$maxAge` is `0`
      *
      * @return string[]
+     *
+     * @phpstan-impure
      */
     public function getAllKeys(?int $maxAge = null): array
     {

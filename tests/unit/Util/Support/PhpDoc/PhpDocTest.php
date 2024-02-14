@@ -118,7 +118,7 @@ final class PhpDocTest extends TestCase
         $this->assertSame('arg2', $phpDoc->Params['arg2']->Name);
         $this->assertSame('string', $phpDoc->Params['arg2']->Type);
         $this->assertSame('Description from ClassA', $phpDoc->Params['arg2']->Description);
-        $this->assertSame(null, $phpDoc->Return->Name);
+        $this->assertNull($phpDoc->Return->Name);
         $this->assertSame('$this', $phpDoc->Return->Type);
         $this->assertSame('Description from ClassC', $phpDoc->Return->Description);
     }
@@ -283,7 +283,7 @@ final class PhpDocTest extends TestCase
             EOF;
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
-        $this->assertSame(null, $phpDoc->Description);
+        $this->assertNull($phpDoc->Description);
         $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
     }
 
@@ -313,20 +313,20 @@ final class PhpDocTest extends TestCase
             EOF;
         $phpDoc = new PhpDoc($docBlock, $classDocBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
-        $this->assertSame(null, $phpDoc->Description);
+        $this->assertNull($phpDoc->Description);
         $this->assertCount(4, $phpDoc->Templates);
         $this->assertSame('T', $phpDoc->Templates['T']->Name);
         $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
-        $this->assertSame(null, $phpDoc->Templates['T']->Description);
+        $this->assertNull($phpDoc->Templates['T']->Description);
         $this->assertSame('TArray', $phpDoc->Templates['TArray']->Name);
         $this->assertSame('array|null', $phpDoc->Templates['TArray']->Type);
-        $this->assertSame(null, $phpDoc->Templates['TArray']->Description);
+        $this->assertNull($phpDoc->Templates['TArray']->Description);
         $this->assertSame('TKey', $phpDoc->Templates['TKey']->Name);
         $this->assertSame('array-key', $phpDoc->Templates['TKey']->Type);
-        $this->assertSame(null, $phpDoc->Templates['TKey']->Description);
+        $this->assertNull($phpDoc->Templates['TKey']->Description);
         $this->assertSame('TValue', $phpDoc->Templates['TValue']->Name);
         $this->assertSame('object', $phpDoc->Templates['TValue']->Type);
-        $this->assertSame(null, $phpDoc->Templates['TValue']->Description);
+        $this->assertNull($phpDoc->Templates['TValue']->Description);
     }
 
     public function testFences(): void
@@ -377,9 +377,9 @@ final class PhpDocTest extends TestCase
             ```
             EOF, Str::eolToNative($phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
-        $this->assertSame(null, $phpDoc->Vars[0]->Name ?? null);
+        $this->assertNull($phpDoc->Vars[0]->Name ?? null);
         $this->assertSame('?callable', $phpDoc->Vars[0]->Type ?? null);
-        $this->assertSame(null, $phpDoc->Vars[0]->Description ?? null);
+        $this->assertNull($phpDoc->Vars[0]->Description ?? null);
     }
 
     public function testBlankLines(): void
@@ -438,7 +438,7 @@ final class PhpDocTest extends TestCase
             EOF;
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame('Summary @internal @template T of object', $phpDoc->Summary);
-        $this->assertSame(null, $phpDoc->Description);
+        $this->assertNull($phpDoc->Description);
         $this->assertCount(0, $phpDoc->Templates);
     }
 
@@ -453,7 +453,7 @@ final class PhpDocTest extends TestCase
         $phpDoc = new PhpDoc($docBlock);
         $this->assertCount(1, $phpDoc->Params);
         $this->assertSame('arg', $phpDoc->Params['arg']->Name ?? null);
-        $this->assertSame(null, $phpDoc->Params['arg']->Type ?? null);
+        $this->assertNull($phpDoc->Params['arg']->Type ?? null);
         $this->assertSame('Description of $arg', $phpDoc->Params['arg']->Description ?? null);
     }
 

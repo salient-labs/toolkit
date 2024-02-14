@@ -34,7 +34,6 @@ final class DeferredRelationshipTest extends SyncTestCase
         // @phpstan-ignore-next-line
         $this->assertSame($post, $user->Posts[0]);
         $this->assertSame($user, $user->Posts[0]->User);
-        // @phpstan-ignore-next-line
         $this->assertSame('sunt aut facere repellat provident occaecati excepturi optio reprehenderit', $post->Title);
 
         $this->assertHttpRequestCounts([

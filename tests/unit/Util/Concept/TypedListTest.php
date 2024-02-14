@@ -113,7 +113,7 @@ final class TypedListTest extends TestCase
         $this->assertNull($list->keyOf($e3, true));
         $this->assertSame(1, $list->keyOf($e1, true));
         $this->assertSame($e1, $list->get($e3));
-        $this->assertSame(null, $list->get($e4));
+        $this->assertNull($list->get($e4));
 
         $list->set(2, $e4);
         $this->assertSame([0 => $e0, 1 => $e1, 2 => $e4], $list->all());

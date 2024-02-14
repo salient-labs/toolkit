@@ -23,8 +23,10 @@ final class DeferredEntityTest extends SyncTestCase
         $post = $provider->with(Post::class, $context)->get(1);
         $this->assertInstanceOf(DeferredEntity::class, $post->User);
 
+        // Reading a property of a deferred entity should force it to resolve
         $userName = $post->User->Name;
         $this->assertSame('Leanne Graham', $userName);
+        // @phpstan-ignore-next-line
         $this->assertInstanceOf(User::class, $post->User);
     }
 
@@ -60,6 +62,7 @@ final class DeferredEntityTest extends SyncTestCase
 
         $userName = $post->User->Name;
         $this->assertSame('Leanne Graham', $userName);
+        // @phpstan-ignore-next-line
         $this->assertInstanceOf(User::class, $post->User);
     }
 

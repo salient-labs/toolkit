@@ -30,6 +30,7 @@
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
+        "phpstan/phpstan-phpunit": "^1",
         "phpunit/phpunit": "^9",
         "sebastian/diff": "^4 || ^5"
     },

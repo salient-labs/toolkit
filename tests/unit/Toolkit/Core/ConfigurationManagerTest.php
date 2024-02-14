@@ -82,9 +82,9 @@ final class ConfigurationManagerTest extends TestCase
     {
         $config = new ConfigurationManager(self::CONFIG);
         $this->assertSame('My App', $config->get('app.name'));
-        $this->assertSame(null, $config->get('app.description'));
+        $this->assertNull($config->get('app.description'));
         $this->assertSame('file', $config->get('app.maintenance.driver'));
-        $this->assertSame(null, $config->get('app.maintenance.does-not-exist', null));
+        $this->assertNull($config->get('app.maintenance.does-not-exist', null));
         $this->assertSame('default', $config->get('app.maintenance.does-not-exist.key', 'default'));
 
         $this->expectException(OutOfRangeException::class);
@@ -127,7 +127,7 @@ final class ConfigurationManagerTest extends TestCase
         $this->assertFalse(isset($config['app.maintenance.does-not-exist']));
         $this->assertFalse(isset($config['app.maintenance.does-not-exist.key']));
         $this->assertSame('My App', $config['app.name']);
-        $this->assertSame(null, $config['app.description']);
+        $this->assertNull($config['app.description']);
 
         $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Array key not found: app.does-not-exist');

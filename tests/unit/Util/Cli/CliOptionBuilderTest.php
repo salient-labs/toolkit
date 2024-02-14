@@ -23,13 +23,13 @@ final class CliOptionBuilderTest extends TestCase
             ->load();
         $this->assertIsFlag($option);
         $this->assertSame(CliOptionValueType::BOOLEAN, $option->ValueType);
-        $this->assertSame(false, $option->MultipleAllowed);
-        $this->assertSame(false, $option->Unique);
-        $this->assertSame(false, $option->DefaultValue);
-        $this->assertSame(false, $option->OriginalDefaultValue);
-        $this->assertSame(null, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(false, $option->IsBound);
+        $this->assertFalse($option->MultipleAllowed);
+        $this->assertFalse($option->Unique);
+        $this->assertFalse($option->DefaultValue);
+        $this->assertFalse($option->OriginalDefaultValue);
+        $this->assertNull($option->EnvVariable);
+        $this->assertNull($option->ValueCallback);
+        $this->assertFalse($option->IsBound);
         $this->assertSame([
             'description' => 'Description of flag.',
             'type' => 'boolean',
@@ -42,13 +42,13 @@ final class CliOptionBuilderTest extends TestCase
             ->load();
         $this->assertIsFlag($option);
         $this->assertSame(CliOptionValueType::INTEGER, $option->ValueType);
-        $this->assertSame(true, $option->MultipleAllowed);
-        $this->assertSame(true, $option->Unique);
+        $this->assertTrue($option->MultipleAllowed);
+        $this->assertTrue($option->Unique);
         $this->assertSame(0, $option->DefaultValue);
         $this->assertSame(0, $option->OriginalDefaultValue);
-        $this->assertSame(null, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(false, $option->IsBound);
+        $this->assertNull($option->EnvVariable);
+        $this->assertNull($option->ValueCallback);
+        $this->assertFalse($option->IsBound);
         $this->assertSame([
             'description' => 'Description of flag.',
             'type' => 'integer',
@@ -61,22 +61,22 @@ final class CliOptionBuilderTest extends TestCase
             ->getFlag()
             ->envVariable(__METHOD__)
             ->load();
-        $this->assertSame(false, $option->MultipleAllowed);
-        $this->assertSame(true, $option->DefaultValue);
-        $this->assertSame(false, $option->OriginalDefaultValue);
+        $this->assertFalse($option->MultipleAllowed);
+        $this->assertTrue($option->DefaultValue);
+        $this->assertFalse($option->OriginalDefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
+        $this->assertNull($option->ValueCallback);
 
         $option = $this
             ->getFlag()
             ->envVariable(__METHOD__)
             ->multipleAllowed()
             ->load();
-        $this->assertSame(true, $option->MultipleAllowed);
+        $this->assertTrue($option->MultipleAllowed);
         $this->assertSame(1, $option->DefaultValue);
         $this->assertSame(0, $option->OriginalDefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
+        $this->assertNull($option->ValueCallback);
 
         unset($_ENV[__METHOD__]);
 
@@ -84,11 +84,11 @@ final class CliOptionBuilderTest extends TestCase
             ->getFlag()
             ->envVariable(__METHOD__)
             ->load();
-        $this->assertSame(false, $option->MultipleAllowed);
-        $this->assertSame(false, $option->DefaultValue);
-        $this->assertSame(false, $option->OriginalDefaultValue);
+        $this->assertFalse($option->MultipleAllowed);
+        $this->assertFalse($option->DefaultValue);
+        $this->assertFalse($option->OriginalDefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
+        $this->assertNull($option->ValueCallback);
     }
 
     private function assertIsFlag(CliOption $option): void
@@ -106,22 +106,22 @@ final class CliOptionBuilderTest extends TestCase
         $this->assertSame('flag', $option->Long);
         $this->assertSame('f', $option->Short);
         $this->assertSame('f|flag', $option->Key);
-        $this->assertSame(null, $option->ValueName);
+        $this->assertNull($option->ValueName);
         $this->assertSame('--flag', $option->DisplayName);
         $this->assertSame(CliOptionType::FLAG, $option->OptionType);
-        $this->assertSame(true, $option->IsFlag);
-        $this->assertSame(false, $option->IsOneOf);
-        $this->assertSame(false, $option->IsPositional);
-        $this->assertSame(false, $option->Required);
-        $this->assertSame(false, $option->WasRequired);
-        $this->assertSame(false, $option->ValueRequired);
-        $this->assertSame(false, $option->ValueOptional);
-        $this->assertSame(null, $option->Delimiter);
+        $this->assertTrue($option->IsFlag);
+        $this->assertFalse($option->IsOneOf);
+        $this->assertFalse($option->IsPositional);
+        $this->assertFalse($option->Required);
+        $this->assertFalse($option->WasRequired);
+        $this->assertFalse($option->ValueRequired);
+        $this->assertFalse($option->ValueOptional);
+        $this->assertNull($option->Delimiter);
         $this->assertSame('Description of flag', $option->Description);
-        $this->assertSame(null, $option->AllowedValues);
-        $this->assertSame(true, $option->CaseSensitive);
-        $this->assertSame(null, $option->UnknownValuePolicy);
-        $this->assertSame(false, $option->AddAll);
+        $this->assertNull($option->AllowedValues);
+        $this->assertTrue($option->CaseSensitive);
+        $this->assertNull($option->UnknownValuePolicy);
+        $this->assertFalse($option->AddAll);
         $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
     }
 
@@ -141,18 +141,18 @@ final class CliOptionBuilderTest extends TestCase
             ->load();
         $this->assertIsValue($option);
         $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
-        $this->assertSame(true, $option->Required);
-        $this->assertSame(true, $option->WasRequired);
-        $this->assertSame(true, $option->ValueRequired);
-        $this->assertSame(false, $option->ValueOptional);
-        $this->assertSame(false, $option->MultipleAllowed);
-        $this->assertSame(false, $option->Unique);
-        $this->assertSame(null, $option->Delimiter);
+        $this->assertTrue($option->Required);
+        $this->assertTrue($option->WasRequired);
+        $this->assertTrue($option->ValueRequired);
+        $this->assertFalse($option->ValueOptional);
+        $this->assertFalse($option->MultipleAllowed);
+        $this->assertFalse($option->Unique);
+        $this->assertNull($option->Delimiter);
         $this->assertSame('today', $option->DefaultValue);
         $this->assertSame('today', $option->OriginalDefaultValue);
-        $this->assertSame(null, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(false, $option->IsBound);
+        $this->assertNull($option->EnvVariable);
+        $this->assertNull($option->ValueCallback);
+        $this->assertFalse($option->IsBound);
         $this->assertSame([
             'description' => 'Description of <NAME>.',
             'type' => 'string',
@@ -166,18 +166,18 @@ final class CliOptionBuilderTest extends TestCase
             ->load();
         $this->assertIsValue($option);
         $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
-        $this->assertSame(false, $option->Required);
-        $this->assertSame(false, $option->WasRequired);
-        $this->assertSame(true, $option->ValueRequired);
-        $this->assertSame(false, $option->ValueOptional);
-        $this->assertSame(true, $option->MultipleAllowed);
-        $this->assertSame(true, $option->Unique);
+        $this->assertFalse($option->Required);
+        $this->assertFalse($option->WasRequired);
+        $this->assertTrue($option->ValueRequired);
+        $this->assertFalse($option->ValueOptional);
+        $this->assertTrue($option->MultipleAllowed);
+        $this->assertTrue($option->Unique);
         $this->assertSame(':', $option->Delimiter);
         $this->assertSame(['today'], $option->DefaultValue);
         $this->assertSame(['today'], $option->OriginalDefaultValue);
-        $this->assertSame(null, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(false, $option->IsBound);
+        $this->assertNull($option->EnvVariable);
+        $this->assertNull($option->ValueCallback);
+        $this->assertFalse($option->IsBound);
         $this->assertSame([
             'description' => 'Description of <NAME>.',
             'type' => 'array',
@@ -195,18 +195,18 @@ final class CliOptionBuilderTest extends TestCase
             ->load();
         $this->assertIsValue($option, CliOptionType::VALUE_OPTIONAL);
         $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
-        $this->assertSame(false, $option->Required);
-        $this->assertSame(false, $option->WasRequired);
-        $this->assertSame(false, $option->ValueRequired);
-        $this->assertSame(true, $option->ValueOptional);
-        $this->assertSame(false, $option->MultipleAllowed);
-        $this->assertSame(false, $option->Unique);
-        $this->assertSame(null, $option->Delimiter);
+        $this->assertFalse($option->Required);
+        $this->assertFalse($option->WasRequired);
+        $this->assertFalse($option->ValueRequired);
+        $this->assertTrue($option->ValueOptional);
+        $this->assertFalse($option->MultipleAllowed);
+        $this->assertFalse($option->Unique);
+        $this->assertNull($option->Delimiter);
         $this->assertSame('today', $option->DefaultValue);
         $this->assertSame('today', $option->OriginalDefaultValue);
-        $this->assertSame(null, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(false, $option->IsBound);
+        $this->assertNull($option->EnvVariable);
+        $this->assertNull($option->ValueCallback);
+        $this->assertFalse($option->IsBound);
         $this->assertSame([
             'description' => 'Description of <NAME>. The name applied if true or null is: today',
             'type' => [
@@ -237,7 +237,7 @@ final class CliOptionBuilderTest extends TestCase
             $option = $option->$name($value);
         }
         $option = $option->load();
-        $this->assertSame(false, $option->IsBound, sprintf(
+        $this->assertFalse($option->IsBound, sprintf(
             'Option bound to variable without %s::bindTo(). Check comparison with func_num_args() in %s::__construct() is >= %d',
             CliOptionBuilder::class,
             CliOption::class,
@@ -251,7 +251,7 @@ final class CliOptionBuilderTest extends TestCase
             ->multipleAllowed()
             ->bindTo($bound)
             ->load();
-        $this->assertSame(true, $option->IsBound, sprintf(
+        $this->assertTrue($option->IsBound, sprintf(
             '%s::bindTo() failed. Check comparison with func_num_args() in %s::__construct() is >= %d',
             CliOptionBuilder::class,
             CliOption::class,
@@ -259,6 +259,7 @@ final class CliOptionBuilderTest extends TestCase
         ));
         $this->assertNull($bound);
         $option->applyValue([]);
+        // @phpstan-ignore-next-line
         $this->assertSame([], $bound);
     }
 
@@ -286,14 +287,14 @@ final class CliOptionBuilderTest extends TestCase
         $this->assertSame('NAME', $option->ValueName);
         $this->assertSame('--value', $option->DisplayName);
         $this->assertSame($type, $option->OptionType);
-        $this->assertSame(false, $option->IsFlag);
-        $this->assertSame(false, $option->IsOneOf);
-        $this->assertSame(false, $option->IsPositional);
+        $this->assertFalse($option->IsFlag);
+        $this->assertFalse($option->IsOneOf);
+        $this->assertFalse($option->IsPositional);
         $this->assertSame('Description of <NAME>', $option->Description);
-        $this->assertSame(null, $option->AllowedValues);
-        $this->assertSame(true, $option->CaseSensitive);
-        $this->assertSame(null, $option->UnknownValuePolicy);
-        $this->assertSame(false, $option->AddAll);
+        $this->assertNull($option->AllowedValues);
+        $this->assertTrue($option->CaseSensitive);
+        $this->assertNull($option->UnknownValuePolicy);
+        $this->assertFalse($option->AddAll);
         $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
     }
 
@@ -315,16 +316,16 @@ final class CliOptionBuilderTest extends TestCase
             ->load();
         $this->assertIsOneOf($option);
         $this->assertSame(CliOptionValueType::DATE, $option->ValueType);
-        $this->assertSame(true, $option->Required);
-        $this->assertSame(true, $option->WasRequired);
-        $this->assertSame(true, $option->MultipleAllowed);
-        $this->assertSame(true, $option->Unique);
+        $this->assertTrue($option->Required);
+        $this->assertTrue($option->WasRequired);
+        $this->assertTrue($option->MultipleAllowed);
+        $this->assertTrue($option->Unique);
         $this->assertSame(':', $option->Delimiter);
         $this->assertSame(['today'], $option->DefaultValue);
         $this->assertSame(['today'], $option->OriginalDefaultValue);
-        $this->assertSame(null, $option->EnvVariable);
-        $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(false, $option->IsBound);
+        $this->assertNull($option->EnvVariable);
+        $this->assertNull($option->ValueCallback);
+        $this->assertFalse($option->IsBound);
         $this->assertSame([
             'description' => 'Description of items.',
             'type' => 'array',
@@ -357,16 +358,16 @@ final class CliOptionBuilderTest extends TestCase
         $this->assertSame('selection', $option->ValueName);
         $this->assertSame('--one-of', $option->DisplayName);
         $this->assertSame(CliOptionType::ONE_OF, $option->OptionType);
-        $this->assertSame(false, $option->IsFlag);
-        $this->assertSame(true, $option->IsOneOf);
-        $this->assertSame(false, $option->IsPositional);
-        $this->assertSame(true, $option->ValueRequired);
-        $this->assertSame(false, $option->ValueOptional);
+        $this->assertFalse($option->IsFlag);
+        $this->assertTrue($option->IsOneOf);
+        $this->assertFalse($option->IsPositional);
+        $this->assertTrue($option->ValueRequired);
+        $this->assertFalse($option->ValueOptional);
         $this->assertSame('Description of items', $option->Description);
         $this->assertSame(['today', 'yesterday', 'tomorrow', 'ALL'], $option->AllowedValues);
-        $this->assertSame(true, $option->CaseSensitive);
+        $this->assertTrue($option->CaseSensitive);
         $this->assertSame(CliOptionValueUnknownPolicy::ACCEPT, $option->UnknownValuePolicy);
-        $this->assertSame(true, $option->AddAll);
+        $this->assertTrue($option->AddAll);
         $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
     }
 

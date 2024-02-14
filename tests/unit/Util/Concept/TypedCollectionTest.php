@@ -112,7 +112,7 @@ final class TypedCollectionTest extends TestCase
         $this->assertNull($collection->keyOf($e3, true));
         $this->assertSame(2, $collection->keyOf($e2, true));
         $this->assertSame($e2, $collection->get($e3));
-        $this->assertSame(null, $collection->get($e4));
+        $this->assertNull($collection->get($e4));
 
         $collection->set('n', $e4);
         $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e4], $collection->all());
