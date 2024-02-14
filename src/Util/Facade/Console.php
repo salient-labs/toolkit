@@ -10,7 +10,7 @@ use Lkrms\Console\Contract\ConsoleTargetInterface as Target;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Console\ConsoleWriter;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 use Throwable;
 
 /**
@@ -58,11 +58,11 @@ use Throwable;
  *
  * @api
  *
- * @extends Facade<ConsoleWriter>
+ * @extends AbstractFacade<ConsoleWriter>
  *
  * @generated
  */
-final class Console extends Facade
+final class Console extends AbstractFacade
 {
     /**
      * @inheritDoc

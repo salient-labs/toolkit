@@ -6,12 +6,12 @@ use Lkrms\Container\Application;
 use Lkrms\Container\ApplicationInterface;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
-use Lkrms\Facade\Config;
 use Lkrms\Tests\TestCase;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Facade\Config;
 
 final class ApplicationTest extends TestCase
 {

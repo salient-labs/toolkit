@@ -5,7 +5,7 @@ namespace Lkrms\Facade;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Container\ServiceLifetime;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 
 /**
  * A facade for the global service container
@@ -34,11 +34,11 @@ use Salient\Core\Facade;
  *
  * @api
  *
- * @extends Facade<ContainerInterface>
+ * @extends AbstractFacade<ContainerInterface>
  *
  * @generated
  */
-final class App extends Facade
+final class App extends AbstractFacade
 {
     /**
      * @inheritDoc

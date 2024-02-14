@@ -24,7 +24,7 @@ use LogicException;
  *
  * @implements FacadeInterface<TService>
  */
-abstract class Facade implements FacadeInterface
+abstract class AbstractFacade implements FacadeInterface
 {
     /** @use ResolvesServiceLists<TService> */
     use ResolvesServiceLists;

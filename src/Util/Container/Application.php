@@ -9,7 +9,6 @@ use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Cache;
-use Lkrms\Facade\Config;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
 use Lkrms\Facade\Profile;
@@ -27,6 +26,7 @@ use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Sys;
 use Lkrms\Utility\Test;
+use Salient\Core\Facade\Config;
 use LogicException;
 use Phar;
 

@@ -12,7 +12,7 @@ use Lkrms\Tests\Concept\Facade\MyServiceClass;
 use Lkrms\Tests\Concept\Facade\MyServiceInterface;
 use Lkrms\Tests\Concept\Facade\MyUnloadsFacadesClass;
 use Lkrms\Tests\TestCase;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 use LogicException;
 
 /**
@@ -141,7 +141,7 @@ final class FacadeTest extends TestCase
 
     protected function tearDown(): void
     {
-        Facade::unloadAll();
+        AbstractFacade::unloadAll();
         if (Container::hasGlobalContainer()) {
             Container::getGlobalContainer()->unload();
         }

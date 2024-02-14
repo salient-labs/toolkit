@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Facade;
+namespace Salient\Core\Facade;
 
+use Salient\Core\AbstractFacade;
 use Salient\Core\ConfigurationManager;
-use Salient\Core\Facade;
 
 /**
  * A facade for ConfigurationManager
@@ -16,11 +16,11 @@ use Salient\Core\Facade;
  *
  * @api
  *
- * @extends Facade<ConfigurationManager>
+ * @extends AbstractFacade<ConfigurationManager>
  *
  * @generated
  */
-final class Config extends Facade
+final class Config extends AbstractFacade
 {
     /**
      * @inheritDoc

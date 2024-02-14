@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Concept\Facade;
 
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 
 /**
  * A facade for MyServiceClass
@@ -13,11 +13,11 @@ use Salient\Core\Facade;
  * @method static static[] getUnloaded() Call MyServiceClass::getUnloaded() on the facade's underlying instance, loading it if necessary
  * @method static void reset() Call MyServiceClass::reset() on the facade's underlying instance, loading it if necessary
  *
- * @extends Facade<MyServiceClass>
+ * @extends AbstractFacade<MyServiceClass>
  *
  * @generated
  */
-final class MyClassFacade extends Facade
+final class MyClassFacade extends AbstractFacade
 {
     /**
      * @inheritDoc

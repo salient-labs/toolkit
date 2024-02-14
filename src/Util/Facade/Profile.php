@@ -3,7 +3,7 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Support\MetricCollector;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 
 /**
  * A facade for MetricCollector
@@ -20,11 +20,11 @@ use Salient\Core\Facade;
  *
  * @api
  *
- * @extends Facade<MetricCollector>
+ * @extends AbstractFacade<MetricCollector>
  *
  * @generated
  */
-final class Profile extends Facade
+final class Profile extends AbstractFacade
 {
     /**
      * @inheritDoc
