@@ -3,7 +3,7 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Support\EventDispatcher;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 use Generator;
 
 /**
@@ -14,11 +14,11 @@ use Generator;
  * @method static int listen(callable(object): mixed $listener, string[]|string|null $event = null) Register an event listener with the dispatcher (see {@see EventDispatcher::listen()})
  * @method static void removeListener(int $id) Remove an event listener from the dispatcher (see {@see EventDispatcher::removeListener()})
  *
- * @extends Facade<EventDispatcher>
+ * @extends AbstractFacade<EventDispatcher>
  *
  * @generated
  */
-final class Event extends Facade
+final class Event extends AbstractFacade
 {
     /**
      * @inheritDoc

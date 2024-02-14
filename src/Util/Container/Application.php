@@ -26,6 +26,7 @@ use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Sys;
 use Lkrms\Utility\Test;
+use Salient\Core\Facade\Config;
 use LogicException;
 use Phar;
 
@@ -264,15 +265,21 @@ class Application extends Container implements ApplicationInterface
      * is used after removing common PHP file extensions and recognised version
      * numbers.
      *
+     * If `$configDir` exists and is a directory, it is passed to
+     * {@see Config::loadDirectory()} after `.env` files are loaded and applied.
+     *
      * @api
      *
      * @param int-mask-of<EnvFlag::*> $envFlags Values to apply from the
      * environment to the running script.
+     * @param string|null $configDir A path relative to the application's base
+     * path, or `null` if configuration files should not be loaded.
      */
     public function __construct(
         ?string $basePath = null,
         ?string $appName = null,
-        int $envFlags = EnvFlag::ALL
+        int $envFlags = EnvFlag::ALL,
+        ?string $configDir = 'config'
     ) {
         if (!isset(self::$StartTime)) {
             self::$StartTime = hrtime(true);
@@ -344,6 +351,15 @@ class Application extends Container implements ApplicationInterface
         $adodb = Package::packagePath('adodb/adodb-php');
         if ($adodb !== null) {
             Err::silencePath($adodb);
+        }
+
+        if ((string) $configDir !== '') {
+            if (!File::isAbsolute($configDir)) {
+                $configDir = "{$this->BasePath}/{$configDir}";
+            }
+            if (is_dir($configDir)) {
+                Config::loadDirectory($configDir);
+            }
         }
     }
 

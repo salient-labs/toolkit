@@ -9,7 +9,7 @@ use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Reflect;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 use ReflectionMethod;
 use ReflectionParameter;
 
@@ -24,6 +24,10 @@ final class GenerateFacade extends GenerateCommand
     private const SKIP_METHODS = [
         'getReadableProperties',
         'getWritableProperties',
+        'offsetExists',
+        'offsetGet',
+        'offsetSet',
+        'offsetUnset',
         'withFacade',
         'withoutFacade',
         // These are displaced by Facade
@@ -123,7 +127,7 @@ final class GenerateFacade extends GenerateCommand
         $classPrefix = $this->getClassPrefix();
 
         $service = $this->getFqcnAlias($classFqcn, $classClass);
-        $extends = $this->getFqcnAlias(Facade::class);
+        $extends = $this->getFqcnAlias(AbstractFacade::class);
 
         $alias = [];
         foreach ($aliasFqcn as $aliasFqcn) {

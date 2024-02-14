@@ -3,7 +3,7 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Support\ErrorHandler;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 
 /**
  * A facade for ErrorHandler
@@ -14,11 +14,11 @@ use Salient\Core\Facade;
  * @method static ErrorHandler silencePath(string $path, int $levels = 26624) Silence errors in a file or directory
  * @method static ErrorHandler silencePattern(string $pattern, int $levels = 26624) Silence errors in paths that match a regular expression
  *
- * @extends Facade<ErrorHandler>
+ * @extends AbstractFacade<ErrorHandler>
  *
  * @generated
  */
-final class Err extends Facade
+final class Err extends AbstractFacade
 {
     /**
      * @inheritDoc

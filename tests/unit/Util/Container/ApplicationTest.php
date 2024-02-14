@@ -7,12 +7,21 @@ use Lkrms\Container\ApplicationInterface;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Tests\TestCase;
+use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Facade\Config;
 
 final class ApplicationTest extends TestCase
 {
+    private const CONFIG = [
+        'app' => [
+            'name' => 'My App',
+        ],
+        'services' => [],
+    ];
+
     public function testBindContainer(): void
     {
         $app = new Application();
@@ -27,6 +36,34 @@ final class ApplicationTest extends TestCase
         $this->assertSame($app, $app->get(Container::class));
         $this->assertSame($app, $app->get(Application::class));
         $app->unload();
+    }
+
+    public function testConfigDir(): void
+    {
+        $this->assertSame([], Config::all());
+
+        $basePath = File::createTempDir();
+        $configDir = $basePath . '/config';
+        File::createDir($configDir);
+        foreach (self::CONFIG as $name => $data) {
+            $data = sprintf(
+                '<?php return %s;' . \PHP_EOL,
+                var_export($data, true),
+            );
+            File::putContents("{$configDir}/{$name}.php", $data);
+        }
+
+        $app = new Application($basePath, null, EnvFlag::ALL, null);
+        $this->assertSame([], Config::all());
+
+        $app = new Application($basePath);
+        $this->assertSame(self::CONFIG, Config::all());
+
+        $app->unload();
+        Config::unload();
+
+        File::pruneDir($basePath);
+        rmdir($basePath);
     }
 
     /**

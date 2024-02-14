@@ -11,7 +11,7 @@ use Lkrms\Sync\Support\SyncError;
 use Lkrms\Sync\Support\SyncErrorBuilder;
 use Lkrms\Sync\Support\SyncErrorCollection;
 use Lkrms\Sync\Support\SyncStore;
-use Salient\Core\Facade;
+use Salient\Core\AbstractFacade;
 
 /**
  * A facade for SyncStore
@@ -45,11 +45,11 @@ use Salient\Core\Facade;
  * @method static ISyncEntity[] resolveDeferredEntities(?int $fromCheckpoint = null, class-string<ISyncEntity>|null $entityType = null, ?int $providerId = null) Resolve deferred sync entities from their respective providers and/or the local entity store
  * @method static array<ISyncEntity[]> resolveDeferredRelationships(?int $fromCheckpoint = null, class-string<ISyncEntity>|null $entityType = null, class-string<ISyncEntity>|null $forEntityType = null, ?int $providerId = null) Resolve deferred relationships from their respective providers and/or the local entity store
  *
- * @extends Facade<SyncStore>
+ * @extends AbstractFacade<SyncStore>
  *
  * @generated
  */
-final class Sync extends Facade
+final class Sync extends AbstractFacade
 {
     /**
      * @inheritDoc

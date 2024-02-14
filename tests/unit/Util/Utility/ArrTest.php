@@ -28,6 +28,144 @@ final class ArrTest extends TestCase
     ];
 
     /**
+     * @dataProvider getProvider
+     *
+     * @param mixed $expected
+     * @param array<array-key,mixed> $array
+     * @param mixed $default
+     */
+    public function testGet($expected, string $key, array $array, $default = null): void
+    {
+        $this->assertSame($expected, Arr::get($key, $array, $default));
+    }
+
+    /**
+     * @return array<array{mixed,string,array<array-key,mixed>,mixed}>
+     */
+    public static function getProvider(): array
+    {
+        return [
+            [
+                'bar',
+                'foo',
+                ['foo' => 'bar'],
+            ],
+            [
+                'qux',
+                'foo.bar',
+                ['foo' => ['bar' => 'qux']],
+            ],
+            [
+                null,
+                'baz',
+                ['foo' => ['bar' => 'qux']],
+                null,
+            ],
+            [
+                null,
+                'foo.baz',
+                ['foo' => ['bar' => 'qux']],
+                null,
+            ],
+            [
+                null,
+                'foo.bar.baz',
+                ['foo' => ['bar' => 'qux']],
+                null,
+            ],
+            [
+                null,
+                'foo.bar.baz.qux',
+                ['foo' => ['bar' => 'qux']],
+                null,
+            ],
+            [
+                'default',
+                'baz',
+                ['foo' => ['bar' => 'qux']],
+                'default',
+            ],
+            [
+                null,
+                'foo.bar',
+                ['foo' => ['bar' => null]],
+                'default',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider hasProvider
+     *
+     * @param array<array-key,mixed> $array
+     */
+    public function testHas(bool $expected, string $key, array $array): void
+    {
+        $this->assertSame($expected, Arr::has($key, $array));
+    }
+
+    /**
+     * @return array<array{bool,string,array<array-key,mixed>}>
+     */
+    public static function hasProvider(): array
+    {
+        return [
+            [
+                true,
+                'foo',
+                ['foo' => 'bar'],
+            ],
+            [
+                true,
+                'foo.bar',
+                ['foo' => ['bar' => 'baz']],
+            ],
+            [
+                false,
+                'baz',
+                ['foo' => ['bar' => 'baz']],
+            ],
+            [
+                false,
+                'baz.qux',
+                ['foo' => ['bar' => 'baz']],
+            ],
+            [
+                true,
+                'foo.bar.baz',
+                ['foo' => ['bar' => ['baz' => 'qux']]],
+            ],
+            [
+                false,
+                'foo.bar.baz.qux',
+                ['foo' => ['bar' => ['baz' => 'qux']]],
+            ],
+            [
+                false,
+                'foo.bar.baz',
+                ['foo' => ['bar' => null]],
+            ],
+            [
+                false,
+                'foo.bar.baz.qux',
+                ['foo' => ['bar' => null]],
+            ],
+            [
+                true,
+                'foo.bar.baz',
+                ['foo' => ['bar' => ['baz' => null]]],
+            ],
+        ];
+    }
+
+    public function testGetThrowsException(): void
+    {
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Array key not found: foo.bar');
+        Arr::get('foo.bar', []);
+    }
+
+    /**
      * @dataProvider extendProvider
      *
      * @param mixed[] $expected

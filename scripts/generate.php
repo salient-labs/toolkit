@@ -57,12 +57,15 @@ use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
+use Salient\Core\Facade\Config;
+use Salient\Core\ConfigurationManager;
 
-$loader = require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
     Cache::class => CacheStore::class,
+    Config::class => [ConfigurationManager::class, '--api'],
     Console::class => [ConsoleWriter::class, '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
     Event::class => EventDispatcher::class,
