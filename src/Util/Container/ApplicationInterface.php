@@ -50,7 +50,8 @@ interface ApplicationInterface extends ContainerInterface
     public function getCachePath(): string;
 
     /**
-     * Get a writable directory for the application's configuration files
+     * Get a writable directory for configuration files created by the
+     * application
      */
     public function getConfigPath(): string;
 
