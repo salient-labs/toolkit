@@ -93,6 +93,18 @@ final class AbstractFacadeTest extends TestCase
         $this->assertTrue(MyClassFacade::isLoaded());
         MyClassFacade::unload();
         $this->assertSame([$instance], MyServiceClass::getUnloaded());
+
+        $this->assertFalse(MyInterfaceFacade::isLoaded());
+        $instance = MyInterfaceFacade::getInstance();
+        $this->assertTrue(MyInterfaceFacade::isLoaded());
+        $this->assertInstanceOf(MyHasFacadeClass::class, $instance);
+        MyInterfaceFacade::unload();
+        $unloaded = MyHasFacadeClass::getUnloaded();
+        $this->assertCount(1, $unloaded);
+        $unloaded = reset($unloaded);
+        $this->assertInstanceOf(MyHasFacadeClass::class, $unloaded);
+        $this->assertNotSame($instance, $unloaded);
+        $this->assertSame(2, $unloaded->getClones());
     }
 
     public function testUnloadNotLoaded(): void
