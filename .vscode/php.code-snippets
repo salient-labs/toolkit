@@ -1,0 +1,16 @@
+{
+	"Class file": {
+		"scope": "php",
+		"prefix": "<?php",
+		"body": [
+			"<?php declare(strict_types=1);",
+			"",
+			"namespace ${TM_DIRECTORY/^.*\\\\/src\\\\/(?:(Toolkit)|(Util))|^.*\\\\/(tests\\\\/(?:unit|fixtures|3rdparty)\\\\/(?:(Toolkit)|(Util)))|\\\\/([a-zA-Z0-9]+)/${1:+Salient}${4:+Salient}${2:+Lkrms}${5:+Lkrms}${3:+\\\\Tests}${6:+\\\\}$6/g};",
+			"",
+			"class ${TM_FILENAME_BASE/[^a-zA-Z0-9]+//g} {",
+			"    $0",
+			"}",
+			""
+		]
+	}
+}
