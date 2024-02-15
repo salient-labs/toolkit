@@ -124,13 +124,6 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
     public function has(string $id): bool;
 
     /**
-     * Check if a service provider is registered with the container
-     *
-     * @param class-string $id
-     */
-    public function hasProvider(string $id): bool;
-
-    /**
      * Check if a shared service is bound to the container
      *
      * @param class-string $id
@@ -143,6 +136,13 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
      * @param class-string $id
      */
     public function hasInstance(string $id): bool;
+
+    /**
+     * Check if a service provider is registered with the container
+     *
+     * @param class-string $id
+     */
+    public function hasProvider(string $id): bool;
 
     /**
      * Bind a service to the container
@@ -223,6 +223,30 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
     ): self;
 
     /**
+     * Bind a shared instance to the container
+     *
+     * @template TService of object
+     * @template T of TService
+     *
+     * @param class-string<TService> $id
+     * @param T $instance
+     * @return $this
+     */
+    public function instance(string $id, $instance): self;
+
+    /**
+     * Bind a shared instance to the container if it isn't already bound
+     *
+     * @template TService of object
+     * @template T of TService
+     *
+     * @param class-string<TService> $id
+     * @param T $instance
+     * @return $this
+     */
+    public function instanceIf(string $id, $instance): self;
+
+    /**
      * Register a contextual binding with the container
      *
      * Subsequent requests from `$context` for `$dependency` resolve to
@@ -300,30 +324,6 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
      * @return array<class-string>
      */
     public function getProviders(): array;
-
-    /**
-     * Bind a shared instance to the container
-     *
-     * @template TService of object
-     * @template T of TService
-     *
-     * @param class-string<TService> $id
-     * @param T $instance
-     * @return $this
-     */
-    public function instance(string $id, $instance): self;
-
-    /**
-     * Bind a shared instance to the container if it isn't already bound
-     *
-     * @template TService of object
-     * @template T of TService
-     *
-     * @param class-string<TService> $id
-     * @param T $instance
-     * @return $this
-     */
-    public function instanceIf(string $id, $instance): self;
 
     /**
      * Remove a binding from the container
