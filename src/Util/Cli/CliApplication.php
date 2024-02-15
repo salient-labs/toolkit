@@ -48,11 +48,13 @@ class CliApplication extends Application implements CliApplicationInterface
     public function __construct(
         ?string $basePath = null,
         ?string $appName = null,
-        int $envFlags = EnvFlag::ALL
+        int $envFlags = EnvFlag::ALL,
+        ?string $configDir = 'config'
     ) {
-        parent::__construct($basePath, $appName, $envFlags);
+        parent::__construct($basePath, $appName, $envFlags, $configDir);
 
         Assert::runningOnCli();
+
         Assert::argvIsDeclared();
 
         // Keep running, even if:

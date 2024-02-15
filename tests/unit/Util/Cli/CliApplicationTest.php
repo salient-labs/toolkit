@@ -8,13 +8,17 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\MockTarget;
+use Lkrms\Container\Application;
 use Lkrms\Facade\Console;
 use Lkrms\Tests\Cli\Command\TestOptions;
 use Lkrms\Tests\TestCase;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
+use Lkrms\Utility\Reflect;
 use Closure;
 use LogicException;
+use ReflectionMethod;
 use stdClass;
 
 /**
@@ -389,5 +393,30 @@ EOF,
         $this->expectExceptionMessage("Another command has been registered at 'options'");
         $this->App->command(['options', 'test'], TestOptions::class);
         $this->App->command(['options'], TestOptions::class);
+    }
+
+    public function testConstructorParameters(): void
+    {
+        $params = Arr::toMap(
+            (new ReflectionMethod(CliApplication::class, '__construct'))->getParameters(),
+            'name',
+        );
+        $appParams = (new ReflectionMethod(Application::class, '__construct'))->getParameters();
+        foreach ($appParams as $appParam) {
+            $message = sprintf(
+                '%s::__construct() parameter does not match %s::__construct(): $%s',
+                CliApplication::class,
+                Application::class,
+                $appParam->name,
+            );
+            $this->assertArrayHasKey($appParam->name, $params, $message);
+            $param = $params[$appParam->name];
+            $this->assertSame(
+                Arr::unwrap(Reflect::getAllTypeNames($appParam->getType())),
+                Arr::unwrap(Reflect::getAllTypeNames($param->getType())),
+                $message,
+            );
+            $this->assertSame($appParam->allowsNull(), $param->allowsNull(), $message);
+        }
     }
 }

@@ -828,9 +828,9 @@ final class Arr extends Utility
      *
      * @template TValue of ArrayAccess|array|object
      *
-     * @param array<TValue> $array
+     * @param TValue[] $array
      * @param array-key $key
-     * @return array<TValue>
+     * @return TValue[]
      */
     public static function toMap(array $array, $key): array
     {
