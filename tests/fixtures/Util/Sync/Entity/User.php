@@ -4,6 +4,8 @@ namespace Lkrms\Tests\Sync\Entity;
 
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Support\DeferredEntity;
+use Lkrms\Sync\Support\DeferredRelationship;
 
 /**
  * Represents the state of a User entity in a backend
@@ -48,17 +50,17 @@ class User extends SyncEntity
     public $Company;
 
     /**
-     * @var Task[]|null
+     * @var array<Task|DeferredEntity<Task>>|DeferredRelationship<Task>|null
      */
     public $Tasks;
 
     /**
-     * @var Post[]|null
+     * @var array<Post|DeferredEntity<Post>>|DeferredRelationship<Post>|null
      */
     public $Posts;
 
     /**
-     * @var Album[]|null
+     * @var array<Album|DeferredEntity<Album>>|DeferredRelationship<Album>|null
      */
     public $Albums;
 

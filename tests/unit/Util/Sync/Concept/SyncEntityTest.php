@@ -46,7 +46,7 @@ final class SyncEntityTest extends SyncTestCase
             $this->expectException(SyncEntityNotFoundException::class);
         }
 
-        $uncertainty = -1;
+        $uncertainty = -1.0;
 
         /** @var ISyncProvider */
         $provider = [$entity, 'defaultProvider']($this->App);

@@ -4,6 +4,8 @@ namespace Lkrms\Tests\Sync\Entity;
 
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Support\DeferredEntity;
+use Lkrms\Sync\Support\DeferredRelationship;
 
 /**
  * Represents the state of a Post entity in a backend
@@ -18,7 +20,7 @@ class Post extends SyncEntity
     public $Id;
 
     /**
-     * @var User|null
+     * @var User|DeferredEntity<User>|null
      */
     public $User;
 
@@ -33,7 +35,7 @@ class Post extends SyncEntity
     public $Body;
 
     /**
-     * @var Comment[]|null
+     * @var array<Comment|DeferredEntity<Comment>>|DeferredRelationship<Comment>|null
      */
     public $Comments;
 

@@ -21,6 +21,8 @@ interface CliApplicationInterface extends ApplicationInterface
      * Get the command invoked by run()
      *
      * This method should only return a command that is currently running.
+     *
+     * @phpstan-impure
      */
     public function getRunningCommand(): ?CliCommandInterface;
 
@@ -29,6 +31,8 @@ interface CliApplicationInterface extends ApplicationInterface
      *
      * This method should only return a command that ran to completion or failed
      * with an exception.
+     *
+     * @phpstan-impure
      */
     public function getLastCommand(): ?CliCommandInterface;
 
@@ -36,6 +40,8 @@ interface CliApplicationInterface extends ApplicationInterface
      * Get the return value most recently recorded by run()
      *
      * This method should return `0` if a return value has not been recorded.
+     *
+     * @phpstan-impure
      */
     public function getLastExitStatus(): int;
 

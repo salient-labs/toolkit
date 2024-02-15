@@ -13,6 +13,8 @@ use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Support\DeferredEntity;
+use Lkrms\Sync\Support\DeferredRelationship;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Inflect;
@@ -399,16 +401,38 @@ EOF)
         }
 
         foreach ($parent as $key => $value) {
-            $properties[$key] = 'static|null';
+            $deferredEntity ??= $this->getFqcnAlias(DeferredEntity::class);
+            $properties[$key] = sprintf('static|%s<static>|null', $deferredEntity);
         }
         foreach ($children as $key => $value) {
-            $properties[$key] = 'static[]|null';
+            $deferredEntity ??= $this->getFqcnAlias(DeferredEntity::class);
+            $deferredRelationship ??= $this->getFqcnAlias(DeferredRelationship::class);
+            $properties[$key] = sprintf(
+                'array<static|%s<static>>|%s<static>|null',
+                $deferredEntity,
+                $deferredRelationship,
+            );
         }
         foreach ($oneToOne as $key => $value) {
-            $properties[$key] = "{$value}|null";
+            $deferredEntity ??= $this->getFqcnAlias(DeferredEntity::class);
+            $properties[$key] = sprintf(
+                '%s|%s<%s>|null',
+                $value,
+                $deferredEntity,
+                $value,
+            );
         }
         foreach ($oneToMany as $key => $value) {
-            $properties[$key] = "{$value}[]|null";
+            $deferredEntity ??= $this->getFqcnAlias(DeferredEntity::class);
+            $deferredRelationship ??= $this->getFqcnAlias(DeferredRelationship::class);
+            $properties[$key] = sprintf(
+                'array<%s|%s<%s>>|%s<%s>|null',
+                $value,
+                $deferredEntity,
+                $value,
+                $deferredRelationship,
+                $value,
+            );
         }
 
         $oneToOne += array_diff_key($tentativeOneToOne, $oneToMany, $parent, $children);

@@ -16,6 +16,14 @@ class TestOptions extends CliCommand
 {
     private const ACTION_APPLY_VALUES = 'apply-values';
     private const ACTION_APPLY_SCHEMA_VALUES = 'apply-schema-values';
+    private const ACTION_GET_RUNNING_COMMAND = 'get-running-command';
+
+    /**
+     * @var mixed
+     */
+    public $Result;
+
+    // --
 
     private ?string $Action = null;
 
@@ -90,6 +98,7 @@ class TestOptions extends CliCommand
                 ->allowedValues([
                     self::ACTION_APPLY_VALUES,
                     self::ACTION_APPLY_SCHEMA_VALUES,
+                    self::ACTION_GET_RUNNING_COMMAND,
                 ])
                 ->hide()
                 ->bindTo($this->Action),
@@ -104,7 +113,6 @@ class TestOptions extends CliCommand
                 ->allowedValues(array_keys($this->getCallbacks()))
                 ->multipleAllowed()
                 ->unique()
-                ->defaultValue(['args', 'schemaOptions', 'hasArg'])
                 ->hide()
                 ->bindTo($this->Print),
             CliOption::build()
@@ -181,6 +189,10 @@ class TestOptions extends CliCommand
                 $data = Json::parseObjectAsArray($this->Data);
                 $this->applyOptionValues($data, true, true, true, true, true);
                 break;
+
+            case self::ACTION_GET_RUNNING_COMMAND:
+                $this->Result = $this->App->getRunningCommand();
+                break;
         }
 
         $callbacks = $this->getCallbacks();
@@ -188,7 +200,11 @@ class TestOptions extends CliCommand
             $output[$print] = $callbacks[$print]();
         }
 
-        echo Json::prettyPrint($output ?? []) . \PHP_EOL;
+        if (!isset($output)) {
+            return;
+        }
+
+        echo Json::prettyPrint($output) . \PHP_EOL;
     }
 
     /**
