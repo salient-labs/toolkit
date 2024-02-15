@@ -7,11 +7,6 @@ use LogicException;
 /**
  * Provides a static interface to an underlying instance
  *
- * Underlying instances that implement {@see FacadeAwareInterface} are replaced
- * with the object returned by {@see FacadeAwareInterface::withFacade()}, and
- * its {@see FacadeAwareInterface::withoutFacade()} method is used to service
- * the facade's {@see swap()}, {@see unload()} and {@see getInstance()} methods.
- *
  * @api
  *
  * @template TService of object
@@ -28,6 +23,10 @@ interface FacadeInterface
      *
      * If `$instance` is `null`, the facade creates a new underlying instance.
      *
+     * Then, if the instance implements {@see FacadeAwareInterface}, it is
+     * replaced with the return value of
+     * {@see FacadeAwareInterface::withFacade()}.
+     *
      * @param TService|null $instance
      * @throws LogicException if the facade's underlying instance is already
      * loaded.
@@ -37,12 +36,22 @@ interface FacadeInterface
     /**
      * Replace the facade's underlying instance
      *
+     * Equivalent to calling {@see unload()} before passing `$instance` to
+     * {@see load()}.
+     *
      * @param TService $instance
      */
     public static function swap(object $instance): void;
 
     /**
      * Remove the facade's underlying instance if loaded
+     *
+     * If the underlying instance implements {@see FacadeAwareInterface}, it is
+     * replaced with the return value of
+     * {@see FacadeAwareInterface::withoutFacade()}.
+     *
+     * Then, if the instance implements {@see Unloadable}, its
+     * {@see Unloadable::unload()} method is called.
      */
     public static function unload(): void;
 

@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concept;
+namespace Salient\Tests\Core;
 
 use Lkrms\Container\Container;
+use Lkrms\Facade\App;
 use Lkrms\Facade\Event;
 use Lkrms\Tests\Concept\Facade\MyBrokenFacade;
 use Lkrms\Tests\Concept\Facade\MyClassFacade;
@@ -14,11 +15,12 @@ use Lkrms\Tests\Concept\Facade\MyUnloadsFacadesClass;
 use Lkrms\Tests\TestCase;
 use Salient\Core\AbstractFacade;
 use LogicException;
+use stdClass;
 
 /**
- * @covers \Lkrms\Concept\Facade
+ * @covers \Salient\Core\AbstractFacade
  */
-final class FacadeTest extends TestCase
+final class AbstractFacadeTest extends TestCase
 {
     public function testBrokenFacade(): void
     {
@@ -137,6 +139,66 @@ final class FacadeTest extends TestCase
         $this->assertInstanceOf(MyUnloadsFacadesClass::class, $instance1);
         $this->assertSame($instance1, $instance2);
         $this->assertNotSame($instance1, $instance3);
+    }
+
+    public function testLoadWithInvalidBinding(): void
+    {
+        $container = Container::getGlobalContainer();
+        $container->bind(MyServiceInterface::class, stdClass::class);
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(' does not inherit ');
+        MyInterfaceFacade::load();
+    }
+
+    public function testGlobalContainerIsSetAndUnloaded(): void
+    {
+        $this->assertFalse(Container::hasGlobalContainer());
+        $this->assertFalse(App::isLoaded());
+        App::get(stdClass::class);
+        $this->assertTrue(Container::hasGlobalContainer());
+        $this->assertTrue(App::isLoaded());
+        $container = Container::getGlobalContainer();
+        $this->assertSame($container, App::getInstance());
+        App::unload();
+        $this->assertFalse(Container::hasGlobalContainer());
+        $this->assertFalse(App::isLoaded());
+    }
+
+    public function testGlobalContainerIsNotReplaced(): void
+    {
+        $container = Container::getGlobalContainer();
+        $this->assertFalse($container->has(MyServiceClass::class));
+        MyClassFacade::load();
+        $this->assertTrue($container->has(MyServiceClass::class));
+        $this->assertFalse(App::isLoaded());
+        App::get(stdClass::class);
+        $this->assertTrue(App::isLoaded());
+        $this->assertSame($container, App::getInstance());
+        App::unload();
+        $this->assertFalse(Container::hasGlobalContainer());
+        $this->assertFalse(App::isLoaded());
+        $this->assertFalse($container->has(MyServiceClass::class));
+    }
+
+    public function testGlobalContainerBindingsAreMaintained(): void
+    {
+        MyClassFacade::load();
+        $this->assertFalse(Container::hasGlobalContainer());
+        $container = Container::getGlobalContainer();
+        $container2 = new Container();
+        $this->assertTrue($container->has(MyServiceClass::class));
+        $this->assertFalse($container2->has(MyServiceClass::class));
+
+        $this->assertFalse(App::isLoaded());
+        App::get(stdClass::class);
+        $this->assertTrue(App::isLoaded());
+        $this->assertSame($container, App::getInstance());
+
+        Container::setGlobalContainer($container2);
+        $this->assertTrue(App::isLoaded());
+        $this->assertSame($container2, App::getInstance());
+        $this->assertTrue($container2->has(MyServiceClass::class));
+        $this->assertFalse($container->has(MyServiceClass::class));
     }
 
     protected function tearDown(): void

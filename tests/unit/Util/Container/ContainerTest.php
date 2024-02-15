@@ -10,8 +10,10 @@ use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IFluentInterface;
+use Lkrms\Facade\App;
 use Lkrms\Tests\TestCase;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use stdClass;
 
 final class ContainerTest extends TestCase
 {
@@ -51,6 +53,50 @@ final class ContainerTest extends TestCase
             [ApplicationInterface::class],
             [Application::class],
         ];
+    }
+
+    public function testHasSingleton(): void
+    {
+        $container = new Container();
+        $this->assertFalse($container->hasSingleton(stdClass::class));
+        $container->bind(stdClass::class);
+        $this->assertFalse($container->hasSingleton(stdClass::class));
+
+        $container = new Container();
+        $container->instance(stdClass::class, new stdClass());
+        $this->assertTrue($container->hasSingleton(stdClass::class));
+        $container->unbindInstance(stdClass::class);
+        $this->assertFalse($container->hasInstance(stdClass::class));
+        $this->assertFalse($container->hasSingleton(stdClass::class));
+
+        $container = new Container();
+        $container->singleton(stdClass::class);
+        $this->assertTrue($container->hasSingleton(stdClass::class));
+        $container->get(stdClass::class);
+        $this->assertTrue($container->hasInstance(stdClass::class));
+        $container->unbindInstance(stdClass::class);
+        $this->assertFalse($container->hasInstance(stdClass::class));
+        $this->assertTrue($container->hasSingleton(stdClass::class));
+    }
+
+    public function testUnload(): void
+    {
+        $container = new Container();
+        $container->instance(stdClass::class, new stdClass());
+        $this->assertTrue($container->has(stdClass::class));
+        $container->unload();
+        $this->assertFalse($container->has(stdClass::class));
+    }
+
+    public function testUnloadWithFacade(): void
+    {
+        $container = App::getInstance();
+        $container->instance(stdClass::class, new stdClass());
+        $this->assertTrue(App::isLoaded());
+        $this->assertTrue($container->has(stdClass::class));
+        $container->unload();
+        $this->assertFalse(App::isLoaded());
+        $this->assertFalse($container->has(stdClass::class));
     }
 
     public function testServiceTransient(): void
