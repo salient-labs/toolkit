@@ -12,6 +12,43 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.42] - 2024-02-15
+
+### Added
+
+- Add service container methods `hasSingleton()` and `unbindInstance()`
+
+### Changed
+
+- Leave `unload()`ed service containers in a usable state
+
+### Fixed
+
+- Fix issue where `HasFacade` doesn't remove references to cloned instances when unloaded
+- Fix issue where service container bindings are forgotten when a facade's underlying instance is removed from a container
+
+## [v0.21.41] - 2024-02-15
+
+### Added
+
+- Add `$configDir` parameter to `CliApplication::__construct()`
+
+### Changed
+
+- Sync: add deferred entity and relationship types to generated entities
+
+## [v0.21.40] - 2024-02-14
+
+### Added
+
+- Add `ConfigurationManager` and the `Config` facade for simple configuration file handling
+- Add `Arr::get()` and `Arr::has()`
+
+### Changed
+
+- **Load application configuration files from `<basePath>/config` by default**
+- Rename `Facade` to `AbstractFacade`
+
 ## [v0.21.39] - 2024-02-12
 
 ### Added
@@ -1685,6 +1722,9 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.42]: https://github.com/lkrms/php-util/compare/v0.21.41...v0.21.42
+[v0.21.41]: https://github.com/lkrms/php-util/compare/v0.21.40...v0.21.41
+[v0.21.40]: https://github.com/lkrms/php-util/compare/v0.21.39...v0.21.40
 [v0.21.39]: https://github.com/lkrms/php-util/compare/v0.21.38...v0.21.39
 [v0.21.38]: https://github.com/lkrms/php-util/compare/v0.21.37...v0.21.38
 [v0.21.37]: https://github.com/lkrms/php-util/compare/v0.21.36...v0.21.37
