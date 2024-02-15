@@ -89,7 +89,10 @@ trait HasFacade
 
         // Keep a copy of the cloned instance for future reuse if the facade is
         // not being unloaded
-        if (!$unloading) {
+        if ($unloading) {
+            $instance->InstanceWithoutFacade = null;
+            $instance->InstanceWithFacade = null;
+        } else {
             $instance->InstanceWithoutFacade = $instance;
             $instance->InstanceWithFacade = $this;
         }

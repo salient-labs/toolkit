@@ -77,10 +77,12 @@ class Container extends FluentInterface implements ContainerInterface, FacadeAwa
     {
         if (self::$GlobalContainer === $this) {
             self::setGlobalContainer(null);
-            $this->unloadFacades();
         }
 
-        unset($this->Dice);
+        $this->unloadFacades();
+
+        $this->Dice = new Dice();
+        $this->bindContainer();
     }
 
     private function bindContainer(): void
@@ -256,6 +258,17 @@ class Container extends FluentInterface implements ContainerInterface, FacadeAwa
     final public function has(string $id): bool
     {
         return $this->Dice->hasRule($id) || $this->Dice->hasShared($id);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function hasSingleton(string $id): bool
+    {
+        return $this->Dice->hasShared($id) || (
+            $this->Dice->hasRule($id) &&
+            ($this->Dice->getRule($id)['shared'] ?? false)
+        );
     }
 
     /**
@@ -644,6 +657,25 @@ class Container extends FluentInterface implements ContainerInterface, FacadeAwa
     {
         $this->Dice = $this->Dice->removeRule($id);
 
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function unbindInstance(string $id): self
+    {
+        if (!$this->Dice->hasShared($id)) {
+            return $this;
+        }
+
+        if ($this->Dice->hasRule($id)) {
+            // Reapplying the rule removes the instance
+            $this->Dice = $this->Dice->addRule($id, $this->Dice->getRule($id));
+            return $this;
+        }
+
+        $this->Dice = $this->Dice->removeRule($id);
         return $this;
     }
 

@@ -41,12 +41,12 @@ use Salient\Core\Contract\Unloadable;
 interface ContainerInterface extends PsrContainerInterface, Unloadable
 {
     /**
-     * Creates a new service container object
+     * Creates a new service container
      */
     public function __construct();
 
     /**
-     * True if the global container is set
+     * Check if the global container is set
      */
     public static function hasGlobalContainer(): bool;
 
@@ -117,28 +117,35 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
     public function getName(string $id): string;
 
     /**
-     * True if a service is bound to the container
+     * Check if a service is bound to the container
      *
      * @param class-string $id
      */
     public function has(string $id): bool;
 
     /**
-     * True if a service provider is registered with the container
+     * Check if a shared service is bound to the container
      *
      * @param class-string $id
      */
-    public function hasProvider(string $id): bool;
+    public function hasSingleton(string $id): bool;
 
     /**
-     * True if a service resolves to a shared instance
+     * Check if a service resolves to a shared instance
      *
      * @param class-string $id
      */
     public function hasInstance(string $id): bool;
 
     /**
-     * Register a binding with the container
+     * Check if a service provider is registered with the container
+     *
+     * @param class-string $id
+     */
+    public function hasProvider(string $id): bool;
+
+    /**
+     * Bind a service to the container
      *
      * Subsequent requests for `$id` resolve to `$class`.
      *
@@ -162,7 +169,7 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
     ): self;
 
     /**
-     * Register a binding with the container if it isn't already registered
+     * Bind a service to the container if it isn't already bound
      *
      * @template TService of object
      * @template T of TService
@@ -179,7 +186,7 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
     ): self;
 
     /**
-     * Register a shared binding with the container
+     * Bind a shared service to the container
      *
      * Subsequent requests for `$id` resolve to the instance of `$class` created
      * when `$id` is first requested.
@@ -199,8 +206,7 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
     ): self;
 
     /**
-     * Register a shared binding with the container if it isn't already
-     * registered
+     * Bind a shared service to the container if it isn't already bound
      *
      * @template TService of object
      * @template T of TService
@@ -215,6 +221,30 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
         ?string $class = null,
         array $args = []
     ): self;
+
+    /**
+     * Bind a shared instance to the container
+     *
+     * @template TService of object
+     * @template T of TService
+     *
+     * @param class-string<TService> $id
+     * @param T $instance
+     * @return $this
+     */
+    public function instance(string $id, $instance): self;
+
+    /**
+     * Bind a shared instance to the container if it isn't already bound
+     *
+     * @template TService of object
+     * @template T of TService
+     *
+     * @param class-string<TService> $id
+     * @param T $instance
+     * @return $this
+     */
+    public function instanceIf(string $id, $instance): self;
 
     /**
      * Register a contextual binding with the container
@@ -296,35 +326,18 @@ interface ContainerInterface extends PsrContainerInterface, Unloadable
     public function getProviders(): array;
 
     /**
-     * Register an object with the container as a shared binding
-     *
-     * @template TService of object
-     * @template T of TService
-     *
-     * @param class-string<TService> $id
-     * @param T $instance
-     * @return $this
-     */
-    public function instance(string $id, $instance): self;
-
-    /**
-     * Register an object with the container as a shared binding if it isn't
-     * already registered
-     *
-     * @template TService of object
-     * @template T of TService
-     *
-     * @param class-string<TService> $id
-     * @param T $instance
-     * @return $this
-     */
-    public function instanceIf(string $id, $instance): self;
-
-    /**
      * Remove a binding from the container
      *
      * @param class-string $id
      * @return $this
      */
     public function unbind(string $id): self;
+
+    /**
+     * Remove a shared instance from the container
+     *
+     * @param class-string $id
+     * @return $this
+     */
+    public function unbindInstance(string $id): self;
 }
