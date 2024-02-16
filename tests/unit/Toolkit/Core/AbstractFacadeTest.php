@@ -5,20 +5,22 @@ namespace Salient\Tests\Core;
 use Lkrms\Container\Container;
 use Lkrms\Facade\App;
 use Lkrms\Facade\Event;
-use Lkrms\Tests\Concept\Facade\MyBrokenFacade;
-use Lkrms\Tests\Concept\Facade\MyClassFacade;
-use Lkrms\Tests\Concept\Facade\MyHasFacadeClass;
-use Lkrms\Tests\Concept\Facade\MyInterfaceFacade;
-use Lkrms\Tests\Concept\Facade\MyServiceClass;
-use Lkrms\Tests\Concept\Facade\MyServiceInterface;
-use Lkrms\Tests\Concept\Facade\MyUnloadsFacadesClass;
 use Lkrms\Tests\TestCase;
 use Salient\Core\AbstractFacade;
+use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
+use Salient\Tests\Core\AbstractFacade\MyClassFacade;
+use Salient\Tests\Core\AbstractFacade\MyHasFacadeClass;
+use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
+use Salient\Tests\Core\AbstractFacade\MyServiceClass;
+use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
+use Salient\Tests\Core\AbstractFacade\MyUnloadsFacadesClass;
 use LogicException;
 use stdClass;
 
 /**
  * @covers \Salient\Core\AbstractFacade
+ * @covers \Salient\Core\Concern\HasFacade
+ * @covers \Salient\Core\Concern\UnloadsFacades
  */
 final class AbstractFacadeTest extends TestCase
 {
@@ -50,13 +52,24 @@ final class AbstractFacadeTest extends TestCase
         $this->assertCount(0, MyHasFacadeClass::getUnloaded());
         MyInterfaceFacade::swap($instance);
         $this->assertCount(1, $unloaded = MyHasFacadeClass::getUnloaded());
-        $this->assertNotSame($instance, reset($unloaded));
+        $this->assertInstanceOf(MyHasFacadeClass::class, $unloaded = reset($unloaded));
+        $this->assertNotSame($instance, $unloaded);
+        $this->assertSame(2, $unloaded->getClones());
         $this->assertSame($instance, MyInterfaceFacade::getInstance());
 
-        $instance = new MyUnloadsFacadesClass(__METHOD__);
+        MyInterfaceFacade::withArgs();
+        $this->assertSame(1, MyInterfaceFacade::getClones());
+        $this->assertSame($instance, MyInterfaceFacade::getInstance());
+
+        MyInterfaceFacade::withArgs(__METHOD__, $line = __LINE__);
+        $this->assertSame(2, MyInterfaceFacade::getClones());
+        $this->assertNotSame($instance, MyInterfaceFacade::getInstance());
+        $this->assertSame([__METHOD__, $line], MyInterfaceFacade::getArgs());
+
+        $instance = new MyUnloadsFacadesClass(__METHOD__, $line = __LINE__);
         MyInterfaceFacade::swap($instance);
-        $this->assertSame([__METHOD__], MyInterfaceFacade::getArgs());
-        $this->assertCount(2, MyHasFacadeClass::getUnloaded());
+        $this->assertSame([__METHOD__, $line], MyInterfaceFacade::getArgs());
+        $this->assertCount(3, MyHasFacadeClass::getUnloaded());
     }
 
     public function testLoadInvalidInstance(): void
@@ -95,16 +108,20 @@ final class AbstractFacadeTest extends TestCase
         $this->assertSame([$instance], MyServiceClass::getUnloaded());
 
         $this->assertFalse(MyInterfaceFacade::isLoaded());
-        $instance = MyInterfaceFacade::getInstance();
+        MyInterfaceFacade::withArgs(__METHOD__, __LINE__);
         $this->assertTrue(MyInterfaceFacade::isLoaded());
+        $instance = MyInterfaceFacade::getInstance();
         $this->assertInstanceOf(MyHasFacadeClass::class, $instance);
+        /** @var MyHasFacadeClass $instance */
+        $this->assertNotNull($instance->getInstanceWithFacade());
+        $this->assertNotNull($instance->getInstanceWithoutFacade());
         MyInterfaceFacade::unload();
-        $unloaded = MyHasFacadeClass::getUnloaded();
-        $this->assertCount(1, $unloaded);
-        $unloaded = reset($unloaded);
-        $this->assertInstanceOf(MyHasFacadeClass::class, $unloaded);
+        $this->assertCount(2, $unloaded = MyHasFacadeClass::getUnloaded());
+        $this->assertInstanceOf(MyHasFacadeClass::class, $unloaded = end($unloaded));
         $this->assertNotSame($instance, $unloaded);
-        $this->assertSame(2, $unloaded->getClones());
+        $this->assertSame(3, $unloaded->getClones());
+        $this->assertNull($unloaded->getInstanceWithFacade());
+        $this->assertNull($unloaded->getInstanceWithoutFacade());
     }
 
     public function testUnloadNotLoaded(): void

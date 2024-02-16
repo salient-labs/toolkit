@@ -72,11 +72,12 @@ trait UnloadsFacades
             return;
         }
 
-        // @codeCoverageIgnore
+        // @codeCoverageIgnoreStart
         throw new LogicException(sprintf(
             'Underlying %s not unloaded: %s',
             static::class,
             implode(' ', $this->Facades),
         ));
+        // @codeCoverageIgnoreEnd
     }
 }

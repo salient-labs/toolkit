@@ -172,8 +172,9 @@ final class Assert extends Utility
         if (\PHP_SAPI === 'cli') {
             return;
         }
-        // @codeCoverageIgnore
+        // @codeCoverageIgnoreStart
         throw new $exception('CLI required');
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -190,8 +191,9 @@ final class Assert extends Utility
         if (ini_get('register_argc_argv')) {
             return;
         }
-        // @codeCoverageIgnore
+        // @codeCoverageIgnoreStart
         throw new $exception('register_argc_argv must be enabled');
+        // @codeCoverageIgnoreEnd
     }
 
     /**
