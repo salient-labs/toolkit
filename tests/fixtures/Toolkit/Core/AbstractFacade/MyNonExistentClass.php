@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concept\Facade;
+namespace Salient\Tests\Core\AbstractFacade;
 
 use Salient\Core\Contract\Unloadable;
 
@@ -10,6 +10,6 @@ use Salient\Core\Contract\Unloadable;
 if (false) {
     class MyNonExistentClass implements MyServiceInterface, Unloadable
     {
-        use MyServiceTrait;
+        use MyInstanceTrait;
     }
 }

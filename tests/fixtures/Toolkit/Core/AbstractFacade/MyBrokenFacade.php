@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concept\Facade;
+namespace Salient\Tests\Core\AbstractFacade;
 
 use Salient\Core\AbstractFacade;
 
@@ -9,13 +9,13 @@ use Salient\Core\AbstractFacade;
  *
  * @method static mixed[] getArgs() Get arguments
  * @method static int getClones() Get the number of times the object has been cloned
- * @method static string getMethod() Get __METHOD__
+ * @method static MyServiceInterface withArgs(mixed ...$args) Get an instance with the given arguments
  *
  * @extends AbstractFacade<MyServiceInterface>
  *
  * @generated
  */
-final class MyInterfaceFacade extends AbstractFacade
+final class MyBrokenFacade extends AbstractFacade
 {
     /**
      * @inheritDoc
@@ -23,10 +23,7 @@ final class MyInterfaceFacade extends AbstractFacade
     protected static function getService()
     {
         return [
-            MyServiceInterface::class => [
-                MyNonExistentClass::class,
-                MyHasFacadeClass::class,
-            ],
+            MyServiceInterface::class => MyNonExistentClass::class,
         ];
     }
 }

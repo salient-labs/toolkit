@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concept\Facade;
+namespace Salient\Tests\Core\AbstractFacade;
 
 trait MyInstanceTrait
 {
@@ -27,6 +27,10 @@ trait MyInstanceTrait
     public function __clone()
     {
         $this->Clones++;
+
+        if (method_exists($this, 'updateFacade')) {
+            $this->updateFacade();
+        }
     }
 
     /**

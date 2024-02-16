@@ -38,12 +38,6 @@ use Lkrms\Sync\Support\SyncErrorBuilder;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
-use Lkrms\Tests\Concept\Facade\MyBrokenFacade;
-use Lkrms\Tests\Concept\Facade\MyClassFacade;
-use Lkrms\Tests\Concept\Facade\MyHasFacadeClass;
-use Lkrms\Tests\Concept\Facade\MyInterfaceFacade;
-use Lkrms\Tests\Concept\Facade\MyServiceClass;
-use Lkrms\Tests\Concept\Facade\MyServiceInterface;
 use Lkrms\Tests\Sync\Entity\Album;
 use Lkrms\Tests\Sync\Entity\Comment;
 use Lkrms\Tests\Sync\Entity\Photo;
@@ -59,6 +53,12 @@ use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Salient\Core\Facade\Config;
 use Salient\Core\ConfigurationManager;
+use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
+use Salient\Tests\Core\AbstractFacade\MyClassFacade;
+use Salient\Tests\Core\AbstractFacade\MyHasFacadeClass;
+use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
+use Salient\Tests\Core\AbstractFacade\MyServiceClass;
+use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -72,8 +72,8 @@ $facades = [
     Sync::class => SyncStore::class,
     Profile::class => [MetricCollector::class, '--api'],
     // Test fixtures
-    MyBrokenFacade::class => [MyServiceInterface::class, ['Lkrms\Tests\Concept\Facade\MyNonExistentClass']],
-    MyInterfaceFacade::class => [MyServiceInterface::class, ['Lkrms\Tests\Concept\Facade\MyNonExistentClass', MyHasFacadeClass::class]],
+    MyBrokenFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass']],
+    MyInterfaceFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass', MyHasFacadeClass::class]],
     MyClassFacade::class => [MyServiceClass::class, '--skip', 'withArgs'],
 ];
 

@@ -1,14 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concept\Facade;
+namespace Salient\Tests\Core\AbstractFacade;
 
 interface MyServiceInterface
 {
-    /**
-     * Get __METHOD__
-     */
-    public function getMethod(): string;
-
     /**
      * Get arguments
      *
@@ -20,4 +15,12 @@ interface MyServiceInterface
      * Get the number of times the object has been cloned
      */
     public function getClones(): int;
+
+    /**
+     * Get an instance with the given arguments
+     *
+     * @param mixed ...$args
+     * @return static
+     */
+    public function withArgs(...$args);
 }
