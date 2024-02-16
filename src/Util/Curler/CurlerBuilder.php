@@ -70,7 +70,7 @@ use Lkrms\Support\Date\DateFormatterInterface;
 final class CurlerBuilder extends Builder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {
@@ -78,7 +78,7 @@ final class CurlerBuilder extends Builder
     }
 
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getTerminators(): array
     {

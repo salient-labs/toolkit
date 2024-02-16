@@ -39,7 +39,7 @@ class Comment extends SyncEntity
     public $Body;
 
     /**
-     * @inheritDoc
+     * @internal
      */
     public static function getRelationships(): array
     {

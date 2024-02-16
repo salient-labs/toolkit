@@ -65,7 +65,7 @@ use Throwable;
 final class Console extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

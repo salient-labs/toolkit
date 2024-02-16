@@ -19,7 +19,7 @@ use Salient\Core\AbstractFacade;
 final class MyClassFacade extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

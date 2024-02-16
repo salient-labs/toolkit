@@ -23,7 +23,7 @@ use Salient\Core\ConfigurationManager;
 final class Config extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

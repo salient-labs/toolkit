@@ -18,7 +18,7 @@ use Salient\Core\AbstractFacade;
 final class MyBrokenFacade extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

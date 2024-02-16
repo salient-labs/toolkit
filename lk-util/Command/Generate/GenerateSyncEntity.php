@@ -472,12 +472,12 @@ EOF;
             $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getParentProperty',
                 $this->code(array_key_first($parent)),
-                '@inheritDoc',
+                '@internal',
             ));
             $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getChildrenProperty',
                 $this->code(array_key_first($children)),
-                '@inheritDoc',
+                '@internal',
             ));
         }
 
@@ -495,7 +495,7 @@ EOF;
             $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getRelationships',
                 '[' . \PHP_EOL . implode(\PHP_EOL, $this->indent($lines)) . \PHP_EOL . ']',
-                '@inheritDoc',
+                '@internal',
                 'array',
             ));
         }

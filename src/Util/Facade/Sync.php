@@ -52,7 +52,7 @@ use Salient\Core\AbstractFacade;
 final class Sync extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

@@ -43,7 +43,7 @@ use Lkrms\Concept\Builder;
 final class CliOptionBuilder extends Builder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {
@@ -51,7 +51,7 @@ final class CliOptionBuilder extends Builder
     }
 
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getTerminators(): array
     {

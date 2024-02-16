@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
 use Lkrms\Utility\Arr;
 use LogicException;
@@ -48,12 +48,14 @@ trait ResolvesServiceLists
             }
 
             if ($service !== $serviceName && !is_a($service, $serviceName, true)) {
+                // @codeCoverageIgnoreStart
                 throw new LogicException(sprintf(
                     '%s does not inherit %s: %s::getService()',
                     $service,
                     $serviceName,
                     static::class,
                 ));
+                // @codeCoverageIgnoreEnd
             }
 
             return $service;
@@ -127,9 +129,11 @@ trait ResolvesServiceLists
             }
         }
 
+        // @codeCoverageIgnoreStart
         throw new LogicException(sprintf(
             'Invalid service: %s::getService()',
             static::class,
         ));
+        // @codeCoverageIgnoreEnd
     }
 }

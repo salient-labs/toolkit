@@ -34,7 +34,7 @@ use DateTimeInterface;
 final class Cache extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

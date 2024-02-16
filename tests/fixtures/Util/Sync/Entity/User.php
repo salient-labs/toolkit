@@ -65,7 +65,7 @@ class User extends SyncEntity
     public $Albums;
 
     /**
-     * @inheritDoc
+     * @internal
      */
     public static function getRelationships(): array
     {

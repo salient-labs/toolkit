@@ -25,7 +25,7 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
 final class CurlerPageBuilder extends Builder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {

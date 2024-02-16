@@ -3,7 +3,7 @@
 namespace Salient\Core\Contract;
 
 /**
- * Implemented by classes that need to know when they are used behind a facade
+ * For classes that need to know when they are used behind a facade
  *
  * @see FacadeInterface
  *

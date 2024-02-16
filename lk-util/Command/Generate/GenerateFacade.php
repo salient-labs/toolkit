@@ -352,7 +352,7 @@ final class GenerateFacade extends GenerateCommand
                 $this->code($alias
                     ? [$service => Arr::unwrap($alias)]
                     : $service),
-                '@inheritDoc',
+                '@internal',
                 null,
                 self::VISIBILITY_PROTECTED
             ))

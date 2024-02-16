@@ -26,7 +26,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 final class SyncErrorBuilder extends Builder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {

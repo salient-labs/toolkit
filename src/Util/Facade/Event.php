@@ -21,7 +21,7 @@ use Generator;
 final class Event extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

@@ -769,7 +769,7 @@ EOF)
             ...$this->indent($this->generateGetter(
                 'getService',
                 "$service::class",
-                '@inheritDoc',
+                '@internal',
                 'string',
                 self::VISIBILITY_PROTECTED,
             )),
@@ -782,7 +782,7 @@ EOF)
                 ...$this->indent($this->generateGetter(
                     'getTerminators',
                     $this->code($terminators),
-                    '@inheritDoc',
+                    '@internal',
                     'array',
                     self::VISIBILITY_PROTECTED,
                 )),

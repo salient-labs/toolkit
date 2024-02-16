@@ -63,13 +63,17 @@ final class AbstractFacadeTest extends TestCase
 
         MyInterfaceFacade::withArgs(__METHOD__, $line = __LINE__);
         $this->assertSame(2, MyInterfaceFacade::getClones());
-        $this->assertNotSame($instance, MyInterfaceFacade::getInstance());
+        $this->assertNotSame($instance, $instance2 = MyInterfaceFacade::getInstance());
         $this->assertSame([__METHOD__, $line], MyInterfaceFacade::getArgs());
+
+        MyInterfaceFacade::swap($instance2);
+        $this->assertSame(2, MyInterfaceFacade::getClones());
+        $this->assertSame($instance2, MyInterfaceFacade::getInstance());
 
         $instance = new MyUnloadsFacadesClass(__METHOD__, $line = __LINE__);
         MyInterfaceFacade::swap($instance);
         $this->assertSame([__METHOD__, $line], MyInterfaceFacade::getArgs());
-        $this->assertCount(3, MyHasFacadeClass::getUnloaded());
+        $this->assertCount(4, MyHasFacadeClass::getUnloaded());
     }
 
     public function testLoadInvalidInstance(): void
