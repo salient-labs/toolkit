@@ -3,14 +3,14 @@
 namespace Salient\Core\Utility;
 
 use Lkrms\Contract\Jsonable;
-use Salient\Core\Catalog\SortTypeFlag;
+use Salient\Core\Catalog\SortFlag;
 use Salient\Core\AbstractUtility;
 use ArrayAccess;
 use OutOfRangeException;
 use Stringable;
 
 /**
- * Manipulate arrays
+ * Work with arrays
  *
  * @api
  */
@@ -204,7 +204,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sort(
@@ -242,7 +242,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<SortTypeFlag::*> $flags
+     * @param int-mask-of<SortFlag::*> $flags
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sortDesc(
@@ -266,7 +266,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
      * @return array<TKey,TValue>
      */
     public static function sortByKey(
@@ -293,7 +293,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<SortTypeFlag::*> $flags
+     * @param int-mask-of<SortFlag::*> $flags
      * @return array<TKey,TValue>
      */
     public static function sortByKeyDesc(

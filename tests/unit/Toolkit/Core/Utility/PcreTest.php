@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Exception\PcreErrorException;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\PcreErrorException;
 use Salient\Core\Utility\Pcre;
 use Stringable;
 

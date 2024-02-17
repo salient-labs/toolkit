@@ -2,12 +2,12 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Exception\PcreErrorException;
+use Salient\Core\Exception\PcreErrorException;
 use Salient\Core\AbstractUtility;
 use Stringable;
 
 /**
- * preg_* function wrappers that throw an exception on failure
+ * Wrappers for PHP's regular expression functions
  */
 final class Pcre extends AbstractUtility
 {

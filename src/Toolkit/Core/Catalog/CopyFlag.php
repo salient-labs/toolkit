@@ -6,11 +6,9 @@ use Lkrms\Concept\Enumeration;
 use Salient\Core\Utility\Get;
 
 /**
- * Deep copy flags
+ * Get::copy() flags
  *
  * @extends Enumeration<int>
- *
- * @see Get::copy()
  */
 final class CopyFlag extends Enumeration
 {

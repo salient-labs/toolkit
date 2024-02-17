@@ -5,13 +5,12 @@ namespace Salient\Core\Utility;
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Facade\Event;
 use Salient\Core\Event\PackageDataReceivedEvent;
+use Salient\Core\Facade\Event;
 use Salient\Core\AbstractUtility;
 
 /**
- * Get information about the package and its dependencies from Composer's
- * runtime API
+ * Get information from Composer's runtime API
  */
 final class Package extends AbstractUtility
 {
@@ -247,7 +246,7 @@ final class Package extends AbstractUtility
     private static function filterData(
         $data,
         string $method,
-        string $class = InstalledVersions::class,
+        string $class,
         ...$args
     ) {
         $event = new PackageDataReceivedEvent($data, $method, $class, ...$args);

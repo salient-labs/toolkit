@@ -8,7 +8,7 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Salient\Core\AbstractUtility;
 
 /**
- * Manipulate strings
+ * Work with strings
  */
 final class Str extends AbstractUtility
 {

@@ -3,11 +3,11 @@
 namespace Lkrms\Tests\Support;
 
 use Lkrms\Contract\HasName;
-use Lkrms\Support\EventDispatcher;
 use Lkrms\Tests\Support\EventDispatcher\BaseEvent;
 use Lkrms\Tests\Support\EventDispatcher\LoggableEvent;
 use Lkrms\Tests\Support\EventDispatcher\MainEvent;
 use Lkrms\Tests\Support\EventDispatcher\NamedEvent;
+use Salient\Core\EventDispatcher;
 use LogicException;
 
 final class EventDispatcherTest extends \PHPUnit\Framework\TestCase

@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
+
+use Lkrms\Exception\Exception;
 
 /**
- * Thrown when an object cannot be cloned
+ * @api
  */
 class UncloneableObjectException extends Exception {}

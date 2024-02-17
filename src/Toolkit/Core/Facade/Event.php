@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Facade;
+namespace Salient\Core\Facade;
 
-use Lkrms\Support\EventDispatcher;
 use Salient\Core\AbstractFacade;
+use Salient\Core\EventDispatcher;
 use Generator;
 
 /**

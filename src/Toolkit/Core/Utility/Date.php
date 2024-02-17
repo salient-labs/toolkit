@@ -10,7 +10,7 @@ use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * Manipulate dates and times
+ * Work with dates and times
  */
 final class Date extends AbstractUtility
 {

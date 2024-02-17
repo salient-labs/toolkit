@@ -4,8 +4,8 @@ namespace Salient\Tests\Core;
 
 use Lkrms\Container\Container;
 use Lkrms\Facade\App;
-use Lkrms\Facade\Event;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Facade\Event;
 use Salient\Core\AbstractFacade;
 use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
 use Salient\Tests\Core\AbstractFacade\MyClassFacade;
