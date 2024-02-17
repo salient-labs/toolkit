@@ -19,8 +19,8 @@ use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Get;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Get;
 use Closure;
 use LogicException;
 

@@ -10,8 +10,8 @@ use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Str;
 
 /**
  * The context within which an entity is instantiated by a provider

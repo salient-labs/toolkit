@@ -15,8 +15,8 @@ use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use LogicException;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Polyfill;
 
-use Lkrms\Utility\Get;
+use Salient\Core\Utility\Get;
 use Stringable;
 use TypeError;
 

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Exception;
 
-use Lkrms\Utility\Get;
+use Salient\Core\Utility\Get;
 
 /**
  * Thrown when a function receives an argument that is not of the required type

@@ -3,11 +3,11 @@
 namespace Lkrms\Support;
 
 use Lkrms\Contract\HasName;
-use Lkrms\Utility\Reflect;
-use Lkrms\Utility\Str;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
+use Salient\Core\Utility\Reflect;
+use Salient\Core\Utility\Str;
 use Generator;
 use LogicException;
 

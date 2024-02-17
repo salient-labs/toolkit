@@ -3,8 +3,8 @@
 namespace Lkrms\Support\PhpDoc;
 
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 
 /**
  * A tag extracted from a PHP DocBlock

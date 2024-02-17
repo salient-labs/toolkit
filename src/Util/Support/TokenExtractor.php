@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Pcre;
 use Generator;
 
 defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);

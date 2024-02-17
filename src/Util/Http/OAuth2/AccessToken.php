@@ -5,9 +5,9 @@ namespace Lkrms\Http\OAuth2;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Contract\AccessTokenInterface;
-use Lkrms\Utility\Date;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
 

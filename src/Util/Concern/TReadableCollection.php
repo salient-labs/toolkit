@@ -7,7 +7,7 @@ use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IComparable;
 use Lkrms\Contract\Jsonable;
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Utility\Json;
+use Salient\Core\Utility\Json;
 use ArrayIterator;
 use JsonSerializable;
 use ReturnTypeWillChange;

@@ -11,10 +11,10 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Inflect;
-use Lkrms\Utility\Json;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Inflect;
+use Salient\Core\Utility\Json;
 
 /**
  * A generic sync entity retrieval command

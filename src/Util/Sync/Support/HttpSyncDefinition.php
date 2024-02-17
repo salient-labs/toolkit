@@ -27,9 +27,9 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
-use Lkrms\Utility\Env;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Env;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Closure;
 use LogicException;
 

@@ -3,9 +3,9 @@
 namespace Lkrms\Http;
 
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Utility\Arr;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Utility\Arr;
 
 /**
  * An HTTP response

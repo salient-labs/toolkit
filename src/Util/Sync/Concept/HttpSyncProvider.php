@@ -17,7 +17,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
-use Lkrms\Utility\Compute;
+use Salient\Core\Utility\Compute;
 
 /**
  * Base class for HTTP-based RESTful API providers

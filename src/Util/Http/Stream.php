@@ -6,9 +6,9 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Http\Exception\StreamDetachedException;
 use Lkrms\Http\Exception\StreamInvalidRequestException;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Str;
 use Psr\Http\Message\StreamInterface;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Str;
 use Stringable;
 
 /**

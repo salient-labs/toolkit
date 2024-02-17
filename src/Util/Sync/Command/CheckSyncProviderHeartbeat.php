@@ -8,7 +8,7 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Inflect;
+use Salient\Core\Utility\Inflect;
 
 /**
  * A generic sync provider heartbeat check command

@@ -6,7 +6,7 @@ use Lkrms\Container\Application;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\File;
+use Salient\Core\Utility\File;
 
 abstract class SyncTestCase extends TestCase
 {

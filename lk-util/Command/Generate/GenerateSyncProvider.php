@@ -12,8 +12,8 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Str;
 
 /**
  * Generates provider interfaces for sync entities

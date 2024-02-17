@@ -3,7 +3,7 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Enumeration;
-use Lkrms\Utility\Compute;
+use Salient\Core\Utility\Compute;
 
 /**
  * Text comparison algorithms

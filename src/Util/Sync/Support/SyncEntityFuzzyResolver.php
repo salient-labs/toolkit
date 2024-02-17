@@ -9,8 +9,8 @@ use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Lkrms\Utility\Compute;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Str;
 use Closure;
 use LogicException;
 

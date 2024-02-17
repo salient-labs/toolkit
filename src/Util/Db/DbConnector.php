@@ -3,11 +3,11 @@
 namespace Lkrms\Db;
 
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Utility\Env;
-use Lkrms\Utility\Format;
-use Lkrms\Utility\Get;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Utility\Env;
+use Salient\Core\Utility\Format;
+use Salient\Core\Utility\Get;
 use ADOConnection;
 
 /**

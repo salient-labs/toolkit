@@ -2,10 +2,10 @@
 
 namespace Salient\Core;
 
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Pcre;
 use Salient\Core\Exception\InvalidConfigurationException;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Pcre;
 use ArrayAccess;
 use LogicException;
 use OutOfRangeException;

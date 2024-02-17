@@ -6,9 +6,9 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Utility\Reflect;
-use Lkrms\Utility\Str;
 use PHPUnit\Framework\TestCase;
+use Salient\Core\Utility\Reflect;
+use Salient\Core\Utility\Str;
 
 /**
  * Generates PHPUnit tests

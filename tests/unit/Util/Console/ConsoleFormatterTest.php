@@ -7,7 +7,7 @@ use Lkrms\Console\Support\ConsoleManPageFormat;
 use Lkrms\Console\Support\ConsoleMarkdownFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Str;
 
 final class ConsoleFormatterTest extends TestCase
 {

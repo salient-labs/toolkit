@@ -12,9 +12,9 @@ use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Generator;
 use LogicException;
 

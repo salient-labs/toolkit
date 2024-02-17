@@ -6,7 +6,7 @@ use Lkrms\Concept\TypedCollection;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
-use Lkrms\Utility\Arr;
+use Salient\Core\Utility\Arr;
 use JsonSerializable;
 
 /**

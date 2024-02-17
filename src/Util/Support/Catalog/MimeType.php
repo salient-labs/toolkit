@@ -3,7 +3,7 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Dictionary;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Str;
 
 /**
  * Frequently-used MIME types

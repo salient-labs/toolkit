@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\Date;
 
-use Lkrms\Utility\Date;
+use Salient\Core\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;

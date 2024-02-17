@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Lkrms\Utility\Arr;
+use Salient\Core\Utility\Arr;
 use LogicException;
 use ReflectionClass;
 

@@ -2,9 +2,9 @@
 
 namespace Salient\Core\Concern;
 
-use Lkrms\Utility\Get;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Utility\Get;
 use LogicException;
 
 /**

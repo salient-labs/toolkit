@@ -11,7 +11,7 @@ use Lkrms\Console\Support\ConsoleManPageFormat as ManPageFormat;
 use Lkrms\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 use LogicException;
 
 /**

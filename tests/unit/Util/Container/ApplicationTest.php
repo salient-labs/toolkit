@@ -7,11 +7,11 @@ use Lkrms\Container\ApplicationInterface;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\Catalog\EnvFlag;
-use Lkrms\Utility\Env;
-use Lkrms\Utility\File;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Facade\Config;
+use Salient\Core\Utility\Env;
+use Salient\Core\Utility\File;
 
 final class ApplicationTest extends TestCase
 {

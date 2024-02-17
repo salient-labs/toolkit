@@ -5,7 +5,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Get;
+use Salient\Core\Utility\Get;
 use ArrayIterator;
 use IteratorAggregate;
 use LogicException;

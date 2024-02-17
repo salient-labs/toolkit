@@ -2,8 +2,8 @@
 
 namespace Lkrms\Exception;
 
-use Lkrms\Utility\Json;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Thrown when a preg_* function fails in a Pcre wrapper method

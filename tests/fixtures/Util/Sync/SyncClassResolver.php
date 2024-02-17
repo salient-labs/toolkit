@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Sync;
 
 use Lkrms\Sync\Contract\ISyncClassResolver;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 
 class SyncClassResolver implements ISyncClassResolver
 {

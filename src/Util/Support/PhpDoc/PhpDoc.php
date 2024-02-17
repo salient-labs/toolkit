@@ -5,10 +5,10 @@ namespace Lkrms\Support\PhpDoc;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 
 /**
  * Parses PSR-5 PHPDocs

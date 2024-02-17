@@ -15,11 +15,11 @@ use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Inflect;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Inflect;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Closure;
 use DateTimeImmutable;
 

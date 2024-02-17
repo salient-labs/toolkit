@@ -4,11 +4,11 @@ namespace Lkrms\Http;
 
 use Lkrms\Concern\Immutable;
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
 use Psr\Http\Message\UriInterface;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use JsonSerializable;
 use Stringable;
 

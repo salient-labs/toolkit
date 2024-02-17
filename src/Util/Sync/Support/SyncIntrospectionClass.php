@@ -7,9 +7,9 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Reflect;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Reflect;
+use Salient\Core\Utility\Str;
 use Closure;
 use ReflectionClass;
 
