@@ -7,7 +7,7 @@ use Salient\Core\AbstractUtility;
 use Stringable;
 
 /**
- * Generate values like hashes and secure UUIDs
+ * Generate values like hashes and UUIDs
  */
 final class Compute extends AbstractUtility
 {

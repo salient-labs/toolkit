@@ -6,12 +6,11 @@ use Lkrms\Container\Event\BeforeGlobalContainerSetEvent;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Facade\App;
-use Lkrms\Facade\Event;
-use Lkrms\Support\EventDispatcher;
-use Salient\Core\Concern\ResolvesServiceLists;
+use Salient\Core\Concern\HasUnderlyingService;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
 use Salient\Core\Contract\Unloadable;
+use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Get;
 use LogicException;
 
@@ -26,8 +25,8 @@ use LogicException;
  */
 abstract class AbstractFacade implements FacadeInterface
 {
-    /** @use ResolvesServiceLists<TService> */
-    use ResolvesServiceLists;
+    /** @use HasUnderlyingService<TService> */
+    use HasUnderlyingService;
 
     /**
      * @var array<class-string<static>,TService>

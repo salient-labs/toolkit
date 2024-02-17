@@ -5,11 +5,11 @@ namespace Salient\Core\Catalog;
 use Lkrms\Concept\Enumeration;
 
 /**
- * Array sorting type flags
+ * Sorting flags
  *
  * @extends Enumeration<int>
  */
-class SortTypeFlag extends Enumeration
+class SortFlag extends Enumeration
 {
     public const REGULAR = \SORT_REGULAR;
     public const NUMERIC = \SORT_NUMERIC;

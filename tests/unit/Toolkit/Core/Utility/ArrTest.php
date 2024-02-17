@@ -4,7 +4,7 @@ namespace Salient\Tests\Core\Utility;
 
 use Lkrms\Contract\Jsonable;
 use Lkrms\Tests\TestCase;
-use Salient\Core\Catalog\SortTypeFlag;
+use Salient\Core\Catalog\SortFlag;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Json;
 use DateTimeImmutable;
@@ -1078,7 +1078,7 @@ final class ArrTest extends TestCase
      *
      * @param mixed[] $expected
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
      */
     public function testSort(array $expected, array $array, bool $preserveKeys = false, $callbackOrFlags = \SORT_REGULAR): void
     {
@@ -1161,7 +1161,7 @@ final class ArrTest extends TestCase
      *
      * @param mixed[] $expected
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortTypeFlag::*> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
      */
     public function testSortByKey(array $expected, array $array, $callbackOrFlags = \SORT_REGULAR): void
     {

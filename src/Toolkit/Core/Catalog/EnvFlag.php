@@ -6,11 +6,9 @@ use Lkrms\Concept\Enumeration;
 use Salient\Core\Utility\Env;
 
 /**
- * Env flags
+ * Env::apply() flags
  *
  * @extends Enumeration<int>
- *
- * @see Env
  */
 final class EnvFlag extends Enumeration
 {

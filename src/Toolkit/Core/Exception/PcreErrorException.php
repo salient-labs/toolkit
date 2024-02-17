@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
 
+use Lkrms\Exception\Exception;
 use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
 
 /**
- * Thrown when a preg_* function fails in a Pcre wrapper method
- *
- * @see Pcre
+ * @api
  */
 class PcreErrorException extends Exception
 {

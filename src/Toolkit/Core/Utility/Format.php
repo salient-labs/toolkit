@@ -7,7 +7,7 @@ use Salient\Core\AbstractUtility;
 use DateTimeInterface;
 
 /**
- * Make data human-readable
+ * Format data for humans
  */
 final class Format extends AbstractUtility
 {

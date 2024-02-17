@@ -7,7 +7,7 @@ use Salient\Core\Catalog\JsonEncodeFlag;
 use Salient\Core\AbstractUtility;
 
 /**
- * Standardise calls to json_encode() and json_decode()
+ * Wrappers for json_encode() and json_decode()
  */
 final class Json extends AbstractUtility
 {

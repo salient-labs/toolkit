@@ -7,9 +7,11 @@ use LogicException;
 use ReflectionClass;
 
 /**
+ * @internal
+ *
  * @template TService of object
  */
-trait ResolvesServiceLists
+trait HasUnderlyingService
 {
     /**
      * @var array<class-string<static>,class-string<TService>>

@@ -3,9 +3,9 @@
 namespace Salient\Tests\Core\Utility;
 
 use Composer\InstalledVersions;
-use Lkrms\Facade\Event;
 use Lkrms\Tests\TestCase;
 use Salient\Core\Event\PackageDataReceivedEvent;
+use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Package;
 
 final class PackageTest extends TestCase
