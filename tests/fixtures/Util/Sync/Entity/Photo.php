@@ -39,7 +39,7 @@ class Photo extends SyncEntity
     public $ThumbnailUrl;
 
     /**
-     * @inheritDoc
+     * @internal
      */
     public static function getRelationships(): array
     {

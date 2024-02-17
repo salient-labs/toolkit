@@ -9,7 +9,7 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Facade\Console;
-use Lkrms\Utility\File;
+use Salient\Core\Utility\File;
 
 abstract class CommandTestCase extends TestCase
 {

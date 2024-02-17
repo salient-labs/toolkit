@@ -6,9 +6,9 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use Lkrms\Http\Exception\HttpServerException;
-use Lkrms\Utility\Pcre;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Listens for HTTP requests on a local address

@@ -34,7 +34,7 @@ class Task extends SyncEntity
     public $Completed;
 
     /**
-     * @inheritDoc
+     * @internal
      */
     public static function getRelationships(): array
     {

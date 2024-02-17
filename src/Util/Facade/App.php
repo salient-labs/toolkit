@@ -43,7 +43,7 @@ use Salient\Core\AbstractFacade;
 final class App extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

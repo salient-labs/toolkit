@@ -5,8 +5,8 @@ namespace Lkrms\Tests\Http;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Uri;
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Pcre;
 use Generator;
 
 /**

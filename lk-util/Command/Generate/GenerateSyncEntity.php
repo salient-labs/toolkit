@@ -15,11 +15,11 @@ use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
-use Lkrms\Utility\Inflect;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Inflect;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Closure;
 use DateTimeImmutable;
 
@@ -265,7 +265,7 @@ EOF)
             }
         } elseif ($provider) {
             $endpoint = $this->HttpEndpoint;
-            $query = Convert::queryToData($this->HttpQuery) ?: null;
+            $query = Get::filter($this->HttpQuery) ?: null;
             $data = $this->HttpDataFile === null
                 ? null
                 : $this->getJson($this->HttpDataFile, $dataUri, false);
@@ -472,12 +472,12 @@ EOF;
             $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getParentProperty',
                 $this->code(array_key_first($parent)),
-                '@inheritDoc',
+                '@internal',
             ));
             $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getChildrenProperty',
                 $this->code(array_key_first($children)),
-                '@inheritDoc',
+                '@internal',
             ));
         }
 
@@ -495,7 +495,7 @@ EOF;
             $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getRelationships',
                 '[' . \PHP_EOL . implode(\PHP_EOL, $this->indent($lines)) . \PHP_EOL . ']',
-                '@inheritDoc',
+                '@internal',
                 'array',
             ));
         }

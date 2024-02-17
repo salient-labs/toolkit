@@ -6,7 +6,7 @@ use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Curler\Curler;
-use Lkrms\Utility\Arr;
+use Salient\Core\Utility\Arr;
 use Closure;
 
 /**

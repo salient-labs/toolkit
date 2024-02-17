@@ -6,7 +6,7 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Contract\ConsoleTargetStreamInterface;
 use Lkrms\Console\Exception\ConsoleInvalidTargetException;
 use Lkrms\Console\ConsoleFormatter as Formatter;
-use Lkrms\Utility\File;
+use Salient\Core\Utility\File;
 
 /**
  * Writes console output to an array

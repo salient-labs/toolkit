@@ -7,8 +7,8 @@ use Lkrms\Http\Exception\StreamDetachedException;
 use Lkrms\Http\Exception\StreamInvalidRequestException;
 use Lkrms\Http\Stream;
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Format;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Format;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests

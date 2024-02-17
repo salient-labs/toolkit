@@ -5,8 +5,8 @@ if (\PHP_VERSION_ID < 80000) {
         'parameters' => [
             'excludePaths' => [
                 'analyseAndScan' => [
-                    'tests/fixtures/Util/Utility/Reflect/MyClassWithDnfTypes.php',
-                    'tests/fixtures/Util/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
+                    'tests/fixtures/Toolkit/Core/Utility/Reflect/MyClassWithDnfTypes.php',
+                    'tests/fixtures/Toolkit/Core/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
                 ],
             ],
             'ignoreErrors' => [],

@@ -58,9 +58,8 @@ trait HasFacade
         // Revert to `$this->InstanceWithFacade` if `$facade` matches and
         // `$this` hasn't been cloned in the meantime
         if (
-            $this->InstanceWithFacade &&
-            $this->InstanceWithFacade->Facade === $facade &&
-            $this->InstanceWithoutFacade === $this
+            $this->InstanceWithoutFacade === $this &&
+            $this->InstanceWithFacade->Facade === $facade
         ) {
             return $this->InstanceWithFacade;
         }
@@ -73,6 +72,8 @@ trait HasFacade
         $instance->InstanceWithFacade = $instance;
         $instance->HasTentativeFacade = false;
 
+        $this->InstanceWithoutFacade = $this;
+        $this->InstanceWithFacade = $instance;
         $this->HasTentativeFacade = false;
 
         return $instance;
@@ -114,6 +115,9 @@ trait HasFacade
         } else {
             $instance->InstanceWithoutFacade = $instance;
             $instance->InstanceWithFacade = $this;
+
+            $this->InstanceWithoutFacade = $instance;
+            $this->InstanceWithFacade = $this;
         }
 
         $this->HasTentativeFacade = false;

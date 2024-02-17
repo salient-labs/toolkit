@@ -21,7 +21,7 @@ use Salient\Core\AbstractFacade;
 final class Err extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

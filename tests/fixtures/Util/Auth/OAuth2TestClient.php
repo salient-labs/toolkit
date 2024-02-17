@@ -7,7 +7,7 @@ use Lkrms\Http\OAuth2\AccessToken;
 use Lkrms\Http\OAuth2\OAuth2Client;
 use Lkrms\Http\OAuth2\OAuth2Flow;
 use Lkrms\Http\HttpServer;
-use Lkrms\Utility\Env;
+use Salient\Core\Utility\Env;
 
 class OAuth2TestClient extends OAuth2Client
 {

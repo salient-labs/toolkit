@@ -18,13 +18,13 @@ use Lkrms\Sync\Event\SyncStoreLoadedEvent;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Sync\Exception\SyncStoreException;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Compute;
-use Lkrms\Utility\Convert;
-use Lkrms\Utility\Inflect;
-use Lkrms\Utility\Json;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Inflect;
+use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use LogicException;
 use ReflectionClass;
 
@@ -346,7 +346,7 @@ final class SyncStore extends SqliteStore
 
         return $binary
             ? $this->RunUuid
-            : Convert::uuidToHex($this->RunUuid);
+            : Get::uuid($this->RunUuid);
     }
 
     /**
@@ -1323,7 +1323,7 @@ final class SyncStore extends SqliteStore
 
         $db = $this->db();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':run_uuid', $uuid = Compute::uuid(true), \SQLITE3_BLOB);
+        $stmt->bindValue(':run_uuid', $uuid = Compute::binaryUuid(), \SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, \SQLITE3_TEXT);
         $stmt->bindValue(':run_arguments_json', Json::stringify($this->Arguments), \SQLITE3_TEXT);
         $stmt->execute();

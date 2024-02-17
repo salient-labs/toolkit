@@ -50,7 +50,7 @@ use Closure;
 final class HttpSyncDefinitionBuilder extends Builder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {

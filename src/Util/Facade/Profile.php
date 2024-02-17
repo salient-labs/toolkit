@@ -27,7 +27,7 @@ use Salient\Core\AbstractFacade;
 final class Profile extends AbstractFacade
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService()
     {

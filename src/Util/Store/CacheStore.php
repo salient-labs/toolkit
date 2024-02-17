@@ -5,7 +5,7 @@ namespace Lkrms\Store;
 use Lkrms\Exception\AssertionFailedException;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Store\Concept\SqliteStore;
-use Lkrms\Utility\Assert;
+use Salient\Core\Utility\Assert;
 use DateTimeInterface;
 use LogicException;
 

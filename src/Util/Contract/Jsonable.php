@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Utility\Catalog\JsonEncodeFlag;
+use Salient\Core\Catalog\JsonEncodeFlag;
 
 interface Jsonable
 {

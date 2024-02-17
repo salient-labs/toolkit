@@ -12,10 +12,10 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Contract\HasJsonSchema;
 use Lkrms\Facade\Console;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Package;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Package;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use LogicException;
 use Throwable;
 

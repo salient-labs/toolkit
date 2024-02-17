@@ -7,8 +7,8 @@ use Lkrms\Cli\CliOption;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Reflect;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Reflect;
 use Salient\Core\AbstractFacade;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -352,7 +352,7 @@ final class GenerateFacade extends GenerateCommand
                 $this->code($alias
                     ? [$service => Arr::unwrap($alias)]
                     : $service),
-                '@inheritDoc',
+                '@internal',
                 null,
                 self::VISIBILITY_PROTECTED
             ))

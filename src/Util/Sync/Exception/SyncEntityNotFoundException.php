@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Exception;
 
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Format;
+use Salient\Core\Utility\Format;
 use Throwable;
 
 /**

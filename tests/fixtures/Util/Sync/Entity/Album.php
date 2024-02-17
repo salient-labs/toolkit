@@ -35,7 +35,7 @@ class Album extends SyncEntity
     public $Photos;
 
     /**
-     * @inheritDoc
+     * @internal
      */
     public static function getRelationships(): array
     {

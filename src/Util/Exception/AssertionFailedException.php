@@ -2,7 +2,7 @@
 
 namespace Lkrms\Exception;
 
-use Lkrms\Utility\Assert;
+use Salient\Core\Utility\Assert;
 
 /**
  * Thrown when an assertion fails

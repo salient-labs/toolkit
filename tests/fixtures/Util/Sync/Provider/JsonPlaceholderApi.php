@@ -26,7 +26,7 @@ use Lkrms\Tests\Sync\Entity\Photo;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
-use Lkrms\Utility\Env;
+use Salient\Core\Utility\Env;
 
 /**
  * @method Album createAlbum(ISyncContext $ctx, Album $album)

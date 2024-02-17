@@ -5,7 +5,7 @@ namespace Lkrms\Sync\Exception;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Json;
+use Salient\Core\Utility\Json;
 
 /**
  * Thrown when there are unclaimed sync operation filters

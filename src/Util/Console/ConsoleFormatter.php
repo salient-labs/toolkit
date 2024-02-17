@@ -15,9 +15,8 @@ use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Utility\Convert;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use LogicException;
 
 /**
@@ -332,7 +331,7 @@ final class ConsoleFormatter
             if ($match['breaks'] !== null) {
                 $breaks = $match['breaks'];
                 if ($unwrap && strpos($breaks, "\n") !== false) {
-                    $breaks = Convert::unwrap($breaks, "\n", false, true, true);
+                    $breaks = Str::unwrap($breaks, "\n", false, true, true);
                 }
                 $string .= $indent . $breaks;
                 continue;
@@ -349,7 +348,7 @@ final class ConsoleFormatter
             if ($match['text'] !== null) {
                 $text = $match['text'];
                 if ($unwrap && strpos($text, "\n") !== false) {
-                    $text = Convert::unwrap($text, "\n", false, true, true);
+                    $text = Str::unwrap($text, "\n", false, true, true);
                 }
 
                 $adjust = 0;

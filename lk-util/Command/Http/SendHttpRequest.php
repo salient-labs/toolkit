@@ -9,11 +9,10 @@ use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Sync\Concept\HttpSyncProvider;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Json;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Str;
 
 /**
  * Sends HTTP requests to HTTP sync providers
@@ -113,7 +112,7 @@ final class SendHttpRequest extends Command
     {
         /** @var HttpSyncProvider */
         $provider = $this->getProvider($this->Provider, HttpSyncProvider::class);
-        $query = Convert::queryToData($this->HttpQuery) ?: null;
+        $query = Get::filter($this->HttpQuery) ?: null;
         $data = ($this->HttpDataFile ?? null) === null
             ? null
             : $this->getJson($this->HttpDataFile, $dataUri, false);

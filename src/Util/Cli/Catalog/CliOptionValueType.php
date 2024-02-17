@@ -3,7 +3,7 @@
 namespace Lkrms\Cli\Catalog;
 
 use Lkrms\Concept\ConvertibleEnumeration;
-use Lkrms\Utility\Test;
+use Salient\Core\Utility\Test;
 use DateTimeImmutable;
 use LogicException;
 

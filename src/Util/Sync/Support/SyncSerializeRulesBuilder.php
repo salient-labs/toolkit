@@ -30,7 +30,7 @@ use Closure;
 final class SyncSerializeRulesBuilder extends Builder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {

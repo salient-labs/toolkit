@@ -38,7 +38,7 @@ use Closure;
 final class DbSyncDefinitionBuilder extends Builder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {

@@ -6,8 +6,8 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
 use Lkrms\Facade\Console;
-use Lkrms\Utility\Format;
-use Lkrms\Utility\Get;
+use Salient\Core\Utility\Format;
+use Salient\Core\Utility\Get;
 
 /**
  * Implements MultipleErrorExceptionInterface

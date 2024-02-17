@@ -5,7 +5,7 @@ namespace Lkrms\Support;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
-use Lkrms\Utility\Arr;
+use Salient\Core\Utility\Arr;
 
 /**
  * Moves array values from one set of keys to another

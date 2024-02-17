@@ -24,18 +24,19 @@ use Lkrms\Store\CacheStore;
 use Lkrms\Support\Catalog\MimeType;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Compute;
-use Lkrms\Utility\Convert;
-use Lkrms\Utility\Env;
-use Lkrms\Utility\Json;
-use Lkrms\Utility\Package;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Catalog\QueryFlag;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Contract\Writable;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Env;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Package;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use CurlHandle;
 use DateTimeInterface;
 use Generator;
@@ -800,9 +801,11 @@ final class Curler implements Readable, Writable, Buildable
             return '';
         }
 
-        return '?' . Convert::dataToQuery(
+        return '?' . Get::query(
             $query,
-            $this->PreserveKeys,
+            $this->PreserveKeys
+                ? QueryFlag::PRESERVE_ALL_KEYS
+                : QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
             $this->DateFormatter
         );
     }
@@ -916,9 +919,11 @@ final class Curler implements Readable, Writable, Buildable
 
         $this->setContentType(MimeType::WWW_FORM);
 
-        return Convert::dataToQuery(
+        return Get::query(
             $data,
-            $this->PreserveKeys,
+            $this->PreserveKeys
+                ? QueryFlag::PRESERVE_ALL_KEYS
+                : QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
             $this->DateFormatter
         );
     }

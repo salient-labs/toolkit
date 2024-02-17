@@ -3,11 +3,11 @@
 namespace Lkrms\Store\Concept;
 
 use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Sys;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Sys;
 use LogicException;
 use SQLite3;
 use Throwable;

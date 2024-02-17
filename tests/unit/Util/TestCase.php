@@ -3,8 +3,8 @@
 namespace Lkrms\Tests;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Closure;
 use Throwable;
 

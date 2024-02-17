@@ -4,7 +4,7 @@ namespace Lkrms\Curler\Exception;
 
 use Lkrms\Curler\Curler;
 use Lkrms\Exception\Exception;
-use Lkrms\Utility\Format;
+use Salient\Core\Utility\Format;
 
 /**
  * Base class for Curler exceptions

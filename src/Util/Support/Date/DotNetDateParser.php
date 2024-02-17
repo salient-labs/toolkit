@@ -2,8 +2,8 @@
 
 namespace Lkrms\Support\Date;
 
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use DateTimeImmutable;
 use DateTimeZone;
 

@@ -13,9 +13,9 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Compute;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Str;
 use ADOConnection;
 use ADODB_Exception;
 

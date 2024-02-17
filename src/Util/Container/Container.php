@@ -518,11 +518,13 @@ class Container extends FluentInterface implements ContainerInterface, FacadeAwa
             $services = array_unique($services);
             $bind = array_intersect($bind, $services);
             if (count($bind) < count($services)) {
+                // @codeCoverageIgnoreStart
                 throw new InvalidContainerBindingException(sprintf(
                     '%s does not implement: %s',
                     $id,
                     implode(', ', array_diff($services, $bind)),
                 ));
+                // @codeCoverageIgnoreEnd
             }
         }
 
@@ -555,7 +557,9 @@ class Container extends FluentInterface implements ContainerInterface, FacadeAwa
         }
 
         if ($dependency === '') {
+            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException('Argument #2 ($dependency) must be a non-empty string');
+            // @codeCoverageIgnoreEnd
         }
 
         $rule = $this->Dice->hasRule($context)

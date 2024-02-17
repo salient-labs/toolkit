@@ -64,8 +64,8 @@
             ]
         },
         "files": [
-            "tests/fixtures/Util/Utility/Debug/GetCallerFile1.php",
-            "tests/fixtures/Util/Utility/Debug/GetCallerFile2.php"
+            "tests/fixtures/Toolkit/Core/Utility/Debug/GetCallerFile1.php",
+            "tests/fixtures/Toolkit/Core/Utility/Debug/GetCallerFile2.php"
         ]
     },
     "bin": [

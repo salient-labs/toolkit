@@ -4,7 +4,7 @@ namespace Lkrms\Concept;
 
 use Lkrms\Concern\IsConvertibleEnumeration;
 use Lkrms\Contract\IConvertibleEnumeration;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Str;
 use LogicException;
 use ReflectionClass;
 

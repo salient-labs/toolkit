@@ -4,7 +4,7 @@ namespace Lkrms\Exception;
 
 use Lkrms\Exception\Concern\ExceptionTrait;
 use Lkrms\Exception\Contract\ExceptionInterface;
-use Lkrms\Utility\Reflect;
+use Salient\Core\Utility\Reflect;
 use ReflectionMethod;
 
 /**

@@ -8,9 +8,9 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Str;
 
 /**
  * Base class for generic sync commands

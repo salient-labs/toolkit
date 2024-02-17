@@ -7,8 +7,8 @@ use Lkrms\Facade\Profile;
 use Lkrms\Store\CacheStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncStore;
-use Lkrms\Utility\Env;
-use Lkrms\Utility\Package;
+use Salient\Core\Utility\Env;
+use Salient\Core\Utility\Package;
 
 /**
  * A service container for applications

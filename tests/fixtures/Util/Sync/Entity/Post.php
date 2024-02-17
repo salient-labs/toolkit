@@ -40,7 +40,7 @@ class Post extends SyncEntity
     public $Comments;
 
     /**
-     * @inheritDoc
+     * @internal
      */
     public static function getRelationships(): array
     {
