@@ -41,6 +41,12 @@ final class SysTest extends TestCase
             'special characters + whitespace' => [
                 ' ! " $ % & \' * + , ; < = > ? [ \ ] ^ ` { | } ~ ',
             ],
+            'path' => [
+                '/some/path',
+            ],
+            'path + spaces' => [
+                '/some/path with spaces',
+            ],
             'quoted' => [
                 '"string"',
             ],
@@ -52,6 +58,9 @@ final class SysTest extends TestCase
             ],
             'quoted + whitespace + backslashes' => [
                 '"\string with words\"',
+            ],
+            'quoted (single + double)' => [
+                '\'quotable\' "quotes"',
             ],
             'unquoted + special (cmd) #1' => [
                 'this&that',
@@ -73,6 +82,18 @@ final class SysTest extends TestCase
             ],
             'cmd variable expansion #4' => [
                 'success!',
+            ],
+            'with newline' => [
+                "line\nline",
+            ],
+            'with blank line' => [
+                "line\n\nline",
+            ],
+            'with trailing newline' => [
+                "line\n",
+            ],
+            'with trailing space' => [
+                'string ',
             ],
         ];
     }

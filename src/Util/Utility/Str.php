@@ -92,6 +92,32 @@ final class Str extends Utility
     }
 
     /**
+     * Normalise a string for comparison
+     *
+     * This method performs the following operations:
+     *
+     * 1. Replace ampersands (`&`) with ` and `
+     * 2. Remove full stops (`.`)
+     * 3. Replace non-alphanumeric sequences with a space (` `)
+     * 4. Trim leading and trailing spaces
+     * 5. Make letters uppercase
+     */
+    public static function normalise(string $string): string
+    {
+        $replace = [
+            '/(?<=[^&])&(?=[^&])/' => ' and ',
+            '/\.++/' => '',
+            '/[^[:alnum:]]+/u' => ' ',
+        ];
+
+        return self::upper(trim(Pcre::replace(
+            array_keys($replace),
+            array_values($replace),
+            $string
+        )));
+    }
+
+    /**
      * Replace the end of a string with an ellipsis ("...") if its length
      * exceeds a limit
      */
@@ -488,6 +514,49 @@ final class Str extends Utility
             wordwrap(str_repeat('x', $delta) . $string, $width, $break, $cutLongWords),
             $delta
         );
+    }
+
+    /**
+     * Undo wordwrap(), preserving Markdown-style paragraphs and lists
+     *
+     * Non-consecutive line breaks are converted to spaces unless they precede
+     * one of the following:
+     *
+     * - four or more spaces
+     * - one or more tabs
+     * - a Markdown-style list item (e.g. `- item`, `1. item`)
+     *
+     * If `$ignoreEscapes` is `false`, whitespace escaped with a backslash is
+     * preserved.
+     *
+     * If `$trimTrailingWhitespace` is `true`, whitespace is removed from the
+     * end of each line, and if `$collapseBlankLines` is `true`, three or more
+     * subsequent line breaks are collapsed to two.
+     */
+    public static function unwrap(
+        string $string,
+        string $break = "\n",
+        bool $ignoreEscapes = true,
+        bool $trimTrailingWhitespace = false,
+        bool $collapseBlankLines = false
+    ): string {
+        $newline = preg_quote($break, '/');
+        $escapes = $ignoreEscapes ? '' : Regex::BEFORE_UNESCAPED . '\K';
+
+        if ($trimTrailingWhitespace) {
+            $search[] = "/{$escapes}\h+{$newline}/";
+            $replace[] = $break;
+        }
+
+        $search[] = "/{$escapes}(?<!{$newline}){$newline}(?!{$newline}|    |\\t|(?:[-+*]|[0-9]+[).])\h)/";
+        $replace[] = ' ';
+
+        if ($collapseBlankLines) {
+            $search[] = "/(?:{$newline}){3,}/";
+            $replace[] = $break . $break;
+        }
+
+        return Pcre::replace($search, $replace, $string);
     }
 
     /**

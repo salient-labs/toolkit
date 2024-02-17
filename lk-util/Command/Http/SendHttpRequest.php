@@ -10,7 +10,6 @@ use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Str;
@@ -113,7 +112,7 @@ final class SendHttpRequest extends Command
     {
         /** @var HttpSyncProvider */
         $provider = $this->getProvider($this->Provider, HttpSyncProvider::class);
-        $query = Convert::queryToData($this->HttpQuery) ?: null;
+        $query = Get::filter($this->HttpQuery) ?: null;
         $data = ($this->HttpDataFile ?? null) === null
             ? null
             : $this->getJson($this->HttpDataFile, $dataUri, false);

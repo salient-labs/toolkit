@@ -16,7 +16,7 @@ use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
@@ -265,7 +265,7 @@ EOF)
             }
         } elseif ($provider) {
             $endpoint = $this->HttpEndpoint;
-            $query = Convert::queryToData($this->HttpQuery) ?: null;
+            $query = Get::filter($this->HttpQuery) ?: null;
             $data = $this->HttpDataFile === null
                 ? null
                 : $this->getJson($this->HttpDataFile, $dataUri, false);

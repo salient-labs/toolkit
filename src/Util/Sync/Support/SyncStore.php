@@ -20,7 +20,7 @@ use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Sync\Exception\SyncStoreException;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
@@ -346,7 +346,7 @@ final class SyncStore extends SqliteStore
 
         return $binary
             ? $this->RunUuid
-            : Convert::uuidToHex($this->RunUuid);
+            : Get::uuid($this->RunUuid);
     }
 
     /**
@@ -1323,7 +1323,7 @@ final class SyncStore extends SqliteStore
 
         $db = $this->db();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':run_uuid', $uuid = Compute::uuid(true), \SQLITE3_BLOB);
+        $stmt->bindValue(':run_uuid', $uuid = Compute::binaryUuid(), \SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, \SQLITE3_TEXT);
         $stmt->bindValue(':run_arguments_json', Json::stringify($this->Arguments), \SQLITE3_TEXT);
         $stmt->execute();

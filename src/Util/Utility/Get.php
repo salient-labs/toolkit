@@ -5,11 +5,15 @@ namespace Lkrms\Utility;
 use Lkrms\Concept\Utility;
 use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Exception\UncloneableObjectException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Support\Date\DateFormatter;
+use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Utility\Catalog\CopyFlag;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Catalog\QueryFlag;
 use Closure;
 use Countable;
 use DateTimeInterface;
@@ -119,6 +123,93 @@ final class Get extends Utility
             return $value(...$args);
         }
         return $value;
+    }
+
+    /**
+     * Convert "key=value" pairs to an associative array
+     *
+     * @param string[] $values
+     * @return array<string,mixed>
+     */
+    public static function filter(array $values): array
+    {
+        $values = Pcre::replaceCallback(
+            '/^([^=]++)=(.++)/s',
+            fn(array $match) =>
+                $match[1] . '=' . rawurlencode($match[2]),
+            $values,
+        );
+
+        $query = [];
+        parse_str(implode('&', $values), $query);
+        return $query;
+    }
+
+    /**
+     * Convert nested arrays to a query string
+     *
+     * List keys are not preserved by default. Use `$flag` to modify this
+     * behaviour.
+     *
+     * @param mixed[] $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     */
+    public static function query(
+        array $data,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null
+    ): string {
+        return implode('&', self::doQuery(
+            $data,
+            $flags,
+            $dateFormatter ?: new DateFormatter()
+        ));
+    }
+
+    /**
+     * @param mixed[] $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     * @param string[] $query
+     * @return string[]
+     */
+    private static function doQuery(
+        array $data,
+        int $flags,
+        DateFormatterInterface $df,
+        array &$query = [],
+        string $keyPrefix = '',
+        string $keyFormat = '%s'
+    ): array {
+        foreach ($data as $key => $value) {
+            $key = $keyPrefix . sprintf($keyFormat, $key);
+
+            if (is_array($value)) {
+                if (!$value) {
+                    continue;
+                }
+                $format = (
+                    Arr::isList($value)
+                        ? $flags & QueryFlag::PRESERVE_LIST_KEYS
+                        : (Arr::isIndexed($value)
+                            ? $flags & QueryFlag::PRESERVE_NUMERIC_KEYS
+                            : $flags & QueryFlag::PRESERVE_STRING_KEYS)
+                ) ? '[%s]' : '[]';
+                self::doQuery($value, $flags, $df, $query, $key, $format);
+                continue;
+            }
+
+            if (is_bool($value)) {
+                $value = (string) (int) $value;
+            } elseif ($value instanceof DateTimeInterface) {
+                $value = $df->format($value);
+            } else {
+                $value = (string) $value;
+            }
+
+            $query[] = rawurlencode($key) . '=' . rawurlencode($value);
+        }
+
+        return $query;
     }
 
     /**
@@ -232,6 +323,49 @@ final class Get extends Utility
     public static function fqcn(string $class): string
     {
         return Str::lower(ltrim($class, '\\'));
+    }
+
+    /**
+     * Get the hexadecimal form of a 16-byte UUID
+     */
+    public static function uuid(string $uuid): string
+    {
+        $length = strlen($uuid);
+
+        if ($length !== 16) {
+            $uuid = str_replace('-', '', $uuid);
+
+            if (!Pcre::match('/^[0-9a-f]{32}$/i', $uuid)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Invalid UUID: %s',
+                    $uuid,
+                ));
+            }
+
+            $uuid = Str::lower($uuid);
+
+            return implode('-', [
+                substr($uuid, 0, 8),
+                substr($uuid, 8, 4),
+                substr($uuid, 12, 4),
+                substr($uuid, 16, 4),
+                substr($uuid, 20, 12),
+            ]);
+        }
+
+        $uuid = [
+            substr($uuid, 0, 4),
+            substr($uuid, 4, 2),
+            substr($uuid, 6, 2),
+            substr($uuid, 8, 2),
+            substr($uuid, 10, 6),
+        ];
+
+        foreach ($uuid as $bin) {
+            $hex[] = bin2hex($bin);
+        }
+
+        return implode('-', $hex);
     }
 
     /**

@@ -10,7 +10,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
 use Lkrms\Utility\Compute;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 use Closure;
 use LogicException;
 
@@ -152,7 +152,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 
         $name =
             $this->Algorithm & Flag::NORMALISE
-                ? Convert::toNormal($name)
+                ? Str::normalise($name)
                 : $name;
 
         if (isset($this->Cache[$name])) {
@@ -251,7 +251,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
             $this->Entities[] = [
                 $entity,
                 $this->Algorithm & Flag::NORMALISE
-                    ? Convert::toNormal($name)
+                    ? Str::normalise($name)
                     : $name,
                 $this->WeightProperty === null
                     ? 0

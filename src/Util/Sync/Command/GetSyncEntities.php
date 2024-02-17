@@ -11,8 +11,8 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Json;
 
@@ -126,7 +126,7 @@ final class GetSyncEntities extends AbstractSyncCommand
             throw new CliInvalidArgumentsException('no default provider: ' . $entity);
         }
 
-        $filter = Convert::queryToData($this->Filter);
+        $filter = Get::filter($this->Filter);
 
         /** @var ISyncProvider */
         $provider = $this->App->get($this->Providers[$provider]);

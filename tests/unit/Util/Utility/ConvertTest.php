@@ -5,7 +5,9 @@ namespace Lkrms\Tests\Utility;
 use Lkrms\Http\Uri;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Tests\TestCase;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
+use Lkrms\Utility\Str;
+use Salient\Core\Catalog\QueryFlag;
 use DateTimeImmutable;
 use DateTimeInterface;
 
@@ -192,7 +194,8 @@ final class ConvertTest extends TestCase
             'key1' => 'value1',
             'key2' => 'value2',
             'key3' => '',
-        ], Convert::queryToData(['key1=value1', 'key2=value2', 'key3=value3', 'key3=', 'key4', '=value5']));
+            'key4' => '',
+        ], Get::filter(['key1=value1', 'key2=value2', 'key3=value3', 'key3=', 'key4', '=value5']));
     }
 
     /**
@@ -208,7 +211,7 @@ final class ConvertTest extends TestCase
     ): void {
         $this->assertSame(
             $expected,
-            Convert::unwrap($string, $break, $ignoreEscapes, $trimTrailingWhitespace, $collapseBlankLines)
+            Str::unwrap($string, $break, $ignoreEscapes, $trimTrailingWhitespace, $collapseBlankLines)
         );
     }
 
@@ -386,15 +389,6 @@ final class ConvertTest extends TestCase
         ];
     }
 
-    public function testToShellArg(): void
-    {
-        $this->assertSame("''", Convert::toShellArg(''));
-        $this->assertSame('abc', Convert::toShellArg('abc'));
-        $this->assertSame('/some/path', Convert::toShellArg('/some/path'));
-        $this->assertSame("'/some/path with spaces'", Convert::toShellArg('/some/path with spaces'));
-        $this->assertSame("''\''quotable'\'' \"quotes\"'", Convert::toShellArg('\'quotable\' "quotes"'));
-    }
-
     /**
      * @dataProvider toNormalProvider
      */
@@ -402,7 +396,7 @@ final class ConvertTest extends TestCase
         string $expected,
         string $text
     ): void {
-        $this->assertSame($expected, Convert::toNormal($text));
+        $this->assertSame($expected, Str::normalise($text));
     }
 
     /**
@@ -424,18 +418,19 @@ final class ConvertTest extends TestCase
      * @dataProvider dataToQueryProvider
      *
      * @param mixed[] $data
+     * @param int-mask-of<QueryFlag::*> $flags
      */
     public function testDataToQuery(
         string $expected,
         array $data,
-        bool $preserveKeys = false,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null
     ): void {
-        $this->assertSame($expected, Convert::dataToQuery($data, $preserveKeys, $dateFormatter));
+        $this->assertSame($expected, Get::query($data, $flags, $dateFormatter));
     }
 
     /**
-     * @return array<array{string,mixed[],2?:bool,3?:DateFormatter}>
+     * @return array<array{string,mixed[],2?:int-mask-of<QueryFlag::*>,3?:DateFormatter}>
      */
     public static function dataToQueryProvider(): array
     {
@@ -462,20 +457,20 @@ final class ConvertTest extends TestCase
                 // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0]=email&fields[notify_by][1]=sms&fields[created]=2021-10-02T17:23:14+10:00
                 'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D=email&fields%5Bnotify_by%5D%5B1%5D=sms&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
                 $data,
-                true,
+                QueryFlag::PRESERVE_ALL_KEYS,
             ],
             [
                 // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=Sat, 02 Oct 2021 17:23:14 +1000
                 'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021%2017%3A23%3A14%20%2B1000',
                 $data,
-                false,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
                 new DateFormatter(DateTimeInterface::RSS),
             ],
             [
                 // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=2021-10-02T07:23:14+00:00
                 'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=2021-10-02T07%3A23%3A14%2B00%3A00',
                 $data,
-                false,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
                 new DateFormatter(DateTimeInterface::ATOM, 'UTC'),
             ],
         ];

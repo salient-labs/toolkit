@@ -12,30 +12,44 @@ use Stringable;
 final class Compute extends Utility
 {
     /**
-     * Get a cryptographically secure UUID
-     *
-     * Of the 128 bits returned, 122 are random.
-     *
-     * Compliant with \[RFC4122].
-     *
-     * @param bool $binary If `true`, 16 bytes of raw binary data are returned
-     * instead of a 36-byte hexadecimal representation.
+     * Get a cryptographically secure [RFC4122]-compliant UUID in raw binary
+     * form
      */
-    public static function uuid(bool $binary = false): string
+    public static function binaryUuid(): string
     {
-        $uuid[] = random_bytes(4);
-        $uuid[] = random_bytes(2);
-        // Version 4 (most significant 4 bits = 0b0100)
-        $uuid[] = chr(ord(random_bytes(1)) & 0x0F | 0x40) . random_bytes(1);
-        // Variant 1 (most significant 2 bits = 0b10)
-        $uuid[] = chr(ord(random_bytes(1)) & 0x3F | 0x80) . random_bytes(1);
-        $uuid[] = random_bytes(6);
+        return self::doUuid(true);
+    }
+
+    /**
+     * Get a cryptographically secure [RFC4122]-compliant UUID in hexadecimal
+     * form
+     */
+    public static function uuid(): string
+    {
+        return self::doUuid(false);
+    }
+
+    private static function doUuid(bool $binary): string
+    {
+        $uuid = [
+            random_bytes(4),
+            random_bytes(2),
+            // Version 4 (most significant 4 bits = 0b0100)
+            chr(random_int(0, 0x0F) | 0x40) . random_bytes(1),
+            // Variant 1 (most significant 2 bits = 0b10)
+            chr(random_int(0, 0x3F) | 0x80) . random_bytes(1),
+            random_bytes(6),
+        ];
 
         if ($binary) {
             return implode('', $uuid);
         }
 
-        return implode('-', array_map(fn(string $bin): string => bin2hex($bin), $uuid));
+        foreach ($uuid as $bin) {
+            $hex[] = bin2hex($bin);
+        }
+
+        return implode('-', $hex);
     }
 
     /**
@@ -59,7 +73,7 @@ final class Compute extends Utility
     public static function binaryHash(...$value): string
     {
         // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
-        return hash('md5', implode("\0", Convert::toStrings(...$value)), true);
+        return hash('md5', implode("\0", $value), true);
     }
 
     /**
@@ -69,7 +83,7 @@ final class Compute extends Utility
      */
     public static function hash(...$value): string
     {
-        return hash('md5', implode("\0", Convert::toStrings(...$value)));
+        return hash('md5', implode("\0", $value));
     }
 
     /**
@@ -77,7 +91,7 @@ final class Compute extends Utility
      * of the longest string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Convert::toNormal()} before comparing them.
+     * {@see Str::normalise()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * are identical, and `1` means they have no similarities.
      */
@@ -91,8 +105,8 @@ final class Compute extends Utility
         }
 
         if ($normalise) {
-            $string1 = Convert::toNormal($string1);
-            $string2 = Convert::toNormal($string2);
+            $string1 = Str::normalise($string1);
+            $string2 = Str::normalise($string2);
         }
 
         return
@@ -105,7 +119,7 @@ final class Compute extends Utility
      * string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Convert::toNormal()} before comparing them.
+     * {@see Str::normalise()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no similarities, and `1` means they are identical.
      */
@@ -119,8 +133,8 @@ final class Compute extends Utility
         }
 
         if ($normalise) {
-            $string1 = Convert::toNormal($string1);
-            $string2 = Convert::toNormal($string2);
+            $string1 = Str::normalise($string1);
+            $string2 = Str::normalise($string2);
         }
 
         return
@@ -138,7 +152,7 @@ final class Compute extends Utility
      * ngrams in the longest string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Convert::toNormal()} before comparing them.
+     * {@see Str::normalise()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no shared ngrams, and `1` means their ngrams are identical.
      */
@@ -156,7 +170,7 @@ final class Compute extends Utility
      * ngrams in the shortest string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Convert::toNormal()} before comparing them.
+     * {@see Str::normalise()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no shared ngrams, and `1` means their ngrams are identical.
      */
@@ -181,8 +195,8 @@ final class Compute extends Utility
         }
 
         if ($normalise) {
-            $string1 = Convert::toNormal($string1);
-            $string2 = Convert::toNormal($string2);
+            $string1 = Str::normalise($string1);
+            $string2 = Str::normalise($string2);
         }
 
         $ngrams1 = self::ngrams($string1, $size);

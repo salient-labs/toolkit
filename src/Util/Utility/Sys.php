@@ -163,17 +163,56 @@ final class Sys extends Utility
 
         if (\PHP_OS_FAMILY !== 'Windows') {
             foreach ($args as $arg) {
-                $command .= ($command ? ' ' : '') . Convert::toShellArg($arg);
+                $command .= ($command ? ' ' : '') . self::escapeShellArg($arg);
             }
 
             return $command;
         }
 
         foreach ($args as $arg) {
-            $command .= ($command ? ' ' : '') . Convert::toCmdArg($arg);
+            $command .= ($command ? ' ' : '') . self::escapeCmdArg($arg);
         }
 
         return $command;
+    }
+
+    /**
+     * Escape an argument for POSIX-compatible shells
+     */
+    private static function escapeShellArg(string $arg): string
+    {
+        if ($arg === '' || Pcre::match('/[^a-z0-9+.\/@_-]/i', $arg)) {
+            return "'" . str_replace("'", "'\''", $arg) . "'";
+        }
+
+        return $arg;
+    }
+
+    /**
+     * Escape an argument for cmd.exe on Windows
+     *
+     * Derived from `Composer\Util\ProcessExecutor::escapeArgument()`, which
+     * credits <https://github.com/johnstevenson/winbox-args>.
+     */
+    private static function escapeCmdArg(string $arg): string
+    {
+        $arg = Pcre::replace('/(\\\\*)"/', '$1$1\"', $arg, -1, $quoteCount);
+        $quote = $arg === '' || strpbrk($arg, " \t,") !== false;
+        $meta = $quoteCount > 0 || Pcre::match('/%[^%]+%|![^!]+!/', $arg);
+
+        if (!$meta && !$quote) {
+            $quote = strpbrk($arg, '^&|<>()') !== false;
+        }
+
+        if ($quote) {
+            $arg = '"' . Pcre::replace('/(\\\\*)$/', '$1$1', $arg) . '"';
+        }
+
+        if ($meta) {
+            $arg = Pcre::replace('/["^&|<>()%!]/', '^$0', $arg);
+        }
+
+        return $arg;
     }
 
     /**
