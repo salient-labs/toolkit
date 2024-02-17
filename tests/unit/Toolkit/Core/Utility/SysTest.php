@@ -12,6 +12,10 @@ final class SysTest extends TestCase
      */
     public function testEscapeCommand(string $arg): void
     {
+        if (\PHP_OS_FAMILY === 'Windows' && strpos($arg, \PHP_EOL) !== false) {
+            $this->markTestSkipped();
+        }
+
         $command = [
             \PHP_BINARY,
             '-ddisplay_startup_errors=0',
@@ -84,13 +88,13 @@ final class SysTest extends TestCase
                 'success!',
             ],
             'with newline' => [
-                "line\nline",
+                'line' . \PHP_EOL . 'line',
             ],
             'with blank line' => [
-                "line\n\nline",
+                'line' . \PHP_EOL . \PHP_EOL . 'line',
             ],
             'with trailing newline' => [
-                "line\n",
+                'line' . \PHP_EOL,
             ],
             'with trailing space' => [
                 'string ',
