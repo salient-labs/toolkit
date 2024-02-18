@@ -2,14 +2,14 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Character sequences
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class CharacterSequence extends Dictionary
+final class CharacterSequence extends AbstractDictionary
 {
     public const ALPHABETIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     public const ALPHABETIC_LOWER = 'abcdefghijklmnopqrstuvwxyz';

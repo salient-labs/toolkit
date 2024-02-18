@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\OAuth2;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * OAuth 2.0 flows
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-class OAuth2Flow extends Enumeration
+class OAuth2Flow extends AbstractEnumeration
 {
     /**
      * Client Credentials flow

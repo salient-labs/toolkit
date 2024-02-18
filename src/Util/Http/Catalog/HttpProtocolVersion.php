@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * HTTP protocol versions
  *
- * @extends Enumeration<string>
+ * @extends AbstractEnumeration<string>
  */
-final class HttpProtocolVersion extends Enumeration
+final class HttpProtocolVersion extends AbstractEnumeration
 {
     public const HTTP_1_0 = '1.0';
 

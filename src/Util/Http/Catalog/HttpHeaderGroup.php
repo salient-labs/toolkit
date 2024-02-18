@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Groups of HTTP headers
  *
- * @extends Dictionary<array<HttpHeader::*>>
+ * @extends AbstractDictionary<array<HttpHeader::*>>
  */
-final class HttpHeaderGroup extends Dictionary
+final class HttpHeaderGroup extends AbstractDictionary
 {
     /**
      * @var array<HttpHeader::*>

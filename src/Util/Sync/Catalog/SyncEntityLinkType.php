@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Serialized sync entity link types
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class SyncEntityLinkType extends Enumeration
+final class SyncEntityLinkType extends AbstractEnumeration
 {
     /**
      * "@type" and "@id"

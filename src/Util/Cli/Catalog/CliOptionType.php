@@ -2,16 +2,16 @@
 
 namespace Lkrms\Cli\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Command line option types
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class CliOptionType extends Enumeration
+final class CliOptionType extends AbstractEnumeration
 {
     /**
      * Enable a setting

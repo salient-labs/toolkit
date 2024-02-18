@@ -2,14 +2,14 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Terminal control sequences
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class TtyControlSequence extends Dictionary
+final class TtyControlSequence extends AbstractDictionary
 {
     public const BLACK = "\e[30m";
     public const RED = "\e[31m";

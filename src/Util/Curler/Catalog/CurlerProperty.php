@@ -2,14 +2,14 @@
 
 namespace Lkrms\Curler\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Curler property names
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class CurlerProperty extends Dictionary
+final class CurlerProperty extends AbstractDictionary
 {
     public const CACHE_RESPONSE = 'CacheResponse';
     public const CACHE_POST_RESPONSE = 'CachePostResponse';

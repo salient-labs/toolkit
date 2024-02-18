@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 /**
  * Has public constants with values of a given type
  *
  * @template TValue
  */
-interface IDictionary
+interface DictionaryInterface
 {
     /**
      * Get an array that maps constant names to values

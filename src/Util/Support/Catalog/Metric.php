@@ -2,14 +2,14 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Salient\Core\AbstractConvertibleEnumeration;
 
 /**
  * Runtime performance metrics
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends AbstractConvertibleEnumeration<int>
  */
-final class Metric extends ConvertibleEnumeration
+final class Metric extends AbstractConvertibleEnumeration
 {
     public const COUNTER = 0;
     public const TIMER = 1;

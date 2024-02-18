@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Groups of HTTP request methods
  *
- * @extends Dictionary<array<HttpRequestMethod::*>>
+ * @extends AbstractDictionary<array<HttpRequestMethod::*>>
  */
-final class HttpRequestMethodGroup extends Dictionary
+final class HttpRequestMethodGroup extends AbstractDictionary
 {
     /**
      * @var array<HttpRequestMethod::*>

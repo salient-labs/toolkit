@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\OAuth2;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * OAuth 2.0 grant types
  *
- * @extends Enumeration<string>
+ * @extends AbstractEnumeration<string>
  */
-class OAuth2GrantType extends Enumeration
+class OAuth2GrantType extends AbstractEnumeration
 {
     public const AUTHORIZATION_CODE = 'authorization_code';
 

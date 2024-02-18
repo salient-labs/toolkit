@@ -2,16 +2,16 @@
 
 namespace Lkrms\Cli\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Help message targets
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class CliHelpTarget extends Enumeration
+final class CliHelpTarget extends AbstractEnumeration
 {
     /**
      * Help is written to the console with minimal formatting

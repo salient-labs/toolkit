@@ -2,7 +2,7 @@
 
 namespace Lkrms\Console\Catalog;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Salient\Core\AbstractConvertibleEnumeration;
 
 /**
  * Console message levels
@@ -11,9 +11,9 @@ use Lkrms\Concept\ConvertibleEnumeration;
  *
  * @api
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends AbstractConvertibleEnumeration<int>
  */
-final class ConsoleLevel extends ConvertibleEnumeration
+final class ConsoleLevel extends AbstractConvertibleEnumeration
 {
     public const EMERGENCY = 0;
     public const ALERT = 1;

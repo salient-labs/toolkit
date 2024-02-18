@@ -2,16 +2,16 @@
 
 namespace Lkrms\Cli\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Section names commonly used in help messages
  *
  * @api
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class CliHelpSectionName extends Dictionary
+final class CliHelpSectionName extends AbstractDictionary
 {
     public const NAME = 'NAME';
     public const SYNOPSIS = 'SYNOPSIS';

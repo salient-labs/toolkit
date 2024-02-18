@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * HTTP headers
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class HttpHeader extends Dictionary
+final class HttpHeader extends AbstractDictionary
 {
     public const ACCEPT = 'Accept';
 

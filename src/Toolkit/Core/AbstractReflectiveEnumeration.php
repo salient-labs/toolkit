@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
-use Lkrms\Concern\IsConvertibleEnumeration;
-use Lkrms\Contract\IConvertibleEnumeration;
+use Salient\Core\Contract\ConvertibleEnumerationInterface;
+use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
 use LogicException;
 use ReflectionClass;
@@ -14,14 +14,11 @@ use ReflectionClass;
  *
  * @template TValue of array-key
  *
- * @extends Enumeration<TValue>
- * @implements IConvertibleEnumeration<TValue>
+ * @extends AbstractEnumeration<TValue>
+ * @implements ConvertibleEnumerationInterface<TValue>
  */
-abstract class ReflectiveEnumeration extends Enumeration implements IConvertibleEnumeration
+abstract class AbstractReflectiveEnumeration extends AbstractEnumeration implements ConvertibleEnumerationInterface
 {
-    /** @use IsConvertibleEnumeration<TValue> */
-    use IsConvertibleEnumeration;
-
     /**
      * Class name => [ constant value => name ]
      *
@@ -39,29 +36,39 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
     private static function loadMaps(): void
     {
         $constants = (new ReflectionClass(static::class))->getReflectionConstants();
+
         $valueMap = [];
         $nameMap = [];
         foreach ($constants as $constant) {
             if (!$constant->isPublic()) {
                 continue;
             }
+
             $name = $constant->getName();
             $value = $constant->getValue();
+
             $valueMap[$name] = $value;
             $nameMap[$value] = $name;
         }
+
         if (!$valueMap) {
             self::$ValueMaps[static::class] = [];
             self::$NameMaps[static::class] = [];
             return;
         }
+
         if (count($valueMap) !== count($nameMap)) {
             throw new LogicException(
-                sprintf('Public constants do not have unique values: %s', static::class)
+                sprintf(
+                    'Public constants do not have unique values: %s',
+                    static::class,
+                )
             );
         }
+
         // Add UPPER_CASE names to $valueMap if not already present
-        $valueMap += array_combine(array_map([Str::class, 'upper'], array_keys($valueMap)), $valueMap);
+        $valueMap += array_change_key_case($valueMap, \CASE_UPPER);
+
         self::$ValueMaps[static::class] = $valueMap;
         self::$NameMaps[static::class] = $nameMap;
     }
@@ -74,15 +81,50 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
         if (!isset(self::$ValueMaps[static::class])) {
             self::loadMaps();
         }
+
         $value = self::$ValueMaps[static::class][$name]
             ?? self::$ValueMaps[static::class][Str::upper($name)]
             ?? null;
+
         if ($value === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($name) is invalid: %s', $name)
             );
         }
+
         return $value;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function fromNames(array $names): array
+    {
+        if (!isset(self::$ValueMaps[static::class])) {
+            self::loadMaps();
+        }
+
+        $invalid = [];
+        foreach ($names as $name) {
+            $value = self::$ValueMaps[static::class][$name]
+                ?? self::$ValueMaps[static::class][Str::upper($name)]
+                ?? null;
+
+            if ($value === null) {
+                $invalid[] = $name;
+                continue;
+            }
+
+            $values[] = $value;
+        }
+
+        if ($invalid) {
+            throw new LogicException(
+                Inflect::format($invalid, 'Invalid {{#:name}}: %s', implode(',', $invalid))
+            );
+        }
+
+        return $values ?? [];
     }
 
     /**
@@ -93,13 +135,46 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
         if (!isset(self::$NameMaps[static::class])) {
             self::loadMaps();
         }
+
         $name = self::$NameMaps[static::class][$value] ?? null;
+
         if ($name === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($value) is invalid: %s', $value)
             );
         }
+
         return $name;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function toNames(array $values): array
+    {
+        if (!isset(self::$NameMaps[static::class])) {
+            self::loadMaps();
+        }
+
+        $invalid = [];
+        foreach ($values as $value) {
+            $name = self::$NameMaps[static::class][$value] ?? null;
+
+            if ($name === null) {
+                $invalid[] = $value;
+                continue;
+            }
+
+            $names[] = $name;
+        }
+
+        if ($invalid) {
+            throw new LogicException(
+                Inflect::format($invalid, 'Invalid {{#:value}}: %s', implode(',', $invalid))
+            );
+        }
+
+        return $names ?? [];
     }
 
     /**
@@ -110,6 +185,7 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
         if (!isset(self::$ValueMaps[static::class])) {
             self::loadMaps();
         }
+
         return self::$ValueMaps[static::class];
     }
 
@@ -121,6 +197,7 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
         if (!isset(self::$NameMaps[static::class])) {
             self::loadMaps();
         }
+
         return isset(self::$NameMaps[static::class][$value]);
     }
 }

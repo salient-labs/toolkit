@@ -2,14 +2,14 @@
 
 namespace Salient\Core\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * json_encode() flags
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-class JsonEncodeFlag extends Enumeration
+class JsonEncodeFlag extends AbstractEnumeration
 {
     public const FORCE_OBJECT = \JSON_FORCE_OBJECT;
     public const INVALID_UTF8_IGNORE = \JSON_INVALID_UTF8_IGNORE;

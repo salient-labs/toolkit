@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
-use Lkrms\Contract\IDictionary;
+use Salient\Core\Contract\DictionaryInterface;
 
 /**
  * Base class for dictionaries
  *
  * @template TValue
  *
- * @extends Catalog<TValue>
- * @implements IDictionary<TValue>
+ * @extends AbstractCatalog<TValue>
+ * @implements DictionaryInterface<TValue>
  */
-abstract class Dictionary extends Catalog implements IDictionary
+abstract class AbstractDictionary extends AbstractCatalog implements DictionaryInterface
 {
     /**
      * @inheritDoc

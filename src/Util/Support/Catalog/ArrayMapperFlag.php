@@ -2,17 +2,17 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Support\ArrayMapper;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * ArrayMapper flags
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  *
  * @see ArrayMapper
  */
-final class ArrayMapperFlag extends Enumeration
+final class ArrayMapperFlag extends AbstractEnumeration
 {
     /**
      * Remove null values from the output array

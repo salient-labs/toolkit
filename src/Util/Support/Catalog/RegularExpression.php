@@ -2,14 +2,14 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Useful PCRE regular expressions
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class RegularExpression extends Dictionary
+final class RegularExpression extends AbstractDictionary
 {
     /**
      * Zero or more backslash pairs with no preceding backslash

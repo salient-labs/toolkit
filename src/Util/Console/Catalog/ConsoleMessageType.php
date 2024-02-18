@@ -2,17 +2,17 @@
 
 namespace Lkrms\Console\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Console\ConsoleWriter;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Console message types
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class ConsoleMessageType extends Enumeration
+final class ConsoleMessageType extends AbstractEnumeration
 {
     /**
      * A message that should be recorded with a prefix and level-based

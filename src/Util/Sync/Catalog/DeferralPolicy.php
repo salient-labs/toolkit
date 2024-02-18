@@ -2,17 +2,17 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
 use Lkrms\Sync\Support\SyncStore;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Policies for deferral of sync entities and relationships
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class DeferralPolicy extends Enumeration
+final class DeferralPolicy extends AbstractEnumeration
 {
     /**
      * Do not resolve deferred entities or relationships

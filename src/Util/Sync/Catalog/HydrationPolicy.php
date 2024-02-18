@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Sync entity hydration policies
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class HydrationPolicy extends Enumeration
+final class HydrationPolicy extends AbstractEnumeration
 {
     /**
      * Do not perform hydration

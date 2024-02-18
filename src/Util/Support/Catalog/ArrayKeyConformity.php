@@ -2,14 +2,14 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Array key conformity levels
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class ArrayKeyConformity extends Enumeration
+final class ArrayKeyConformity extends AbstractEnumeration
 {
     /**
      * Arrays may have different keys in different orders

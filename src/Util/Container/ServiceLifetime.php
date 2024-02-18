@@ -2,17 +2,17 @@
 
 namespace Lkrms\Container;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Container\Contract\SingletonInterface;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Service lifetimes relative to the container
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class ServiceLifetime extends Enumeration
+final class ServiceLifetime extends AbstractEnumeration
 {
     /**
      * A new instance of the class is always created

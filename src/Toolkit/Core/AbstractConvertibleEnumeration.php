@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
-use Lkrms\Concern\IsConvertibleEnumeration;
-use Lkrms\Contract\IConvertibleEnumeration;
+use Salient\Core\Contract\ConvertibleEnumerationInterface;
+use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
 use LogicException;
 
@@ -13,14 +13,11 @@ use LogicException;
  *
  * @template TValue of array-key
  *
- * @extends Enumeration<TValue>
- * @implements IConvertibleEnumeration<TValue>
+ * @extends AbstractEnumeration<TValue>
+ * @implements ConvertibleEnumerationInterface<TValue>
  */
-abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
+abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implements ConvertibleEnumerationInterface
 {
-    /** @use IsConvertibleEnumeration<TValue> */
-    use IsConvertibleEnumeration;
-
     /**
      * An array that maps values to names
      *
@@ -43,12 +40,42 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
         $value = static::$ValueMap[$name]
             ?? static::$ValueMap[Str::upper($name)]
             ?? null;
+
         if ($value === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($name) is invalid: %s', $name)
             );
         }
+
         return $value;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function fromNames(array $names): array
+    {
+        $invalid = [];
+        foreach ($names as $name) {
+            $value = static::$ValueMap[$name]
+                ?? static::$ValueMap[Str::upper($name)]
+                ?? null;
+
+            if ($value === null) {
+                $invalid[] = $name;
+                continue;
+            }
+
+            $values[] = $value;
+        }
+
+        if ($invalid) {
+            throw new LogicException(
+                Inflect::format($invalid, 'Invalid {{#:name}}: %s', implode(',', $invalid))
+            );
+        }
+
+        return $values ?? [];
     }
 
     /**
@@ -57,12 +84,40 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
     final public static function toName($value): string
     {
         $name = static::$NameMap[$value] ?? null;
+
         if ($name === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($value) is invalid: %s', $value)
             );
         }
+
         return $name;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function toNames(array $values): array
+    {
+        $invalid = [];
+        foreach ($values as $value) {
+            $name = static::$NameMap[$value] ?? null;
+
+            if ($name === null) {
+                $invalid[] = $value;
+                continue;
+            }
+
+            $names[] = $name;
+        }
+
+        if ($invalid) {
+            throw new LogicException(
+                Inflect::format($invalid, 'Invalid {{#:value}}: %s', implode(',', $invalid))
+            );
+        }
+
+        return $names ?? [];
     }
 
     /**

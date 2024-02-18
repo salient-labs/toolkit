@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Groups of sync operation types
  *
- * @extends Enumeration<int[]>
+ * @extends AbstractEnumeration<int[]>
  */
-final class SyncOperations extends Enumeration
+final class SyncOperations extends AbstractEnumeration
 {
     public const ALL = [
         SyncOperation::CREATE,

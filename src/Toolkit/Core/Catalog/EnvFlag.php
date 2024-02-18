@@ -2,15 +2,15 @@
 
 namespace Salient\Core\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Salient\Core\Utility\Env;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Env::apply() flags
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class EnvFlag extends Enumeration
+final class EnvFlag extends AbstractEnumeration
 {
     /**
      * Set locale information from the environment
