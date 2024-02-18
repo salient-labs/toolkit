@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support\EventDispatcher;
+namespace Salient\Tests\Core\EventDispatcher;
 
 class LoggableEvent extends BaseEvent
 {

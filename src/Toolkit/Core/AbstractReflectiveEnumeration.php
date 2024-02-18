@@ -79,7 +79,9 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
     final public static function fromName(string $name)
     {
         if (!isset(self::$ValueMaps[static::class])) {
+            // @codeCoverageIgnoreStart
             self::loadMaps();
+            // @codeCoverageIgnoreEnd
         }
 
         $value = self::$ValueMaps[static::class][$name]
@@ -101,7 +103,9 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
     final public static function fromNames(array $names): array
     {
         if (!isset(self::$ValueMaps[static::class])) {
+            // @codeCoverageIgnoreStart
             self::loadMaps();
+            // @codeCoverageIgnoreEnd
         }
 
         $invalid = [];
@@ -133,7 +137,9 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
     final public static function toName($value): string
     {
         if (!isset(self::$NameMaps[static::class])) {
+            // @codeCoverageIgnoreStart
             self::loadMaps();
+            // @codeCoverageIgnoreEnd
         }
 
         $name = self::$NameMaps[static::class][$value] ?? null;
@@ -153,7 +159,9 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
     final public static function toNames(array $values): array
     {
         if (!isset(self::$NameMaps[static::class])) {
+            // @codeCoverageIgnoreStart
             self::loadMaps();
+            // @codeCoverageIgnoreEnd
         }
 
         $invalid = [];
@@ -183,7 +191,9 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
     final public static function cases(): array
     {
         if (!isset(self::$ValueMaps[static::class])) {
+            // @codeCoverageIgnoreStart
             self::loadMaps();
+            // @codeCoverageIgnoreEnd
         }
 
         return self::$ValueMaps[static::class];
@@ -195,7 +205,9 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
     final public static function hasValue($value): bool
     {
         if (!isset(self::$NameMaps[static::class])) {
+            // @codeCoverageIgnoreStart
             self::loadMaps();
+            // @codeCoverageIgnoreEnd
         }
 
         return isset(self::$NameMaps[static::class][$value]);

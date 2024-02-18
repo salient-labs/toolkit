@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support;
+namespace Salient\Tests\Core;
 
 use Lkrms\Contract\HasName;
-use Lkrms\Tests\Support\EventDispatcher\BaseEvent;
-use Lkrms\Tests\Support\EventDispatcher\LoggableEvent;
-use Lkrms\Tests\Support\EventDispatcher\MainEvent;
-use Lkrms\Tests\Support\EventDispatcher\NamedEvent;
+use Salient\Core\Facade\Event;
 use Salient\Core\EventDispatcher;
+use Salient\Tests\Core\EventDispatcher\BaseEvent;
+use Salient\Tests\Core\EventDispatcher\LoggableEvent;
+use Salient\Tests\Core\EventDispatcher\MainEvent;
+use Salient\Tests\Core\EventDispatcher\NamedEvent;
 use LogicException;
 
 final class EventDispatcherTest extends \PHPUnit\Framework\TestCase
@@ -77,6 +78,18 @@ final class EventDispatcherTest extends \PHPUnit\Framework\TestCase
         $dispatcher->listen(fn(object $event) => $event);
     }
 
+    public function testFacade(): void
+    {
+        $received = 0;
+        Event::listen(
+            function (MainEvent $event) use (&$received) {
+                $received++;
+            }
+        );
+        Event::dispatch(new MainEvent());
+        $this->assertSame(1, $received);
+    }
+
     public function listenCallback(LoggableEvent $event): void
     {
         $event->log();
@@ -88,5 +101,12 @@ final class EventDispatcherTest extends \PHPUnit\Framework\TestCase
         $this->expectExceptionMessage('$callable has no parameters');
         $dispatcher = new EventDispatcher();
         $dispatcher->listen(fn() => null);
+    }
+
+    protected function tearDown(): void
+    {
+        if (Event::isLoaded()) {
+            Event::unload();
+        }
     }
 }
