@@ -9,7 +9,6 @@ use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Salient\Core\Utility\Compute;
 use Salient\Core\Utility\Str;
 use Closure;
 use LogicException;
@@ -279,16 +278,16 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
                         : 1.0;
 
             case Algorithm::LEVENSHTEIN:
-                return Compute::textDistance($string1, $string2, false);
+                return Str::distance($string1, $string2, false);
 
             case Algorithm::SIMILAR_TEXT:
-                return 1 - Compute::textSimilarity($string1, $string2, false);
+                return 1 - Str::similarity($string1, $string2, false);
 
             case Algorithm::NGRAM_SIMILARITY:
-                return 1 - Compute::ngramSimilarity($string1, $string2, false);
+                return 1 - Str::ngramSimilarity($string1, $string2, false);
 
             case Algorithm::NGRAM_INTERSECTION:
-                return 1 - Compute::ngramIntersection($string1, $string2, false);
+                return 1 - Str::ngramIntersection($string1, $string2, false);
 
             default:
                 throw new LogicException(sprintf(

@@ -2,14 +2,14 @@
 
 namespace Lkrms\Http\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * HTTP request methods
  *
- * @extends Enumeration<string>
+ * @extends AbstractEnumeration<string>
  */
-final class HttpRequestMethod extends Enumeration
+final class HttpRequestMethod extends AbstractEnumeration
 {
     public const GET = 'GET';
 

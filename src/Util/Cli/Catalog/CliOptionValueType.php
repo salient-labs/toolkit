@@ -2,8 +2,8 @@
 
 namespace Lkrms\Cli\Catalog;
 
-use Lkrms\Concept\ConvertibleEnumeration;
 use Salient\Core\Utility\Test;
+use Salient\Core\AbstractConvertibleEnumeration;
 use DateTimeImmutable;
 use LogicException;
 
@@ -12,9 +12,9 @@ use LogicException;
  *
  * @api
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends AbstractConvertibleEnumeration<int>
  */
-final class CliOptionValueType extends ConvertibleEnumeration
+final class CliOptionValueType extends AbstractConvertibleEnumeration
 {
     /**
      * A boolean value

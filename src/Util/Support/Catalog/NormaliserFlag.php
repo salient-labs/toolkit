@@ -2,9 +2,9 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\ReturnsNormaliser;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Normaliser flags
@@ -12,9 +12,9 @@ use Lkrms\Contract\ReturnsNormaliser;
  * @see IResolvable::normalise()
  * @see ReturnsNormaliser::normaliser()
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class NormaliserFlag extends Enumeration
+final class NormaliserFlag extends AbstractEnumeration
 {
     /**
      * Normalise names by applying every available transformation

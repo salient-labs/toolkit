@@ -26,7 +26,6 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Sys;
-use Salient\Core\Utility\Test;
 use LogicException;
 use Phar;
 
@@ -137,7 +136,7 @@ class Application extends Container implements ApplicationInterface
         // it resolves to a writable directory
         if (!$this->isProduction()) {
             $path = "{$this->BasePath}/$sourceChild";
-            if (Test::firstExistingDirectoryIsWritable($path)) {
+            if (File::creatable($path)) {
                 return $this->checkPath($path, $name, $create, $save);
             }
         }
@@ -428,6 +427,7 @@ class Application extends Container implements ApplicationInterface
 
         register_shutdown_function(
             static function () {
+                /** @var int&Level::* */
                 $level = self::$ShutdownReportLevel;
                 self::doReportMetrics($level, true, self::$ShutdownReportMetricGroups, 10);
                 if (self::$ShutdownReportResourceUsage) {

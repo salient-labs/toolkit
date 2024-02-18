@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 /**
  * Has public constants with unique values of a given type
  *
  * @template TValue
  */
-interface IEnumeration
+interface EnumerationInterface
 {
     /**
      * Get an array that maps constant names to values

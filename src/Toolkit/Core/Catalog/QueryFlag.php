@@ -2,14 +2,14 @@
 
 namespace Salient\Core\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Get::query() flags
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class QueryFlag extends Enumeration
+final class QueryFlag extends AbstractEnumeration
 {
     public const PRESERVE_LIST_KEYS = 1;
 

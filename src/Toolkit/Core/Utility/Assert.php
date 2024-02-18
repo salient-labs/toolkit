@@ -15,40 +15,64 @@ final class Assert extends AbstractUtility
     /**
      * Assert that a file or directory exists
      *
-     * @throws FilesystemErrorException if `$filename` does not exist.
+     * @template TException of Throwable
+     *
+     * @param class-string<TException> $exception
+     * @throws TException if `$filename` does not exist.
      */
-    public static function fileExists(string $filename): void
-    {
+    public static function fileExists(
+        string $filename,
+        string $exception = FilesystemErrorException::class
+    ): void {
         if (file_exists($filename)) {
             return;
         }
-        throw new FilesystemErrorException(sprintf('File not found: %s', $filename));
+        throw new $exception(sprintf(
+            'File not found: %s',
+            $filename,
+        ));
     }
 
     /**
      * Assert that a file exists
      *
-     * @throws FilesystemErrorException if `$filename` is not a regular file.
+     * @template TException of Throwable
+     *
+     * @param class-string<TException> $exception
+     * @throws TException if `$filename` is not a regular file.
      */
-    public static function isFile(string $filename): void
-    {
+    public static function isFile(
+        string $filename,
+        string $exception = FilesystemErrorException::class
+    ): void {
         if (is_file($filename)) {
             return;
         }
-        throw new FilesystemErrorException(sprintf('Not a file: %s', $filename));
+        throw new $exception(sprintf(
+            'Not a file: %s',
+            $filename,
+        ));
     }
 
     /**
      * Assert that a directory exists
      *
-     * @throws FilesystemErrorException if `$filename` is not a directory.
+     * @template TException of Throwable
+     *
+     * @param class-string<TException> $exception
+     * @throws TException if `$filename` is not a directory.
      */
-    public static function isDir(string $filename): void
-    {
+    public static function isDir(
+        string $filename,
+        string $exception = FilesystemErrorException::class
+    ): void {
         if (is_dir($filename)) {
             return;
         }
-        throw new FilesystemErrorException(sprintf('Not a directory: %s', $filename));
+        throw new $exception(sprintf(
+            'Not a directory: %s',
+            $filename,
+        ));
     }
 
     /**

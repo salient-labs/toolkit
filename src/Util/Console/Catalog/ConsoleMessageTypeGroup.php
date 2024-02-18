@@ -2,17 +2,17 @@
 
 namespace Lkrms\Console\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Groups of console message types
  *
  * @api
  *
- * @extends Enumeration<int[]>
+ * @extends AbstractEnumeration<int[]>
  */
-final class ConsoleMessageTypeGroup extends Enumeration
+final class ConsoleMessageTypeGroup extends AbstractEnumeration
 {
     public const ALL = [
         MessageType::STANDARD,

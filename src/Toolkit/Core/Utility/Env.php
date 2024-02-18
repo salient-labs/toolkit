@@ -2,12 +2,12 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Exception\InvalidDotenvSyntaxException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Exception\RuntimeException;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Salient\Core\Catalog\EnvFlag;
+use Salient\Core\Exception\InvalidDotenvSyntaxException;
 use Salient\Core\AbstractUtility;
 use LogicException;
 

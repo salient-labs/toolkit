@@ -2,16 +2,16 @@
 
 namespace Lkrms\Cli\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Command line option visibility flags
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class CliOptionVisibility extends Enumeration
+final class CliOptionVisibility extends AbstractEnumeration
 {
     /**
      * Don't include the option in any help output

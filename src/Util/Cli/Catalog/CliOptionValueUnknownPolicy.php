@@ -2,7 +2,7 @@
 
 namespace Lkrms\Cli\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Unknown value policy for command line options of type ONE_OF, ONE_OF_OPTIONAL
@@ -10,9 +10,9 @@ use Lkrms\Concept\Enumeration;
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class CliOptionValueUnknownPolicy extends Enumeration
+final class CliOptionValueUnknownPolicy extends AbstractEnumeration
 {
     /**
      * Throw an exception if an unknown value is given

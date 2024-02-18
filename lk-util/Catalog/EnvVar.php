@@ -2,14 +2,14 @@
 
 namespace Lkrms\LkUtil\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Environment variables used by lk-util commands
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class EnvVar extends Dictionary
+final class EnvVar extends AbstractDictionary
 {
     public const NS_DEFAULT = 'DEFAULT_NAMESPACE';
 

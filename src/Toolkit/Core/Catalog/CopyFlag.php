@@ -2,15 +2,15 @@
 
 namespace Salient\Core\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Salient\Core\Utility\Get;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Get::copy() flags
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class CopyFlag extends Enumeration
+final class CopyFlag extends AbstractEnumeration
 {
     /**
      * Do not throw an exception if an uncloneable object is encountered

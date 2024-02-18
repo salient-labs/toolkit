@@ -2,15 +2,15 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Policies for unclaimed sync operation filters
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class FilterPolicy extends Enumeration
+final class FilterPolicy extends AbstractEnumeration
 {
     /**
      * Ignore unclaimed filters

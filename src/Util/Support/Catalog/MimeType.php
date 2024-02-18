@@ -2,15 +2,15 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Dictionary;
 use Salient\Core\Utility\Str;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Frequently-used MIME types
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class MimeType extends Dictionary
+final class MimeType extends AbstractDictionary
 {
     public const TEXT = 'text/plain';
     public const BINARY = 'application/octet-stream';

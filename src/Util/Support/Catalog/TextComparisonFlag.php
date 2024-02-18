@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Text comparison flags
@@ -10,9 +10,9 @@ use Lkrms\Concept\Enumeration;
  * {@see TextComparisonFlag} and {@see TextComparisonAlgorithm} values combine
  * to form one bitmask and cannot intersect.
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-class TextComparisonFlag extends Enumeration
+class TextComparisonFlag extends AbstractEnumeration
 {
     /**
      * Normalise values before comparing them

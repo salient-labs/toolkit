@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Salient\Core\AbstractConvertibleEnumeration;
 
 /**
  * Sync operation types
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends AbstractConvertibleEnumeration<int>
  */
-final class SyncOperation extends ConvertibleEnumeration
+final class SyncOperation extends AbstractConvertibleEnumeration
 {
     /**
      * Add an entity to the backend

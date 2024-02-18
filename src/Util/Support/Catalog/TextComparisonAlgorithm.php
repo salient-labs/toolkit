@@ -2,8 +2,8 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Enumeration;
-use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Str;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Text comparison algorithms
@@ -12,9 +12,9 @@ use Salient\Core\Utility\Compute;
  * and `1`, where `0` indicates the strings could not be more similar, and `1`
  * indicates they could not be more different.
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-class TextComparisonAlgorithm extends Enumeration
+class TextComparisonAlgorithm extends AbstractEnumeration
 {
     /**
      * Uncertainty is 0 if values are identical, otherwise 1
@@ -46,14 +46,14 @@ class TextComparisonAlgorithm extends Enumeration
     /**
      * Uncertainty is derived from ngramSimilarity()
      *
-     * @see Compute::ngramSimilarity()
+     * @see Str::ngramSimilarity()
      */
     public const NGRAM_SIMILARITY = 16;
 
     /**
      * Uncertainty is derived from ngramIntersection()
      *
-     * @see Compute::ngramIntersection()
+     * @see Str::ngramIntersection()
      */
     public const NGRAM_INTERSECTION = 32;
 }

@@ -17,7 +17,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
-use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Get;
 
 /**
  * Base class for HTTP-based RESTful API providers
@@ -114,7 +114,7 @@ abstract class HttpSyncProvider extends SyncProvider
         $key = implode(':', [
             static::class,
             __FUNCTION__,
-            Compute::hash(...$this->getBackendIdentifier()),
+            Get::hash(implode("\0", $this->getBackendIdentifier())),
         ]);
 
         if (Cache::get($key, $ttl) === null) {

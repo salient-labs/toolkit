@@ -19,7 +19,6 @@ use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Sync\Exception\SyncStoreException;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Compute;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Json;
@@ -469,10 +468,10 @@ final class SyncStore extends SqliteStore
     public function getProviderHash(ISyncProvider $provider): string
     {
         $class = get_class($provider);
-        return Compute::binaryHash(
+        return Get::binaryHash(implode("\0", [
             $class,
-            ...$provider->getBackendIdentifier()
-        );
+            ...$provider->getBackendIdentifier(),
+        ]));
     }
 
     /**
@@ -1323,7 +1322,7 @@ final class SyncStore extends SqliteStore
 
         $db = $this->db();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':run_uuid', $uuid = Compute::binaryUuid(), \SQLITE3_BLOB);
+        $stmt->bindValue(':run_uuid', $uuid = Get::binaryUuid(), \SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, \SQLITE3_TEXT);
         $stmt->bindValue(':run_arguments_json', Json::stringify($this->Arguments), \SQLITE3_TEXT);
         $stmt->execute();

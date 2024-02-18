@@ -2,16 +2,16 @@
 
 namespace Lkrms\Console\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Console output target type flags
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class ConsoleTargetTypeFlag extends Enumeration
+final class ConsoleTargetTypeFlag extends AbstractEnumeration
 {
     public const STREAM = 1;
     public const STDIO = 2;

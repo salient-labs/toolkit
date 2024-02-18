@@ -17,8 +17,7 @@ use Stringable;
 final class Arr extends AbstractUtility
 {
     /**
-     * Get a value from an array, descending into nested arrays if the given key
-     * uses dot notation
+     * Get a value from nested arrays using dot notation
      *
      * @param array<array-key,mixed> $array
      * @param mixed $default
@@ -34,7 +33,10 @@ final class Arr extends AbstractUtility
                 continue;
             }
             if (func_num_args() < 3) {
-                throw new OutOfRangeException(sprintf('Array key not found: %s', $key));
+                throw new OutOfRangeException(sprintf(
+                    'Array key not found: %s',
+                    $key,
+                ));
             }
             return $default;
         }
@@ -42,8 +44,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Check if a value exists in an array, descending into nested arrays if the
-     * given key uses dot notation
+     * Check if a value exists in nested arrays using dot notation
      *
      * @param array<array-key,mixed> $array
      */

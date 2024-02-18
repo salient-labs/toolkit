@@ -2,14 +2,14 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Useful PCRE regular expressions
  *
- * @extends Dictionary<string>
+ * @extends AbstractDictionary<string>
  */
-final class RegularExpression extends Dictionary
+final class RegularExpression extends AbstractDictionary
 {
     /**
      * Zero or more backslash pairs with no preceding backslash
@@ -53,9 +53,7 @@ final class RegularExpression extends Dictionary
     public const PHP_IDENTIFIER = '[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*';
 
     /**
-     * A valid PHP type, i.e. an optionally namespaced PHP_IDENTIFIER
-     *
-     * @see RegularExpression::PHP_IDENTIFIER
+     * A valid PHP type, i.e. a PHP_IDENTIFIER with an optional namespace
      */
     public const PHP_TYPE = '(?:\\\\?' . self::PHP_IDENTIFIER . ')+';
 

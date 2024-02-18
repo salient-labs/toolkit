@@ -2,17 +2,17 @@
 
 namespace Lkrms\Console\Catalog;
 
-use Lkrms\Concept\Enumeration;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Groups of console message levels
  *
  * @api
  *
- * @extends Enumeration<int[]>
+ * @extends AbstractEnumeration<int[]>
  */
-final class ConsoleLevelGroup extends Enumeration
+final class ConsoleLevelGroup extends AbstractEnumeration
 {
     public const ALL = [
         Level::EMERGENCY,

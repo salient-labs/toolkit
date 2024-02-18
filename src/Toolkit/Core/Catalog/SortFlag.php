@@ -2,14 +2,14 @@
 
 namespace Salient\Core\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Sorting flags
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-class SortFlag extends Enumeration
+class SortFlag extends AbstractEnumeration
 {
     public const REGULAR = \SORT_REGULAR;
     public const NUMERIC = \SORT_NUMERIC;

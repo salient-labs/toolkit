@@ -1,15 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
 use ReflectionClass;
 
 /**
- * Has public constants with values of a given type, and cannot be instantiated
+ * Base class for uninstantiable classes with public constants of a given type
+ *
+ * @internal
  *
  * @template TValue
  */
-abstract class Catalog
+abstract class AbstractCatalog
 {
     /**
      * @var array<class-string<static>,array<string,TValue>>

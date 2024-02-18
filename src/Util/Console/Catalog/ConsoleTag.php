@@ -2,14 +2,14 @@
 
 namespace Lkrms\Console\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Console output formatting tags
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class ConsoleTag extends Enumeration
+final class ConsoleTag extends AbstractEnumeration
 {
     /**
      * Heading

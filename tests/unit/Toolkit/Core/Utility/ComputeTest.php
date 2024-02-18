@@ -3,7 +3,7 @@
 namespace Salient\Tests\Core\Utility;
 
 use Lkrms\Tests\TestCase;
-use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Str;
 
 final class ComputeTest extends TestCase
 {
@@ -16,7 +16,7 @@ final class ComputeTest extends TestCase
         string $string2,
         bool $normalise = true
     ): void {
-        $this->assertSame($expected, Compute::textDistance($string1, $string2, $normalise));
+        $this->assertSame($expected, Str::distance($string1, $string2, $normalise));
     }
 
     /**
@@ -43,7 +43,7 @@ final class ComputeTest extends TestCase
         string $string2,
         bool $normalise = true
     ): void {
-        $this->assertSame($expected, Compute::textSimilarity($string1, $string2, $normalise));
+        $this->assertSame($expected, Str::similarity($string1, $string2, $normalise));
     }
 
     /**
@@ -72,7 +72,7 @@ final class ComputeTest extends TestCase
         bool $normalise = true,
         int $size = 2
     ): void {
-        $this->assertSame($expected, Compute::ngramSimilarity($string1, $string2, $normalise, $size));
+        $this->assertSame($expected, Str::ngramSimilarity($string1, $string2, $normalise, $size));
     }
 
     /**
@@ -107,7 +107,7 @@ final class ComputeTest extends TestCase
         bool $normalise = true,
         int $size = 2
     ): void {
-        $this->assertSame($expected, Compute::ngramIntersection($string1, $string2, $normalise, $size));
+        $this->assertSame($expected, Str::ngramIntersection($string1, $string2, $normalise, $size));
     }
 
     /**
@@ -142,7 +142,7 @@ final class ComputeTest extends TestCase
         string $string,
         int $size = 2
     ): void {
-        $actual = Compute::ngrams($string, $size);
+        $actual = Str::ngrams($string, $size);
         sort($actual);
         $this->assertSame($expected, $actual);
     }

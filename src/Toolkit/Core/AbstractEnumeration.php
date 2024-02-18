@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
-use Lkrms\Contract\IEnumeration;
+use Salient\Core\Contract\EnumerationInterface;
 
 /**
  * Base class for enumerations
  *
  * @template TValue
  *
- * @extends Catalog<TValue>
- * @implements IEnumeration<TValue>
+ * @extends AbstractCatalog<TValue>
+ * @implements EnumerationInterface<TValue>
  */
-abstract class Enumeration extends Catalog implements IEnumeration
+abstract class AbstractEnumeration extends AbstractCatalog implements EnumerationInterface
 {
     /**
      * @inheritDoc

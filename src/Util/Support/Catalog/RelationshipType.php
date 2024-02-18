@@ -2,14 +2,14 @@
 
 namespace Lkrms\Support\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Entity relationship types
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class RelationshipType extends Enumeration
+final class RelationshipType extends AbstractEnumeration
 {
     public const ONE_TO_ONE = 0;
     public const ONE_TO_MANY = 1;

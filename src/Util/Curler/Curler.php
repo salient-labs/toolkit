@@ -30,7 +30,6 @@ use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Contract\Writable;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Compute;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
@@ -1061,8 +1060,8 @@ final class Curler implements Readable, Writable, Buildable
             ($this->Method === HttpRequestMethod::POST &&
                 $this->CachePostResponse &&
                 !is_array($this->Body))) ||
-            !($url = $this->getEffectiveUrl()
-                ?: $this->BaseUrl . $this->QueryString)) {
+            ($url = $this->getEffectiveUrl()
+                ?? $this->BaseUrl . $this->QueryString) === '') {
             return null;
         }
 
@@ -1070,7 +1069,9 @@ final class Curler implements Readable, Writable, Buildable
             ? ($this->ResponseCacheKeyCallback)($this)
             : $this->getPublicHeaders()->getLines('%s:%s');
         if ($this->Method === HttpRequestMethod::POST) {
-            $key[] = $this->Body;
+            /** @var string */
+            $body = $this->Body;
+            $key[] = $body;
         }
 
         return implode(':', [
@@ -1078,7 +1079,7 @@ final class Curler implements Readable, Writable, Buildable
             'response',
             $this->Method,
             rawurlencode($url),
-            Compute::hash(...$key),
+            Get::hash(implode("\0", $key)),
         ]);
     }
 
