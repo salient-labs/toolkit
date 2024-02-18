@@ -53,9 +53,7 @@ final class RegularExpression extends Dictionary
     public const PHP_IDENTIFIER = '[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*';
 
     /**
-     * A valid PHP type, i.e. an optionally namespaced PHP_IDENTIFIER
-     *
-     * @see RegularExpression::PHP_IDENTIFIER
+     * A valid PHP type, i.e. a PHP_IDENTIFIER with an optional namespace
      */
     public const PHP_TYPE = '(?:\\\\?' . self::PHP_IDENTIFIER . ')+';
 

@@ -21,7 +21,6 @@ use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
 use Salient\Core\Contract\Unloadable;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Compute;
 use Salient\Core\Utility\Debug;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
@@ -1063,7 +1062,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
-        $hash = Compute::hash($level, $msg1, $msg2, $type, $msg2HasTags);
+        $hash = Get::hash(implode("\0", [$level, $msg1, $msg2, $type, $msg2HasTags]));
         if ($this->State->Written[$hash] ?? false) {
             return $this;
         }

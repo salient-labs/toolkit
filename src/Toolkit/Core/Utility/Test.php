@@ -92,23 +92,6 @@ final class Test extends AbstractUtility
     }
 
     /**
-     * True if a directory exists and is writable, or doesn't exist but
-     * can be created
-     */
-    public static function firstExistingDirectoryIsWritable(string $dir): bool
-    {
-        while (!file_exists($dir)) {
-            $next = dirname($dir);
-            if ($next === $dir) {
-                break;
-            }
-            $dir = $next;
-        }
-
-        return is_dir($dir) && is_writable($dir);
-    }
-
-    /**
      * True if a value is a PHP reserved word
      *
      * @link https://www.php.net/manual/en/reserved.php

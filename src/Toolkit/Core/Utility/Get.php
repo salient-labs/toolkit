@@ -6,6 +6,7 @@ use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\InvalidArgumentTypeException;
+use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
@@ -20,6 +21,7 @@ use DateTimeInterface;
 use DateTimeZone;
 use ReflectionClass;
 use ReflectionObject;
+use Stringable;
 use Traversable;
 use UnitEnum;
 
@@ -326,9 +328,57 @@ final class Get extends AbstractUtility
     }
 
     /**
-     * Get the hexadecimal form of a 16-byte UUID
+     * Get a UUID in raw binary form
+     *
+     * If `$uuid` is not given, an \[RFC4122]-compliant UUID is generated.
+     *
+     * @throws InvalidArgumentException if an invalid UUID is given.
      */
-    public static function uuid(string $uuid): string
+    public static function binaryUuid(?string $uuid = null): string
+    {
+        return $uuid === null
+            ? self::getUuid(true)
+            : self::normaliseUuid($uuid, true);
+    }
+
+    /**
+     * Get a UUID in hexadecimal form
+     *
+     * If `$uuid` is not given, an \[RFC4122]-compliant UUID is generated.
+     *
+     * @throws InvalidArgumentException if an invalid UUID is given.
+     */
+    public static function uuid(?string $uuid = null): string
+    {
+        return $uuid === null
+            ? self::getUuid(false)
+            : self::normaliseUuid($uuid, false);
+    }
+
+    private static function getUuid(bool $binary): string
+    {
+        $uuid = [
+            random_bytes(4),
+            random_bytes(2),
+            // Version 4 (most significant 4 bits = 0b0100)
+            chr(random_int(0, 0x0F) | 0x40) . random_bytes(1),
+            // Variant 1 (most significant 2 bits = 0b10)
+            chr(random_int(0, 0x3F) | 0x80) . random_bytes(1),
+            random_bytes(6),
+        ];
+
+        if ($binary) {
+            return implode('', $uuid);
+        }
+
+        foreach ($uuid as $bin) {
+            $hex[] = bin2hex($bin);
+        }
+
+        return implode('-', $hex);
+    }
+
+    private static function normaliseUuid(string $uuid, bool $binary): string
     {
         $length = strlen($uuid);
 
@@ -342,6 +392,10 @@ final class Get extends AbstractUtility
                 ));
             }
 
+            if ($binary) {
+                return hex2bin($uuid);
+            }
+
             $uuid = Str::lower($uuid);
 
             return implode('-', [
@@ -351,6 +405,10 @@ final class Get extends AbstractUtility
                 substr($uuid, 16, 4),
                 substr($uuid, 20, 12),
             ]);
+        }
+
+        if ($binary) {
+            return $uuid;
         }
 
         $uuid = [
@@ -366,6 +424,40 @@ final class Get extends AbstractUtility
         }
 
         return implode('-', $hex);
+    }
+
+    /**
+     * Get a sequence of random characters
+     */
+    public static function randomText(int $length, string $chars = Char::ALPHANUMERIC): string
+    {
+        $max = strlen($chars) - 1;
+        $text = '';
+        for ($i = 0; $i < $length; $i++) {
+            $text .= $chars[random_int(0, $max)];
+        }
+        return $text;
+    }
+
+    /**
+     * Get the hash of a value in raw binary form
+     *
+     * @param int|float|string|bool|Stringable|null $value
+     */
+    public static function binaryHash($value): string
+    {
+        // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
+        return hash('md5', $value, true);
+    }
+
+    /**
+     * Get the hash of a value in hexadecimal form
+     *
+     * @param int|float|string|bool|Stringable|null $value
+     */
+    public static function hash($value): string
+    {
+        return hash('md5', $value);
     }
 
     /**

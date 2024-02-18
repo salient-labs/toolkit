@@ -14,7 +14,7 @@ use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 use ADOConnection;
 use ADODB_Exception;
@@ -115,7 +115,7 @@ abstract class DbSyncProvider extends SyncProvider
         $key = implode(':', [
             static::class,
             __FUNCTION__,
-            Compute::hash(...$this->getBackendIdentifier()),
+            Get::hash(implode("\0", $this->getBackendIdentifier())),
         ]);
 
         if (Cache::get($key, $ttl) === null) {

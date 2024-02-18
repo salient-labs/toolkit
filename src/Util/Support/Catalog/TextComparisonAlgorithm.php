@@ -3,7 +3,7 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Enumeration;
-use Salient\Core\Utility\Compute;
+use Salient\Core\Utility\Str;
 
 /**
  * Text comparison algorithms
@@ -46,14 +46,14 @@ class TextComparisonAlgorithm extends Enumeration
     /**
      * Uncertainty is derived from ngramSimilarity()
      *
-     * @see Compute::ngramSimilarity()
+     * @see Str::ngramSimilarity()
      */
     public const NGRAM_SIMILARITY = 16;
 
     /**
      * Uncertainty is derived from ngramIntersection()
      *
-     * @see Compute::ngramIntersection()
+     * @see Str::ngramIntersection()
      */
     public const NGRAM_INTERSECTION = 32;
 }

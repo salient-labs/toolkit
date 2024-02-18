@@ -522,6 +522,25 @@ final class File extends AbstractUtility
     }
 
     /**
+     * True if a path exists and is writable, or doesn't exist but descends from
+     * a writable directory
+     */
+    public static function creatable(string $path): bool
+    {
+        $pathIsParent = false;
+        while (!file_exists($path)) {
+            $parent = dirname($path);
+            if ($parent === $path) {
+                break;
+            }
+            $path = $parent;
+            $pathIsParent = true;
+        }
+
+        return (!$pathIsParent || is_dir($path)) && is_writable($path);
+    }
+
+    /**
      * True if a file appears to contain PHP code
      *
      * Returns `true` if `$filename` has a PHP open tag (`<?php`) at the start
@@ -697,7 +716,7 @@ final class File extends AbstractUtility
         $directory ??= self::getTempDir();
         $prefix ??= Sys::getProgramBasename();
         do {
-            $dir = sprintf('%s/%s%s.tmp', $directory, $prefix, Compute::randomText(8));
+            $dir = sprintf('%s/%s%s.tmp', $directory, $prefix, Get::randomText(8));
         } while (!@mkdir($dir, 0700));
 
         return $dir;
@@ -1030,7 +1049,7 @@ final class File extends AbstractUtility
         $path = Sys::getProgramName();
         $program = basename($path);
         $path = self::realpath($path);
-        $hash = Compute::hash($path);
+        $hash = Get::hash($path);
         $user = Sys::getUserId();
 
         if ($dir === null) {

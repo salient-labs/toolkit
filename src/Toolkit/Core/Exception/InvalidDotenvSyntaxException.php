@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
 
-/**
- * Thrown when one or more .env files contain invalid syntax
- */
+use Lkrms\Exception\MultipleErrorException;
+
 class InvalidDotenvSyntaxException extends MultipleErrorException {}
