@@ -25,6 +25,7 @@ use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Core\Contract\PipelineInterface;
+use Salient\Core\Contract\StreamPipelineInterface;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Pcre;
@@ -453,6 +454,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                             ->send($entity, [$operation, $ctx, $entity, ...$args])
                             ->then(fn($data) => $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $entity, $operation))
                             ->runInto($this->getRoundTripPipeline($operation))
+                            ->withConformity($this->Conformity)
                             ->run();
 
             case OP::READ:
@@ -487,10 +489,12 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                             ->after($after)
                             ->if(
                                 $this->SyncOneEntityPerRequest,
-                                fn(PipelineInterface $p) => $p->then($then),
-                                fn(PipelineInterface $p) => $p->collectThen($then)
+                                fn(StreamPipelineInterface $p) => $p->then($then),
+                                fn(StreamPipelineInterface $p) => $p->collectThen($then)
                             )
                             ->startInto($this->getRoundTripPipeline($operation))
+                            ->withConformity($this->Conformity)
+                            ->unlessIf(fn($entity) => $entity === null)
                             ->start();
                     };
 
@@ -501,6 +505,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                             ->getPipelineFromBackend()
                             ->stream(($httpRunner)($ctx, ...$args), [$operation, $ctx, ...$args])
                             ->withConformity($this->Conformity)
+                            ->unlessIf(fn($entity) => $entity === null)
                             ->start();
         }
 

@@ -2,97 +2,99 @@
 
 namespace Salient\Core;
 
-use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
+use Lkrms\Facade\App;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\ArrayMapper;
 use Salient\Core\Concern\HasChainableMethods;
+use Salient\Core\Contract\EntityPipelineInterface;
 use Salient\Core\Contract\PipeInterface;
 use Salient\Core\Contract\PipelineInterface;
-use Salient\Core\Exception\PipelineFilterException;
+use Salient\Core\Contract\StreamPipelineInterface;
+use Salient\Core\Utility\Get;
 use Closure;
 use Generator;
 use LogicException;
-use Throwable;
 
 /**
- * Sends a payload through a series of pipes to a destination
+ * Sends a payload through a series of pipes
  *
  * @template TInput
  * @template TOutput
  * @template TArgument
  *
  * @implements PipelineInterface<TInput,TOutput,TArgument>
+ * @implements EntityPipelineInterface<TInput,TOutput,TArgument>
+ * @implements StreamPipelineInterface<TInput,TOutput,TArgument>
  */
-final class Pipeline implements PipelineInterface
+final class Pipeline implements
+    PipelineInterface,
+    EntityPipelineInterface,
+    StreamPipelineInterface
 {
     use HasChainableMethods;
 
-    /**
-     * @var ContainerInterface|null
-     */
-    private $Container;
+    private bool $HasPayload = false;
+
+    private bool $HasStream = false;
 
     /**
-     * @var TInput|iterable<TInput>
+     * @var iterable<TInput>|TInput
      */
     private $Payload;
 
     /**
-     * @var ArrayKeyConformity::*
-     */
-    private $PayloadConformity;
-
-    /**
-     * @var TArgument|null
+     * @var TArgument
      */
     private $Arg;
 
     /**
-     * @var bool|null
+     * @var ArrayKeyConformity::*
      */
-    private $Stream;
+    private int $PayloadConformity = ArrayKeyConformity::NONE;
 
     /**
-     * @var array<PipeInterface<TInput,TOutput,TArgument>|(callable(TInput|TOutput, Closure, static, TArgument): (TInput|TOutput))|class-string<PipeInterface<TInput,TOutput,TArgument>>>
+     * @var (Closure(TInput $payload, static $pipeline, TArgument $arg): (TInput|TOutput))|null
      */
-    private $Pipes = [];
+    private ?Closure $After = null;
+
+    /**
+     * @var array<(Closure(TInput|TOutput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>>>
+     */
+    private array $Pipes = [];
 
     /**
      * @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapperFlag::*>}>
      */
-    private $KeyMaps = [];
-
-    /**
-     * @var (callable(TInput, static, TArgument): (TInput|TOutput))|null
-     */
-    private $After;
-
-    /**
-     * @var (callable(TInput, static, TArgument): TOutput)|null
-     */
-    private $Then;
-
-    /**
-     * @var bool
-     */
-    private $CollectThen = false;
-
-    /**
-     * @var array<callable(TOutput, static, TArgument): mixed>
-     */
-    private $Cc = [];
-
-    /**
-     * @var (callable(TOutput, static, TArgument): bool)|null
-     */
-    private $Unless;
+    private array $KeyMaps = [];
 
     /**
      * @var ArrayMapper[]
      */
-    private $ArrayMappers = [];
+    private array $ArrayMappers;
+
+    /**
+     * @var (Closure(TInput|TOutput $result, static $pipeline, TArgument $arg): TOutput)|null
+     */
+    private ?Closure $Then = null;
+
+    /**
+     * @var (Closure(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput>)|null
+     */
+    private ?Closure $CollectThen = null;
+
+    /**
+     * @var array<Closure(TOutput $result, static $pipeline, TArgument $arg): mixed>
+     */
+    private array $Cc = [];
+
+    /**
+     * @var (Closure(TOutput, static, TArgument): bool)|null
+     */
+    private ?Closure $Unless = null;
+
+    private ?ContainerInterface $Container;
 
     /**
      * Creates a new Pipeline object
@@ -103,7 +105,7 @@ final class Pipeline implements PipelineInterface
     }
 
     /**
-     * Get a new pipeline
+     * Creates a new Pipeline object
      *
      * Syntactic sugar for `new Pipeline()`.
      *
@@ -115,17 +117,29 @@ final class Pipeline implements PipelineInterface
     }
 
     /**
+     * @internal
+     */
+    public function __clone()
+    {
+        unset($this->ArrayMappers);
+    }
+
+    /**
      * @inheritDoc
      */
     public function send($payload, $arg = null)
     {
-        $clone = clone $this;
-        $clone->Payload = $payload;
-        $clone->PayloadConformity = ArrayKeyConformity::NONE;
-        $clone->Arg = $arg;
-        $clone->Stream = false;
-        $clone->ArrayMappers = [];
+        if ($this->HasPayload) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Payload already set');
+            // @codeCoverageIgnoreEnd
+        }
 
+        $clone = clone $this;
+        $clone->HasPayload = true;
+        $clone->HasStream = false;
+        $clone->Payload = $payload;
+        $clone->Arg = $arg;
         return $clone;
     }
 
@@ -134,52 +148,74 @@ final class Pipeline implements PipelineInterface
      */
     public function stream(iterable $payload, $arg = null)
     {
-        $clone = clone $this;
-        $clone->Payload = $payload;
-        $clone->PayloadConformity = ArrayKeyConformity::NONE;
-        $clone->Arg = $arg;
-        $clone->Stream = true;
-        $clone->ArrayMappers = [];
+        if ($this->HasPayload) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Payload already set');
+            // @codeCoverageIgnoreEnd
+        }
 
+        $clone = clone $this;
+        $clone->HasPayload = true;
+        $clone->HasStream = true;
+        $clone->Payload = $payload;
+        $clone->Arg = $arg;
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function withConformity($conformity = ArrayKeyConformity::PARTIAL)
+    public function withConformity($conformity)
     {
+        if (!$this->HasPayload) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('No payload');
+            // @codeCoverageIgnoreEnd
+        }
+
         $clone = clone $this;
         $clone->PayloadConformity = $conformity;
-        $clone->ArrayMappers = [];
-
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function after(callable $callback)
+    public function getConformity()
+    {
+        if (!$this->HasPayload) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('No payload');
+            // @codeCoverageIgnoreEnd
+        }
+
+        return $this->PayloadConformity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function after(Closure $closure)
     {
         if ($this->After) {
-            throw new LogicException(static::class . '::after() has already been applied');
+            // @codeCoverageIgnoreStart
+            throw new LogicException(static::class . '::after() already applied');
+            // @codeCoverageIgnoreEnd
         }
+
         $clone = clone $this;
-        $clone->After = $callback;
-
+        $clone->After = $closure;
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function afterIf(callable $callback)
+    public function afterIf(Closure $closure)
     {
-        if ($this->After) {
-            return $this;
-        }
-
-        return $this->after($callback);
+        return $this->After
+            ? $this
+            : $this->after($closure);
     }
 
     /**
@@ -189,18 +225,17 @@ final class Pipeline implements PipelineInterface
     {
         $clone = clone $this;
         array_push($clone->Pipes, ...$pipes);
-
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function throughCallback(callable $callback)
+    public function throughClosure(Closure $closure)
     {
         return $this->through(
             fn($payload, Closure $next, self $pipeline, $args) =>
-                $next($callback($payload, $pipeline, $args))
+                $next($closure($payload, $pipeline, $args))
         );
     }
 
@@ -212,7 +247,7 @@ final class Pipeline implements PipelineInterface
         $keyMapKey = count($this->KeyMaps);
         $clone = $this->through(
             fn($payload, Closure $next, self $pipeline) =>
-                $next($pipeline->getArrayMapper($keyMapKey)->map($payload))
+                $next($pipeline->ArrayMappers[$keyMapKey]->map($payload))
         );
         $clone->KeyMaps[] = [$keyMap, $flags];
         return $clone;
@@ -221,91 +256,107 @@ final class Pipeline implements PipelineInterface
     /**
      * @inheritDoc
      */
-    public function then(callable $callback)
+    public function then(Closure $closure)
     {
-        if ($this->Then) {
-            throw new LogicException(static::class . '::then() has already been applied');
+        if ($this->Then || $this->CollectThen) {
+            throw new LogicException(static::class . '::then() already applied');
         }
-        $clone = clone $this;
-        $clone->Then = $callback;
 
+        $clone = clone $this;
+        $clone->Then = $closure;
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function thenIf(callable $callback)
+    public function thenIf(Closure $closure)
     {
-        if ($this->Then) {
-            return $this;
-        }
-
-        return $this->then($callback);
+        return $this->Then || $this->CollectThen
+            ? $this
+            : $this->then($closure);
     }
 
     /**
      * @inheritDoc
      */
-    public function collectThen(callable $callback)
+    public function collectThen(Closure $closure)
     {
-        if ($this->Then) {
-            throw new LogicException(static::class . '::then() has already been applied');
+        if (!$this->HasPayload || !$this->HasStream) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Invalid payload');
+            // @codeCoverageIgnoreEnd
         }
-        $clone = clone $this;
-        $clone->Then = $callback;
-        $clone->CollectThen = true;
 
+        if ($this->Then || $this->CollectThen) {
+            throw new LogicException(static::class . '::then() already applied');
+        }
+
+        $clone = clone $this;
+        $clone->CollectThen = $closure;
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function collectThenIf(callable $callback)
+    public function collectThenIf(Closure $closure)
     {
-        if ($this->Then) {
-            return $this;
+        if (!$this->HasPayload || !$this->HasStream) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Invalid payload');
+            // @codeCoverageIgnoreEnd
         }
 
-        return $this->collectThen($callback);
+        return $this->Then || $this->CollectThen
+            ? $this
+            : $this->collectThen($closure);
     }
 
     /**
      * @inheritDoc
      */
-    public function cc(callable $callback)
+    public function cc(Closure $closure)
     {
         $clone = clone $this;
-        $clone->Cc[] = $callback;
-
+        $clone->Cc[] = $closure;
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function unless(callable $filter)
+    public function unless(Closure $filter)
     {
+        if (!$this->HasPayload || !$this->HasStream) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Invalid payload');
+            // @codeCoverageIgnoreEnd
+        }
+
         if ($this->Unless) {
-            throw new LogicException(static::class . '::unless() has already been applied');
+            throw new LogicException(static::class . '::unless() already applied');
         }
+
         $clone = clone $this;
         $clone->Unless = $filter;
-
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    public function unlessIf(callable $filter)
+    public function unlessIf(Closure $filter)
     {
-        if ($this->Unless) {
-            return $this;
+        if (!$this->HasPayload || !$this->HasStream) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Invalid payload');
+            // @codeCoverageIgnoreEnd
         }
 
-        return $this->unless($filter);
+        return $this->Unless
+            ? $this
+            : $this->unless($filter);
     }
 
     /**
@@ -313,12 +364,10 @@ final class Pipeline implements PipelineInterface
      */
     public function run()
     {
-        if ($this->Stream || $this->CollectThen) {
-            throw new LogicException(
-                static::class . '::run() cannot be called after '
-                . static::class . '::stream() or '
-                . static::class . '::collectThen()'
-            );
+        if (!$this->HasPayload || $this->HasStream) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Invalid payload');
+            // @codeCoverageIgnoreEnd
         }
 
         $result = $this->getClosure()(
@@ -326,11 +375,6 @@ final class Pipeline implements PipelineInterface
                 ? ($this->After)($this->Payload, $this, $this->Arg)
                 : $this->Payload
         );
-
-        if ($this->Unless &&
-                ($this->Unless)($result, $this, $this->Arg) === true) {
-            throw new PipelineFilterException($this->Payload, $result);
-        }
 
         if ($this->Cc) {
             $this->ccResult($result);
@@ -342,13 +386,20 @@ final class Pipeline implements PipelineInterface
     /**
      * @inheritDoc
      */
+    public function runInto(PipelineInterface $next)
+    {
+        return $next->send($this->run(), $this->Arg);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function start(): Generator
     {
-        if (!$this->Stream) {
-            throw new LogicException(
-                static::class . '::stream() must be called before '
-                . static::class . '::start()'
-            );
+        if (!$this->HasPayload || !$this->HasStream) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Invalid payload');
+            // @codeCoverageIgnoreEnd
         }
 
         $closure = $this->getClosure();
@@ -360,8 +411,10 @@ final class Pipeline implements PipelineInterface
                     : $payload
             );
 
-            if ($this->Unless &&
-                    ($this->Unless)($result, $this, $this->Arg) === true) {
+            if (
+                $this->Unless &&
+                ($this->Unless)($result, $this, $this->Arg) !== false
+            ) {
                 continue;
             }
 
@@ -381,7 +434,7 @@ final class Pipeline implements PipelineInterface
             return;
         }
 
-        $results = ($this->Then)($results, $this, $this->Arg);
+        $results = ($this->CollectThen)($results, $this, $this->Arg);
         foreach ($results as $key => $result) {
             if ($this->Cc) {
                 $this->ccResult($result);
@@ -394,35 +447,9 @@ final class Pipeline implements PipelineInterface
     /**
      * @inheritDoc
      */
-    public function getConformity()
-    {
-        return $this->PayloadConformity;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function runInto(PipelineInterface $next)
-    {
-        return $next->send($this->run(), $this->Arg);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function startInto(PipelineInterface $next)
     {
         return $next->stream($this->start(), $this->Arg);
-    }
-
-    private function getArrayMapper(int $keyMapKey): ArrayMapper
-    {
-        return $this->ArrayMappers[$keyMapKey]
-            ??= new ArrayMapper(
-                $this->KeyMaps[$keyMapKey][0],
-                $this->PayloadConformity,
-                $this->KeyMaps[$keyMapKey][1],
-            );
     }
 
     /**
@@ -430,50 +457,45 @@ final class Pipeline implements PipelineInterface
      */
     private function ccResult($result): void
     {
-        foreach ($this->Cc as $callback) {
-            $callback($result, $this, $this->Arg);
+        foreach ($this->Cc as $closure) {
+            $closure($result, $this, $this->Arg);
         }
-    }
-
-    /**
-     * @param mixed $payload
-     * @return never
-     */
-    private function handleException($payload, Throwable $ex)
-    {
-        throw $ex;
     }
 
     private function getClosure(): Closure
     {
-        return array_reduce(
-            array_reverse($this->Pipes),
-            function (Closure $next, $pipe): Closure {
-                if (is_callable($pipe)) {
-                    $closure = fn($payload) => $pipe($payload, $next, $this, $this->Arg);
-                } else {
-                    if (is_string($pipe)) {
-                        $container = $this->Container ?: Container::maybeGetGlobalContainer();
-                        $pipe = $container ? $container->get($pipe) : new $pipe();
-                    }
-                    if (!($pipe instanceof PipeInterface)) {
-                        throw new LogicException('Pipe does not implement ' . PipeInterface::class);
-                    }
-                    $closure = fn($payload) => $pipe->handle($payload, $next, $this, $this->Arg);
-                }
+        $this->ArrayMappers = [];
+        foreach ($this->KeyMaps as [$keyMap, $flags]) {
+            $this->ArrayMappers[] = new ArrayMapper($keyMap, $this->PayloadConformity, $flags);
+        }
 
-                return
-                    function ($payload) use ($closure) {
-                        try {
-                            return $closure($payload);
-                        } catch (Throwable $ex) {
-                            return $this->handleException($payload, $ex);
-                        }
-                    };
-            },
-            $this->Then && !$this->CollectThen
-                ? fn($result) => ($this->Then)($result, $this, $this->Arg)
-                : fn($result) => $result
-        );
+        $closure = $this->Then
+            ? fn($result) => ($this->Then)($result, $this, $this->Arg)
+            : fn($result) => $result;
+
+        foreach (array_reverse($this->Pipes) as $pipe) {
+            if ($pipe instanceof Closure) {
+                $closure = fn($payload) => $pipe($payload, $closure, $this, $this->Arg);
+                continue;
+            }
+
+            if (is_string($pipe)) {
+                $pipe = $this->Container
+                    ? $this->Container->get($pipe)
+                    : App::get($pipe);
+            }
+
+            if (!($pipe instanceof PipeInterface)) {
+                throw new LogicException(sprintf(
+                    '%s does not implement %s',
+                    Get::type($pipe),
+                    PipeInterface::class,
+                ));
+            }
+
+            $closure = fn($payload) => $pipe->handle($payload, $closure, $this, $this->Arg);
+        }
+
+        return $closure;
     }
 }

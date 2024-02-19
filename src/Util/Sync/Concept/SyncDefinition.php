@@ -418,6 +418,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
      * Get an entity-to-data pipeline for the entity
      *
      * Before returning the pipeline:
+     *
      * - a pipe that serializes any unserialized {@see ISyncEntity} instances is
      *   added via {@see PipelineInterface::through()}
      *
@@ -426,7 +427,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
     final protected function getPipelineToBackend(): PipelineInterface
     {
         /** @var PipelineInterface<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
-        $pipeline = $this->PipelineToBackend ?: Pipeline::create();
+        $pipeline = $this->PipelineToBackend ?? Pipeline::create();
 
         /** @var PipelineInterface<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
         $pipeline = $pipeline->through(
@@ -443,26 +444,24 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
      * Get a data-to-entity pipeline for the entity
      *
      * Before returning the pipeline:
+     *
+     * - if the definition has a key map, it is applied via
+     *   {@see PipelineInterface::throughKeyMap()}
      * - a closure to create instances of the entity from arrays returned by the
      *   pipeline is applied via {@see PipelineInterface::then()}
-     * - a closure to discard `null` results is applied via
-     *   {@see PipelineInterface::unlessIf()}
-     * - the definition's {@see SyncDefinition::$Conformity} is applied via
-     *   {@see PipelineInterface::withConformity()}
      *
      * @return PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
     final protected function getPipelineFromBackend(): PipelineInterface
     {
         /** @var PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
-        $pipeline = $this->PipelineFromBackend ?: Pipeline::create();
+        $pipeline = $this->PipelineFromBackend ?? Pipeline::create();
 
         if ($this->KeyMap !== null) {
             $pipeline = $pipeline->throughKeyMap($this->KeyMap, $this->KeyMapFlags);
         }
 
         return $pipeline
-            ->withConformity($this->Conformity)
             ->then(
                 function (array $data, PipelineInterface $pipeline, $arg) use (&$ctx, &$closure) {
                     if (!$ctx) {
@@ -485,8 +484,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
 
                     return $entity;
                 }
-            )
-            ->unlessIf(fn($entity) => $entity === null);
+            );
     }
 
     /**

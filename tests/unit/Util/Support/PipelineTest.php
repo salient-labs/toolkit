@@ -6,7 +6,6 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\PipelineFilterException;
 use Salient\Core\Pipeline;
 use Closure;
 use Throwable;
@@ -100,17 +99,6 @@ final class PipelineTest extends TestCase
             [1.565, 4.435, 7.304, 10.174],
             $out
         );
-
-        $this->expectException(PipelineFilterException::class);
-        (new Pipeline())
-            ->send(23)
-            ->through(
-                fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
-                fn($payload, Closure $next) => $next($payload / 23),
-                fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
-            )
-            ->unless(fn($result) => $result === null)
-            ->run();
     }
 
     public function testThroughKeyMap(): void

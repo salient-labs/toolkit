@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Contract;
 
-use Salient\Core\Contract\PipelineInterface;
 use Closure;
 
 /**
