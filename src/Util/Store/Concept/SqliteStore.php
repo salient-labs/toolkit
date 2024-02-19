@@ -2,10 +2,10 @@
 
 namespace Lkrms\Store\Concept;
 
-use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Sys;
 use LogicException;
@@ -284,6 +284,6 @@ abstract class SqliteStore implements FacadeAwareInterface
             return $this;
         }
 
-        throw new IncompatibleRuntimeEnvironmentException('SQLite 3.24 or above required');
+        throw new InvalidRuntimeConfigurationException('SQLite 3.24 or above required');
     }
 }

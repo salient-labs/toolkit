@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use Lkrms\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentException;
 
 /**
  * A "param" tag extracted from a PHP DocBlock

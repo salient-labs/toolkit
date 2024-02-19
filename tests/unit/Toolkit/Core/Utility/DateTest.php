@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Date;
 use DateInterval;
 use DateMalformedIntervalStringException;

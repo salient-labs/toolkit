@@ -2,9 +2,9 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Facade\Console;
 use Salient\Core\Concern\UnloadsFacades;
+use Salient\Core\Contract\ExceptionInterface;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
 use Salient\Core\Utility\File;

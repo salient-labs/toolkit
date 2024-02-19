@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core;
 
-use Lkrms\Exception\Concern\MultipleErrorExceptionTrait;
-use Lkrms\Exception\Contract\MultipleErrorExceptionInterface;
+use Salient\Core\Concern\MultipleErrorExceptionTrait;
+use Salient\Core\Contract\MultipleErrorExceptionInterface;
 
 /**
- * Base class for exceptions that represent multiple errors
+ * Base class for runtime exceptions that represent multiple errors
  */
-abstract class MultipleErrorException extends Exception implements MultipleErrorExceptionInterface
+abstract class AbstractMultipleErrorException extends AbstractException implements MultipleErrorExceptionInterface
 {
     use MultipleErrorExceptionTrait;
 }

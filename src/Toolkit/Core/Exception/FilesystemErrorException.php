@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
+
+use Salient\Core\AbstractException;
 
 /**
- * Thrown when a filesystem-related error occurs
+ * @api
  */
-class FilesystemErrorException extends Exception {}
+class FilesystemErrorException extends AbstractException {}

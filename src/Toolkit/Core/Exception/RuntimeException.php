@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
+
+use Salient\Core\AbstractException;
 
 /**
- * Thrown when an unrecoverable error occurs at runtime
+ * @api
  */
-class RuntimeException extends Exception {}
+class RuntimeException extends AbstractException {}

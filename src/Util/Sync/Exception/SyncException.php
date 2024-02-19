@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Base class for sync exceptions
  */
-abstract class SyncException extends Exception {}
+abstract class SyncException extends AbstractException {}

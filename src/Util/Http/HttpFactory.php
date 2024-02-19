@@ -2,7 +2,6 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Exception\MethodNotImplementedException;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -15,6 +14,7 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
+use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\File;
 
 class HttpFactory implements

@@ -2,12 +2,12 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\PipelineFilterException;
 use Closure;
 use Throwable;
 
@@ -101,7 +101,7 @@ final class PipelineTest extends TestCase
             $out
         );
 
-        $this->expectException(PipelineResultRejectedException::class);
+        $this->expectException(PipelineFilterException::class);
         (new Pipeline())
             ->send(23)
             ->through(

@@ -2,14 +2,14 @@
 
 namespace Lkrms\Cli\Exception;
 
-use Lkrms\Exception\MultipleErrorException;
+use Salient\Core\AbstractMultipleErrorException;
 
 /**
  * Thrown when invalid command line arguments are given
  *
  * @api
  */
-class CliInvalidArgumentsException extends MultipleErrorException
+class CliInvalidArgumentsException extends AbstractMultipleErrorException
 {
     public function __construct(string ...$errors)
     {

@@ -4,7 +4,7 @@ namespace Lkrms\Concern;
 
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\IList;
-use Lkrms\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Get;
 
 /**

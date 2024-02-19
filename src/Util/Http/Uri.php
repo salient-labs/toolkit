@@ -3,8 +3,8 @@
 namespace Lkrms\Http;
 
 use Lkrms\Concern\Immutable;
-use Lkrms\Exception\InvalidArgumentException;
 use Psr\Http\Message\UriInterface;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;

@@ -1,12 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
 
-use Salient\Core\Utility\Assert;
+use Salient\Core\AbstractException;
 
 /**
- * Thrown when an assertion fails
- *
- * @see Assert
+ * @api
  */
-class AssertionFailedException extends Exception {}
+class AssertionFailedException extends AbstractException {}

@@ -2,9 +2,9 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 
 /**

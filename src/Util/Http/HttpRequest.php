@@ -2,13 +2,13 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Str;
 use Stringable;
 

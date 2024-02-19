@@ -2,12 +2,12 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Exception\FilesystemErrorException;
-use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\Support\Indentation;
+use Salient\Core\Exception\FilesystemErrorException;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\AbstractUtility;
 use Stringable;
 
@@ -901,7 +901,7 @@ final class File extends AbstractUtility
 
         if ($utf16le) {
             if (!extension_loaded('iconv')) {
-                throw new IncompatibleRuntimeEnvironmentException(
+                throw new InvalidRuntimeConfigurationException(
                     "'iconv' extension required for UTF-16LE encoding"
                 );
             }

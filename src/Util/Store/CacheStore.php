@@ -2,9 +2,9 @@
 
 namespace Lkrms\Store;
 
-use Lkrms\Exception\AssertionFailedException;
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Store\Concept\SqliteStore;
+use Salient\Core\Exception\AssertionFailedException;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Assert;
 use DateTimeInterface;
 use LogicException;

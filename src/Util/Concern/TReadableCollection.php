@@ -6,7 +6,7 @@ use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IComparable;
 use Lkrms\Contract\Jsonable;
-use Lkrms\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Json;
 use ArrayIterator;
 use JsonSerializable;

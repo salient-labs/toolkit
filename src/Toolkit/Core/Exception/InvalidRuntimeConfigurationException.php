@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
+
+use Salient\Core\AbstractException;
 
 /**
- * Thrown when something is wrong with PHP's runtime environment
+ * @api
  */
-class IncompatibleRuntimeEnvironmentException extends Exception {}
+class InvalidRuntimeConfigurationException extends AbstractException {}

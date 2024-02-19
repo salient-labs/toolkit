@@ -2,11 +2,11 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Exception\UnexpectedValueException;
 use Salient\Core\Catalog\Regex;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 

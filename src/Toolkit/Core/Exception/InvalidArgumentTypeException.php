@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
 
 use Salient\Core\Utility\Get;
 
 /**
- * Thrown when a function receives an argument that is not of the required type
+ * @api
  */
 class InvalidArgumentTypeException extends InvalidArgumentException
 {
@@ -22,7 +22,7 @@ class InvalidArgumentTypeException extends InvalidArgumentException
             $position,
             ltrim($name, '$'),
             $type,
-            Get::type($value)
+            Get::type($value),
         ));
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Exception\UnexpectedValueException;
+use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Generator;

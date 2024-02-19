@@ -4,8 +4,6 @@ namespace Salient\Core\Utility;
 
 use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
@@ -13,6 +11,8 @@ use Salient\Core\Catalog\Char;
 use Salient\Core\Catalog\CopyFlag;
 use Salient\Core\Catalog\QueryFlag;
 use Salient\Core\Catalog\Regex;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\UncloneableObjectException;
 use Salient\Core\AbstractUtility;
 use Closure;

@@ -2,12 +2,12 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Exception\InvalidEnvironmentException;
-use Lkrms\Exception\RuntimeException;
 use Lkrms\Facade\Console;
 use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Catalog\Regex;
-use Salient\Core\Exception\InvalidDotenvSyntaxException;
+use Salient\Core\Exception\InvalidDotEnvSyntaxException;
+use Salient\Core\Exception\InvalidEnvironmentException;
+use Salient\Core\Exception\RuntimeException;
 use Salient\Core\AbstractUtility;
 use LogicException;
 
@@ -53,7 +53,7 @@ final class Env extends AbstractUtility
      *
      * Later values override earlier ones.
      *
-     * @throws InvalidDotenvSyntaxException if invalid syntax is found.
+     * @throws InvalidDotEnvSyntaxException if invalid syntax is found.
      */
     public static function load(string ...$path): void
     {
@@ -593,7 +593,7 @@ final class Env extends AbstractUtility
     private static function doLoad(array $queue, array $errors): void
     {
         if ($errors) {
-            throw (new InvalidDotenvSyntaxException('Unable to load .env files', ...$errors))
+            throw (new InvalidDotEnvSyntaxException('Unable to load .env files', ...$errors))
                 ->reportErrors();
         }
         foreach ($queue as $name => $value) {

@@ -2,12 +2,12 @@
 
 namespace Lkrms\Container\Exception;
 
-use Lkrms\Exception\Exception;
 use Psr\Container\ContainerExceptionInterface;
+use Salient\Core\AbstractException;
 
 /**
  * Base class for container exceptions
  *
  * @api
  */
-abstract class ContainerException extends Exception implements ContainerExceptionInterface {}
+abstract class ContainerException extends AbstractException implements ContainerExceptionInterface {}

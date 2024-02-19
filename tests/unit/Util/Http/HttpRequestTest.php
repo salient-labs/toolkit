@@ -2,12 +2,12 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\HttpRequest;
 use Lkrms\Http\Uri;
 use Lkrms\Tests\TestCase;
 use Psr\Http\Message\StreamInterface;
+use Salient\Core\Exception\InvalidArgumentException;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests

@@ -1,14 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core;
 
-use Lkrms\Exception\Concern\ExceptionTrait;
-use Lkrms\Exception\Contract\ExceptionInterface;
+use Salient\Core\Concern\ExceptionTrait;
+use Salient\Core\Contract\ExceptionInterface;
+use RuntimeException;
 
 /**
  * Base class for runtime exceptions
  */
-abstract class Exception extends \RuntimeException implements ExceptionInterface
+abstract class AbstractException extends RuntimeException implements ExceptionInterface
 {
     use ExceptionTrait;
 }

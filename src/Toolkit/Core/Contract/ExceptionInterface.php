@@ -1,9 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception\Contract;
+namespace Salient\Core\Contract;
 
 use Throwable;
 
+/**
+ * @api
+ */
 interface ExceptionInterface extends Throwable
 {
     /**

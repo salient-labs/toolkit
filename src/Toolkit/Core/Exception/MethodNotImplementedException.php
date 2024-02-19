@@ -1,16 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
 
-use Lkrms\Exception\Concern\ExceptionTrait;
-use Lkrms\Exception\Contract\ExceptionInterface;
+use Salient\Core\Concern\ExceptionTrait;
+use Salient\Core\Contract\ExceptionInterface;
 use Salient\Core\Utility\Reflect;
+use BadMethodCallException;
 use ReflectionMethod;
 
 /**
- * Thrown when an unimplemented method is called
+ * @api
  */
-class MethodNotImplementedException extends \BadMethodCallException implements ExceptionInterface
+class MethodNotImplementedException extends BadMethodCallException implements ExceptionInterface
 {
     use ExceptionTrait;
 

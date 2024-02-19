@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
 
-use Lkrms\Exception\Concern\ExceptionTrait;
-use Lkrms\Exception\Contract\ExceptionInterface;
+use Salient\Core\Concern\ExceptionTrait;
+use Salient\Core\Contract\ExceptionInterface;
 
 /**
- * Thrown when an invalid argument is passed to a method
+ * @api
  */
 class InvalidArgumentException extends \InvalidArgumentException implements ExceptionInterface
 {

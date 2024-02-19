@@ -3,7 +3,7 @@
 namespace Salient\Core\Utility;
 
 use Lkrms\Contract\Arrayable;
-use Lkrms\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 use Closure;
 use Countable;

@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Exception\AssertionFailedException;
-use Lkrms\Exception\FilesystemErrorException;
+use Salient\Core\Exception\AssertionFailedException;
+use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\AbstractUtility;
 use Throwable;
 

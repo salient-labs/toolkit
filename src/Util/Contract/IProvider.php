@@ -3,8 +3,8 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Container\ContainerInterface;
-use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\Date\DateFormatterInterface;
+use Salient\Core\Exception\MethodNotImplementedException;
 use Stringable;
 
 /**

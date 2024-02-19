@@ -4,8 +4,8 @@ namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Concept\ConsoleStreamTarget;
 use Lkrms\Console\Exception\ConsoleInvalidTargetException;
-use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Support\Catalog\TtyControlSequence;
+use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
 use DateTime;

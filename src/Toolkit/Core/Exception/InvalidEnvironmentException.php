@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
+
+use Salient\Core\AbstractException;
 
 /**
- * Thrown when an environment variable is missing or has an invalid value
+ * @api
  */
-class InvalidEnvironmentException extends Exception {}
+class InvalidEnvironmentException extends AbstractException {}

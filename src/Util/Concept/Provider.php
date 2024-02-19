@@ -4,9 +4,9 @@ namespace Lkrms\Concept;
 
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IProvider;
-use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Support\ProviderContext;
+use Salient\Core\Exception\MethodNotImplementedException;
 
 /**
  * Base class for providers

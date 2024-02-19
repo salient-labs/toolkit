@@ -2,13 +2,13 @@
 
 namespace Salient\Core\Exception;
 
-use Lkrms\Exception\Exception;
 use Salient\Core\Utility\Json;
+use Salient\Core\AbstractException;
 
 /**
  * @api
  */
-class PcreErrorException extends Exception
+class PcreErrorException extends AbstractException
 {
     private const ERROR_MESSAGE_MAP = [
         \PREG_NO_ERROR => 'No error',
