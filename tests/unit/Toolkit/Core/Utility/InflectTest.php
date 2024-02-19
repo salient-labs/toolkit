@@ -2,11 +2,14 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Inflect;
 
+/**
+ * @covers \Salient\Core\Utility\Inflect
+ */
 final class InflectTest extends TestCase
 {
     /**

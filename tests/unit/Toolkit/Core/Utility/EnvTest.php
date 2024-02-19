@@ -2,10 +2,13 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Utility\Env;
 
+/**
+ * @covers \Salient\Core\Utility\Env
+ */
 final class EnvTest extends TestCase
 {
     /**

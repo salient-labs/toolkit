@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Concept;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Tests\Concept\TypedList\MyClass;
 use Lkrms\Tests\Concept\TypedList\MyList;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
 
 final class TypedListTest extends TestCase
 {

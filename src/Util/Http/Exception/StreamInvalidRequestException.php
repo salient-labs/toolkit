@@ -2,10 +2,10 @@
 
 namespace Lkrms\Http\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when a stream wrapper receives a request the underlying PHP stream
  * cannot service
  */
-class StreamInvalidRequestException extends Exception {}
+class StreamInvalidRequestException extends AbstractException {}

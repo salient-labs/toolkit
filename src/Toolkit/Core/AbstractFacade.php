@@ -79,6 +79,14 @@ abstract class AbstractFacade implements FacadeInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    final public static function unload(): void
+    {
+        self::doUnload();
+    }
+
+    /**
      * Remove the underlying instances of all facades
      */
     final public static function unloadAll(): void
@@ -88,17 +96,13 @@ abstract class AbstractFacade implements FacadeInterface
             if ($class === Event::class) {
                 continue;
             }
+
             $class::doUnload();
         }
-        Event::doUnload();
-    }
 
-    /**
-     * @inheritDoc
-     */
-    final public static function unload(): void
-    {
-        self::doUnload();
+        Event::doUnload();
+
+        self::unloadAllServiceLists();
     }
 
     /**
@@ -296,5 +300,7 @@ abstract class AbstractFacade implements FacadeInterface
         }
 
         unset(self::$Instances[static::class]);
+
+        self::unloadServiceList();
     }
 }

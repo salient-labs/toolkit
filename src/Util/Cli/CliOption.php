@@ -15,7 +15,7 @@ use Lkrms\Contract\Buildable;
 use Lkrms\Contract\HasJsonSchema;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Facade\Console;
-use Lkrms\Support\Catalog\CharacterSequence as Char;
+use Salient\Core\Catalog\Char;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Utility\Arr;

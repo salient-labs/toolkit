@@ -6,7 +6,6 @@ use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
-use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
@@ -17,6 +16,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
+use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\Get;
 
 /**

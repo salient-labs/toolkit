@@ -2,9 +2,9 @@
 
 namespace Lkrms\Http\OAuth2;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when an OAuth 2.0 request fails
  */
-class OAuth2Exception extends Exception {}
+class OAuth2Exception extends AbstractException {}

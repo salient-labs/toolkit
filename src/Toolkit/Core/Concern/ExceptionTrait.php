@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception\Concern;
+namespace Salient\Core\Concern;
 
-use Lkrms\Exception\Contract\ExceptionInterface;
+use Salient\Core\Contract\ExceptionInterface;
 use Throwable;
 
 /**

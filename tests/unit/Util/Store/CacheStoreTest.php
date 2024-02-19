@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Store;
 
-use Lkrms\Exception\AssertionFailedException;
 use Lkrms\Store\CacheStore;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\AssertionFailedException;
 use Salient\Core\Utility\File;
 use DateTimeImmutable;
 use stdClass;

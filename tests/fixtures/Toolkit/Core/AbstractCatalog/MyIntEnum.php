@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Core\AbstractCatalog;
 
 use Salient\Core\AbstractEnumeration;
 
 /**
  * @extends AbstractEnumeration<int>
  */
-class MyEnum extends AbstractEnumeration
+class MyIntEnum extends AbstractEnumeration
 {
     public const FOO = 0;
     public const BAR = 1;

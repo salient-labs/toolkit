@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\ArrayMapper;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
 use Throwable;
 use ValueError;
 

@@ -5,6 +5,9 @@ namespace Salient\Tests\Core\Utility;
 use Lkrms\Tests\TestCase;
 use Salient\Core\Utility\Sys;
 
+/**
+ * @covers \Salient\Core\Utility\Sys
+ */
 final class SysTest extends TestCase
 {
     /**

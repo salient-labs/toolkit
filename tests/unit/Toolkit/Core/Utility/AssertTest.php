@@ -2,15 +2,18 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Exception\AssertionFailedException;
-use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\AssertionFailedException;
+use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Assert;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use stdClass;
 
+/**
+ * @covers \Salient\Core\Utility\Assert
+ */
 final class AssertTest extends TestCase
 {
     /**

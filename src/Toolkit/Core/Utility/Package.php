@@ -4,8 +4,8 @@ namespace Salient\Core\Utility;
 
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
-use Lkrms\Exception\UnexpectedValueException;
 use Salient\Core\Event\PackageDataReceivedEvent;
+use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Event;
 use Salient\Core\AbstractUtility;
 

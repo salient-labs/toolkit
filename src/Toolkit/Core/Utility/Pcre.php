@@ -62,8 +62,7 @@ final class Pcre extends AbstractUtility
     ): int {
         $result = preg_match($pattern, $subject, $matches, $flags, $offset);
         if ($result === false) {
-            $error = preg_last_error();
-            throw new PcreErrorException($error, 'preg_match', $pattern, $subject);
+            throw new PcreErrorException(null, 'preg_match', $pattern, $subject);
         }
         return $result;
     }
@@ -111,8 +110,7 @@ final class Pcre extends AbstractUtility
     ): int {
         $result = preg_match_all($pattern, $subject, $matches, $flags, $offset);
         if ($result === false) {
-            $error = preg_last_error();
-            throw new PcreErrorException($error, 'preg_match_all', $pattern, $subject);
+            throw new PcreErrorException(null, 'preg_match_all', $pattern, $subject);
         }
         return $result;
     }
@@ -136,8 +134,7 @@ final class Pcre extends AbstractUtility
     ) {
         $result = preg_replace($pattern, $replacement, $subject, $limit, $count);
         if ($result === null) {
-            $error = preg_last_error();
-            throw new PcreErrorException($error, 'preg_replace', $pattern, $subject);
+            throw new PcreErrorException(null, 'preg_replace', $pattern, $subject);
         }
         return $result;
     }
@@ -175,8 +172,7 @@ final class Pcre extends AbstractUtility
     ) {
         $result = preg_replace_callback($pattern, $callback, $subject, $limit, $count, $flags);
         if ($result === null) {
-            $error = preg_last_error();
-            throw new PcreErrorException($error, 'preg_replace_callback', $pattern, $subject);
+            throw new PcreErrorException(null, 'preg_replace_callback', $pattern, $subject);
         }
         return $result;
     }
@@ -212,8 +208,7 @@ final class Pcre extends AbstractUtility
     ) {
         $result = preg_replace_callback_array($pattern, $subject, $limit, $count, $flags);
         if ($result === null) {
-            $error = preg_last_error();
-            throw new PcreErrorException($error, 'preg_replace_callback_array', $pattern, $subject);
+            throw new PcreErrorException(null, 'preg_replace_callback_array', $pattern, $subject);
         }
         return $result;
     }
@@ -232,8 +227,7 @@ final class Pcre extends AbstractUtility
     ): array {
         $result = preg_split($pattern, $subject, $limit, $flags);
         if ($result === false) {
-            $error = preg_last_error();
-            throw new PcreErrorException($error, 'preg_split', $pattern, $subject);
+            throw new PcreErrorException(null, 'preg_split', $pattern, $subject);
         }
         return $result;
     }

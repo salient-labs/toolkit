@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\SyncTestCase;
+use Salient\Core\Catalog\Regex;
 
 final class SyncStoreTest extends SyncTestCase
 {

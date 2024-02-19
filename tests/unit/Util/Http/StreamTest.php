@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Exception\StreamDetachedException;
 use Lkrms\Http\Exception\StreamInvalidRequestException;
 use Lkrms\Http\Stream;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
 

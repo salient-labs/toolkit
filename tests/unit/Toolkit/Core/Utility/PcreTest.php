@@ -4,9 +4,14 @@ namespace Salient\Tests\Core\Utility;
 
 use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\PcreErrorException;
+use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
 use Stringable;
 
+/**
+ * @covers \Salient\Core\Utility\Pcre
+ * @covers \Salient\Core\Exception\PcreErrorException
+ */
 final class PcreTest extends TestCase
 {
     public function testGrepFails(): void
@@ -101,6 +106,26 @@ final class PcreTest extends TestCase
         Pcre::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
     }
 
+    public function testMatchException(): void
+    {
+        try {
+            Pcre::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
+        } catch (PcreErrorException $e) {
+            $this->assertStringContainsString('Call to preg_match() failed with PREG_BACKTRACK_LIMIT_ERROR', $e->getMessage());
+            $this->assertSame([
+                'PcreError' => (string) \PREG_BACKTRACK_LIMIT_ERROR,
+                'Pattern' => '/(?:\D+|<\d+>)*[!?]/',
+                'Subject' => 'foobar foobar foobar',
+            ], $e->getDetail());
+            $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
+            $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
+            $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');
+            $this->assertSame($e->getFunction(), 'preg_match');
+            $this->assertSame($e->getPattern(), '/(?:\D+|<\d+>)*[!?]/');
+            $this->assertSame($e->getSubject(), 'foobar foobar foobar');
+        }
+    }
+
     public function testMatchAll(): void
     {
         $this->expectException(PcreErrorException::class);
@@ -113,6 +138,30 @@ final class PcreTest extends TestCase
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_replace() failed with PREG_BACKTRACK_LIMIT_ERROR');
         Pcre::replace('/(?:\D+|<\d+>)*[!?]/', '', 'foobar foobar foobar');
+    }
+
+    public function testReplaceException(): void
+    {
+        $pattern = ['/(?:\D+|<\d+>)*[!?]/', '/\h+/'];
+        try {
+            Pcre::replace($pattern, ['', ' '], 'foobar foobar foobar');
+        } catch (PcreErrorException $e) {
+            $this->assertStringContainsString(
+                'Call to preg_replace() failed with PREG_BACKTRACK_LIMIT_ERROR',
+                $e->getMessage(),
+            );
+            $this->assertSame([
+                'PcreError' => (string) \PREG_BACKTRACK_LIMIT_ERROR,
+                'Pattern' => Json::prettyPrint($pattern),
+                'Subject' => 'foobar foobar foobar',
+            ], $e->getDetail());
+            $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
+            $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
+            $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');
+            $this->assertSame($e->getFunction(), 'preg_replace');
+            $this->assertSame($e->getPattern(), $pattern);
+            $this->assertSame($e->getSubject(), 'foobar foobar foobar');
+        }
     }
 
     public function testReplaceCallback(): void

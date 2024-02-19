@@ -3,13 +3,13 @@
 namespace Lkrms\Tests\Http;
 
 use Lkrms\Contract\ICollection;
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Catalog\HttpHeaderGroup;
 use Lkrms\Http\OAuth2\AccessToken;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Support\Catalog\MimeType;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use LogicException;
 

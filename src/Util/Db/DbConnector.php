@@ -2,9 +2,9 @@
 
 namespace Lkrms\Db;
 
-use Lkrms\Exception\UnexpectedValueException;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Get;

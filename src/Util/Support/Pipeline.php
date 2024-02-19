@@ -7,9 +7,9 @@ use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Salient\Core\Exception\PipelineFilterException;
 use Closure;
 use Generator;
 use LogicException;
@@ -326,7 +326,7 @@ final class Pipeline extends FluentInterface implements IPipeline
 
         if ($this->Unless &&
                 ($this->Unless)($result, $this, $this->Arg) === true) {
-            throw new PipelineResultRejectedException($this->Payload, $result);
+            throw new PipelineFilterException($this->Payload, $result);
         }
 
         if ($this->Cc) {

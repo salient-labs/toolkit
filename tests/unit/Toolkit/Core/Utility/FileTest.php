@@ -2,14 +2,17 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Support\Indentation;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Str;
 use Stringable;
 
+/**
+ * @covers \Salient\Core\Utility\File
+ */
 final class FileTest extends TestCase
 {
     public function testCwd(): void

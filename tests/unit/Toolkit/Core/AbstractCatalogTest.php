@@ -5,6 +5,15 @@ namespace Salient\Tests\Core;
 use Lkrms\Tests\TestCase;
 use Salient\Core\Contract\ConvertibleEnumerationInterface;
 use Salient\Core\Contract\EnumerationInterface;
+use Salient\Tests\Core\AbstractCatalog\MyArrayEnum;
+use Salient\Tests\Core\AbstractCatalog\MyConvertibleEnum;
+use Salient\Tests\Core\AbstractCatalog\MyDictionary;
+use Salient\Tests\Core\AbstractCatalog\MyEmptyReflectiveEnum;
+use Salient\Tests\Core\AbstractCatalog\MyIntEnum;
+use Salient\Tests\Core\AbstractCatalog\MyInvalidReflectiveEnum;
+use Salient\Tests\Core\AbstractCatalog\MyReflectiveEnum;
+use Salient\Tests\Core\AbstractCatalog\MyReflectiveFloatEnum;
+use Salient\Tests\Core\AbstractCatalog\MyRepeatedValueEnum;
 use LogicException;
 use Throwable;
 
@@ -23,22 +32,26 @@ final class AbstractCatalogTest extends TestCase
             'FOO' => 0,
             'BAR' => 1,
             'BAZ' => 2,
-        ], MyEnum::cases());
-        $this->assertTrue(MyEnum::hasValue(0));
-        $this->assertTrue(MyEnum::hasValue(1));
-        $this->assertFalse(MyEnum::hasValue(3));
+        ], MyIntEnum::cases());
+        $this->assertTrue(MyIntEnum::hasValue(0));
+        $this->assertTrue(MyIntEnum::hasValue(1));
+        $this->assertFalse(MyIntEnum::hasValue(3));
         // @phpstan-ignore-next-line
-        $this->assertFalse(MyEnum::hasValue(null));
+        $this->assertFalse(MyIntEnum::hasValue(null));
         // @phpstan-ignore-next-line
-        $this->assertFalse(MyEnum::hasValue(false));
+        $this->assertFalse(MyIntEnum::hasValue(false));
         // @phpstan-ignore-next-line
-        $this->assertFalse(MyEnum::hasValue(true));
+        $this->assertFalse(MyIntEnum::hasValue(true));
         // @phpstan-ignore-next-line
-        $this->assertFalse(MyEnum::hasValue(''));
+        $this->assertFalse(MyIntEnum::hasValue(''));
         // @phpstan-ignore-next-line
-        $this->assertFalse(MyEnum::hasValue('foo'));
+        $this->assertFalse(MyIntEnum::hasValue('foo'));
         // @phpstan-ignore-next-line
-        $this->assertFalse(MyEnum::hasValue([]));
+        $this->assertFalse(MyIntEnum::hasValue([0]));
+        // @phpstan-ignore-next-line
+        $this->assertFalse(MyIntEnum::hasValue([1]));
+        // @phpstan-ignore-next-line
+        $this->assertFalse(MyIntEnum::hasValue([]));
 
         $this->assertSame([
             'FOO' => 0,
@@ -61,6 +74,7 @@ final class AbstractCatalogTest extends TestCase
         $this->assertTrue(MyArrayEnum::hasValue([2]));
         $this->assertFalse(MyArrayEnum::hasValue([0, 1]));
         $this->assertFalse(MyArrayEnum::hasValue([0]));
+        $this->assertFalse(MyArrayEnum::hasValue([1]));
         $this->assertFalse(MyArrayEnum::hasValue([]));
         // @phpstan-ignore-next-line
         $this->assertFalse(MyArrayEnum::hasValue(3));
@@ -194,11 +208,18 @@ final class AbstractCatalogTest extends TestCase
         $this->assertFalse(MyEmptyReflectiveEnum::hasValue(0));
     }
 
-    public function testInvalidEnum(): void
+    public function testInvalidEnumerationType(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Public constants do not have unique values: ' . MyInvalidEnum::class);
-        MyInvalidEnum::toName(0);
+        $this->expectExceptionMessage('Public constant is not of type int|string: ' . MyReflectiveFloatEnum::class . '::FOO');
+        MyReflectiveFloatEnum::toName(0.0);
+    }
+
+    public function testInvalidEnumerationValues(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Public constants are not unique: ' . MyInvalidReflectiveEnum::class);
+        MyInvalidReflectiveEnum::toName(0);
     }
 
     public function testDictionary(): void

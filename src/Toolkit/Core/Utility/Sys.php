@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Console;
+use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\AbstractUtility;
 use LogicException;
 use SQLite3;

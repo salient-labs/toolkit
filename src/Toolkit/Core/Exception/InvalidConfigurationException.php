@@ -2,9 +2,9 @@
 
 namespace Salient\Core\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * @api
  */
-class InvalidConfigurationException extends Exception {}
+class InvalidConfigurationException extends AbstractException {}

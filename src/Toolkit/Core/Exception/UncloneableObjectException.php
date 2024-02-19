@@ -2,9 +2,9 @@
 
 namespace Salient\Core\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * @api
  */
-class UncloneableObjectException extends Exception {}
+class UncloneableObjectException extends AbstractException {}

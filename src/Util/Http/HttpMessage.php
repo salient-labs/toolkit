@@ -4,12 +4,12 @@ namespace Lkrms\Http;
 
 use Lkrms\Concern\Immutable;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Http\Catalog\HttpProtocolVersion;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentTypeException;
 
 /**
  * Base class for HTTP messages

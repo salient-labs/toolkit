@@ -47,6 +47,14 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
             $name = $constant->getName();
             $value = $constant->getValue();
 
+            if (!is_int($value) && !is_string($value)) {
+                throw new LogicException(sprintf(
+                    'Public constant is not of type int|string: %s::%s',
+                    static::class,
+                    $name,
+                ));
+            }
+
             $valueMap[$name] = $value;
             $nameMap[$value] = $name;
         }
@@ -60,7 +68,7 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
         if (count($valueMap) !== count($nameMap)) {
             throw new LogicException(
                 sprintf(
-                    'Public constants do not have unique values: %s',
+                    'Public constants are not unique: %s',
                     static::class,
                 )
             );

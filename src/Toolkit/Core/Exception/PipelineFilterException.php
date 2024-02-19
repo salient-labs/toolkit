@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Salient\Core\Exception;
 
 use Lkrms\Contract\IPipeline;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when the result of a pipeline run is rejected by a filter
@@ -10,7 +11,7 @@ use Lkrms\Contract\IPipeline;
  * @see IPipeline::unless()
  * @see IPipeline::unlessIf()
  */
-class PipelineResultRejectedException extends Exception
+class PipelineFilterException extends AbstractException
 {
     /**
      * @var mixed

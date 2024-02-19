@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Catalog;
+namespace Salient\Core\Catalog;
 
 use Salient\Core\AbstractDictionary;
 
 /**
- * Useful PCRE regular expressions
+ * Useful regular expressions
  *
  * @extends AbstractDictionary<string>
  */
-final class RegularExpression extends AbstractDictionary
+final class Regex extends AbstractDictionary
 {
     /**
      * Zero or more backslash pairs with no preceding backslash
@@ -77,9 +77,8 @@ final class RegularExpression extends AbstractDictionary
     /**
      * A PHP DNF type, e.g. "A|(B&C)|D|E"
      *
-     * PHP 8.0 union types are also matched. Reject
-     * {@see RegularExpression::PHP_UNION_TYPE} matches if this is not
-     * desirable.
+     * PHP 8.0 union types are also matched. Reject {@see Regex::PHP_UNION_TYPE}
+     * matches if this is not desirable.
      *
      * @link https://wiki.php.net/rfc/dnf_types
      */

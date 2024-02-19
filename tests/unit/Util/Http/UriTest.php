@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Uri;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Generator;
@@ -781,5 +781,185 @@ final class UriTest extends TestCase
             $in = (string) substr($in, strlen($matches[0]));
         }
         return $out;
+    }
+
+    /**
+     * @todo Review testParse() and testUnparse()
+     */
+    public function testParse(): void
+    {
+        $expected = [
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => 'user',
+                'pass' => 'pass',
+                'path' => '/path/;params',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => 'user',
+                'pass' => '',
+                'path' => '/path/;params',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => '',
+                'pass' => 'pass',
+                'path' => '/path/;params',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => '',
+                'pass' => '',
+                'path' => '/path/;params',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => '',
+                'path' => '/path/;params',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'path' => '/path/;params',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'query' => 'query',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'query' => 'query',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'host',
+            ],
+            [
+                'scheme' => 'https',
+                'host' => 'www.example.com',
+                'port' => 123,
+                'user' => 'john.doe',
+                'path' => '/forum/questions/',
+                'query' => 'tag=networking&order=newest',
+                'fragment' => 'top',
+            ],
+            [
+                'scheme' => 'ldap',
+                'host' => '[2001:db8::7]',
+                'path' => '/c=GB',
+                'query' => 'objectClass?one',
+            ],
+            [
+                'scheme' => 'mailto',
+                'path' => 'John.Doe@example.com',
+            ],
+            [
+                'scheme' => 'news',
+                'path' => 'comp.infosystems.www.servers.unix',
+            ],
+            [
+                'scheme' => 'tel',
+                'path' => '+1-816-555-1212',
+            ],
+            [
+                'scheme' => 'telnet',
+                'host' => '192.0.2.16',
+                'port' => 80,
+                'path' => '/',
+            ],
+            [
+                'scheme' => 'urn',
+                'path' => 'oasis:names:specification:docbook:dtd:xml:4.1.2',
+            ],
+        ];
+
+        foreach ($this->getUrls(true) as $i => $url) {
+            $this->assertSame($expected[$i], Uri::parse($url));
+        }
+    }
+
+    public function testUnparse(): void
+    {
+        foreach ($this->getUrls() as $url) {
+            $this->assertSame($url, Uri::unparse(parse_url($url)));
+        }
+
+        foreach ($this->getUrls(true) as $url) {
+            $this->assertSame($url, Uri::unparse(Uri::parse($url)));
+        }
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getUrls(bool $withParams = false): array
+    {
+        $params = $withParams ? ';params' : '';
+
+        return [
+            "https://user:pass@host:8443/path/$params?query#fragment",
+            "https://user:@host:8443/path/$params?query#fragment",
+            "https://:pass@host:8443/path/$params?query#fragment",
+            "https://:@host:8443/path/$params?query#fragment",
+            "https://@host:8443/path/$params?query#fragment",
+            "https://host:8443/path/$params?query#fragment",
+            'https://host:8443?query',
+            'https://host?query',
+            'https://host:8443#fragment',
+            'https://host#fragment',
+            'https://host:8443',
+            'https://host',
+            // From https://en.wikipedia.org/wiki/Uniform_Resource_Identifier:
+            'https://john.doe@www.example.com:123/forum/questions/?tag=networking&order=newest#top',
+            'ldap://[2001:db8::7]/c=GB?objectClass?one',
+            'mailto:John.Doe@example.com',
+            'news:comp.infosystems.www.servers.unix',
+            'tel:+1-816-555-1212',
+            'telnet://192.0.2.16:80/',
+            'urn:oasis:names:specification:docbook:dtd:xml:4.1.2',
+        ];
     }
 }

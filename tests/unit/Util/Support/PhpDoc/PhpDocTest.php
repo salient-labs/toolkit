@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Support\PhpDoc;
 
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Tests\TestCase;
+use Salient\Core\Catalog\Regex;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Str;
 
 final class PhpDocTest extends TestCase

@@ -3,9 +3,9 @@
 namespace Lkrms\Iterator;
 
 use Lkrms\Contract\IImmutable;
-use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Iterator\Concern\FluentIteratorTrait;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
+use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Pcre;
 use AppendIterator;
 use CallbackFilterIterator;

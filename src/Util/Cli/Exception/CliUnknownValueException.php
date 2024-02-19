@@ -2,11 +2,11 @@
 
 namespace Lkrms\Cli\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when an unknown value is rejected by a command line option
  *
  * @api
  */
-class CliUnknownValueException extends Exception {}
+class CliUnknownValueException extends AbstractException {}

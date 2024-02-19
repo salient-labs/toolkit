@@ -8,6 +8,9 @@ use Salient\Tests\Core\Utility\Debug\GetCallerClass;
 use function Salient\Tests\Core\Utility\Debug\getCallerViaFunction;
 use function Salient\Tests\Core\Utility\Debug\getFunctionCallback;
 
+/**
+ * @covers \Salient\Core\Utility\Debug
+ */
 final class DebugTest extends TestCase
 {
     public function testGetCaller(): void

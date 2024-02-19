@@ -2,9 +2,9 @@
 
 namespace Lkrms\Http\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when an HTTP server error occurs
  */
-class HttpServerException extends Exception {}
+class HttpServerException extends AbstractException {}

@@ -2,11 +2,11 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Exception\InvalidArgumentTypeException;
 use Lkrms\Http\Exception\StreamDetachedException;
 use Lkrms\Http\Exception\StreamInvalidRequestException;
 use Psr\Http\Message\StreamInterface;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
 use Stringable;
