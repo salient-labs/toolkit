@@ -8,6 +8,9 @@ use Salient\Core\Event\PackageDataReceivedEvent;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Package;
 
+/**
+ * @covers \Salient\Core\Utility\Package
+ */
 final class PackageTest extends TestCase
 {
     private const DEV_PACKAGE = [

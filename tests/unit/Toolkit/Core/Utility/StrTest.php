@@ -7,6 +7,9 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 use ReflectionParameter;
 
+/**
+ * @covers \Salient\Core\Utility\Str
+ */
 final class StrTest extends TestCase
 {
     /**
@@ -243,6 +246,31 @@ final class StrTest extends TestCase
     }
 
     /**
+     * @dataProvider normaliseProvider
+     */
+    public function testNormalise(
+        string $expected,
+        string $text
+    ): void {
+        $this->assertSame($expected, Str::normalise($text));
+    }
+
+    /**
+     * @return array<string[]>
+     */
+    public static function normaliseProvider(): array
+    {
+        return [
+            ['HISTORY AND GEOGRAPHY', 'History & Geography'],
+            ['MATHEMATICS', '& Mathematics'],
+            ['LANGUAGES MODERN', 'Languages — Modern'],
+            ['IT', 'I.T.'],
+            ['IT', 'IT. '],
+            ['IT', 'it'],
+        ];
+    }
+
+    /**
      * @dataProvider ellipsizeProvider
      */
     public function testEllipsize(string $expected, string $value, int $length): void
@@ -474,11 +502,384 @@ final class StrTest extends TestCase
     }
 
     /**
-     * @dataProvider linesToListsProvider
+     * @dataProvider unwrapProvider
+     */
+    public function testUnwrap(
+        string $expected,
+        string $string,
+        string $break = \PHP_EOL,
+        bool $ignoreEscapes = true,
+        bool $trimTrailingWhitespace = false,
+        bool $collapseBlankLines = false
+    ): void {
+        $this->assertSame(
+            $expected,
+            Str::unwrap($string, $break, $ignoreEscapes, $trimTrailingWhitespace, $collapseBlankLines)
+        );
+    }
+
+    /**
+     * @return array<string,array{0:string,1:string,2?:string,3?:bool,4?:bool,5?:bool}>
+     */
+    public static function unwrapProvider(): array
+    {
+        return [
+            'empty' => [
+                <<<'EOF'
+                EOF,
+                <<<'EOF'
+                EOF,
+            ],
+            'unwrapped' => [
+                <<<'EOF'
+                Tempor in mollit ad esse.
+                EOF,
+                <<<'EOF'
+                Tempor in mollit ad esse.
+                EOF,
+            ],
+            'paragraph + list + indent' => [
+                <<<'EOF'
+                Tempor pariatur nulla esse velit esse:
+                - Ad officia ex   reprehenderit sint et.
+                - Ea occaecat et aliqua ea officia cupidatat ad nulla cillum.
+                - Proident ullamco id eu id.
+
+                Amet duis aliqua qui laboris ullamco dolor nostrud irure commodo ad eu anim enim.
+
+                    Cillum adipisicing sit cillum
+                    sunt elit magna fugiat do in
+                    deserunt ut Lorem aliqua.
+
+
+                EOF,
+                <<<'EOF'
+                Tempor pariatur nulla
+                esse velit esse:
+                - Ad officia ex
+                  reprehenderit sint et.
+                - Ea occaecat et aliqua ea officia
+                cupidatat ad nulla cillum.
+                - Proident ullamco id eu id.
+
+                Amet duis aliqua qui laboris
+                ullamco dolor nostrud irure
+                commodo ad eu anim enim.
+
+                    Cillum adipisicing sit cillum
+                    sunt elit magna fugiat do in
+                    deserunt ut Lorem aliqua.
+
+
+                EOF,
+            ],
+            'leading + trailing + inner lines' => [
+                <<<'EOF'
+                 Est   esse sunt velit ea. 
+                EOF,
+                <<<'EOF'
+
+                Est   esse
+                sunt velit
+                ea.
+
+                EOF,
+            ],
+            'escaped #1' => [
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\ consectetur irure ad nisi Lorem non ea reprehenderit id eu.
+                EOF,
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\
+                consectetur irure ad nisi
+                Lorem non ea reprehenderit id eu.
+                EOF,
+            ],
+            'escaped #2' => [
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\
+                consectetur irure ad nisi Lorem non ea reprehenderit id eu.
+                EOF,
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\
+                consectetur irure ad nisi
+                Lorem non ea reprehenderit id eu.
+                EOF,
+                \PHP_EOL,
+                false,
+            ],
+            'trimmed #1 (baseline)' => [
+                <<<'EOF'
+                Est magna\  voluptate  minim est.
+
+                 
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                \PHP_EOL,
+            ],
+            'trimmed #2 (+ trimTrailingWhitespace)' => [
+                <<<'EOF'
+                Est magna\ voluptate minim est.
+
+
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                \PHP_EOL,
+                true,
+                true,
+            ],
+            'trimmed #3 (- ignoreEscapes)' => [
+                <<<'EOF'
+                Est magna\  voluptate minim est.
+
+
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                \PHP_EOL,
+                false,
+                true,
+            ],
+            'trimmed #4 (+ collapseBlankLines)' => [
+                <<<'EOF'
+                Est magna\  voluptate minim est.
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                \PHP_EOL,
+                false,
+                true,
+                true,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider distanceProvider
+     */
+    public function testDistance(
+        float $expected,
+        string $string1,
+        string $string2,
+        bool $normalise = true
+    ): void {
+        $this->assertSame($expected, Str::distance($string1, $string2, $normalise));
+    }
+
+    /**
+     * @return array<array{float,string,string,3?:bool}>
+     */
+    public static function distanceProvider(): array
+    {
+        return [
+            [1.0, 'DELIVERY', 'milk delivery', false],
+            [0.5, 'DELIVERY', 'milk deliverer'],
+            [0.38461538461538464, 'DELIVERY', 'milk delivery'],
+            [0.7692307692307693, 'DELIVERY - MILK', 'milk delivery'],
+            [0.0, 'DELIVERY', 'delivery'],
+            [0.6190476190476191, 'DELIVERY', 'milk delivery service'],
+        ];
+    }
+
+    /**
+     * @dataProvider similarityProvider
+     */
+    public function testSimilarity(
+        float $expected,
+        string $string1,
+        string $string2,
+        bool $normalise = true
+    ): void {
+        $this->assertSame($expected, Str::similarity($string1, $string2, $normalise));
+    }
+
+    /**
+     * @return array<array{float,string,string,3?:bool}>
+     */
+    public static function similarityProvider(): array
+    {
+        return [
+            [0.0, 'DELIVERY', 'milk delivery', false],
+            [0.5, 'DELIVERY', 'milk deliverer'],
+            [0.6153846153846154, 'DELIVERY', 'milk delivery'],
+            [0.6153846153846154, 'DELIVERY - MILK', 'milk delivery'],
+            [1.0, 'DELIVERY - MILK', 'delivery milk'],
+            [1.0, 'DELIVERY', 'delivery'],
+            [0.38095238095238093, 'DELIVERY', 'milk delivery service'],
+        ];
+    }
+
+    /**
+     * @dataProvider ngramSimilarityProvider
+     */
+    public function testNgramSimilarity(
+        float $expected,
+        string $string1,
+        string $string2,
+        bool $normalise = true,
+        int $size = 2
+    ): void {
+        $this->assertSame($expected, Str::ngramSimilarity($string1, $string2, $normalise, $size));
+    }
+
+    /**
+     * @return array<array{float,string,string,3?:bool,4?:int}>
+     */
+    public static function ngramSimilarityProvider(): array
+    {
+        return [
+            [0.0, 'DELIVERY', 'milk delivery', false],
+            [0.46153846153846156, 'DELIVERY', 'milk deliverer'],
+            [0.5833333333333334, 'DELIVERY', 'milk delivery'],
+            [0.8333333333333334, 'DELIVERY - MILK', 'milk delivery'],
+            [1.0, 'DELIVERY - MILK', 'delivery milk'],
+            [1.0, 'DELIVERY', 'delivery'],
+            [0.35, 'DELIVERY', 'milk delivery service'],
+            [0.4166666666666667, 'DELIVERY', 'milk deliverer', true, 3],
+            [0.5454545454545454, 'DELIVERY', 'milk delivery', true, 3],
+            [0.7272727272727273, 'DELIVERY - MILK', 'milk delivery', true, 3],
+            [1.0, 'DELIVERY - MILK', 'delivery milk', true, 3],
+            [1.0, 'DELIVERY', 'delivery', true, 3],
+            [0.3157894736842105, 'DELIVERY', 'milk delivery service', true, 3],
+        ];
+    }
+
+    /**
+     * @dataProvider ngramIntersectionProvider
+     */
+    public function testNgramIntersection(
+        float $expected,
+        string $string1,
+        string $string2,
+        bool $normalise = true,
+        int $size = 2
+    ): void {
+        $this->assertSame($expected, Str::ngramIntersection($string1, $string2, $normalise, $size));
+    }
+
+    /**
+     * @return array<array{float,string,string,3?:bool,4?:int}>
+     */
+    public static function ngramIntersectionProvider(): array
+    {
+        return [
+            [0.0, 'DELIVERY', 'milk delivery', false],
+            [0.8571428571428571, 'DELIVERY', 'milk deliverer'],
+            [1.0, 'DELIVERY', 'milk delivery'],
+            [0.8333333333333334, 'DELIVERY - MILK', 'milk delivery'],
+            [1.0, 'DELIVERY - MILK', 'delivery milk'],
+            [1.0, 'DELIVERY', 'delivery'],
+            [1.0, 'DELIVERY', 'milk delivery service'],
+            [0.8333333333333334, 'DELIVERY', 'milk deliverer', true, 3],
+            [1.0, 'DELIVERY', 'milk delivery', true, 3],
+            [0.7272727272727273, 'DELIVERY - MILK', 'milk delivery', true, 3],
+            [1.0, 'DELIVERY - MILK', 'delivery milk', true, 3],
+            [1.0, 'DELIVERY', 'delivery', true, 3],
+            [1.0, 'DELIVERY', 'milk delivery service', true, 3],
+        ];
+    }
+
+    /**
+     * @dataProvider ngramProvider
+     *
+     * @param string[] $expected
+     */
+    public function testNgram(
+        array $expected,
+        string $string,
+        int $size = 2
+    ): void {
+        $actual = Str::ngrams($string, $size);
+        sort($actual);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return array<array{string[],string,2?:int}>
+     */
+    public static function ngramProvider(): array
+    {
+        return [
+            [
+                [],
+                '',
+            ],
+            [
+                [],
+                'a',
+            ],
+            [
+                ['ab'],
+                'ab',
+            ],
+            [
+                ['ab', 'bc'],
+                'abc',
+            ],
+            [
+                ['ab', 'bc', 'cd'],
+                'abcd',
+            ],
+            [
+                ['ab', 'bc', 'cd', 'de'],
+                'abcde',
+            ],
+            [
+                ['ab', 'bc', 'cd', 'de', 'ef'],
+                'abcdef',
+            ],
+            [
+                ['abc', 'bcd', 'cde'],
+                'abcde',
+                3,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider mergeListsProvider
      *
      * @param mixed ...$args
      */
-    public function testLinesToLists(string $expected, ...$args): void
+    public function testMergeLists(string $expected, ...$args): void
     {
         $this->assertSame($expected, Str::eolToNative(Str::mergeLists(...$args)));
     }
@@ -486,7 +887,7 @@ final class StrTest extends TestCase
     /**
      * @return array<string,string[]>
      */
-    public static function linesToListsProvider(): array
+    public static function mergeListsProvider(): array
     {
         $defaultRegex = (
             new ReflectionParameter([Str::class, 'mergeLists'], 'regex')

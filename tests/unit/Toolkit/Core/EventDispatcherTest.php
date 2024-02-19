@@ -3,6 +3,7 @@
 namespace Salient\Tests\Core;
 
 use Lkrms\Contract\HasName;
+use Lkrms\Tests\TestCase;
 use Salient\Core\Facade\Event;
 use Salient\Core\EventDispatcher;
 use Salient\Tests\Core\EventDispatcher\BaseEvent;
@@ -11,7 +12,11 @@ use Salient\Tests\Core\EventDispatcher\MainEvent;
 use Salient\Tests\Core\EventDispatcher\NamedEvent;
 use LogicException;
 
-final class EventDispatcherTest extends \PHPUnit\Framework\TestCase
+/**
+ * @covers \Salient\Core\EventDispatcher
+ * @covers \Salient\Core\Facade\Event
+ */
+final class EventDispatcherTest extends TestCase
 {
     public function testDispatch(): void
     {

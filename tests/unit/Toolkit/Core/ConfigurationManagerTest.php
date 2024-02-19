@@ -8,6 +8,9 @@ use Salient\Core\ConfigurationManager;
 use LogicException;
 use OutOfRangeException;
 
+/**
+ * @covers \Salient\Core\ConfigurationManager
+ */
 final class ConfigurationManagerTest extends TestCase
 {
     private const CONFIG = [

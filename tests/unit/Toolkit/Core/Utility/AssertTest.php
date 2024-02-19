@@ -11,6 +11,9 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use stdClass;
 
+/**
+ * @covers \Salient\Core\Utility\Assert
+ */
 final class AssertTest extends TestCase
 {
     /**

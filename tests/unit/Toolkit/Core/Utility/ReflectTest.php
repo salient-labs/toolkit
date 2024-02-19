@@ -22,6 +22,9 @@ use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 
+/**
+ * @covers \Salient\Core\Utility\Reflect
+ */
 final class ReflectTest extends TestCase
 {
     public function testGetNames(): void

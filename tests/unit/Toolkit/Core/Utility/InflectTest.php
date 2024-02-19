@@ -7,6 +7,9 @@ use Lkrms\Tests\TestCase;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Inflect;
 
+/**
+ * @covers \Salient\Core\Utility\Inflect
+ */
 final class InflectTest extends TestCase
 {
     /**

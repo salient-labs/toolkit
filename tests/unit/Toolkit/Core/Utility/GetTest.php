@@ -5,8 +5,10 @@ namespace Salient\Tests\Core\Utility;
 use Lkrms\Container\Container;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Tests\TestCase;
 use Salient\Core\Catalog\CopyFlag;
+use Salient\Core\Catalog\QueryFlag;
 use Salient\Core\Exception\UncloneableObjectException;
 use Salient\Core\Utility\Get;
 use Salient\Tests\Core\Utility\Get\ClassWithCloneMethod;
@@ -17,9 +19,13 @@ use ArrayIterator;
 use ArrayObject;
 use Countable;
 use DateTimeImmutable;
+use DateTimeInterface;
 use stdClass;
 use Traversable;
 
+/**
+ * @covers \Salient\Core\Utility\Get
+ */
 final class GetTest extends TestCase
 {
     /**
@@ -216,6 +222,78 @@ final class GetTest extends TestCase
                 0,
                 '',
                 'foo',
+            ],
+        ];
+    }
+
+    public function testFilter(): void
+    {
+        $this->assertSame([
+            'key1' => 'value1',
+            'key2' => 'value2',
+            'key3' => '',
+            'key4' => '',
+        ], Get::filter(['key1=value1', 'key2=value2', 'key3=value3', 'key3=', 'key4', '=value5']));
+    }
+
+    /**
+     * @dataProvider queryProvider
+     *
+     * @param mixed[] $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     */
+    public function testQuery(
+        string $expected,
+        array $data,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatter $dateFormatter = null
+    ): void {
+        $this->assertSame($expected, Get::query($data, $flags, $dateFormatter));
+    }
+
+    /**
+     * @return array<array{string,mixed[],2?:int-mask-of<QueryFlag::*>,3?:DateFormatter}>
+     */
+    public static function queryProvider(): array
+    {
+        $data = [
+            'user_id' => 7654,
+            'fields' => [
+                'surname' => 'Williams',
+                'email' => 'JWilliams432@gmail.com',
+                'notify_by' => [
+                    'email',
+                    'sms',
+                ],
+                'created' => new DateTimeImmutable('2021-10-02T17:23:14+10:00'),
+            ],
+        ];
+
+        return [
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                $data,
+            ],
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0]=email&fields[notify_by][1]=sms&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D=email&fields%5Bnotify_by%5D%5B1%5D=sms&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                $data,
+                QueryFlag::PRESERVE_ALL_KEYS,
+            ],
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=Sat, 02 Oct 2021 17:23:14 +1000
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021%2017%3A23%3A14%20%2B1000',
+                $data,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                new DateFormatter(DateTimeInterface::RSS),
+            ],
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=2021-10-02T07:23:14+00:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=2021-10-02T07%3A23%3A14%2B00%3A00',
+                $data,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                new DateFormatter(DateTimeInterface::ATOM, 'UTC'),
             ],
         ];
     }

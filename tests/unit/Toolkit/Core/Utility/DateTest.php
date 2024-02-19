@@ -9,6 +9,9 @@ use DateInterval;
 use DateMalformedIntervalStringException;
 use Exception;
 
+/**
+ * @covers \Salient\Core\Utility\Date
+ */
 final class DateTest extends TestCase
 {
     /**
