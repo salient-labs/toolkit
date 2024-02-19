@@ -2,17 +2,17 @@
 
 namespace Lkrms\Console\Support;
 
-use Lkrms\Concern\Immutable;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\ConsoleFormatInterface as Format;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
+use Salient\Core\Concern\HasImmutableProperties;
 
 /**
  * Maps inline formatting tags to formats
  */
 final class ConsoleTagFormats
 {
-    use Immutable;
+    use HasImmutableProperties;
 
     /**
      * @var array<Tag::*,Format>

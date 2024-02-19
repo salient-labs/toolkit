@@ -2,8 +2,8 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Concern\Immutable;
 use Psr\Http\Message\UriInterface;
+use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
@@ -17,7 +17,7 @@ use Stringable;
  */
 class Uri implements JsonSerializable, Stringable, UriInterface
 {
-    use Immutable {
+    use HasImmutableProperties {
         withPropertyValue as with;
     }
 

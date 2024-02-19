@@ -2,13 +2,13 @@
 
 namespace Lkrms\Tests\Concern\Immutable;
 
-use Lkrms\Concern\Immutable;
 use Lkrms\Support\ImmutableCollection;
+use Salient\Core\Concern\HasImmutableProperties;
 use stdClass;
 
 class MyImmutableClass
 {
-    use Immutable;
+    use HasImmutableProperties;
 
     public int $A;
 

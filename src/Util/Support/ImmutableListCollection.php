@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\TImmutableList;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IList;
+use Salient\Core\Contract\Immutable;
 
 /**
  * An immutable array-like list of items
@@ -13,7 +13,7 @@ use Lkrms\Contract\IList;
  *
  * @implements IList<TValue>
  */
-final class ImmutableListCollection implements IList, IImmutable
+final class ImmutableListCollection implements IList, Immutable
 {
     /** @use TImmutableList<TValue> */
     use TImmutableList;

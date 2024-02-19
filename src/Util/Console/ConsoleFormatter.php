@@ -2,7 +2,6 @@
 
 namespace Lkrms\Console;
 
-use Lkrms\Concern\Immutable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
@@ -14,6 +13,7 @@ use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Lkrms\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
@@ -26,7 +26,7 @@ use LogicException;
  */
 final class ConsoleFormatter
 {
-    use Immutable;
+    use HasImmutableProperties;
 
     public const DEFAULT_LEVEL_PREFIX_MAP = [
         Level::EMERGENCY => ' !! ',

@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Salient\Core\Contract\Chainable;
+use Salient\Core\Contract\Immutable;
 use Closure;
 
 /**
@@ -13,7 +15,7 @@ use Closure;
  * @template TOutput
  * @template TArgument
  */
-interface IPipeline extends IFluentInterface, IImmutable
+interface PipelineInterface extends Chainable, Immutable
 {
     /**
      * Set the payload
@@ -96,7 +98,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      *   (this bypasses any remaining pipes and the callback passed to
      *   {@see IPipeline::then()}, if applicable)
      *
-     * @param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>> ...$pipes
+     * @param PipeInterface<TInput,TOutput,TArgument>|(callable(TInput|TOutput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|class-string<PipeInterface<TInput,TOutput,TArgument>> ...$pipes
      * Each pipe must be an `IPipe` object, the name of an `IPipe` class to
      * instantiate, or a closure.
      * @return static
@@ -130,7 +132,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * @template TThenOutput
      *
      * @param callable(TInput|TOutput $result, static $pipeline, TArgument $arg): TThenOutput $callback
-     * @return IPipeline<TInput,TThenOutput,TArgument>
+     * @return PipelineInterface<TInput,TThenOutput,TArgument>
      */
     public function then(callable $callback);
 
@@ -141,7 +143,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * @template TThenOutput
      *
      * @param callable(TInput|TOutput $result, static $pipeline, TArgument $arg): TThenOutput $callback
-     * @return IPipeline<TInput,TThenOutput,TArgument>
+     * @return PipelineInterface<TInput,TThenOutput,TArgument>
      */
     public function thenIf(callable $callback);
 
@@ -161,7 +163,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * @template TThenOutput
      *
      * @param callable(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TThenOutput> $callback
-     * @return IPipeline<TInput,TThenOutput,TArgument>
+     * @return PipelineInterface<TInput,TThenOutput,TArgument>
      */
     public function collectThen(callable $callback);
 
@@ -172,7 +174,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * @template TThenOutput
      *
      * @param callable(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TThenOutput> $callback
-     * @return IPipeline<TInput,TThenOutput,TArgument>
+     * @return PipelineInterface<TInput,TThenOutput,TArgument>
      */
     public function collectThenIf(callable $callback);
 
@@ -249,10 +251,10 @@ interface IPipeline extends IFluentInterface, IImmutable
      *
      * @template TNextOutput
      *
-     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
-     * @return IPipeline<TOutput,TNextOutput,TArgument>
+     * @param PipelineInterface<TOutput,TNextOutput,TArgument> $next
+     * @return PipelineInterface<TOutput,TNextOutput,TArgument>
      */
-    public function runInto(IPipeline $next);
+    public function runInto(PipelineInterface $next);
 
     /**
      * Run the pipeline and pass each result to another pipeline
@@ -262,8 +264,8 @@ interface IPipeline extends IFluentInterface, IImmutable
      *
      * @template TNextOutput
      *
-     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
-     * @return IPipeline<TOutput,TNextOutput,TArgument>
+     * @param PipelineInterface<TOutput,TNextOutput,TArgument> $next
+     * @return PipelineInterface<TOutput,TNextOutput,TArgument>
      */
-    public function startInto(IPipeline $next);
+    public function startInto(PipelineInterface $next);
 }

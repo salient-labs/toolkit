@@ -5,12 +5,12 @@ namespace Lkrms\Cli;
 use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliHelpTarget;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
-use Lkrms\Concern\Immutable;
 use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 use Lkrms\Console\Support\ConsoleManPageFormat as ManPageFormat;
 use Lkrms\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Console;
+use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Utility\Pcre;
 use LogicException;
 
@@ -21,7 +21,7 @@ use LogicException;
  */
 final class CliHelpStyle
 {
-    use Immutable;
+    use HasImmutableProperties;
 
     /**
      * @readonly

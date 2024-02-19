@@ -6,11 +6,11 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IComparable;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 
 /**
@@ -27,7 +27,7 @@ use Salient\Core\Contract\Readable;
  *
  * @implements Buildable<SyncErrorBuilder>
  */
-final class SyncError implements Readable, IComparable, IImmutable, Buildable
+final class SyncError implements Readable, IComparable, Immutable, Buildable
 {
     use ReadsProtectedProperties;
     use HasBuilder;

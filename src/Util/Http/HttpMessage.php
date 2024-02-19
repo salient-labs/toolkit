@@ -2,21 +2,21 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Concern\Immutable;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Http\Catalog\HttpProtocolVersion;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
+use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 
 /**
  * Base class for HTTP messages
  */
-abstract class HttpMessage implements MessageInterface, IImmutable
+abstract class HttpMessage implements MessageInterface, Immutable
 {
-    use Immutable {
+    use HasImmutableProperties {
         withPropertyValue as with;
     }
 

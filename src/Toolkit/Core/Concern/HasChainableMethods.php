@@ -1,27 +1,39 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core\Concern;
 
-use Lkrms\Contract\IFluentInterface;
+use Salient\Core\Contract\Chainable;
 
 /**
- * Base class for fluent interfaces
+ * Implements Chainable
+ *
+ * @see Chainable
  */
-abstract class FluentInterface implements IFluentInterface
+trait HasChainableMethods
 {
-    final public function apply(callable $callback)
+    /**
+     * @param callable($this): static $callback
+     * @return static
+     */
+    public function apply(callable $callback)
     {
         return $callback($this);
     }
 
-    final public function if($condition, ?callable $then = null, ?callable $else = null)
+    /**
+     * @param (callable($this): bool)|bool $condition
+     * @param (callable($this): static)|null $then
+     * @param (callable($this): static)|null $else
+     * @return static
+     */
+    public function if($condition, ?callable $then = null, ?callable $else = null)
     {
         if (is_callable($condition)) {
             $condition = $condition($this);
         }
         if (!$condition) {
-            return $else ? $else($this) : $this;
+            return $else === null ? $this : $else($this);
         }
-        return $then ? $then($this) : $this;
+        return $then === null ? $this : $then($this);
     }
 }

@@ -2,14 +2,14 @@
 
 namespace Salient\Core\Exception;
 
-use Lkrms\Contract\IPipeline;
+use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\AbstractException;
 
 /**
  * Thrown when the result of a pipeline run is rejected by a filter
  *
- * @see IPipeline::unless()
- * @see IPipeline::unlessIf()
+ * @see PipelineInterface::unless()
+ * @see PipelineInterface::unlessIf()
  */
 class PipelineFilterException extends AbstractException
 {

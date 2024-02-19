@@ -4,7 +4,6 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\Buildable;
-use Lkrms\Contract\IPipeline;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\FilterPolicy;
@@ -14,6 +13,7 @@ use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Salient\Core\Contract\PipelineInterface;
 use Closure;
 use LogicException;
 
@@ -47,8 +47,8 @@ final class DbSyncDefinition extends SyncDefinition implements Buildable
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
-     * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
@@ -61,8 +61,8 @@ final class DbSyncDefinition extends SyncDefinition implements Buildable
         array $overrides = [],
         ?array $keyMap = null,
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
-        ?IPipeline $pipelineFromBackend = null,
-        ?IPipeline $pipelineToBackend = null,
+        ?PipelineInterface $pipelineFromBackend = null,
+        ?PipelineInterface $pipelineToBackend = null,
         bool $readFromReadList = false,
         ?int $returnEntitiesFrom = null
     ) {

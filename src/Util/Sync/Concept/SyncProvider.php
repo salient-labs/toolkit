@@ -6,8 +6,6 @@ use Lkrms\Concept\Provider;
 use Lkrms\Container\Contract\HasContextualBindings;
 use Lkrms\Container\Contract\HasServices;
 use Lkrms\Container\ContainerInterface;
-use Lkrms\Contract\IPipeline;
-use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -18,8 +16,10 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Core\Catalog\Regex;
+use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\Pipeline;
 use Closure;
 use LogicException;
 
@@ -198,9 +198,9 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
      * @template T of ISyncEntity
      *
      * @param class-string<T> $entity
-     * @return IPipeline<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
+     * @return PipelineInterface<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
      */
-    protected function pipelineFrom(string $entity): IPipeline
+    protected function pipelineFrom(string $entity): PipelineInterface
     {
         return Pipeline::create($this->App);
     }
@@ -211,9 +211,9 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
      * @template T of ISyncEntity
      *
      * @param class-string<T> $entity
-     * @return IPipeline<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
+     * @return PipelineInterface<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
      */
-    protected function pipelineTo(string $entity): IPipeline
+    protected function pipelineTo(string $entity): PipelineInterface
     {
         return Pipeline::create($this->App);
     }

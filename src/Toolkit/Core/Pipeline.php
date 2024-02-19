@@ -1,14 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Core;
 
-use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
-use Lkrms\Contract\IPipe;
-use Lkrms\Contract\IPipeline;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Lkrms\Support\ArrayMapper;
+use Salient\Core\Concern\HasChainableMethods;
+use Salient\Core\Contract\PipeInterface;
+use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Exception\PipelineFilterException;
 use Closure;
 use Generator;
@@ -22,10 +23,12 @@ use Throwable;
  * @template TOutput
  * @template TArgument
  *
- * @implements IPipeline<TInput,TOutput,TArgument>
+ * @implements PipelineInterface<TInput,TOutput,TArgument>
  */
-final class Pipeline extends FluentInterface implements IPipeline
+final class Pipeline implements PipelineInterface
 {
+    use HasChainableMethods;
+
     /**
      * @var ContainerInterface|null
      */
@@ -52,7 +55,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     private $Stream;
 
     /**
-     * @var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, Closure, static, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>>>
+     * @var array<PipeInterface<TInput,TOutput,TArgument>|(callable(TInput|TOutput, Closure, static, TArgument): (TInput|TOutput))|class-string<PipeInterface<TInput,TOutput,TArgument>>>
      */
     private $Pipes = [];
 
@@ -399,7 +402,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     /**
      * @inheritDoc
      */
-    public function runInto(IPipeline $next)
+    public function runInto(PipelineInterface $next)
     {
         return $next->send($this->run(), $this->Arg);
     }
@@ -407,7 +410,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     /**
      * @inheritDoc
      */
-    public function startInto(IPipeline $next)
+    public function startInto(PipelineInterface $next)
     {
         return $next->stream($this->start(), $this->Arg);
     }
@@ -453,8 +456,8 @@ final class Pipeline extends FluentInterface implements IPipeline
                         $container = $this->Container ?: Container::maybeGetGlobalContainer();
                         $pipe = $container ? $container->get($pipe) : new $pipe();
                     }
-                    if (!($pipe instanceof IPipe)) {
-                        throw new LogicException('Pipe does not implement ' . IPipe::class);
+                    if (!($pipe instanceof PipeInterface)) {
+                        throw new LogicException('Pipe does not implement ' . PipeInterface::class);
                     }
                     $closure = fn($payload) => $pipe->handle($payload, $next, $this, $this->Arg);
                 }

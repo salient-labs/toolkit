@@ -2,8 +2,8 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IImmutable;
 use Lkrms\Sync\Catalog\SyncOperation;
+use Salient\Core\Contract\Immutable;
 use Closure;
 
 /**
@@ -13,7 +13,7 @@ use Closure;
  * @template TEntity of ISyncEntity
  * @template TProvider of ISyncProvider
  */
-interface ISyncDefinition extends IImmutable
+interface ISyncDefinition extends Immutable
 {
     /**
      * Get a closure that uses the provider to perform a sync operation on the

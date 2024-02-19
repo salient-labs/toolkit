@@ -4,7 +4,6 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\Buildable;
-use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
@@ -14,7 +13,6 @@ use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
-use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
@@ -26,10 +24,12 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
+use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\Pipeline;
 use Closure;
 use LogicException;
 
@@ -248,8 +248,8 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
-     * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
@@ -270,8 +270,8 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
         array $overrides = [],
         ?array $keyMap = null,
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
-        ?IPipeline $pipelineFromBackend = null,
-        ?IPipeline $pipelineToBackend = null,
+        ?PipelineInterface $pipelineFromBackend = null,
+        ?PipelineInterface $pipelineToBackend = null,
         bool $readFromReadList = false,
         ?int $returnEntitiesFrom = SyncEntitySource::HTTP_WRITE
     ) {
@@ -487,8 +487,8 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                             ->after($after)
                             ->if(
                                 $this->SyncOneEntityPerRequest,
-                                fn(IPipeline $p) => $p->then($then),
-                                fn(IPipeline $p) => $p->collectThen($then)
+                                fn(PipelineInterface $p) => $p->then($then),
+                                fn(PipelineInterface $p) => $p->collectThen($then)
                             )
                             ->startInto($this->getRoundTripPipeline($operation))
                             ->start();
@@ -733,9 +733,9 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
 
     /**
      * @param OP::* $operation
-     * @return IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
+     * @return PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
-    private function getRoundTripPipeline($operation): IPipeline
+    private function getRoundTripPipeline($operation): PipelineInterface
     {
         switch ($this->ReturnEntitiesFrom) {
             case SyncEntitySource::SYNC_OPERATION:

@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
+use Salient\Core\Contract\PipelineInterface;
 use Closure;
 
 /**
@@ -11,15 +12,15 @@ use Closure;
  * @template TOutput
  * @template TArgument
  *
- * @see IPipeline
+ * @see PipelineInterface
  */
-interface IPipe
+interface PipeInterface
 {
     /**
      * @param TInput|TOutput $payload
-     * @param IPipeline<TInput,TOutput,TArgument> $pipeline
+     * @param PipelineInterface<TInput,TOutput,TArgument> $pipeline
      * @param TArgument $arg
      * @return TInput|TOutput
      */
-    public function handle($payload, Closure $next, IPipeline $pipeline, $arg);
+    public function handle($payload, Closure $next, PipelineInterface $pipeline, $arg);
 }

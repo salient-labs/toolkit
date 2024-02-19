@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
-trait Immutable
+trait HasImmutableProperties
 {
     /**
      * Clone the object

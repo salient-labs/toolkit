@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 /**
- * Instances are read-only after construction, and setter methods therefore
- * return a modified instance
+ * @api
  */
-interface IImmutable {}
+interface Immutable {}

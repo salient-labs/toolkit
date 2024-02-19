@@ -4,6 +4,7 @@ namespace Lkrms\Contract;
 
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Salient\Core\Contract\Immutable;
 
 /**
  * The context within which entities of a given type are instantiated by a
@@ -16,7 +17,7 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
  * @extends HasProvider<TProvider>
  */
 interface IProviderContext extends
-    IImmutable,
+    Immutable,
     HasContainer,
     HasProvider
 {

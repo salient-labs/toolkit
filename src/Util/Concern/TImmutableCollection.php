@@ -3,6 +3,7 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Contract\ICollection;
+use Salient\Core\Concern\HasImmutableProperties;
 
 /**
  * Implements ICollection for immutable classes
@@ -23,7 +24,7 @@ trait TImmutableCollection
         ImmutableArrayAccess::offsetSet insteadof TCollection;
         ImmutableArrayAccess::offsetUnset insteadof TCollection;
     }
-    use Immutable;
+    use HasImmutableProperties;
 
     /**
      * @return static

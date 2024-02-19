@@ -5,7 +5,7 @@ namespace Lkrms\Support;
 use Lkrms\Concern\TImmutableCollection;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IImmutable;
+use Salient\Core\Contract\Immutable;
 
 /**
  * An immutable array-like collection of items
@@ -16,7 +16,7 @@ use Lkrms\Contract\IImmutable;
  * @implements ICollection<TKey,TValue>
  * @implements Arrayable<TKey,TValue>
  */
-final class ImmutableCollection implements ICollection, Arrayable, IImmutable
+final class ImmutableCollection implements ICollection, Arrayable, Immutable
 {
     /** @use TImmutableCollection<TKey,TValue> */
     use TImmutableCollection;
