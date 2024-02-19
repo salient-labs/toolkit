@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Catalog;
+namespace Salient\Core\Catalog;
 
 use Salient\Core\AbstractDictionary;
 
@@ -9,7 +9,7 @@ use Salient\Core\AbstractDictionary;
  *
  * @extends AbstractDictionary<string>
  */
-final class CharacterSequence extends AbstractDictionary
+final class Char extends AbstractDictionary
 {
     public const ALPHABETIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     public const ALPHABETIC_LOWER = 'abcdefghijklmnopqrstuvwxyz';

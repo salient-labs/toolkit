@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Salient\Core\Catalog\Regex;
 use Salient\Core\AbstractUtility;
 use Closure;
 use LogicException;

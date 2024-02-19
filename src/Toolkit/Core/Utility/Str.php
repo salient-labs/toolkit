@@ -3,8 +3,8 @@
 namespace Salient\Core\Utility;
 
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Support\Catalog\CharacterSequence as Char;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Salient\Core\Catalog\Char;
+use Salient\Core\Catalog\Regex;
 use Salient\Core\AbstractUtility;
 
 /**

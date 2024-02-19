@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Salient\Core\Catalog\Regex;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 

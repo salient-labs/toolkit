@@ -4,7 +4,7 @@ namespace Lkrms\Support\PhpDoc;
 
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Salient\Core\Catalog\Regex;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Utility\Pcre;
