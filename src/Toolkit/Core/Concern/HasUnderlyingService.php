@@ -138,4 +138,18 @@ trait HasUnderlyingService
         ));
         // @codeCoverageIgnoreEnd
     }
+
+    private static function unloadServiceList(): void
+    {
+        unset(self::$LoadedServices[static::class]);
+        unset(self::$ServiceLists[static::class]);
+        unset(self::$ServiceNames[static::class]);
+    }
+
+    private static function unloadAllServiceLists(): void
+    {
+        self::$ServiceNames = [];
+        self::$ServiceLists = [];
+        self::$LoadedServices = [];
+    }
 }
