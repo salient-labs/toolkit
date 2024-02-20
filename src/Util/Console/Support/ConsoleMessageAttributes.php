@@ -2,16 +2,16 @@
 
 namespace Lkrms\Console\Support;
 
-use Lkrms\Concern\Immutable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
+use Salient\Core\Concern\HasImmutableProperties;
 
 /**
  * Message attributes
  */
 final class ConsoleMessageAttributes
 {
-    use Immutable;
+    use HasImmutableProperties;
 
     /**
      * Message level

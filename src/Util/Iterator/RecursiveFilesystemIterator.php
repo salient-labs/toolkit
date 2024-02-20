@@ -2,9 +2,9 @@
 
 namespace Lkrms\Iterator;
 
-use Lkrms\Contract\IImmutable;
 use Lkrms\Iterator\Concern\FluentIteratorTrait;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
+use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Pcre;
 use AppendIterator;
@@ -29,7 +29,7 @@ use Traversable;
 class RecursiveFilesystemIterator implements
     IteratorAggregate,
     FluentIteratorInterface,
-    IImmutable,
+    Immutable,
     Countable
 {
     /** @use FluentIteratorTrait<string,SplFileInfo> */

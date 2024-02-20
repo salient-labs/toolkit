@@ -3,7 +3,6 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Contract\IPipeline;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\FilterPolicy;
@@ -13,6 +12,7 @@ use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Salient\Core\Contract\PipelineInterface;
 use Closure;
 
 /**
@@ -76,10 +76,10 @@ final class DbSyncDefinitionBuilder extends Builder
      *
      * @template T of ISyncEntity
      *
-     * @param IPipeline<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
+     * @param PipelineInterface<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */
-    public function pipelineFromBackend(?IPipeline $value)
+    public function pipelineFromBackend(?PipelineInterface $value)
     {
         return $this->withValueB(__FUNCTION__, $value);
     }
@@ -89,10 +89,10 @@ final class DbSyncDefinitionBuilder extends Builder
      *
      * @template T of ISyncEntity
      *
-     * @param IPipeline<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
+     * @param PipelineInterface<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */
-    public function pipelineToBackend(?IPipeline $value)
+    public function pipelineToBackend(?PipelineInterface $value)
     {
         return $this->withValueB(__FUNCTION__, $value);
     }

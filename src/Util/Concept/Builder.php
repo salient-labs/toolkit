@@ -4,9 +4,11 @@ namespace Lkrms\Concept;
 
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
+use Salient\Core\Concern\HasChainableMethods;
+use Salient\Core\Contract\Chainable;
+use Salient\Core\Contract\Immutable;
 use LogicException;
 
 /**
@@ -14,8 +16,10 @@ use LogicException;
  *
  * @template TClass of object
  */
-abstract class Builder extends FluentInterface implements IImmutable
+abstract class Builder implements Chainable, Immutable
 {
+    use HasChainableMethods;
+
     /**
      * Get the class to build
      *

@@ -2,15 +2,15 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Concern\Immutable;
 use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Http\Contract\HttpHeadersInterface;
+use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
@@ -21,13 +21,13 @@ use LogicException;
 /**
  * A collection of [RFC7230]-compliant HTTP headers
  */
-class HttpHeaders implements HttpHeadersInterface, IImmutable
+class HttpHeaders implements HttpHeadersInterface, Immutable
 {
     /** @use TReadableCollection<string,string[]> */
     use TReadableCollection;
     /** @use ImmutableArrayAccess<string,string[]> */
     use ImmutableArrayAccess;
-    use Immutable {
+    use HasImmutableProperties {
         withPropertyValue as with;
     }
 

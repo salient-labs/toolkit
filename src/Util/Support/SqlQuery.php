@@ -2,8 +2,9 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Concept\FluentInterface;
+use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\Readable;
 use LogicException;
 
@@ -12,8 +13,9 @@ use LogicException;
  *
  * @property-read array<string,mixed> $Values Parameter name => value
  */
-final class SqlQuery extends FluentInterface implements Readable
+final class SqlQuery implements Chainable, Readable
 {
+    use HasChainableMethods;
     use HasReadableProperties;
 
     public const AND = 'AND';

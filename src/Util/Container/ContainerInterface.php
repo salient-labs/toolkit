@@ -10,6 +10,7 @@ use Lkrms\Container\Contract\ServiceAwareInterface;
 use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Container\Exception\ContainerUnusableArgumentsException;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\Unloadable;
 
 /**
@@ -38,7 +39,10 @@ use Salient\Core\Contract\Unloadable;
  *
  * @api
  */
-interface ContainerInterface extends PsrContainerInterface, Unloadable
+interface ContainerInterface extends
+    PsrContainerInterface,
+    Chainable,
+    Unloadable
 {
     /**
      * Creates a new service container

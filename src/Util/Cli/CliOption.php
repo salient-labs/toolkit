@@ -13,10 +13,10 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\HasJsonSchema;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Facade\Console;
 use Salient\Core\Catalog\Char;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Env;
@@ -65,7 +65,7 @@ use LogicException;
  *
  * @implements Buildable<CliOptionBuilder>
  */
-final class CliOption implements Buildable, HasJsonSchema, IImmutable, Readable
+final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
 {
     use HasBuilder;
     use ReadsProtectedProperties;

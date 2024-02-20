@@ -2,11 +2,11 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Contract\IImmutable;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use Lkrms\Http\Exception\HttpServerException;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Utility\Pcre;
 
@@ -20,7 +20,7 @@ use Salient\Core\Utility\Pcre;
  * @property-read int|null $ProxyPort
  * @property-read bool|null $ProxyTls
  */
-final class HttpServer implements Readable, IImmutable
+final class HttpServer implements Readable, Immutable
 {
     use ReadsProtectedProperties;
 

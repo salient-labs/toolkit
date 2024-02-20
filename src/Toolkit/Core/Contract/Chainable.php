@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 /**
- * Provides a fluent interface via chainable methods that return $this
+ * @api
  */
-interface IFluentInterface
+interface Chainable
 {
     /**
      * Move to the next method in the chain after applying a callback to the
@@ -21,8 +21,10 @@ interface IFluentInterface
      * callback to the object
      *
      * @param (callable($this): bool)|bool $condition
-     * @param (callable($this): $this)|null $then Called if `$condition` resolves to `true`.
-     * @param (callable($this): $this)|null $else Called if `$condition` resolves to `false`.
+     * @param (callable($this): $this)|null $then Called if `$condition`
+     * resolves to `true`.
+     * @param (callable($this): $this)|null $else Called if `$condition`
+     * resolves to `false`.
      * @return $this
      */
     public function if($condition, ?callable $then = null, ?callable $else = null);

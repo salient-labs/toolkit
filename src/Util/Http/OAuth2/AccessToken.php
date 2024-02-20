@@ -2,9 +2,9 @@
 
 namespace Lkrms\Http\OAuth2;
 
-use Lkrms\Contract\IImmutable;
 use Lkrms\Http\Contract\AccessTokenInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Date;
@@ -20,7 +20,7 @@ use DateTimeInterface;
  * @property-read string[] $Scopes
  * @property-read array<string,mixed> $Claims
  */
-final class AccessToken implements AccessTokenInterface, IImmutable, Readable
+final class AccessToken implements AccessTokenInterface, Immutable, Readable
 {
     use ReadsProtectedProperties;
 

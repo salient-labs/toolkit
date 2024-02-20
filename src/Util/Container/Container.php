@@ -4,7 +4,6 @@ namespace Lkrms\Container;
 
 use Dice\Dice;
 use Dice\DiceException;
-use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Contract\ContainerAwareInterface;
 use Lkrms\Container\Contract\HasBindings;
 use Lkrms\Container\Contract\HasContextualBindings;
@@ -17,6 +16,7 @@ use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Exception\ContainerUnusableArgumentsException;
 use Lkrms\Container\Exception\InvalidContainerBindingException;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
@@ -33,10 +33,11 @@ use ReflectionParameter;
  *
  * @implements FacadeAwareInterface<FacadeInterface<self>>
  */
-class Container extends FluentInterface implements ContainerInterface, FacadeAwareInterface
+class Container implements ContainerInterface, FacadeAwareInterface
 {
     /** @use UnloadsFacades<FacadeInterface<self>> */
     use UnloadsFacades;
+    use HasChainableMethods;
 
     private const SERVICE_PROVIDER_INTERFACES = [
         ContainerAwareInterface::class,

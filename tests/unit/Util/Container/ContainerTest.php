@@ -2,17 +2,16 @@
 
 namespace Lkrms\Tests\Container;
 
-use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Application;
 use Lkrms\Container\ApplicationInterface;
 use Lkrms\Container\Container;
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Container\ServiceLifetime;
-use Lkrms\Contract\IFluentInterface;
 use Lkrms\Facade\App;
 use Lkrms\Tests\TestCase;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Core\Contract\Chainable;
 use stdClass;
 
 final class ContainerTest extends TestCase
@@ -48,8 +47,7 @@ final class ContainerTest extends TestCase
     public static function onlyBindsContainerProvider(): array
     {
         return [
-            [IFluentInterface::class],
-            [FluentInterface::class],
+            [Chainable::class],
             [ApplicationInterface::class],
             [Application::class],
         ];

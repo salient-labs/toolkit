@@ -3,6 +3,7 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Contract\IList;
+use Salient\Core\Concern\HasImmutableProperties;
 
 /**
  * Implements IList for immutable classes
@@ -22,7 +23,7 @@ trait TImmutableList
         ImmutableArrayAccess::offsetSet insteadof TList;
         ImmutableArrayAccess::offsetUnset insteadof TList;
     }
-    use Immutable;
+    use HasImmutableProperties;
 
     /**
      * @return static
