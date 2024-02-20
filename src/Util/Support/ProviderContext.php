@@ -14,9 +14,13 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 
 /**
- * The context within which an entity is instantiated by a provider
+ * The context within which entities of a given type are instantiated by a
+ * provider
  *
- * @implements IProviderContext<IProvider<static>,IProvidable<IProvider<static>,static>>
+ * @template TProvider of IProvider
+ * @template TEntity of IProvidable
+ *
+ * @implements IProviderContext<TProvider,TEntity>
  */
 class ProviderContext implements IProviderContext
 {
@@ -25,12 +29,12 @@ class ProviderContext implements IProviderContext
     protected ContainerInterface $Container;
 
     /**
-     * @var IProvider<static>
+     * @var TProvider
      */
     protected IProvider $Provider;
 
     /**
-     * @var array<IProvidable<IProvider<static>,static>>
+     * @var TEntity[]
      */
     protected array $Stack = [];
 
@@ -40,7 +44,7 @@ class ProviderContext implements IProviderContext
     protected array $Values = [];
 
     /**
-     * @var (IProvidable<IProvider<static>,static>&ITreeable)|null
+     * @var (TEntity&ITreeable)|null
      */
     protected ?ITreeable $Parent = null;
 
@@ -52,7 +56,7 @@ class ProviderContext implements IProviderContext
     /**
      * Creates a new ProviderContext object
      *
-     * @param IProvider<static> $provider
+     * @param TProvider $provider
      */
     public function __construct(
         ContainerInterface $container,

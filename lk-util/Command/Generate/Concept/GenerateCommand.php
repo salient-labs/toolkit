@@ -200,7 +200,7 @@ abstract class GenerateCommand extends Command
     protected string $InputClassType;
 
     /**
-     * @var Introspector<object,Provider,Entity,ProviderContext>
+     * @var Introspector<object,Provider,Entity,ProviderContext<Provider,Entity>>
      */
     protected Introspector $InputIntrospector;
 

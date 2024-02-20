@@ -6,6 +6,7 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
+use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -84,7 +85,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ->bindTo($this->Filter),
             CliOption::build()
                 ->long('shallow')
-                ->description('Do not hydrate entity relationships')
+                ->description('Do not resolve entity relationships')
                 ->bindTo($this->Shallow),
             CliOption::build()
                 ->long('include-canonical-id')
@@ -148,7 +149,9 @@ final class GetSyncEntities extends AbstractSyncCommand
 
         $context = $provider->getContext();
         if ($this->Shallow || $this->Csv) {
-            $context = $context->withHydrationPolicy(HydrationPolicy::SUPPRESS);
+            $context = $context
+                ->withDeferralPolicy(DeferralPolicy::DO_NOT_RESOLVE)
+                ->withHydrationPolicy(HydrationPolicy::SUPPRESS);
         }
 
         $result = $this->EntityId !== null

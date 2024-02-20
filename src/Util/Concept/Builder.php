@@ -40,7 +40,7 @@ abstract class Builder implements Chainable, Immutable
     protected ContainerInterface $Container;
 
     /**
-     * @var Introspector<object,Provider,Entity,ProviderContext>
+     * @var Introspector<object,Provider,Entity,ProviderContext<Provider,Entity>>
      */
     private Introspector $Introspector;
 

@@ -8,6 +8,8 @@ use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Exception\SyncEntityRecursionException;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
@@ -16,7 +18,9 @@ use Salient\Core\Utility\Str;
 use LogicException;
 
 /**
- * The context within which a sync entity is instantiated by a provider
+ * The context within which sync entities are instantiated by a provider
+ *
+ * @extends ProviderContext<ISyncProvider,ISyncEntity>
  */
 final class SyncContext extends ProviderContext implements ISyncContext
 {
@@ -31,31 +35,30 @@ final class SyncContext extends ProviderContext implements ISyncContext
     protected array $FilterKeys = [];
 
     /**
-     * @var (callable(ISyncContext, ?bool &$returnEmpty, mixed &$empty): void)|null
+     * @var (callable(ISyncContext, ?bool &$returnEmpty, array{}|null &$empty): void)|null
      */
     protected $FilterPolicyCallback;
 
-    /**
-     * @var bool|null
-     */
-    protected $Offline;
+    protected ?bool $Offline = null;
 
     /**
      * @var DeferralPolicy::*
      */
-    protected $DeferralPolicy = DeferralPolicy::RESOLVE_EARLY;
+    protected int $DeferralPolicy = DeferralPolicy::RESOLVE_EARLY;
 
     /**
      * Entity => depth => policy
      *
-     * @var array<class-string<ISyncEntity>,array<int<0,max>,HydrationPolicy::*>>
+     * @var array<class-string<ISyncEntity>,array<int<0,max>,int&HydrationPolicy::*>>
      */
-    protected $EntityHydrationPolicy = [];
+    protected array $EntityHydrationPolicy = [];
 
     /**
      * @var array<int<0,max>,HydrationPolicy::*>
      */
-    protected $FallbackHydrationPolicy = [0 => HydrationPolicy::DEFER];
+    protected array $FallbackHydrationPolicy = [0 => HydrationPolicy::DEFER];
+
+    protected ?ISyncEntity $LastRecursedInto = null;
 
     /**
      * @inheritDoc
@@ -92,7 +95,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function applyFilterPolicy(?bool &$returnEmpty, &$empty): void
+    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void
     {
         $returnEmpty = false;
 
@@ -177,7 +180,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     }
 
     /**
-     * @inheritDoc
+     * @param int&HydrationPolicy::* $policy
      */
     public function withHydrationPolicy(
         int $policy,
@@ -198,6 +201,35 @@ final class SyncContext extends ProviderContext implements ISyncContext
         }
 
         return $clone;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function pushWithRecursionCheck(ISyncEntity $entity)
+    {
+        return $this
+            ->push($entity)
+            ->withPropertyValue(
+                'LastRecursedInto',
+                in_array($entity, $this->Stack, true) ? $entity : null,
+            );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function maybeThrowRecursionException(): void
+    {
+        if (
+            $this->LastRecursedInto &&
+            $this->LastRecursedInto === end($this->Stack)
+        ) {
+            throw new SyncEntityRecursionException(sprintf(
+                'Circular reference detected: %s',
+                $this->LastRecursedInto->uri(),
+            ));
+        }
     }
 
     /**
@@ -340,7 +372,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     }
 
     /**
-     * @param HydrationPolicy::* $policy
+     * @param int&HydrationPolicy::* $policy
      * @param class-string<ISyncEntity>|null $entity
      * @param array<int<1,max>>|int<1,max>|null $depth
      */
