@@ -12,6 +12,82 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.44] - 2024-02-20
+
+### Added
+
+- Add `ITreeable::countDescendants()` and implement in `HasParent`
+
+## [v0.21.43] - 2024-02-20
+
+### Added
+
+- Add `HasFacade::updateFacade()` to improve support for facades with immutable underlying instances
+
+### Changed
+
+- Make `Get::binaryHash()` and `Get::hash()` parameter `$value` non-variadic
+- Move `Test::firstExistingDirectoryIsWritable()` to `File::creatable()` and accept file names, not just directories
+- Allow filesystem-related assertions to throw exceptions other than `FilesystemErrorException`
+- Improve `Pcre` error reporting
+- Continue migration to `Salient` namespace
+  - Move utility classes to `Salient\Core\Utility`
+  - Move `EventHandler` and related classes to `Salient\Core`
+  - Move enumeration- and dictionary-related interfaces and classes to `Salient\Core` and rename:
+    - `IEnumeration` -> `EnumerationInterface`
+    - `IConvertibleEnumeration` -> `ConvertibleEnumerationInterface`
+    - `IDictionary` -> `DictionaryInterface`
+    - `Catalog` -> `AbstractCatalog`
+    - `Enumeration` -> `AbstractEnumeration`
+    - `ConvertibleEnumeration` -> `AbstractConvertibleEnumeration`
+    - `ReflectiveEnumeration` -> `AbstractReflectiveEnumeration`
+    - `Dictionary` -> `AbstractDictionary`
+  - Move `RegularExpression` and `CharacterSequence` to `Salient\Core\Catalog` and rename:
+    - `RegularExpression` -> `Regex`
+    - `CharacterSequence` -> `Char`
+  - Move exceptions to `Salient\Core` and rename:
+    - `Exception` -> `AbstractException`
+    - `MultipleErrorException` -> `AbstractMultipleErrorException`
+    - `IncompatibleRuntimeEnvironmentException` -> `InvalidRuntimeConfigurationException`
+    - `PipelineResultRejectedException` -> `PipelineFilterException`
+    - `InvalidDotenvSyntaxException` -> `InvalidDotEnvSyntaxException`
+  - Move pipeline- and immutable-related interfaces, classes and traits to `Salient\Core` and rename:
+    - `IFluentInterface` -> `Chainable`
+    - `FluentInterface` -> `HasChainableMethods` (class -> trait)
+    - `Immutable` -> `HasImmutableProperties`
+    - `IImmutable` -> `Immutable`
+    - `IPipeline` -> `PipelineInterface`
+    - `IPipe` -> `PipeInterface`
+- Refactor pipelines
+  - Require closures where callables were previously sufficient
+  - Rename `throughCallback()` to `throughClosure()`
+  - Split `PipelineInterface` into multiple interfaces to surface different methods after `send()` or `stream()` are called, and to prevent useless early calls to `withConformity()`
+- Add `fromNames()` and `toNames()` to `ConvertibleEnumerationInterface` and implement in `AbstractConvertibleEnumeration` and `AbstractReflectiveEnumeration`
+- Move `Convert::toNormal()` to `Str::normalise()`
+- Move `Convert::queryToData()` to `Get::filter()` and refactor to take advantage of `parse_str()`
+- Move `Convert::dataToQuery()` to `Get::query()` and add `QueryFlag` for more precise control of serialization
+- Move `Convert::uuidToHex()` to `Get::uuid()` and allow the given UUID to be in hexadecimal form already
+- Add `Compute::binaryUuid()` and remove `$binary` parameter from `Compute::uuid()`
+- Move `Convert::unwrap()` to `Str::unwrap()`
+- Move `Convert::toShellArg()` and `Convert::toCmdArg()` to `Sys` as private methods `escapeShellArg()` and `escapeCmdArg()`
+- Move `Compute` methods `binaryUuid()`, `uuid()`, `randomText()`, `binaryHash()`, `hash()` to `Get`
+- Move `Compute` methods `textDistance()` and `textSimilarity()` to `Str::distance()` and `Str::similarity()` respectively
+- Move `ngramSimilarity()`, `ngramIntersection()`, `ngrams()` from `Compute` to `Str`
+- Rename `ResolvesServiceLists` trait to `HasUnderlyingService`
+- Rename `SortTypeFlag` to `SortFlag`
+
+### Removed
+
+- Remove `PipelineFilterException` (previously `PipelineResultRejectedException`) because `unless()` and `send()` cannot be used together
+- Remove empty `Compute` class
+- Remove `Convert` class, including unused methods `toStrings()` and `objectToArray()`
+- Remove unused `IsConvertibleEnumeration` trait
+
+### Fixed
+
+- Fix `HasFacade` issue where instances are not always reused
+- Fix issue where `AbstractFacade::unload()` does not unload service lists
+
 ## [v0.21.42] - 2024-02-15
 
 ### Added
@@ -1722,6 +1798,8 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.44]: https://github.com/lkrms/php-util/compare/v0.21.43...v0.21.44
+[v0.21.43]: https://github.com/lkrms/php-util/compare/v0.21.42...v0.21.43
 [v0.21.42]: https://github.com/lkrms/php-util/compare/v0.21.41...v0.21.42
 [v0.21.41]: https://github.com/lkrms/php-util/compare/v0.21.40...v0.21.41
 [v0.21.40]: https://github.com/lkrms/php-util/compare/v0.21.39...v0.21.40
