@@ -64,4 +64,9 @@ interface ITreeable extends IRelatable, HasParentProperty, HasChildrenProperty
      * and so on.
      */
     public function getDepth(): int;
+
+    /**
+     * Get the number of objects descended from the object
+     */
+    public function countDescendants(): int;
 }

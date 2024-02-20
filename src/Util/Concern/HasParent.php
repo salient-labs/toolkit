@@ -161,4 +161,32 @@ trait HasParent
 
         return $depth;
     }
+
+    final public function countDescendants(): int
+    {
+        if (!isset(self::$_ChildrenProperties[static::class])) {
+            static::loadHierarchyProperties();
+        }
+
+        return $this->doCountDescendants(
+            self::$_ChildrenProperties[static::class]
+        );
+    }
+
+    private function doCountDescendants(string $_children): int
+    {
+        /** @var static[] */
+        $children = $this->{$_children} ?? [];
+
+        if ($children === []) {
+            return 0;
+        }
+
+        $count = 0;
+        foreach ($children as $child) {
+            $count += 1 + $child->doCountDescendants($_children);
+        }
+
+        return $count;
+    }
 }
