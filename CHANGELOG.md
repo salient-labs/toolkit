@@ -12,6 +12,25 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.45] - 2024-02-21
+
+### Added
+
+- Add `SyncEntityRecursionException`
+- Add `ISyncContext::pushWithRecursionCheck()`
+- Add `ISyncContext::maybeThrowRecursionException()`
+
+### Changed
+
+- Sync: prevent infinite recursion during entity hydration
+  - Call `ISyncContext::pushWithRecursionCheck()` instead of `ISyncContext::push()` where necessary
+  - Call `ISyncContext::maybeThrowRecursionException()` before requesting entities from providers
+- In `GetSyncEntities`, apply `DeferralPolicy::DO_NOT_RESOLVE` in addition to `HydrationPolicy::SUPPRESS` when `--shallow` is given
+
+### Fixed
+
+- Fix issue where deferred relationships are created to hydrate entities with no identifier
+
 ## [v0.21.44] - 2024-02-20
 
 ### Added
@@ -1798,6 +1817,7 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.45]: https://github.com/lkrms/php-util/compare/v0.21.44...v0.21.45
 [v0.21.44]: https://github.com/lkrms/php-util/compare/v0.21.43...v0.21.44
 [v0.21.43]: https://github.com/lkrms/php-util/compare/v0.21.42...v0.21.43
 [v0.21.42]: https://github.com/lkrms/php-util/compare/v0.21.41...v0.21.42
