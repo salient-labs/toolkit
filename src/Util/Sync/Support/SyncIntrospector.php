@@ -687,11 +687,13 @@ final class SyncIntrospector extends Introspector
                 $isParent,
                 $isChildren
             ): void {
-                if ($data[$key] === null ||
-                        (Arr::isList($data[$key]) xor $isList) ||
-                        !($entity instanceof ISyncEntity) ||
-                        !($provider instanceof ISyncProvider) ||
-                        !($context instanceof ISyncContext)) {
+                if (
+                    $data[$key] === null ||
+                    (Arr::isList($data[$key]) xor $isList) ||
+                    !($entity instanceof ISyncEntity) ||
+                    !($provider instanceof ISyncProvider) ||
+                    !($context instanceof ISyncContext)
+                ) {
                     $entity->{$property} = $data[$key];
                     return;
                 }
@@ -701,7 +703,7 @@ final class SyncIntrospector extends Introspector
                         if (!$isChildren) {
                             DeferredEntity::deferList(
                                 $provider,
-                                $context->push($entity),
+                                $context->pushWithRecursionCheck($entity),
                                 $relationship,
                                 $data[$key],
                                 $entity->{$property},
@@ -712,7 +714,7 @@ final class SyncIntrospector extends Introspector
                         /** @var ISyncEntity&ITreeable $entity */
                         DeferredEntity::deferList(
                             $provider,
-                            $context->push($entity),
+                            $context->pushWithRecursionCheck($entity),
                             $relationship,
                             $data[$key],
                             $replace,
@@ -749,7 +751,7 @@ final class SyncIntrospector extends Introspector
                     if (!$isParent) {
                         DeferredEntity::defer(
                             $provider,
-                            $context->push($entity),
+                            $context->pushWithRecursionCheck($entity),
                             $relationship,
                             $data[$key],
                             $entity->{$property},
@@ -760,7 +762,7 @@ final class SyncIntrospector extends Introspector
                     /** @var ISyncEntity&ITreeable $entity */
                     DeferredEntity::defer(
                         $provider,
-                        $context->push($entity),
+                        $context->pushWithRecursionCheck($entity),
                         $relationship,
                         $data[$key],
                         $replace,
@@ -822,9 +824,12 @@ final class SyncIntrospector extends Introspector
                 $entityType,
                 $entityProvider
             ): void {
-                if (!($context instanceof ISyncContext) ||
-                        !($provider instanceof ISyncProvider) ||
-                        !is_a($provider, $entityProvider)) {
+                if (
+                    !($context instanceof ISyncContext) ||
+                    !($provider instanceof ISyncProvider) ||
+                    !is_a($provider, $entityProvider) ||
+                    $data[$idKey] === null
+                ) {
                     return;
                 }
 
@@ -840,7 +845,7 @@ final class SyncIntrospector extends Introspector
                 if (!$isChildren) {
                     DeferredRelationship::defer(
                         $provider,
-                        $context->push($entity),
+                        $context->pushWithRecursionCheck($entity),
                         $relationship,
                         $service ?? $entityType,
                         $property,
@@ -854,7 +859,7 @@ final class SyncIntrospector extends Introspector
                 /** @var ISyncEntity&ITreeable $entity */
                 DeferredRelationship::defer(
                     $provider,
-                    $context->push($entity),
+                    $context->pushWithRecursionCheck($entity),
                     $relationship,
                     $service ?? $entityType,
                     $property,

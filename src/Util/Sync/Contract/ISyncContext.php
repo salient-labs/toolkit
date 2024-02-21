@@ -9,10 +9,11 @@ use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Exception\SyncEntityRecursionException;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
 
 /**
- * The context within which a sync entity is instantiated by a provider
+ * The context within which sync entities are instantiated by a provider
  *
  * @extends IProviderContext<ISyncProvider,ISyncEntity>
  */
@@ -62,7 +63,7 @@ interface ISyncContext extends IProviderContext
      * @param SyncOperation::* $operation
      * @param mixed ...$args Sync operation arguments, NOT including the
      * {@see ISyncContext} argument.
-     * @return $this
+     * @return static
      */
     public function withArgs($operation, ...$args);
 
@@ -76,14 +77,14 @@ interface ISyncContext extends IProviderContext
      * @see ISyncContext::applyFilterPolicy()
      *
      * @param (callable(ISyncContext, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
-     * @return $this
+     * @return static
      */
     public function withFilterPolicyCallback(?callable $callback);
 
     /**
      * Reject entities from the local entity store
      *
-     * @return $this
+     * @return static
      */
     public function online();
 
@@ -93,7 +94,7 @@ interface ISyncContext extends IProviderContext
      * An exception is thrown if the local entity store is unable to satisfy
      * subsequent entity requests.
      *
-     * @return $this
+     * @return static
      */
     public function offline();
 
@@ -103,7 +104,7 @@ interface ISyncContext extends IProviderContext
      *
      * This is the default behaviour.
      *
-     * @return $this
+     * @return static
      */
     public function offlineFirst();
 
@@ -111,7 +112,7 @@ interface ISyncContext extends IProviderContext
      * Apply the given deferral policy to the context
      *
      * @param DeferralPolicy::* $policy
-     * @return $this
+     * @return static
      */
     public function withDeferralPolicy($policy);
 
@@ -123,13 +124,32 @@ interface ISyncContext extends IProviderContext
      * change to an entity and its subclasses.
      * @param array<int<1,max>>|int<1,max>|null $depth Limit the scope of the
      * change to entities at a given `$depth` from the current context.
-     * @return $this
+     * @return static
      */
     public function withHydrationPolicy(
         int $policy,
         ?string $entity = null,
         $depth = null
     );
+
+    /**
+     * Push the entity propagating the context onto the stack after checking if
+     * it is already present
+     *
+     * {@see ISyncContext::maybeThrowRecursionException()} fails with an
+     * exception if `$entity` is already in the stack.
+     *
+     * @return static
+     */
+    public function pushWithRecursionCheck(ISyncEntity $entity);
+
+    /**
+     * Throw an exception if recursion is detected
+     *
+     * @throws SyncEntityRecursionException if
+     * {@see ISyncContext::pushWithRecursionCheck()} detected recursion.
+     */
+    public function maybeThrowRecursionException(): void;
 
     /**
      * Run the unclaimed filter policy callback
@@ -163,7 +183,7 @@ interface ISyncContext extends IProviderContext
      *
      * @param array{}|null $empty
      */
-    public function applyFilterPolicy(?bool &$returnEmpty, &$empty): void;
+    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void;
 
     /**
      * Get the filters passed to the context via optional sync operation
@@ -196,7 +216,7 @@ interface ISyncContext extends IProviderContext
      *
      * Unlike other {@see ISyncContext} methods,
      * {@see ISyncContext::claimFilter()} modifies the object it is called on
-     * instead of returning a modified clone.
+     * instead of returning a modified instance.
      *
      * If `$orValue` is `true` and a value for `$key` has been applied to the
      * context via {@see IProviderContext::withValue()}, it is returned if there

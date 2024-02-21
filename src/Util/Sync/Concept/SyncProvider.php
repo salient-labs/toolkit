@@ -83,7 +83,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): SyncContext
+    public function getContext(?ContainerInterface $container = null): ISyncContext
     {
         if (!$container) {
             $container = $this->App;
@@ -249,10 +249,14 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
      */
     final public function with(string $entity, $context = null): SyncEntityProvider
     {
-        /** @var ContainerInterface */
-        $container = $context instanceof ISyncContext
-            ? $context->container()
-            : ($context ?: $this->App);
+        if ($context instanceof ISyncContext) {
+            $context->maybeThrowRecursionException();
+            $container = $context->container();
+        } else {
+            /** @var ContainerInterface */
+            $container = $context ?? $this->App;
+        }
+
         $container = $container->inContextOf(static::class);
 
         $context = $context instanceof ISyncContext

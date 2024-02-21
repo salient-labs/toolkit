@@ -325,12 +325,13 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
 
         // If a method has been declared for this operation, use it, even if
         // it's not in $this->Operations
-        if ($closure =
-                $this->ProviderIntrospector->getDeclaredSyncOperationClosure(
-                    $operation,
-                    $this->EntityIntrospector,
-                    $this->Provider
-                )) {
+        $closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure(
+            $operation,
+            $this->EntityIntrospector,
+            $this->Provider
+        );
+
+        if ($closure) {
             return $this->Closures[$operation] =
                 fn(ISyncContext $ctx, ...$args) =>
                     $closure(
@@ -344,10 +345,9 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
                 ($closure = $this->getSyncOperationClosure(OP::READ_LIST))) {
             return $this->Closures[$operation] =
                 function (ISyncContext $ctx, $id, ...$args) use ($closure) {
-                    $entity =
-                        $this
-                            ->getFluentIterator($closure($ctx, ...$args))
-                            ->nextWithValue('Id', $id);
+                    $entity = $this
+                        ->getFluentIterator($closure($ctx, ...$args))
+                        ->nextWithValue('Id', $id);
                     if ($entity === null) {
                         throw new SyncEntityNotFoundException($this->Provider, $this->Entity, $id);
                     }

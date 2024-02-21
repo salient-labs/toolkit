@@ -107,7 +107,7 @@ class Introspector
      * @template T of object
      *
      * @param class-string<T> $service
-     * @return static<T,Provider,Entity,ProviderContext>
+     * @return static<T,Provider,Entity,ProviderContext<Provider,Entity>>
      */
     public static function getService(ContainerInterface $container, string $service)
     {
@@ -126,7 +126,7 @@ class Introspector
      * @template T of object
      *
      * @param class-string<T> $class
-     * @return static<T,Provider,Entity,ProviderContext>
+     * @return static<T,Provider,Entity,ProviderContext<Provider,Entity>>
      */
     public static function get(string $class)
     {

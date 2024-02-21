@@ -4,6 +4,7 @@ namespace Lkrms\Concept;
 
 use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IProvider;
+use Lkrms\Contract\IProviderContext;
 use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Support\ProviderContext;
 use Salient\Core\Exception\MethodNotImplementedException;
@@ -11,7 +12,7 @@ use Salient\Core\Exception\MethodNotImplementedException;
 /**
  * Base class for providers
  *
- * @implements IProvider<ProviderContext>
+ * @implements IProvider<ProviderContext<static,Entity>>
  */
 abstract class Provider implements IProvider
 {
@@ -39,11 +40,9 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): ProviderContext
+    public function getContext(?ContainerInterface $container = null): IProviderContext
     {
-        if (!$container) {
-            $container = $this->App;
-        }
+        $container ??= $this->App;
 
         return $container->get(ProviderContext::class, [$this]);
     }
@@ -81,17 +80,15 @@ abstract class Provider implements IProvider
      */
     final public function dateFormatter(): DateFormatterInterface
     {
-        return $this->DateFormatter
-            ?? ($this->DateFormatter = $this->getDateFormatter());
+        return $this->DateFormatter ??= $this->getDateFormatter();
     }
 
     /**
-     * Get the date formatter cached by dateFormatter(), or null if it hasn't
-     * been cached
+     * Check if the date formatter returned by dateFormatter() has been cached
      */
-    final protected function getCachedDateFormatter(): ?DateFormatterInterface
+    final protected function hasDateFormatter(): bool
     {
-        return $this->DateFormatter ?? null;
+        return isset($this->DateFormatter);
     }
 
     /**
