@@ -104,4 +104,9 @@ final class SysTest extends TestCase
             ],
         ];
     }
+
+    public function testIsWindows(): void
+    {
+        $this->assertSame(\DIRECTORY_SEPARATOR === '\\', Sys::isWindows());
+    }
 }
