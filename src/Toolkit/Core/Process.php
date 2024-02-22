@@ -120,10 +120,12 @@ final class Process
     ) {
         $timeout = (int) $timeout;
         if ($timeout < 0) {
+            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException(sprintf(
                 'Invalid timeout: %d',
                 $timeout,
             ));
+            // @codeCoverageIgnoreEnd
         }
 
         $this->Command = [$command, ...$args];
@@ -142,7 +144,9 @@ final class Process
     public function __destruct()
     {
         if ($this->isRunning() && $this->stop()->isRunning()) {
+            // @codeCoverageIgnoreStart
             $this->close();
+            // @codeCoverageIgnoreEnd
         }
 
         if ($this->OutputDir !== null && is_dir($this->OutputDir)) {
@@ -158,7 +162,9 @@ final class Process
         $this->assertHasNotRun();
 
         if ($this->Input === null) {
+            // @codeCoverageIgnoreStart
             $descriptors = [];
+            // @codeCoverageIgnoreEnd
         } elseif ($this->Input === '') {
             $descriptors[Stream::STDIN] = ['pipe', 'r'];
         } else {
@@ -399,12 +405,14 @@ final class Process
 
         try {
             $this->stop();
+            // @codeCoverageIgnoreStart
         } catch (Throwable $ex) {
             throw new ProcessException(sprintf(
                 'Error terminating process that timed out after %ds: %s',
                 $this->Timeout,
                 Get::code($this->Command),
             ), $ex);
+            // @codeCoverageIgnoreEnd
         }
 
         throw new ProcessTimedOutException(sprintf(
@@ -422,7 +430,9 @@ final class Process
     private function stop()
     {
         if (!$this->isRunning()) {
+            // @codeCoverageIgnoreStart
             return $this;
+            // @codeCoverageIgnoreEnd
         }
 
         $this->throwOnFailure(
@@ -441,17 +451,23 @@ final class Process
     private function close()
     {
         if ($this->State !== State::RUNNING) {
+            // @codeCoverageIgnoreStart
             return $this;
+            // @codeCoverageIgnoreEnd
         }
 
         if ($this->Pipes) {
+            // @codeCoverageIgnoreStart
             $this->closePipes();
+            // @codeCoverageIgnoreEnd
         }
 
         if (is_resource($this->Process)) {
             $result = @proc_close($this->Process);
             if ($result === -1 && is_resource($this->Process)) {
+                // @codeCoverageIgnoreStart
                 $this->throwOnFailure($result, 'Error closing process: %s', -1);
+                // @codeCoverageIgnoreEnd
             }
         }
         unset($this->Process);
@@ -464,6 +480,8 @@ final class Process
 
     /**
      * @return $this
+     *
+     * @codeCoverageIgnore
      */
     private function closePipes()
     {
@@ -516,8 +534,11 @@ final class Process
         if ($error) {
             throw new ProcessException($error['message']);
         }
+
+        // @codeCoverageIgnoreStart
         throw new ProcessException(
             sprintf($message, Get::code($this->Command))
         );
+        // @codeCoverageIgnoreEnd
     }
 }

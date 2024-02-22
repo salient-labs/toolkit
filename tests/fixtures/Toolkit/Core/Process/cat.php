@@ -38,7 +38,7 @@ switch ($action) {
         if ($action === 'delay') {
             File::close(\STDOUT);
             File::close(\STDERR);
-            usleep(200000);
+            usleep(400000);
         }
 
         if ($action === 'timeout') {
