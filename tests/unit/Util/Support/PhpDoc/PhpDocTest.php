@@ -6,6 +6,7 @@ use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Tests\TestCase;
 use Salient\Core\Catalog\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 
 final class PhpDocTest extends TestCase
@@ -496,7 +497,7 @@ final class PhpDocTest extends TestCase
      */
     public function testTypeRegex(string $phpDocType, bool $expectMatch = true): void
     {
-        $regex = Regex::anchorAndDelimit(Regex::PHPDOC_TYPE);
+        $regex = Pcre::delimit('^' . Regex::PHPDOC_TYPE . '$', '/');
         if ($expectMatch) {
             $this->assertMatchesRegularExpression($regex, trim($phpDocType));
         } else {

@@ -881,7 +881,7 @@ abstract class GenerateCommand extends Command
             $this->OutputFile = $file;
 
             if (file_exists($file)) {
-                $input = file_get_contents($file);
+                $input = File::getContents($file);
                 if ($input === $output) {
                     Console::log('Nothing to do:', $file);
                     return;
@@ -916,7 +916,7 @@ abstract class GenerateCommand extends Command
             Console::info($verb, $file);
         }
 
-        file_put_contents($file, $output);
+        File::putContents($file, $output);
     }
 
     /**

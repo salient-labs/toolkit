@@ -98,7 +98,7 @@ class PhpDocTag
             };
 
         if (!Pcre::match(
-            Regex::anchorAndDelimit(Regex::PHPDOC_TYPE),
+            Pcre::delimit('^' . Regex::PHPDOC_TYPE . '$', '/'),
             trim($type),
             $matches
         )) {
@@ -121,7 +121,7 @@ class PhpDocTag
         }
 
         // Simplify composite types
-        $phpTypeRegex = Regex::anchorAndDelimit(Regex::PHP_TYPE);
+        $phpTypeRegex = Pcre::delimit('^' . Regex::PHP_TYPE . '$', '/');
         foreach ($types as &$type) {
             $brackets = false;
             if ($type && $type[0] === '(' && $type[-1] === ')') {

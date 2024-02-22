@@ -3,6 +3,7 @@
 namespace Lkrms\Support;
 
 use Salient\Core\Exception\UnexpectedValueException;
+use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Generator;
@@ -24,7 +25,7 @@ final class TokenExtractor
     public function __construct(string $filename)
     {
         $this->Tokens = array_values(array_filter(
-            token_get_all(file_get_contents($filename), \TOKEN_PARSE),
+            token_get_all(File::getContents($filename), \TOKEN_PARSE),
             fn($t) => !is_array($t) || !in_array($t[0], [\T_WHITESPACE])
         ));
     }

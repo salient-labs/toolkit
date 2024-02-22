@@ -143,7 +143,7 @@ class Application extends Container implements ApplicationInterface
 
         $app = $this->getAppName();
 
-        if (\PHP_OS_FAMILY === 'Windows') {
+        if (Sys::isWindows()) {
             switch ($parent) {
                 case self::DIR_CONFIG:
                 case self::DIR_DATA:

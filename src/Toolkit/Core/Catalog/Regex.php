@@ -192,24 +192,4 @@ final class Regex extends AbstractDictionary
           (?: \s* (?: \| | & ) (?&sp)* (?-1) )?
         )
         REGEX;
-
-    public static function delimit(
-        string $regex,
-        string $delimiter = '/'
-    ): string {
-        return $delimiter
-            . str_replace($delimiter, '\\' . $delimiter, $regex)
-            . $delimiter;
-    }
-
-    public static function anchorAndDelimit(
-        string $regex,
-        string $delimiter = '/'
-    ): string {
-        return $delimiter
-            . '^'
-            . str_replace($delimiter, '\\' . $delimiter, $regex)
-            . '$'
-            . $delimiter;
-    }
 }

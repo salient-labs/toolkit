@@ -38,6 +38,12 @@ use LogicException;
  *   `'\''`
  * - Variable expansion and command substitution are not supported.
  * - Comment lines must start with `#`.
+ *
+ * {@see Env::get()}, {@see Env::getInt()}, etc. check `$_ENV`, `$_SERVER`
+ * and {@see getenv()} for a given variable and return the first value found. If
+ * the value is not of the expected type, an {@see InvalidEnvironmentException}
+ * is thrown. If the variable is not present in the environment, `$default` is
+ * returned if given, otherwise an {@see InvalidEnvironmentException} is thrown.
  */
 final class Env extends AbstractUtility
 {
@@ -60,7 +66,7 @@ final class Env extends AbstractUtility
         $queue = [];
         $errors = [];
         foreach ($path as $filename) {
-            $lines = explode("\n", Str::setEol(file_get_contents($filename)));
+            $lines = explode("\n", Str::setEol(File::getContents($filename)));
             self::parse($lines, $queue, $errors, $filename);
         }
         self::doLoad($queue, $errors);
@@ -74,11 +80,9 @@ final class Env extends AbstractUtility
     public static function apply(int $flags = EnvFlag::ALL): void
     {
         if ($flags & EnvFlag::LOCALE) {
-            $locale = setlocale(\LC_ALL, '');
+            $locale = @setlocale(\LC_ALL, '');
             if ($locale === false) {
-                throw new InvalidEnvironmentException(
-                    'Unable to set locale from environment'
-                );
+                Console::debug('Unable to set locale from environment');
             }
             Console::debug('Locale:', $locale);
         }
@@ -110,10 +114,12 @@ final class Env extends AbstractUtility
     public static function set(string $name, string $value): void
     {
         if (putenv($name . '=' . $value) === false) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException(sprintf(
                 'Unable to set environment variable: %s',
                 $name,
             ));
+            // @codeCoverageIgnoreEnd
         }
         $_ENV[$name] = $value;
         $_SERVER[$name] = $value;
@@ -122,18 +128,280 @@ final class Env extends AbstractUtility
     /**
      * Unset an environment variable
      *
-     * The change is applied to `$_ENV`, `$_SERVER` and {@see putenv()}.
+     * The variable is removed from `$_ENV`, `$_SERVER` and {@see putenv()}.
      */
     public static function unset(string $name): void
     {
         if (putenv($name) === false) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException(sprintf(
                 'Unable to unset environment variable: %s',
                 $name,
             ));
+            // @codeCoverageIgnoreEnd
         }
         unset($_ENV[$name]);
         unset($_SERVER[$name]);
+    }
+
+    /**
+     * Check if a variable is present in the environment
+     */
+    public static function has(string $name): bool
+    {
+        return self::_get($name, false) !== false;
+    }
+
+    /**
+     * Get a value from the environment
+     *
+     * @template T of string|null|false
+     *
+     * @param T $default
+     * @return (T is string ? string : (T is null ? string|null : string|never))
+     */
+    public static function get(string $name, $default = false): ?string
+    {
+        $value = self::_get($name);
+
+        if ($value !== false) {
+            return $value;
+        }
+
+        if ($default === false) {
+            self::throwValueNotFoundException($name);
+        }
+
+        return $default;
+    }
+
+    /**
+     * Get an integer value from the environment
+     *
+     * @template T of int|null|false
+     *
+     * @param T $default
+     * @return (T is int ? int : (T is null ? int|null : int|never))
+     */
+    public static function getInt(string $name, $default = false): ?int
+    {
+        $value = self::_get($name);
+
+        if ($value === false) {
+            if ($default === false) {
+                self::throwValueNotFoundException($name);
+            }
+
+            return $default;
+        }
+
+        if (!Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not an integer: %s',
+                $name,
+            ));
+        }
+
+        return (int) $value;
+    }
+
+    /**
+     * Get a boolean value from the environment
+     *
+     * @see Test::isBoolValue()
+     *
+     * @template T of bool|null|-1
+     *
+     * @param T $default
+     * @return (T is bool ? bool : (T is null ? bool|null : bool|never))
+     */
+    public static function getBool(string $name, $default = -1): ?bool
+    {
+        $value = self::_get($name);
+
+        if ($value === false) {
+            if ($default === -1) {
+                self::throwValueNotFoundException($name);
+            }
+
+            return $default;
+        }
+
+        if (trim($value) === '') {
+            return false;
+        }
+
+        if (!Pcre::match(
+            '/^' . Regex::BOOLEAN_STRING . '$/',
+            $value,
+            $match,
+            \PREG_UNMATCHED_AS_NULL
+        )) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not boolean: %s',
+                $name,
+            ));
+        }
+
+        return $match['true'] !== null ? true : false;
+    }
+
+    /**
+     * Get a list of values from the environment
+     *
+     * @template T of string[]|null|false
+     *
+     * @param T $default
+     * @return (T is string[] ? string[] : (T is null ? string[]|null : string[]|never))
+     */
+    public static function getList(string $name, $default = false, string $delimiter = ','): ?array
+    {
+        if ($delimiter === '') {
+            throw new LogicException('Invalid delimiter');
+        }
+
+        $value = self::_get($name);
+
+        if ($value !== false) {
+            return $value === '' ? [] : explode($delimiter, $value);
+        }
+
+        if ($default === false) {
+            self::throwValueNotFoundException($name);
+        }
+
+        return $default;
+    }
+
+    /**
+     * Get a list of integers from the environment
+     *
+     * @template T of int[]|null|false
+     *
+     * @param T $default
+     * @return (T is int[] ? int[] : (T is null ? int[]|null : int[]|never))
+     */
+    public static function getIntList(string $name, $default = false, string $delimiter = ','): ?array
+    {
+        if ($delimiter === '') {
+            throw new LogicException('Invalid delimiter');
+        }
+
+        $value = self::_get($name);
+
+        if ($value === false) {
+            if ($default === false) {
+                self::throwValueNotFoundException($name);
+            }
+
+            return $default;
+        }
+
+        if (trim($value) === '') {
+            return [];
+        }
+
+        $regex = sprintf('/^%s(?:%s%1$s)*+$/', Regex::INTEGER_STRING, preg_quote($delimiter, '/'));
+        if (!Pcre::match($regex, $value)) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not an integer list: %s',
+                $name,
+            ));
+        }
+
+        foreach (explode($delimiter, $value) as $value) {
+            $list[] = (int) $value;
+        }
+
+        return $list;
+    }
+
+    /**
+     * Get a value from the environment, returning null if it's empty
+     *
+     * @param string|false|null $default
+     */
+    public static function getNullable(string $name, $default = false): ?string
+    {
+        $value = self::_get($name);
+
+        if ($value !== false) {
+            return trim($value) === '' ? null : $value;
+        }
+
+        if ($default === false) {
+            self::throwValueNotFoundException($name);
+        }
+
+        return $default;
+    }
+
+    /**
+     * Get an integer value from the environment, returning null if it's empty
+     *
+     * @param int|false|null $default
+     */
+    public static function getNullableInt(string $name, $default = false): ?int
+    {
+        $value = self::_get($name);
+
+        if ($value === false) {
+            if ($default === false) {
+                self::throwValueNotFoundException($name);
+            }
+
+            return $default;
+        }
+
+        if (trim($value) === '') {
+            return null;
+        }
+
+        if (!Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not an integer: %s',
+                $name,
+            ));
+        }
+        return (int) $value;
+    }
+
+    /**
+     * Get a boolean value from the environment, returning null if it's empty
+     *
+     * @see Test::isBoolValue()
+     *
+     * @param bool|-1|null $default
+     */
+    public static function getNullableBool(string $name, $default = -1): ?bool
+    {
+        $value = self::_get($name);
+
+        if ($value === false) {
+            if ($default === -1) {
+                self::throwValueNotFoundException($name);
+            }
+
+            return $default;
+        }
+
+        if (trim($value) === '') {
+            return null;
+        }
+
+        if (!Pcre::match(
+            '/^' . Regex::BOOLEAN_STRING . '$/',
+            $value,
+            $match,
+            \PREG_UNMATCHED_AS_NULL
+        )) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not boolean: %s',
+                $name,
+            ));
+        }
+
+        return $match['true'] !== null ? true : false;
     }
 
     /**
@@ -156,312 +424,6 @@ final class Env extends AbstractUtility
             ));
         }
         return $value;
-    }
-
-    /**
-     * True if a variable is present in the environment
-     */
-    public static function has(string $name): bool
-    {
-        return self::_get($name, false) !== false;
-    }
-
-    /**
-     * Get a value from the environment
-     *
-     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
-     * returns the first value found.
-     *
-     * If the variable is not found, `$default` is returned if given, otherwise
-     * an {@see InvalidEnvironmentException} is thrown.
-     *
-     * @template T of string|null
-     *
-     * @param T $default
-     * @return T|string
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given.
-     */
-    public static function get(string $name, ?string $default = null): ?string
-    {
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        return $value;
-    }
-
-    /**
-     * Get an integer value from the environment
-     *
-     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
-     * returns the first value found.
-     *
-     * If the value is not an integer, an {@see InvalidEnvironmentException} is
-     * thrown.
-     *
-     * If the variable is not found, `$default` is returned if given, otherwise
-     * an {@see InvalidEnvironmentException} is thrown.
-     *
-     * @template T of int|null
-     *
-     * @param T $default
-     * @return T|int
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given, or if the value of `$name` is
-     * not an integer.
-     */
-    public static function getInt(string $name, ?int $default = null): ?int
-    {
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        if (!Pcre::match(
-            Regex::anchorAndDelimit(Regex::INTEGER_STRING),
-            $value
-        )) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not an integer: %s',
-                $name,
-            ));
-        }
-        return (int) $value;
-    }
-
-    /**
-     * Get a boolean value from the environment
-     *
-     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
-     * returns the first value found.
-     *
-     * If the value is not boolean, an {@see InvalidEnvironmentException} is
-     * thrown.
-     *
-     * If the variable is not found, `$default` is returned if given, otherwise
-     * an {@see InvalidEnvironmentException} is thrown.
-     *
-     * - Values equivalent to `false`: `""`, `"0"`, `"off"`, `"false"`, `"n"`,
-     *   `"no"`, `"disable"`, `"disabled"`
-     * - Values equivalent to `true`: `"1"`, `"on"`, `"true"`, `"y"`, `"yes"`,
-     *   `"enable"`, `"enabled"`
-     *
-     * @template T of bool|null
-     *
-     * @param T $default
-     * @return T|bool
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given, or if the value of `$name` is
-     * not boolean.
-     */
-    public static function getBool(string $name, ?bool $default = null): ?bool
-    {
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        if (trim($value) === '') {
-            return false;
-        }
-        if (!Pcre::match(
-            Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
-            $value,
-            $match,
-            \PREG_UNMATCHED_AS_NULL
-        )) {
-            throw new InvalidEnvironmentException(sprintf('Value is not boolean: %s', $name));
-        }
-        return $match['true'] ? true : false;
-    }
-
-    /**
-     * Get a list of strings from the environment
-     *
-     * Returns `$default` if `$name` is not set or an empty array if it's empty,
-     * otherwise splits its value on `$delimiter` before returning.
-     *
-     * @template T of string[]|null
-     *
-     * @param T $default
-     * @return T|string[]
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given.
-     */
-    public static function getList(string $name, ?array $default = null, string $delimiter = ','): ?array
-    {
-        if (!$delimiter) {
-            throw new LogicException('Invalid delimiter');
-        }
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        return $value !== '' ? explode($delimiter, $value) : [];
-    }
-
-    /**
-     * Get a list of integers from the environment
-     *
-     * Returns `$default` if `$name` is not set or an empty array if it's empty,
-     * otherwise splits its value on `$delimiter` and casts entries to integers
-     * before returning.
-     *
-     * @template T of int[]|null
-     *
-     * @param T $default
-     * @return T|int[]
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given, or if the value of `$name` is
-     * invalid.
-     */
-    public static function getIntList(string $name, ?array $default = null, string $delimiter = ','): ?array
-    {
-        if (!$delimiter) {
-            throw new LogicException('Invalid delimiter');
-        }
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        if (trim($value) === '') {
-            return [];
-        }
-        $sep = preg_quote($delimiter, '/');
-        $int = Regex::INTEGER_STRING;
-        if (!Pcre::match("/^{$int}(?:{$sep}{$int})*+\$/", $value)) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not an integer list: %s',
-                $name,
-            ));
-        }
-        $list = [];
-        foreach (explode($delimiter, $value) as $value) {
-            $list[] = (int) $value;
-        }
-        return $list;
-    }
-
-    /**
-     * Get a value from the environment, returning null if it's empty
-     *
-     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
-     * returns the first value found.
-     *
-     * If the variable is not found, `$default` is returned if given, otherwise
-     * an {@see InvalidEnvironmentException} is thrown.
-     *
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given.
-     */
-    public static function getNullable(string $name, ?string $default = null): ?string
-    {
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        return trim($value) === '' ? null : $value;
-    }
-
-    /**
-     * Get an integer value from the environment, returning null if it's empty
-     *
-     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
-     * returns the first value found.
-     *
-     * If the value is not empty and not an integer, an
-     * {@see InvalidEnvironmentException} is thrown.
-     *
-     * If the variable is not found, `$default` is returned if given, otherwise
-     * an {@see InvalidEnvironmentException} is thrown.
-     *
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given, or if the value of `$name` is
-     * neither an integer nor an empty string.
-     */
-    public static function getNullableInt(string $name, ?int $default = null): ?int
-    {
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        if (trim($value) === '') {
-            return null;
-        }
-        if (!Pcre::match(
-            Regex::anchorAndDelimit(Regex::INTEGER_STRING),
-            $value
-        )) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not an integer: %s',
-                $name,
-            ));
-        }
-        return (int) $value;
-    }
-
-    /**
-     * Get a boolean value from the environment, returning null if it's empty
-     *
-     * Checks `$_ENV`, `$_SERVER` and {@see getenv()} for the variable and
-     * returns the first value found.
-     *
-     * If the value is not empty and not boolean, an
-     * {@see InvalidEnvironmentException} is thrown.
-     *
-     * If the variable is not found, `$default` is returned if given, otherwise
-     * an {@see InvalidEnvironmentException} is thrown.
-     *
-     * - Values equivalent to `false`: `""`, `"0"`, `"off"`, `"false"`, `"n"`,
-     *   `"no"`, `"disable"`, `"disabled"`
-     * - Values equivalent to `true`: `"1"`, `"on"`, `"true"`, `"y"`, `"yes"`,
-     *   `"enable"`, `"enabled"`
-     *
-     * @throws InvalidEnvironmentException if `$name` is not present in the
-     * environment and `$default` is not given, or if the value of `$name` is
-     * neither boolean nor an empty string.
-     */
-    public static function getNullableBool(string $name, ?bool $default = null): ?bool
-    {
-        $value = self::_get($name);
-        if ($value === false) {
-            if (func_num_args() < 2) {
-                self::throwValueNotFoundException($name);
-            }
-            return $default;
-        }
-        if (trim($value) === '') {
-            return null;
-        }
-        if (!Pcre::match(
-            Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
-            $value,
-            $match,
-            \PREG_UNMATCHED_AS_NULL
-        )) {
-            throw new InvalidEnvironmentException(sprintf('Value is not boolean: %s', $name));
-        }
-        return $match['true'] ? true : false;
     }
 
     /**

@@ -93,14 +93,17 @@ final class DbConnector implements Readable
      * @param DbDriver::*|null $driver If `null`, the environment variable
      * `<name>_driver` is used.
      */
-    public function __construct(string $name, int $driver = null)
+    public function __construct(string $name, ?int $driver = null)
     {
-        $driver = $driver === null
-            ? Get::apparent(Env::get("{$name}_driver"), false, false)
-            : $driver;
+        $driver ??= Get::arrayKey(Env::get("{$name}_driver"));
+        /** @var (int&DbDriver::*)|string $driver */
+        if (is_string($driver)) {
+            /** @var (int&DbDriver::*) */
+            $driver = DbDriver::fromName($driver);
+        }
 
         $this->Name = $name;
-        $this->Driver = is_int($driver) ? $driver : DbDriver::fromName($driver);
+        $this->Driver = $driver;
         $this->Dsn = Env::getNullable("{$name}_dsn", null);
         $this->Hostname = Env::getNullable("{$name}_hostname", null);
         $this->Port = Env::getNullableInt("{$name}_port", null);
@@ -109,7 +112,7 @@ final class DbConnector implements Readable
         $this->Database = Env::getNullable("{$name}_database", null);
         $this->Schema = Env::getNullable("{$name}_schema", null);
 
-        $this->AdodbDriver = DbDriver::toAdodbDriver($this->Driver);
+        $this->AdodbDriver = DbDriver::toAdodbDriver($driver);
     }
 
     /**

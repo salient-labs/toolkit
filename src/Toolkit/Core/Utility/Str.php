@@ -33,7 +33,7 @@ final class Str extends AbstractUtility
      */
     public static function lower(string $string): string
     {
-        return strtr($string, Char::ALPHABETIC_UPPER, Char::ALPHABETIC_LOWER);
+        return strtr($string, Char::UPPER, Char::LOWER);
     }
 
     /**
@@ -41,7 +41,7 @@ final class Str extends AbstractUtility
      */
     public static function upper(string $string): string
     {
-        return strtr($string, Char::ALPHABETIC_LOWER, Char::ALPHABETIC_UPPER);
+        return strtr($string, Char::LOWER, Char::UPPER);
     }
 
     /**
@@ -68,9 +68,9 @@ final class Str extends AbstractUtility
             return $string;
         }
 
-        $upper = strpbrk($match, Char::ALPHABETIC_UPPER);
+        $upper = strpbrk($match, Char::UPPER);
         $hasUpper = $upper !== false;
-        $hasLower = strpbrk($match, Char::ALPHABETIC_LOWER) !== false;
+        $hasLower = strpbrk($match, Char::LOWER) !== false;
 
         if ($hasUpper && !$hasLower && strlen($match) > 1) {
             return self::upper($string);
@@ -454,11 +454,7 @@ final class Str extends AbstractUtility
         }
 
         $quoted = preg_quote($separator, '/');
-
-        $escaped = $separator;
-        if (strpos('\-', $separator) !== false) {
-            $escaped = '\\' . $separator;
-        }
+        $escaped = Pcre::quoteCharacterClass($separator, '/');
 
         $regex = <<<REGEX
             (?x)
@@ -472,7 +468,7 @@ final class Str extends AbstractUtility
             REGEX;
 
         Pcre::matchAll(
-            Regex::delimit($regex),
+            Pcre::delimit($regex, '/'),
             $string,
             $matches,
         );

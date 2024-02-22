@@ -414,7 +414,7 @@ final class Reflect extends AbstractUtility
         }
         if ($typeNameCallback) {
             $_const = Pcre::replaceCallback(
-                Regex::delimit('^' . Regex::PHP_TYPE . '(?=::)'),
+                '/^' . Regex::PHP_TYPE . '(?=::)/',
                 fn(array $matches): string =>
                     $typeNameCallback($matches[0]) ?? $matches[0],
                 $const

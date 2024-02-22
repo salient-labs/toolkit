@@ -107,8 +107,8 @@ abstract class SyncProvider extends Provider implements ISyncProvider, HasServic
     {
         if (
             is_int($id) ||
-            Pcre::match(Regex::anchorAndDelimit(Regex::MONGODB_OBJECTID), $id) ||
-            Pcre::match(Regex::anchorAndDelimit(Regex::UUID), $id)
+            Pcre::match(Pcre::delimit('^' . Regex::MONGODB_OBJECTID . '$', '/'), $id) ||
+            Pcre::match(Pcre::delimit('^' . Regex::UUID . '$', '/'), $id)
         ) {
             return true;
         }

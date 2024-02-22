@@ -93,52 +93,49 @@ final class GetTest extends TestCase
     }
 
     /**
-     * @dataProvider apparentProvider
+     * @dataProvider arrayKeyProvider
      *
-     * @param int|float|string|bool|null $expected
-     * @param int|float|string|bool|null $value
+     * @param int|string|null $expected
+     * @param int|string|null $value
      */
-    public function testApparent($expected, $value, bool $toFloat = true, bool $toBool = true): void
+    public function testArrayKey($expected, $value): void
     {
-        $this->assertSame($expected, Get::apparent($value, $toFloat, $toBool));
+        $this->assertSame($expected, Get::arrayKey($value));
     }
 
     /**
-     * @return array<array{int|float|string|bool|null,int|float|string|bool|null,2?:bool,3?:bool}>
+     * @return array<array{int|string|null,int|string|null}>
      */
-    public static function apparentProvider(): array
+    public static function arrayKeyProvider(): array
     {
         return [
             [null, null],
             ['', ''],
             [0, 0],
             [1, 1],
-            [3.14, 3.14],
-            [false, false],
-            [true, true],
-            [null, 'null'],
-            [null, ' NULL '],
+            ['null', 'null'],
+            [' NULL ', ' NULL '],
             [0, '0'],
             [0, ' 0 '],
             [1, '1'],
             [1, ' 1 '],
-            [3.14, '3.14'],
-            [3.14, ' 3.14 '],
-            [false, 'false'],
-            [false, ' no '],
-            [true, 'true'],
-            [true, ' YES '],
-            ['3.14', '3.14', false],
-            ['false', 'false', true, false],
+            [-1, '-1'],
+            [-1, ' -1 '],
+            ['3.14', '3.14'],
+            [' 3.14 ', ' 3.14 '],
+            ['false', 'false'],
+            [' no ', ' no '],
+            ['true', 'true'],
+            [' YES ', ' YES '],
         ];
     }
 
-    public function testApparentWithInvalidValue(): void
+    public function testArrayKeyWithInvalidValue(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($value) must be of type int|float|string|bool|null, stdClass given');
+        $this->expectExceptionMessage('Argument #1 ($value) must be of type int|string|null, stdClass given');
         // @phpstan-ignore-next-line
-        Get::apparent(new stdClass());
+        Get::arrayKey(new stdClass());
     }
 
     /**

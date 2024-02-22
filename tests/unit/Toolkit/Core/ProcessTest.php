@@ -4,7 +4,7 @@ namespace Salient\Tests\Core;
 
 use Lkrms\Facade\Profile;
 use Lkrms\Tests\TestCase;
-use Salient\Core\Catalog\ProcessStream as Stream;
+use Salient\Core\Catalog\FileDescriptor;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;
 use Salient\Core\Utility\Sys;
@@ -55,7 +55,7 @@ final class ProcessTest extends TestCase
         $this->assertSame($exitStatus, $result);
         $this->assertSame($exitStatus, $process->getExitStatus());
         $this->assertSame($stdout, $process->getOutput());
-        $this->assertSame($stderr, $process->getOutput(Stream::STDERR));
+        $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR));
         $this->assertTrue($process->isTerminated());
         $this->assertIsInt($pid = $process->getPid());
         $this->assertGreaterThan(0, $pid);
@@ -211,15 +211,15 @@ final class ProcessTest extends TestCase
     public function testInvalidCommands(string $command): void
     {
         // PHP 8.3 uses posix_spawn for proc_open
-        if (\PHP_VERSION_ID >= 80300 || \PHP_OS_FAMILY === 'Windows') {
+        if (\PHP_VERSION_ID >= 80300 || Sys::isWindows()) {
             $this->expectException(ProcessException::class);
         }
         $process = new Process($command);
         $result = $process->run();
         $this->assertNotSame(0, $exitStatus = $process->getExitStatus());
         $this->assertSame($exitStatus, $result);
-        $this->assertSame('', $process->getOutput(Stream::STDOUT));
-        $this->assertSame('', $process->getOutput(Stream::STDERR));
+        $this->assertSame('', $process->getOutput(FileDescriptor::OUT));
+        $this->assertSame('', $process->getOutput(FileDescriptor::ERR));
     }
 
     /**
