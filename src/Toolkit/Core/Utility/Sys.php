@@ -216,6 +216,14 @@ final class Sys extends AbstractUtility
     }
 
     /**
+     * True if the script is running on Windows
+     */
+    public static function isWindows(): bool
+    {
+        return \PHP_OS_FAMILY === 'Windows';
+    }
+
+    /**
      * True if the SQLite3 library supports UPSERT syntax
      *
      * @link https://www.sqlite.org/lang_UPSERT.html
