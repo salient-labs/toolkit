@@ -15,7 +15,7 @@ final class SysTest extends TestCase
      */
     public function testEscapeCommand(string $arg): void
     {
-        if (\PHP_OS_FAMILY === 'Windows' && strpos($arg, \PHP_EOL) !== false) {
+        if (Sys::isWindows() && strpos($arg, \PHP_EOL) !== false) {
             $this->markTestSkipped();
         }
 

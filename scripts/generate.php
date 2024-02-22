@@ -184,7 +184,7 @@ foreach ($entities as $class => $entityArgs) {
     generated($generateEntity);
     if ($save && $generateEntity->Entity !== null) {
         File::createDir(dirname($file));
-        file_put_contents($file, Json::prettyPrint($generateEntity->Entity));
+        File::putContents($file, Json::prettyPrint($generateEntity->Entity));
         generated($file);
     }
 }
@@ -206,14 +206,14 @@ foreach ($generated as $generated) {
 }
 sort($attributes);
 $attributes = implode(\PHP_EOL, $attributes) . \PHP_EOL;
-if (file_get_contents($file) !== $attributes) {
+if (File::getContents($file) !== $attributes) {
     if (in_array('--check', $args)) {
         Console::info('Would replace', $file);
         Console::count(Level::ERROR);
         $status |= 1;
     } else {
         Console::info('Replacing', $file);
-        file_put_contents($file, $attributes);
+        File::putContents($file, $attributes);
     }
 } else {
     Console::log('Nothing to do:', $file);

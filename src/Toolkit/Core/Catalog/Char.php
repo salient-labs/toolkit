@@ -7,13 +7,15 @@ use Salient\Core\AbstractDictionary;
 /**
  * Character sequences
  *
+ * @api
+ *
  * @extends AbstractDictionary<string>
  */
 final class Char extends AbstractDictionary
 {
-    public const ALPHABETIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    public const ALPHABETIC_LOWER = 'abcdefghijklmnopqrstuvwxyz';
-    public const ALPHABETIC_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    public const ALPHA = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    public const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+    public const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     public const NUMERIC = '0123456789';
     public const ALPHANUMERIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 }

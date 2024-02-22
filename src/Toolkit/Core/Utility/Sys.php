@@ -161,7 +161,7 @@ final class Sys extends AbstractUtility
     {
         $command = '';
 
-        if (\PHP_OS_FAMILY !== 'Windows') {
+        if (!self::isWindows()) {
             foreach ($args as $arg) {
                 $command .= ($command ? ' ' : '') . self::escapeShellArg($arg);
             }

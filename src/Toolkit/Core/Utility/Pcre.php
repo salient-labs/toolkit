@@ -233,6 +233,19 @@ final class Pcre extends AbstractUtility
     }
 
     /**
+     * Enclose a pattern in delimiters
+     */
+    public static function delimit(string $pattern, string $delimiter = '/'): string
+    {
+        return sprintf(
+            '%s%s%s',
+            $delimiter,
+            str_replace($delimiter, '\\' . $delimiter, $pattern),
+            $delimiter,
+        );
+    }
+
+    /**
      * Quote characters for use in a character class
      *
      * @param string|null $delimiter The PCRE pattern delimiter to escape.
@@ -242,9 +255,10 @@ final class Pcre extends AbstractUtility
         string $characters,
         ?string $delimiter = null
     ): string {
-        $orDelimiter = $delimiter === null || $delimiter === ''
+        $orDelimiter = (string) $delimiter === ''
             ? ''
             : '|' . preg_quote($delimiter, '/');
+
         // "All non-alphanumeric characters other than \, -, ^ (at the start)
         // and the terminating ] are non-special in character classes"
         return self::replace("/(?:[]^\\\\-]$orDelimiter)/", '\\\\$0', $characters);

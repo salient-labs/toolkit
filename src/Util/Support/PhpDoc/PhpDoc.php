@@ -128,7 +128,7 @@ final class PhpDoc implements Readable
         bool $legacyNullable = false
     ) {
         // Check for a leading "*" after every newline as per PSR-5
-        if (!Pcre::match(Regex::anchorAndDelimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
+        if (!Pcre::match(Pcre::delimit('^' . Regex::PHP_DOCBLOCK . '$', '/'), $docBlock, $matches)) {
             throw new InvalidArgumentException('Invalid DocBlock');
         }
         $this->LegacyNullable = $legacyNullable;
@@ -152,7 +152,7 @@ final class PhpDoc implements Readable
         );
         $this->NextLine = reset($this->Lines);
 
-        $tagRegex = Regex::delimit('^' . Regex::PHPDOC_TAG);
+        $tagRegex = Pcre::delimit('^' . Regex::PHPDOC_TAG, '/');
         if ($this->NextLine !== false && !Pcre::match($tagRegex, $this->NextLine)) {
             $this->Summary = $this->getLinesUntil('/^$/', true, true);
 
@@ -344,7 +344,7 @@ final class PhpDoc implements Readable
     private function getTagType(string $text, ?string &$type): string
     {
         $regex = self::$PhpDocTypeRegex
-            ?: (self::$PhpDocTypeRegex = Regex::delimit('^' . Regex::PHPDOC_TYPE));
+            ?: (self::$PhpDocTypeRegex = Pcre::delimit('^' . Regex::PHPDOC_TYPE, '/'));
         $type = null;
         if (Pcre::match($regex, $text, $matches, \PREG_OFFSET_CAPTURE)) {
             /** @var array<array{0:string,1:int}> $matches */

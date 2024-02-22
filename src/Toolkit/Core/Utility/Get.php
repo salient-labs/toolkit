@@ -72,41 +72,25 @@ final class Get extends AbstractUtility
     }
 
     /**
-     * Convert a scalar to the type it appears to be
+     * Cast a value to the array-key it appears to be, preserving null
      *
-     * @param int|float|string|bool|null $value
-     * @param bool $toFloat If `true` (the default), convert float strings to
-     * `float`s.
-     * @param bool $toBool If `true` (the default), convert boolean strings to
-     * `bool`s.
-     * @return int|float|string|bool|null
+     * @param int|string|null $value
+     * @return ($value is null ? null : ($value is int ? int : int|string))
      */
-    public static function apparent($value, bool $toFloat = true, bool $toBool = true)
+    public static function arrayKey($value)
     {
-        if ($value === null || is_bool($value) || is_int($value) || is_float($value)) {
+        if ($value === null || is_int($value)) {
             return $value;
         }
+
         if (!is_string($value)) {
-            throw new InvalidArgumentTypeException(1, 'value', 'int|float|string|bool|null', $value);
+            throw new InvalidArgumentTypeException(1, 'value', 'int|string|null', $value);
         }
-        $trimmed = trim($value);
-        if (Str::lower($trimmed) === 'null') {
-            return null;
-        }
+
         if (Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
             return (int) $value;
         }
-        if ($toFloat && is_numeric($trimmed)) {
-            return (float) $value;
-        }
-        if ($toBool && Pcre::match(
-            '/^' . Regex::BOOLEAN_STRING . '$/',
-            $value,
-            $match,
-            \PREG_UNMATCHED_AS_NULL
-        )) {
-            return $match['true'] !== null;
-        }
+
         return $value;
     }
 

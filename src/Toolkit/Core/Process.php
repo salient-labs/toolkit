@@ -3,8 +3,7 @@
 namespace Salient\Core;
 
 use Lkrms\Facade\Profile;
-use Salient\Core\Catalog\ProcessState as State;
-use Salient\Core\Catalog\ProcessStream as Stream;
+use Salient\Core\Catalog\FileDescriptor;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;
@@ -20,10 +19,11 @@ use Throwable;
  */
 final class Process
 {
-    private const OPTIONS = [
-        'suppress_errors' => true,
-        'bypass_shell' => true,
-    ];
+    private const READY = 0;
+
+    private const RUNNING = 1;
+
+    private const TERMINATED = 2;
 
     /**
      * Microseconds to wait for stream activity
@@ -32,6 +32,11 @@ final class Process
      * status change is detected.
      */
     private const TIMEOUT_PRECISION = 200000;
+
+    private const OPTIONS = [
+        'suppress_errors' => true,
+        'bypass_shell' => true,
+    ];
 
     /**
      * @var string[]
@@ -58,10 +63,7 @@ final class Process
 
     private int $Usec = 0;
 
-    /**
-     * @var State::*
-     */
-    private int $State = State::READY;
+    private int $State = self::READY;
 
     private ?string $OutputDir = null;
 
@@ -76,7 +78,7 @@ final class Process
     private $Process;
 
     /**
-     * @var array<Stream::*,resource>
+     * @var array<FileDescriptor::*,resource>
      */
     private array $Pipes;
 
@@ -95,11 +97,11 @@ final class Process
     private $LastReadTime = null;
 
     /**
-     * @var array<Stream::STDOUT|Stream::STDERR,string>
+     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,string>
      */
     private $Output = [
-        Stream::STDOUT => '',
-        Stream::STDERR => '',
+        FileDescriptor::OUT => '',
+        FileDescriptor::ERR => '',
     ];
 
     /**
@@ -166,12 +168,12 @@ final class Process
             $descriptors = [];
             // @codeCoverageIgnoreEnd
         } elseif ($this->Input === '') {
-            $descriptors[Stream::STDIN] = ['pipe', 'r'];
+            $descriptors[FileDescriptor::IN] = ['pipe', 'r'];
         } else {
             if (is_string($this->Input)) {
                 $this->Input = Str::toStream($this->Input);
             }
-            $descriptors[Stream::STDIN] = $this->Input;
+            $descriptors[FileDescriptor::IN] = $this->Input;
         }
 
         $handles = [];
@@ -180,7 +182,7 @@ final class Process
             // Use files in a temporary directory as output buffers because
             // proc_open() blocks until the command exits if standard output
             // pipes are used on Windows
-            foreach ([Stream::STDOUT, Stream::STDERR] as $fd) {
+            foreach ([FileDescriptor::OUT, FileDescriptor::ERR] as $fd) {
                 $file = ($this->OutputDir ??= File::createTempDir()) . '/' . $fd;
                 File::create($file);
                 $handles[$fd] = File::open($file, 'r');
@@ -188,8 +190,8 @@ final class Process
             }
         } else {
             $descriptors += [
-                Stream::STDOUT => ['pipe', 'w'],
-                Stream::STDERR => ['pipe', 'w'],
+                FileDescriptor::OUT => ['pipe', 'w'],
+                FileDescriptor::ERR => ['pipe', 'w'],
             ];
         }
 
@@ -204,9 +206,9 @@ final class Process
             self::OPTIONS,
         ));
 
-        if (isset($pipes[Stream::STDIN])) {
-            File::close($pipes[Stream::STDIN]);
-            unset($pipes[Stream::STDIN]);
+        if (isset($pipes[FileDescriptor::IN])) {
+            File::close($pipes[FileDescriptor::IN]);
+            unset($pipes[FileDescriptor::IN]);
         }
 
         $pipes += $handles;
@@ -217,7 +219,7 @@ final class Process
 
         $this->Process = $process;
         $this->Pipes = $pipes;
-        $this->State = State::RUNNING;
+        $this->State = self::RUNNING;
 
         $this->updateStatus();
         $this->Pid = $this->ProcessStatus['pid'];
@@ -246,8 +248,8 @@ final class Process
     public function isRunning(): bool
     {
         return
-            $this->State === State::RUNNING &&
-            $this->updateStatus()->State === State::RUNNING;
+            $this->State === self::RUNNING &&
+            $this->updateStatus()->State === self::RUNNING;
     }
 
     /**
@@ -256,8 +258,8 @@ final class Process
     public function isTerminated(): bool
     {
         return
-            $this->State === State::TERMINATED ||
-            $this->updateStatus()->State === State::TERMINATED;
+            $this->State === self::TERMINATED ||
+            $this->updateStatus()->State === self::TERMINATED;
     }
 
     /**
@@ -285,14 +287,14 @@ final class Process
     /**
      * Get output written to STDOUT or STDERR by the process
      *
-     * @param Stream::STDOUT|Stream::STDERR $stream
+     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
      * @throws ProcessException if the process has not run.
      */
-    public function getOutput(int $stream = Stream::STDOUT): string
+    public function getOutput(int $fd = FileDescriptor::OUT): string
     {
         $this->assertHasRun();
 
-        return $this->Output[$stream];
+        return $this->Output[$fd];
     }
 
     /**
@@ -312,7 +314,7 @@ final class Process
      */
     private function updateStatus(bool $wait = false)
     {
-        if ($this->State !== State::RUNNING) {
+        if ($this->State !== self::RUNNING) {
             return $this;
         }
 
@@ -366,7 +368,7 @@ final class Process
         }
 
         foreach ($read as $pipe) {
-            /** @var Stream::* */
+            /** @var FileDescriptor::* */
             $i = Arr::keyOf($pipe, $this->Pipes);
 
             $data = $this->throwOnFailure(
@@ -396,7 +398,7 @@ final class Process
     private function checkTimeout()
     {
         if (
-            $this->State !== State::RUNNING ||
+            $this->State !== self::RUNNING ||
             !$this->Timeout ||
             $this->Timeout > (hrtime(true) - $this->StartTime) / 1000000000
         ) {
@@ -450,7 +452,7 @@ final class Process
      */
     private function close()
     {
-        if ($this->State !== State::RUNNING) {
+        if ($this->State !== self::RUNNING) {
             // @codeCoverageIgnoreStart
             return $this;
             // @codeCoverageIgnoreEnd
@@ -473,7 +475,7 @@ final class Process
         unset($this->Process);
 
         $this->ExitStatus = $this->ProcessStatus['exitcode'];
-        $this->State = State::TERMINATED;
+        $this->State = self::TERMINATED;
 
         return $this;
     }
@@ -497,21 +499,21 @@ final class Process
 
     private function assertHasNotRun(): void
     {
-        if ($this->State !== State::READY) {
+        if ($this->State !== self::READY) {
             throw new ProcessException('Process has already run');
         }
     }
 
     private function assertHasRun(): void
     {
-        if ($this->State === State::READY) {
+        if ($this->State === self::READY) {
             throw new ProcessException('Process has not run');
         }
     }
 
     private function assertHasTerminated(): void
     {
-        if ($this->State !== State::TERMINATED) {
+        if ($this->State !== self::TERMINATED) {
             throw new ProcessException('Process is not terminated');
         }
     }

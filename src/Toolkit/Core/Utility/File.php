@@ -27,7 +27,7 @@ final class File extends AbstractUtility
      */
     public static function cwd(): string
     {
-        $pipe = self::openPipe(\PHP_OS_FAMILY === 'Windows' ? 'cd' : 'pwd', 'rb');
+        $pipe = self::openPipe(Sys::isWindows() ? 'cd' : 'pwd', 'rb');
         $dir = self::getContents($pipe);
         $status = self::closePipe($pipe);
 

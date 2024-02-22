@@ -699,8 +699,8 @@ final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
         $name = Str::toKebabCase($this->ValueName, '=');
 
         if (
-            strpbrk($this->ValueName, Char::ALPHABETIC_UPPER) !== false &&
-            strpbrk($this->ValueName, Char::ALPHABETIC_LOWER) === false
+            strpbrk($this->ValueName, Char::UPPER) !== false &&
+            strpbrk($this->ValueName, Char::LOWER) === false
         ) {
             $name = Str::upper($name);
             if (!$withMarkup) {
