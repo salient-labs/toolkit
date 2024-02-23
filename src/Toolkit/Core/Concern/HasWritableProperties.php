@@ -2,19 +2,20 @@
 
 namespace Salient\Core\Concern;
 
-use Lkrms\Support\Introspector as IS;
+use Lkrms\Support\Introspector;
 use Salient\Core\Contract\Writable;
 
 /**
  * Implements Writable
  *
- * - If `_set<Property>($value)` is defined, it will be called instead of
- *   assigning `$value` to `<Property>`.
- * - If `_unset<Property>()` is defined, it will be called to unset `<Property>`
+ * - If `_set<Property>()` is defined, it is called instead of assigning
+ *   `$value` to `<Property>`.
+ * - If `_unset<Property>()` is defined, it is called to unset `<Property>`
  *   instead of assigning `null`.
- * - The existence of `_set<Property>()` implies that `<Property>` is writable,
- *   regardless of {@see HasWritableProperties::getWritableProperties()}'s
- *   return value.
+ * - The existence of `_set<Property>()` makes `<Property>` writable, regardless
+ *   of {@see Writable::getWritableProperties()}'s return value.
+ *
+ * @api
  *
  * @see Writable
  */
@@ -30,7 +31,7 @@ trait HasWritableProperties
      */
     private function setProperty(string $action, string $name, ...$params): void
     {
-        IS::get(static::class)->getPropertyActionClosure($name, $action)($this, ...$params);
+        Introspector::get(static::class)->getPropertyActionClosure($name, $action)($this, ...$params);
     }
 
     /**

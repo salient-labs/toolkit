@@ -7,6 +7,8 @@ use Salient\Core\AbstractEnumeration;
 /**
  * Get::query() flags
  *
+ * @api
+ *
  * @extends AbstractEnumeration<int>
  */
 final class QueryFlag extends AbstractEnumeration

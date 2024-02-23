@@ -7,9 +7,11 @@ use Salient\Core\AbstractEnumeration;
 /**
  * Sorting flags
  *
+ * @api
+ *
  * @extends AbstractEnumeration<int>
  */
-class SortFlag extends AbstractEnumeration
+final class SortFlag extends AbstractEnumeration
 {
     public const REGULAR = \SORT_REGULAR;
     public const NUMERIC = \SORT_NUMERIC;

@@ -24,6 +24,7 @@
         "adodb/adodb-php": "^5",
         "analog/analog": "^1",
         "clue/phar-composer": "^1",
+        "ergebnis/phpunit-slow-test-detector": "^2",
         "firebase/php-jwt": "^6",
         "league/oauth2-client": "^2",
         "php-http/psr7-integration-tests": "^1.3",

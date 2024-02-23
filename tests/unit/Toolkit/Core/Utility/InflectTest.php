@@ -233,45 +233,62 @@ final class InflectTest extends TestCase
         Inflect::formatRange(71, 3.14, '{{#}}');
     }
 
-    /**
-     * @dataProvider pluralProvider
-     *
-     * @param array<array{string,string}> $data
-     */
-    public function testPlural(float $minAccuracy, array $data): void
+    public function testPlural(): void
     {
-        $expected = [];
-        $actual = [];
-        $rows = 0;
-        $goodRows = 0;
-        foreach ($data as [$word, $expectedPlural]) {
-            $rows++;
-            $actualPlural = Inflect::plural($word);
-            if ($actualPlural === $expectedPlural) {
-                $goodRows++;
-                continue;
+        foreach (self::getPluralData() as $test => [$minAccuracy, $data]) {
+            $expected = [];
+            $actual = [];
+            $rows = 0;
+            $goodRows = 0;
+            foreach ($data as [$word, $expectedPlural]) {
+                $rows++;
+                $actualPlural = Inflect::plural($word);
+                if ($actualPlural === $expectedPlural) {
+                    $goodRows++;
+                    continue;
+                }
+                $expected[$word] = $expectedPlural;
+                $actual[$word] = $actualPlural;
             }
-            $expected[$word] = $expectedPlural;
-            $actual[$word] = $actualPlural;
+            $actualAccuracy = $goodRows * 100 / $rows;
+
+            $_expected = [
+                'message' => sprintf(
+                    'Accuracy: %.2f%% (%d/%d) >= %.2f%%',
+                    max($actualAccuracy, $minAccuracy),
+                    $goodRows,
+                    $rows,
+                    $minAccuracy,
+                ),
+            ];
+
+            if ($actualAccuracy < $minAccuracy) {
+                $_expected['data'] = $expected;
+                $_actual = [
+                    'message' => sprintf(
+                        'Accuracy: %.2f%% (%d/%d) < %.2f%%',
+                        $actualAccuracy,
+                        $goodRows,
+                        $rows,
+                        $minAccuracy,
+                    ),
+                    'data' => $actual,
+                ];
+            } else {
+                $_actual = $_expected;
+            }
+
+            $expectedOutput[$test] = $_expected;
+            $actualOutput[$test] = $_actual;
         }
-        $actualAccuracy = $goodRows * 100 / $rows;
-        if ($actualAccuracy < $minAccuracy) {
-            $this->assertSame($expected, $actual, sprintf(
-                'Accuracy: %.2f%% (%d/%d) < %.2f%%',
-                $actualAccuracy,
-                $goodRows,
-                $rows,
-                $minAccuracy,
-            ));
-        } else {
-            $this->assertGreaterThanOrEqual($minAccuracy, $actualAccuracy);
-        }
+
+        $this->assertSame($expectedOutput ?? [], $actualOutput ?? []);
     }
 
     /**
      * @return array<string,array{float,array<array{string,string}>}>
      */
-    public static function pluralProvider(): array
+    public static function getPluralData(): array
     {
         $dir = self::getFixturesPath(__CLASS__);
 

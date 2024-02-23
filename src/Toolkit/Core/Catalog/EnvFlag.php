@@ -2,11 +2,12 @@
 
 namespace Salient\Core\Catalog;
 
-use Salient\Core\Utility\Env;
 use Salient\Core\AbstractEnumeration;
 
 /**
  * Env::apply() flags
+ *
+ * @api
  *
  * @extends AbstractEnumeration<int>
  */
@@ -33,5 +34,7 @@ final class EnvFlag extends AbstractEnumeration
     /**
      * Apply all recognised values from the environment to the running script
      */
-    public const ALL = self::LOCALE | self::TIMEZONE;
+    public const ALL =
+        EnvFlag::LOCALE
+        | EnvFlag::TIMEZONE;
 }

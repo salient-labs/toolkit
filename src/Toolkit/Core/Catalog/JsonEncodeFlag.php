@@ -5,11 +5,13 @@ namespace Salient\Core\Catalog;
 use Salient\Core\AbstractEnumeration;
 
 /**
- * json_encode() flags
+ * Json::stringify() flags
+ *
+ * @api
  *
  * @extends AbstractEnumeration<int>
  */
-class JsonEncodeFlag extends AbstractEnumeration
+final class JsonEncodeFlag extends AbstractEnumeration
 {
     public const FORCE_OBJECT = \JSON_FORCE_OBJECT;
     public const INVALID_UTF8_IGNORE = \JSON_INVALID_UTF8_IGNORE;
