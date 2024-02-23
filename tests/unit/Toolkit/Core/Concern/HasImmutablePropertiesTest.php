@@ -1,12 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concern;
+namespace Salient\Tests\Core\Concern;
 
-use Lkrms\Tests\Concern\Immutable\MyImmutableClass;
+use Salient\Tests\Core\Concern\HasImmutableProperties\MyImmutableClass;
 use Salient\Tests\TestCase;
 use stdClass;
 
-final class ImmutableTest extends TestCase
+/**
+ * @covers \Salient\Core\Concern\HasImmutableProperties
+ */
+final class HasImmutablePropertiesTest extends TestCase
 {
     public function testWithPropertyValue(): void
     {

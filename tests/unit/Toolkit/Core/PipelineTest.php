@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support;
+namespace Salient\Tests\Core;
 
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
@@ -10,6 +10,9 @@ use Salient\Tests\TestCase;
 use Closure;
 use Throwable;
 
+/**
+ * @covers \Salient\Core\Pipeline
+ */
 final class PipelineTest extends TestCase
 {
     public function testStream(): void

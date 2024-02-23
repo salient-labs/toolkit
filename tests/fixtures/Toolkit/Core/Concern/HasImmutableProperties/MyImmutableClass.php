@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concern\Immutable;
+namespace Salient\Tests\Core\Concern\HasImmutableProperties;
 
 use Lkrms\Support\ImmutableCollection;
 use Salient\Core\Concern\HasImmutableProperties;
