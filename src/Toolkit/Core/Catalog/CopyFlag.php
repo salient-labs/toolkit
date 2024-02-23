@@ -8,6 +8,8 @@ use Salient\Core\AbstractEnumeration;
 /**
  * Get::copy() flags
  *
+ * @api
+ *
  * @extends AbstractEnumeration<int>
  */
 final class CopyFlag extends AbstractEnumeration

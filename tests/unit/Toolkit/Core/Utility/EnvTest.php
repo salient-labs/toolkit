@@ -157,11 +157,11 @@ final class EnvTest extends TestCase
         return [
             // getNullable
             '[nullable] empty string -> string' => [null, 'getNullable', ['value' => '']],
-            '[nullable] whitespace -> string' => [null, 'getNullable', ['value' => ' ']],
+            '[nullable] whitespace -> string' => [' ', 'getNullable', ['value' => ' ']],
             '[nullable] text -> string' => ['a', 'getNullable', ['value' => 'a']],
             '[nullable] zero -> string' => ['0', 'getNullable', ['value' => '0']],
             '[nullable] empty string -> string, with default' => [null, 'getNullable', ['value' => '', 'default' => '1']],
-            '[nullable] whitespace -> string, with default' => [null, 'getNullable', ['value' => ' ', 'default' => '1']],
+            '[nullable] whitespace -> string, with default' => [' ', 'getNullable', ['value' => ' ', 'default' => '1']],
             '[nullable] text -> string, with default' => ['a', 'getNullable', ['value' => 'a', 'default' => '1']],
             '[nullable] zero -> string, with default' => ['0', 'getNullable', ['value' => '0', 'default' => '1']],
             '[nullable] unset -> string, no default' => [null, 'getNullable', [], InvalidEnvironmentException::class],
