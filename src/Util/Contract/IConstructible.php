@@ -2,8 +2,8 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Catalog\Conformity;
 
 /**
  * Creates instances of itself from data in associative arrays
@@ -21,12 +21,12 @@ interface IConstructible
 
     /**
      * @param iterable<mixed[]> $list
-     * @param ArrayKeyConformity::* $conformity
+     * @param Conformity::* $conformity
      * @return iterable<static>
      */
     public static function constructList(
         iterable $list,
-        $conformity = ArrayKeyConformity::NONE,
+        $conformity = Conformity::NONE,
         ?ContainerInterface $container = null
     ): iterable;
 }

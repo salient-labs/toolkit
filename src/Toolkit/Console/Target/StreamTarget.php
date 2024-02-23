@@ -4,7 +4,7 @@ namespace Salient\Console\Target;
 
 use Salient\Console\Concept\ConsoleStreamTarget;
 use Salient\Console\Exception\ConsoleInvalidTargetException;
-use Salient\Core\Catalog\TtyControlSequence;
+use Salient\Core\Catalog\EscapeSequence;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
@@ -233,7 +233,7 @@ final class StreamTarget extends ConsoleStreamTarget
                 return;
             }
             if ($message !== '' && $message[-1] === "\r") {
-                File::write($this->Stream, TtyControlSequence::WRAP_OFF . rtrim($message, "\r"));
+                File::write($this->Stream, EscapeSequence::WRAP_OFF . rtrim($message, "\r"));
                 self::$HasPendingClearLine = true;
                 return;
             }
@@ -268,7 +268,7 @@ final class StreamTarget extends ConsoleStreamTarget
 
     private function clearLine(): void
     {
-        File::write($this->Stream, "\r" . TtyControlSequence::CLEAR_LINE . TtyControlSequence::WRAP_ON);
+        File::write($this->Stream, "\r" . EscapeSequence::CLEAR_LINE . EscapeSequence::WRAP_ON);
         self::$HasPendingClearLine = false;
     }
 }

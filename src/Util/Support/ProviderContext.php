@@ -7,8 +7,8 @@ use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
-use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Catalog\Conformity;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
@@ -49,9 +49,9 @@ class ProviderContext implements IProviderContext
     protected ?ITreeable $Parent = null;
 
     /**
-     * @var ArrayKeyConformity::*
+     * @var Conformity::*
      */
-    protected $Conformity = ArrayKeyConformity::NONE;
+    protected $Conformity = Conformity::NONE;
 
     /**
      * Creates a new ProviderContext object

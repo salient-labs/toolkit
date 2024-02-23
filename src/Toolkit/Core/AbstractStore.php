@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Store\Concept;
+namespace Salient\Core;
 
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Contract\FacadeAwareInterface;
@@ -17,7 +17,7 @@ use Throwable;
  *
  * @implements FacadeAwareInterface<FacadeInterface<self>>
  */
-abstract class SqliteStore implements FacadeAwareInterface
+abstract class AbstractStore implements FacadeAwareInterface
 {
     /** @use UnloadsFacades<FacadeInterface<self>> */
     use UnloadsFacades;
@@ -110,7 +110,7 @@ abstract class SqliteStore implements FacadeAwareInterface
      * Override to perform an action whenever the open SQLite3 instance is
      * accessed
      *
-     * Called once per call to {@see SqliteStore::db()}.
+     * Called once per call to {@see AbstractStore::db()}.
      *
      * @return $this
      */
@@ -146,7 +146,8 @@ abstract class SqliteStore implements FacadeAwareInterface
     /**
      * Call from check() and return if isCheckRunning() returns false
      *
-     * Recommended if `check()` has callers other than {@see SqliteStore::db()}.
+     * Recommended if `check()` has callers other than
+     * {@see AbstractStore::db()}.
      *
      * @return $this
      */

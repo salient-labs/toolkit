@@ -4,7 +4,6 @@ namespace Lkrms\Sync\Concept;
 
 use Lkrms\Contract\IProvider;
 use Lkrms\Db\DbConnector;
-use Lkrms\Facade\Cache;
 use Lkrms\Support\SqlQuery;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -13,6 +12,7 @@ use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use Salient\Core\Exception\MethodNotImplementedException;
+use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;

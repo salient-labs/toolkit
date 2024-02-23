@@ -9,8 +9,6 @@ use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Support\Catalog\ArrayKeyConformity;
-use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
@@ -22,6 +20,8 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
+use Salient\Core\Catalog\ArrayMapperFlag;
+use Salient\Core\Catalog\Conformity;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\PipelineInterface;
@@ -242,7 +242,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @param string[]|string|null $path
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param ArrayKeyConformity::* $conformity
+     * @param Conformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @param array<CurlerProperty::*,mixed> $curlerProperties
@@ -262,7 +262,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
         ?HttpHeadersInterface $headers = null,
         ?ICurlerPager $pager = null,
         ?callable $callback = null,
-        $conformity = ArrayKeyConformity::NONE,
+        $conformity = Conformity::NONE,
         ?int $filterPolicy = null,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,

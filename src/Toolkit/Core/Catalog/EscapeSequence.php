@@ -5,11 +5,11 @@ namespace Salient\Core\Catalog;
 use Salient\Core\AbstractDictionary;
 
 /**
- * Terminal control sequences
+ * ANSI escape sequences for formatting terminal output
  *
  * @extends AbstractDictionary<string>
  */
-final class TtyControlSequence extends AbstractDictionary
+final class EscapeSequence extends AbstractDictionary
 {
     public const BLACK = "\e[30m";
     public const RED = "\e[31m";
@@ -37,8 +37,8 @@ final class TtyControlSequence extends AbstractDictionary
     /**
      * Reset BOLD and DIM
      *
-     * @see TtyControlSequence::UNBOLD_DIM
-     * @see TtyControlSequence::UNDIM_BOLD
+     * @see EscapeSequence::UNBOLD_DIM
+     * @see EscapeSequence::UNDIM_BOLD
      */
     public const UNBOLD_UNDIM = "\e[22m";
 

@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Contract;
 
-use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Salient\Core\Catalog\ArrayMapperFlag;
 use Closure;
 
 /**

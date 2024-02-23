@@ -10,6 +10,7 @@
 /scripts export-ignore
 /src/Toolkit/Cli/CliOptionBuilder.php linguist-generated
 /src/Toolkit/Core/Facade/App.php linguist-generated
+/src/Toolkit/Core/Facade/Cache.php linguist-generated
 /src/Toolkit/Core/Facade/Config.php linguist-generated
 /src/Toolkit/Core/Facade/Console.php linguist-generated
 /src/Toolkit/Core/Facade/Err.php linguist-generated
@@ -17,7 +18,6 @@
 /src/Toolkit/Core/Facade/Profile.php linguist-generated
 /src/Util/Curler/CurlerBuilder.php linguist-generated
 /src/Util/Curler/Support/CurlerPageBuilder.php linguist-generated
-/src/Util/Facade/Cache.php linguist-generated
 /src/Util/Facade/Sync.php linguist-generated
 /src/Util/Sync/Support/DbSyncDefinitionBuilder.php linguist-generated
 /src/Util/Sync/Support/HttpSyncDefinitionBuilder.php linguist-generated

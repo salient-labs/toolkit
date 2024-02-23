@@ -3,9 +3,9 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Salient\Container\Contract\HasService;
 use Salient\Container\Contract\ServiceAwareInterface;
+use Salient\Core\Catalog\Conformity;
 
 /**
  * Serviced by a provider
@@ -45,14 +45,14 @@ interface IProvidable extends
      *
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @param ArrayKeyConformity::* $conformity
+     * @param Conformity::* $conformity
      * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
     public static function provideList(
         iterable $list,
         IProvider $provider,
-        $conformity = ArrayKeyConformity::NONE,
+        $conformity = Conformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface;
 

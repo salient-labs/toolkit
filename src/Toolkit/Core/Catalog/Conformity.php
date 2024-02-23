@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Catalog;
+namespace Salient\Core\Catalog;
 
 use Salient\Core\AbstractEnumeration;
 
@@ -9,7 +9,7 @@ use Salient\Core\AbstractEnumeration;
  *
  * @extends AbstractEnumeration<int>
  */
-final class ArrayKeyConformity extends AbstractEnumeration
+final class Conformity extends AbstractEnumeration
 {
     /**
      * Arrays may have different keys in different orders

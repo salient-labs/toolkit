@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncErrorType;
@@ -24,6 +23,7 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\AbstractStore;
 use LogicException;
 use ReflectionClass;
 
@@ -35,7 +35,7 @@ use ReflectionClass;
  * terminated by calling {@see SyncStore::close()}, otherwise a failed run is
  * recorded.
  */
-final class SyncStore extends SqliteStore
+final class SyncStore extends AbstractStore
 {
     /**
      * @var bool

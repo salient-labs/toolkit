@@ -2,10 +2,9 @@
 
 namespace Salient\Container;
 
-use Lkrms\Facade\Cache;
 use Lkrms\Facade\Sync;
-use Lkrms\Store\CacheStore;
 use Lkrms\Sync\Support\SyncStore;
+use Salient\Cache\CacheStore;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
@@ -13,6 +12,7 @@ use Salient\Console\Target\StreamTarget;
 use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidEnvironmentException;
+use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;

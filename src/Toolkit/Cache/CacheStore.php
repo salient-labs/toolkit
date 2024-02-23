@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Store;
+namespace Salient\Cache;
 
-use Lkrms\Store\Concept\SqliteStore;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\AbstractStore;
 use DateTimeInterface;
 use LogicException;
 
@@ -13,7 +13,7 @@ use LogicException;
  * Expired items are not implicitly flushed. {@see CacheStore::flush()} must be
  * called explicitly, e.g. on a schedule or once per run.
  */
-final class CacheStore extends SqliteStore
+final class CacheStore extends AbstractStore
 {
     private ?int $Now = null;
 

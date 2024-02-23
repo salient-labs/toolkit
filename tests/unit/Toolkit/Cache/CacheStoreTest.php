@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Store;
+namespace Salient\Tests\Cache;
 
-use Lkrms\Store\CacheStore;
+use Salient\Cache\CacheStore;
 use Salient\Core\Utility\File;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;

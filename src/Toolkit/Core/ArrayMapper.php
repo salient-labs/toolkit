@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Core;
 
-use Lkrms\Support\Catalog\ArrayKeyConformity;
-use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Salient\Core\Catalog\ArrayMapperFlag;
+use Salient\Core\Catalog\Conformity;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 
@@ -56,14 +56,14 @@ final class ArrayMapper
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
      * input keys to one or more output keys.
-     * @param ArrayKeyConformity::* $conformity Use
-     * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
+     * @param Conformity::* $conformity Use
+     * {@see Conformity::COMPLETE} wherever possible to improve
      * performance.
      * @param int-mask-of<ArrayMapperFlag::*> $flags
      */
     public function __construct(
         array $keyMap,
-        $conformity = ArrayKeyConformity::NONE,
+        $conformity = Conformity::NONE,
         int $flags = ArrayMapperFlag::ADD_UNMAPPED
     ) {
         foreach ($keyMap as $inKey => $outKey) {
@@ -76,7 +76,7 @@ final class ArrayMapper
 
         if (
             count($keyMap) === count($this->OutputMap) &&
-            $conformity === ArrayKeyConformity::COMPLETE
+            $conformity === Conformity::COMPLETE
         ) {
             $this->OutputKeys = array_keys($this->OutputMap);
             return;

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Catalog;
+namespace Salient\Core\Catalog;
 
-use Lkrms\Support\ArrayMapper;
 use Salient\Core\AbstractEnumeration;
+use Salient\Core\ArrayMapper;
 
 /**
  * ArrayMapper flags

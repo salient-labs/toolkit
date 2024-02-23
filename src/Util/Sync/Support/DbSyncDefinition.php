@@ -2,8 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Support\Catalog\ArrayKeyConformity;
-use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
@@ -11,6 +9,8 @@ use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Salient\Core\Catalog\ArrayMapperFlag;
+use Salient\Core\Catalog\Conformity;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\PipelineInterface;
@@ -42,7 +42,7 @@ final class DbSyncDefinition extends SyncDefinition implements Buildable
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations
-     * @param ArrayKeyConformity::* $conformity
+     * @param Conformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
@@ -56,7 +56,7 @@ final class DbSyncDefinition extends SyncDefinition implements Buildable
         DbSyncProvider $provider,
         array $operations = [],
         ?string $table = null,
-        $conformity = ArrayKeyConformity::PARTIAL,
+        $conformity = Conformity::PARTIAL,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,

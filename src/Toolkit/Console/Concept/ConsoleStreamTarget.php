@@ -12,7 +12,7 @@ use Salient\Console\Support\ConsoleFormat as Format;
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
-use Salient\Core\Catalog\TtyControlSequence as Colour;
+use Salient\Core\Catalog\EscapeSequence as Colour;
 
 /**
  * Base class for console output targets with an underlying PHP stream

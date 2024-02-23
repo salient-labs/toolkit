@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Contract;
 
-use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Salient\Core\Catalog\Conformity;
 
 /**
  * @template TInput
@@ -20,8 +20,8 @@ interface PayloadPipelineInterface extends BasePipelineInterface
      * with {@see PipelineInterface::throughKeyMap()}. It has no effect
      * otherwise.
      *
-     * @param ArrayKeyConformity::* $conformity Use
-     * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
+     * @param Conformity::* $conformity Use
+     * {@see Conformity::COMPLETE} wherever possible to improve
      * performance.
      * @return static
      */
@@ -30,7 +30,7 @@ interface PayloadPipelineInterface extends BasePipelineInterface
     /**
      * Get the payload's array key conformity
      *
-     * @return ArrayKeyConformity::*
+     * @return Conformity::*
      */
     public function getConformity();
 }

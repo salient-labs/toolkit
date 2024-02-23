@@ -6,17 +6,17 @@ use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
-use Lkrms\Facade\Cache;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
-use Lkrms\Store\CacheStore;
 use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
+use Salient\Cache\CacheStore;
 use Salient\Core\Exception\MethodNotImplementedException;
+use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
 
 /**
