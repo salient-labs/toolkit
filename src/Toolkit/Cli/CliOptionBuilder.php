@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli;
+namespace Salient\Cli;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\Catalog\CliOptionValueType;
-use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
-use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Concept\Builder;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
+use Salient\Cli\Catalog\CliOptionVisibility;
 
 /**
  * A fluent CliOption factory

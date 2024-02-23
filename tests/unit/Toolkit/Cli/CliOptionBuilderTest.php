@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Cli;
+namespace Salient\Tests\Cli;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\Catalog\CliOptionValueType;
-use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
-use Lkrms\Cli\Catalog\CliOptionVisibility;
-use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Concept\Builder;
 use Lkrms\Tests\TestCase;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
+use Salient\Cli\Catalog\CliOptionVisibility;
+use Salient\Cli\CliOption;
+use Salient\Cli\CliOptionBuilder;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use ReflectionClass;

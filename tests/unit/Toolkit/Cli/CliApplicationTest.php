@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Cli;
+namespace Salient\Tests\Cli;
 
-use Lkrms\Cli\Contract\CliApplicationInterface;
-use Lkrms\Cli\Contract\CliCommandInterface;
-use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Facade\Console;
-use Lkrms\Tests\Cli\Command\TestOptions;
 use Lkrms\Tests\TestCase;
+use Salient\Cli\Contract\CliApplicationInterface;
+use Salient\Cli\Contract\CliCommandInterface;
+use Salient\Cli\CliApplication;
 use Salient\Container\Application;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Reflect;
+use Salient\Tests\Cli\Command\TestOptions;
 use Closure;
 use LogicException;
 use ReflectionMethod;

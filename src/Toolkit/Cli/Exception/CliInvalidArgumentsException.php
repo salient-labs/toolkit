@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli\Exception;
+namespace Salient\Cli\Exception;
 
 use Salient\Core\AbstractMultipleErrorException;
 

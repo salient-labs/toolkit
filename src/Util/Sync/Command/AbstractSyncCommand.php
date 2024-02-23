@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Command;
 
-use Lkrms\Cli\Contract\CliApplicationInterface;
-use Lkrms\Cli\CliCommand;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
+use Salient\Cli\Contract\CliApplicationInterface;
+use Salient\Cli\CliCommand;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;

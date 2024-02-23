@@ -8,10 +8,10 @@
 /phpstan* export-ignore
 /phpunit* export-ignore
 /scripts export-ignore
+/src/Toolkit/Cli/CliOptionBuilder.php linguist-generated
 /src/Toolkit/Core/Facade/App.php linguist-generated
 /src/Toolkit/Core/Facade/Config.php linguist-generated
 /src/Toolkit/Core/Facade/Event.php linguist-generated
-/src/Util/Cli/CliOptionBuilder.php linguist-generated
 /src/Util/Curler/CurlerBuilder.php linguist-generated
 /src/Util/Curler/Support/CurlerPageBuilder.php linguist-generated
 /src/Util/Facade/Cache.php linguist-generated

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli\Catalog;
+namespace Salient\Cli\Catalog;
 
 use Salient\Core\AbstractDictionary;
 

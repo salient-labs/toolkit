@@ -1,9 +1,6 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Cli\CliApplication;
-use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleWriter;
 use Lkrms\Curler\Support\CurlerPage;
@@ -40,6 +37,9 @@ use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Salient\Cli\CliApplication;
+use Salient\Cli\CliOption;
+use Salient\Cli\CliOptionBuilder;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Facade\App;

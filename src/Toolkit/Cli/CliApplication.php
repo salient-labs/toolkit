@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli;
+namespace Salient\Cli;
 
-use Lkrms\Cli\Catalog\CliHelpSectionName;
-use Lkrms\Cli\Catalog\CliHelpTarget;
-use Lkrms\Cli\Contract\CliApplicationInterface;
-use Lkrms\Cli\Contract\CliCommandInterface;
-use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Console\Support\ConsoleManPageFormat;
 use Lkrms\Console\Support\ConsoleMarkdownFormat;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\HasJsonSchema;
 use Lkrms\Facade\Console;
+use Salient\Cli\Catalog\CliHelpSectionName;
+use Salient\Cli\Catalog\CliHelpTarget;
+use Salient\Cli\Contract\CliApplicationInterface;
+use Salient\Cli\Contract\CliCommandInterface;
+use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Container\Application;
 use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Utility\Arr;

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Cli\Command;
+namespace Salient\Tests\Cli\Command;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\Catalog\CliOptionValueType;
-use Lkrms\Cli\CliCommand;
-use Lkrms\Cli\CliOption;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Cli\CliCommand;
+use Salient\Cli\CliOption;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Json;

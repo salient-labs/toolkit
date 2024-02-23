@@ -2,12 +2,12 @@
 
 namespace Lkrms\LkUtil\Command\Http;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\Catalog\CliOptionValueType;
-use Lkrms\Cli\CliOption;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Sync\Concept\HttpSyncProvider;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Cli\CliOption;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

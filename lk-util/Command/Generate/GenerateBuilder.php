@@ -2,14 +2,14 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliOption;
 use Lkrms\Concept\Builder;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use Lkrms\Support\Introspector;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\CliOption;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;

@@ -2,11 +2,11 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliOption;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use PHPUnit\Framework\TestCase;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\CliOption;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 

@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli\Contract;
+namespace Salient\Cli\Contract;
 
-use Lkrms\Cli\Catalog\CliHelpSectionName;
-use Lkrms\Cli\CliCommand;
-use Lkrms\Cli\CliHelpStyle;
 use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\HasName;
+use Salient\Cli\Catalog\CliHelpSectionName;
+use Salient\Cli\CliCommand;
+use Salient\Cli\CliHelpStyle;
 use Salient\Container\Contract\HasContainer;
 use LogicException;
 
