@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Console\Catalog;
 
-use Lkrms\Tests\TestCase;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Console\Catalog\ConsoleMessageTypeGroup as MessageTypeGroup;
+use Salient\Tests\TestCase;
 
 final class ConsoleMessageTypesTest extends TestCase
 {

@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Core;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Contract\ConvertibleEnumerationInterface;
 use Salient\Core\Contract\EnumerationInterface;
 use Salient\Tests\Core\AbstractCatalog\MyArrayEnum;
@@ -14,6 +13,7 @@ use Salient\Tests\Core\AbstractCatalog\MyInvalidReflectiveEnum;
 use Salient\Tests\Core\AbstractCatalog\MyReflectiveEnum;
 use Salient\Tests\Core\AbstractCatalog\MyReflectiveFloatEnum;
 use Salient\Tests\Core\AbstractCatalog\MyRepeatedValueEnum;
+use Salient\Tests\TestCase;
 use LogicException;
 use Throwable;
 

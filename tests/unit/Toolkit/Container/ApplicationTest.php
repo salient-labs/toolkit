@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Container;
 
-use Lkrms\Tests\TestCase;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Container\Application;
 use Salient\Container\ApplicationInterface;
@@ -12,6 +11,7 @@ use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Facade\Config;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
+use Salient\Tests\TestCase;
 
 final class ApplicationTest extends TestCase
 {

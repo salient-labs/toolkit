@@ -4,8 +4,8 @@ namespace Lkrms\Tests\Concept;
 
 use Lkrms\Tests\Concept\TypedList\MyClass;
 use Lkrms\Tests\Concept\TypedList\MyList;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Tests\TestCase;
 
 final class TypedListTest extends TestCase
 {

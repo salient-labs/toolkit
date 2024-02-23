@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Support\Catalog;
 
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
-use Lkrms\Tests\TestCase;
+use Salient\Tests\TestCase;
 use ReflectionClass;
 
 final class TextComparisonFlagTest extends TestCase

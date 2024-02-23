@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Tests\Core\Utility\Debug\GetCallerClass;
+use Salient\Tests\TestCase;
 
 use function Salient\Tests\Core\Utility\Debug\getCallerViaFunction;
 use function Salient\Tests\Core\Utility\Debug\getFunctionCallback;

@@ -4,9 +4,9 @@ namespace Lkrms\Tests\Support;
 
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Pipeline;
+use Salient\Tests\TestCase;
 use Closure;
 use Throwable;
 

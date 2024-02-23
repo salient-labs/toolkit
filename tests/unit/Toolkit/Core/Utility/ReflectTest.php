@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Utility\Reflect;
 use Salient\Tests\Core\Utility\Reflect\MyBaseClass;
 use Salient\Tests\Core\Utility\Reflect\MyBaseInterface;
@@ -15,6 +14,7 @@ use Salient\Tests\Core\Utility\Reflect\MyOtherInterface;
 use Salient\Tests\Core\Utility\Reflect\MyReusedTrait;
 use Salient\Tests\Core\Utility\Reflect\MySubclass;
 use Salient\Tests\Core\Utility\Reflect\MyTrait;
+use Salient\Tests\TestCase;
 use Generator;
 use ReflectionClass;
 use ReflectionClassConstant;

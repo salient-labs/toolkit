@@ -3,10 +3,10 @@
 namespace Salient\Tests\Core\Utility;
 
 use Composer\InstalledVersions;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Event\PackageDataReceivedEvent;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Package;
+use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Core\Utility\Package

@@ -5,9 +5,9 @@ namespace Lkrms\Tests\Http;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\HttpRequest;
 use Lkrms\Http\Uri;
-use Lkrms\Tests\TestCase;
 use Psr\Http\Message\StreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Tests\TestCase;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests

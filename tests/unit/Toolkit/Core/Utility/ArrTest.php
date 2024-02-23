@@ -3,10 +3,10 @@
 namespace Salient\Tests\Core\Utility;
 
 use Lkrms\Contract\Jsonable;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Catalog\SortFlag;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Json;
+use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use DateTimeInterface;
 use OutOfRangeException;

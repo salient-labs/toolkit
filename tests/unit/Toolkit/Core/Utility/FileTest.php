@@ -3,11 +3,11 @@
 namespace Salient\Tests\Core\Utility;
 
 use Lkrms\Support\Indentation;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Str;
+use Salient\Tests\TestCase;
 use Stringable;
 
 /**

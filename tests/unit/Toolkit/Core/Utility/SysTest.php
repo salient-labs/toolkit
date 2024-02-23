@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Utility\Sys;
+use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Core\Utility\Sys

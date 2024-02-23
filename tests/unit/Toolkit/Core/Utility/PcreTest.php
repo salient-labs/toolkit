@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\PcreErrorException;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
+use Salient\Tests\TestCase;
 use Stringable;
 
 /**

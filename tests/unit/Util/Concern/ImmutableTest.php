@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Concern;
 
 use Lkrms\Tests\Concern\Immutable\MyImmutableClass;
-use Lkrms\Tests\TestCase;
+use Salient\Tests\TestCase;
 use stdClass;
 
 final class ImmutableTest extends TestCase

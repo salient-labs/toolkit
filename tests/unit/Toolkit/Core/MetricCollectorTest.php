@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\MetricCollector;
+use Salient\Tests\TestCase;
 use LogicException;
 
 final class MetricCollectorTest extends TestCase

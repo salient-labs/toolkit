@@ -6,8 +6,8 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 use Lkrms\Tests\Sync\CustomEntity\Post as CustomPost;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
-use Lkrms\Tests\TestCase;
 use Salient\Container\Container;
+use Salient\Tests\TestCase;
 
 final class SyncSerializeRulesTest extends TestCase
 {

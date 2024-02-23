@@ -5,8 +5,8 @@ namespace Lkrms\Tests\Support;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\ArrayMapper;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Tests\TestCase;
 use Throwable;
 use ValueError;
 
