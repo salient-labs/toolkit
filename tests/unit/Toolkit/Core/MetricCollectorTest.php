@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support;
+namespace Salient\Tests\Core;
 
-use Lkrms\Support\MetricCollector;
 use Lkrms\Tests\TestCase;
+use Salient\Core\MetricCollector;
 use LogicException;
 
 final class MetricCollectorTest extends TestCase

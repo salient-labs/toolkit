@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Core;
 
-use Lkrms\Support\Catalog\Metric;
+use Salient\Core\Catalog\Metric;
 use LogicException;
 
 /**
