@@ -1,14 +1,11 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\ConsoleWriter;
 use Lkrms\Curler\Support\CurlerPage;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Facade\Cache;
-use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
 use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sync;
@@ -40,10 +37,13 @@ use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Cli\CliApplication;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\ConsoleWriter;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Config;
+use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Env;

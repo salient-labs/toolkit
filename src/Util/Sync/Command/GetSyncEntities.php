@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Command;
 
-use Lkrms\Facade\Console;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -12,6 +11,7 @@ use Lkrms\Sync\Support\SyncSerializeRules;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;

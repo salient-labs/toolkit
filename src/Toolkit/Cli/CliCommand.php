@@ -3,7 +3,6 @@
 namespace Salient\Cli;
 
 use Lkrms\Contract\HasJsonSchema;
-use Lkrms\Facade\Console;
 use Salient\Cli\Catalog\CliHelpSectionName;
 use Salient\Cli\Catalog\CliHelpTarget;
 use Salient\Cli\Catalog\CliOptionValueType;
@@ -12,6 +11,7 @@ use Salient\Cli\Contract\CliApplicationInterface;
 use Salient\Cli\Contract\CliCommandInterface;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;

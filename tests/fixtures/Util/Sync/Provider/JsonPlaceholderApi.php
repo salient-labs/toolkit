@@ -3,7 +3,6 @@
 namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Curler\CurlerBuilder;
-use Lkrms\Facade\Console;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
@@ -26,6 +25,7 @@ use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Salient\Container\Contract\SingletonInterface;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Env;
 
 /**

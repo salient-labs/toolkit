@@ -3,9 +3,9 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\TypedCollection;
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Utility\Arr;
 use JsonSerializable;
 

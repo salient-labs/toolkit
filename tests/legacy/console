@@ -3,10 +3,10 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Console\Target\StreamTarget;
-use Lkrms\Console\ConsoleFormatter;
-use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
+use Salient\Console\Target\StreamTarget;
+use Salient\Console\ConsoleFormatter;
+use Salient\Core\Facade\Console;
 
 require __DIR__ . '/../vendor/autoload.php';
 

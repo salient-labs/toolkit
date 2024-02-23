@@ -2,11 +2,11 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Facade\Console;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Contract\ExceptionInterface;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
 use ErrorException;

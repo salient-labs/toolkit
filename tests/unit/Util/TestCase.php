@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Closure;

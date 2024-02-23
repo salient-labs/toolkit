@@ -2,12 +2,12 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use Lkrms\Http\Exception\HttpServerException;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Pcre;
 
 /**

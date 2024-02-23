@@ -2,11 +2,11 @@
 
 namespace Salient\Container;
 
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Facade\Profile;
 use Lkrms\Store\CacheStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncStore;
+use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Package;
 

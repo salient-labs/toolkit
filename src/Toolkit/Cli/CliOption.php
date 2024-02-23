@@ -3,21 +3,21 @@
 namespace Salient\Cli;
 
 use Lkrms\Concern\HasBuilder;
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Contract\Buildable;
 use Lkrms\Contract\HasJsonSchema;
-use Lkrms\Facade\Console;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Salient\Cli\Catalog\CliOptionVisibility;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Core\Catalog\Char;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Format;

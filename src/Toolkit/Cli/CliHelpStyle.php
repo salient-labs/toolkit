@@ -2,15 +2,15 @@
 
 namespace Salient\Cli;
 
-use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
-use Lkrms\Console\Support\ConsoleManPageFormat as ManPageFormat;
-use Lkrms\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
-use Lkrms\Console\ConsoleFormatter as Formatter;
-use Lkrms\Facade\Console;
 use Salient\Cli\Catalog\CliHelpSectionName;
 use Salient\Cli\Catalog\CliHelpTarget;
 use Salient\Cli\Catalog\CliOptionVisibility;
+use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
+use Salient\Console\Support\ConsoleManPageFormat as ManPageFormat;
+use Salient\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
+use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Pcre;
 use LogicException;
 

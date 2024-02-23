@@ -3,10 +3,10 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Salient\Console\Catalog\ConsoleLevel as Level;
 
 /**
  * A fluent SyncError factory
