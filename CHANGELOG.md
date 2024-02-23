@@ -12,6 +12,27 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.47] - 2024-02-23
+
+### Changed
+
+- Move classes into the `Salient` namespace:
+  - `Lkrms\Container\*` -> `Salient\Container\*`
+  - `Lkrms\Cli\*` -> `Salient\Cli\*`
+  - `Lkrms\Console\*` -> `Salient\Console\*`
+  - `Lkrms\Concept\Builder` -> `Salient\Core\AbstractBuilder`
+  - `Lkrms\Concern\HasBuilder` -> `Salient\Core\Concern\HasBuilder`
+  - `Lkrms\Contract\Buildable` -> `Salient\Core\Contract\Buildable`
+  - `Lkrms\Contract\HasContainer` -> `Salient\Container\Contract\HasContainer`
+  - `Lkrms\Contract\HasService` -> `Salient\Container\Contract\HasService`
+  - `Lkrms\Facade\App` -> `Salient\Core\Facade\App`
+  - `Lkrms\Facade\Console` -> `Salient\Core\Facade\Console`
+  - `Lkrms\Facade\Err` -> `Salient\Core\Facade\Err`
+  - `Lkrms\Facade\Profile` -> `Salient\Core\Facade\Profile`
+  - `Lkrms\Support\Catalog\TtyControlSequence` -> `Salient\Core\Catalog\TtyControlSequence`
+  - `Lkrms\Support\ErrorHandler` -> `Salient\Core\ErrorHandler`
+  - `Lkrms\Support\MetricCollector` -> `Salient\Core\MetricCollector`
+
 ## [v0.21.46] - 2024-02-23
 
 ### Added
@@ -1840,6 +1861,7 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.47]: https://github.com/lkrms/php-util/compare/v0.21.46...v0.21.47
 [v0.21.46]: https://github.com/lkrms/php-util/compare/v0.21.45...v0.21.46
 [v0.21.45]: https://github.com/lkrms/php-util/compare/v0.21.44...v0.21.45
 [v0.21.44]: https://github.com/lkrms/php-util/compare/v0.21.43...v0.21.44
