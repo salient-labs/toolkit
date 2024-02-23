@@ -2,14 +2,8 @@
 
 namespace Lkrms\LkUtil\Command\Generate\Concept;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Concept\Entity;
 use Lkrms\Concept\Provider;
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Facade\Console;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTag;
@@ -17,7 +11,13 @@ use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
 use Lkrms\Support\TokenExtractor;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\Exception\CliInvalidArgumentsException;
+use Salient\Cli\CliOption;
+use Salient\Cli\CliOptionBuilder;
+use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\Catalog\Regex;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;

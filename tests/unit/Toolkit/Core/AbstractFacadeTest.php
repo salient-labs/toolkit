@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Core;
 
-use Lkrms\Container\Container;
-use Lkrms\Facade\App;
 use Lkrms\Tests\TestCase;
+use Salient\Container\Container;
+use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
 use Salient\Core\AbstractFacade;
 use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;

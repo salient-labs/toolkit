@@ -2,11 +2,11 @@
 
 namespace Lkrms\Curler;
 
-use Lkrms\Concept\Builder;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Support\Date\DateFormatterInterface;
+use Salient\Core\AbstractBuilder;
 
 /**
  * A fluent Curler factory
@@ -63,11 +63,11 @@ use Lkrms\Support\Date\DateFormatterInterface;
  * @method mixed[] getAllLinkedByEntity(string $entityName, mixed[] $query = null) Follow `$result['links']['next']` to retrieve and merge paged JSON data (see {@see Curler::getAllLinkedByEntity()})
  * @method mixed[] getByGraphQL(string $query, array<string,mixed>|null $variables = null, ?string $entityPath = null, ?string $pagePath = null, ?callable $filter = null, ?int $requestLimit = null) Call Curler::getByGraphQL() on a new instance
  *
- * @extends Builder<Curler>
+ * @extends AbstractBuilder<Curler>
  *
  * @generated
  */
-final class CurlerBuilder extends Builder
+final class CurlerBuilder extends AbstractBuilder
 {
     /**
      * @internal

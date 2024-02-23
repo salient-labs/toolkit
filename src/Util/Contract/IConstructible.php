@@ -2,8 +2,8 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Salient\Container\ContainerInterface;
 
 /**
  * Creates instances of itself from data in associative arrays

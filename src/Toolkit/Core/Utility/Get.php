@@ -2,11 +2,11 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Container\Contract\SingletonInterface;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Container\Contract\SingletonInterface;
 use Salient\Core\Catalog\Char;
 use Salient\Core\Catalog\CopyFlag;
 use Salient\Core\Catalog\QueryFlag;

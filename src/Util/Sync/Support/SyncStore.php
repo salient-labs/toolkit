@@ -2,9 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
-use Lkrms\Facade\Console;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
@@ -16,7 +13,10 @@ use Lkrms\Sync\Event\SyncStoreLoadedEvent;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Sync\Exception\SyncStoreException;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Core\Exception\MethodNotImplementedException;
+use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

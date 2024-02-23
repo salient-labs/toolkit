@@ -2,11 +2,11 @@
 
 namespace Salient\Core;
 
-use Lkrms\Facade\Profile;
 use Salient\Core\Catalog\FileDescriptor;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;
+use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;

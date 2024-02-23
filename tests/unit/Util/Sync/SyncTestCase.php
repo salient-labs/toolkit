@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Sync;
 
-use Lkrms\Container\Application;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\TestCase;
+use Salient\Container\Application;
 use Salient\Core\Utility\File;
 
 abstract class SyncTestCase extends TestCase

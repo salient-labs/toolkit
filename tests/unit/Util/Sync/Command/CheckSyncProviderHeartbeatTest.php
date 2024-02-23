@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Sync\Command;
 
-use Lkrms\Cli\Contract\CliApplicationInterface;
-use Lkrms\Cli\Contract\CliCommandInterface;
 use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\CommandTestCase;
+use Salient\Cli\Contract\CliApplicationInterface;
+use Salient\Cli\Contract\CliCommandInterface;
 
 class CheckSyncProviderHeartbeatTest extends CommandTestCase
 {

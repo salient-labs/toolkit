@@ -2,9 +2,6 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Sync;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Sync\Catalog\SyncOperation;
@@ -12,6 +9,9 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\Exception\CliInvalidArgumentsException;
+use Salient\Cli\CliOption;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
 

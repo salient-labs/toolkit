@@ -2,10 +2,10 @@
 
 namespace Salient\Core\Concern;
 
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
-use Lkrms\Facade\Console;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Core\Contract\MultipleErrorExceptionInterface;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Get;
 

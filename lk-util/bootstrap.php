@@ -2,7 +2,6 @@
 
 namespace Lkrms\LkUtil;
 
-use Lkrms\Cli\CliApplication;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
@@ -11,6 +10,7 @@ use Lkrms\LkUtil\Command\Generate\GenerateTests;
 use Lkrms\LkUtil\Command\Http\SendHttpRequest;
 use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
 use Lkrms\Sync\Command\GetSyncEntities;
+use Salient\Cli\CliApplication;
 
 $loader = require $_composer_autoload_path
     ?? dirname(__DIR__) . '/vendor/autoload.php';

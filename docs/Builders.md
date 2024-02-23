@@ -5,9 +5,9 @@
 ```php
 <?php
 
-use Lkrms\Concept\Builder;
-use Lkrms\Concern\HasBuilder;
-use Lkrms\Contract\Buildable;
+use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Contract\Buildable;
+use Salient\Core\AbstractBuilder;
 
 /**
  * @implements Buildable<OptionBuilder>
@@ -48,9 +48,9 @@ class Option implements Buildable
  * @method $this valueType($value)
  * @method $this description($value)
  *
- * @extends Builder<Option>
+ * @extends AbstractBuilder<Option>
  */
-class OptionBuilder extends Builder
+class OptionBuilder extends AbstractBuilder
 {
     protected static function getService(): string
     {

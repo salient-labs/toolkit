@@ -2,7 +2,6 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Container\Container;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
@@ -13,6 +12,7 @@ use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\SyncClassResolver;
 use Lkrms\Tests\TestCase;
+use Salient\Container\Container;
 use Closure;
 use ReflectionFunction;
 

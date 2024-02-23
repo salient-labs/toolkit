@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\Container;
-use Lkrms\Container\ContainerInterface;
+use Salient\Container\Container;
+use Salient\Container\ContainerInterface;
 
 trait RequiresContainer
 {

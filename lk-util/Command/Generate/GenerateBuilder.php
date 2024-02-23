@@ -2,18 +2,18 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliOption;
-use Lkrms\Concept\Builder;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use Lkrms\Support\Introspector;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\CliOption;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
+use Salient\Core\AbstractBuilder;
 use Closure;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -25,10 +25,10 @@ use ReflectionProperty;
 class GenerateBuilder extends GenerateCommand
 {
     /**
-     * Properties and methods that shouldn't be surfaced by the Builder
+     * Properties and methods that shouldn't be surfaced by the builder
      */
     private const SKIP = [
-        // These are displaced by Builder
+        // These are displaced by AbstractBuilder
         'apply',
         'build',
         'getB',
@@ -165,7 +165,7 @@ EOF)
         $classPrefix = $this->getClassPrefix();
 
         $service = $this->getFqcnAlias($classFqcn, $classClass);
-        $extends = $this->getFqcnAlias(Builder::class);
+        $extends = $this->getFqcnAlias(AbstractBuilder::class);
 
         $desc = $this->Description === null
             ? "A fluent $classClass factory"

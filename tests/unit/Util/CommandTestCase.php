@@ -2,13 +2,13 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Cli\Contract\CliApplicationInterface;
-use Lkrms\Cli\Contract\CliCommandInterface;
-use Lkrms\Cli\CliApplication;
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
-use Lkrms\Console\Target\MockTarget;
-use Lkrms\Facade\Console;
+use Salient\Cli\Contract\CliApplicationInterface;
+use Salient\Cli\Contract\CliCommandInterface;
+use Salient\Cli\CliApplication;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
+use Salient\Console\Target\MockTarget;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 
 abstract class CommandTestCase extends TestCase

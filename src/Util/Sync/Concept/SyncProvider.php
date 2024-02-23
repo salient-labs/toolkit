@@ -3,9 +3,6 @@
 namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concept\Provider;
-use Lkrms\Container\Contract\HasContextualBindings;
-use Lkrms\Container\Contract\HasServices;
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -15,6 +12,9 @@ use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
+use Salient\Container\Contract\HasContextualBindings;
+use Salient\Container\Contract\HasServices;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Regex;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Utility\Pcre;

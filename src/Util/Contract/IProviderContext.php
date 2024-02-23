@@ -2,8 +2,9 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Salient\Container\Contract\HasContainer;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Contract\Immutable;
 
 /**

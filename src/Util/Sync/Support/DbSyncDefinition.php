@@ -2,8 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concern\HasBuilder;
-use Lkrms\Contract\Buildable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\FilterPolicy;
@@ -13,6 +11,8 @@ use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\PipelineInterface;
 use Closure;
 use LogicException;

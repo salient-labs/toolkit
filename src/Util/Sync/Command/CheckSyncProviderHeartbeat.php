@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Command;
 
-use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\Catalog\CliOptionValueType;
-use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Cli\CliOption;
-use Lkrms\Facade\Console;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Salient\Cli\Catalog\CliOptionType;
+use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Cli\Exception\CliInvalidArgumentsException;
+use Salient\Cli\CliOption;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Inflect;
 
 /**

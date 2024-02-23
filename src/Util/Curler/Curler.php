@@ -2,8 +2,6 @@
 
 namespace Lkrms\Curler;
 
-use Lkrms\Concern\HasBuilder;
-use Lkrms\Contract\Buildable;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
@@ -11,7 +9,6 @@ use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Exception\CurlerInvalidResponseException;
 use Lkrms\Curler\Exception\CurlerUnexpectedResponseException;
 use Lkrms\Facade\Cache;
-use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Catalog\HttpHeaderGroup;
 use Lkrms\Http\Catalog\HttpRequestMethod;
@@ -24,11 +21,14 @@ use Lkrms\Support\Catalog\MimeType;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
 use Salient\Core\Catalog\QueryFlag;
+use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Contract\Writable;
+use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;

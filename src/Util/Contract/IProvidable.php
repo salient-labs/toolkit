@@ -2,9 +2,10 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\Contract\ServiceAwareInterface;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Salient\Container\Contract\HasService;
+use Salient\Container\Contract\ServiceAwareInterface;
 
 /**
  * Serviced by a provider

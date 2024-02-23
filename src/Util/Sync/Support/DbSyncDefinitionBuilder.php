@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concept\Builder;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\FilterPolicy;
@@ -13,6 +12,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Salient\Core\Contract\PipelineInterface;
+use Salient\Core\AbstractBuilder;
 use Closure;
 
 /**
@@ -31,11 +31,11 @@ use Closure;
  * @template TEntity of ISyncEntity
  * @template TProvider of DbSyncProvider
  *
- * @extends Builder<DbSyncDefinition<TEntity,TProvider>>
+ * @extends AbstractBuilder<DbSyncDefinition<TEntity,TProvider>>
  *
  * @generated
  */
-final class DbSyncDefinitionBuilder extends Builder
+final class DbSyncDefinitionBuilder extends AbstractBuilder
 {
     /**
      * @internal

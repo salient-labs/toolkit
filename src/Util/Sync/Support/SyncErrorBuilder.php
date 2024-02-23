@@ -2,11 +2,11 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concept\Builder;
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Core\AbstractBuilder;
 
 /**
  * A fluent SyncError factory
@@ -19,11 +19,11 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method $this entityName(?string $value) The display name of the entity associated with the error (see {@see SyncError::$EntityName})
  * @method $this provider(?ISyncProvider $value) The sync provider associated with the error
  *
- * @extends Builder<SyncError>
+ * @extends AbstractBuilder<SyncError>
  *
  * @generated
  */
-final class SyncErrorBuilder extends Builder
+final class SyncErrorBuilder extends AbstractBuilder
 {
     /**
      * @internal

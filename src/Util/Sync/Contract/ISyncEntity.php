@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasIdentifier;
 use Lkrms\Contract\HasName;
 use Lkrms\Contract\IProvidable;
@@ -13,6 +12,7 @@ use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncStore;
+use Salient\Container\ContainerInterface;
 use JsonSerializable;
 
 /**
