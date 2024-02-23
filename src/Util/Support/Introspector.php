@@ -4,7 +4,6 @@ namespace Lkrms\Support;
 
 use Lkrms\Concept\Entity;
 use Lkrms\Concept\Provider;
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasName;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
@@ -18,6 +17,7 @@ use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DateFormatterInterface;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ITreeable;
@@ -15,6 +14,7 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Regex;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

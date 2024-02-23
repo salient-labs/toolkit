@@ -2,16 +2,16 @@
 
 namespace Salient\Core;
 
-use Lkrms\Container\ContainerInterface;
-use Lkrms\Facade\App;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\ArrayMapper;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Contract\EntityPipelineInterface;
 use Salient\Core\Contract\PipeInterface;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Contract\StreamPipelineInterface;
+use Salient\Core\Facade\App;
 use Salient\Core\Utility\Get;
 use Closure;
 use Generator;

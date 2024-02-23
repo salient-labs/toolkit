@@ -3,8 +3,8 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\Buildable;
+use Salient\Container\ContainerInterface;
 
 /**
  * Implements Buildable

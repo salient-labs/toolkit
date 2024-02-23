@@ -9,9 +9,9 @@ use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Concept\Builder;
-use Lkrms\Container\Container;
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Tests\TestCase;
+use Salient\Container\Container;
+use Salient\Container\ContainerInterface;
 use ReflectionClass;
 
 final class CliOptionBuilderTest extends TestCase

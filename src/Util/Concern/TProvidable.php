@@ -2,7 +2,6 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
@@ -11,6 +10,7 @@ use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
+use Salient\Container\ContainerInterface;
 use Generator;
 use LogicException;
 

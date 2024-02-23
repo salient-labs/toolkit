@@ -2,8 +2,9 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Support\Date\DateFormatterInterface;
+use Salient\Container\Contract\HasContainer;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Stringable;
 

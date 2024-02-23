@@ -2,10 +2,10 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Container\Container;
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
+use Salient\Container\Container;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\Immutable;

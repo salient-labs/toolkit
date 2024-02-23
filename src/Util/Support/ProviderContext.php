@@ -2,13 +2,13 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Container\ContainerInterface;
 use Lkrms\Contract\HasIdentifier;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Salient\Container\ContainerInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
