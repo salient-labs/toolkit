@@ -45,4 +45,15 @@
         name="URI_FACTORY"
         value="Lkrms\Http\HttpFactory" />
   </php>
+  <extensions>
+    <extension class="Ergebnis\PHPUnit\SlowTestDetector\Extension">
+      <arguments>
+        <array>
+          <element key="maximum-duration">
+            <integer>200</integer>
+          </element>
+        </array>
+      </arguments>
+    </extension>
+  </extensions>
 </phpunit>
