@@ -1,5 +1,9 @@
 <?php declare(strict_types=1);
 
+$parameters = [
+    'tmpDir' => sprintf('build/cache/phpstan/%d.%d', \PHP_MAJOR_VERSION, \PHP_MINOR_VERSION),
+];
+
 if (\PHP_VERSION_ID < 80000) {
     return [
         'parameters' => [
@@ -10,7 +14,7 @@ if (\PHP_VERSION_ID < 80000) {
                 ],
             ],
             'ignoreErrors' => [],
-        ]
+        ] + $parameters,
     ];
 }
 
@@ -23,5 +27,5 @@ return [
                 'path' => '../src/Util/Support/ArrayMapper.php',
             ],
         ],
-    ]
+    ] + $parameters,
 ];
