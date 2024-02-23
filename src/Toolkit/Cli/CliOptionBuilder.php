@@ -2,11 +2,11 @@
 
 namespace Salient\Cli;
 
-use Lkrms\Concept\Builder;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Salient\Cli\Catalog\CliOptionVisibility;
+use Salient\Core\AbstractBuilder;
 
 /**
  * A fluent CliOption factory
@@ -36,11 +36,11 @@ use Salient\Cli\Catalog\CliOptionVisibility;
  *
  * @api
  *
- * @extends Builder<CliOption>
+ * @extends AbstractBuilder<CliOption>
  *
  * @generated
  */
-final class CliOptionBuilder extends Builder
+final class CliOptionBuilder extends AbstractBuilder
 {
     /**
      * @internal

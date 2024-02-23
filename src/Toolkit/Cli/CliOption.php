@@ -2,8 +2,6 @@
 
 namespace Salient\Cli;
 
-use Lkrms\Concern\HasBuilder;
-use Lkrms\Contract\Buildable;
 use Lkrms\Contract\HasJsonSchema;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
@@ -14,7 +12,9 @@ use Salient\Cli\Exception\CliUnknownValueException;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Core\Catalog\Char;
+use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Facade\Console;

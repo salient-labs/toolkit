@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
+use Lkrms\Concept\Entity;
+use Lkrms\Concept\Provider;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
 use Salient\Container\Container;
@@ -16,7 +18,7 @@ use LogicException;
  *
  * @template TClass of object
  */
-abstract class Builder implements Chainable, Immutable
+abstract class AbstractBuilder implements Chainable, Immutable
 {
     use HasChainableMethods;
 
@@ -55,7 +57,7 @@ abstract class Builder implements Chainable, Immutable
     private array $Data = [];
 
     /**
-     * Creates a new Builder object
+     * Creates a new builder
      */
     final public function __construct(?ContainerInterface $container = null)
     {
@@ -68,14 +70,7 @@ abstract class Builder implements Chainable, Immutable
     }
 
     /**
-     * Get a new builder
-     *
-     * Syntactic sugar for:
-     *
-     * ```php
-     * <?php
-     * new static()
-     * ```
+     * Creates a new builder
      *
      * @return static
      */
@@ -86,13 +81,6 @@ abstract class Builder implements Chainable, Immutable
 
     /**
      * Get an instance from an optionally terminated builder
-     *
-     * Syntactic sugar for:
-     *
-     * ```php
-     * <?php
-     * $object instanceof static ? $object->go() : $object
-     * ```
      *
      * @param static|TClass $object
      * @return TClass

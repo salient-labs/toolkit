@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
-use Lkrms\Concept\Builder;
-use Lkrms\Contract\Buildable;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Contract\Buildable;
+use Salient\Core\AbstractBuilder;
 
 /**
  * Implements Buildable
@@ -18,7 +18,7 @@ trait HasBuilder
         return static::class . 'Builder';
     }
 
-    final public static function build(?ContainerInterface $container = null): Builder
+    final public static function build(?ContainerInterface $container = null): AbstractBuilder
     {
         return static::getBuilder()::build($container);
     }

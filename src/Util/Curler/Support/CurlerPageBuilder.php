@@ -2,10 +2,10 @@
 
 namespace Lkrms\Curler\Support;
 
-use Lkrms\Concept\Builder;
 use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Curler;
 use Lkrms\Http\Contract\HttpHeadersInterface;
+use Salient\Core\AbstractBuilder;
 
 /**
  * A fluent CurlerPage factory
@@ -18,11 +18,11 @@ use Lkrms\Http\Contract\HttpHeadersInterface;
  * @method $this nextData(mixed[]|null $value) Data to send in the body of the next request
  * @method $this nextHeaders(HttpHeadersInterface|null $value) Replaces the next request's HTTP headers
  *
- * @extends Builder<CurlerPage>
+ * @extends AbstractBuilder<CurlerPage>
  *
  * @generated
  */
-final class CurlerPageBuilder extends Builder
+final class CurlerPageBuilder extends AbstractBuilder
 {
     /**
      * @internal

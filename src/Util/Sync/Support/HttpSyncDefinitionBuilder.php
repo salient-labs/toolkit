@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concept\Builder;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Http\Catalog\HttpRequestMethod;
@@ -17,6 +16,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Salient\Core\Contract\PipelineInterface;
+use Salient\Core\AbstractBuilder;
 use Closure;
 
 /**
@@ -43,11 +43,11 @@ use Closure;
  * @template TEntity of ISyncEntity
  * @template TProvider of HttpSyncProvider
  *
- * @extends Builder<HttpSyncDefinition<TEntity,TProvider>>
+ * @extends AbstractBuilder<HttpSyncDefinition<TEntity,TProvider>>
  *
  * @generated
  */
-final class HttpSyncDefinitionBuilder extends Builder
+final class HttpSyncDefinitionBuilder extends AbstractBuilder
 {
     /**
      * @internal

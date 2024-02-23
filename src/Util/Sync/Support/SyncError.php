@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concern\HasBuilder;
-use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IComparable;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 

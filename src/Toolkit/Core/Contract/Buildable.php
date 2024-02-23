@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
-use Lkrms\Concept\Builder;
-use Lkrms\Concern\HasBuilder;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Concern\HasBuilder;
+use Salient\Core\AbstractBuilder;
 
 /**
- * @template TBuilder of Builder
+ * @template TBuilder of AbstractBuilder
  *
- * @see Builder
+ * @see AbstractBuilder
  * @see HasBuilder
  */
 interface Buildable
@@ -27,7 +27,7 @@ interface Buildable
      *
      * @return TBuilder
      */
-    public static function build(?ContainerInterface $container = null): Builder;
+    public static function build(?ContainerInterface $container = null): AbstractBuilder;
 
     /**
      * Get an instance of the class from an optionally terminated builder

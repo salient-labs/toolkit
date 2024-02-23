@@ -2,8 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concern\HasBuilder;
-use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
@@ -24,6 +22,8 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
+use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Contract\StreamPipelineInterface;
 use Salient\Core\Exception\UnexpectedValueException;

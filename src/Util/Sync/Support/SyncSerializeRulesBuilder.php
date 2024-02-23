@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concept\Builder;
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Salient\Core\AbstractBuilder;
 use Closure;
 
 /**
@@ -23,11 +23,11 @@ use Closure;
  *
  * @template-covariant TEntity of ISyncEntity
  *
- * @extends Builder<SyncSerializeRules<TEntity>>
+ * @extends AbstractBuilder<SyncSerializeRules<TEntity>>
  *
  * @generated
  */
-final class SyncSerializeRulesBuilder extends Builder
+final class SyncSerializeRulesBuilder extends AbstractBuilder
 {
     /**
      * @internal

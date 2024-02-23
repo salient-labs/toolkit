@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Cli;
 
-use Lkrms\Concept\Builder;
 use Lkrms\Tests\TestCase;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
@@ -12,6 +11,7 @@ use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
+use Salient\Core\AbstractBuilder;
 use ReflectionClass;
 
 final class CliOptionBuilderTest extends TestCase
@@ -225,7 +225,7 @@ final class CliOptionBuilderTest extends TestCase
             if (
                 $param->isPassedByReference() ||
                 $option->issetB($name) ||
-                method_exists(Builder::class, $name)
+                method_exists(AbstractBuilder::class, $name)
             ) {
                 continue;
             }
