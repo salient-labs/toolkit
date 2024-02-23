@@ -12,6 +12,29 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.46] - 2024-02-23
+
+### Added
+
+- **Add `Process` and supporting classes**
+- Add `Env::flag()`
+- Add `Sys::isWindows()`
+- Add `Pcre::delimit()`
+
+### Changed
+
+- **Replace `Get::apparent()` with `Get::arrayKey()`**
+- **In `Env::apply()`, don't throw an exception when `setlocale()` fails**
+- Allow `Env::get*()` default values to be closures
+
+### Removed
+
+- Remove `Regex::delimit()` and `Regex::anchorAndDelimit()`
+
+### Fixed
+
+- **Fix inconsistent handling of non-empty whitespace-only strings by preserving them without collapsing to `null` in `Env::getNullable()`**
+
 ## [v0.21.45] - 2024-02-21
 
 ### Added
@@ -1817,6 +1840,7 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.46]: https://github.com/lkrms/php-util/compare/v0.21.45...v0.21.46
 [v0.21.45]: https://github.com/lkrms/php-util/compare/v0.21.44...v0.21.45
 [v0.21.44]: https://github.com/lkrms/php-util/compare/v0.21.43...v0.21.44
 [v0.21.43]: https://github.com/lkrms/php-util/compare/v0.21.42...v0.21.43
