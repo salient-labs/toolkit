@@ -3,7 +3,6 @@
 namespace Lkrms\Tests\Store;
 
 use Lkrms\Store\CacheStore;
-use Salient\Core\Exception\AssertionFailedException;
 use Salient\Core\Utility\File;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
@@ -113,8 +112,35 @@ final class CacheStoreTest extends TestCase
 
         $arr = ['foo' => 'bar'];
         $this->Cache->set(__METHOD__, $arr);
-        $this->expectException(AssertionFailedException::class);
-        $this->Cache->getInstanceOf(__METHOD__, stdClass::class);
+        $this->assertNull($this->Cache->getInstanceOf(__METHOD__, stdClass::class));
+        $this->assertSame($arr, $this->Cache->get(__METHOD__));
+    }
+
+    public function testGetArray(): void
+    {
+        $this->assertNull($this->Cache->getArray(__METHOD__));
+        $this->Cache->set(__METHOD__, $arr = ['foo' => 'bar']);
+        $this->assertSame($arr, $this->Cache->getArray(__METHOD__));
+        $this->Cache->set(__METHOD__, 'foo');
+        $this->assertNull($this->Cache->getArray(__METHOD__));
+    }
+
+    public function testGetInt(): void
+    {
+        $this->assertNull($this->Cache->getInt(__METHOD__));
+        $this->Cache->set(__METHOD__, 123);
+        $this->assertSame(123, $this->Cache->getInt(__METHOD__));
+        $this->Cache->set(__METHOD__, 'foo');
+        $this->assertNull($this->Cache->getInt(__METHOD__));
+    }
+
+    public function testGetString(): void
+    {
+        $this->assertNull($this->Cache->getString(__METHOD__));
+        $this->Cache->set(__METHOD__, 'foo');
+        $this->assertSame('foo', $this->Cache->getString(__METHOD__));
+        $this->Cache->set(__METHOD__, 123);
+        $this->assertNull($this->Cache->getString(__METHOD__));
     }
 
     public function testMaybeGet(): void
