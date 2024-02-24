@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Cli;
 
-use Lkrms\Tests\TestCase;
 use Salient\Cli\Contract\CliApplicationInterface;
 use Salient\Cli\Contract\CliCommandInterface;
 use Salient\Cli\CliApplication;
@@ -16,6 +15,7 @@ use Salient\Core\Utility\File;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Reflect;
 use Salient\Tests\Cli\Command\TestOptions;
+use Salient\Tests\TestCase;
 use Closure;
 use LogicException;
 use ReflectionMethod;

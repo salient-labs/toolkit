@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Container;
 
-use Lkrms\Tests\TestCase;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Container\Exception\ContainerServiceNotFoundException;
 use Salient\Container\Application;
@@ -12,6 +11,7 @@ use Salient\Container\ContainerInterface;
 use Salient\Container\ServiceLifetime;
 use Salient\Core\Contract\Chainable;
 use Salient\Core\Facade\App;
+use Salient\Tests\TestCase;
 use stdClass;
 
 final class ContainerTest extends TestCase

@@ -1,15 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support;
+namespace Salient\Tests\Core;
 
-use Lkrms\Support\Catalog\ArrayKeyConformity;
-use Lkrms\Support\Catalog\ArrayMapperFlag;
-use Lkrms\Tests\TestCase;
+use Salient\Core\Catalog\ArrayMapperFlag;
+use Salient\Core\Catalog\Conformity;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Pipeline;
+use Salient\Tests\TestCase;
 use Closure;
 use Throwable;
 
+/**
+ * @covers \Salient\Core\Pipeline
+ */
 final class PipelineTest extends TestCase
 {
     public function testStream(): void
@@ -267,7 +270,7 @@ final class PipelineTest extends TestCase
         $out = [];
         $err = [];
 
-        foreach ([ArrayKeyConformity::COMPLETE, ArrayKeyConformity::NONE] as $conformity) {
+        foreach ([Conformity::COMPLETE, Conformity::NONE] as $conformity) {
             foreach ([$good, $bad, $ugly] as $i => $in) {
                 $pipeline = Pipeline::create()
                     ->stream($in)
@@ -289,25 +292,25 @@ final class PipelineTest extends TestCase
         }
 
         $this->assertSame([
-            // ArrayKeyConformity::COMPLETE + good
+            // Conformity::COMPLETE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ArrayKeyConformity::COMPLETE + bad
+            // Conformity::COMPLETE + bad
             ['Id' => 'Greta', 'Name' => 32, 'Email' => 'greta@domain.test'],
             ['Id' => 'Amir', 'Name' => 'amir@domain.test', 'Email' => 53],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ArrayKeyConformity::COMPLETE + ugly
+            // Conformity::COMPLETE + ugly
             $err[0] ?? null,
-            // ArrayKeyConformity::NONE + good
+            // Conformity::NONE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ArrayKeyConformity::NONE + bad
+            // Conformity::NONE + bad
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ArrayKeyConformity::NONE + ugly
+            // Conformity::NONE + ugly
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry'],

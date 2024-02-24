@@ -8,9 +8,9 @@ use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
-use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Catalog\Conformity;
 use Generator;
 use LogicException;
 
@@ -164,14 +164,14 @@ trait TProvidable
      *
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @param ArrayKeyConformity::* $conformity
+     * @param Conformity::* $conformity
      * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
     final public static function provideList(
         iterable $list,
         IProvider $provider,
-        $conformity = ArrayKeyConformity::NONE,
+        $conformity = Conformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
@@ -182,7 +182,7 @@ trait TProvidable
     /**
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @param ArrayKeyConformity::* $conformity
+     * @param Conformity::* $conformity
      * @param TContext|null $context
      * @return Generator<array-key,static>
      */
@@ -209,7 +209,7 @@ trait TProvidable
         foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
-                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE], true)
+                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE], true)
                         ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
                         : $introspector->getCreateProvidableFromClosure();
             }

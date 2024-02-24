@@ -67,6 +67,8 @@ trait MyInstanceTrait
 
     /**
      * @return static[]
+     *
+     * @phpstan-impure
      */
     public static function getUnloaded(): array
     {

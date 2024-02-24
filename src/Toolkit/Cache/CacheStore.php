@@ -1,11 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Store;
+namespace Salient\Cache;
 
-use Lkrms\Store\Concept\SqliteStore;
-use Salient\Core\Exception\AssertionFailedException;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Assert;
+use Salient\Core\AbstractStore;
 use DateTimeInterface;
 use LogicException;
 
@@ -15,7 +13,7 @@ use LogicException;
  * Expired items are not implicitly flushed. {@see CacheStore::flush()} must be
  * called explicitly, e.g. on a schedule or once per run.
  */
-final class CacheStore extends SqliteStore
+final class CacheStore extends AbstractStore
 {
     private ?int $Now = null;
 
@@ -183,9 +181,8 @@ final class CacheStore extends SqliteStore
      * @template T of object
      *
      * @param class-string<T> $class
-     * @return T|null `null` if the item has expired or doesn't exist.
-     * @throws AssertionFailedException if the item stored under `$key` is not
-     * an instance of `$class`.
+     * @return T|null `null` if the item has expired, doesn't exist or is not an
+     * instance of `$class`.
      *
      * @phpstan-impure
      */
@@ -196,16 +193,17 @@ final class CacheStore extends SqliteStore
             return null;
         }
         $item = $store->get($key, $maxAge);
-        Assert::instanceOf($item, $class);
+        if (!is_a($item, $class)) {
+            return null;
+        }
         return $item;
     }
 
     /**
      * Retrieve an array stored under a given key
      *
-     * @return mixed[]|null `null` if the item has expired or doesn't exist.
-     * @throws AssertionFailedException if the item stored under `$key` is not
-     * an array.
+     * @return mixed[]|null `null` if the item has expired, doesn't exist or is
+     * not an array.
      *
      * @phpstan-impure
      */
@@ -216,15 +214,16 @@ final class CacheStore extends SqliteStore
             return null;
         }
         $item = $store->get($key, $maxAge);
-        Assert::isarray($item);
+        if (!is_array($item)) {
+            return null;
+        }
         return $item;
     }
 
     /**
      * Retrieve an integer stored under a given key
      *
-     * @return int|null `null` if the item has expired or doesn't exist.
-     * @throws AssertionFailedException if the item stored under `$key` is not
+     * @return int|null `null` if the item has expired, doesn't exist or is not
      * an integer.
      *
      * @phpstan-impure
@@ -236,16 +235,17 @@ final class CacheStore extends SqliteStore
             return null;
         }
         $item = $store->get($key, $maxAge);
-        Assert::isInt($item);
+        if (!is_int($item)) {
+            return null;
+        }
         return $item;
     }
 
     /**
      * Retrieve a string stored under a given key
      *
-     * @return string|null `null` if the item has expired or doesn't exist.
-     * @throws AssertionFailedException if the item stored under `$key` is not a
-     * string.
+     * @return string|null `null` if the item has expired, doesn't exist or is
+     * not a string.
      *
      * @phpstan-impure
      */
@@ -256,7 +256,9 @@ final class CacheStore extends SqliteStore
             return null;
         }
         $item = $store->get($key, $maxAge);
-        Assert::isString($item);
+        if (!is_string($item)) {
+            return null;
+        }
         return $item;
     }
 

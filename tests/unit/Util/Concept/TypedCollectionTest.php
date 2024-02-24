@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Concept;
 
 use Lkrms\Tests\Concept\TypedCollection\MyClass;
 use Lkrms\Tests\Concept\TypedCollection\MyCollection;
-use Lkrms\Tests\TestCase;
+use Salient\Tests\TestCase;
 
 final class TypedCollectionTest extends TestCase
 {

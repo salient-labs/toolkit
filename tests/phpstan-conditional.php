@@ -24,7 +24,7 @@ return [
             [
                 'message' => '#^Strict comparison using \=\=\= between array and false will always evaluate to false\.$#',
                 'count' => 1,
-                'path' => '../src/Util/Support/ArrayMapper.php',
+                'path' => '../src/Toolkit/Core/ArrayMapper.php',
             ],
         ],
     ] + $parameters,

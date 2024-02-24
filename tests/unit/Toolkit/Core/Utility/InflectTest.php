@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Inflect;
+use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Core\Utility\Inflect

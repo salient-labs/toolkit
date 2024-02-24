@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Iterator;
 
 use Lkrms\Iterator\RecursiveCallbackIterator;
 use Lkrms\Iterator\RecursiveGraphIterator;
-use Lkrms\Tests\TestCase;
+use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;

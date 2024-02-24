@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\AssertionFailedException;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Assert;
+use Salient\Tests\TestCase;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;

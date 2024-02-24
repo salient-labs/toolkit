@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Facade;
+namespace Salient\Core\Facade;
 
-use Lkrms\Store\CacheStore;
+use Salient\Cache\CacheStore;
 use Salient\Core\AbstractFacade;
 use DateTimeInterface;
 

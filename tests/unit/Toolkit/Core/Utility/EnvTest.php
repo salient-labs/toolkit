@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Utility\Env;
+use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Core\Utility\Env

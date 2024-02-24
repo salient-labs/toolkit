@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Core;
 
-use Lkrms\Tests\TestCase;
 use Salient\Container\Container;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
@@ -14,6 +13,7 @@ use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
 use Salient\Tests\Core\AbstractFacade\MyServiceClass;
 use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
 use Salient\Tests\Core\AbstractFacade\MyUnloadsFacadesClass;
+use Salient\Tests\TestCase;
 use LogicException;
 use stdClass;
 

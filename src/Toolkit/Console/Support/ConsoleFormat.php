@@ -5,7 +5,7 @@ namespace Salient\Console\Support;
 use Salient\Console\Catalog\ConsoleTag as Tag;
 use Salient\Console\Contract\ConsoleFormatInterface;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Core\Catalog\TtyControlSequence as Colour;
+use Salient\Core\Catalog\EscapeSequence as Colour;
 
 /**
  * Applies inline character sequences to console output

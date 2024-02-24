@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests;
+namespace Salient\Tests;
 
 use Salient\Cli\Contract\CliApplicationInterface;
 use Salient\Cli\Contract\CliCommandInterface;

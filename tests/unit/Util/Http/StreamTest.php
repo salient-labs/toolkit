@@ -5,10 +5,10 @@ namespace Lkrms\Tests\Http;
 use Lkrms\Http\Exception\StreamDetachedException;
 use Lkrms\Http\Exception\StreamInvalidRequestException;
 use Lkrms\Http\Stream;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
+use Salient\Tests\TestCase;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests

@@ -4,7 +4,6 @@ namespace Salient\Tests\Core\Utility;
 
 use Lkrms\Contract\Arrayable;
 use Lkrms\Support\Date\DateFormatter;
-use Lkrms\Tests\TestCase;
 use Salient\Container\Container;
 use Salient\Core\Catalog\CopyFlag;
 use Salient\Core\Catalog\QueryFlag;
@@ -15,6 +14,7 @@ use Salient\Tests\Core\Utility\Get\ClassWithCloneMethod;
 use Salient\Tests\Core\Utility\Get\ClassWithRefs;
 use Salient\Tests\Core\Utility\Get\SingletonWithContainer;
 use Salient\Tests\Core\Utility\Get\UncloneableClass;
+use Salient\Tests\TestCase;
 use ArrayIterator;
 use ArrayObject;
 use Countable;

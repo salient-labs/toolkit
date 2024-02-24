@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Core;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Exception\InvalidConfigurationException;
 use Salient\Core\ConfigurationManager;
+use Salient\Tests\TestCase;
 use LogicException;
 use OutOfRangeException;
 

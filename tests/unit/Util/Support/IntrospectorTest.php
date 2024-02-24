@@ -16,7 +16,7 @@ use Lkrms\Tests\Support\Introspector\LastNameOnlyA;
 use Lkrms\Tests\Support\Introspector\LastNameOnlyB;
 use Lkrms\Tests\Support\Introspector\SurnameOnlyA;
 use Lkrms\Tests\Support\Introspector\SurnameOnlyB;
-use Lkrms\Tests\TestCase;
+use Salient\Tests\TestCase;
 use Generator;
 
 final class IntrospectorTest extends TestCase

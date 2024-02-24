@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Cli;
 
-use Lkrms\Tests\TestCase;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
@@ -12,6 +11,7 @@ use Salient\Cli\CliOptionBuilder;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use Salient\Core\AbstractBuilder;
+use Salient\Tests\TestCase;
 use ReflectionClass;
 
 final class CliOptionBuilderTest extends TestCase

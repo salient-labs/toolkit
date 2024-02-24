@@ -2,9 +2,9 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Salient\Container\Contract\HasContainer;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Catalog\Conformity;
 use Salient\Core\Contract\Immutable;
 
 /**
@@ -74,8 +74,8 @@ interface IProviderContext extends
     /**
      * Apply the current payload's array key conformity to the context
      *
-     * @param ArrayKeyConformity::* $conformity Use
-     * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
+     * @param Conformity::* $conformity Use
+     * {@see Conformity::COMPLETE} wherever possible to improve
      * performance.
      * @return static
      */
@@ -125,7 +125,7 @@ interface IProviderContext extends
     /**
      * Get the current payload's array key conformity
      *
-     * @return ArrayKeyConformity::*
+     * @return Conformity::*
      */
     public function getConformity();
 }

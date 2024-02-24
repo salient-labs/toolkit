@@ -3,9 +3,9 @@
 namespace Lkrms\Tests\Polyfill;
 
 use Lkrms\Polyfill\PhpToken;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
+use Salient\Tests\TestCase;
 use Throwable;
 use TypeError;
 

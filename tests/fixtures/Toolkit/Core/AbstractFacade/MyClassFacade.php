@@ -9,7 +9,7 @@ use Salient\Core\AbstractFacade;
  *
  * @method static mixed[] getArgs() Call MyServiceClass::getArgs() on the facade's underlying instance, loading it if necessary
  * @method static int getClones() Call MyServiceClass::getClones() on the facade's underlying instance, loading it if necessary
- * @method static static[] getUnloaded() Call MyServiceClass::getUnloaded() on the facade's underlying instance, loading it if necessary
+ * @method static static[] getUnloaded() See {@see MyServiceClass::getUnloaded()}
  * @method static void reset() Call MyServiceClass::reset() on the facade's underlying instance, loading it if necessary
  *
  * @extends AbstractFacade<MyServiceClass>

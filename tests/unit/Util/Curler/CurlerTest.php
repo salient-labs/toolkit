@@ -5,7 +5,7 @@ namespace Lkrms\Tests\Curler;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
-use Lkrms\Tests\TestCase;
+use Salient\Tests\TestCase;
 
 final class CurlerTest extends TestCase
 {

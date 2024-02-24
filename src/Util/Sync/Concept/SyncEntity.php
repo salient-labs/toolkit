@@ -15,7 +15,6 @@ use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Sync;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
-use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
@@ -34,6 +33,7 @@ use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Catalog\Conformity;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Contract\Readable;
@@ -677,7 +677,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     final public static function provideList(
         iterable $list,
         IProvider $provider,
-        $conformity = ArrayKeyConformity::NONE,
+        $conformity = Conformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
@@ -782,7 +782,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     /**
      * @param iterable<array-key,mixed[]> $list
      * @param ISyncProvider $provider
-     * @param ArrayKeyConformity::* $conformity
+     * @param Conformity::* $conformity
      * @param ISyncContext|null $context
      * @return Generator<array-key,static>
      */
@@ -807,7 +807,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
-                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE])
                         ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
                         : $introspector->getCreateSyncEntityFromClosure();
             }

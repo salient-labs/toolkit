@@ -5,10 +5,10 @@ namespace Lkrms\Concern;
 use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\ITreeable;
-use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Catalog\Conformity;
 use Generator;
 
 /**
@@ -53,7 +53,7 @@ trait TConstructible
      * See {@see TConstructible::construct()} for more information.
      *
      * @param iterable<mixed[]> $list
-     * @param ArrayKeyConformity::* $conformity Use `COMPLETE` or `PARTIAL`
+     * @param Conformity::* $conformity Use `COMPLETE` or `PARTIAL`
      * wherever possible to improve performance.
      * @param ContainerInterface|null $container Used to create each instance if
      * set.
@@ -64,7 +64,7 @@ trait TConstructible
      */
     final public static function constructList(
         iterable $list,
-        $conformity = ArrayKeyConformity::NONE,
+        $conformity = Conformity::NONE,
         ?ContainerInterface $container = null,
         $parent = null
     ): Generator {
@@ -77,7 +77,7 @@ trait TConstructible
             if (!$closure) {
                 $builder = Introspector::getService($container, static::class);
                 $closure =
-                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE])
                         ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
                         : $builder->getCreateFromClosure(true);
             }

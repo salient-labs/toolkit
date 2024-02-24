@@ -4,9 +4,9 @@ namespace Lkrms\Tests\Sync\Command;
 
 use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
-use Lkrms\Tests\CommandTestCase;
 use Salient\Cli\Contract\CliApplicationInterface;
 use Salient\Cli\Contract\CliCommandInterface;
+use Salient\Tests\CommandTestCase;
 
 class CheckSyncProviderHeartbeatTest extends CommandTestCase
 {

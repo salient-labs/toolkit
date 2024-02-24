@@ -3,11 +3,11 @@
 namespace Lkrms\Tests\Support\PhpDoc;
 
 use Lkrms\Support\PhpDoc\PhpDoc;
-use Lkrms\Tests\TestCase;
 use Salient\Core\Catalog\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Tests\TestCase;
 
 final class PhpDocTest extends TestCase
 {

@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Console;
 
-use Lkrms\Tests\TestCase;
 use Salient\Console\Support\ConsoleLoopbackFormat;
 use Salient\Console\Support\ConsoleManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Utility\Str;
+use Salient\Tests\TestCase;
 
 final class ConsoleFormatterTest extends TestCase
 {

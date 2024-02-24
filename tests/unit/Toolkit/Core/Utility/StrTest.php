@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Lkrms\Tests\TestCase;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
+use Salient\Tests\TestCase;
 use ReflectionParameter;
 
 /**

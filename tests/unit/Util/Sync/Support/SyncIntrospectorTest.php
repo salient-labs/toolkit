@@ -11,8 +11,8 @@ use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\SyncClassResolver;
-use Lkrms\Tests\TestCase;
 use Salient\Container\Container;
+use Salient\Tests\TestCase;
 use Closure;
 use ReflectionFunction;
 

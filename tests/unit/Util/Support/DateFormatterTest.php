@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Support;
 
 use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Support\Date\DotNetDateParser;
-use Lkrms\Tests\TestCase;
+use Salient\Tests\TestCase;
 use DateTimeInterface;
 
 final class DateFormatterTest extends TestCase
