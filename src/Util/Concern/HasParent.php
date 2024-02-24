@@ -7,7 +7,7 @@ use Salient\Core\Introspector;
 use LogicException;
 
 /**
- * Implements ITreeable
+ * Implements Treeable
  *
  * @see Treeable
  */
@@ -162,18 +162,18 @@ trait HasParent
         return $depth;
     }
 
-    final public function countDescendants(): int
+    final public function getDescendantCount(): int
     {
         if (!isset(self::$_ChildrenProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
-        return $this->doCountDescendants(
+        return $this->countDescendants(
             self::$_ChildrenProperties[static::class]
         );
     }
 
-    private function doCountDescendants(string $_children): int
+    private function countDescendants(string $_children): int
     {
         /** @var static[] */
         $children = $this->{$_children} ?? [];
@@ -184,7 +184,7 @@ trait HasParent
 
         $count = 0;
         foreach ($children as $child) {
-            $count += 1 + $child->doCountDescendants($_children);
+            $count += 1 + $child->countDescendants($_children);
         }
 
         return $count;

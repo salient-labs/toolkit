@@ -20,13 +20,13 @@ interface Relatable
      * public static function getRelationships(): array
      * {
      *     return [
-     *         'CreatedBy' => [RelationshipType::ONE_TO_ONE => User::class],
-     *         'Tags' => [RelationshipType::ONE_TO_MANY => Tag::class],
+     *         'CreatedBy' => [Cardinality::ONE_TO_ONE => User::class],
+     *         'Tags' => [Cardinality::ONE_TO_MANY => Tag::class],
      *     ];
      * }
      * ```
      *
-     * @return array<string,array<RelationshipType::*,class-string<Relatable>>>
+     * @return array<string,array<Cardinality::*,class-string<Relatable>>>
      * Property name => relationship type => target class
      */
     public static function getRelationships(): array;

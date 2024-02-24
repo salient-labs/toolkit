@@ -1625,7 +1625,7 @@ final class ArrTest extends TestCase
                 [],
             ],
             [
-                [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}', Stringable::class, '{"Lkrms\\\\Contract\\\\Jsonable":true}'],
+                [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}', Stringable::class, '{"Salient\\\\Core\\\\Contract\\\\Jsonable":true}'],
                 [null, 0, 3.14, true, false, '', 'a', [1, 2, 3], ['foo' => 'bar'], $a, $b],
             ],
             [

@@ -67,6 +67,7 @@ use LogicException;
  */
 final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Readable
 {
+    /** @use HasBuilder<CliOptionBuilder> */
     use HasBuilder;
     use ReadsProtectedProperties;
 

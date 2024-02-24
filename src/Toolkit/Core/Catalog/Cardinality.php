@@ -5,7 +5,7 @@ namespace Salient\Core\Catalog;
 use Salient\Core\AbstractEnumeration;
 
 /**
- * Entity relationship types
+ * Entity relationship cardinalities
  *
  * @extends AbstractEnumeration<int>
  */

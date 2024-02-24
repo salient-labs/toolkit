@@ -5,7 +5,6 @@ namespace Salient\Core\Contract;
 use Salient\Container\Contract\HasContainer;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ListConformity;
-use Salient\Core\Contract\Immutable;
 
 /**
  * The context within which entities of a given type are instantiated by a
@@ -33,9 +32,9 @@ interface ProviderContextInterface extends
      * Push the entity propagating the context onto the stack
      *
      * Note that although the same entity may be passed to both
-     * {@see IProviderContext::push()} and {@see IProviderContext::withParent()}
-     * (e.g. when a hierarchy is being populated from a root entity), they serve
-     * different purposes.
+     * {@see ProviderContextInterface::push()} and
+     * {@see ProviderContextInterface::withParent()} (e.g. when a hierarchy is
+     * being populated from a root entity), they serve different purposes.
      *
      * Example: a `Post` object would `push()` itself onto the entity stack to
      * retrieve a `User` instance for its `Author` property, but a `Staff`
@@ -43,10 +42,10 @@ interface ProviderContextInterface extends
      * instances for its `DirectReports` property, **and** pass itself to
      * `withParent()` as the parent (a.k.a. manager) of those `Staff`.
      *
-     * Pushing an entity that implements {@see HasIdentifier} onto the stack
+     * Pushing an entity that implements {@see Identifiable} onto the stack
      * implicitly adds its unique identifier to the context as a value with name
-     * `<entity_basename>_id` if {@see HasIdentifier::id()} returns a value
-     * other than `null`.
+     * `<entity_basename>_id` if {@see Identifiable::id()} returns a value other
+     * than `null`.
      *
      * @param TEntity $entity
      * @return static
@@ -64,7 +63,7 @@ interface ProviderContextInterface extends
     /**
      * Apply a parent entity to the context
      *
-     * @see IProviderContext::push()
+     * @see ProviderContextInterface::push()
      *
      * @param (TEntity&Treeable)|null $parent
      * @return static
@@ -74,9 +73,8 @@ interface ProviderContextInterface extends
     /**
      * Apply the current payload's array key conformity to the context
      *
-     * @param Conformity::* $conformity Use
-     * {@see Conformity::COMPLETE} wherever possible to improve
-     * performance.
+     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
+     * wherever possible to improve performance.
      * @return static
      */
     public function withConformity($conformity);
@@ -84,7 +82,7 @@ interface ProviderContextInterface extends
     /**
      * @return TProvider
      */
-    public function provider(): ProviderInterface;
+    public function getProvider(): ProviderInterface;
 
     /**
      * Get the entities responsible for propagating this context
@@ -125,7 +123,7 @@ interface ProviderContextInterface extends
     /**
      * Get the current payload's array key conformity
      *
-     * @return Conformity::*
+     * @return ListConformity::*
      */
     public function getConformity();
 }

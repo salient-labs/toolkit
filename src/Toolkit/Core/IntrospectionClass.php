@@ -57,35 +57,35 @@ class IntrospectionClass
     public $IsWritable;
 
     /**
-     * True if the class implements IExtensible
+     * True if the class implements Extensible
      *
      * @var bool
      */
     public $IsExtensible;
 
     /**
-     * True if the class implements IProvidable
+     * True if the class implements Providable
      *
      * @var bool
      */
     public $IsProvidable;
 
     /**
-     * True if the class implements IRelatable
+     * True if the class implements Relatable
      *
      * @var bool
      */
     public $IsRelatable;
 
     /**
-     * True if the class implements ITreeable
+     * True if the class implements Treeable
      *
      * @var bool
      */
     public $IsTreeable;
 
     /**
-     * True if the class implements HasDateProperties
+     * True if the class implements Temporal
      *
      * @var bool
      */
@@ -186,7 +186,7 @@ class IntrospectionClass
      * Parameters with a declared type that implements DateTimeInterface
      * (normalised name => declared name)
      *
-     * Empty if the class does not implement {@see HasDateProperties}.
+     * Empty if the class does not implement {@see Temporal}.
      *
      * @var array<string,string>
      */
@@ -230,7 +230,7 @@ class IntrospectionClass
     /**
      * The normalised parent property
      *
-     * `null` if the class does not implement {@see ITreeable} or returns an
+     * `null` if the class does not implement {@see Treeable} or returns an
      * invalid pair of parent and children properties.
      *
      * @var string|null
@@ -240,7 +240,7 @@ class IntrospectionClass
     /**
      * The normalised children property
      *
-     * `null` if the class does not implement {@see ITreeable} or returns an
+     * `null` if the class does not implement {@see Treeable} or returns an
      * invalid pair of parent and children properties.
      *
      * @var string|null
@@ -275,7 +275,7 @@ class IntrospectionClass
      *
      * @var (Closure(string $name, bool $greedy=, string...$hints): string)|null
      */
-    public $Normaliser;
+    public ?Closure $Normaliser = null;
 
     /**
      * Normalises property names with $greedy = false
@@ -367,13 +367,14 @@ class IntrospectionClass
         $this->IsRelatable = $this->IsTreeable || $class->implementsInterface(Relatable::class);
         $this->HasDates = $class->implementsInterface(Temporal::class);
 
-        // IResolvable provides access to properties via non-canonical names
-        if ($class->implementsInterface(Normalisable::class)) {
-            if ($class->implementsInterface(NormaliserFactory::class)) {
-                $this->Normaliser = $class->getMethod('normaliser')->invoke(null);
-            } else {
-                $this->Normaliser = Closure::fromCallable([$className, 'normalise']);
-            }
+        if ($class->implementsInterface(NormaliserFactory::class)) {
+            /** @var class-string<NormaliserFactory> $className */
+            $this->Normaliser = $className::getNormaliser();
+        } elseif ($class->implementsInterface(Normalisable::class)) {
+            $this->Normaliser = Closure::fromCallable([$className, 'normalise']);
+        }
+
+        if ($this->Normaliser) {
             $this->GentleNormaliser = fn(string $name): string => ($this->Normaliser)($name, false);
             $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedKeys);
         }
@@ -545,7 +546,7 @@ class IntrospectionClass
             );
 
         if ($this->IsRelatable) {
-            /** @var array<string,array<RelationshipType::*,class-string<Relatable>>> */
+            /** @var array<string,array<Cardinality::*,class-string<Relatable>>> */
             $relationships = $class->getMethod('getRelationships')->invoke(null);
             $relationships = array_combine(
                 $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
@@ -553,7 +554,7 @@ class IntrospectionClass
             );
 
             // Create self-referencing parent/child relationships between
-            // ITreeable classes after identifying the class that declared
+            // Treeable classes after identifying the class that declared
             // getParentProperty() and getChildrenProperty(), which is most
             // likely to be the base/service class. If not, explicit
             // relationship declarations take precedence over these.
@@ -652,8 +653,8 @@ class IntrospectionClass
      * @param int-mask-of<NormaliserFlag::*> $flags
      * @return T
      *
-     * @see IResolvable::normalise()
-     * @see ReturnsNormaliser::normaliser()
+     * @see Normalisable::normalise()
+     * @see NormaliserFactory::getNormaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {

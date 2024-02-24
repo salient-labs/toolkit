@@ -3,18 +3,26 @@
 namespace Salient\Core\Contract;
 
 /**
- * Returns a provider context
+ * @api
  *
  * @template TContext of ProviderContextInterface
  */
 interface ProviderContextAwareInterface
 {
     /**
+     * Set the object's provider context
+     *
+     * @param TContext $context
+     * @return $this
+     */
+    public function setContext(ProviderContextInterface $context);
+
+    /**
      * Get the object's current provider context
      *
      * @return TContext|null
      */
-    public function context(): ?ProviderContextInterface;
+    public function getContext(): ?ProviderContextInterface;
 
     /**
      * Get the object's current provider context, or throw an exception if no

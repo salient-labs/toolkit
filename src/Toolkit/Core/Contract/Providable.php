@@ -3,7 +3,6 @@
 namespace Salient\Core\Contract;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Salient\Container\Contract\HasService;
 use Salient\Container\Contract\ServiceAwareInterface;
 use Salient\Core\Catalog\ListConformity;
 
@@ -14,17 +13,12 @@ use Salient\Core\Catalog\ListConformity;
  * @template TContext of ProviderContextInterface
  *
  * @extends ProviderAwareInterface<TProvider>
- * @extends ReceivesProviderContext<TContext>
- * @extends HasProvider<TProvider>
  * @extends ProviderContextAwareInterface<TContext>
  */
 interface Providable extends
     ProviderAwareInterface,
-    ReceivesProviderContext,
     ServiceAwareInterface,
-    HasProvider,
-    ProviderContextAwareInterface,
-    HasService
+    ProviderContextAwareInterface
 {
     /**
      * Create an instance of the class from an array on behalf of a provider
@@ -45,7 +39,7 @@ interface Providable extends
      *
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */

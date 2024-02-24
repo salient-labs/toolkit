@@ -2,11 +2,8 @@
 
 namespace Salient\Core\Contract;
 
-use Salient\Core\Contract\Readable;
-use Salient\Core\Contract\Writable;
-
 /**
- * A generic entity
+ * @api
  */
 interface EntityInterface extends
     Normalisable,
@@ -14,13 +11,4 @@ interface EntityInterface extends
     Readable,
     Writable,
     Extensible,
-    Temporal
-{
-    /**
-     * Get the plural form of the entity's class name
-     *
-     * The return value of `Faculty::plural()`, for example, should be
-     * `Faculties`.
-     */
-    public static function plural(): string;
-}
+    Temporal {}

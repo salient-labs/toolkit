@@ -9,8 +9,8 @@ use Salient\Core\AbstractEnumeration;
 /**
  * Normaliser flags
  *
- * @see IResolvable::normalise()
- * @see ReturnsNormaliser::normaliser()
+ * @see Normalisable::normalise()
+ * @see NormaliserFactory::getNormaliser()
  *
  * @extends AbstractEnumeration<int>
  */

@@ -2,17 +2,15 @@
 
 namespace Salient\Core\Contract;
 
-use Salient\Core\DateFormatter;
-
 /**
- * Instructions for serializing nested entities
+ * @api
  */
 interface SerializeRulesInterface
 {
     /**
      * Override the default date formatter
      */
-    public function getDateFormatter(): ?DateFormatter;
+    public function getDateFormatter(): ?DateFormatterInterface;
 
     /**
      * Include undeclared property values?
@@ -35,28 +33,23 @@ interface SerializeRulesInterface
     public function getDetectRecursion(): bool;
 
     /**
-     * A bitmask of enabled flags
-     */
-    public function getFlags(): int;
-
-    /**
      * Set the value of IncludeMeta on a copy of the instance
      *
-     * @return $this
+     * @return static
      */
     public function withIncludeMeta(?bool $value);
 
     /**
      * Set the value of SortByKey on a copy of the instance
      *
-     * @return $this
+     * @return static
      */
     public function withSortByKey(?bool $value);
 
     /**
      * Set the value of MaxDepth on a copy of the instance
      *
-     * @return $this
+     * @return static
      */
     public function withMaxDepth(?int $value);
 }

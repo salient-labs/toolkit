@@ -2,6 +2,8 @@
 
 namespace Lkrms\Contract;
 
+use Salient\Core\Contract\Arrayable;
+
 /**
  * An array-like list of items
  *

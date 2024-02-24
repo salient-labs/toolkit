@@ -95,13 +95,9 @@ use LogicException;
 final class SyncSerializeRules implements ISyncSerializeRules, Readable, Immutable, Buildable
 {
     use ReadsProtectedProperties;
+    /** @use HasBuilder<SyncSerializeRulesBuilder<TEntity>> */
     use HasBuilder;
     use HasImmutableProperties;
-
-    /**
-     * Values are being serialized for an entity store
-     */
-    public const SYNC_STORE = 1;
 
     /**
      * The class name of the SyncEntity being serialized (required)

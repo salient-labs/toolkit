@@ -20,9 +20,8 @@ interface PayloadPipelineInterface extends BasePipelineInterface
      * with {@see PipelineInterface::throughKeyMap()}. It has no effect
      * otherwise.
      *
-     * @param Conformity::* $conformity Use
-     * {@see Conformity::COMPLETE} wherever possible to improve
-     * performance.
+     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
+     * wherever possible to improve performance.
      * @return static
      */
     public function withConformity($conformity);
@@ -30,7 +29,7 @@ interface PayloadPipelineInterface extends BasePipelineInterface
     /**
      * Get the payload's array key conformity
      *
-     * @return Conformity::*
+     * @return ListConformity::*
      */
     public function getConformity();
 }

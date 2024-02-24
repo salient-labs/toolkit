@@ -292,25 +292,25 @@ final class PipelineTest extends TestCase
         }
 
         $this->assertSame([
-            // Conformity::COMPLETE + good
+            // ListConformity::COMPLETE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // Conformity::COMPLETE + bad
+            // ListConformity::COMPLETE + bad
             ['Id' => 'Greta', 'Name' => 32, 'Email' => 'greta@domain.test'],
             ['Id' => 'Amir', 'Name' => 'amir@domain.test', 'Email' => 53],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // Conformity::COMPLETE + ugly
+            // ListConformity::COMPLETE + ugly
             $err[0] ?? null,
-            // Conformity::NONE + good
+            // ListConformity::NONE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // Conformity::NONE + bad
+            // ListConformity::NONE + bad
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // Conformity::NONE + ugly
+            // ListConformity::NONE + ugly
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry'],

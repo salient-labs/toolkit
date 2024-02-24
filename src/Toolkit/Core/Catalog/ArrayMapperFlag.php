@@ -8,9 +8,9 @@ use Salient\Core\ArrayMapper;
 /**
  * ArrayMapper flags
  *
- * @extends AbstractEnumeration<int>
- *
  * @see ArrayMapper
+ *
+ * @extends AbstractEnumeration<int>
  */
 final class ArrayMapperFlag extends AbstractEnumeration
 {

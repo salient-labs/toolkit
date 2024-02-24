@@ -7,6 +7,8 @@ use Salient\Core\Contract\EnumerationInterface;
 /**
  * Base class for enumerations
  *
+ * @api
+ *
  * @template TValue
  *
  * @extends AbstractCatalog<TValue>

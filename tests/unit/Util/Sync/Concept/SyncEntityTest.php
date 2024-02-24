@@ -22,8 +22,8 @@ final class SyncEntityTest extends SyncTestCase
         $provider = $this->App->get(JsonPlaceholderApi::class);
 
         $this->assertSame($provider, $postProvider);
-        $this->assertSame($provider, $postEntityProvider->provider());
-        $this->assertSame($provider, $userEntityProvider->provider());
+        $this->assertSame($provider, $postEntityProvider->getProvider());
+        $this->assertSame($provider, $userEntityProvider->getProvider());
         $this->assertInstanceOf(ISyncEntityProvider::class, $postEntityProvider);
         $this->assertInstanceOf(ISyncEntityProvider::class, $userEntityProvider);
     }

@@ -118,7 +118,7 @@ class GenerateSyncEntity extends GenerateCommand
                 ->description(<<<EOF
 Add a one-to-one "parent" relationship to the entity
 
-`--children` must also be given. The generated class will implement `ITreeable`.
+`--children` must also be given. The generated class will implement `Treeable`.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->ParentProperty),
@@ -128,7 +128,7 @@ EOF)
                 ->description(<<<EOF
 Add a one-to-many "children" relationship to the entity
 
-`--parent` must also be given. The generated class will implement `ITreeable`.
+`--parent` must also be given. The generated class will implement `Treeable`.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->ChildrenProperty),
@@ -303,7 +303,7 @@ EOF)
         };
 
         $entityClass::$EntityName = $class;
-        $normaliser = $entityClass::normaliser();
+        $normaliser = $entityClass::getNormaliser();
         $normaliser =
             fn(string $name): string =>
                 Str::toPascalCase($normaliser($name));
@@ -442,7 +442,7 @@ EOF)
         if ($relationships) {
             // Sort relationships by the position of their respective properties
             $relationships = array_replace(array_intersect_key($properties, $relationships), $relationships);
-            $relationshipTypeAlias = $this->getFqcnAlias(Cardinality::class);
+            $cardinalityAlias = $this->getFqcnAlias(Cardinality::class);
         }
 
         $docBlock = [];
@@ -487,7 +487,7 @@ EOF;
                 $lines[] = sprintf(
                     "'%s' => [%s::%s => %s::class],",
                     $property,
-                    $relationshipTypeAlias,
+                    $cardinalityAlias,
                     isset($oneToMany[$property]) ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
                     $type,
                 );

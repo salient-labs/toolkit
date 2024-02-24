@@ -49,7 +49,7 @@ final class Pipeline implements
     private $Arg;
 
     /**
-     * @var Conformity::*
+     * @var ListConformity::*
      */
     private int $PayloadConformity = ListConformity::NONE;
 

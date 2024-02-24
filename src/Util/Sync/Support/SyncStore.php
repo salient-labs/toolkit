@@ -842,7 +842,7 @@ final class SyncStore extends AbstractStore
         if ($context) {
             $last = $context->last();
             if ($last) {
-                $context = $last->context();
+                $context = $last->getContext();
             }
         }
         $policy = $context
@@ -905,7 +905,7 @@ final class SyncStore extends AbstractStore
         if ($context) {
             $last = $context->last();
             if ($last) {
-                $context = $last->context();
+                $context = $last->getContext();
             }
         }
         $policy = $context

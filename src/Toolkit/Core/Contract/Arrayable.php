@@ -3,6 +3,8 @@
 namespace Salient\Core\Contract;
 
 /**
+ * @api
+ *
  * @template TKey of array-key
  * @template TValue
  */

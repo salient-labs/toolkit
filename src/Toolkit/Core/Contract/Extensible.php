@@ -17,7 +17,7 @@ interface Extensible
     /**
      * Get the value of an undeclared property
      *
-     * @return mixed
+     * @return mixed `null` if the undeclared property is not set.
      */
     public function getMetaProperty(string $name);
 
@@ -47,16 +47,26 @@ interface Extensible
     public function clearMetaProperties();
 
     /**
+     * Set the value of an undeclared property
+     *
      * @param mixed $value
      */
     public function __set(string $name, $value): void;
 
     /**
-     * @return mixed
+     * Get the value of an undeclared property
+     *
+     * @return mixed `null` if the undeclared property is not set.
      */
     public function __get(string $name);
 
+    /**
+     * True if an undeclared property is set
+     */
     public function __isset(string $name): bool;
 
+    /**
+     * Unset an undeclared property
+     */
     public function __unset(string $name): void;
 }

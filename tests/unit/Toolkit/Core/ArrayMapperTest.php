@@ -18,7 +18,7 @@ final class ArrayMapperTest extends TestCase
      * @param array<string,mixed>|class-string<Throwable>|null $expected
      * @param array<array-key,array-key|array-key[]> $keyMap
      * @param array<string,mixed> $in
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param int-mask-of<ArrayMapperFlag::*> $flags
      */
     public function testMap(
@@ -46,7 +46,7 @@ final class ArrayMapperTest extends TestCase
     }
 
     /**
-     * @return array<string,array{array<string,mixed>|class-string<Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:Conformity::*,4?:int-mask-of<ArrayMapperFlag::*>}>
+     * @return array<string,array{array<string,mixed>|class-string<Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:ListConformity::*,4?:int-mask-of<ArrayMapperFlag::*>}>
      */
     public static function mapProvider(): array
     {

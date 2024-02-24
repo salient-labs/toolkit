@@ -49,7 +49,7 @@ class ProviderContext implements ProviderContextInterface
     protected ?Treeable $Parent = null;
 
     /**
-     * @var Conformity::*
+     * @var ListConformity::*
      */
     protected $Conformity = ListConformity::NONE;
 
@@ -85,7 +85,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function provider(): ProviderInterface
+    final public function getProvider(): ProviderInterface
     {
         return $this->Provider;
     }

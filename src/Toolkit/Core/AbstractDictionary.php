@@ -7,6 +7,8 @@ use Salient\Core\Contract\DictionaryInterface;
 /**
  * Base class for dictionaries
  *
+ * @api
+ *
  * @template TValue
  *
  * @extends AbstractCatalog<TValue>

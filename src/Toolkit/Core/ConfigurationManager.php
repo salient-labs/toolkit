@@ -14,6 +14,8 @@ use ReturnTypeWillChange;
 /**
  * Provides access to values in configuration files
  *
+ * @api
+ *
  * @implements ArrayAccess<string,mixed>
  */
 final class ConfigurationManager implements ArrayAccess

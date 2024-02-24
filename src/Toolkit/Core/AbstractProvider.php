@@ -7,7 +7,6 @@ use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\Contract\ProviderContextInterface;
 use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
-use Salient\Core\ProviderContext;
 
 /**
  * Base class for providers

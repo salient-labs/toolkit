@@ -89,6 +89,7 @@ final class Curler implements Readable, Writable, Buildable
 {
     use HasReadableProperties;
     use HasWritableProperties;
+    /** @use HasBuilder<CurlerBuilder> */
     use HasBuilder;
     use HasImmutableProperties;
 

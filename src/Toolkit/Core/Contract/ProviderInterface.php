@@ -4,7 +4,6 @@ namespace Salient\Core\Contract;
 
 use Salient\Container\Contract\HasContainer;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Stringable;
 

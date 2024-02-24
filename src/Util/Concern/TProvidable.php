@@ -15,7 +15,7 @@ use Generator;
 use LogicException;
 
 /**
- * Implements IProvidable to represent an external entity
+ * Implements Providable to represent an external entity
  *
  * @template TProvider of ProviderInterface
  * @template TContext of ProviderContextInterface
@@ -56,7 +56,7 @@ trait TProvidable
     /**
      * @return TProvider|null
      */
-    final public function provider(): ?ProviderInterface
+    final public function getProvider(): ?ProviderInterface
     {
         return $this->Provider;
     }
@@ -86,7 +86,7 @@ trait TProvidable
     /**
      * @return TContext|null
      */
-    final public function context(): ?ProviderContextInterface
+    final public function getContext(): ?ProviderContextInterface
     {
         return $this->Context;
     }
@@ -102,7 +102,7 @@ trait TProvidable
     /**
      * @return class-string
      */
-    final public function service(): string
+    final public function getService(): string
     {
         return $this->Service ?? static::class;
     }
@@ -124,8 +124,8 @@ trait TProvidable
      *
      * The constructor (if any) is invoked with values from `$data`. If `$data`
      * values remain, they are assigned to writable properties. If further
-     * values remain and the class implements {@see IExtensible}, they are
-     * assigned via {@see IExtensible::setMetaProperty()}.
+     * values remain and the class implements {@see Extensible}, they are
+     * assigned via {@see Extensible::setMetaProperty()}.
      *
      * `$data` keys, constructor parameters and writable properties are
      * normalised for comparison.
@@ -164,7 +164,7 @@ trait TProvidable
      *
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
@@ -182,7 +182,7 @@ trait TProvidable
     /**
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param TContext|null $context
      * @return Generator<array-key,static>
      */

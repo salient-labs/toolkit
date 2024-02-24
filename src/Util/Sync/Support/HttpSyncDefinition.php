@@ -75,6 +75,7 @@ use LogicException;
  */
 final class HttpSyncDefinition extends SyncDefinition implements Buildable
 {
+    /** @use HasBuilder<HttpSyncDefinitionBuilder<TEntity,TProvider>> */
     use HasBuilder;
 
     public const DEFAULT_METHOD_MAP = [
@@ -104,8 +105,9 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * are taken from the {@see ISyncContext} object received by the sync
      * operation. The first matching value is used:
      *
-     * - Values applied explicitly via {@see IProviderContext::withValue()} or
-     *   implicitly via {@see IProviderContext::push()}
+     * - Values applied explicitly via
+     *   {@see ProviderContextInterface::withValue()} or implicitly via
+     *   {@see ProviderContextInterface::push()}
      * - Unclaimed filters passed to the operation via
      *   {@see ISyncContext::withArgs()}
      *
@@ -242,7 +244,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @param string[]|string|null $path
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @param array<CurlerProperty::*,mixed> $curlerProperties

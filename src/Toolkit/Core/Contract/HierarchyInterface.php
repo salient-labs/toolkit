@@ -3,12 +3,9 @@
 namespace Salient\Core\Contract;
 
 /**
- * Has a parent and children of the same type and can be traversed towards them
- * via public properties
- *
- * The properties need not be declared if the class uses property overloading.
+ * @api
  */
-interface HierarchyInterface extends Relatable, Treeable, HasChildrenProperty
+interface HierarchyInterface
 {
     /**
      * Get the parent of the object
@@ -25,7 +22,7 @@ interface HierarchyInterface extends Relatable, Treeable, HasChildrenProperty
     public function getChildren(): array;
 
     /**
-     * Set the parent of the object
+     * Set or unset the parent of the object
      *
      * - `$child->setParent($parent)` is equivalent to
      *   `$parent->addChild($child)`
@@ -68,5 +65,5 @@ interface HierarchyInterface extends Relatable, Treeable, HasChildrenProperty
     /**
      * Get the number of objects descended from the object
      */
-    public function countDescendants(): int;
+    public function getDescendantCount(): int;
 }

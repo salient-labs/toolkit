@@ -2,6 +2,8 @@
 
 namespace Salient\Core;
 
+use Salient\Core\Contract\DateFormatterInterface;
+use Salient\Core\Contract\DateParserInterface;
 use Salient\Core\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;

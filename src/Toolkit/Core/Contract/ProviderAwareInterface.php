@@ -6,8 +6,10 @@ namespace Salient\Core\Contract;
  * Receives the provider servicing the object
  *
  * @template TProvider of ProviderInterface
+ *
+ * @extends HasProvider<TProvider>
  */
-interface ProviderAwareInterface
+interface ProviderAwareInterface extends HasProvider
 {
     /**
      * Set the object's provider

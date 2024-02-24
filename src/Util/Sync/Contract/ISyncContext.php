@@ -41,7 +41,7 @@ interface ISyncContext extends ProviderContextInterface
      *
      * 3. A list of entities (`fn(...$mandatoryArgs, ISyncEntity ...$entities)`)
      *
-     *    - Entities are grouped by snake_case {@see IProvidable::service()}
+     *    - Entities are grouped by snake_case {@see Providable::getService()}
      *      basename and replaced with their IDs, e.g. `['faculty' => [42, 71],
      *      'user' => [101]]`
      *
@@ -200,8 +200,8 @@ interface ISyncContext extends ProviderContextInterface
      * operation arguments
      *
      * If `$orValue` is `true` and a value for `$key` has been applied to the
-     * context via {@see IProviderContext::withValue()}, it is returned if there
-     * is no matching filter.
+     * context via {@see ProviderContextInterface::withValue()}, it is returned
+     * if there is no matching filter.
      *
      * @return mixed `null` if the value has been claimed via
      * {@see ISyncContext::claimFilter()} or wasn't passed to the operation.
@@ -219,8 +219,8 @@ interface ISyncContext extends ProviderContextInterface
      * instead of returning a modified instance.
      *
      * If `$orValue` is `true` and a value for `$key` has been applied to the
-     * context via {@see IProviderContext::withValue()}, it is returned if there
-     * is no matching filter.
+     * context via {@see ProviderContextInterface::withValue()}, it is returned
+     * if there is no matching filter.
      *
      * @return mixed `null` if the value has already been claimed or wasn't
      * passed to the operation.

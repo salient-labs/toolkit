@@ -18,9 +18,6 @@ use Salient\Core\Contract\Treeable;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
-use Salient\Core\AbstractEntity;
-use Salient\Core\AbstractProvider;
-use Salient\Core\DateFormatter;
 use Closure;
 use LogicException;
 
@@ -30,11 +27,11 @@ use LogicException;
  * @property-read class-string<TClass> $Class The name of the class under introspection
  * @property-read bool $IsReadable True if the class implements Readable
  * @property-read bool $IsWritable True if the class implements Writable
- * @property-read bool $IsExtensible True if the class implements IExtensible
- * @property-read bool $IsProvidable True if the class implements IProvidable
- * @property-read bool $IsRelatable True if the class implements IRelatable
- * @property-read bool $IsTreeable True if the class implements ITreeable
- * @property-read bool $HasDates True if the class implements HasDateProperties
+ * @property-read bool $IsExtensible True if the class implements Extensible
+ * @property-read bool $IsProvidable True if the class implements Providable
+ * @property-read bool $IsRelatable True if the class implements Relatable
+ * @property-read bool $IsTreeable True if the class implements Treeable
+ * @property-read bool $HasDates True if the class implements Temporal
  * @property-read array<string,string> $Properties Properties (normalised name => declared name)
  * @property-read array<string,string> $PublicProperties Public properties (normalised name => declared name)
  * @property-read array<string,string> $ReadableProperties Readable properties (normalised name => declared name)
@@ -200,8 +197,8 @@ class Introspector
      * @param int-mask-of<NormaliserFlag::*> $flags
      * @return T
      *
-     * @see IResolvable::normalise()
-     * @see ReturnsNormaliser::normaliser()
+     * @see Normalisable::normalise()
+     * @see NormaliserFactory::getNormaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {
@@ -506,7 +503,8 @@ class Introspector
 
         // Resolve `$keys` to:
         //
-        // - constructor parameters (`$parameterKeys`, `$passByRefKeys`, `$notNullableKeys`)
+        // - constructor parameters (`$parameterKeys`, `$passByRefKeys`,
+        //   `$notNullableKeys`)
         // - callbacks (`$callbackKeys`)
         // - "magic" property methods (`$methodKeys`)
         // - properties (`$propertyKeys`)
@@ -652,10 +650,10 @@ class Introspector
      * If `$name` and `$action` correspond to a "magic" property method (e.g.
      * `_get<Property>()`), a closure to invoke the method is returned.
      * Otherwise, if `$name` corresponds to an accessible declared property, or
-     * the class implements {@see IExtensible}), a closure to perform the
+     * the class implements {@see Extensible}), a closure to perform the
      * requested `$action` on the property directly is returned.
      *
-     * Fails with an exception if {@see IExtensible} is not implemented and no
+     * Fails with an exception if {@see Extensible} is not implemented and no
      * declared or "magic" property matches `$name` and `$action`.
      *
      * Closure signature:
@@ -731,7 +729,7 @@ class Introspector
     /**
      * Get a closure that returns the name of an instance on a best-effort basis
      *
-     * Intended for use in default {@see HasName::name()} implementations.
+     * Intended for use in default {@see Nameable::name()} implementations.
      * Instance names are returned from properties most likely to contain them.
      *
      * @return Closure(TClass): string
@@ -941,7 +939,7 @@ class Introspector
                     throw new UnexpectedValueException('$context cannot be null when $provider is not null');
                 }
                 /** @var TClass&TEntity $obj */
-                $currentProvider = $obj->provider();
+                $currentProvider = $obj->getProvider();
                 if ($currentProvider === null) {
                     $obj = $obj->setProvider($provider);
                 } elseif ($currentProvider !== $provider) {

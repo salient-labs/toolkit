@@ -2,6 +2,9 @@
 
 namespace Salient\Core\Contract;
 
+/**
+ * @api
+ */
 interface Describable
 {
     /**

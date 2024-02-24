@@ -3,12 +3,12 @@
 namespace Salient\Core\Contract;
 
 /**
- * Has a parent of the same type and can be traversed towards it via a public
- * property
+ * Has a parent and children of the same type and can be traversed towards them
+ * via public properties
  *
- * The property need not be declared if the class uses property overloading.
+ * The properties need not be declared if the class uses property overloading.
  */
-interface Treeable
+interface Treeable extends HierarchyInterface, Relatable
 {
     /**
      * Get the name of the property that links the object to a parent of the
@@ -17,4 +17,12 @@ interface Treeable
      * The property should accept values of type `static|null`.
      */
     public static function getParentProperty(): string;
+
+    /**
+     * Get the name of the property that links the object to children of the
+     * same type
+     *
+     * The property should accept values of type `iterable<static>`.
+     */
+    public static function getChildrenProperty(): string;
 }

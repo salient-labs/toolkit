@@ -6,7 +6,7 @@ use Salient\Core\Contract\Extensible;
 use Salient\Core\Introspector as IS;
 
 /**
- * Implements IExtensible to store arbitrary property values
+ * Implements Extensible to store arbitrary property values
  *
  * @see Extensible
  */

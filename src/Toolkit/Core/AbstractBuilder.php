@@ -2,19 +2,18 @@
 
 namespace Salient\Core;
 
-use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\Immutable;
-use Salient\Core\AbstractEntity;
-use Salient\Core\AbstractProvider;
-use Salient\Core\Introspector;
-use Salient\Core\ProviderContext;
-use LogicException;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Facade\App;
 
 /**
  * Base class for builders
+ *
+ * @api
  *
  * @template TClass of object
  */
@@ -61,7 +60,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
      */
     final public function __construct(?ContainerInterface $container = null)
     {
-        $this->Container = $container ?? Container::getGlobalContainer();
+        $this->Container = $container ?? App::getInstance();
         $this->Introspector = Introspector::getService($this->Container, static::getService());
         foreach (static::getTerminators() as $terminator) {
             $this->Terminators[$terminator] = true;
@@ -91,15 +90,16 @@ abstract class AbstractBuilder implements Chainable, Immutable
             return $object->go();
         }
 
-        if (!is_a($object, static::getService())) {
-            throw new LogicException(sprintf(
-                'Invalid argument (%s|%s expected)',
-                static::class,
-                static::getService(),
-            ));
+        if (is_a($object, static::getService())) {
+            return $object;
         }
 
-        return $object;
+        throw new InvalidArgumentTypeException(
+            1,
+            'object',
+            static::class . '|' . static::getService(),
+            $object,
+        );
     }
 
     /**
@@ -113,7 +113,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
-     * True if a value has been applied to the builder
+     * Check if a value has been applied to the builder
      */
     final public function issetB(string $name): bool
     {
@@ -143,7 +143,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
      */
     final public function go()
     {
-        return ($this->Introspector->getCreateFromClosure(true))($this->Data, $this->Container);
+        return $this->Introspector->getCreateFromClosure(true)($this->Data, $this->Container);
     }
 
     /**
@@ -163,7 +163,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
 
         $count = count($arguments);
         if ($count > 1) {
-            throw new LogicException('Invalid arguments');
+            throw new InvalidArgumentException('Too many arguments');
         }
 
         return $this->withValueB($name, $count ? $arguments[0] : true);

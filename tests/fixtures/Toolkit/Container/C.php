@@ -4,7 +4,6 @@ namespace Salient\Tests\Container;
 
 use Salient\Container\Contract\ContainerAwareInterface;
 use Salient\Container\Contract\HasContainer;
-use Salient\Container\Contract\HasService;
 use Salient\Container\Contract\ServiceAwareInterface;
 use Salient\Container\ContainerInterface;
 
@@ -13,7 +12,7 @@ use Salient\Container\ContainerInterface;
  *
  * @implements HasContainer<T>
  */
-class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer, HasService
+class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
 {
     use TestTrait;
 

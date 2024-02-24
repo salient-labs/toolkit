@@ -5,17 +5,17 @@ namespace Salient\Core\Contract;
 use Closure;
 
 /**
- * Returns a closure that normalises the names of its properties
+ * @api
  */
-interface NormaliserFactory extends Normalisable
+interface NormaliserFactory
 {
     /**
-     * Get a closure that normalises a property name
+     * Get a closure that normalises the name of a property of the class
      *
      * Arguments after `$name` may be ignored. If `$greedy` is honoured, it
      * should be `true` by default.
      *
      * @return Closure(string $name, bool $greedy=, string...$hints): string
      */
-    public static function normaliser(): Closure;
+    public static function getNormaliser(): Closure;
 }

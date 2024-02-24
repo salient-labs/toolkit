@@ -30,6 +30,7 @@ use Salient\Core\Contract\Readable;
 final class SyncError implements Readable, IComparable, Immutable, Buildable
 {
     use ReadsProtectedProperties;
+    /** @use HasBuilder<SyncErrorBuilder> */
     use HasBuilder;
 
     /**
@@ -119,7 +120,7 @@ final class SyncError implements Readable, IComparable, Immutable, Buildable
         $this->Values = $values ?: [$this->EntityName];
         $this->Level = $level;
         $this->Entity = $entity;
-        $this->Provider = $provider ?? ($entity ? $entity->provider() : null);
+        $this->Provider = $provider ?? ($entity ? $entity->getProvider() : null);
     }
 
     /**

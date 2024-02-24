@@ -31,6 +31,7 @@ use LogicException;
  */
 final class DbSyncDefinition extends SyncDefinition implements Buildable
 {
+    /** @use HasBuilder<DbSyncDefinitionBuilder<TEntity,TProvider>> */
     use HasBuilder;
 
     /**
@@ -42,7 +43,7 @@ final class DbSyncDefinition extends SyncDefinition implements Buildable
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap

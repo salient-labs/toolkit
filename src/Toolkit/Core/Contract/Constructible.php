@@ -6,7 +6,7 @@ use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ListConformity;
 
 /**
- * Creates instances of itself from data in associative arrays
+ * @api
  */
 interface Constructible
 {
@@ -14,14 +14,11 @@ interface Constructible
      * @param mixed[] $data
      * @return static
      */
-    public static function construct(
-        array $data,
-        ?ContainerInterface $container = null
-    );
+    public static function construct(array $data, ?ContainerInterface $container = null);
 
     /**
      * @param iterable<mixed[]> $list
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @return iterable<static>
      */
     public static function constructList(

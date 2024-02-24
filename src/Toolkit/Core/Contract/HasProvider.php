@@ -14,7 +14,7 @@ interface HasProvider
      *
      * @return TProvider|null
      */
-    public function provider(): ?ProviderInterface;
+    public function getProvider(): ?ProviderInterface;
 
     /**
      * Get the object's provider, or throw an exception if no provider has been

@@ -156,7 +156,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                         fn(ISyncEntity $entity): array => [
                             Str::toSnakeCase(
                                 Get::basename(
-                                    $entity->service()
+                                    $entity->getService()
                                 )
                             ) => [
                                 $entity->id(),

@@ -3,10 +3,11 @@
 namespace Salient\Core;
 
 use Salient\Core\Contract\ProvidableEntityInterface;
-use Salient\Core\ProviderContext;
 
 /**
- * Base class for entities
+ * Base class for provider-serviced entities
+ *
+ * @api
  *
  * @implements ProvidableEntityInterface<AbstractProvider,ProviderContext<AbstractProvider,self>>
  */

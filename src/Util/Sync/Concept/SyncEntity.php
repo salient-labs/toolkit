@@ -263,7 +263,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
      * remove are derived by shifting each word off the beginning of the prefix
      * (e.g. "user_group" and "group").
      */
-    final public static function normaliser(): Closure
+    final public static function getNormaliser(): Closure
     {
         // If there aren't any prefixes to remove, return a closure that
         // converts everything to snake_case
@@ -396,7 +396,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
 
     private function typeUri(bool $compact): string
     {
-        $service = $this->service();
+        $service = $this->getService();
         $typeUri = $this->store()->getEntityTypeUri($service, $compact);
 
         return $typeUri
@@ -560,7 +560,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
             }
         } elseif ($node instanceof DateTimeInterface) {
             $node = ($rules->getDateFormatter()
-                ?: ($this->provider() ? $this->provider()->dateFormatter() : null)
+                ?: ($this->getProvider() ? $this->getProvider()->dateFormatter() : null)
                 ?: new DateFormatter())->format($node);
         } else {
             throw new UnexpectedValueException('Array or SyncEntity expected: ' . print_r($node, true));
@@ -705,7 +705,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
             $context = $provider->container();
         } else {
             $context = $providerOrContext;
-            $provider = $context->provider();
+            $provider = $context->getProvider();
         }
 
         if ($provider->isValidIdentifier($nameOrId, static::class)) {
@@ -782,7 +782,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     /**
      * @param iterable<array-key,mixed[]> $list
      * @param ISyncProvider $provider
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param ISyncContext|null $context
      * @return Generator<array-key,static>
      */

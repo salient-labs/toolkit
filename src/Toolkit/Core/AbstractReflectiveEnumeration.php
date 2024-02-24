@@ -12,6 +12,8 @@ use ReflectionClass;
  * Base class for enumerations that use reflection to map constants to and from
  * their names
  *
+ * @api
+ *
  * @template TValue of array-key
  *
  * @extends AbstractEnumeration<TValue>
@@ -32,54 +34,6 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
      * @var array<string,array<string,TValue>>
      */
     private static $ValueMaps = [];
-
-    private static function loadMaps(): void
-    {
-        $constants = (new ReflectionClass(static::class))->getReflectionConstants();
-
-        $valueMap = [];
-        $nameMap = [];
-        foreach ($constants as $constant) {
-            if (!$constant->isPublic()) {
-                continue;
-            }
-
-            $name = $constant->getName();
-            $value = $constant->getValue();
-
-            if (!is_int($value) && !is_string($value)) {
-                throw new LogicException(sprintf(
-                    'Public constant is not of type int|string: %s::%s',
-                    static::class,
-                    $name,
-                ));
-            }
-
-            $valueMap[$name] = $value;
-            $nameMap[$value] = $name;
-        }
-
-        if (!$valueMap) {
-            self::$ValueMaps[static::class] = [];
-            self::$NameMaps[static::class] = [];
-            return;
-        }
-
-        if (count($valueMap) !== count($nameMap)) {
-            throw new LogicException(
-                sprintf(
-                    'Public constants are not unique: %s',
-                    static::class,
-                )
-            );
-        }
-
-        // Add UPPER_CASE names to $valueMap if not already present
-        $valueMap += array_change_key_case($valueMap, \CASE_UPPER);
-
-        self::$ValueMaps[static::class] = $valueMap;
-        self::$NameMaps[static::class] = $nameMap;
-    }
 
     /**
      * @inheritDoc
@@ -219,5 +173,53 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
         }
 
         return isset(self::$NameMaps[static::class][$value]);
+    }
+
+    private static function loadMaps(): void
+    {
+        $constants = (new ReflectionClass(static::class))->getReflectionConstants();
+
+        $valueMap = [];
+        $nameMap = [];
+        foreach ($constants as $constant) {
+            if (!$constant->isPublic()) {
+                continue;
+            }
+
+            $name = $constant->getName();
+            $value = $constant->getValue();
+
+            if (!is_int($value) && !is_string($value)) {
+                throw new LogicException(sprintf(
+                    'Public constant is not of type int|string: %s::%s',
+                    static::class,
+                    $name,
+                ));
+            }
+
+            $valueMap[$name] = $value;
+            $nameMap[$value] = $name;
+        }
+
+        if (!$valueMap) {
+            self::$ValueMaps[static::class] = [];
+            self::$NameMaps[static::class] = [];
+            return;
+        }
+
+        if (count($valueMap) !== count($nameMap)) {
+            throw new LogicException(
+                sprintf(
+                    'Public constants are not unique: %s',
+                    static::class,
+                )
+            );
+        }
+
+        // Add UPPER_CASE names to $valueMap if not already present
+        $valueMap += array_change_key_case($valueMap, \CASE_UPPER);
+
+        self::$ValueMaps[static::class] = $valueMap;
+        self::$NameMaps[static::class] = $nameMap;
     }
 }

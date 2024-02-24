@@ -2,20 +2,15 @@
 
 namespace Salient\Core\Contract;
 
-use DateTimeInterface;
-
 /**
- * Has properties that store date and time values
- *
- * The properties need not be declared if the class uses property overloading.
+ * Has declared or undeclared properties that accept date and time values
  */
 interface Temporal
 {
     /**
-     * Get properties that store date and time values, or ["*"] to detect date
-     * and time values automatically
+     * Get properties that accept date and time values
      *
-     * Properties should accept values of type {@see DateTimeInterface}`|null`.
+     * Return `["*"]` to detect date and time values automatically.
      *
      * @return string[]
      */

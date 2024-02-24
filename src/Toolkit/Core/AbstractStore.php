@@ -5,9 +5,9 @@ namespace Salient\Core;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Contract\FacadeAwareInterface;
 use Salient\Core\Contract\FacadeInterface;
+use Salient\Core\Contract\Unloadable;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Sys;
 use LogicException;
 use SQLite3;
 use Throwable;
@@ -15,32 +15,22 @@ use Throwable;
 /**
  * Base class for SQLite-backed stores
  *
- * @implements FacadeAwareInterface<FacadeInterface<self>>
+ * @api
+ *
+ * @implements FacadeAwareInterface<FacadeInterface<static>>
  */
-abstract class AbstractStore implements FacadeAwareInterface
+abstract class AbstractStore implements FacadeAwareInterface, Unloadable
 {
-    /** @use UnloadsFacades<FacadeInterface<self>> */
+    /** @use UnloadsFacades<FacadeInterface<static>> */
     use UnloadsFacades;
 
-    /**
-     * @var SQLite3|null
-     */
-    private $Db;
+    private ?SQLite3 $Db = null;
 
-    /**
-     * @var string|null
-     */
-    private $Filename;
+    private string $Filename;
 
-    /**
-     * @var bool
-     */
-    private $IsTransactionOpen;
+    private bool $IsTransactionOpen = false;
 
-    /**
-     * @var bool
-     */
-    private $CheckIsRunning = false;
+    private bool $IsCheckRunning = false;
 
     /**
      * Create or open a database
@@ -59,15 +49,19 @@ abstract class AbstractStore implements FacadeAwareInterface
         }
 
         $db = new SQLite3($filename);
+
         if (\PHP_VERSION_ID < 80300) {
             $db->enableExceptions();
         }
+
         $db->busyTimeout(60000);
         $db->exec('PRAGMA journal_mode=WAL');
         $db->exec('PRAGMA foreign_keys=ON');
+
         if ($query) {
             $db->exec($query);
         }
+
         $this->Db = $db;
         $this->Filename = $filename;
 
@@ -75,25 +69,11 @@ abstract class AbstractStore implements FacadeAwareInterface
     }
 
     /**
-     * If a database is open, close it
-     *
-     * @return $this
+     * @inheritDoc
      */
-    final protected function closeDb()
+    final public function unload(): void
     {
-        try {
-            if (!$this->Db) {
-                return $this;
-            }
-
-            $this->Db->close();
-            $this->Db = null;
-            $this->Filename = null;
-
-            return $this;
-        } finally {
-            $this->unloadFacades();
-        }
+        $this->close();
     }
 
     /**
@@ -104,6 +84,27 @@ abstract class AbstractStore implements FacadeAwareInterface
     public function close()
     {
         return $this->closeDb();
+    }
+
+    /**
+     * If a database is open, close it
+     *
+     * @return $this
+     */
+    final protected function closeDb()
+    {
+        if (!$this->Db) {
+            $this->unloadFacades();
+            return $this;
+        }
+
+        $this->Db->close();
+        $this->Db = null;
+        unset($this->Filename);
+
+        $this->unloadFacades();
+
+        return $this;
     }
 
     /**
@@ -124,59 +125,76 @@ abstract class AbstractStore implements FacadeAwareInterface
      */
     final public function isOpen(): bool
     {
-        return $this->Db ? true : false;
+        return (bool) $this->Db;
     }
 
     /**
      * Get the filename of the database
+     *
+     * @throws LogicException if the database is not open.
      */
-    final public function getFilename(): ?string
+    final public function getFilename(): string
     {
+        $this->assertIsOpen();
+
         return $this->Filename;
     }
 
     /**
-     * True if check() is currently running
+     * True if check() is running via safeCheck()
      */
     final protected function isCheckRunning(): bool
     {
-        return $this->CheckIsRunning;
+        return $this->IsCheckRunning;
     }
 
     /**
-     * Call from check() and return if isCheckRunning() returns false
+     * Call check() without recursion
      *
-     * Recommended if `check()` has callers other than
-     * {@see AbstractStore::db()}.
+     * {@see AbstractStore::db()} calls {@see AbstractStore::check()} via
+     * {@see AbstractStore::safeCheck()} to prevent recursion when
+     * {@see AbstractStore::check()} calls {@see AbstractStore::db()}.
+     *
+     * If {@see AbstractStore::check()} may be called directly, it should call
+     * itself via {@see AbstractStore::safeCheck()}, for example:
+     *
+     * ```php
+     * protected function check()
+     * {
+     *     if (!$this->isCheckRunning()) {
+     *         return $this->safeCheck();
+     *     }
+     *
+     *     // ...
+     * }
+     * ```
      *
      * @return $this
      */
     final protected function safeCheck()
     {
-        $this->CheckIsRunning = true;
+        $this->IsCheckRunning = true;
         try {
             return $this->check();
         } finally {
-            $this->CheckIsRunning = false;
+            $this->IsCheckRunning = false;
         }
     }
 
     /**
      * Get the open SQLite3 instance
      *
-     * @throws LogicException if no database is open.
+     * @throws LogicException if the database is not open.
      */
     final protected function db(): SQLite3
     {
-        if ($this->Db) {
-            if ($this->CheckIsRunning) {
-                return $this->Db;
-            }
+        $this->assertIsOpen();
 
-            return $this->safeCheck()->Db;
+        if ($this->IsCheckRunning) {
+            return $this->Db;
         }
 
-        throw new LogicException('No database open');
+        return $this->safeCheck()->Db;
     }
 
     final protected function isTransactionOpen(): bool
@@ -277,14 +295,26 @@ abstract class AbstractStore implements FacadeAwareInterface
     /**
      * Throw an exception if the SQLite3 library doesn't support UPSERT syntax
      *
+     * @link https://www.sqlite.org/lang_UPSERT.html
+     *
      * @return $this
      */
     final protected function requireUpsert()
     {
-        if (Sys::sqliteHasUpsert()) {
+        if (SQLite3::version()['versionNumber'] >= 3024000) {
             return $this;
         }
 
         throw new InvalidRuntimeConfigurationException('SQLite 3.24 or above required');
+    }
+
+    /**
+     * Throw an exception if the database is not open
+     */
+    final protected function assertIsOpen(): void
+    {
+        if (!$this->Db) {
+            throw new LogicException('No database open');
+        }
     }
 }

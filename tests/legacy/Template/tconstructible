@@ -6,7 +6,7 @@ namespace Lkrms\Tests\Template;
 use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
-use Lkrms\Contract\IExtensible;
+use Lkrms\Contract\Extensible;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Err;
 use Salient\Container\Container;
@@ -30,7 +30,7 @@ class A implements Readable, Writable, ReturnsNormaliser
     public $Name;
 }
 
-class B extends A implements IExtensible
+class B extends A implements Extensible
 {
     public $Data = [];
 }

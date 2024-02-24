@@ -9,6 +9,8 @@ use Salient\Core\Utility\Arr;
 
 /**
  * Moves array values from one set of keys to another
+ *
+ * @api
  */
 final class ArrayMapper
 {
@@ -48,7 +50,7 @@ final class ArrayMapper
      *
      * - populates an "output" array with values mapped from an "input" array
      * - ignores missing values (maps for which there are no input values)
-     * - discards unmapped values (input values for which there are no maps)
+     * - preserves unmapped values (input values for which there are no maps)
      * - keeps `null` values in the output array
      *
      * Provide a bitmask of {@see ArrayMapperFlag} values to modify this
@@ -56,9 +58,8 @@ final class ArrayMapper
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
      * input keys to one or more output keys.
-     * @param Conformity::* $conformity Use
-     * {@see Conformity::COMPLETE} wherever possible to improve
-     * performance.
+     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
+     * wherever possible to improve performance.
      * @param int-mask-of<ArrayMapperFlag::*> $flags
      */
     public function __construct(

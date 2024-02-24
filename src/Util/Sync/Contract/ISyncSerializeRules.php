@@ -10,6 +10,18 @@ use Salient\Core\Contract\SerializeRulesInterface;
 interface ISyncSerializeRules extends SerializeRulesInterface
 {
     /**
+     * Values are being serialized for an entity store
+     */
+    public const SYNC_STORE = 1;
+
+    /**
+     * A bitmask of enabled flags
+     *
+     * @return int-mask-of<ISyncSerializeRules::*>
+     */
+    public function getFlags(): int;
+
+    /**
      * Remove CanonicalId from sync entities?
      */
     public function getRemoveCanonicalId(): bool;

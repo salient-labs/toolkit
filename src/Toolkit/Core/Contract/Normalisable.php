@@ -3,12 +3,12 @@
 namespace Salient\Core\Contract;
 
 /**
- * Normalises the names of its properties
+ * @api
  */
 interface Normalisable
 {
     /**
-     * Normalise a property name
+     * Normalise the name of a property of the class
      *
      * Arguments after `$name` may be ignored.
      */
