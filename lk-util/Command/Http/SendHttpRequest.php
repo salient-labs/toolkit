@@ -2,7 +2,6 @@
 
 namespace Lkrms\LkUtil\Command\Http;
 
-use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
@@ -12,6 +11,7 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
+use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Sync\Concept\HttpSyncProvider;
 
 /**

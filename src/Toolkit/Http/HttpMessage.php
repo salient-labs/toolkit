@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http;
+namespace Salient\Http;
 
-use Lkrms\Http\Catalog\HttpProtocolVersion;
-use Lkrms\Http\Contract\HttpHeadersInterface;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Http\Catalog\HttpProtocolVersion;
+use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * Base class for HTTP messages

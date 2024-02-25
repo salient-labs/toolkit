@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Http\Uri;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
+use Salient\Http\Uri;
 use Salient\Tests\TestCase;
 use Generator;
 

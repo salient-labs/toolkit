@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Psr7Test;
 
 use Http\Psr7Test\RequestIntegrationTest;
-use Lkrms\Http\HttpRequest;
+use Salient\Http\HttpRequest;
 
 class RequestTest extends RequestIntegrationTest
 {

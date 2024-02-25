@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\Contract;
+namespace Salient\Http\Contract;
 
-use Lkrms\Http\Catalog\HttpHeader;
 use Salient\Collection\CollectionInterface;
 use Salient\Core\Contract\Arrayable;
+use Salient\Http\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers

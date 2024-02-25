@@ -3,8 +3,8 @@
 namespace Lkrms\Tests\Psr7Test;
 
 use Http\Psr7Test\StreamIntegrationTest;
-use Lkrms\Http\Stream;
 use Psr\Http\Message\StreamInterface;
+use Salient\Http\Stream;
 
 class StreamTest extends StreamIntegrationTest
 {

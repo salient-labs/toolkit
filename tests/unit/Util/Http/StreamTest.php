@@ -2,12 +2,12 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Http\Exception\StreamDetachedException;
-use Lkrms\Http\Exception\StreamInvalidRequestException;
-use Lkrms\Http\Stream;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
+use Salient\Http\Exception\StreamDetachedException;
+use Salient\Http\Exception\StreamInvalidRequestException;
+use Salient\Http\Stream;
 use Salient\Tests\TestCase;
 
 /**

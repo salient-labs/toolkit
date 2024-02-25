@@ -2,7 +2,7 @@
 
 namespace Lkrms\Curler\Contract;
 
-use Lkrms\Http\Contract\HttpHeadersInterface;
+use Salient\Http\Contract\HttpHeadersInterface;
 
 interface ICurlerPage
 {

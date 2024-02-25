@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Psr7Test;
 
 use Http\Psr7Test\UriIntegrationTest;
-use Lkrms\Http\Uri;
+use Salient\Http\Uri;
 
 class UriTest extends UriIntegrationTest
 {

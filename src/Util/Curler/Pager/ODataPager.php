@@ -6,8 +6,8 @@ use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Curler\Curler;
-use Lkrms\Http\Catalog\HttpHeader;
 use Salient\Core\Utility\Pcre;
+use Salient\Http\Catalog\HttpHeader;
 
 final class ODataPager implements ICurlerPager
 {

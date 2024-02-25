@@ -2,7 +2,6 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
@@ -16,6 +15,7 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Sync\Concept\HttpSyncProvider;
 use Salient\Sync\Concept\SyncEntity;
 use Salient\Sync\Support\DeferredEntity;

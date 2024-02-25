@@ -2,14 +2,14 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Http\Catalog\HttpHeader;
-use Lkrms\Http\Catalog\HttpHeaderGroup;
-use Lkrms\Http\OAuth2\AccessToken;
-use Lkrms\Http\HttpHeaders;
 use Salient\Collection\CollectionInterface;
 use Salient\Core\Catalog\MimeType;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
+use Salient\Http\Catalog\HttpHeader;
+use Salient\Http\Catalog\HttpHeaderGroup;
+use Salient\Http\OAuth2\AccessToken;
+use Salient\Http\HttpHeaders;
 use Salient\Tests\TestCase;
 use LogicException;
 

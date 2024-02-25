@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http;
+namespace Salient\Http;
 
-use Lkrms\Http\Exception\StreamDetachedException;
-use Lkrms\Http\Exception\StreamInvalidRequestException;
 use Psr\Http\Message\StreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
+use Salient\Http\Exception\StreamDetachedException;
+use Salient\Http\Exception\StreamInvalidRequestException;
 use Stringable;
 
 /**

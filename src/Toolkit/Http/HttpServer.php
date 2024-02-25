@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http;
+namespace Salient\Http;
 
-use Lkrms\Http\Catalog\HttpRequestMethodGroup;
-use Lkrms\Http\Exception\HttpServerException;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Pcre;
+use Salient\Http\Catalog\HttpRequestMethodGroup;
+use Salient\Http\Exception\HttpServerException;
 
 /**
  * Listens for HTTP requests on a local address

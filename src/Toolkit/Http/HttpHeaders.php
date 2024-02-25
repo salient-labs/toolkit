@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http;
+namespace Salient\Http;
 
-use Lkrms\Http\Catalog\HttpHeader;
-use Lkrms\Http\Contract\AccessTokenInterface;
-use Lkrms\Http\Contract\HttpHeadersInterface;
 use Salient\Collection\CollectionInterface;
 use Salient\Collection\ReadableCollectionTrait;
 use Salient\Core\Concern\HasImmutableProperties;
@@ -15,6 +12,9 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Http\Catalog\HttpHeader;
+use Salient\Http\Contract\AccessTokenInterface;
+use Salient\Http\Contract\HttpHeadersInterface;
 use Generator;
 use LogicException;
 

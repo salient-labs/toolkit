@@ -28,22 +28,22 @@
   <php>
     <const
         name="REQUEST_FACTORY"
-        value="Lkrms\Http\HttpFactory" />
+        value="Salient\Http\HttpFactory" />
     <const
         name="RESPONSE_FACTORY"
-        value="Lkrms\Http\HttpFactory" />
+        value="Salient\Http\HttpFactory" />
     <const
         name="SERVER_REQUEST_FACTORY"
-        value="Lkrms\Http\HttpFactory" />
+        value="Salient\Http\HttpFactory" />
     <const
         name="STREAM_FACTORY"
-        value="Lkrms\Http\HttpFactory" />
+        value="Salient\Http\HttpFactory" />
     <const
         name="UPLOADED_FILE_FACTORY"
-        value="Lkrms\Http\HttpFactory" />
+        value="Salient\Http\HttpFactory" />
     <const
         name="URI_FACTORY"
-        value="Lkrms\Http\HttpFactory" />
+        value="Salient\Http\HttpFactory" />
   </php>
   <extensions>
     <extension class="Ergebnis\PHPUnit\SlowTestDetector\Extension">

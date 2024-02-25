@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\Catalog;
+namespace Salient\Http\Catalog;
 
 use Salient\Core\AbstractDictionary;
 

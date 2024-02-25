@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\Contract;
+namespace Salient\Http\Contract;
 
 interface AccessTokenInterface
 {

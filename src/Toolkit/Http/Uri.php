@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http;
+namespace Salient\Http;
 
 use Psr\Http\Message\UriInterface;
 use Salient\Core\Concern\HasImmutableProperties;

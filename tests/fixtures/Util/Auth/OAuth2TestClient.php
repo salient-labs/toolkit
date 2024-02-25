@@ -3,11 +3,11 @@
 namespace Lkrms\Tests\Auth;
 
 use League\OAuth2\Client\Provider\GenericProvider;
-use Lkrms\Http\OAuth2\AccessToken;
-use Lkrms\Http\OAuth2\OAuth2Client;
-use Lkrms\Http\OAuth2\OAuth2Flow;
-use Lkrms\Http\HttpServer;
 use Salient\Core\Utility\Env;
+use Salient\Http\OAuth2\AccessToken;
+use Salient\Http\OAuth2\OAuth2Client;
+use Salient\Http\OAuth2\OAuth2Flow;
+use Salient\Http\HttpServer;
 
 class OAuth2TestClient extends OAuth2Client
 {

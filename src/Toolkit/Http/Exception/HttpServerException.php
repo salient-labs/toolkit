@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\Exception;
+namespace Salient\Http\Exception;
 
 use Salient\Core\AbstractException;
 

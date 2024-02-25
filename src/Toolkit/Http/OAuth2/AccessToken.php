@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\OAuth2;
+namespace Salient\Http\OAuth2;
 
-use Lkrms\Http\Contract\AccessTokenInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Date;
+use Salient\Http\Contract\AccessTokenInterface;
 use DateTimeImmutable;
 use DateTimeInterface;
 

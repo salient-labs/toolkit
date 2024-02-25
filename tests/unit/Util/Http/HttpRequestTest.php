@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Http\Catalog\HttpHeader;
-use Lkrms\Http\HttpRequest;
-use Lkrms\Http\Uri;
 use Psr\Http\Message\StreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Http\Catalog\HttpHeader;
+use Salient\Http\HttpRequest;
+use Salient\Http\Uri;
 use Salient\Tests\TestCase;
 
 /**

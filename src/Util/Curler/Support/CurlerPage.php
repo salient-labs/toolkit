@@ -4,8 +4,8 @@ namespace Lkrms\Curler\Support;
 
 use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Curler;
-use Lkrms\Http\Contract\HttpHeadersInterface;
 use Salient\Core\Exception\AssertionFailedException;
+use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * Implements ICurlerPage

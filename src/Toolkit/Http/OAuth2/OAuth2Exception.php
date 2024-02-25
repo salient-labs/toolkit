@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\OAuth2;
+namespace Salient\Http\OAuth2;
 
 use Salient\Core\AbstractException;
 

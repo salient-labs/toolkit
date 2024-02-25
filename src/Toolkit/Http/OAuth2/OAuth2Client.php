@@ -1,16 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http\OAuth2;
+namespace Salient\Http\OAuth2;
 
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use Lkrms\Curler\Curler;
-use Lkrms\Http\Catalog\HttpRequestMethod as Method;
-use Lkrms\Http\HttpResponse;
-use Lkrms\Http\HttpServer;
-use Lkrms\Http\HttpServerRequest;
 use Salient\Cache\CacheStore;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Cache;
@@ -19,6 +15,10 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
+use Salient\Http\Catalog\HttpRequestMethod as Method;
+use Salient\Http\HttpResponse;
+use Salient\Http\HttpServer;
+use Salient\Http\HttpServerRequest;
 use LogicException;
 use Throwable;
 

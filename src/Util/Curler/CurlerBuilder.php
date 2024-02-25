@@ -4,9 +4,9 @@ namespace Lkrms\Curler;
 
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Http\Contract\HttpHeadersInterface;
 use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\AbstractBuilder;
+use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * A fluent Curler factory

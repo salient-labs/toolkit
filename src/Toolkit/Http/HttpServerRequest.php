@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http;
+namespace Salient\Http;
 
-use Lkrms\Http\Contract\HttpHeadersInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Readable;
+use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * An HTTP request

@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Http;
+namespace Salient\Http;
 
-use Lkrms\Http\Catalog\HttpHeader;
-use Lkrms\Http\Catalog\HttpRequestMethod;
-use Lkrms\Http\Contract\HttpHeadersInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Str;
+use Salient\Http\Catalog\HttpHeader;
+use Salient\Http\Catalog\HttpRequestMethod;
+use Salient\Http\Contract\HttpHeadersInterface;
 use Stringable;
 
 /**
@@ -212,7 +212,7 @@ class HttpRequest extends HttpMessage implements RequestInterface
     {
         // `UriInterface` makes no distinction between empty and undefined URI
         // components, but `/path?` and `/path` are not necessarily equivalent,
-        // so URIs are always converted to instances of `Lkrms\Http\Uri`, which
+        // so URIs are always converted to instances of `Salient\Http\Uri`, which
         // surfaces empty and undefined queries as `""` and `null` respectively
         return Uri::from($uri)->normalise();
     }
