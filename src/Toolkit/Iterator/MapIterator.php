@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Iterator;
+namespace Salient\Iterator;
 
 use IteratorIterator;
 use ReturnTypeWillChange;

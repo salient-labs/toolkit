@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Exception;
+namespace Salient\Curler\Exception;
 
-use Lkrms\Curler\Curler;
 use Salient\Core\Utility\Format;
 use Salient\Core\AbstractException;
+use Salient\Curler\Curler;
 
 /**
  * Base class for Curler exceptions

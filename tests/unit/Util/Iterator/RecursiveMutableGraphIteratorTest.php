@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Iterator;
 
-use Lkrms\Iterator\RecursiveMutableGraphIterator;
+use Salient\Iterator\RecursiveMutableGraphIterator;
 use Salient\Tests\TestCase;
 use RecursiveIteratorIterator;
 use stdClass;

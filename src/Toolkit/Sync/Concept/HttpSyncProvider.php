@@ -2,15 +2,15 @@
 
 namespace Salient\Sync\Concept;
 
-use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Curler\Exception\CurlerCurlErrorException;
-use Lkrms\Curler\Curler;
-use Lkrms\Curler\CurlerBuilder;
 use Salient\Cache\CacheStore;
 use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
+use Salient\Curler\Contract\ICurlerPager;
+use Salient\Curler\Exception\CurlerCurlErrorException;
+use Salient\Curler\Curler;
+use Salient\Curler\CurlerBuilder;
 use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Http\HttpHeaders;
 use Salient\Sync\Contract\ISyncDefinition;

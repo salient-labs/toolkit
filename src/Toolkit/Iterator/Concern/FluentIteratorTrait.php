@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Iterator\Concern;
+namespace Salient\Iterator\Concern;
 
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
+use Salient\Iterator\Contract\FluentIteratorInterface;
 use ArrayAccess;
 
 /**

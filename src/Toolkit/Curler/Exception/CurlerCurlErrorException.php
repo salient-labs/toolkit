@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Exception;
+namespace Salient\Curler\Exception;
 
-use Lkrms\Curler\Curler;
+use Salient\Curler\Curler;
 
 /**
  * Thrown when a libcurl error occurs

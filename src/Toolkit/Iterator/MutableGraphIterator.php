@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Iterator;
+namespace Salient\Iterator;
 
-use Lkrms\Iterator\Contract\MutableIterator;
+use Salient\Iterator\Contract\MutableIterator;
 use LogicException;
 
 /**

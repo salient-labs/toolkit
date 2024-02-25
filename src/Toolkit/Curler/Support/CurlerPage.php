@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Support;
+namespace Salient\Curler\Support;
 
-use Lkrms\Curler\Contract\ICurlerPage;
-use Lkrms\Curler\Curler;
 use Salient\Core\Exception\AssertionFailedException;
+use Salient\Curler\Contract\ICurlerPage;
+use Salient\Curler\Curler;
 use Salient\Http\Contract\HttpHeadersInterface;
 
 /**

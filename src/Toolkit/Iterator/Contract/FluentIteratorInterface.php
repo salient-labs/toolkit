@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Iterator\Contract;
+namespace Salient\Iterator\Contract;
 
 use Salient\Core\Contract\Arrayable;
 use Traversable;

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Iterator;
+namespace Salient\Iterator;
 
-use Lkrms\Iterator\Concern\RecursiveGraphIteratorTrait;
+use Salient\Iterator\Concern\RecursiveGraphIteratorTrait;
 use RecursiveIterator;
 
 /**

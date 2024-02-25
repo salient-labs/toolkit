@@ -2,8 +2,6 @@
 
 namespace Salient\Sync\Concept;
 
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Iterator\IterableIterator;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
@@ -12,6 +10,8 @@ use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Pipeline;
+use Salient\Iterator\Contract\FluentIteratorInterface;
+use Salient\Iterator\IterableIterator;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\Catalog\SyncEntitySource;
 use Salient\Sync\Catalog\SyncOperation as OP;

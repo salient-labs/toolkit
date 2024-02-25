@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Iterator;
+namespace Salient\Iterator;
 
-use Lkrms\Iterator\Concern\FluentIteratorTrait;
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Pcre;
+use Salient\Iterator\Concern\FluentIteratorTrait;
+use Salient\Iterator\Contract\FluentIteratorInterface;
 use AppendIterator;
 use CallbackFilterIterator;
 use Countable;

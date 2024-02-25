@@ -1,10 +1,6 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Curler\Support\CurlerPage;
-use Lkrms\Curler\Support\CurlerPageBuilder;
-use Lkrms\Curler\Curler;
-use Lkrms\Curler\CurlerBuilder;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
@@ -44,6 +40,10 @@ use Salient\Core\ConfigurationManager;
 use Salient\Core\ErrorHandler;
 use Salient\Core\EventDispatcher;
 use Salient\Core\MetricCollector;
+use Salient\Curler\Support\CurlerPage;
+use Salient\Curler\Support\CurlerPageBuilder;
+use Salient\Curler\Curler;
+use Salient\Curler\CurlerBuilder;
 use Salient\Sync\Support\DbSyncDefinition;
 use Salient\Sync\Support\DbSyncDefinitionBuilder;
 use Salient\Sync\Support\HttpSyncDefinition;

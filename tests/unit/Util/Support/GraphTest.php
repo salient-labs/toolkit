@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Support\Graph;
+use Salient\Iterator\Graph;
 use Salient\Tests\TestCase;
 use LogicException;
 use stdClass;

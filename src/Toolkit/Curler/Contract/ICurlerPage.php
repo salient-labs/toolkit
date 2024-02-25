@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Contract;
+namespace Salient\Curler\Contract;
 
 use Salient\Http\Contract\HttpHeadersInterface;
 

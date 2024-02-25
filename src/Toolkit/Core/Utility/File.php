@@ -2,13 +2,13 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\AbstractUtility;
 use Salient\Core\Indentation;
+use Salient\Iterator\RecursiveFilesystemIterator;
 use Stringable;
 
 /**

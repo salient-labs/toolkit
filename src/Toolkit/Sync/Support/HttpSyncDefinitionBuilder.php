@@ -2,12 +2,12 @@
 
 namespace Salient\Sync\Support;
 
-use Lkrms\Curler\Catalog\CurlerProperty;
-use Lkrms\Curler\Contract\ICurlerPager;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\AbstractBuilder;
+use Salient\Curler\Catalog\CurlerProperty;
+use Salient\Curler\Contract\ICurlerPager;
 use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Sync\Catalog\FilterPolicy;

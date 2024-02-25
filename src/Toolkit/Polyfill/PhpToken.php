@@ -1,6 +1,6 @@
 <?php
 
-namespace Lkrms\Polyfill;
+namespace Salient\Polyfill;
 
 use Salient\Core\Utility\Get;
 use Stringable;

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Iterator;
 
-use Lkrms\Iterator\IterableIterator;
+use Salient\Iterator\IterableIterator;
 use Salient\Tests\TestCase;
 use ArrayIterator;
 use NoRewindIterator;

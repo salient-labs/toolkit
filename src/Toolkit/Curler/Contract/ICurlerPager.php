@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Contract;
+namespace Salient\Curler\Contract;
 
-use Lkrms\Curler\Curler;
+use Salient\Curler\Curler;
 
 /**
  * Implements retrieval and extraction of paginated data

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler;
+namespace Salient\Curler;
 
 use CURLFile;
 use LogicException;

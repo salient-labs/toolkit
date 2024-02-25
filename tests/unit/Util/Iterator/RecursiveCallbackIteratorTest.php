@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Iterator;
 
-use Lkrms\Iterator\RecursiveCallbackIterator;
-use Lkrms\Iterator\RecursiveGraphIterator;
+use Salient\Iterator\RecursiveCallbackIterator;
+use Salient\Iterator\RecursiveGraphIterator;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use DateTimeInterface;

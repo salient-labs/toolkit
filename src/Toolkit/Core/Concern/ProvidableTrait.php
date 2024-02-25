@@ -2,8 +2,6 @@
 
 namespace Salient\Core\Concern;
 
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Iterator\IterableIterator;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Contract\Extensible;
@@ -11,6 +9,8 @@ use Salient\Core\Contract\Providable;
 use Salient\Core\Contract\ProviderContextInterface;
 use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Introspector;
+use Salient\Iterator\Contract\FluentIteratorInterface;
+use Salient\Iterator\IterableIterator;
 use Generator;
 use LogicException;
 

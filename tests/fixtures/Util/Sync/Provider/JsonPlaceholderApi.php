@@ -2,7 +2,6 @@
 
 namespace Lkrms\Tests\Sync\Provider;
 
-use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Tests\Sync\CustomEntity\Post as CustomPost;
 use Lkrms\Tests\Sync\CustomEntity\User as CustomUser;
 use Lkrms\Tests\Sync\Entity\Provider\AlbumProvider;
@@ -22,6 +21,7 @@ use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Env;
 use Salient\Core\DateFormatter;
+use Salient\Curler\CurlerBuilder;
 use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Sync\Catalog\SyncOperation as OP;
 use Salient\Sync\Concept\HttpSyncProvider;

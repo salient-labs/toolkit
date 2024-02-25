@@ -2,10 +2,10 @@
 
 namespace Salient\Sync\Contract;
 
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Salient\Core\Catalog\TextComparisonAlgorithm;
 use Salient\Core\Catalog\TextComparisonFlag;
 use Salient\Core\Contract\HasProvider;
+use Salient\Iterator\Contract\FluentIteratorInterface;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
 

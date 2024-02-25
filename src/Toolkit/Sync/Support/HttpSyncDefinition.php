@@ -2,10 +2,6 @@
 
 namespace Salient\Sync\Support;
 
-use Lkrms\Curler\Catalog\CurlerProperty;
-use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Curler\Exception\CurlerHttpErrorException;
-use Lkrms\Curler\Curler;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasBuilder;
@@ -18,6 +14,10 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Pipeline;
+use Salient\Curler\Catalog\CurlerProperty;
+use Salient\Curler\Contract\ICurlerPager;
+use Salient\Curler\Exception\CurlerHttpErrorException;
+use Salient\Curler\Curler;
 use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Sync\Catalog\FilterPolicy;

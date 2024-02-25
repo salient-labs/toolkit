@@ -2,8 +2,6 @@
 
 namespace Salient\Sync\Concept;
 
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Iterator\IterableIterator;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Catalog\NormaliserFlag;
@@ -31,6 +29,8 @@ use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
+use Salient\Iterator\Contract\FluentIteratorInterface;
+use Salient\Iterator\IterableIterator;
 use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Salient\Sync\Catalog\SyncEntityState;
 use Salient\Sync\Contract\ISyncContext;

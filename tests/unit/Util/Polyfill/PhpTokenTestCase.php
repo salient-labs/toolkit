@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Polyfill;
 
-use Lkrms\Polyfill\PhpToken;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
+use Salient\Polyfill\PhpToken;
 use Salient\Tests\TestCase;
 use Throwable;
 use TypeError;

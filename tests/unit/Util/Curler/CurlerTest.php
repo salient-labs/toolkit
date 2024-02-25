@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Curler;
 
-use Lkrms\Curler\Exception\CurlerCurlErrorException;
-use Lkrms\Curler\Exception\CurlerHttpErrorException;
-use Lkrms\Curler\Curler;
+use Salient\Curler\Exception\CurlerCurlErrorException;
+use Salient\Curler\Exception\CurlerHttpErrorException;
+use Salient\Curler\Curler;
 use Salient\Tests\TestCase;
 
 final class CurlerTest extends TestCase

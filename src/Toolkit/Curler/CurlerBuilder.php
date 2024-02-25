@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler;
+namespace Salient\Curler;
 
-use Lkrms\Curler\Catalog\CurlerProperty;
-use Lkrms\Curler\Contract\ICurlerPager;
 use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\AbstractBuilder;
+use Salient\Curler\Catalog\CurlerProperty;
+use Salient\Curler\Contract\ICurlerPager;
 use Salient\Http\Contract\HttpHeadersInterface;
 
 /**

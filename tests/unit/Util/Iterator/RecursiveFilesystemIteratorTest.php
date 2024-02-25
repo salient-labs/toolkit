@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Iterator;
 
-use Lkrms\Iterator\RecursiveFilesystemIterator;
+use Salient\Iterator\RecursiveFilesystemIterator;
 use Salient\Tests\TestCase;
 use FilesystemIterator;
 use LogicException;

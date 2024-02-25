@@ -1,15 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler;
+namespace Salient\Curler;
 
-use Lkrms\Curler\Catalog\CurlerProperty;
-use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Curler\Exception\CurlerCurlErrorException;
-use Lkrms\Curler\Exception\CurlerHttpErrorException;
-use Lkrms\Curler\Exception\CurlerInvalidResponseException;
-use Lkrms\Curler\Exception\CurlerUnexpectedResponseException;
-use Lkrms\Iterator\RecursiveCallbackIterator;
-use Lkrms\Iterator\RecursiveMutableGraphIterator;
 use Salient\Cache\CacheStore;
 use Salient\Core\Catalog\MimeType;
 use Salient\Core\Catalog\QueryFlag;
@@ -31,11 +23,19 @@ use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\DateFormatter;
+use Salient\Curler\Catalog\CurlerProperty;
+use Salient\Curler\Contract\ICurlerPager;
+use Salient\Curler\Exception\CurlerCurlErrorException;
+use Salient\Curler\Exception\CurlerHttpErrorException;
+use Salient\Curler\Exception\CurlerInvalidResponseException;
+use Salient\Curler\Exception\CurlerUnexpectedResponseException;
 use Salient\Http\Catalog\HttpHeader;
 use Salient\Http\Catalog\HttpHeaderGroup;
 use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Http\HttpHeaders;
+use Salient\Iterator\RecursiveCallbackIterator;
+use Salient\Iterator\RecursiveMutableGraphIterator;
 use CurlHandle;
 use DateTimeInterface;
 use Generator;

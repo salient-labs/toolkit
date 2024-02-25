@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Exception;
+namespace Salient\Curler\Exception;
 
 /**
  * Thrown when an invalid HTTP response is received

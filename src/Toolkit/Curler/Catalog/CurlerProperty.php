@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Catalog;
+namespace Salient\Curler\Catalog;
 
 use Salient\Core\AbstractDictionary;
 

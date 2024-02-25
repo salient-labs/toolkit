@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Curler\Pager;
+namespace Salient\Curler\Pager;
 
-use Lkrms\Curler\Contract\ICurlerPage;
-use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Curler\Support\CurlerPageBuilder;
-use Lkrms\Curler\Curler;
 use Salient\Core\Utility\Pcre;
+use Salient\Curler\Contract\ICurlerPage;
+use Salient\Curler\Contract\ICurlerPager;
+use Salient\Curler\Support\CurlerPageBuilder;
+use Salient\Curler\Curler;
 use Salient\Http\Catalog\HttpHeader;
 
 final class ODataPager implements ICurlerPager

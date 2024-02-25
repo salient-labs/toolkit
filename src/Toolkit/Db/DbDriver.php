@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Db;
+namespace Salient\Db;
 
 use Salient\Core\AbstractReflectiveEnumeration;
 use LogicException;

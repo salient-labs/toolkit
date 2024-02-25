@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Polyfill;
 
-use Lkrms\Polyfill\PhpToken;
+use Salient\Polyfill\PhpToken;
 
 final class PhpTokenTest extends PhpTokenTestCase
 {
