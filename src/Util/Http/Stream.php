@@ -16,20 +16,16 @@ use Stringable;
  */
 class Stream implements StreamInterface, Stringable
 {
+    protected ?string $Uri;
+    protected bool $IsReadable;
+    protected bool $IsWritable;
+    protected bool $IsSeekable;
+    protected ?int $Size = null;
+
     /**
      * @var resource|null
      */
     protected $Stream;
-
-    protected ?string $Uri;
-
-    protected bool $IsReadable;
-
-    protected bool $IsWritable;
-
-    protected bool $IsSeekable;
-
-    protected ?int $Size = null;
 
     /**
      * Creates a new Stream object
@@ -44,12 +40,12 @@ class Stream implements StreamInterface, Stringable
 
         $meta = stream_get_meta_data($stream);
 
-        $this->Stream = $stream;
         // @phpstan-ignore-next-line
         $this->Uri = $meta['uri'] ?? null;
         $this->IsReadable = strpbrk($meta['mode'], 'r+') !== false;
         $this->IsWritable = strpbrk($meta['mode'], 'waxc+') !== false;
         $this->IsSeekable = $meta['seekable'];
+        $this->Stream = $stream;
     }
 
     /**

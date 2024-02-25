@@ -15,7 +15,7 @@ use Stringable;
 /**
  * An [RFC3986]-compliant URI
  */
-class Uri implements JsonSerializable, Stringable, UriInterface
+class Uri implements UriInterface, Stringable, JsonSerializable
 {
     use HasImmutableProperties {
         withPropertyValue as with;
@@ -92,12 +92,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
             $uri = $this->encode($uri);
         }
 
-        if (!Pcre::match(
-            self::URI,
-            $uri,
-            $parts,
-            \PREG_UNMATCHED_AS_NULL
-        )) {
+        if (!Pcre::match(self::URI, $uri, $parts, \PREG_UNMATCHED_AS_NULL)) {
             throw new InvalidArgumentException(sprintf('Invalid URI: %s', $uri));
         }
 
@@ -126,9 +121,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
      */
     public static function fromParts(array $parts): self
     {
-        $uri = new static();
-        $uri->applyParts($parts);
-        return $uri;
+        return (new static())->applyParts($parts);
     }
 
     /**
@@ -192,7 +185,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
     }
 
     /**
-     * True if the URI is not absolute
+     * Check if the URI is not absolute
      */
     public function isReference(): bool
     {
@@ -504,6 +497,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ($uri instanceof static) {
             return $uri;
         }
+
         return new static((string) $uri);
     }
 
@@ -530,8 +524,9 @@ class Uri implements JsonSerializable, Stringable, UriInterface
 
     /**
      * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
+     * @return $this
      */
-    private function applyParts(array $parts): void
+    private function applyParts(array $parts): self
     {
         $this->Scheme = $this->filterScheme($parts['scheme'] ?? null);
         $this->User = $this->filterUserInfoPart($parts['user'] ?? null);
@@ -545,6 +540,8 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ($this->Password !== null) {
             $this->User ??= '';
         }
+
+        return $this;
     }
 
     private function filterScheme(?string $scheme, bool $validate = true): ?string
@@ -552,11 +549,13 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ((string) $scheme === '') {
             return null;
         }
+
         if ($validate && !Pcre::match(self::URI_SCHEME, $scheme)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid scheme: %s', $scheme)
             );
         }
+
         return Str::lower($scheme);
     }
 
@@ -565,6 +564,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ((string) $part === '') {
             return $part;
         }
+
         return $this->normaliseComponent($part, '[]#/:?@[]');
     }
 
@@ -573,6 +573,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ((string) $host === '') {
             return $host;
         }
+
         if ($validate) {
             $host = $this->encode($host);
             if (!Pcre::match(self::URI_HOST, $host)) {
@@ -581,6 +582,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
                 );
             }
         }
+
         return $this->normaliseComponent(
             Str::lower($this->decodeUnreserved($host)),
             '[#/?@]',
@@ -596,12 +598,14 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ((string) $port === '') {
             return null;
         }
+
         $port = (int) $port;
         if ($port < 0 || $port > 65535) {
             throw new InvalidArgumentException(
                 sprintf('Invalid port: %d', $port)
             );
         }
+
         return $port;
     }
 
@@ -610,6 +614,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ((string) $path === '') {
             return '';
         }
+
         return $this->normaliseComponent($path, '[]#?[]');
     }
 
@@ -618,6 +623,7 @@ class Uri implements JsonSerializable, Stringable, UriInterface
         if ((string) $part === '') {
             return $part;
         }
+
         return $this->normaliseComponent($part, '[]#[]');
     }
 
