@@ -16,7 +16,7 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Contract\Chainable;
@@ -237,7 +237,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
         string $entity,
         ISyncProvider $provider,
         array $operations = [],
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
@@ -472,7 +472,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
                     if (!$closure) {
                         $closure = in_array(
                             $this->Conformity,
-                            [Conformity::PARTIAL, Conformity::COMPLETE]
+                            [ListConformity::PARTIAL, ListConformity::COMPLETE]
                         )
                             ? SyncIntrospector::getService($ctx->container(), $this->Entity)
                                 ->getCreateSyncEntityFromSignatureClosure(array_keys($data))

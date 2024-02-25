@@ -6,8 +6,8 @@ use Salient\Cli\Catalog\CliHelpSectionName;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliHelpStyle;
 use Salient\Container\Contract\HasContainer;
-use Salient\Core\Contract\HasDescription;
-use Salient\Core\Contract\HasName;
+use Salient\Core\Contract\Describable;
+use Salient\Core\Contract\Nameable;
 use LogicException;
 
 /**
@@ -19,7 +19,7 @@ use LogicException;
  *
  * @see CliCommand
  */
-interface CliCommandNodeInterface extends HasContainer, HasName, HasDescription
+interface CliCommandNodeInterface extends HasContainer, Nameable, Describable
 {
     /**
      * Get the command name as a string of space-delimited subcommands

@@ -5,11 +5,11 @@ namespace Salient\Core\Contract;
 /**
  * A generic entity serviced by a provider
  *
- * @template TProvider of IProvider
- * @template TContext of IProviderContext
+ * @template TProvider of ProviderInterface
+ * @template TContext of ProviderContextInterface
  *
- * @extends IProvidable<TProvider,TContext>
+ * @extends Providable<TProvider,TContext>
  */
-interface IProviderEntity extends
-    IEntity,
-    IProvidable {}
+interface ProvidableEntityInterface extends
+    EntityInterface,
+    Providable {}

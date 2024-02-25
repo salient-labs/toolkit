@@ -5,7 +5,7 @@ namespace Lkrms\Tests\Sync\Entity;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
-use Salient\Core\Catalog\RelationshipType;
+use Salient\Core\Catalog\Cardinality;
 
 /**
  * Represents the state of an Album entity in a backend
@@ -40,8 +40,8 @@ class Album extends SyncEntity
     public static function getRelationships(): array
     {
         return [
-            'User' => [RelationshipType::ONE_TO_ONE => User::class],
-            'Photos' => [RelationshipType::ONE_TO_MANY => Photo::class],
+            'User' => [Cardinality::ONE_TO_ONE => User::class],
+            'Photos' => [Cardinality::ONE_TO_MANY => Photo::class],
         ];
     }
 }

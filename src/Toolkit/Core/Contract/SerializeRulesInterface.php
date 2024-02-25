@@ -7,7 +7,7 @@ use Salient\Core\DateFormatter;
 /**
  * Instructions for serializing nested entities
  */
-interface ISerializeRules
+interface SerializeRulesInterface
 {
     /**
      * Override the default date formatter

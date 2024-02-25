@@ -4,20 +4,20 @@ namespace Salient\Core\Contract;
 
 use Salient\Container\Contract\HasContainer;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Contract\Immutable;
 
 /**
  * The context within which entities of a given type are instantiated by a
  * provider
  *
- * @template TProvider of IProvider
- * @template TEntity of IProvidable
+ * @template TProvider of ProviderInterface
+ * @template TEntity of Providable
  *
  * @extends HasContainer<ContainerInterface>
  * @extends HasProvider<TProvider>
  */
-interface IProviderContext extends
+interface ProviderContextInterface extends
     Immutable,
     HasContainer,
     HasProvider
@@ -66,10 +66,10 @@ interface IProviderContext extends
      *
      * @see IProviderContext::push()
      *
-     * @param (TEntity&ITreeable)|null $parent
+     * @param (TEntity&Treeable)|null $parent
      * @return static
      */
-    public function withParent(?ITreeable $parent);
+    public function withParent(?Treeable $parent);
 
     /**
      * Apply the current payload's array key conformity to the context
@@ -84,7 +84,7 @@ interface IProviderContext extends
     /**
      * @return TProvider
      */
-    public function provider(): IProvider;
+    public function provider(): ProviderInterface;
 
     /**
      * Get the entities responsible for propagating this context
@@ -99,14 +99,14 @@ interface IProviderContext extends
      *
      * @return TEntity|null
      */
-    public function last(): ?IProvidable;
+    public function last(): ?Providable;
 
     /**
      * Get the parent entity applied to the context
      *
-     * @return (TEntity&ITreeable)|null
+     * @return (TEntity&Treeable)|null
      */
-    public function getParent(): ?ITreeable;
+    public function getParent(): ?Treeable;
 
     /**
      * Get a value previously applied to the context

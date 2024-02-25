@@ -3,13 +3,13 @@
 namespace Salient\Core;
 
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Contract\HasIdentifier;
-use Salient\Core\Contract\IProvidable;
-use Salient\Core\Contract\IProvider;
-use Salient\Core\Contract\IProviderContext;
-use Salient\Core\Contract\ITreeable;
+use Salient\Core\Contract\Identifiable;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Core\Contract\ProviderInterface;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 
@@ -17,12 +17,12 @@ use Salient\Core\Utility\Str;
  * The context within which entities of a given type are instantiated by a
  * provider
  *
- * @template TProvider of IProvider
- * @template TEntity of IProvidable
+ * @template TProvider of ProviderInterface
+ * @template TEntity of Providable
  *
- * @implements IProviderContext<TProvider,TEntity>
+ * @implements ProviderContextInterface<TProvider,TEntity>
  */
-class ProviderContext implements IProviderContext
+class ProviderContext implements ProviderContextInterface
 {
     use HasImmutableProperties;
 
@@ -31,7 +31,7 @@ class ProviderContext implements IProviderContext
     /**
      * @var TProvider
      */
-    protected IProvider $Provider;
+    protected ProviderInterface $Provider;
 
     /**
      * @var TEntity[]
@@ -44,14 +44,14 @@ class ProviderContext implements IProviderContext
     protected array $Values = [];
 
     /**
-     * @var (TEntity&ITreeable)|null
+     * @var (TEntity&Treeable)|null
      */
-    protected ?ITreeable $Parent = null;
+    protected ?Treeable $Parent = null;
 
     /**
      * @var Conformity::*
      */
-    protected $Conformity = Conformity::NONE;
+    protected $Conformity = ListConformity::NONE;
 
     /**
      * Creates a new ProviderContext object
@@ -60,7 +60,7 @@ class ProviderContext implements IProviderContext
      */
     public function __construct(
         ContainerInterface $container,
-        IProvider $provider
+        ProviderInterface $provider
     ) {
         $this->Container = $container;
         $this->Provider = $provider;
@@ -85,7 +85,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function provider(): IProvider
+    final public function provider(): ProviderInterface
     {
         return $this->Provider;
     }
@@ -93,7 +93,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function requireProvider(): IProvider
+    final public function requireProvider(): ProviderInterface
     {
         return $this->Provider;
     }
@@ -114,7 +114,7 @@ class ProviderContext implements IProviderContext
         $clone = $this->clone();
         $clone->Stack[] = $entity;
 
-        if ($entity instanceof HasIdentifier) {
+        if ($entity instanceof Identifiable) {
             $id = $entity->id();
             if ($id !== null) {
                 $name = Get::basename(get_class($entity));
@@ -147,7 +147,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function withParent(?ITreeable $parent)
+    final public function withParent(?Treeable $parent)
     {
         return $this->withPropertyValue('Parent', $parent);
     }
@@ -171,7 +171,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function last(): ?IProvidable
+    final public function last(): ?Providable
     {
         return end($this->Stack) ?: null;
     }
@@ -179,7 +179,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function getParent(): ?ITreeable
+    final public function getParent(): ?Treeable
     {
         return $this->Parent;
     }

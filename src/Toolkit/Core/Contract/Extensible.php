@@ -5,7 +5,7 @@ namespace Salient\Core\Contract;
 /**
  * Reads and writes arbitrary undeclared properties
  */
-interface IExtensible
+interface Extensible
 {
     /**
      * Set the value of an undeclared property

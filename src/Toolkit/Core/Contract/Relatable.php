@@ -2,13 +2,13 @@
 
 namespace Salient\Core\Contract;
 
-use Salient\Core\Catalog\RelationshipType;
+use Salient\Core\Catalog\Cardinality;
 
 /**
  * Has one-to-one and one-to-many relationships with other classes implementing
  * the same interface
  */
-interface IRelatable
+interface Relatable
 {
     /**
      * Get an array that maps property names to relationships
@@ -26,7 +26,7 @@ interface IRelatable
      * }
      * ```
      *
-     * @return array<string,array<RelationshipType::*,class-string<IRelatable>>>
+     * @return array<string,array<RelationshipType::*,class-string<Relatable>>>
      * Property name => relationship type => target class
      */
     public static function getRelationships(): array;

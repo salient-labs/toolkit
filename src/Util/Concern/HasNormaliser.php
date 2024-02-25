@@ -2,14 +2,14 @@
 
 namespace Lkrms\Concern;
 
-use Salient\Core\Contract\ReturnsNormaliser;
+use Salient\Core\Contract\NormaliserFactory;
 use Salient\Core\Utility\Str;
 use Closure;
 
 /**
  * Implements ReturnsNormaliser
  *
- * @see ReturnsNormaliser
+ * @see NormaliserFactory
  */
 trait HasNormaliser
 {

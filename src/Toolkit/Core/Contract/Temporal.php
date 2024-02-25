@@ -9,7 +9,7 @@ use DateTimeInterface;
  *
  * The properties need not be declared if the class uses property overloading.
  */
-interface HasDateProperties
+interface Temporal
 {
     /**
      * Get properties that store date and time values, or ["*"] to detect date

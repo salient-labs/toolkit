@@ -18,15 +18,15 @@ use Salient\Core\Catalog\Regex;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
-use Salient\Core\Provider;
 use Closure;
 use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
  */
-abstract class SyncProvider extends Provider implements ISyncProvider, HasServices, HasContextualBindings
+abstract class SyncProvider extends AbstractProvider implements ISyncProvider, HasServices, HasContextualBindings
 {
     /**
      * Get a dependency substitution map for the provider

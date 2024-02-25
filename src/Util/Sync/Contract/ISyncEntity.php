@@ -8,11 +8,11 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Contract\HasIdentifier;
-use Salient\Core\Contract\HasName;
-use Salient\Core\Contract\IProvidable;
-use Salient\Core\Contract\IProviderEntity;
-use Salient\Core\Contract\IRelatable;
+use Salient\Core\Contract\Identifiable;
+use Salient\Core\Contract\Nameable;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\ProvidableEntityInterface;
+use Salient\Core\Contract\Relatable;
 use JsonSerializable;
 
 /**
@@ -20,13 +20,13 @@ use JsonSerializable;
  *
  * @see SyncEntity
  *
- * @extends IProviderEntity<ISyncProvider,ISyncContext>
+ * @extends ProvidableEntityInterface<ISyncProvider,ISyncContext>
  */
 interface ISyncEntity extends
-    HasIdentifier,
-    HasName,
-    IProviderEntity,
-    IRelatable,
+    Identifiable,
+    Nameable,
+    ProvidableEntityInterface,
+    Relatable,
     JsonSerializable
 {
     /**

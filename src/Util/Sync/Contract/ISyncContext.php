@@ -9,15 +9,15 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Exception\SyncEntityRecursionException;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
-use Salient\Core\Contract\IProvidable;
-use Salient\Core\Contract\IProviderContext;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\ProviderContextInterface;
 
 /**
  * The context within which sync entities are instantiated by a provider
  *
- * @extends IProviderContext<ISyncProvider,ISyncEntity>
+ * @extends ProviderContextInterface<ISyncProvider,ISyncEntity>
  */
-interface ISyncContext extends IProviderContext
+interface ISyncContext extends ProviderContextInterface
 {
     /**
      * Normalise optional sync operation arguments and apply them to the context

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Core\Contract\HasName;
+use Salient\Core\Contract\Nameable;
 use Salient\Core\Facade\Event;
 use Salient\Core\EventDispatcher;
 use Salient\Tests\Core\EventDispatcher\BaseEvent;
@@ -28,7 +28,7 @@ final class EventDispatcherTest extends TestCase
 
         $logger =
             function (object $event, array &$log): void {
-                if ($event instanceof HasName) {
+                if ($event instanceof Nameable) {
                     $log[] = [$event->name() => get_class($event)];
                     return;
                 }

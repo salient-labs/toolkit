@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Contract;
 
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 
 /**
  * @template TInput

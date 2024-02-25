@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Contract;
 
-interface HasIdentifier
+interface Identifiable
 {
     /**
      * Get the object's unique identifier

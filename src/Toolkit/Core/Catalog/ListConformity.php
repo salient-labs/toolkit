@@ -9,7 +9,7 @@ use Salient\Core\AbstractEnumeration;
  *
  * @extends AbstractEnumeration<int>
  */
-final class Conformity extends AbstractEnumeration
+final class ListConformity extends AbstractEnumeration
 {
     /**
      * Arrays may have different keys in different orders

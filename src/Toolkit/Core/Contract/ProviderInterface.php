@@ -11,11 +11,11 @@ use Stringable;
 /**
  * Services objects on behalf of a backend
  *
- * @template TContext of IProviderContext
+ * @template TContext of ProviderContextInterface
  *
  * @extends HasContainer<ContainerInterface>
  */
-interface IProvider extends HasContainer, HasName
+interface ProviderInterface extends HasContainer, Nameable
 {
     /**
      * Get the name of the provider
@@ -34,7 +34,7 @@ interface IProvider extends HasContainer, HasName
      *
      * @return TContext
      */
-    public function getContext(?ContainerInterface $container = null): IProviderContext;
+    public function getContext(?ContainerInterface $container = null): ProviderContextInterface;
 
     /**
      * Get a stable list of values that, together with the name of the class,

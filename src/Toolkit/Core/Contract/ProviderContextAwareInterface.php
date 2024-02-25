@@ -5,16 +5,16 @@ namespace Salient\Core\Contract;
 /**
  * Returns a provider context
  *
- * @template TContext of IProviderContext
+ * @template TContext of ProviderContextInterface
  */
-interface HasProviderContext
+interface ProviderContextAwareInterface
 {
     /**
      * Get the object's current provider context
      *
      * @return TContext|null
      */
-    public function context(): ?IProviderContext;
+    public function context(): ?ProviderContextInterface;
 
     /**
      * Get the object's current provider context, or throw an exception if no
@@ -22,5 +22,5 @@ interface HasProviderContext
      *
      * @return TContext
      */
-    public function requireContext(): IProviderContext;
+    public function requireContext(): ProviderContextInterface;
 }

@@ -20,11 +20,11 @@ use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Contract\Buildable;
-use Salient\Core\Contract\IProviderContext;
 use Salient\Core\Contract\PipelineInterface;
+use Salient\Core\Contract\ProviderContextInterface;
 use Salient\Core\Contract\StreamPipelineInterface;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
@@ -262,7 +262,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
         ?HttpHeadersInterface $headers = null,
         ?ICurlerPager $pager = null,
         ?callable $callback = null,
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,

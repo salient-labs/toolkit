@@ -3,7 +3,7 @@
 namespace Salient\Tests\Core;
 
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Pipeline;
 use Salient\Tests\TestCase;
@@ -270,7 +270,7 @@ final class PipelineTest extends TestCase
         $out = [];
         $err = [];
 
-        foreach ([Conformity::COMPLETE, Conformity::NONE] as $conformity) {
+        foreach ([ListConformity::COMPLETE, ListConformity::NONE] as $conformity) {
             foreach ([$good, $bad, $ugly] as $i => $in) {
                 $pipeline = Pipeline::create()
                     ->stream($in)

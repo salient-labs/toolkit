@@ -4,17 +4,17 @@ namespace Lkrms\Concern;
 
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
-use Salient\Core\Contract\IConstructible;
-use Salient\Core\Contract\IExtensible;
-use Salient\Core\Contract\ITreeable;
+use Salient\Core\Catalog\ListConformity;
+use Salient\Core\Contract\Constructible;
+use Salient\Core\Contract\Extensible;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Introspector;
 use Generator;
 
 /**
  * Implements IConstructible to create instances from associative arrays
  *
- * @see IConstructible
+ * @see Constructible
  */
 trait TConstructible
 {
@@ -32,7 +32,7 @@ trait TConstructible
      * @param mixed[] $data
      * @param ContainerInterface|null $container Used to create the instance if
      * set.
-     * @param (ITreeable&static)|null $parent If the class implements
+     * @param (Treeable&static)|null $parent If the class implements
      * {@see ITreeable}, pass `$parent` to the instance via
      * {@see ITreeable::setParent()}.
      * @return static
@@ -57,14 +57,14 @@ trait TConstructible
      * wherever possible to improve performance.
      * @param ContainerInterface|null $container Used to create each instance if
      * set.
-     * @param (ITreeable&static)|null $parent If the class implements
+     * @param (Treeable&static)|null $parent If the class implements
      * {@see ITreeable}, pass `$parent` to each instance via
      * {@see ITreeable::setParent()}.
      * @return Generator<static>
      */
     final public static function constructList(
         iterable $list,
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         ?ContainerInterface $container = null,
         $parent = null
     ): Generator {
@@ -77,7 +77,7 @@ trait TConstructible
             if (!$closure) {
                 $builder = Introspector::getService($container, static::class);
                 $closure =
-                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE])
+                    in_array($conformity, [ListConformity::PARTIAL, ListConformity::COMPLETE])
                         ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
                         : $builder->getCreateFromClosure(true);
             }

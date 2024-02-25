@@ -2,13 +2,13 @@
 
 namespace Lkrms\Concern;
 
-use Salient\Core\Contract\IExtensible;
+use Salient\Core\Contract\Extensible;
 use Salient\Core\Introspector as IS;
 
 /**
  * Implements IExtensible to store arbitrary property values
  *
- * @see IExtensible
+ * @see Extensible
  */
 trait TExtensible
 {

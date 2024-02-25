@@ -5,25 +5,25 @@ namespace Salient\Core\Contract;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Salient\Container\Contract\HasService;
 use Salient\Container\Contract\ServiceAwareInterface;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 
 /**
  * Serviced by a provider
  *
- * @template TProvider of IProvider
- * @template TContext of IProviderContext
+ * @template TProvider of ProviderInterface
+ * @template TContext of ProviderContextInterface
  *
- * @extends ReceivesProvider<TProvider>
+ * @extends ProviderAwareInterface<TProvider>
  * @extends ReceivesProviderContext<TContext>
  * @extends HasProvider<TProvider>
- * @extends HasProviderContext<TContext>
+ * @extends ProviderContextAwareInterface<TContext>
  */
-interface IProvidable extends
-    ReceivesProvider,
+interface Providable extends
+    ProviderAwareInterface,
     ReceivesProviderContext,
     ServiceAwareInterface,
     HasProvider,
-    HasProviderContext,
+    ProviderContextAwareInterface,
     HasService
 {
     /**
@@ -36,8 +36,8 @@ interface IProvidable extends
      */
     public static function provide(
         array $data,
-        IProvider $provider,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        ?ProviderContextInterface $context = null
     );
 
     /**
@@ -51,9 +51,9 @@ interface IProvidable extends
      */
     public static function provideList(
         iterable $list,
-        IProvider $provider,
-        $conformity = Conformity::NONE,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        $conformity = ListConformity::NONE,
+        ?ProviderContextInterface $context = null
     ): FluentIteratorInterface;
 
     /**

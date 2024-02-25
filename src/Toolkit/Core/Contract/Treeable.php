@@ -8,7 +8,7 @@ namespace Salient\Core\Contract;
  *
  * The property need not be declared if the class uses property overloading.
  */
-interface HasParentProperty
+interface Treeable
 {
     /**
      * Get the name of the property that links the object to a parent of the

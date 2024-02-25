@@ -12,7 +12,7 @@ use Salient\Console\Support\ConsoleMarkdownFormat;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Container\Application;
 use Salient\Core\Catalog\EnvFlag;
-use Salient\Core\Contract\HasJsonSchema;
+use Salient\Core\Contract\JsonSchemaInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Assert;
@@ -393,7 +393,7 @@ class CliApplication extends Application implements CliApplicationInterface
                 array_shift($args);
                 $schema = $command->getJsonSchema();
                 echo Json::prettyPrint([
-                    '$schema' => $schema['$schema'] ?? HasJsonSchema::DRAFT_04_SCHEMA_ID,
+                    '$schema' => $schema['$schema'] ?? JsonSchemaInterface::DRAFT_04_SCHEMA_ID,
                     'title' => $args[0] ?? $schema['title'] ?? trim($this->getProgramName() . " $name") . ' options',
                 ] + $schema) . \PHP_EOL;
                 return $this;

@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Salient\Core\Contract\ISerializeRules;
+use Salient\Core\Contract\SerializeRulesInterface;
 
 /**
  * Instructions for serializing nested sync entities
  */
-interface ISyncSerializeRules extends ISerializeRules
+interface ISyncSerializeRules extends SerializeRulesInterface
 {
     /**
      * Remove CanonicalId from sync entities?

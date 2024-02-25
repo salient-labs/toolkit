@@ -22,9 +22,9 @@ use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
-use Salient\Core\Entity;
+use Salient\Core\AbstractEntity;
+use Salient\Core\AbstractProvider;
 use Salient\Core\Introspector;
-use Salient\Core\Provider;
 use Salient\Core\ProviderContext;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
@@ -200,7 +200,7 @@ abstract class GenerateCommand extends Command
     protected string $InputClassType;
 
     /**
-     * @var Introspector<object,Provider,Entity,ProviderContext<Provider,Entity>>
+     * @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>>
      */
     protected Introspector $InputIntrospector;
 

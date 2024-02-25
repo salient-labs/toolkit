@@ -26,15 +26,15 @@ use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
-use Salient\Core\Contract\HasDescription;
-use Salient\Core\Contract\IProvider;
-use Salient\Core\Contract\IProviderContext;
+use Salient\Core\Contract\Describable;
+use Salient\Core\Contract\NormaliserFactory;
+use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Contract\Readable;
-use Salient\Core\Contract\ReturnsNormaliser;
 use Salient\Core\Contract\Writable;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
@@ -42,8 +42,8 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
-use Salient\Core\Entity;
 use Closure;
 use DateTimeInterface;
 use Generator;
@@ -73,7 +73,7 @@ use ReflectionClass;
  * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
  * nested entities.
  */
-abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormaliser
+abstract class SyncEntity extends AbstractEntity implements ISyncEntity, NormaliserFactory
 {
     /** @use TProvidable<ISyncProvider,ISyncContext> */
     use TConstructible, HasReadableProperties, HasWritableProperties, TExtensible, TProvidable, HasNormaliser, RequiresContainer;
@@ -350,7 +350,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                         : $this->Id,
                     '@name' => $this->name(),
                     '@description' =>
-                        $this instanceof HasDescription
+                        $this instanceof Describable
                             ? $this->description()
                             : null,
                 ]);
@@ -651,8 +651,8 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     final public static function provide(
         array $data,
-        IProvider $provider,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        ?ProviderContextInterface $context = null
     ) {
         $container = $context
             ? $context->container()
@@ -676,9 +676,9 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     final public static function provideList(
         iterable $list,
-        IProvider $provider,
-        $conformity = Conformity::NONE,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        $conformity = ListConformity::NONE,
+        ?ProviderContextInterface $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
             self::_provideList($list, $provider, $conformity, $context)
@@ -788,9 +788,9 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     private static function _provideList(
         iterable $list,
-        IProvider $provider,
+        ProviderInterface $provider,
         $conformity,
-        ?IProviderContext $context
+        ?ProviderContextInterface $context
     ): Generator {
         $container = $context
             ? $context->container()
@@ -807,7 +807,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
-                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE])
+                    in_array($conformity, [ListConformity::PARTIAL, ListConformity::COMPLETE])
                         ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
                         : $introspector->getCreateSyncEntityFromClosure();
             }

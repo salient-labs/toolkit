@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Contract;
 
-interface HasJsonSchema
+interface JsonSchemaInterface
 {
     public const DRAFT_04_SCHEMA_ID = 'http://json-schema.org/draft-04/schema#';
 

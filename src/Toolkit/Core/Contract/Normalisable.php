@@ -5,7 +5,7 @@ namespace Salient\Core\Contract;
 /**
  * Normalises the names of its properties
  */
-interface IResolvable
+interface Normalisable
 {
     /**
      * Normalise a property name

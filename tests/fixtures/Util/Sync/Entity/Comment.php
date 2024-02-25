@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Sync\Entity;
 
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
-use Salient\Core\Catalog\RelationshipType;
+use Salient\Core\Catalog\Cardinality;
 
 /**
  * Represents the state of a Comment entity in a backend
@@ -44,7 +44,7 @@ class Comment extends SyncEntity
     public static function getRelationships(): array
     {
         return [
-            'Post' => [RelationshipType::ONE_TO_ONE => Post::class],
+            'Post' => [Cardinality::ONE_TO_ONE => Post::class],
         ];
     }
 }

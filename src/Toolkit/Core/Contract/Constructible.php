@@ -3,12 +3,12 @@
 namespace Salient\Core\Contract;
 
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 
 /**
  * Creates instances of itself from data in associative arrays
  */
-interface IConstructible
+interface Constructible
 {
     /**
      * @param mixed[] $data
@@ -26,7 +26,7 @@ interface IConstructible
      */
     public static function constructList(
         iterable $list,
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         ?ContainerInterface $container = null
     ): iterable;
 }

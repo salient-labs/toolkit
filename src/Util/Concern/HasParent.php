@@ -2,14 +2,14 @@
 
 namespace Lkrms\Concern;
 
-use Salient\Core\Contract\ITreeable;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Introspector;
 use LogicException;
 
 /**
  * Implements ITreeable
  *
- * @see ITreeable
+ * @see Treeable
  */
 trait HasParent
 {
@@ -36,7 +36,7 @@ trait HasParent
                 sprintf(
                     '%s does not implement %s or does not return valid parent/child properties',
                     static::class,
-                    ITreeable::class,
+                    Treeable::class,
                 )
             );
         }
@@ -78,7 +78,7 @@ trait HasParent
     }
 
     /**
-     * @param (ITreeable&static)|null $parent
+     * @param (Treeable&static)|null $parent
      * @return $this
      */
     final public function setParent($parent)

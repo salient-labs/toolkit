@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Catalog;
 
-use Salient\Core\Contract\IResolvable;
-use Salient\Core\Contract\ReturnsNormaliser;
+use Salient\Core\Contract\Normalisable;
+use Salient\Core\Contract\NormaliserFactory;
 use Salient\Core\AbstractEnumeration;
 
 /**

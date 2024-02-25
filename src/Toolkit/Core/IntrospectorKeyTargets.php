@@ -3,8 +3,8 @@
 namespace Salient\Core;
 
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\IProvider;
-use Salient\Core\Contract\IProviderContext;
+use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Contract\Readable;
 use Closure;
 
@@ -26,8 +26,8 @@ use Closure;
  *
  * @template TIntrospector of Introspector
  * @template TClass of object
- * @template TProvider of IProvider
- * @template TContext of IProviderContext
+ * @template TProvider of ProviderInterface
+ * @template TContext of ProviderContextInterface
  */
 final class IntrospectorKeyTargets implements Readable
 {

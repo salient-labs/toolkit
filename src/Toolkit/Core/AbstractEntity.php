@@ -2,12 +2,12 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Contract\IProviderEntity;
+use Salient\Core\Contract\ProvidableEntityInterface;
 use Salient\Core\ProviderContext;
 
 /**
  * Base class for entities
  *
- * @implements IProviderEntity<Provider,ProviderContext<Provider,self>>
+ * @implements ProvidableEntityInterface<AbstractProvider,ProviderContext<AbstractProvider,self>>
  */
-abstract class Entity implements IProviderEntity {}
+abstract class AbstractEntity implements ProvidableEntityInterface {}

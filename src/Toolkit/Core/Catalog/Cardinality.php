@@ -9,7 +9,7 @@ use Salient\Core\AbstractEnumeration;
  *
  * @extends AbstractEnumeration<int>
  */
-final class RelationshipType extends AbstractEnumeration
+final class Cardinality extends AbstractEnumeration
 {
     public const ONE_TO_ONE = 0;
     public const ONE_TO_MANY = 1;

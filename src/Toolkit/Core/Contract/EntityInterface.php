@@ -8,13 +8,13 @@ use Salient\Core\Contract\Writable;
 /**
  * A generic entity
  */
-interface IEntity extends
-    IResolvable,
-    IConstructible,
+interface EntityInterface extends
+    Normalisable,
+    Constructible,
     Readable,
     Writable,
-    IExtensible,
-    HasDateProperties
+    Extensible,
+    Temporal
 {
     /**
      * Get the plural form of the entity's class name

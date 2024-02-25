@@ -5,22 +5,22 @@ namespace Salient\Core;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Contract\DateFormatterInterface;
-use Salient\Core\Contract\HasName;
-use Salient\Core\Contract\IExtensible;
-use Salient\Core\Contract\IProvidable;
-use Salient\Core\Contract\IProvider;
-use Salient\Core\Contract\IProviderContext;
-use Salient\Core\Contract\IRelatable;
-use Salient\Core\Contract\IResolvable;
-use Salient\Core\Contract\ISerializeRules;
-use Salient\Core\Contract\ITreeable;
-use Salient\Core\Contract\ReturnsNormaliser;
+use Salient\Core\Contract\Extensible;
+use Salient\Core\Contract\Nameable;
+use Salient\Core\Contract\Normalisable;
+use Salient\Core\Contract\NormaliserFactory;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Core\Contract\ProviderInterface;
+use Salient\Core\Contract\Relatable;
+use Salient\Core\Contract\SerializeRulesInterface;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
+use Salient\Core\AbstractEntity;
+use Salient\Core\AbstractProvider;
 use Salient\Core\DateFormatter;
-use Salient\Core\Entity;
-use Salient\Core\Provider;
 use Closure;
 use LogicException;
 
@@ -53,8 +53,8 @@ use LogicException;
  * @property-read string[] $NormalisedKeys Normalised properties (declared and "magic" property names)
  * @property-read string|null $ParentProperty The normalised parent property
  * @property-read string|null $ChildrenProperty The normalised children property
- * @property-read array<string,class-string<IRelatable>> $OneToOneRelationships One-to-one relationships between the class and others (normalised property name => target class)
- * @property-read array<string,class-string<IRelatable>> $OneToManyRelationships One-to-many relationships between the class and others (normalised property name => target class)
+ * @property-read array<string,class-string<Relatable>> $OneToOneRelationships One-to-one relationships between the class and others (normalised property name => target class)
+ * @property-read array<string,class-string<Relatable>> $OneToManyRelationships One-to-many relationships between the class and others (normalised property name => target class)
  * @property-read string[] $DateKeys Normalised date properties (declared and "magic" property names)
  *
  * @method string[] getReadableProperties() Get readable properties, including "magic" properties
@@ -62,9 +62,9 @@ use LogicException;
  * @method bool propertyActionIsAllowed(string $property, IntrospectionClass::ACTION_* $action) True if an action can be performed on a property
  *
  * @template TClass of object
- * @template TProvider of IProvider
- * @template TEntity of IProvidable
- * @template TContext of IProviderContext
+ * @template TProvider of ProviderInterface
+ * @template TEntity of Providable
+ * @template TContext of ProviderContextInterface
  */
 class Introspector
 {
@@ -107,15 +107,15 @@ class Introspector
      * @template T of object
      *
      * @param class-string<T> $service
-     * @return static<T,Provider,Entity,ProviderContext<Provider,Entity>>
+     * @return static<T,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>>
      */
     public static function getService(ContainerInterface $container, string $service)
     {
         return new static(
             $service,
             $container->getName($service),
-            Provider::class,
-            Entity::class,
+            AbstractProvider::class,
+            AbstractEntity::class,
             ProviderContext::class,
         );
     }
@@ -126,15 +126,15 @@ class Introspector
      * @template T of object
      *
      * @param class-string<T> $class
-     * @return static<T,Provider,Entity,ProviderContext<Provider,Entity>>
+     * @return static<T,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>>
      */
     public static function get(string $class)
     {
         return new static(
             $class,
             $class,
-            Provider::class,
-            Entity::class,
+            AbstractProvider::class,
+            AbstractEntity::class,
             ProviderContext::class,
         );
     }
@@ -224,7 +224,7 @@ class Introspector
      *
      * @param bool $strict If `true`, the closure will throw an exception if it
      * receives any data that would be discarded.
-     * @return Closure(mixed[], ContainerInterface, DateFormatterInterface|null=, ITreeable|null=): TClass
+     * @return Closure(mixed[], ContainerInterface, DateFormatterInterface|null=, Treeable|null=): TClass
      */
     final public function getCreateFromClosure(bool $strict = false): Closure
     {
@@ -241,7 +241,7 @@ class Introspector
                 array $array,
                 ContainerInterface $container,
                 ?DateFormatterInterface $dateFormatter = null,
-                ?ITreeable $parent = null
+                ?Treeable $parent = null
             ) use ($strict) {
                 $keys = array_keys($array);
                 $closure = $this->getCreateFromSignatureClosure($keys, $strict);
@@ -260,7 +260,7 @@ class Introspector
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], ContainerInterface, DateFormatterInterface|null=, ITreeable|null=): TClass
+     * @return Closure(mixed[], ContainerInterface, DateFormatterInterface|null=, Treeable|null=): TClass
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -289,7 +289,7 @@ class Introspector
                 array $array,
                 ContainerInterface $container,
                 ?DateFormatterInterface $dateFormatter = null,
-                ?ITreeable $parent = null
+                ?Treeable $parent = null
             ) use ($closure, $service) {
                 return $closure(
                     $array,
@@ -327,8 +327,8 @@ class Introspector
         $closure =
             function (
                 array $array,
-                IProvider $provider,
-                IProviderContext $context
+                ProviderInterface $provider,
+                ProviderContextInterface $context
             ) use ($strict) {
                 $keys = array_keys($array);
                 $closure = $this->getCreateProvidableFromSignatureClosure($keys, $strict);
@@ -372,8 +372,8 @@ class Introspector
         return
             static function (
                 array $array,
-                IProvider $provider,
-                IProviderContext $context
+                ProviderInterface $provider,
+                ProviderContextInterface $context
             ) use ($closure, $service) {
                 return $closure(
                     $array,
@@ -389,7 +389,7 @@ class Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], class-string|null, ContainerInterface, TProvider|null, TContext|null, DateFormatterInterface|null, ITreeable|null): TClass
+     * @return Closure(mixed[], class-string|null, ContainerInterface, TProvider|null, TContext|null, DateFormatterInterface|null, Treeable|null): TClass
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -407,15 +407,15 @@ class Introspector
             array $array,
             ?string $service,
             ContainerInterface $container,
-            ?IProvider $provider,
-            ?IProviderContext $context,
+            ?ProviderInterface $provider,
+            ?ProviderContextInterface $context,
             ?DateFormatterInterface $dateFormatter,
-            ?ITreeable $parent
+            ?Treeable $parent
         ) use ($constructor, $updater, $resolver) {
             $obj = $constructor($array, $service, $container);
             $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
             $obj = $resolver($array, $service, $obj, $provider, $context);
-            if ($obj instanceof IProvidable) {
+            if ($obj instanceof Providable) {
                 $obj->postLoad();
             }
             return $obj;
@@ -825,7 +825,7 @@ class Introspector
                 };
     }
 
-    final public function getSerializeClosure(?ISerializeRules $rules = null): Closure
+    final public function getSerializeClosure(?SerializeRulesInterface $rules = null): Closure
     {
         $rules = $rules
             ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
@@ -869,7 +869,7 @@ class Introspector
         })->bindTo(null, $this->_Class->Class);
 
         if ($includeMeta) {
-            $closure = static function (IExtensible $instance) use ($closure) {
+            $closure = static function (Extensible $instance) use ($closure) {
                 $meta = $instance->getMetaProperties();
 
                 return ($meta ? ['@meta' => $meta] : []) + $closure($instance);
@@ -881,7 +881,7 @@ class Introspector
 
     /**
      * @param IntrospectorKeyTargets<covariant static,TClass,TProvider,TContext> $targets
-     * @return Closure(mixed[], TClass, ContainerInterface, TProvider|null, TContext|null, DateFormatterInterface|null, ITreeable|null): TClass
+     * @return Closure(mixed[], TClass, ContainerInterface, TProvider|null, TContext|null, DateFormatterInterface|null, Treeable|null): TClass
      */
     final protected function _getUpdater(IntrospectorKeyTargets $targets): Closure
     {
@@ -896,10 +896,10 @@ class Introspector
             array $array,
             $obj,
             ContainerInterface $container,
-            ?IProvider $provider,
-            ?IProviderContext $context,
+            ?ProviderInterface $provider,
+            ?ProviderContextInterface $context,
             ?DateFormatterInterface $dateFormatter,
-            ?ITreeable $parent
+            ?Treeable $parent
         ) use (
             $isProvidable,
             $isTreeable,
@@ -957,7 +957,7 @@ class Introspector
 
             // Ditto for `setParent()`
             if ($isTreeable && $parent) {
-                /** @var TClass&TEntity&ITreeable $obj */
+                /** @var TClass&TEntity&Treeable $obj */
                 $obj = $obj->setParent($parent);
             }
 
@@ -992,8 +992,8 @@ class Introspector
             array $array,
             ?string $service,
             $obj,
-            ?IProvider $provider,
-            ?IProviderContext $context
+            ?ProviderInterface $provider,
+            ?ProviderContextInterface $context
         ) use ($callbackKeys) {
             if ($callbackKeys) {
                 foreach ($callbackKeys as $callback) {

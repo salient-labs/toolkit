@@ -2,16 +2,16 @@
 
 namespace Salient\Core;
 
+use Salient\Core\Catalog\Cardinality;
 use Salient\Core\Catalog\NormaliserFlag;
-use Salient\Core\Catalog\RelationshipType;
-use Salient\Core\Contract\HasDateProperties;
-use Salient\Core\Contract\IExtensible;
-use Salient\Core\Contract\IProvidable;
-use Salient\Core\Contract\IRelatable;
-use Salient\Core\Contract\IResolvable;
-use Salient\Core\Contract\ITreeable;
+use Salient\Core\Contract\Extensible;
+use Salient\Core\Contract\Normalisable;
+use Salient\Core\Contract\NormaliserFactory;
+use Salient\Core\Contract\Providable;
 use Salient\Core\Contract\Readable;
-use Salient\Core\Contract\ReturnsNormaliser;
+use Salient\Core\Contract\Relatable;
+use Salient\Core\Contract\Temporal;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Contract\Writable;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
@@ -251,7 +251,7 @@ class IntrospectionClass
      * One-to-one relationships between the class and others (normalised
      * property name => target class)
      *
-     * @var array<string,class-string<IRelatable>>
+     * @var array<string,class-string<Relatable>>
      */
     public $OneToOneRelationships = [];
 
@@ -259,7 +259,7 @@ class IntrospectionClass
      * One-to-many relationships between the class and others (normalised
      * property name => target class)
      *
-     * @var array<string,class-string<IRelatable>>
+     * @var array<string,class-string<Relatable>>
      */
     public $OneToManyRelationships = [];
 
@@ -361,15 +361,15 @@ class IntrospectionClass
         $this->Class = $className;
         $this->IsReadable = $class->implementsInterface(Readable::class);
         $this->IsWritable = $class->implementsInterface(Writable::class);
-        $this->IsExtensible = $class->implementsInterface(IExtensible::class);
-        $this->IsProvidable = $class->implementsInterface(IProvidable::class);
-        $this->IsTreeable = $class->implementsInterface(ITreeable::class);
-        $this->IsRelatable = $this->IsTreeable || $class->implementsInterface(IRelatable::class);
-        $this->HasDates = $class->implementsInterface(HasDateProperties::class);
+        $this->IsExtensible = $class->implementsInterface(Extensible::class);
+        $this->IsProvidable = $class->implementsInterface(Providable::class);
+        $this->IsTreeable = $class->implementsInterface(Treeable::class);
+        $this->IsRelatable = $this->IsTreeable || $class->implementsInterface(Relatable::class);
+        $this->HasDates = $class->implementsInterface(Temporal::class);
 
         // IResolvable provides access to properties via non-canonical names
-        if ($class->implementsInterface(IResolvable::class)) {
-            if ($class->implementsInterface(ReturnsNormaliser::class)) {
+        if ($class->implementsInterface(Normalisable::class)) {
+            if ($class->implementsInterface(NormaliserFactory::class)) {
                 $this->Normaliser = $class->getMethod('normaliser')->invoke(null);
             } else {
                 $this->Normaliser = Closure::fromCallable([$className, 'normalise']);
@@ -545,7 +545,7 @@ class IntrospectionClass
             );
 
         if ($this->IsRelatable) {
-            /** @var array<string,array<RelationshipType::*,class-string<IRelatable>>> */
+            /** @var array<string,array<RelationshipType::*,class-string<Relatable>>> */
             $relationships = $class->getMethod('getRelationships')->invoke(null);
             $relationships = array_combine(
                 $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
@@ -598,15 +598,15 @@ class IntrospectionClass
                 if (!in_array($property, $this->NormalisedKeys, true)) {
                     continue;
                 }
-                if (!is_a($target, IRelatable::class, true)) {
+                if (!is_a($target, Relatable::class, true)) {
                     continue;
                 }
                 switch ($type) {
-                    case RelationshipType::ONE_TO_ONE:
+                    case Cardinality::ONE_TO_ONE:
                         $this->OneToOneRelationships[$property] = $target;
                         break;
 
-                    case RelationshipType::ONE_TO_MANY:
+                    case Cardinality::ONE_TO_MANY:
                         $this->OneToManyRelationships[$property] = $target;
                         break;
                 }

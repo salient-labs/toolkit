@@ -5,11 +5,11 @@ namespace Lkrms\Concern;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
-use Salient\Core\Contract\IExtensible;
-use Salient\Core\Contract\IProvidable;
-use Salient\Core\Contract\IProvider;
-use Salient\Core\Contract\IProviderContext;
+use Salient\Core\Catalog\ListConformity;
+use Salient\Core\Contract\Extensible;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Introspector;
 use Generator;
 use LogicException;
@@ -17,10 +17,10 @@ use LogicException;
 /**
  * Implements IProvidable to represent an external entity
  *
- * @template TProvider of IProvider
- * @template TContext of IProviderContext
+ * @template TProvider of ProviderInterface
+ * @template TContext of ProviderContextInterface
  *
- * @see IProvidable
+ * @see Providable
  */
 trait TProvidable
 {
@@ -43,7 +43,7 @@ trait TProvidable
      * @param TProvider $provider
      * @return $this
      */
-    final public function setProvider(IProvider $provider)
+    final public function setProvider(ProviderInterface $provider)
     {
         if ($this->Provider) {
             throw new LogicException('Provider already set');
@@ -56,7 +56,7 @@ trait TProvidable
     /**
      * @return TProvider|null
      */
-    final public function provider(): ?IProvider
+    final public function provider(): ?ProviderInterface
     {
         return $this->Provider;
     }
@@ -64,7 +64,7 @@ trait TProvidable
     /**
      * @return TProvider
      */
-    final public function requireProvider(): IProvider
+    final public function requireProvider(): ProviderInterface
     {
         if (!$this->Provider) {
             throw new LogicException('Provider required');
@@ -76,7 +76,7 @@ trait TProvidable
      * @param TContext $context
      * @return $this
      */
-    final public function setContext(IProviderContext $context)
+    final public function setContext(ProviderContextInterface $context)
     {
         $this->Context = $context;
 
@@ -86,7 +86,7 @@ trait TProvidable
     /**
      * @return TContext|null
      */
-    final public function context(): ?IProviderContext
+    final public function context(): ?ProviderContextInterface
     {
         return $this->Context;
     }
@@ -110,7 +110,7 @@ trait TProvidable
     /**
      * @return TContext
      */
-    final public function requireContext(): IProviderContext
+    final public function requireContext(): ProviderContextInterface
     {
         if (!$this->Context) {
             throw new LogicException('Context required');
@@ -137,8 +137,8 @@ trait TProvidable
      */
     final public static function provide(
         array $data,
-        IProvider $provider,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        ?ProviderContextInterface $context = null
     ) {
         /** @var ContainerInterface */
         $container = $context
@@ -170,9 +170,9 @@ trait TProvidable
      */
     final public static function provideList(
         iterable $list,
-        IProvider $provider,
-        $conformity = Conformity::NONE,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        $conformity = ListConformity::NONE,
+        ?ProviderContextInterface $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
             self::_provideList($list, $provider, $conformity, $context)
@@ -188,9 +188,9 @@ trait TProvidable
      */
     private static function _provideList(
         iterable $list,
-        IProvider $provider,
+        ProviderInterface $provider,
         $conformity,
-        ?IProviderContext $context
+        ?ProviderContextInterface $context
     ): Generator {
         /** @var ContainerInterface */
         $container = $context
@@ -198,7 +198,7 @@ trait TProvidable
             : $provider->container();
         $container = $container->inContextOf(get_class($provider));
 
-        /** @var IProviderContext */
+        /** @var ProviderContextInterface */
         $context = $context
             ? $context->withContainer($container)
             : $provider->getContext($container);
@@ -209,7 +209,7 @@ trait TProvidable
         foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
-                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE], true)
+                    in_array($conformity, [ListConformity::PARTIAL, ListConformity::COMPLETE], true)
                         ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
                         : $introspector->getCreateProvidableFromClosure();
             }

@@ -13,8 +13,8 @@ use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
-use Salient\Core\Catalog\RelationshipType;
-use Salient\Core\Contract\ITreeable;
+use Salient\Core\Catalog\Cardinality;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
@@ -220,7 +220,7 @@ EOF)
 
         $this->Extends[] = $this->getFqcnAlias(SyncEntity::class);
         if ($this->ParentProperty !== null) {
-            $this->Implements[] = $this->getFqcnAlias(ITreeable::class);
+            $this->Implements[] = $this->getFqcnAlias(Treeable::class);
             $this->Uses[] = $this->getFqcnAlias(HasParent::class);
         }
 
@@ -442,7 +442,7 @@ EOF)
         if ($relationships) {
             // Sort relationships by the position of their respective properties
             $relationships = array_replace(array_intersect_key($properties, $relationships), $relationships);
-            $relationshipTypeAlias = $this->getFqcnAlias(RelationshipType::class);
+            $relationshipTypeAlias = $this->getFqcnAlias(Cardinality::class);
         }
 
         $docBlock = [];

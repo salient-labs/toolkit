@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Support\Introspector;
 
-use Salient\Core\Contract\IResolvable;
+use Salient\Core\Contract\Normalisable;
 use Salient\Core\Utility\Str;
 
-class ResolvableA implements IResolvable
+class ResolvableA implements Normalisable
 {
     public static function normalise(
         string $name,

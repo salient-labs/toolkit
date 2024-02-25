@@ -5,9 +5,9 @@ namespace Salient\Core\Contract;
 /**
  * Receives the provider servicing the object
  *
- * @template TProvider of IProvider
+ * @template TProvider of ProviderInterface
  */
-interface ReceivesProvider
+interface ProviderAwareInterface
 {
     /**
      * Set the object's provider
@@ -17,5 +17,5 @@ interface ReceivesProvider
      * @param TProvider $provider
      * @return $this
      */
-    public function setProvider(IProvider $provider);
+    public function setProvider(ProviderInterface $provider);
 }

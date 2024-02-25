@@ -7,7 +7,7 @@ use Closure;
 /**
  * Returns a closure that normalises the names of its properties
  */
-interface ReturnsNormaliser extends IResolvable
+interface NormaliserFactory extends Normalisable
 {
     /**
      * Get a closure that normalises a property name

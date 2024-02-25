@@ -7,9 +7,9 @@ use Salient\Container\ContainerInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\Immutable;
-use Salient\Core\Entity;
+use Salient\Core\AbstractEntity;
+use Salient\Core\AbstractProvider;
 use Salient\Core\Introspector;
-use Salient\Core\Provider;
 use Salient\Core\ProviderContext;
 use LogicException;
 
@@ -42,7 +42,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     protected ContainerInterface $Container;
 
     /**
-     * @var Introspector<object,Provider,Entity,ProviderContext<Provider,Entity>>
+     * @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>>
      */
     private Introspector $Introspector;
 

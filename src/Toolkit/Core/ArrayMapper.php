@@ -3,7 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 
@@ -63,7 +63,7 @@ final class ArrayMapper
      */
     public function __construct(
         array $keyMap,
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         int $flags = ArrayMapperFlag::ADD_UNMAPPED
     ) {
         foreach ($keyMap as $inKey => $outKey) {
@@ -76,7 +76,7 @@ final class ArrayMapper
 
         if (
             count($keyMap) === count($this->OutputMap) &&
-            $conformity === Conformity::COMPLETE
+            $conformity === ListConformity::COMPLETE
         ) {
             $this->OutputKeys = array_keys($this->OutputMap);
             return;

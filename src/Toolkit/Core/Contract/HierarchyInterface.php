@@ -8,7 +8,7 @@ namespace Salient\Core\Contract;
  *
  * The properties need not be declared if the class uses property overloading.
  */
-interface ITreeable extends IRelatable, HasParentProperty, HasChildrenProperty
+interface HierarchyInterface extends Relatable, Treeable, HasChildrenProperty
 {
     /**
      * Get the parent of the object

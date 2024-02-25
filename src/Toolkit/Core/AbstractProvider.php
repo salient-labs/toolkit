@@ -4,17 +4,17 @@ namespace Salient\Core;
 
 use Salient\Container\ContainerInterface;
 use Salient\Core\Contract\DateFormatterInterface;
-use Salient\Core\Contract\IProvider;
-use Salient\Core\Contract\IProviderContext;
+use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\ProviderContext;
 
 /**
  * Base class for providers
  *
- * @implements IProvider<ProviderContext<static,Entity>>
+ * @implements ProviderInterface<ProviderContext<static,AbstractEntity>>
  */
-abstract class Provider implements IProvider
+abstract class AbstractProvider implements ProviderInterface
 {
     protected ContainerInterface $App;
 
@@ -40,7 +40,7 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): IProviderContext
+    public function getContext(?ContainerInterface $container = null): ProviderContextInterface
     {
         $container ??= $this->App;
 
@@ -55,7 +55,7 @@ abstract class Provider implements IProvider
         throw new MethodNotImplementedException(
             static::class,
             __FUNCTION__,
-            IProvider::class
+            ProviderInterface::class
         );
     }
 

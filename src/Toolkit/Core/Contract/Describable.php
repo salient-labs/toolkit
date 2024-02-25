@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Contract;
 
-interface HasDescription
+interface Describable
 {
     /**
      * Get a description of the object

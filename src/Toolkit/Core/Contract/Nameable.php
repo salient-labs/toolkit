@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Contract;
 
-interface HasName
+interface Nameable
 {
     /**
      * Get the name of the object
