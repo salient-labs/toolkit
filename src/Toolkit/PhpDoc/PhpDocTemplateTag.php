@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\PhpDoc;
+namespace Salient\PhpDoc;
 
 use Salient\Core\Exception\InvalidArgumentException;
 

@@ -4,8 +4,6 @@ namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Support\PhpDoc\PhpDoc;
-use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\CliOption;
 use Salient\Core\Utility\Pcre;
@@ -14,6 +12,8 @@ use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
 use Salient\Core\AbstractBuilder;
 use Salient\Core\Introspector;
+use Salient\PhpDoc\PhpDoc;
+use Salient\PhpDoc\PhpDocTemplateTag;
 use Closure;
 use ReflectionMethod;
 use ReflectionParameter;

@@ -1,28 +1,32 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\PhpDoc;
+namespace Salient\PhpDoc;
 
 use Salient\Core\Exception\InvalidArgumentException;
 
 /**
- * A "var" tag extracted from a PHP DocBlock
+ * A "return" tag extracted from a PHP DocBlock
  */
-class PhpDocVarTag extends PhpDocTag
+class PhpDocReturnTag extends PhpDocTag
 {
     /**
      * @var string
      */
     public $Type;
 
+    /**
+     * @var null
+     */
+    public $Name;
+
     public function __construct(
         string $type,
-        ?string $name = null,
         ?string $description = null,
         ?string $class = null,
         ?string $member = null,
         bool $legacyNullable = false
     ) {
-        parent::__construct('var', $name, $type, $description, $class, $member, $legacyNullable);
+        parent::__construct('return', null, $type, $description, $class, $member, $legacyNullable);
         if (!$this->Type) {
             throw new InvalidArgumentException(sprintf('Invalid type: %s', $type));
         }
