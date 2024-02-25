@@ -3,7 +3,7 @@
 namespace Lkrms\LkUtil\Command\Generate\Concept;
 
 use Lkrms\LkUtil\Command\Concept\Command;
-use Lkrms\Support\TokenExtractor;
+use Lkrms\LkUtil\Support\TokenExtractor;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
