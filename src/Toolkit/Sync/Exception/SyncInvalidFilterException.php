@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Exception;
+namespace Salient\Sync\Exception;
 
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Contract\ISyncContext;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Contract\ISyncContext;
 
 /**
  * Thrown when the non-mandatory arguments passed to a sync operation do not

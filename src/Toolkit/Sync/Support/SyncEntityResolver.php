@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncEntityProvider;
-use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncEntityProvider;
+use Salient\Sync\Contract\ISyncEntityResolver;
+use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 
 /**
  * Resolves a name to an entity

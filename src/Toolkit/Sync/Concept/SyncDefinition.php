@@ -1,20 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Concept;
+namespace Salient\Sync\Concept;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
-use Lkrms\Sync\Catalog\FilterPolicy;
-use Lkrms\Sync\Catalog\SyncEntitySource;
-use Lkrms\Sync\Catalog\SyncOperation as OP;
-use Lkrms\Sync\Catalog\SyncOperations;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncDefinition;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Exception\SyncEntityNotFoundException;
-use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
-use Lkrms\Sync\Support\SyncIntrospector;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
@@ -23,6 +12,17 @@ use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Pipeline;
+use Salient\Sync\Catalog\FilterPolicy;
+use Salient\Sync\Catalog\SyncEntitySource;
+use Salient\Sync\Catalog\SyncOperation as OP;
+use Salient\Sync\Catalog\SyncOperations;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncDefinition;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Exception\SyncFilterPolicyViolationException;
+use Salient\Sync\Support\SyncIntrospector;
 use Closure;
 use LogicException;
 

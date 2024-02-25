@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Catalog;
+namespace Salient\Sync\Catalog;
 
 use Salient\Core\AbstractReflectiveEnumeration;
 

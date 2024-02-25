@@ -2,8 +2,6 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Support\DeferredRelationship;
 use Lkrms\Tests\Sync\Entity\Provider\AlbumProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
 use Lkrms\Tests\Sync\Entity\Album;
@@ -12,6 +10,8 @@ use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\SyncTestCase;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Support\DeferredRelationship;
 
 final class DeferredRelationshipTest extends SyncTestCase
 {

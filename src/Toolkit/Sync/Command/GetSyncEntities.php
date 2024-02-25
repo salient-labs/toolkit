@@ -1,13 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Command;
+namespace Salient\Sync\Command;
 
-use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncIntrospector;
-use Lkrms\Sync\Support\SyncSerializeRules;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
@@ -16,6 +10,12 @@ use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Json;
+use Salient\Sync\Catalog\DeferralPolicy;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\Support\SyncSerializeRules;
 
 /**
  * A generic sync entity retrieval command

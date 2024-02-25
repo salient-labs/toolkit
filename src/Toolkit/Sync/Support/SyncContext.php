@@ -1,20 +1,20 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Exception\SyncEntityRecursionException;
-use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\ProviderContext;
+use Salient\Sync\Catalog\DeferralPolicy;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Exception\SyncEntityRecursionException;
+use Salient\Sync\Exception\SyncInvalidFilterException;
 use LogicException;
 
 /**

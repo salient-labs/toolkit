@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
+use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
 use LogicException;
 
 /**

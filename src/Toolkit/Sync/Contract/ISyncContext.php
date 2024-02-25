@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Contract;
+namespace Salient\Sync\Contract;
 
-use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\FilterPolicy;
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Concept\SyncProvider;
-use Lkrms\Sync\Exception\SyncEntityRecursionException;
-use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Salient\Core\Contract\Providable;
 use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Sync\Catalog\DeferralPolicy;
+use Salient\Sync\Catalog\FilterPolicy;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Concept\SyncProvider;
+use Salient\Sync\Exception\SyncEntityRecursionException;
+use Salient\Sync\Exception\SyncInvalidFilterException;
 
 /**
  * The context within which sync entities are instantiated by a provider

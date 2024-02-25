@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Catalog\SyncErrorType;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\AbstractBuilder;
+use Salient\Sync\Catalog\SyncErrorType;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
 
 /**
  * A fluent SyncError factory

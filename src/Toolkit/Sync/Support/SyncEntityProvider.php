@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
-use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncDefinition;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncEntityProvider;
-use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Container\ContainerInterface;
+use Salient\Sync\Catalog\DeferralPolicy;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncDefinition;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncEntityProvider;
+use Salient\Sync\Contract\ISyncEntityResolver;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Generator;
 use LogicException;
 

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Event;
+namespace Salient\Sync\Event;
 
-use Lkrms\Sync\Support\SyncStore;
+use Salient\Sync\Support\SyncStore;
 
 /**
  * Base class for entity store events

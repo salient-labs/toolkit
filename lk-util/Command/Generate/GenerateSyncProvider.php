@@ -2,18 +2,18 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Facade\Sync;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncIntrospector;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Support\SyncIntrospector;
 
 /**
  * Generates provider interfaces for sync entities

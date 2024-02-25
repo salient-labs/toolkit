@@ -4,13 +4,13 @@ namespace Lkrms\Tests\Sync\Support;
 
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncEntityProvider;
-use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
-use Lkrms\Sync\Support\SyncEntityResolver;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\SyncTestCase;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncEntityProvider;
+use Salient\Sync\Contract\ISyncEntityResolver;
+use Salient\Sync\Support\SyncEntityFuzzyResolver;
+use Salient\Sync\Support\SyncEntityResolver;
 
 final class SyncEntityResolverTest extends SyncTestCase
 {

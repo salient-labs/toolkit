@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Contract\ISyncEntity;
 use Salient\Core\AbstractBuilder;
 use Salient\Core\DateFormatter;
+use Salient\Sync\Contract\ISyncEntity;
 use Closure;
 
 /**

@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Sync\Concept\SyncEntity;
-use Lkrms\Sync\Support\DeferredEntity;
 use Salient\Core\Catalog\Cardinality;
+use Salient\Sync\Concept\SyncEntity;
+use Salient\Sync\Support\DeferredEntity;
 
 /**
  * Represents the state of a Task entity in a backend

@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Sync\Concept\SyncEntity;
-use Lkrms\Sync\Support\DeferredEntity;
-use Lkrms\Sync\Support\DeferredRelationship;
 use Salient\Core\Catalog\Cardinality;
+use Salient\Sync\Concept\SyncEntity;
+use Salient\Sync\Support\DeferredEntity;
+use Salient\Sync\Support\DeferredRelationship;
 
 /**
  * Represents the state of a Post entity in a backend

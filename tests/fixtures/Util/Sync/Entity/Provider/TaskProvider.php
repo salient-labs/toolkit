@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Sync\Entity\Provider;
 
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Tests\Sync\Entity\Task;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncProvider;
 
 /**
  * Syncs Task objects with a backend

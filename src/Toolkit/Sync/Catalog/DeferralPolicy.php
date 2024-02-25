@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Catalog;
+namespace Salient\Sync\Catalog;
 
-use Lkrms\Sync\Support\DeferredEntity;
-use Lkrms\Sync\Support\DeferredRelationship;
-use Lkrms\Sync\Support\SyncStore;
 use Salient\Core\AbstractEnumeration;
+use Salient\Sync\Support\DeferredEntity;
+use Salient\Sync\Support\DeferredRelationship;
+use Salient\Sync\Support\SyncStore;
 
 /**
  * Policies for deferral of sync entities and relationships

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Catalog;
+namespace Salient\Sync\Catalog;
 
-use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Salient\Core\AbstractEnumeration;
+use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 
 /**
  * Policies for unclaimed sync operation filters

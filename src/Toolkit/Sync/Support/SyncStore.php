@@ -1,17 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Catalog\SyncErrorType;
-use Lkrms\Sync\Contract\ISyncClassResolver;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Event\SyncStoreLoadedEvent;
-use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
-use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
-use Lkrms\Sync\Exception\SyncStoreException;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Core\Exception\MethodNotImplementedException;
@@ -24,6 +14,16 @@ use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractStore;
+use Salient\Sync\Catalog\DeferralPolicy;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Catalog\SyncErrorType;
+use Salient\Sync\Contract\ISyncClassResolver;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Event\SyncStoreLoadedEvent;
+use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
+use Salient\Sync\Exception\SyncStoreException;
 use LogicException;
 use ReflectionClass;
 

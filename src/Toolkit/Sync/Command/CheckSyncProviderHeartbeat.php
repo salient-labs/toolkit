@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Command;
+namespace Salient\Sync\Command;
 
-use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Inflect;
+use Salient\Sync\Contract\ISyncProvider;
 
 /**
  * A generic sync provider heartbeat check command

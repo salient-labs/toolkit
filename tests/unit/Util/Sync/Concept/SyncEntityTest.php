@@ -2,14 +2,14 @@
 
 namespace Lkrms\Tests\Sync\Concept;
 
-use Lkrms\Sync\Contract\ISyncEntityProvider;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Exception\SyncEntityNotFoundException;
-use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\SyncTestCase;
+use Salient\Sync\Contract\ISyncEntityProvider;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 
 final class SyncEntityTest extends SyncTestCase
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Contract;
+namespace Salient\Sync\Contract;
 
 /**
  * Resolves sync entity classes to their respective provider interfaces, and

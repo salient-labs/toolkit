@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
 use Lkrms\Contract\IComparable;
-use Lkrms\Sync\Catalog\SyncErrorType;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
+use Salient\Sync\Catalog\SyncErrorType;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
 
 /**
  * An error that occurred during a sync operation

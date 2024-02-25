@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Exception;
+namespace Salient\Sync\Exception;
 
-use Lkrms\Sync\Catalog\FilterPolicy;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Core\Utility\Json;
+use Salient\Sync\Catalog\FilterPolicy;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
 
 /**
  * Thrown when there are unclaimed sync operation filters

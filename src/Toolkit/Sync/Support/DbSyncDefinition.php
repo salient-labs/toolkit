@@ -1,19 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Catalog\FilterPolicy;
-use Lkrms\Sync\Catalog\SyncEntitySource;
-use Lkrms\Sync\Catalog\SyncOperation as OP;
-use Lkrms\Sync\Concept\DbSyncProvider;
-use Lkrms\Sync\Concept\SyncDefinition;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncEntity;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\PipelineInterface;
+use Salient\Sync\Catalog\FilterPolicy;
+use Salient\Sync\Catalog\SyncEntitySource;
+use Salient\Sync\Catalog\SyncOperation as OP;
+use Salient\Sync\Concept\DbSyncProvider;
+use Salient\Sync\Concept\SyncDefinition;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncEntity;
 use Closure;
 use LogicException;
 

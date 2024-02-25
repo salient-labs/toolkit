@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
 use Lkrms\Concept\TypedCollection;
-use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Utility\Arr;
+use Salient\Sync\Catalog\SyncErrorType as ErrorType;
 use JsonSerializable;
 
 /**

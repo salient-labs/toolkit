@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Concept;
+namespace Salient\Sync\Concept;
 
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
@@ -8,16 +8,16 @@ use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Lkrms\Http\HttpHeaders;
-use Lkrms\Sync\Contract\ISyncDefinition;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
-use Lkrms\Sync\Support\HttpSyncDefinition;
-use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 use Salient\Cache\CacheStore;
 use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
+use Salient\Sync\Contract\ISyncDefinition;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\Support\HttpSyncDefinition;
+use Salient\Sync\Support\HttpSyncDefinitionBuilder;
 
 /**
  * Base class for HTTP-based RESTful API providers

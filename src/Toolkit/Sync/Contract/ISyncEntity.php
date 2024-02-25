@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Contract;
+namespace Salient\Sync\Contract;
 
-use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
-use Lkrms\Sync\Concept\SyncEntity;
-use Lkrms\Sync\Exception\SyncEntityNotFoundException;
-use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
-use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Contract\Identifiable;
 use Salient\Core\Contract\Nameable;
 use Salient\Core\Contract\Providable;
 use Salient\Core\Contract\ProvidableEntityInterface;
 use Salient\Core\Contract\Relatable;
+use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
+use Salient\Sync\Concept\SyncEntity;
+use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Support\SyncSerializeRules as SerializeRules;
+use Salient\Sync\Support\SyncStore;
 use JsonSerializable;
 
 /**

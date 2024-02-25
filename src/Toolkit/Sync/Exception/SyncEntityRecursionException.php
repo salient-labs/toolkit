@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Exception;
+namespace Salient\Sync\Exception;
 
 /**
  * Thrown when entity hydration triggers infinite recursion

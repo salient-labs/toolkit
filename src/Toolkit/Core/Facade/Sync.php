@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Facade;
+namespace Salient\Core\Facade;
 
-use Lkrms\Sync\Contract\ISyncClassResolver;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\DeferredEntity;
-use Lkrms\Sync\Support\DeferredRelationship;
-use Lkrms\Sync\Support\SyncError;
-use Lkrms\Sync\Support\SyncErrorBuilder;
-use Lkrms\Sync\Support\SyncErrorCollection;
-use Lkrms\Sync\Support\SyncStore;
 use Salient\Core\AbstractFacade;
+use Salient\Sync\Contract\ISyncClassResolver;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Support\DeferredEntity;
+use Salient\Sync\Support\DeferredRelationship;
+use Salient\Sync\Support\SyncError;
+use Salient\Sync\Support\SyncErrorBuilder;
+use Salient\Sync\Support\SyncErrorCollection;
+use Salient\Sync\Support\SyncStore;
 
 /**
  * A facade for SyncStore

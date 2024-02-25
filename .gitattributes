@@ -16,13 +16,13 @@
 /src/Toolkit/Core/Facade/Err.php linguist-generated
 /src/Toolkit/Core/Facade/Event.php linguist-generated
 /src/Toolkit/Core/Facade/Profile.php linguist-generated
+/src/Toolkit/Sync/Support/DbSyncDefinitionBuilder.php linguist-generated
+/src/Toolkit/Sync/Support/HttpSyncDefinitionBuilder.php linguist-generated
+/src/Toolkit/Sync/Support/SyncErrorBuilder.php linguist-generated
+/src/Toolkit/Sync/Support/SyncSerializeRulesBuilder.php linguist-generated
 /src/Util/Curler/CurlerBuilder.php linguist-generated
 /src/Util/Curler/Support/CurlerPageBuilder.php linguist-generated
 /src/Util/Facade/Sync.php linguist-generated
-/src/Util/Sync/Support/DbSyncDefinitionBuilder.php linguist-generated
-/src/Util/Sync/Support/HttpSyncDefinitionBuilder.php linguist-generated
-/src/Util/Sync/Support/SyncErrorBuilder.php linguist-generated
-/src/Util/Sync/Support/SyncSerializeRulesBuilder.php linguist-generated
 /tests export-ignore
 /tests/data/entity/albums.json linguist-generated
 /tests/data/entity/comments.json linguist-generated

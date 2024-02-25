@@ -1,16 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Concept;
+namespace Salient\Sync\Concept;
 
-use Lkrms\Sync\Catalog\SyncOperation as OP;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncContext;
-use Lkrms\Sync\Support\SyncEntityProvider;
-use Lkrms\Sync\Support\SyncIntrospector;
-use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
-use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\Contract\HasContextualBindings;
 use Salient\Container\Contract\HasServices;
 use Salient\Container\ContainerInterface;
@@ -20,6 +11,15 @@ use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
+use Salient\Sync\Catalog\SyncOperation as OP;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Support\SyncContext;
+use Salient\Sync\Support\SyncEntityProvider;
+use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
+use Salient\Sync\Support\SyncStore;
 use Closure;
 use LogicException;
 

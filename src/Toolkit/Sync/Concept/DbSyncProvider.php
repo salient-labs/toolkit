@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Concept;
+namespace Salient\Sync\Concept;
 
 use Lkrms\Db\DbConnector;
 use Lkrms\Support\SqlQuery;
-use Lkrms\Sync\Contract\ISyncDefinition;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Exception\SyncEntityNotFoundException;
-use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
-use Lkrms\Sync\Support\DbSyncDefinition;
-use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
+use Salient\Sync\Contract\ISyncDefinition;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\Support\DbSyncDefinition;
+use Salient\Sync\Support\DbSyncDefinitionBuilder;
 use ADOConnection;
 use ADODB_Exception;
 

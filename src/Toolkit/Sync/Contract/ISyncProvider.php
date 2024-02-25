@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Contract;
+namespace Salient\Sync\Contract;
 
-use Lkrms\Sync\Catalog\FilterPolicy;
-use Lkrms\Sync\Concept\SyncProvider;
-use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Contract\ProviderInterface;
+use Salient\Sync\Catalog\FilterPolicy;
+use Salient\Sync\Concept\SyncProvider;
+use Salient\Sync\Support\SyncStore;
 
 /**
  * Base interface for providers that sync entities to and from third-party

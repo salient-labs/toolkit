@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Exception;
+namespace Salient\Sync\Exception;
 
-use Lkrms\Sync\Catalog\SyncEntitySource;
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
+use Salient\Sync\Catalog\SyncEntitySource;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
 
 /**
  * Thrown when an invalid data source is provided for the return value of a sync

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
@@ -8,17 +8,6 @@ use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Sync\Catalog\FilterPolicy;
-use Lkrms\Sync\Catalog\SyncEntitySource;
-use Lkrms\Sync\Catalog\SyncOperation as OP;
-use Lkrms\Sync\Concept\HttpSyncProvider;
-use Lkrms\Sync\Concept\SyncDefinition;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Exception\SyncEntityNotFoundException;
-use Lkrms\Sync\Exception\SyncInvalidContextException;
-use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
-use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasBuilder;
@@ -31,6 +20,17 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Pipeline;
+use Salient\Sync\Catalog\FilterPolicy;
+use Salient\Sync\Catalog\SyncEntitySource;
+use Salient\Sync\Catalog\SyncOperation as OP;
+use Salient\Sync\Concept\HttpSyncProvider;
+use Salient\Sync\Concept\SyncDefinition;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Exception\SyncInvalidContextException;
+use Salient\Sync\Exception\SyncInvalidEntitySourceException;
+use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Closure;
 use LogicException;
 

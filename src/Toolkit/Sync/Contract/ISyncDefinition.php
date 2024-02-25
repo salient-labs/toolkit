@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Contract;
+namespace Salient\Sync\Contract;
 
-use Lkrms\Sync\Catalog\SyncOperation;
 use Salient\Core\Contract\Immutable;
+use Salient\Sync\Catalog\SyncOperation;
 use Closure;
 
 /**

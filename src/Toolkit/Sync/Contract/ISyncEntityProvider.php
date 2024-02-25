@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Contract;
+namespace Salient\Sync\Contract;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
 use Salient\Core\Contract\HasProvider;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Catalog\SyncOperation;
 
 /**
  * Provides an entity-agnostic interface to an ISyncProvider's implementation of

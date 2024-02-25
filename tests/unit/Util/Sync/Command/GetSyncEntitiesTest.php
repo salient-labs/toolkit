@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Sync\Command;
 
-use Lkrms\Sync\Command\GetSyncEntities;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Cli\Contract\CliApplicationInterface;
 use Salient\Cli\Contract\CliCommandInterface;
+use Salient\Sync\Command\GetSyncEntities;
 use Salient\Tests\CommandTestCase;
 
 class GetSyncEntitiesTest extends CommandTestCase

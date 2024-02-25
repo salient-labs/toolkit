@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Concept\SyncEntity;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
@@ -16,6 +13,9 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\DateFormatter;
+use Salient\Sync\Concept\SyncEntity;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncSerializeRules;
 use Closure;
 use LogicException;
 

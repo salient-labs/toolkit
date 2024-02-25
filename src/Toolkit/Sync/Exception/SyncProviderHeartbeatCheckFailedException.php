@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Exception;
+namespace Salient\Sync\Exception;
 
-use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncStore;
+use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Support\SyncStore;
 
 /**
  * Thrown when an entity store's provider heartbeat check fails

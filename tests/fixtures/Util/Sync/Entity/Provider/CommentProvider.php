@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Sync\Entity\Provider;
 
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Tests\Sync\Entity\Comment;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncProvider;
 
 /**
  * Syncs Comment objects with a backend

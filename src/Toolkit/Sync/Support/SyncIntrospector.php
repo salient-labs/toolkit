@@ -1,18 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Facade\Sync;
-use Lkrms\Sync\Catalog\HydrationPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Regex;
 use Salient\Core\Contract\Providable;
 use Salient\Core\Contract\Relatable;
 use Salient\Core\Contract\Treeable;
+use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
@@ -20,6 +15,11 @@ use Salient\Core\Utility\Str;
 use Salient\Core\DateFormatter;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
+use Salient\Sync\Catalog\HydrationPolicy;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
 use Closure;
 use LogicException;
 

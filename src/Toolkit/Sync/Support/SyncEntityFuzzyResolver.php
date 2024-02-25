@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncEntityProvider;
-use Lkrms\Sync\Contract\ISyncEntityResolver;
 use Salient\Core\Utility\Str;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncEntityProvider;
+use Salient\Sync\Contract\ISyncEntityResolver;
 use Closure;
 use LogicException;
 

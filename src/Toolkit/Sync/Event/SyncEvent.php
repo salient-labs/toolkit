@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Event;
+namespace Salient\Sync\Event;
 
 /**
  * Base class for sync events

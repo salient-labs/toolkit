@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Sync;
 
-use Lkrms\Sync\Contract\ISyncClassResolver;
 use Salient\Core\Utility\Pcre;
+use Salient\Sync\Contract\ISyncClassResolver;
 
 class SyncClassResolver implements ISyncClassResolver
 {

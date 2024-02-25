@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 use Lkrms\Tests\Sync\CustomEntity\Post as CustomPost;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Salient\Container\Container;
+use Salient\Sync\Support\SyncSerializeRulesBuilder;
 use Salient\Tests\TestCase;
 
 final class SyncSerializeRulesTest extends TestCase

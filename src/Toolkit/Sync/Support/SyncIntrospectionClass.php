@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Salient\Sync\Support;
 
-use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Concept\SyncProvider;
-use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 use Salient\Core\IntrospectionClass;
+use Salient\Sync\Catalog\SyncOperation;
+use Salient\Sync\Concept\SyncProvider;
+use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\ISyncProvider;
 use Closure;
 use ReflectionClass;
 

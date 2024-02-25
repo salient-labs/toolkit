@@ -2,13 +2,13 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\SyncTestCase;
+use Salient\Sync\Catalog\DeferralPolicy;
+use Salient\Sync\Support\DeferredEntity;
 
 final class DeferredEntityTest extends SyncTestCase
 {
