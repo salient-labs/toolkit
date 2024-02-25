@@ -2,7 +2,7 @@
 
 namespace Salient\Sync\Support;
 
-use Lkrms\Concept\TypedCollection;
+use Salient\Collection\AbstractTypedCollection;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Utility\Arr;
@@ -12,9 +12,9 @@ use JsonSerializable;
 /**
  * A collection of SyncError objects
  *
- * @extends TypedCollection<int,SyncError>
+ * @extends AbstractTypedCollection<int,SyncError>
  */
-final class SyncErrorCollection extends TypedCollection implements JsonSerializable
+final class SyncErrorCollection extends AbstractTypedCollection implements JsonSerializable
 {
     /**
      * Get a JSON:API-compatible representation of the errors

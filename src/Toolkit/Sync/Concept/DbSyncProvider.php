@@ -3,13 +3,13 @@
 namespace Salient\Sync\Concept;
 
 use Lkrms\Db\DbConnector;
-use Lkrms\Support\SqlQuery;
 use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
+use Salient\Core\SqlQuery;
 use Salient\Sync\Contract\ISyncDefinition;
 use Salient\Sync\Contract\ISyncEntity;
 use Salient\Sync\Exception\SyncEntityNotFoundException;

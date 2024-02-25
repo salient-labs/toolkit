@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Catalog;
+namespace Salient\Core\Catalog;
 
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractEnumeration;

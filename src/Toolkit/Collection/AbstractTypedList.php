@@ -1,21 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
-
-use Lkrms\Concern\TList;
-use Lkrms\Contract\IList;
+namespace Salient\Collection;
 
 /**
  * Base class for lists of items of a given type
  *
  * @template TValue
  *
- * @implements IList<TValue>
+ * @implements ListInterface<TValue>
  */
-abstract class TypedList implements IList
+abstract class AbstractTypedList implements ListInterface
 {
-    /** @use TList<TValue> */
-    use TList;
+    /** @use ListTrait<TValue> */
+    use ListTrait;
 
     /**
      * Clone the list

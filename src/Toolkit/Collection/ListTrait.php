@@ -1,26 +1,25 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Collection;
 
-use Lkrms\Contract\IList;
 use Salient\Core\Contract\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Get;
 
 /**
- * Implements IList
+ * Implements ListInterface
  *
  * Unless otherwise noted, {@see TList} methods operate on one instance of the
  * class. Immutable classes should use {@see TImmutableList} instead.
  *
  * @template TValue
  *
- * @see IList
+ * @see ListInterface
  */
-trait TList
+trait ListTrait
 {
-    /** @use TCollection<int,TValue> */
-    use TCollection {
+    /** @use CollectionTrait<int,TValue> */
+    use CollectionTrait {
         getItems as private _getItems;
         replaceItems as private _replaceItems;
     }

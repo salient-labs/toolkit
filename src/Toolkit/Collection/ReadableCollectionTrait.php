@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Collection;
 
-use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IComparable;
 use Salient\Core\Contract\Arrayable;
 use Salient\Core\Contract\Jsonable;
@@ -14,14 +13,14 @@ use ReturnTypeWillChange;
 use Traversable;
 
 /**
- * Implements ICollection getters
+ * Implements CollectionInterface getters
  *
  * @template TKey of array-key
  * @template TValue
  *
- * @see ICollection
+ * @see CollectionInterface
  */
-trait TReadableCollection
+trait ReadableCollectionTrait
 {
     /**
      * @var array<TKey,TValue>
@@ -46,19 +45,19 @@ trait TReadableCollection
 
     /**
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
-     * @param ICollection::CALLBACK_USE_* $mode
+     * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return $this
      */
-    public function forEach(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE)
+    public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
         $prev = null;
         $item = null;
         $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $mode === ICollection::CALLBACK_USE_KEY
+            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
                 ? $nextKey
-                : ($mode === ICollection::CALLBACK_USE_BOTH
+                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
                     ? [$nextKey => $nextValue]
                     : $nextValue);
             if ($i++) {
@@ -76,10 +75,10 @@ trait TReadableCollection
 
     /**
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
-     * @param ICollection::CALLBACK_USE_* $mode
+     * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return TValue|null
      */
-    public function find(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE)
+    public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
         $prev = null;
         $item = null;
@@ -87,9 +86,9 @@ trait TReadableCollection
         $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $mode === ICollection::CALLBACK_USE_KEY
+            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
                 ? $nextKey
-                : ($mode === ICollection::CALLBACK_USE_BOTH
+                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
                     ? [$nextKey => $nextValue]
                     : $nextValue);
             if ($i++) {

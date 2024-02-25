@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Collection;
 
-use Lkrms\Concern\TImmutableCollection;
-use Lkrms\Contract\ICollection;
 use Salient\Core\Contract\Arrayable;
 use Salient\Core\Contract\Immutable;
 
@@ -13,11 +11,11 @@ use Salient\Core\Contract\Immutable;
  * @template TKey of array-key
  * @template TValue
  *
- * @implements ICollection<TKey,TValue>
+ * @implements CollectionInterface<TKey,TValue>
  * @implements Arrayable<TKey,TValue>
  */
-final class ImmutableCollection implements ICollection, Arrayable, Immutable
+final class ImmutableCollection implements CollectionInterface, Arrayable, Immutable
 {
-    /** @use TImmutableCollection<TKey,TValue> */
-    use TImmutableCollection;
+    /** @use ImmutableCollectionTrait<TKey,TValue> */
+    use ImmutableCollectionTrait;
 }

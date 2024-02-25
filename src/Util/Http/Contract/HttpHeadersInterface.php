@@ -2,16 +2,16 @@
 
 namespace Lkrms\Http\Contract;
 
-use Lkrms\Contract\ICollection;
 use Lkrms\Http\Catalog\HttpHeader;
+use Salient\Collection\CollectionInterface;
 use Salient\Core\Contract\Arrayable;
 
 /**
  * A collection of HTTP headers
  *
- * @extends ICollection<string,string[]>
+ * @extends CollectionInterface<string,string[]>
  */
-interface HttpHeadersInterface extends ICollection
+interface HttpHeadersInterface extends CollectionInterface
 {
     /**
      * Parse and apply an HTTP header field or continuation thereof

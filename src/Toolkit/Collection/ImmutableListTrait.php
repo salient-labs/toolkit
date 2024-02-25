@@ -1,27 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Collection;
 
-use Lkrms\Contract\IList;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\ImmutableArrayAccessTrait;
 
 /**
- * Implements IList for immutable classes
+ * Implements ListInterface for immutable classes
  *
  * Mutable classes should use {@see TList} instead.
  *
  * @template TValue
  *
- * @see IList
+ * @see ListInterface
  */
-trait TImmutableList
+trait ImmutableListTrait
 {
-    /** @use TList<TValue> */
-    use TList;
-    /** @use ImmutableArrayAccess<int,TValue> */
-    use ImmutableArrayAccess {
-        ImmutableArrayAccess::offsetSet insteadof TList;
-        ImmutableArrayAccess::offsetUnset insteadof TList;
+    /** @use ListTrait<TValue> */
+    use ListTrait;
+    /** @use ImmutableArrayAccessTrait<int,TValue> */
+    use ImmutableArrayAccessTrait {
+        ImmutableArrayAccessTrait::offsetSet insteadof ListTrait;
+        ImmutableArrayAccessTrait::offsetUnset insteadof ListTrait;
     }
     use HasImmutableProperties;
 

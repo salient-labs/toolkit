@@ -1,19 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
-
-use Lkrms\Concern\TList;
-use Lkrms\Contract\IList;
+namespace Salient\Collection;
 
 /**
  * An array-like list of items
  *
  * @template TValue
  *
- * @implements IList<TValue>
+ * @implements ListInterface<TValue>
  */
-final class ListCollection implements IList
+final class ListCollection implements ListInterface
 {
-    /** @use TList<TValue> */
-    use TList;
+    /** @use ListTrait<TValue> */
+    use ListTrait;
 }

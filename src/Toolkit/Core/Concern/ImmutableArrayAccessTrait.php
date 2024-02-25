@@ -1,29 +1,41 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
-use LogicException;
+use Salient\Core\Exception\BadMethodCallException;
 
 /**
  * @template TKey of array-key
  * @template TValue
  */
-trait ImmutableArrayAccess
+trait ImmutableArrayAccessTrait
 {
     /**
+     * @internal
+     *
      * @param TKey|null $offset
      * @param TValue $value
+     * @return never
      */
     public function offsetSet($offset, $value): void
     {
-        throw new LogicException(sprintf('%s is immutable', static::class));
+        throw new BadMethodCallException(sprintf(
+            '%s values are read-only',
+            static::class,
+        ));
     }
 
     /**
+     * @internal
+     *
      * @param TKey $offset
+     * @return never
      */
     public function offsetUnset($offset): void
     {
-        throw new LogicException(sprintf('%s is immutable', static::class));
+        throw new BadMethodCallException(sprintf(
+            '%s values are read-only',
+            static::class,
+        ));
     }
 }

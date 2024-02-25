@@ -2,10 +2,10 @@
 
 namespace Salient\Sync\Support;
 
-use Lkrms\Support\Catalog\TextComparisonAlgorithm;
-use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
-use Lkrms\Support\Catalog\TextComparisonFlag;
-use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
+use Salient\Core\Catalog\TextComparisonAlgorithm;
+use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
+use Salient\Core\Catalog\TextComparisonFlag;
+use Salient\Core\Catalog\TextComparisonFlag as Flag;
 use Salient\Core\Utility\Str;
 use Salient\Sync\Contract\ISyncEntity;
 use Salient\Sync\Contract\ISyncEntityProvider;

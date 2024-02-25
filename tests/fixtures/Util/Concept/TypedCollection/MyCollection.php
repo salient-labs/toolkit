@@ -2,12 +2,12 @@
 
 namespace Lkrms\Tests\Concept\TypedCollection;
 
-use Lkrms\Concept\TypedCollection;
+use Salient\Collection\AbstractTypedCollection;
 
 /**
- * @extends TypedCollection<array-key,MyClass>
+ * @extends AbstractTypedCollection<array-key,MyClass>
  */
-class MyCollection extends TypedCollection
+class MyCollection extends AbstractTypedCollection
 {
     protected function compareItems($a, $b): int
     {

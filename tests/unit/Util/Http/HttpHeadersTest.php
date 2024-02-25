@@ -2,12 +2,12 @@
 
 namespace Lkrms\Tests\Http;
 
-use Lkrms\Contract\ICollection;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Catalog\HttpHeaderGroup;
 use Lkrms\Http\OAuth2\AccessToken;
 use Lkrms\Http\HttpHeaders;
-use Lkrms\Support\Catalog\MimeType;
+use Salient\Collection\CollectionInterface;
+use Salient\Core\Catalog\MimeType;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Tests\TestCase;
@@ -316,7 +316,7 @@ final class HttpHeadersTest extends TestCase
         $headers = $headers
             ->filter(
                 fn(string $key) => !($index[$key] ?? false),
-                ICollection::CALLBACK_USE_KEY
+                CollectionInterface::CALLBACK_USE_KEY
             );
         $this->assertSame([
             'Accept' => ['*/*'],

@@ -2,12 +2,12 @@
 
 namespace Lkrms\Tests\Concept\TypedList;
 
-use Lkrms\Concept\TypedList;
+use Salient\Collection\AbstractTypedList;
 
 /**
- * @extends TypedList<MyClass>
+ * @extends AbstractTypedList<MyClass>
  */
-class MyList extends TypedList
+class MyList extends AbstractTypedList
 {
     protected function compareItems($a, $b): int
     {

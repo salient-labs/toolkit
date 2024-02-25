@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Collection;
 
 use Salient\Core\Contract\Arrayable;
 
@@ -9,10 +9,10 @@ use Salient\Core\Contract\Arrayable;
  *
  * @template TValue
  *
- * @extends ICollection<int,TValue>
+ * @extends CollectionInterface<int,TValue>
  * @extends Arrayable<int,TValue>
  */
-interface IList extends ICollection, Arrayable
+interface ListInterface extends CollectionInterface, Arrayable
 {
     /**
      * Add an item

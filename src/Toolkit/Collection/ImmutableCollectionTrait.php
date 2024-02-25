@@ -1,28 +1,28 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Collection;
 
-use Lkrms\Contract\ICollection;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\ImmutableArrayAccessTrait;
 
 /**
- * Implements ICollection for immutable classes
+ * Implements CollectionInterface for immutable classes
  *
- * Mutable classes should use {@see TCollection} instead.
+ * Mutable classes should use {@see CollectionTrait} instead.
  *
  * @template TKey of array-key
  * @template TValue
  *
- * @see ICollection
+ * @see CollectionInterface
  */
-trait TImmutableCollection
+trait ImmutableCollectionTrait
 {
-    /** @use TCollection<TKey,TValue> */
-    use TCollection;
-    /** @use ImmutableArrayAccess<TKey,TValue> */
-    use ImmutableArrayAccess {
-        ImmutableArrayAccess::offsetSet insteadof TCollection;
-        ImmutableArrayAccess::offsetUnset insteadof TCollection;
+    /** @use CollectionTrait<TKey,TValue> */
+    use CollectionTrait;
+    /** @use ImmutableArrayAccessTrait<TKey,TValue> */
+    use ImmutableArrayAccessTrait {
+        ImmutableArrayAccessTrait::offsetSet insteadof CollectionTrait;
+        ImmutableArrayAccessTrait::offsetUnset insteadof CollectionTrait;
     }
     use HasImmutableProperties;
 

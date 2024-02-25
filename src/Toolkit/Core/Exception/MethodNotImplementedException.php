@@ -5,7 +5,6 @@ namespace Salient\Core\Exception;
 use Salient\Core\Concern\ExceptionTrait;
 use Salient\Core\Contract\ExceptionInterface;
 use Salient\Core\Utility\Reflect;
-use BadMethodCallException;
 use ReflectionMethod;
 
 /**

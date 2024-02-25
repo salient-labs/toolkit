@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
-use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\SyncTestCase;
+use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
+use Salient\Core\Catalog\TextComparisonFlag as Flag;
 use Salient\Sync\Contract\ISyncEntity;
 use Salient\Sync\Contract\ISyncEntityProvider;
 use Salient\Sync\Contract\ISyncEntityResolver;

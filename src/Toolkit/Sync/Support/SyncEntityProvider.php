@@ -4,8 +4,8 @@ namespace Salient\Sync\Support;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
-use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Catalog\TextComparisonAlgorithm;
 use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;

@@ -1,9 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
-
-use Lkrms\Concern\TCollection;
-use Lkrms\Contract\ICollection;
+namespace Salient\Collection;
 
 /**
  * Base class for collections of items of a given type
@@ -11,12 +8,12 @@ use Lkrms\Contract\ICollection;
  * @template TKey of array-key
  * @template TValue
  *
- * @implements ICollection<TKey,TValue>
+ * @implements CollectionInterface<TKey,TValue>
  */
-abstract class TypedCollection implements ICollection
+abstract class AbstractTypedCollection implements CollectionInterface
 {
-    /** @use TCollection<TKey,TValue> */
-    use TCollection;
+    /** @use CollectionTrait<TKey,TValue> */
+    use CollectionTrait;
 
     /**
      * Clone the collection

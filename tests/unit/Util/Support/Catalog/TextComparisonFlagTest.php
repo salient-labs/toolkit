@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Support\Catalog;
 
-use Lkrms\Support\Catalog\TextComparisonAlgorithm;
-use Lkrms\Support\Catalog\TextComparisonFlag;
+use Salient\Core\Catalog\TextComparisonAlgorithm;
+use Salient\Core\Catalog\TextComparisonFlag;
 use Salient\Tests\TestCase;
 use ReflectionClass;
 

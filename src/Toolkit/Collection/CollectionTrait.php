@@ -1,25 +1,24 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Collection;
 
-use Lkrms\Contract\ICollection;
 use Salient\Core\Contract\Arrayable;
 
 /**
- * Implements ICollection
+ * Implements CollectionInterface
  *
- * Unless otherwise noted, {@see TCollection} methods operate on one instance of
+ * Unless otherwise noted, {@see CollectionTrait} methods operate on one instance of
  * the class. Immutable classes should use {@see TImmutableCollection} instead.
  *
  * @template TKey of array-key
  * @template TValue
  *
- * @see ICollection
+ * @see CollectionInterface
  */
-trait TCollection
+trait CollectionTrait
 {
-    /** @use TReadableCollection<TKey,TValue> */
-    use TReadableCollection;
+    /** @use ReadableCollectionTrait<TKey,TValue> */
+    use ReadableCollectionTrait;
 
     /**
      * @param TKey $key
@@ -84,10 +83,10 @@ trait TCollection
 
     /**
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
-     * @param ICollection::CALLBACK_USE_* $mode
+     * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return static A copy of the collection with items that satisfy `$callback`.
      */
-    public function filter(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE)
+    public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
         $items = [];
         $prev = null;
@@ -97,9 +96,9 @@ trait TCollection
         $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $mode === ICollection::CALLBACK_USE_KEY
+            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
                 ? $nextKey
-                : ($mode === ICollection::CALLBACK_USE_BOTH
+                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
                     ? [$nextKey => $nextValue]
                     : $nextValue);
             if ($i++) {

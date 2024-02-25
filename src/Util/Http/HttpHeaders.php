@@ -2,13 +2,13 @@
 
 namespace Lkrms\Http;
 
-use Lkrms\Concern\ImmutableArrayAccess;
-use Lkrms\Concern\TReadableCollection;
-use Lkrms\Contract\ICollection;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Http\Contract\HttpHeadersInterface;
+use Salient\Collection\CollectionInterface;
+use Salient\Collection\ReadableCollectionTrait;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Contract\Arrayable;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\InvalidArgumentException;
@@ -23,10 +23,10 @@ use LogicException;
  */
 class HttpHeaders implements HttpHeadersInterface, Immutable
 {
-    /** @use TReadableCollection<string,string[]> */
-    use TReadableCollection;
-    /** @use ImmutableArrayAccess<string,string[]> */
-    use ImmutableArrayAccess;
+    /** @use ReadableCollectionTrait<string,string[]> */
+    use ReadableCollectionTrait;
+    /** @use ImmutableArrayAccessTrait<string,string[]> */
+    use ImmutableArrayAccessTrait;
     use HasImmutableProperties {
         withPropertyValue as with;
     }
@@ -342,7 +342,7 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
     /**
      * @inheritDoc
      */
-    public function filter(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE)
+    public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
         $index = $this->Index;
         $prev = null;
@@ -356,14 +356,14 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
             foreach ($headerIndex as $i) {
                 $header = $this->Headers[$i];
                 $value = reset($header);
-                if ($mode === ICollection::CALLBACK_USE_KEY) {
+                if ($mode === CollectionInterface::CALLBACK_USE_KEY) {
                     break;
                 }
                 $nextValue[] = $value;
             }
-            $next = $mode === ICollection::CALLBACK_USE_KEY
+            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
                 ? $nextLower
-                : ($mode === ICollection::CALLBACK_USE_BOTH
+                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
                     ? [$nextLower => $nextValue]
                     : $nextValue);
             if ($count++) {

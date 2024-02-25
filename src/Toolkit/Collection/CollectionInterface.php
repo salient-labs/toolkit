@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Collection;
 
 use Salient\Core\Contract\Arrayable;
 use Salient\Core\Contract\Jsonable;
@@ -19,7 +19,7 @@ use JsonSerializable;
  * @extends Arrayable<TKey,TValue>
  * @extends IteratorAggregate<TKey,TValue>
  */
-interface ICollection extends ArrayAccess, Arrayable, Countable, IteratorAggregate, JsonSerializable, Jsonable
+interface CollectionInterface extends ArrayAccess, Arrayable, Countable, IteratorAggregate, JsonSerializable, Jsonable
 {
     /**
      * Pass the value of each item to the callback
@@ -91,29 +91,29 @@ interface ICollection extends ArrayAccess, Arrayable, Countable, IteratorAggrega
      * Apply a callback to items in the collection
      *
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
-     * @param ICollection::CALLBACK_USE_* $mode
+     * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return $this
      */
-    public function forEach(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE);
+    public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
 
     /**
      * Reduce the collection to items that satisfy a callback
      *
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
-     * @param ICollection::CALLBACK_USE_* $mode
+     * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return static
      */
-    public function filter(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE);
+    public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
 
     /**
      * Get the first item that satisfies a callback, or null if there is no such
      * item in the collection
      *
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
-     * @param ICollection::CALLBACK_USE_* $mode
+     * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return TValue|null
      */
-    public function find(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE);
+    public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
 
     /**
      * Reduce the collection to items with keys in an array
