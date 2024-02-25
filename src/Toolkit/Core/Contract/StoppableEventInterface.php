@@ -1,13 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
-
-use Psr\EventDispatcher\StoppableEventInterface;
+namespace Salient\Core\Contract;
 
 /**
  * A cancellable event
  */
-interface IStoppableEvent extends StoppableEventInterface
+interface StoppableEventInterface extends \Psr\EventDispatcher\StoppableEventInterface
 {
     /**
      * True if the event should not be passed to listeners

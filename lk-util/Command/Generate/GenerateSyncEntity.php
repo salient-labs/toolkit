@@ -2,7 +2,6 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Concern\HasParent;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Salient\Cli\Catalog\CliOptionType;
@@ -10,6 +9,7 @@ use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Core\Catalog\Cardinality;
+use Salient\Core\Concern\TreeableTrait;
 use Salient\Core\Contract\Treeable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
@@ -221,7 +221,7 @@ EOF)
         $this->Extends[] = $this->getFqcnAlias(SyncEntity::class);
         if ($this->ParentProperty !== null) {
             $this->Implements[] = $this->getFqcnAlias(Treeable::class);
-            $this->Uses[] = $this->getFqcnAlias(HasParent::class);
+            $this->Uses[] = $this->getFqcnAlias(TreeableTrait::class);
         }
 
         if ($this->Description === null) {

@@ -2,11 +2,11 @@
 
 namespace Salient\Sync\Support;
 
-use Lkrms\Contract\IComparable;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Buildable;
+use Salient\Core\Contract\Comparable;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Sync\Catalog\SyncErrorType;
@@ -27,7 +27,7 @@ use Salient\Sync\Contract\ISyncProvider;
  *
  * @implements Buildable<SyncErrorBuilder>
  */
-final class SyncError implements Readable, IComparable, Immutable, Buildable
+final class SyncError implements Readable, Comparable, Immutable, Buildable
 {
     use ReadsProtectedProperties;
     /** @use HasBuilder<SyncErrorBuilder> */

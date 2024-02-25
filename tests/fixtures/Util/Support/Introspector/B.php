@@ -2,13 +2,13 @@
 
 namespace Lkrms\Tests\Support\Introspector;
 
-use Lkrms\Concern\TConstructible;
+use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Contract\Constructible;
 use DateTimeImmutable;
 
 class B extends A implements Constructible
 {
-    use TConstructible;
+    use ConstructibleTrait;
 
     /**
      * @var mixed[]

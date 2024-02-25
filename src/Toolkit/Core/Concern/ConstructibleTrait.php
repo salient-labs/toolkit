@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
@@ -16,7 +16,7 @@ use Generator;
  *
  * @see Constructible
  */
-trait TConstructible
+trait ConstructibleTrait
 {
     /**
      * Create an instance of the class from an array
@@ -50,7 +50,7 @@ trait TConstructible
     /**
      * Create traversable instances from traversable arrays
      *
-     * See {@see TConstructible::construct()} for more information.
+     * See {@see ConstructibleTrait::construct()} for more information.
      *
      * @param iterable<mixed[]> $list
      * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;

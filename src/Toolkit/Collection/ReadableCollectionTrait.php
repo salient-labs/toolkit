@@ -2,8 +2,8 @@
 
 namespace Salient\Collection;
 
-use Lkrms\Contract\IComparable;
 use Salient\Core\Contract\Arrayable;
+use Salient\Core\Contract\Comparable;
 use Salient\Core\Contract\Jsonable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Json;
@@ -322,7 +322,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * Compare items using IComparable::compare() if implemented
+     * Compare items using Comparable::compare() if implemented
      *
      * @param TValue $a
      * @param TValue $b
@@ -330,8 +330,8 @@ trait ReadableCollectionTrait
     protected function compareItems($a, $b): int
     {
         if (
-            $a instanceof IComparable &&
-            $b instanceof IComparable
+            $a instanceof Comparable &&
+            $b instanceof Comparable
         ) {
             if ($b instanceof $a) {
                 return $a->compare($a, $b);

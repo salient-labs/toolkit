@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
 use Salient\Core\Contract\Treeable;
 use Salient\Core\Introspector;
@@ -11,7 +11,7 @@ use LogicException;
  *
  * @see Treeable
  */
-trait HasParent
+trait TreeableTrait
 {
     abstract public static function getParentProperty(): string;
 
@@ -20,12 +20,12 @@ trait HasParent
     /**
      * @var array<class-string<self>,string>
      */
-    private static $_ParentProperties = [];
+    private static $ParentProperties = [];
 
     /**
      * @var array<class-string<self>,string>
      */
-    private static $_ChildrenProperties = [];
+    private static $ChildrenProperties = [];
 
     private static function loadHierarchyProperties(): void
     {
@@ -41,10 +41,10 @@ trait HasParent
             );
         }
 
-        self::$_ParentProperties[static::class] =
+        self::$ParentProperties[static::class] =
             $introspector->Properties[$introspector->ParentProperty]
                 ?? $introspector->ParentProperty;
-        self::$_ChildrenProperties[static::class] =
+        self::$ChildrenProperties[static::class] =
             $introspector->Properties[$introspector->ChildrenProperty]
                 ?? $introspector->ChildrenProperty;
     }
@@ -54,11 +54,11 @@ trait HasParent
      */
     final public function getParent()
     {
-        if (!isset(self::$_ParentProperties[static::class])) {
+        if (!isset(self::$ParentProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
-        $_parent = self::$_ParentProperties[static::class];
+        $_parent = self::$ParentProperties[static::class];
 
         return $this->{$_parent};
     }
@@ -68,11 +68,11 @@ trait HasParent
      */
     final public function getChildren(): array
     {
-        if (!isset(self::$_ChildrenProperties[static::class])) {
+        if (!isset(self::$ChildrenProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
-        $_children = self::$_ChildrenProperties[static::class];
+        $_children = self::$ChildrenProperties[static::class];
 
         return $this->{$_children} ?? [];
     }
@@ -83,12 +83,12 @@ trait HasParent
      */
     final public function setParent($parent)
     {
-        if (!isset(self::$_ParentProperties[static::class])) {
+        if (!isset(self::$ParentProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
-        $_parent = self::$_ParentProperties[static::class];
-        $_children = self::$_ChildrenProperties[static::class];
+        $_parent = self::$ParentProperties[static::class];
+        $_children = self::$ChildrenProperties[static::class];
 
         if ($parent === $this->{$_parent} &&
             ($parent === null ||
@@ -131,11 +131,11 @@ trait HasParent
      */
     final public function removeChild($child)
     {
-        if (!isset(self::$_ParentProperties[static::class])) {
+        if (!isset(self::$ParentProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
-        $_parent = self::$_ParentProperties[static::class];
+        $_parent = self::$ParentProperties[static::class];
 
         if ($child->{$_parent} !== $this) {
             throw new LogicException('Argument #1 ($child) is not a child of this object');
@@ -146,11 +146,11 @@ trait HasParent
 
     final public function getDepth(): int
     {
-        if (!isset(self::$_ParentProperties[static::class])) {
+        if (!isset(self::$ParentProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
-        $_parent = self::$_ParentProperties[static::class];
+        $_parent = self::$ParentProperties[static::class];
 
         $depth = 0;
         $parent = $this->{$_parent};
@@ -164,12 +164,12 @@ trait HasParent
 
     final public function getDescendantCount(): int
     {
-        if (!isset(self::$_ChildrenProperties[static::class])) {
+        if (!isset(self::$ChildrenProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
         return $this->countDescendants(
-            self::$_ChildrenProperties[static::class]
+            self::$ChildrenProperties[static::class]
         );
     }
 

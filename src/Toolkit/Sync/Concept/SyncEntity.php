@@ -2,11 +2,6 @@
 
 namespace Salient\Sync\Concept;
 
-use Lkrms\Concern\HasNormaliser;
-use Lkrms\Concern\RequiresContainer;
-use Lkrms\Concern\TConstructible;
-use Lkrms\Concern\TExtensible;
-use Lkrms\Concern\TProvidable;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Salient\Container\ContainerInterface;
@@ -14,8 +9,13 @@ use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
 use Salient\Core\Catalog\TextComparisonFlag as Flag;
+use Salient\Core\Concern\ConstructibleTrait;
+use Salient\Core\Concern\ExtensibleTrait;
+use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Concern\ProvidableTrait;
+use Salient\Core\Concern\RequiresContainer;
 use Salient\Core\Contract\Describable;
 use Salient\Core\Contract\NormaliserFactory;
 use Salient\Core\Contract\ProviderContextInterface;
@@ -75,8 +75,8 @@ use ReflectionClass;
  */
 abstract class SyncEntity extends AbstractEntity implements ISyncEntity, NormaliserFactory
 {
-    /** @use TProvidable<ISyncProvider,ISyncContext> */
-    use TConstructible, HasReadableProperties, HasWritableProperties, TExtensible, TProvidable, HasNormaliser, RequiresContainer;
+    /** @use ProvidableTrait<ISyncProvider,ISyncContext> */
+    use ConstructibleTrait, HasReadableProperties, HasWritableProperties, ExtensibleTrait, ProvidableTrait, HasNormaliser, RequiresContainer;
 
     /**
      * The unique identifier assigned to the entity by its provider

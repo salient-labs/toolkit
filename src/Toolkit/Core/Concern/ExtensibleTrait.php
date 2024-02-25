@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
 use Salient\Core\Contract\Extensible;
 use Salient\Core\Introspector as IS;
@@ -10,7 +10,7 @@ use Salient\Core\Introspector as IS;
  *
  * @see Extensible
  */
-trait TExtensible
+trait ExtensibleTrait
 {
     /**
      * Normalised property name => value

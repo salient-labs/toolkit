@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Support\Introspector;
 
-use Lkrms\Concern\HasNormaliser;
-use Lkrms\Concern\TExtensible;
+use Salient\Core\Concern\ExtensibleTrait;
+use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Extensible;
@@ -14,7 +14,7 @@ use Salient\Core\Contract\Writable;
 
 class A implements Readable, Writable, Extensible, Normalisable, NormaliserFactory
 {
-    use ReadsProtectedProperties, HasWritableProperties, TExtensible, HasNormaliser;
+    use ReadsProtectedProperties, HasWritableProperties, ExtensibleTrait, HasNormaliser;
 
     /**
      * @inheritDoc

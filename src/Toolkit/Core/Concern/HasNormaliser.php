@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
 use Salient\Core\Contract\Normalisable;
 use Salient\Core\Contract\NormaliserFactory;
@@ -21,7 +21,7 @@ trait HasNormaliser
     /**
      * @var array<string,Closure(string $name, bool $greedy=, string...$hints): string>
      */
-    private static $_Normaliser = [];
+    private static $Normaliser = [];
 
     /**
      * @inheritDoc
@@ -40,7 +40,7 @@ trait HasNormaliser
         bool $greedy = true,
         string ...$hints
     ): string {
-        $normaliser = self::$_Normaliser[static::class]
+        $normaliser = self::$Normaliser[static::class]
             ??= static::getNormaliser();
 
         return $normaliser($name, $greedy, ...$hints);

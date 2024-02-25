@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
@@ -22,7 +22,7 @@ use LogicException;
  *
  * @see Providable
  */
-trait TProvidable
+trait ProvidableTrait
 {
     /**
      * @var TProvider|null
@@ -160,7 +160,7 @@ trait TProvidable
     /**
      * Create instances of the class from arrays on behalf of a provider
      *
-     * See {@see TProvidable::provide()} for more information.
+     * See {@see ProvidableTrait::provide()} for more information.
      *
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider

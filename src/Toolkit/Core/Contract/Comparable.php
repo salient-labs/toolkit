@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 /**
  * Able to compare instances of itself, e.g. for sorting purposes
  */
-interface IComparable
+interface Comparable
 {
     /**
      * Get an integer less than, equal to, or greater than zero when $a is less

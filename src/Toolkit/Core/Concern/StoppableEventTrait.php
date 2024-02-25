@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concern;
+namespace Salient\Core\Concern;
 
-use Lkrms\Contract\IStoppableEvent;
+use Salient\Core\Contract\StoppableEventInterface;
 
 /**
  * Implements IStoppableEvent
  *
- * @see IStoppableEvent
+ * @see StoppableEventInterface
  */
-trait TStoppableEvent
+trait StoppableEventTrait
 {
     protected bool $Propagate = true;
 
