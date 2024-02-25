@@ -8,6 +8,8 @@ use RuntimeException;
 
 /**
  * Base class for runtime exceptions
+ *
+ * @api
  */
 abstract class AbstractException extends RuntimeException implements ExceptionInterface
 {

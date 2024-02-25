@@ -2,7 +2,6 @@
 
 namespace Salient\Cli;
 
-use Lkrms\Contract\HasJsonSchema;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
@@ -16,6 +15,7 @@ use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\Immutable;
+use Salient\Core\Contract\JsonSchemaInterface;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
@@ -65,8 +65,9 @@ use LogicException;
  *
  * @implements Buildable<CliOptionBuilder>
  */
-final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
+final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Readable
 {
+    /** @use HasBuilder<CliOptionBuilder> */
     use HasBuilder;
     use ReadsProtectedProperties;
 

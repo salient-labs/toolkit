@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Contract\Jsonable;
+use Salient\Core\Contract\Jsonable;
 use Salient\Core\AbstractUtility;
 use DateTimeInterface;
 

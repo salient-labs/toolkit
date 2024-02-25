@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Support\IntrospectionClass;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -10,6 +9,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
+use Salient\Core\IntrospectionClass;
 use Closure;
 use ReflectionClass;
 

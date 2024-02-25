@@ -19,4 +19,11 @@ interface ServiceAwareInterface
      * @param class-string $service
      */
     public function setService(string $service): void;
+
+    /**
+     * Get the service or services resolved with the instance
+     *
+     * @return class-string[]|class-string
+     */
+    public function getService();
 }

@@ -2,10 +2,10 @@
 
 namespace Lkrms\LkUtil\Command\Concept;
 
-use Lkrms\Contract\IProvider;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
+use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
@@ -91,14 +91,14 @@ abstract class Command extends CliCommand
     /**
      * Resolve a user-supplied provider name to a concrete instance
      *
-     * @template TBaseProvider of IProvider
+     * @template TBaseProvider of ProviderInterface
      * @template TProvider of TBaseProvider
      *
      * @param class-string<TProvider> $provider
      * @param class-string<TBaseProvider> $class
      * @return TProvider
      */
-    protected function getProvider(string $provider, string $class = IProvider::class): IProvider
+    protected function getProvider(string $provider, string $class = ProviderInterface::class): ProviderInterface
     {
         $provider = $this->getFqcnOptionValue($provider, EnvVar::NS_PROVIDER);
         if (is_a($provider, $class, true)) {

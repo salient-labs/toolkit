@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Salient\Core\AbstractBuilder;
+use Salient\Core\DateFormatter;
 use Closure;
 
 /**

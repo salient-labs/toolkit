@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
-use Lkrms\Support\Introspector;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Introspector;
 
 /**
  * Implements Readable

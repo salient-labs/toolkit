@@ -2,14 +2,19 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\ReturnsNormaliser;
+use Salient\Core\Contract\Normalisable;
+use Salient\Core\Contract\NormaliserFactory;
 use Salient\Core\Utility\Str;
 use Closure;
 
 /**
- * Implements ReturnsNormaliser
+ * Implements NormaliserFactory and Normalisable
  *
- * @see ReturnsNormaliser
+ * @see NormaliserFactory
+ * @see Normalisable
+ *
+ * @phpstan-require-implements NormaliserFactory
+ * @phpstan-require-implements Normalisable
  */
 trait HasNormaliser
 {
@@ -18,17 +23,25 @@ trait HasNormaliser
      */
     private static $_Normaliser = [];
 
-    public static function normaliser(): Closure
+    /**
+     * @inheritDoc
+     */
+    public static function getNormaliser(): Closure
     {
-        return
-            fn(string $name): string =>
-                Str::toSnakeCase($name);
+        return fn(string $name): string =>
+            Str::toSnakeCase($name);
     }
 
-    final public static function normalise(string $name, bool $greedy = true, string ...$hints): string
-    {
+    /**
+     * @inheritDoc
+     */
+    final public static function normalise(
+        string $name,
+        bool $greedy = true,
+        string ...$hints
+    ): string {
         $normaliser = self::$_Normaliser[static::class]
-            ?? (self::$_Normaliser[static::class] = static::normaliser());
+            ??= static::getNormaliser();
 
         return $normaliser($name, $greedy, ...$hints);
     }

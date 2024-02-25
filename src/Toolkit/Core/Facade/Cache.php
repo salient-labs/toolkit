@@ -17,7 +17,7 @@ use DateTimeInterface;
  * @method static mixed|null get(string $key, ?int $maxAge = null) Retrieve an item stored under a given key (see {@see CacheStore::get()})
  * @method static string[] getAllKeys(?int $maxAge = null) Get a list of keys under which unexpired items are stored (see {@see CacheStore::getAllKeys()})
  * @method static mixed[]|null getArray(string $key, ?int $maxAge = null) Retrieve an array stored under a given key (see {@see CacheStore::getArray()})
- * @method static string|null getFilename() Get the filename of the database
+ * @method static string getFilename() Get the filename of the database
  * @method static object|null getInstanceOf(string $key, class-string $class, ?int $maxAge = null) Retrieve an instance of a class stored under a given key (see {@see CacheStore::getInstanceOf()})
  * @method static int|null getInt(string $key, ?int $maxAge = null) Retrieve an integer stored under a given key (see {@see CacheStore::getInt()})
  * @method static int getItemCount(?int $maxAge = null) Get the number of unexpired items in the store (see {@see CacheStore::getItemCount()})

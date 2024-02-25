@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\HasProvider;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
+use Salient\Core\Contract\HasProvider;
 
 /**
  * Provides an entity-agnostic interface to an ISyncProvider's implementation of

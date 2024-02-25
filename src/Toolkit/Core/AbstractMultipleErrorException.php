@@ -7,6 +7,8 @@ use Salient\Core\Contract\MultipleErrorExceptionInterface;
 
 /**
  * Base class for runtime exceptions that represent multiple errors
+ *
+ * @api
  */
 abstract class AbstractMultipleErrorException extends AbstractException implements MultipleErrorExceptionInterface
 {

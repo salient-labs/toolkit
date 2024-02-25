@@ -456,6 +456,7 @@ final class PhpDoc implements Readable
             'param',
             'readonly',
             'return',
+            'throws',
             'var',
             'template',
             'internal',

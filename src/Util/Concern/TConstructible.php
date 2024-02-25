@@ -2,19 +2,19 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IConstructible;
-use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\ITreeable;
-use Lkrms\Support\Introspector;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
+use Salient\Core\Contract\Constructible;
+use Salient\Core\Contract\Extensible;
+use Salient\Core\Contract\Treeable;
+use Salient\Core\Introspector;
 use Generator;
 
 /**
- * Implements IConstructible to create instances from associative arrays
+ * Implements Constructible
  *
- * @see IConstructible
+ * @see Constructible
  */
 trait TConstructible
 {
@@ -23,8 +23,8 @@ trait TConstructible
      *
      * The constructor (if any) is invoked with parameters taken from `$data`.
      * If `$data` values remain, they are assigned to writable properties. If
-     * further values remain and the class implements {@see IExtensible}, they
-     * are assigned via {@see IExtensible::setMetaProperty()}.
+     * further values remain and the class implements {@see Extensible}, they
+     * are assigned via {@see Extensible::setMetaProperty()}.
      *
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
@@ -32,9 +32,9 @@ trait TConstructible
      * @param mixed[] $data
      * @param ContainerInterface|null $container Used to create the instance if
      * set.
-     * @param (ITreeable&static)|null $parent If the class implements
-     * {@see ITreeable}, pass `$parent` to the instance via
-     * {@see ITreeable::setParent()}.
+     * @param (Treeable&static)|null $parent If the class implements
+     * {@see Treeable}, pass `$parent` to the instance via
+     * {@see Treeable::setParent()}.
      * @return static
      */
     final public static function construct(array $data, ?ContainerInterface $container = null, $parent = null)
@@ -53,18 +53,19 @@ trait TConstructible
      * See {@see TConstructible::construct()} for more information.
      *
      * @param iterable<mixed[]> $list
-     * @param Conformity::* $conformity Use `COMPLETE` or `PARTIAL`
-     * wherever possible to improve performance.
+     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
+     * or {@see ListConformity::PARTIAL} wherever possible to improve
+     * performance.
      * @param ContainerInterface|null $container Used to create each instance if
      * set.
-     * @param (ITreeable&static)|null $parent If the class implements
-     * {@see ITreeable}, pass `$parent` to each instance via
-     * {@see ITreeable::setParent()}.
+     * @param (Treeable&static)|null $parent If the class implements
+     * {@see Treeable}, pass `$parent` to each instance via
+     * {@see Treeable::setParent()}.
      * @return Generator<static>
      */
     final public static function constructList(
         iterable $list,
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         ?ContainerInterface $container = null,
         $parent = null
     ): Generator {
@@ -77,7 +78,7 @@ trait TConstructible
             if (!$closure) {
                 $builder = Introspector::getService($container, static::class);
                 $closure =
-                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE])
+                    in_array($conformity, [ListConformity::PARTIAL, ListConformity::COMPLETE])
                         ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
                         : $builder->getCreateFromClosure(true);
             }

@@ -2,7 +2,6 @@
 
 namespace Salient\Cli;
 
-use Lkrms\Contract\HasJsonSchema;
 use Salient\Cli\Catalog\CliHelpSectionName;
 use Salient\Cli\Catalog\CliHelpTarget;
 use Salient\Cli\Catalog\CliOptionValueType;
@@ -11,6 +10,7 @@ use Salient\Cli\Contract\CliApplicationInterface;
 use Salient\Cli\Contract\CliCommandInterface;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
+use Salient\Core\Contract\JsonSchemaInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Package;
@@ -728,7 +728,7 @@ abstract class CliCommand implements CliCommandInterface
     final public function getJsonSchema(): array
     {
         $schema = [
-            '$schema' => HasJsonSchema::DRAFT_04_SCHEMA_ID,
+            '$schema' => JsonSchemaInterface::DRAFT_04_SCHEMA_ID,
         ];
         $schema['type'] = 'object';
         $schema['required'] = [];

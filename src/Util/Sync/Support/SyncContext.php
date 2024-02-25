@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
@@ -15,6 +14,7 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\ProviderContext;
 use LogicException;
 
 /**
@@ -156,7 +156,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                         fn(ISyncEntity $entity): array => [
                             Str::toSnakeCase(
                                 Get::basename(
-                                    $entity->service()
+                                    $entity->getService()
                                 )
                             ) => [
                                 $entity->id(),

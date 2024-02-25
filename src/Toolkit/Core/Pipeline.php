@@ -4,7 +4,7 @@ namespace Salient\Core;
 
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Contract\EntityPipelineInterface;
 use Salient\Core\Contract\PipeInterface;
@@ -49,9 +49,9 @@ final class Pipeline implements
     private $Arg;
 
     /**
-     * @var Conformity::*
+     * @var ListConformity::*
      */
-    private int $PayloadConformity = Conformity::NONE;
+    private int $PayloadConformity = ListConformity::NONE;
 
     /**
      * @var (Closure(TInput $payload, static $pipeline, TArgument $arg): (TInput|TOutput))|null

@@ -4,8 +4,6 @@ namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Support\Date\DateFormatter;
-use Lkrms\Support\Date\DateFormatterInterface;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -25,8 +23,10 @@ use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Salient\Container\Contract\SingletonInterface;
+use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Env;
+use Salient\Core\DateFormatter;
 
 /**
  * @method Album createAlbum(ISyncContext $ctx, Album $album)

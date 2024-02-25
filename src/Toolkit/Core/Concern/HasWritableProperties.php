@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
-use Lkrms\Support\Introspector;
 use Salient\Core\Contract\Writable;
+use Salient\Core\Introspector;
 
 /**
  * Implements Writable

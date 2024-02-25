@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
+use Salient\Core\Catalog\Cardinality;
 
 /**
  * Represents the state of a User entity in a backend
@@ -70,9 +70,9 @@ class User extends SyncEntity
     public static function getRelationships(): array
     {
         return [
-            'Tasks' => [RelationshipType::ONE_TO_MANY => Task::class],
-            'Posts' => [RelationshipType::ONE_TO_MANY => Post::class],
-            'Albums' => [RelationshipType::ONE_TO_MANY => Album::class],
+            'Tasks' => [Cardinality::ONE_TO_MANY => Task::class],
+            'Posts' => [Cardinality::ONE_TO_MANY => Post::class],
+            'Albums' => [Cardinality::ONE_TO_MANY => Album::class],
         ];
     }
 }

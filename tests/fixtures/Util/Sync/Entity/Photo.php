@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
+use Salient\Core\Catalog\Cardinality;
 
 /**
  * Represents the state of a Photo entity in a backend
@@ -44,7 +44,7 @@ class Photo extends SyncEntity
     public static function getRelationships(): array
     {
         return [
-            'Album' => [RelationshipType::ONE_TO_ONE => Album::class],
+            'Album' => [Cardinality::ONE_TO_ONE => Album::class],
         ];
     }
 }

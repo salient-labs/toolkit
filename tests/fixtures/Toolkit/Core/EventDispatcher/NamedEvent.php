@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Core\EventDispatcher;
 
-use Lkrms\Contract\HasName;
+use Salient\Core\Contract\Nameable;
 
-class NamedEvent extends BaseEvent implements HasName
+class NamedEvent extends BaseEvent implements Nameable
 {
     protected string $Name;
 

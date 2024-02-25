@@ -16,7 +16,7 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Contract\Chainable;
@@ -36,7 +36,7 @@ use LogicException;
  * @property-read class-string<TEntity> $Entity The ISyncEntity being serviced
  * @property-read TProvider $Provider The ISyncProvider servicing the entity
  * @property-read array<OP::*> $Operations A list of supported sync operations
- * @property-read Conformity::* $Conformity The conformity level of data returned by the provider for this entity
+ * @property-read ListConformity::* $Conformity The conformity level of data returned by the provider for this entity
  * @property-read FilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
  * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $Overrides An array that maps sync operations to closures that override other implementations
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap An array that maps provider (backend) keys to one or more entity keys
@@ -101,11 +101,10 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
     /**
      * The conformity level of data returned by the provider for this entity
      *
-     * Use {@see Conformity::COMPLETE} or
-     * {@see Conformity::PARTIAL} wherever possible to improve
-     * performance.
+     * Use {@see ListConformity::COMPLETE} or {@see ListConformity::PARTIAL}
+     * wherever possible to improve performance.
      *
-     * @var Conformity::*
+     * @var ListConformity::*
      */
     protected $Conformity;
 
@@ -224,7 +223,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
@@ -237,7 +236,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
         string $entity,
         ISyncProvider $provider,
         array $operations = [],
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
@@ -472,7 +471,7 @@ abstract class SyncDefinition implements ISyncDefinition, Chainable, Readable
                     if (!$closure) {
                         $closure = in_array(
                             $this->Conformity,
-                            [Conformity::PARTIAL, Conformity::COMPLETE]
+                            [ListConformity::PARTIAL, ListConformity::COMPLETE]
                         )
                             ? SyncIntrospector::getService($ctx->container(), $this->Entity)
                                 ->getCreateSyncEntityFromSignatureClosure(array_keys($data))

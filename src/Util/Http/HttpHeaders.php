@@ -4,12 +4,12 @@ namespace Lkrms\Http;
 
 use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
-use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Http\Catalog\HttpHeader;
 use Lkrms\Http\Contract\AccessTokenInterface;
 use Lkrms\Http\Contract\HttpHeadersInterface;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Contract\Arrayable;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;

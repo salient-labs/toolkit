@@ -2,13 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IRelatable;
-use Lkrms\Contract\ITreeable;
 use Lkrms\Facade\Sync;
-use Lkrms\Support\Date\DateFormatter;
-use Lkrms\Support\Introspector;
-use Lkrms\Support\IntrospectorKeyTargets;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -16,10 +10,16 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Regex;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\Relatable;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\DateFormatter;
+use Salient\Core\Introspector;
+use Salient\Core\IntrospectorKeyTargets;
 use Closure;
 use LogicException;
 
@@ -344,7 +344,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, ContainerInterface, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null): TClass
+     * @return Closure(mixed[], string|null, ContainerInterface, ISyncProvider|null, ISyncContext|null, DateFormatter|null, Treeable|null): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -376,12 +376,12 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?ITreeable $parent
+                ?Treeable $parent
             ) use ($constructor, $updater, $resolver) {
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                 $obj = $resolver($array, $service, $obj, $provider, $context);
-                if ($obj instanceof IProvidable) {
+                if ($obj instanceof Providable) {
                     $obj->postLoad();
                 }
                 return $obj;
@@ -395,7 +395,7 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?ITreeable $parent
+                ?Treeable $parent
             ) use (
                 $constructor,
                 $updater,
@@ -411,7 +411,7 @@ final class SyncIntrospector extends Introspector
                     $obj = $constructor($array, $service, $container);
                     $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                     $obj = $resolver($array, $service, $obj, $provider, $context);
-                    if ($obj instanceof IProvidable) {
+                    if ($obj instanceof Providable) {
                         $obj->postLoad();
                     }
                     return $obj;
@@ -424,7 +424,7 @@ final class SyncIntrospector extends Introspector
                 if ($obj) {
                     $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                     $obj = $existingResolver($array, $service, $obj, $provider, $context);
-                    if ($obj instanceof IProvidable) {
+                    if ($obj instanceof Providable) {
                         $obj->postLoad();
                     }
                     return $obj;
@@ -434,7 +434,7 @@ final class SyncIntrospector extends Introspector
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                 $store->entity($providerId, $service ?? $entityType, $id, $obj);
                 $obj = $resolver($array, $service, $obj, $provider, $context);
-                if ($obj instanceof IProvidable) {
+                if ($obj instanceof Providable) {
                     $obj->postLoad();
                 }
                 return $obj;
@@ -650,7 +650,7 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @param class-string<ISyncEntity&IRelatable>|null $relationship
+     * @param class-string<ISyncEntity&Relatable>|null $relationship
      * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
      */
     private function getRelationshipClosure(
@@ -711,7 +711,7 @@ final class SyncIntrospector extends Introspector
                             return;
                         }
 
-                        /** @var ISyncEntity&ITreeable $entity */
+                        /** @var ISyncEntity&Treeable $entity */
                         DeferredEntity::deferList(
                             $provider,
                             $context->pushWithRecursionCheck($entity),
@@ -719,7 +719,7 @@ final class SyncIntrospector extends Introspector
                             $data[$key],
                             $replace,
                             static function ($child) use ($entity): void {
-                                /** @var ISyncEntity&ITreeable $child */
+                                /** @var ISyncEntity&Treeable $child */
                                 $entity->addChild($child);
                             },
                         );
@@ -739,9 +739,9 @@ final class SyncIntrospector extends Introspector
                         return;
                     }
 
-                    /** @var array<ISyncEntity&ITreeable> $entities */
+                    /** @var array<ISyncEntity&Treeable> $entities */
                     foreach ($entities as $child) {
-                        /** @var ISyncEntity&ITreeable $entity */
+                        /** @var ISyncEntity&Treeable $entity */
                         $entity->addChild($child);
                     }
                     return;
@@ -759,7 +759,7 @@ final class SyncIntrospector extends Introspector
                         return;
                     }
 
-                    /** @var ISyncEntity&ITreeable $entity */
+                    /** @var ISyncEntity&Treeable $entity */
                     DeferredEntity::defer(
                         $provider,
                         $context->pushWithRecursionCheck($entity),
@@ -767,7 +767,7 @@ final class SyncIntrospector extends Introspector
                         $data[$key],
                         $replace,
                         static function ($parent) use ($entity): void {
-                            /** @var ISyncEntity&ITreeable $parent */
+                            /** @var ISyncEntity&Treeable $parent */
                             $entity->setParent($parent);
                         },
                     );
@@ -787,15 +787,15 @@ final class SyncIntrospector extends Introspector
                 }
 
                 /**
-                 * @var ISyncEntity&ITreeable $entity
-                 * @var ISyncEntity&ITreeable $related
+                 * @var ISyncEntity&Treeable $entity
+                 * @var ISyncEntity&Treeable $related
                  */
                 $entity->setParent($related);
             };
     }
 
     /**
-     * @param class-string<ISyncEntity&IRelatable> $relationship
+     * @param class-string<ISyncEntity&Relatable> $relationship
      * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
      */
     private function getHydrator(
@@ -856,7 +856,7 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
 
-                /** @var ISyncEntity&ITreeable $entity */
+                /** @var ISyncEntity&Treeable $entity */
                 DeferredRelationship::defer(
                     $provider,
                     $context->pushWithRecursionCheck($entity),
@@ -872,7 +872,7 @@ final class SyncIntrospector extends Introspector
                             return;
                         }
                         foreach ($entities as $child) {
-                            /** @var ISyncEntity&ITreeable $child */
+                            /** @var ISyncEntity&Treeable $child */
                             $entity->addChild($child);
                         }
                     },

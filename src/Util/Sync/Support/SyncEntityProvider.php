@@ -102,7 +102,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @inheritDoc
      */
-    public function provider(): ISyncProvider
+    public function getProvider(): ISyncProvider
     {
         return $this->Provider;
     }

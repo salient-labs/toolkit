@@ -7,6 +7,8 @@ use Salient\Core\Concern\HasBuilder;
 use Salient\Core\AbstractBuilder;
 
 /**
+ * @api
+ *
  * @template TBuilder of AbstractBuilder
  *
  * @see AbstractBuilder
@@ -15,15 +17,7 @@ use Salient\Core\AbstractBuilder;
 interface Buildable
 {
     /**
-     * Get the name of a builder that creates instances of the class via a
-     * fluent interface
-     *
-     * @return class-string<TBuilder>
-     */
-    public static function getBuilder(): string;
-
-    /**
-     * Get a builder that creates instances of the class via a fluent interface
+     * Get a builder that creates instances of the class
      *
      * @return TBuilder
      */

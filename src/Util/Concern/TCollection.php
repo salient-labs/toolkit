@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
+use Salient\Core\Contract\Arrayable;
 
 /**
  * Implements ICollection

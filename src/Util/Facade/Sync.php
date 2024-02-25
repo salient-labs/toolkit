@@ -30,7 +30,7 @@ use Salient\Core\AbstractFacade;
  * @method static string|null getEntityTypeNamespace(class-string<ISyncEntity> $entity) Get the namespace of a sync entity type (see {@see SyncStore::getEntityTypeNamespace()})
  * @method static string|null getEntityTypeUri(class-string<ISyncEntity> $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
  * @method static SyncErrorCollection getErrors() Get sync errors recorded so far
- * @method static string|null getFilename() Get the filename of the database
+ * @method static string getFilename() Get the filename of the database
  * @method static class-string<ISyncClassResolver>|null getNamespaceResolver(class-string<ISyncEntity|ISyncProvider> $class) Get the class resolver for an entity or provider's namespace
  * @method static ISyncProvider|null getProvider(string $hash) Get a registered sync provider
  * @method static string getProviderHash(ISyncProvider $provider) Get the stable identifier of a sync provider

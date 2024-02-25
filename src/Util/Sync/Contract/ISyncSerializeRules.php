@@ -2,13 +2,25 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\ISerializeRules;
+use Salient\Core\Contract\SerializeRulesInterface;
 
 /**
  * Instructions for serializing nested sync entities
  */
-interface ISyncSerializeRules extends ISerializeRules
+interface ISyncSerializeRules extends SerializeRulesInterface
 {
+    /**
+     * Values are being serialized for an entity store
+     */
+    public const SYNC_STORE = 1;
+
+    /**
+     * A bitmask of enabled flags
+     *
+     * @return int-mask-of<ISyncSerializeRules::*>
+     */
+    public function getFlags(): int;
+
     /**
      * Remove CanonicalId from sync entities?
      */

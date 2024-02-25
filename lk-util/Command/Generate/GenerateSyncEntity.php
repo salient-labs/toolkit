@@ -3,10 +3,8 @@
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Concern\HasParent;
-use Lkrms\Contract\ITreeable;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
@@ -15,6 +13,8 @@ use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Core\Catalog\Cardinality;
+use Salient\Core\Contract\Treeable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
@@ -118,7 +118,7 @@ class GenerateSyncEntity extends GenerateCommand
                 ->description(<<<EOF
 Add a one-to-one "parent" relationship to the entity
 
-`--children` must also be given. The generated class will implement `ITreeable`.
+`--children` must also be given. The generated class will implement `Treeable`.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->ParentProperty),
@@ -128,7 +128,7 @@ EOF)
                 ->description(<<<EOF
 Add a one-to-many "children" relationship to the entity
 
-`--parent` must also be given. The generated class will implement `ITreeable`.
+`--parent` must also be given. The generated class will implement `Treeable`.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->ChildrenProperty),
@@ -220,7 +220,7 @@ EOF)
 
         $this->Extends[] = $this->getFqcnAlias(SyncEntity::class);
         if ($this->ParentProperty !== null) {
-            $this->Implements[] = $this->getFqcnAlias(ITreeable::class);
+            $this->Implements[] = $this->getFqcnAlias(Treeable::class);
             $this->Uses[] = $this->getFqcnAlias(HasParent::class);
         }
 
@@ -303,7 +303,7 @@ EOF)
         };
 
         $entityClass::$EntityName = $class;
-        $normaliser = $entityClass::normaliser();
+        $normaliser = $entityClass::getNormaliser();
         $normaliser =
             fn(string $name): string =>
                 Str::toPascalCase($normaliser($name));
@@ -442,7 +442,7 @@ EOF)
         if ($relationships) {
             // Sort relationships by the position of their respective properties
             $relationships = array_replace(array_intersect_key($properties, $relationships), $relationships);
-            $relationshipTypeAlias = $this->getFqcnAlias(RelationshipType::class);
+            $cardinalityAlias = $this->getFqcnAlias(Cardinality::class);
         }
 
         $docBlock = [];
@@ -487,7 +487,7 @@ EOF;
                 $lines[] = sprintf(
                     "'%s' => [%s::%s => %s::class],",
                     $property,
-                    $relationshipTypeAlias,
+                    $cardinalityAlias,
                     isset($oneToMany[$property]) ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
                     $type,
                 );

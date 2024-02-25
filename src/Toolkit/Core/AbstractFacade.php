@@ -202,6 +202,7 @@ abstract class AbstractFacade implements FacadeInterface
     }
 
     /**
+     * @param class-string<TService> $serviceName
      * @return TService
      */
     private static function getInstanceFromContainer(

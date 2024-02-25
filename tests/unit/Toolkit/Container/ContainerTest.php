@@ -139,8 +139,8 @@ final class ContainerTest extends TestCase
         $this->assertSame($o1->TestService, $o2->TestService);
         $this->assertSame($container, $o1->container());
         $this->assertSame($container2, $o2->container());
-        $this->assertSame(A::class, $o1->service());
-        $this->assertSame(A::class, $o2->service());
+        $this->assertSame(A::class, $o1->getService());
+        $this->assertSame(A::class, $o2->getService());
 
         // `TestServiceImplB` is only bound to itself, so the container can't
         // inject `ITestService1` into `A::construct()` unless it's passed as a
@@ -161,48 +161,45 @@ final class ContainerTest extends TestCase
 
         $o1 = $container->get(C::class);
         $this->assertInstanceOf(C::class, $o1);
-        $this->assertSame(C::class, $o1->service());
+        $this->assertSame(C::class, $o1->getService());
         $this->assertInstanceOf(A::class, $o1->a);
         $this->assertNotInstanceOf(B::class, $o1->a);
 
-        $o2 = $container->getAs(C::class, D::class);
-        $this->assertInstanceOf(C::class, $o2);
-        $this->assertNotInstanceOf(D::class, $o2);
-        $this->assertSame(D::class, $o2->service());
+        $o2 = $container->getAs(D::class, C::class);
+        $this->assertInstanceOf(D::class, $o2);
+        $this->assertSame(C::class, $o2->getService());
         $this->assertInstanceOf(A::class, $o2->a);
         $this->assertNotInstanceOf(B::class, $o2->a);
 
         $o3 = $container->get(A::class);
         $this->assertInstanceOf(A::class, $o3);
         $this->assertNotInstanceOf(B::class, $o3);
-        $this->assertSame(A::class, $o3->service());
+        $this->assertSame(A::class, $o3->getService());
 
-        $o4 = $container->getAs(A::class, B::class);
-        $this->assertInstanceOf(A::class, $o4);
-        $this->assertNotInstanceOf(B::class, $o4);
-        $this->assertSame(B::class, $o4->service());
+        $o4 = $container->getAs(B::class, A::class);
+        $this->assertInstanceOf(B::class, $o4);
+        $this->assertSame(A::class, $o4->getService());
 
         $ts1 = $container->get(ITestService1::class);
         $container2 = $container->inContextOf(get_class($ts1));
 
         $o5 = $container2->get(C::class);
         $this->assertInstanceOf(C::class, $o5);
-        $this->assertSame(C::class, $o5->service());
+        $this->assertSame(C::class, $o5->getService());
         $this->assertInstanceOf(B::class, $o5->a);
 
-        $o6 = $container2->getAs(C::class, D::class);
-        $this->assertInstanceOf(C::class, $o6);
-        $this->assertNotInstanceOf(D::class, $o6);
-        $this->assertSame(D::class, $o6->service());
+        $o6 = $container2->getAs(D::class, C::class);
+        $this->assertInstanceOf(D::class, $o6);
+        $this->assertSame(C::class, $o6->getService());
         $this->assertInstanceOf(B::class, $o6->a);
 
         $o7 = $container2->get(A::class);
         $this->assertInstanceOf(B::class, $o7);
-        $this->assertSame(A::class, $o7->service());
+        $this->assertSame(A::class, $o7->getService());
 
-        $o8 = $container2->getAs(A::class, B::class);
+        $o8 = $container2->getAs(A::class, I::class);
         $this->assertInstanceOf(B::class, $o8);
-        $this->assertSame(B::class, $o8->service());
+        $this->assertSame(I::class, $o8->getService());
     }
 
     private function _testServiceTransient(Container $container, string $concrete = TestServiceImplA::class): void

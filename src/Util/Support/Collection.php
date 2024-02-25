@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\TCollection;
-use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
+use Salient\Core\Contract\Arrayable;
 
 /**
  * An array-like collection of items

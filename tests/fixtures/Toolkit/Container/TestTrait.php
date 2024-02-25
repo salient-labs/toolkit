@@ -2,10 +2,16 @@
 
 namespace Salient\Tests\Container;
 
+use Salient\Container\Contract\ContainerAwareInterface;
+use Salient\Container\Contract\ServiceAwareInterface;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use LogicException;
 
+/**
+ * @phpstan-require-implements ContainerAwareInterface
+ * @phpstan-require-implements ServiceAwareInterface
+ */
 trait TestTrait
 {
     protected ?ContainerInterface $Container = null;
@@ -14,7 +20,7 @@ trait TestTrait
 
     protected int $SetServiceCount = 0;
 
-    public function service(): string
+    public function getService(): string
     {
         return $this->Service ?? static::class;
     }

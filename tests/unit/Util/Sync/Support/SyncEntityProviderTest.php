@@ -23,7 +23,7 @@ final class SyncEntityProviderTest extends SyncTestCase
         // immediately
         $userEntityProvider->getListA();
 
-        $provider = $postEntityProvider->provider();
+        $provider = $postEntityProvider->getProvider();
         if ($provider instanceof JsonPlaceholderApi) {
             $before = $provider->HttpRequestCount;
         }

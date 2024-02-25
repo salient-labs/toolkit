@@ -2,17 +2,17 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\HasIdentifier;
-use Lkrms\Contract\HasName;
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProviderEntity;
-use Lkrms\Contract\IRelatable;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Contract\Identifiable;
+use Salient\Core\Contract\Nameable;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\ProvidableEntityInterface;
+use Salient\Core\Contract\Relatable;
 use JsonSerializable;
 
 /**
@@ -20,13 +20,13 @@ use JsonSerializable;
  *
  * @see SyncEntity
  *
- * @extends IProviderEntity<ISyncProvider,ISyncContext>
+ * @extends ProvidableEntityInterface<ISyncProvider,ISyncContext>
  */
 interface ISyncEntity extends
-    HasIdentifier,
-    HasName,
-    IProviderEntity,
-    IRelatable,
+    Identifiable,
+    Nameable,
+    ProvidableEntityInterface,
+    Relatable,
     JsonSerializable
 {
     /**
@@ -67,6 +67,13 @@ interface ISyncEntity extends
     public static function getEntityTypeId(): ?int;
 
     /**
+     * Get the plural form of the entity's class name
+     *
+     * e.g. `Faculty::plural()` should return `'Faculties'`.
+     */
+    public static function plural(): string;
+
+    /**
      * Resolve a name or entity ID to the entity ID of one matching entity
      *
      * Returns:
@@ -105,8 +112,8 @@ interface ISyncEntity extends
      *
      * If a provider is bound to the service container as the default
      * implementation of the provider interface associated with an entity's
-     * underlying {@see IProvidable::service()}, it is regarded as the entity's
-     * canonical backend.
+     * underlying {@see Providable::getService()}, it is regarded as the
+     * entity's canonical backend.
      *
      * To improve the accuracy and performance of sync operations, providers
      * should propagate this value to and from backends capable of storing it,
@@ -119,8 +126,8 @@ interface ISyncEntity extends
     /**
      * Serialize the entity and any nested entities
      *
-     * The entity's {@see SerializeRules} are applied to each
-     * {@see ISyncEntity} encountered during this recursive operation.
+     * The entity's {@see SerializeRules} are applied to each {@see ISyncEntity}
+     * encountered during this recursive operation.
      *
      * @return array<string,mixed>
      *

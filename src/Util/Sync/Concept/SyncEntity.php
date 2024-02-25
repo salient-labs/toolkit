@@ -2,23 +2,16 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Lkrms\Concept\Entity;
 use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\RequiresContainer;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TProvidable;
-use Lkrms\Contract\HasDescription;
-use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
-use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Sync;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
-use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
-use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Catalog\SyncEntityState;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -33,9 +26,14 @@ use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
+use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Contract\Describable;
+use Salient\Core\Contract\NormaliserFactory;
+use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Contract\Writable;
 use Salient\Core\Exception\UnexpectedValueException;
@@ -44,6 +42,8 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\AbstractEntity;
+use Salient\Core\DateFormatter;
 use Closure;
 use DateTimeInterface;
 use Generator;
@@ -73,7 +73,7 @@ use ReflectionClass;
  * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
  * nested entities.
  */
-abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormaliser
+abstract class SyncEntity extends AbstractEntity implements ISyncEntity, NormaliserFactory
 {
     /** @use TProvidable<ISyncProvider,ISyncContext> */
     use TConstructible, HasReadableProperties, HasWritableProperties, TExtensible, TProvidable, HasNormaliser, RequiresContainer;
@@ -263,7 +263,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      * remove are derived by shifting each word off the beginning of the prefix
      * (e.g. "user_group" and "group").
      */
-    final public static function normaliser(): Closure
+    final public static function getNormaliser(): Closure
     {
         // If there aren't any prefixes to remove, return a closure that
         // converts everything to snake_case
@@ -350,7 +350,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                         : $this->Id,
                     '@name' => $this->name(),
                     '@description' =>
-                        $this instanceof HasDescription
+                        $this instanceof Describable
                             ? $this->description()
                             : null,
                 ]);
@@ -396,7 +396,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
 
     private function typeUri(bool $compact): string
     {
-        $service = $this->service();
+        $service = $this->getService();
         $typeUri = $this->store()->getEntityTypeUri($service, $compact);
 
         return $typeUri
@@ -560,7 +560,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             }
         } elseif ($node instanceof DateTimeInterface) {
             $node = ($rules->getDateFormatter()
-                ?: ($this->provider() ? $this->provider()->dateFormatter() : null)
+                ?: ($this->getProvider() ? $this->getProvider()->dateFormatter() : null)
                 ?: new DateFormatter())->format($node);
         } else {
             throw new UnexpectedValueException('Array or SyncEntity expected: ' . print_r($node, true));
@@ -651,8 +651,8 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     final public static function provide(
         array $data,
-        IProvider $provider,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        ?ProviderContextInterface $context = null
     ) {
         $container = $context
             ? $context->container()
@@ -676,9 +676,9 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     final public static function provideList(
         iterable $list,
-        IProvider $provider,
-        $conformity = Conformity::NONE,
-        ?IProviderContext $context = null
+        ProviderInterface $provider,
+        $conformity = ListConformity::NONE,
+        ?ProviderContextInterface $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
             self::_provideList($list, $provider, $conformity, $context)
@@ -705,7 +705,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             $context = $provider->container();
         } else {
             $context = $providerOrContext;
-            $provider = $context->provider();
+            $provider = $context->getProvider();
         }
 
         if ($provider->isValidIdentifier($nameOrId, static::class)) {
@@ -782,15 +782,15 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     /**
      * @param iterable<array-key,mixed[]> $list
      * @param ISyncProvider $provider
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param ISyncContext|null $context
      * @return Generator<array-key,static>
      */
     private static function _provideList(
         iterable $list,
-        IProvider $provider,
+        ProviderInterface $provider,
         $conformity,
-        ?IProviderContext $context
+        ?ProviderContextInterface $context
     ): Generator {
         $container = $context
             ? $context->container()
@@ -807,7 +807,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
-                    in_array($conformity, [Conformity::PARTIAL, Conformity::COMPLETE])
+                    in_array($conformity, [ListConformity::PARTIAL, ListConformity::COMPLETE])
                         ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
                         : $introspector->getCreateSyncEntityFromClosure();
             }

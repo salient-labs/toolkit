@@ -2,6 +2,8 @@
 
 namespace Lkrms\Contract;
 
+use Salient\Core\Contract\Arrayable;
+use Salient\Core\Contract\Jsonable;
 use ArrayAccess;
 use Countable;
 use IteratorAggregate;

@@ -2,8 +2,6 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
@@ -11,13 +9,15 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Exception\SyncEntityRecursionException;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
+use Salient\Core\Contract\Providable;
+use Salient\Core\Contract\ProviderContextInterface;
 
 /**
  * The context within which sync entities are instantiated by a provider
  *
- * @extends IProviderContext<ISyncProvider,ISyncEntity>
+ * @extends ProviderContextInterface<ISyncProvider,ISyncEntity>
  */
-interface ISyncContext extends IProviderContext
+interface ISyncContext extends ProviderContextInterface
 {
     /**
      * Normalise optional sync operation arguments and apply them to the context
@@ -41,7 +41,7 @@ interface ISyncContext extends IProviderContext
      *
      * 3. A list of entities (`fn(...$mandatoryArgs, ISyncEntity ...$entities)`)
      *
-     *    - Entities are grouped by snake_case {@see IProvidable::service()}
+     *    - Entities are grouped by snake_case {@see Providable::getService()}
      *      basename and replaced with their IDs, e.g. `['faculty' => [42, 71],
      *      'user' => [101]]`
      *
@@ -200,8 +200,8 @@ interface ISyncContext extends IProviderContext
      * operation arguments
      *
      * If `$orValue` is `true` and a value for `$key` has been applied to the
-     * context via {@see IProviderContext::withValue()}, it is returned if there
-     * is no matching filter.
+     * context via {@see ProviderContextInterface::withValue()}, it is returned
+     * if there is no matching filter.
      *
      * @return mixed `null` if the value has been claimed via
      * {@see ISyncContext::claimFilter()} or wasn't passed to the operation.
@@ -219,8 +219,8 @@ interface ISyncContext extends IProviderContext
      * instead of returning a modified instance.
      *
      * If `$orValue` is `true` and a value for `$key` has been applied to the
-     * context via {@see IProviderContext::withValue()}, it is returned if there
-     * is no matching filter.
+     * context via {@see ProviderContextInterface::withValue()}, it is returned
+     * if there is no matching filter.
      *
      * @return mixed `null` if the value has already been claimed or wasn't
      * passed to the operation.

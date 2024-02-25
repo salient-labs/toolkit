@@ -14,7 +14,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\AbstractBuilder;
 use Closure;
@@ -28,7 +28,7 @@ use Closure;
  * @method $this headers(?HttpHeadersInterface $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
  * @method $this pager(?ICurlerPager $value) The pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
- * @method $this conformity(Conformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
+ * @method $this conformity(ListConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
  * @method $this filterPolicy(FilterPolicy::*|null $value) The action to take when filters are unclaimed by the provider (see {@see SyncDefinition::$FilterPolicy})
  * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array<OP::*,HttpRequestMethod::*> $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})

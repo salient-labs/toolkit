@@ -5,7 +5,7 @@ namespace Lkrms\Curler;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Http\Contract\HttpHeadersInterface;
-use Lkrms\Support\Date\DateFormatterInterface;
+use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\AbstractBuilder;
 
 /**

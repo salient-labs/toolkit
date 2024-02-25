@@ -2,11 +2,11 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IProvider;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Contract\ProviderInterface;
 
 /**
  * Base interface for providers that sync entities to and from third-party
@@ -14,9 +14,9 @@ use Salient\Container\ContainerInterface;
  *
  * @see SyncProvider
  *
- * @extends IProvider<ISyncContext>
+ * @extends ProviderInterface<ISyncContext>
  */
-interface ISyncProvider extends IProvider
+interface ISyncProvider extends ProviderInterface
 {
     /**
      * @inheritDoc

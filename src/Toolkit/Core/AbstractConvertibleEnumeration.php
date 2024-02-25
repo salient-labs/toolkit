@@ -3,13 +3,15 @@
 namespace Salient\Core;
 
 use Salient\Core\Contract\ConvertibleEnumerationInterface;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
-use LogicException;
 
 /**
  * Base class for enumerations that use static arrays to map constants to and
  * from their names
+ *
+ * @api
  *
  * @template TValue of array-key
  *
@@ -42,7 +44,7 @@ abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implem
             ?? null;
 
         if ($value === null) {
-            throw new LogicException(
+            throw new InvalidArgumentException(
                 sprintf('Argument #1 ($name) is invalid: %s', $name)
             );
         }
@@ -70,7 +72,7 @@ abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implem
         }
 
         if ($invalid) {
-            throw new LogicException(
+            throw new InvalidArgumentException(
                 Inflect::format($invalid, 'Invalid {{#:name}}: %s', implode(',', $invalid))
             );
         }
@@ -86,7 +88,7 @@ abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implem
         $name = static::$NameMap[$value] ?? null;
 
         if ($name === null) {
-            throw new LogicException(
+            throw new InvalidArgumentException(
                 sprintf('Argument #1 ($value) is invalid: %s', $value)
             );
         }
@@ -112,7 +114,7 @@ abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implem
         }
 
         if ($invalid) {
-            throw new LogicException(
+            throw new InvalidArgumentException(
                 Inflect::format($invalid, 'Invalid {{#:value}}: %s', implode(',', $invalid))
             );
         }

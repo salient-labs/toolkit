@@ -2,14 +2,14 @@
 
 namespace Salient\Cli\Contract;
 
-use Lkrms\Contract\HasJsonSchema;
+use Salient\Core\Contract\JsonSchemaInterface;
 
 /**
  * A runnable CLI command
  *
  * @api
  */
-interface CliCommandInterface extends CliCommandNodeInterface, HasJsonSchema
+interface CliCommandInterface extends CliCommandNodeInterface, JsonSchemaInterface
 {
     /**
      * Parse the given arguments and run the command

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerHttpErrorException;
@@ -21,10 +20,11 @@ use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\Conformity;
+use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Contract\Buildable;
 use Salient\Core\Contract\PipelineInterface;
+use Salient\Core\Contract\ProviderContextInterface;
 use Salient\Core\Contract\StreamPipelineInterface;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
@@ -75,6 +75,7 @@ use LogicException;
  */
 final class HttpSyncDefinition extends SyncDefinition implements Buildable
 {
+    /** @use HasBuilder<HttpSyncDefinitionBuilder<TEntity,TProvider>> */
     use HasBuilder;
 
     public const DEFAULT_METHOD_MAP = [
@@ -104,8 +105,9 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * are taken from the {@see ISyncContext} object received by the sync
      * operation. The first matching value is used:
      *
-     * - Values applied explicitly via {@see IProviderContext::withValue()} or
-     *   implicitly via {@see IProviderContext::push()}
+     * - Values applied explicitly via
+     *   {@see ProviderContextInterface::withValue()} or implicitly via
+     *   {@see ProviderContextInterface::push()}
      * - Unclaimed filters passed to the operation via
      *   {@see ISyncContext::withArgs()}
      *
@@ -242,7 +244,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @param string[]|string|null $path
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param Conformity::* $conformity
+     * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @param array<CurlerProperty::*,mixed> $curlerProperties
@@ -262,7 +264,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
         ?HttpHeadersInterface $headers = null,
         ?ICurlerPager $pager = null,
         ?callable $callback = null,
-        $conformity = Conformity::NONE,
+        $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,

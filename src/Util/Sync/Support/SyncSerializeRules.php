@@ -2,11 +2,10 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Support\Catalog\NormaliserFlag;
-use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
+use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;
@@ -16,6 +15,7 @@ use Salient\Core\Contract\Readable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
+use Salient\Core\DateFormatter;
 use Closure;
 use LogicException;
 
@@ -95,13 +95,9 @@ use LogicException;
 final class SyncSerializeRules implements ISyncSerializeRules, Readable, Immutable, Buildable
 {
     use ReadsProtectedProperties;
+    /** @use HasBuilder<SyncSerializeRulesBuilder<TEntity>> */
     use HasBuilder;
     use HasImmutableProperties;
-
-    /**
-     * Values are being serialized for an entity store
-     */
-    public const SYNC_STORE = 1;
 
     /**
      * The class name of the SyncEntity being serialized (required)

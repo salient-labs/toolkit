@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Support\Date\DateFormatter;
-use Lkrms\Support\Date\DotNetDateParser;
+use Salient\Core\DateFormatter;
+use Salient\Core\DotNetDateParser;
 use Salient\Tests\TestCase;
 use DateTimeInterface;
 

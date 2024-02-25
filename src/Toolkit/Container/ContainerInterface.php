@@ -98,13 +98,13 @@ interface ContainerInterface extends
      * This method resolves `$id` normally but passes `$service` to
      * {@see ServiceAwareInterface::setService()} instead of `$id`.
      *
+     * @template T of object
      * @template TService of object
-     * @template T of TService
      *
      * @param class-string<T> $id
      * @param class-string<TService> $service
      * @param mixed[] $args
-     * @return T
+     * @return T&TService
      * @throws ContainerUnusableArgumentsException if `$args` are given and
      * `$id` resolves to a shared instance.
      */
