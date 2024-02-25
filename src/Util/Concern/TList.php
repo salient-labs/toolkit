@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\IList;
+use Salient\Core\Contract\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Get;
 

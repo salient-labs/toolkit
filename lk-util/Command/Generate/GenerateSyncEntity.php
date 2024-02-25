@@ -3,10 +3,8 @@
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Concern\HasParent;
-use Lkrms\Contract\ITreeable;
 use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
@@ -15,6 +13,8 @@ use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Core\Catalog\RelationshipType;
+use Salient\Core\Contract\ITreeable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;

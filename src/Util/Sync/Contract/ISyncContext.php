@@ -2,8 +2,6 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
@@ -11,6 +9,8 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Exception\SyncEntityRecursionException;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
+use Salient\Core\Contract\IProvidable;
+use Salient\Core\Contract\IProviderContext;
 
 /**
  * The context within which sync entities are instantiated by a provider

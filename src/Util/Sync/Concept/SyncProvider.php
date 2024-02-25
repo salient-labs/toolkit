@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Lkrms\Concept\Provider;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -20,6 +19,7 @@ use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Pipeline;
+use Salient\Core\Provider;
 use Closure;
 use LogicException;
 

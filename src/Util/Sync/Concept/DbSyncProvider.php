@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Lkrms\Contract\IProvider;
 use Lkrms\Db\DbConnector;
 use Lkrms\Support\SqlQuery;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -11,6 +10,7 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
+use Salient\Core\Contract\IProvider;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Arr;

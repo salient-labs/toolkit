@@ -2,10 +2,10 @@
 
 namespace Salient\Core;
 
-use Lkrms\Contract\HasName;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
+use Salient\Core\Contract\HasName;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 use Generator;

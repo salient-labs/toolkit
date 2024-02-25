@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\ITreeable;
-use Lkrms\Support\Introspector;
+use Salient\Core\Contract\ITreeable;
+use Salient\Core\Introspector;
 use LogicException;
 
 /**

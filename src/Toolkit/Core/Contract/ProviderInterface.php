@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
-use Lkrms\Support\Date\DateFormatterInterface;
 use Salient\Container\Contract\HasContainer;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Contract\DateFormatterInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Stringable;
 

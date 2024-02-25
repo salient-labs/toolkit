@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Support\Introspector;
 
-use Lkrms\Contract\IResolvable;
+use Salient\Core\Contract\IResolvable;
 use Salient\Core\Utility\Str;
 
 class ResolvableB implements IResolvable

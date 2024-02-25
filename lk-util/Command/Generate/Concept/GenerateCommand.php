@@ -2,14 +2,10 @@
 
 namespace Lkrms\LkUtil\Command\Generate\Concept;
 
-use Lkrms\Concept\Entity;
-use Lkrms\Concept\Provider;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTag;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
-use Lkrms\Support\Introspector;
-use Lkrms\Support\ProviderContext;
 use Lkrms\Support\TokenExtractor;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
@@ -26,6 +22,10 @@ use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
+use Salient\Core\Entity;
+use Salient\Core\Introspector;
+use Salient\Core\Provider;
+use Salient\Core\ProviderContext;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use ReflectionClass;

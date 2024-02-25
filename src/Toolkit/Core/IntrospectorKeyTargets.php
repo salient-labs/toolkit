@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Core;
 
-use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\IProvider;
+use Salient\Core\Contract\IProviderContext;
 use Salient\Core\Contract\Readable;
 use Closure;
 

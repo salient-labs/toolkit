@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 /**
  * Reads and writes arbitrary undeclared properties

@@ -2,7 +2,6 @@
 
 namespace Salient\Cli;
 
-use Lkrms\Contract\HasJsonSchema;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
@@ -15,6 +14,7 @@ use Salient\Core\Catalog\Char;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Contract\Buildable;
+use Salient\Core\Contract\HasJsonSchema;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Core\Facade\Console;

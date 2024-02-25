@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\EventDispatcher;
 
-use Lkrms\Contract\HasName;
+use Salient\Core\Contract\HasName;
 
 class NamedEvent extends BaseEvent implements HasName
 {

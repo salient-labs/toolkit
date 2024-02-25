@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Core;
 
-use Lkrms\Contract\HasIdentifier;
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
-use Lkrms\Contract\ITreeable;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Conformity;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Contract\HasIdentifier;
+use Salient\Core\Contract\IProvidable;
+use Salient\Core\Contract\IProvider;
+use Salient\Core\Contract\IProviderContext;
+use Salient\Core\Contract\ITreeable;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 

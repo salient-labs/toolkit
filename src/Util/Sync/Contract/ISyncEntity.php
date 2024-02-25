@@ -2,17 +2,17 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\HasIdentifier;
-use Lkrms\Contract\HasName;
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProviderEntity;
-use Lkrms\Contract\IRelatable;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncStore;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Contract\HasIdentifier;
+use Salient\Core\Contract\HasName;
+use Salient\Core\Contract\IProvidable;
+use Salient\Core\Contract\IProviderEntity;
+use Salient\Core\Contract\IRelatable;
 use JsonSerializable;
 
 /**

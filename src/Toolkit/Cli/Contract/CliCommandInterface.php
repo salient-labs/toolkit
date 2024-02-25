@@ -2,7 +2,7 @@
 
 namespace Salient\Cli\Contract;
 
-use Lkrms\Contract\HasJsonSchema;
+use Salient\Core\Contract\HasJsonSchema;
 
 /**
  * A runnable CLI command

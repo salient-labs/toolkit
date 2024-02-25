@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
-use Lkrms\Support\Date\DateFormatter;
+use Salient\Core\DateFormatter;
 
 /**
  * Instructions for serializing nested entities

@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Support\Introspector;
 
 use Lkrms\Concern\TConstructible;
-use Lkrms\Contract\IConstructible;
+use Salient\Core\Contract\IConstructible;
 use DateTimeImmutable;
 
 class B extends A implements IConstructible

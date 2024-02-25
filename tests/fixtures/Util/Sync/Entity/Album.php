@@ -2,10 +2,10 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
+use Salient\Core\Catalog\RelationshipType;
 
 /**
  * Represents the state of an Album entity in a backend

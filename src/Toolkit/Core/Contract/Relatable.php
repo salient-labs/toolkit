@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
-use Lkrms\Support\Catalog\RelationshipType;
+use Salient\Core\Catalog\RelationshipType;
 
 /**
  * Has one-to-one and one-to-many relationships with other classes implementing

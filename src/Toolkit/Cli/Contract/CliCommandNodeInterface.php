@@ -2,12 +2,12 @@
 
 namespace Salient\Cli\Contract;
 
-use Lkrms\Contract\HasDescription;
-use Lkrms\Contract\HasName;
 use Salient\Cli\Catalog\CliHelpSectionName;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliHelpStyle;
 use Salient\Container\Contract\HasContainer;
+use Salient\Core\Contract\HasDescription;
+use Salient\Core\Contract\HasName;
 use LogicException;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Iterator\Contract;
 
-use Lkrms\Contract\Arrayable;
+use Salient\Core\Contract\Arrayable;
 use Traversable;
 
 /**

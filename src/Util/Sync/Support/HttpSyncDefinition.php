@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerHttpErrorException;
@@ -24,6 +23,7 @@ use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\Conformity;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Contract\Buildable;
+use Salient\Core\Contract\IProviderContext;
 use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Contract\StreamPipelineInterface;
 use Salient\Core\Exception\UnexpectedValueException;

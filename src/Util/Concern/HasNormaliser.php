@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\ReturnsNormaliser;
+use Salient\Core\Contract\ReturnsNormaliser;
 use Salient\Core\Utility\Str;
 use Closure;
 

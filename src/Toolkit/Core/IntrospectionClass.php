@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Core;
 
-use Lkrms\Contract\HasDateProperties;
-use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IRelatable;
-use Lkrms\Contract\IResolvable;
-use Lkrms\Contract\ITreeable;
-use Lkrms\Contract\ReturnsNormaliser;
-use Lkrms\Support\Catalog\NormaliserFlag;
-use Lkrms\Support\Catalog\RelationshipType;
+use Salient\Core\Catalog\NormaliserFlag;
+use Salient\Core\Catalog\RelationshipType;
+use Salient\Core\Contract\HasDateProperties;
+use Salient\Core\Contract\IExtensible;
+use Salient\Core\Contract\IProvidable;
+use Salient\Core\Contract\IRelatable;
+use Salient\Core\Contract\IResolvable;
+use Salient\Core\Contract\ITreeable;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\ReturnsNormaliser;
 use Salient\Core\Contract\Writable;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;

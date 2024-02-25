@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
-use Lkrms\Contract\IProviderEntity;
-use Lkrms\Support\ProviderContext;
+use Salient\Core\Contract\IProviderEntity;
+use Salient\Core\ProviderContext;
 
 /**
  * Base class for entities

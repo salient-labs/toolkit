@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core;
 
-use Lkrms\Contract\HasName;
+use Salient\Core\Contract\HasName;
 use Salient\Core\Facade\Event;
 use Salient\Core\EventDispatcher;
 use Salient\Tests\Core\EventDispatcher\BaseEvent;

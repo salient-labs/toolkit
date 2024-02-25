@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Catalog;
+namespace Salient\Core\Catalog;
 
-use Lkrms\Contract\IResolvable;
-use Lkrms\Contract\ReturnsNormaliser;
+use Salient\Core\Contract\IResolvable;
+use Salient\Core\Contract\ReturnsNormaliser;
 use Salient\Core\AbstractEnumeration;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Support\DateParser;
 
-use Lkrms\Support\Date\DotNetDateParser;
+use Salient\Core\DotNetDateParser;
 use Salient\Tests\TestCase;
 use DateTimeInterface;
 use DateTimeZone;

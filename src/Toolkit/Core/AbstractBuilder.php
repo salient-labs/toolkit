@@ -2,15 +2,15 @@
 
 namespace Salient\Core;
 
-use Lkrms\Concept\Entity;
-use Lkrms\Concept\Provider;
-use Lkrms\Support\Introspector;
-use Lkrms\Support\ProviderContext;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Contract\Chainable;
 use Salient\Core\Contract\Immutable;
+use Salient\Core\Entity;
+use Salient\Core\Introspector;
+use Salient\Core\Provider;
+use Salient\Core\ProviderContext;
 use LogicException;
 
 /**

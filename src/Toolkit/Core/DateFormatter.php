@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Date;
+namespace Salient\Core;
 
 use Salient\Core\Utility\Date;
 use DateTimeImmutable;

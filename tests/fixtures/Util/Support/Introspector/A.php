@@ -4,11 +4,11 @@ namespace Lkrms\Tests\Support\Introspector;
 
 use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\TExtensible;
-use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\ReturnsNormaliser;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Contract\IExtensible;
 use Salient\Core\Contract\Readable;
+use Salient\Core\Contract\ReturnsNormaliser;
 use Salient\Core\Contract\Writable;
 
 class A implements Readable, Writable, IExtensible, ReturnsNormaliser

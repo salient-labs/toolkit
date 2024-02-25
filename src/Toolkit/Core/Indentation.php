@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Salient\Core;
 
 final class Indentation
 {

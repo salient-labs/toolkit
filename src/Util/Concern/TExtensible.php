@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IExtensible;
-use Lkrms\Support\Introspector as IS;
+use Salient\Core\Contract\IExtensible;
+use Salient\Core\Introspector as IS;
 
 /**
  * Implements IExtensible to store arbitrary property values

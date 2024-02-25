@@ -2,9 +2,9 @@
 
 namespace Lkrms\Http\Contract;
 
-use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Http\Catalog\HttpHeader;
+use Salient\Core\Contract\Arrayable;
 
 /**
  * A collection of HTTP headers

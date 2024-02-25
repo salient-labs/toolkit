@@ -2,13 +2,13 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IConstructible;
-use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\ITreeable;
-use Lkrms\Support\Introspector;
 use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Conformity;
+use Salient\Core\Contract\IConstructible;
+use Salient\Core\Contract\IExtensible;
+use Salient\Core\Contract\ITreeable;
+use Salient\Core\Introspector;
 use Generator;
 
 /**

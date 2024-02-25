@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\DeferredEntity;
+use Salient\Core\Catalog\RelationshipType;
 
 /**
  * Represents the state of a Photo entity in a backend

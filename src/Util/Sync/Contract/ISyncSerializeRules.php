@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\ISerializeRules;
+use Salient\Core\Contract\ISerializeRules;
 
 /**
  * Instructions for serializing nested sync entities

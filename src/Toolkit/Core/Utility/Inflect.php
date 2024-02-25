@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Utility;
 
-use Lkrms\Contract\Arrayable;
+use Salient\Core\Contract\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 use Closure;

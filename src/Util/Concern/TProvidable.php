@@ -2,15 +2,15 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
-use Lkrms\Support\Introspector;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Conformity;
+use Salient\Core\Contract\IExtensible;
+use Salient\Core\Contract\IProvidable;
+use Salient\Core\Contract\IProvider;
+use Salient\Core\Contract\IProviderContext;
+use Salient\Core\Introspector;
 use Generator;
 use LogicException;
 

@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Concept;
+namespace Salient\Core;
 
-use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
-use Lkrms\Support\Date\DateFormatterInterface;
-use Lkrms\Support\ProviderContext;
 use Salient\Container\ContainerInterface;
+use Salient\Core\Contract\DateFormatterInterface;
+use Salient\Core\Contract\IProvider;
+use Salient\Core\Contract\IProviderContext;
 use Salient\Core\Exception\MethodNotImplementedException;
+use Salient\Core\ProviderContext;
 
 /**
  * Base class for providers

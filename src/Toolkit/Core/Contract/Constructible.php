@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\Conformity;

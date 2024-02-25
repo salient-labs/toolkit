@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Salient\Core\Contract;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Salient\Container\Contract\HasService;

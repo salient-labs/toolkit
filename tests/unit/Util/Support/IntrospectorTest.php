@@ -2,7 +2,6 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Support\Introspector;
 use Lkrms\Tests\Support\Introspector\A;
 use Lkrms\Tests\Support\Introspector\B;
 use Lkrms\Tests\Support\Introspector\C;
@@ -16,6 +15,7 @@ use Lkrms\Tests\Support\Introspector\LastNameOnlyA;
 use Lkrms\Tests\Support\Introspector\LastNameOnlyB;
 use Lkrms\Tests\Support\Introspector\SurnameOnlyA;
 use Lkrms\Tests\Support\Introspector\SurnameOnlyB;
+use Salient\Core\Introspector;
 use Salient\Tests\TestCase;
 use Generator;
 

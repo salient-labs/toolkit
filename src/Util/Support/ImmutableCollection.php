@@ -3,8 +3,8 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\TImmutableCollection;
-use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
+use Salient\Core\Contract\Arrayable;
 use Salient\Core\Contract\Immutable;
 
 /**

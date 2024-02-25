@@ -2,11 +2,10 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Support\Catalog\NormaliserFlag;
-use Lkrms\Support\Date\DateFormatter;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
+use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;
@@ -16,6 +15,7 @@ use Salient\Core\Contract\Readable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
+use Salient\Core\DateFormatter;
 use Closure;
 use LogicException;
 
