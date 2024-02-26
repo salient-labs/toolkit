@@ -12,6 +12,30 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.49] - 2024-02-26
+
+This is the final release of `lkrms/util`. It is moving to [Salient](https://github.com/salient-labs/) as `salient/toolkit`.
+
+### Changed
+
+- Sync: move abstract and high-priority classes to `Salient\Sync`
+- Rename:
+  - `ISyncClassResolver` -> `SyncClassResolverInterface`
+  - `ISyncContext` -> `SyncContextInterface`
+  - `ISyncDefinition` -> `SyncDefinitionInterface`
+  - `ISyncEntity` -> `SyncEntityInterface`
+  - `ISyncEntityProvider` -> `SyncEntityProviderInterface`
+  - `ISyncEntityResolver` -> `SyncEntityResolverInterface`
+  - `ISyncProvider` -> `SyncProviderInterface`
+  - `ISyncSerializeRules` -> `SyncSerializeRulesInterface`
+  - `SyncDefinition` -> `AbstractSyncDefinition`
+  - `SyncEntity` -> `AbstractSyncEntity`
+  - `SyncOperations` -> `SyncOperationGroup`
+  - `SyncProvider` -> `AbstractSyncProvider`
+  - `SyncException` -> `AbstractSyncException`
+  - `SyncEvent` -> `AbstractSyncEvent`
+  - `SyncStoreEvent` -> `AbstractSyncStoreEvent`
+
 ## [v0.21.48] - 2024-02-26
 
 ### Added
@@ -1944,6 +1968,7 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.49]: https://github.com/lkrms/php-util/compare/v0.21.48...v0.21.49
 [v0.21.48]: https://github.com/lkrms/php-util/compare/v0.21.47...v0.21.48
 [v0.21.47]: https://github.com/lkrms/php-util/compare/v0.21.46...v0.21.47
 [v0.21.46]: https://github.com/lkrms/php-util/compare/v0.21.45...v0.21.46
