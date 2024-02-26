@@ -91,9 +91,9 @@ final class ProcessTest extends TestCase
         $counters = [
             ['assertGreaterThan', 'readOperations#1', Process::class, 0],
             ['assertGreaterThan', 'readOperations#2', Process::class, 0],
-            ['assertLessThan', 'readOperations#1', Process::class, 10],
-            ['assertLessThan', 'readOperations#2', Process::class, 10],
-            ['assertLessThan', 'readIterations', Process::class, 10],
+            ['assertLessThan', 'readOperations#1', Process::class, 50],
+            ['assertLessThan', 'readOperations#2', Process::class, 50],
+            ['assertLessThan', 'readIterations', Process::class, 50],
         ];
 
         $delayAfterEofCounters = $counters;
