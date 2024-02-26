@@ -96,26 +96,26 @@ class GenerateTests extends GenerateCommand
         $classPrefix = $this->getClassPrefix();
 
         // Search for the most appropriate `TestCase` to extend, e.g. for
-        // `Lkrms\Tests\Sync\Command\GetSyncEntitiesTest`, try:
+        // `Salient\Tests\Sync\Command\GetSyncEntitiesTest`, try:
         //
-        // - `Lkrms\Tests\Sync\Command\CommandTestCase` (generality: 0)
-        // - `Lkrms\Tests\Sync\Command\TestCase` (generality: 1)
-        // - `Lkrms\Tests\Sync\CommandTestCase` (generality: 0)
-        // - `Lkrms\Tests\Sync\SyncTestCase` (generality: 1)
-        // - `Lkrms\Tests\Sync\TestCase` (generality: 2)
-        // - `Lkrms\Tests\CommandTestCase` (generality: 0)
-        // - `Lkrms\Tests\SyncTestCase` (generality: 1)
-        // - `Lkrms\Tests\TestsTestCase` (generality: 2)
-        // - `Lkrms\Tests\TestCase` (generality: 3)
-        // - `Lkrms\CommandTestCase `(generality: 0) <==
-        // - `Lkrms\SyncTestCase` (generality: 1)
-        // - `Lkrms\TestsTestCase` (generality: 2)
-        // - `Lkrms\LkrmsTestCase` (generality: 3)
-        // - `Lkrms\TestCase` (generality: 4)
+        // - `Salient\Tests\Sync\Command\CommandTestCase` (generality: 0)
+        // - `Salient\Tests\Sync\Command\TestCase` (generality: 1)
+        // - `Salient\Tests\Sync\CommandTestCase` (generality: 0)
+        // - `Salient\Tests\Sync\SyncTestCase` (generality: 1)
+        // - `Salient\Tests\Sync\TestCase` (generality: 2)
+        // - `Salient\Tests\CommandTestCase` (generality: 0)
+        // - `Salient\Tests\SyncTestCase` (generality: 1)
+        // - `Salient\Tests\TestsTestCase` (generality: 2)
+        // - `Salient\Tests\TestCase` (generality: 3)
+        // - `Salient\CommandTestCase `(generality: 0) <==
+        // - `Salient\SyncTestCase` (generality: 1)
+        // - `Salient\TestsTestCase` (generality: 2)
+        // - `Salient\SalientTestCase` (generality: 3)
+        // - `Salient\TestCase` (generality: 4)
         //
         // Preference is given to the `TestCase` with the lowest generality, so
-        // in this example, `Lkrms\CommandTestCase` is extended instead of
-        // `Lkrms\Tests\Sync\SyncTestCase`. If multiple classes have the same
+        // in this example, `Salient\CommandTestCase` is extended instead of
+        // `Salient\Tests\Sync\SyncTestCase`. If multiple classes have the same
         // generality, preference is given to the first encountered.
 
         $extends = null;

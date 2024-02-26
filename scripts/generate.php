@@ -7,13 +7,6 @@ use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
-use Lkrms\Tests\Sync\Entity\Album;
-use Lkrms\Tests\Sync\Entity\Comment;
-use Lkrms\Tests\Sync\Entity\Photo;
-use Lkrms\Tests\Sync\Entity\Post;
-use Lkrms\Tests\Sync\Entity\Task;
-use Lkrms\Tests\Sync\Entity\User;
-use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Cache\CacheStore;
 use Salient\Cli\CliApplication;
 use Salient\Cli\CliOption;
@@ -59,6 +52,13 @@ use Salient\Tests\Core\AbstractFacade\MyHasFacadeClass;
 use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
 use Salient\Tests\Core\AbstractFacade\MyServiceClass;
 use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
+use Salient\Tests\Sync\Entity\Album;
+use Salient\Tests\Sync\Entity\Comment;
+use Salient\Tests\Sync\Entity\Photo;
+use Salient\Tests\Sync\Entity\Post;
+use Salient\Tests\Sync\Entity\Task;
+use Salient\Tests\Sync\Entity\User;
+use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
