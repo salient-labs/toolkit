@@ -5,5 +5,5 @@ if (\PHP_VERSION_ID < 80000 && extension_loaded('tokenizer')) {
         return;
     }
 
-    class PhpToken extends Lkrms\Polyfill\PhpToken {}
+    class PhpToken extends Salient\Polyfill\PhpToken {}
 }

@@ -103,20 +103,20 @@ final class DebugTest extends TestCase
         $expected = [
             'file' => $expectedPath,
             0 => '::',
-            'function' => 'Lkrms_Tests_Runtime_getCallerViaFunction',
+            'function' => 'Salient_Tests_Core_Utility_Debug_getCallerViaFunction',
             1 => ':',
         ];
-        $this->assertIsCaller($expected, Lkrms_Tests_Runtime_getCallerViaFunction());
-        $this->assertIsCaller($thisMethod, Lkrms_Tests_Runtime_getCallerViaFunction(1));
-        $this->assertIsCaller($expected, (Lkrms_Tests_Runtime_getFunctionCallback())());
+        $this->assertIsCaller($expected, Salient_Tests_Core_Utility_Debug_getCallerViaFunction());
+        $this->assertIsCaller($thisMethod, Salient_Tests_Core_Utility_Debug_getCallerViaFunction(1));
+        $this->assertIsCaller($expected, (Salient_Tests_Core_Utility_Debug_getFunctionCallback())());
         $expected = [
             'file' => $expectedPath,
             0 => '::',
             'function' => '{closure}',
             1 => ':',
         ];
-        $this->assertIsCaller($expected, (Lkrms_Tests_Runtime_getFunctionCallback())(1));
-        $this->assertIsCaller($thisMethod, (Lkrms_Tests_Runtime_getFunctionCallback())(2));
+        $this->assertIsCaller($expected, (Salient_Tests_Core_Utility_Debug_getFunctionCallback())(1));
+        $this->assertIsCaller($thisMethod, (Salient_Tests_Core_Utility_Debug_getFunctionCallback())(2));
     }
 
     /**

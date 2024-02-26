@@ -2,24 +2,24 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Concern\HasParent;
-use Lkrms\Http\Catalog\HttpRequestMethod;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Sync\Concept\HttpSyncProvider;
-use Lkrms\Sync\Concept\SyncEntity;
-use Lkrms\Sync\Support\DeferredEntity;
-use Lkrms\Sync\Support\DeferredRelationship;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Core\Catalog\Cardinality;
+use Salient\Core\Concern\TreeableTrait;
 use Salient\Core\Contract\Treeable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Http\Catalog\HttpRequestMethod;
+use Salient\Sync\Concept\HttpSyncProvider;
+use Salient\Sync\Concept\SyncEntity;
+use Salient\Sync\Support\DeferredEntity;
+use Salient\Sync\Support\DeferredRelationship;
 use Closure;
 use DateTimeImmutable;
 
@@ -221,7 +221,7 @@ EOF)
         $this->Extends[] = $this->getFqcnAlias(SyncEntity::class);
         if ($this->ParentProperty !== null) {
             $this->Implements[] = $this->getFqcnAlias(Treeable::class);
-            $this->Uses[] = $this->getFqcnAlias(HasParent::class);
+            $this->Uses[] = $this->getFqcnAlias(TreeableTrait::class);
         }
 
         if ($this->Description === null) {

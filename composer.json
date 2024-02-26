@@ -40,7 +40,6 @@
     },
     "autoload": {
         "psr-4": {
-            "Lkrms\\": "src/Util/",
             "Salient\\": "src/Toolkit/"
         },
         "classmap": [
@@ -53,11 +52,6 @@
     "autoload-dev": {
         "psr-4": {
             "Lkrms\\LkUtil\\": "lk-util/",
-            "Lkrms\\Tests\\": [
-                "tests/unit/Util/",
-                "tests/fixtures/Util/",
-                "tests/3rdparty/Util/"
-            ],
             "Salient\\Tests\\": [
                 "tests/unit/Toolkit/",
                 "tests/fixtures/Toolkit/",

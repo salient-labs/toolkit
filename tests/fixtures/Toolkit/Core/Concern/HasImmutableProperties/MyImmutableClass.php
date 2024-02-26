@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\Concern\HasImmutableProperties;
 
-use Lkrms\Support\ImmutableCollection;
+use Salient\Collection\ImmutableCollection;
 use Salient\Core\Concern\HasImmutableProperties;
 use stdClass;
 

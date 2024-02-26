@@ -4,12 +4,12 @@ namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Support\PhpDoc\PhpDoc;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\CliOption;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\AbstractFacade;
+use Salient\PhpDoc\PhpDoc;
 use ReflectionMethod;
 use ReflectionParameter;
 

@@ -141,7 +141,7 @@ final class ConfigurationManagerTest extends TestCase
     public function testSetThrowsException(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Configuration values are read-only');
+        $this->expectExceptionMessage(ConfigurationManager::class . ' values are read-only');
         $config = new ConfigurationManager();
         $config['key'] = 'value';
     }
@@ -149,7 +149,7 @@ final class ConfigurationManagerTest extends TestCase
     public function testUnsetThrowsException(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Configuration values are read-only');
+        $this->expectExceptionMessage(ConfigurationManager::class . ' values are read-only');
         $config = new ConfigurationManager(self::CONFIG);
         unset($config['app.name']);
     }

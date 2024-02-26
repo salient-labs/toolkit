@@ -2,12 +2,12 @@
 
 namespace Salient\Core;
 
+use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidConfigurationException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
 use ArrayAccess;
-use LogicException;
 use OutOfRangeException;
 use ReturnTypeWillChange;
 
@@ -20,6 +20,9 @@ use ReturnTypeWillChange;
  */
 final class ConfigurationManager implements ArrayAccess
 {
+    /** @use ImmutableArrayAccessTrait<string,mixed> */
+    use ImmutableArrayAccessTrait;
+
     /**
      * @var array<string,mixed[]>
      */
@@ -140,26 +143,5 @@ final class ConfigurationManager implements ArrayAccess
     public function offsetGet($offset)
     {
         return Arr::get($offset, $this->Items);
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $offset
-     * @param mixed $value
-     */
-    public function offsetSet($offset, $value): void
-    {
-        throw new LogicException('Configuration values are read-only');
-    }
-
-    /**
-     * @internal
-     *
-     * @param string $offset
-     */
-    public function offsetUnset($offset): void
-    {
-        throw new LogicException('Configuration values are read-only');
     }
 }

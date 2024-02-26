@@ -8,9 +8,9 @@ use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Lkrms\LkUtil\Command\Generate\GenerateTests;
 use Lkrms\LkUtil\Command\Http\SendHttpRequest;
-use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
-use Lkrms\Sync\Command\GetSyncEntities;
 use Salient\Cli\CliApplication;
+use Salient\Sync\Command\CheckSyncProviderHeartbeat;
+use Salient\Sync\Command\GetSyncEntities;
 
 $loader = require $_composer_autoload_path
     ?? dirname(__DIR__) . '/vendor/autoload.php';

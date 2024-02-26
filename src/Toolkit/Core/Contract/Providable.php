@@ -2,9 +2,9 @@
 
 namespace Salient\Core\Contract;
 
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Salient\Container\Contract\ServiceAwareInterface;
 use Salient\Core\Catalog\ListConformity;
+use Salient\Iterator\Contract\FluentIteratorInterface;
 
 /**
  * Serviced by a provider

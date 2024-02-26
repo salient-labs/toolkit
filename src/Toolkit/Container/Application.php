@@ -2,8 +2,6 @@
 
 namespace Salient\Container;
 
-use Lkrms\Facade\Sync;
-use Lkrms\Sync\Support\SyncStore;
 use Salient\Cache\CacheStore;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
@@ -17,6 +15,7 @@ use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Profile;
+use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Assert;
 use Salient\Core\Utility\Env;
@@ -26,6 +25,7 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Sys;
+use Salient\Sync\Support\SyncStore;
 use LogicException;
 use Phar;
 
