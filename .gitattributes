@@ -19,10 +19,10 @@
 /src/Toolkit/Core/Facade/Sync.php linguist-generated
 /src/Toolkit/Curler/CurlerBuilder.php linguist-generated
 /src/Toolkit/Curler/Support/CurlerPageBuilder.php linguist-generated
-/src/Toolkit/Sync/Support/DbSyncDefinitionBuilder.php linguist-generated
-/src/Toolkit/Sync/Support/HttpSyncDefinitionBuilder.php linguist-generated
-/src/Toolkit/Sync/Support/SyncErrorBuilder.php linguist-generated
-/src/Toolkit/Sync/Support/SyncSerializeRulesBuilder.php linguist-generated
+/src/Toolkit/Sync/DbSyncDefinitionBuilder.php linguist-generated
+/src/Toolkit/Sync/HttpSyncDefinitionBuilder.php linguist-generated
+/src/Toolkit/Sync/SyncErrorBuilder.php linguist-generated
+/src/Toolkit/Sync/SyncSerializeRulesBuilder.php linguist-generated
 /tests export-ignore
 /tests/data/entity/albums.json linguist-generated
 /tests/data/entity/comments.json linguist-generated

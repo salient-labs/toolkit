@@ -3,15 +3,16 @@
 namespace Salient\Sync\Support;
 
 use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Sync\SyncStore;
 use LogicException;
 
 /**
  * The promise of a sync entity that hasn't been retrieved yet
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  *
  * @mixin TEntity
  */
@@ -20,14 +21,14 @@ final class DeferredEntity
     /**
      * The provider servicing the entity
      *
-     * @var ISyncProvider
+     * @var SyncProviderInterface
      */
     private $Provider;
 
     /**
      * The context within which the provider is servicing the entity
      *
-     * @var ISyncContext|null
+     * @var SyncContextInterface|null
      */
     private $Context;
 
@@ -69,8 +70,8 @@ final class DeferredEntity
      * @param (callable(TEntity): void)|null $callback
      */
     private function __construct(
-        ISyncProvider $provider,
-        ?ISyncContext $context,
+        SyncProviderInterface $provider,
+        ?SyncContextInterface $context,
         string $entity,
         $entityId,
         &$replace,
@@ -147,7 +148,7 @@ final class DeferredEntity
      *
      * @return TEntity
      */
-    public function resolve(): ISyncEntity
+    public function resolve(): SyncEntityInterface
     {
         if ($this->Resolved !== null) {
             return $this->Resolved;
@@ -168,7 +169,7 @@ final class DeferredEntity
      *
      * @param TEntity $entity
      */
-    public function replace(ISyncEntity $entity): void
+    public function replace(SyncEntityInterface $entity): void
     {
         if ($this->Resolved !== null) {
             throw new LogicException('Entity already resolved');
@@ -181,7 +182,7 @@ final class DeferredEntity
     /**
      * @param TEntity $entity
      */
-    private function apply(ISyncEntity $entity): void
+    private function apply(SyncEntityInterface $entity): void
     {
         if ($this->Callback) {
             ($this->Callback)($entity);
@@ -195,8 +196,8 @@ final class DeferredEntity
     /**
      * Defer retrieval of a sync entity
      *
-     * @param ISyncProvider $provider The provider servicing the entity.
-     * @param ISyncContext|null $context The context within which the provider
+     * @param SyncProviderInterface $provider The provider servicing the entity.
+     * @param SyncContextInterface|null $context The context within which the provider
      * is servicing the entity.
      * @param class-string<TEntity> $entity The entity to instantiate.
      * @param int|string $entityId The identifier of the deferred entity.
@@ -207,8 +208,8 @@ final class DeferredEntity
      * ignored and the resolved entity is passed to the callback.
      */
     public static function defer(
-        ISyncProvider $provider,
-        ?ISyncContext $context,
+        SyncProviderInterface $provider,
+        ?SyncContextInterface $context,
         string $entity,
         $entityId,
         &$replace = null,
@@ -227,8 +228,8 @@ final class DeferredEntity
     /**
      * Defer retrieval of a list of sync entities
      *
-     * @param ISyncProvider $provider The provider servicing the entity.
-     * @param ISyncContext|null $context The context within which the provider
+     * @param SyncProviderInterface $provider The provider servicing the entity.
+     * @param SyncContextInterface|null $context The context within which the provider
      * is servicing the entity.
      * @param class-string<TEntity> $entity The entity to instantiate.
      * @param array<int|string> $entityIds A list of deferred entity
@@ -240,8 +241,8 @@ final class DeferredEntity
      * ignored and the resolved entities are passed to the callback.
      */
     public static function deferList(
-        ISyncProvider $provider,
-        ?ISyncContext $context,
+        SyncProviderInterface $provider,
+        ?SyncContextInterface $context,
         string $entity,
         array $entityIds,
         &$replace = null,
@@ -280,7 +281,7 @@ final class DeferredEntity
     /**
      * Get the context within which the provider is servicing the entity
      */
-    public function getContext(): ?ISyncContext
+    public function getContext(): ?SyncContextInterface
     {
         return $this->Context;
     }

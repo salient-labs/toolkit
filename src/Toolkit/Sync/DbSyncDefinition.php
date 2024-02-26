@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Support;
+namespace Salient\Sync;
 
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
@@ -10,10 +10,8 @@ use Salient\Core\Contract\PipelineInterface;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\Catalog\SyncEntitySource;
 use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Concept\DbSyncProvider;
-use Salient\Sync\Concept\SyncDefinition;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
 use Closure;
 use LogicException;
 
@@ -21,15 +19,15 @@ use LogicException;
  * Provides direct access to a DbSyncProvider's implementation of sync
  * operations for an entity
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider
  *
  * @property-read string|null $Table
  *
- * @extends SyncDefinition<TEntity,TProvider>
+ * @extends AbstractSyncDefinition<TEntity,TProvider>
  * @implements Buildable<DbSyncDefinitionBuilder<TEntity,TProvider>>
  */
-final class DbSyncDefinition extends SyncDefinition implements Buildable
+final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
 {
     /** @use HasBuilder<DbSyncDefinitionBuilder<TEntity,TProvider>> */
     use HasBuilder;
@@ -45,11 +43,11 @@ final class DbSyncDefinition extends SyncDefinition implements Buildable
      * @param array<OP::*> $operations
      * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
-     * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
+     * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
-     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(

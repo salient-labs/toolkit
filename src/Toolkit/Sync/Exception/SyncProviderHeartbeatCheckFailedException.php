@@ -2,22 +2,22 @@
 
 namespace Salient\Sync\Exception;
 
-use Salient\Sync\Contract\ISyncProvider;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Sync\SyncStore;
 
 /**
  * Thrown when an entity store's provider heartbeat check fails
  *
  * @see SyncStore::checkHeartbeats()
  */
-class SyncProviderHeartbeatCheckFailedException extends SyncException
+class SyncProviderHeartbeatCheckFailedException extends AbstractSyncException
 {
     /**
-     * @var ISyncProvider[]
+     * @var SyncProviderInterface[]
      */
     protected $Providers;
 
-    public function __construct(ISyncProvider ...$provider)
+    public function __construct(SyncProviderInterface ...$provider)
     {
         $this->Providers = $provider;
 

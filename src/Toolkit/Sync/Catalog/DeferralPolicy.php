@@ -5,7 +5,7 @@ namespace Salient\Sync\Catalog;
 use Salient\Core\AbstractEnumeration;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\SyncStore;
 
 /**
  * Policies for deferral of sync entities and relationships

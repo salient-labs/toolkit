@@ -8,7 +8,7 @@ use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Inflect;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * A generic sync provider heartbeat check command
@@ -21,7 +21,7 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
     private array $ProviderBasename = [];
 
     /**
-     * @var array<class-string<ISyncProvider>>
+     * @var array<class-string<SyncProviderInterface>>
      */
     private array $Provider = [];
 
@@ -121,7 +121,7 @@ EOF;
                     function (string $providerClass) {
                         if (is_a(
                             $this->App->getName($providerClass),
-                            ISyncProvider::class,
+                            SyncProviderInterface::class,
                             true
                         )) {
                             return $this->App->get($providerClass);
@@ -130,7 +130,7 @@ EOF;
                         throw new CliInvalidArgumentsException(sprintf(
                             '%s does not implement %s',
                             $providerClass,
-                            ISyncProvider::class
+                            SyncProviderInterface::class
                         ));
                     },
                     $this->Provider

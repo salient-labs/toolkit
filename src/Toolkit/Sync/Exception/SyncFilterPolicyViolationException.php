@@ -4,15 +4,15 @@ namespace Salient\Sync\Exception;
 
 use Salient\Core\Utility\Json;
 use Salient\Sync\Catalog\FilterPolicy;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * Thrown when there are unclaimed sync operation filters
  *
  * @see FilterPolicy
  */
-class SyncFilterPolicyViolationException extends SyncException
+class SyncFilterPolicyViolationException extends AbstractSyncException
 {
     /**
      * @var array<string,mixed>
@@ -20,10 +20,10 @@ class SyncFilterPolicyViolationException extends SyncException
     protected array $Unclaimed;
 
     /**
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<SyncEntityInterface> $entity
      * @param array<string,mixed> $unclaimed
      */
-    public function __construct(ISyncProvider $provider, string $entity, array $unclaimed)
+    public function __construct(SyncProviderInterface $provider, string $entity, array $unclaimed)
     {
         $this->Unclaimed = $unclaimed;
 

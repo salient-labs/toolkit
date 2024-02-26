@@ -25,7 +25,7 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Sys;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\SyncStore;
 use LogicException;
 use Phar;
 

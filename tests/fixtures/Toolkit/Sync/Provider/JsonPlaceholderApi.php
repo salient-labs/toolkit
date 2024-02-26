@@ -10,9 +10,9 @@ use Salient\Core\DateFormatter;
 use Salient\Curler\CurlerBuilder;
 use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Concept\HttpSyncProvider;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Support\HttpSyncDefinitionBuilder;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\HttpSyncDefinitionBuilder;
+use Salient\Sync\HttpSyncProvider;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;
 use Salient\Tests\Sync\CustomEntity\User as CustomUser;
 use Salient\Tests\Sync\Entity\Provider\AlbumProvider;
@@ -29,35 +29,35 @@ use Salient\Tests\Sync\Entity\Task;
 use Salient\Tests\Sync\Entity\User;
 
 /**
- * @method Album createAlbum(ISyncContext $ctx, Album $album)
- * @method Album getAlbum(ISyncContext $ctx, int|string|null $id)
- * @method Album updateAlbum(ISyncContext $ctx, Album $album)
- * @method Album deleteAlbum(ISyncContext $ctx, Album $album)
- * @method iterable<Album> getAlbums(ISyncContext $ctx)
- * @method Comment createComment(ISyncContext $ctx, Comment $comment)
- * @method Comment getComment(ISyncContext $ctx, int|string|null $id)
- * @method Comment updateComment(ISyncContext $ctx, Comment $comment)
- * @method Comment deleteComment(ISyncContext $ctx, Comment $comment)
- * @method iterable<Comment> getComments(ISyncContext $ctx)
- * @method Photo createPhoto(ISyncContext $ctx, Photo $photo)
- * @method Photo getPhoto(ISyncContext $ctx, int|string|null $id)
- * @method Photo updatePhoto(ISyncContext $ctx, Photo $photo)
- * @method Photo deletePhoto(ISyncContext $ctx, Photo $photo)
- * @method iterable<Photo> getPhotos(ISyncContext $ctx)
- * @method Post createPost(ISyncContext $ctx, Post $post)
- * @method Post getPost(ISyncContext $ctx, int|string|null $id)
- * @method Post updatePost(ISyncContext $ctx, Post $post)
- * @method Post deletePost(ISyncContext $ctx, Post $post)
- * @method iterable<Post> getPosts(ISyncContext $ctx)
- * @method Task createTask(ISyncContext $ctx, Task $task)
- * @method Task updateTask(ISyncContext $ctx, Task $task)
- * @method Task deleteTask(ISyncContext $ctx, Task $task)
- * @method iterable<Task> getTasks(ISyncContext $ctx)
- * @method User createUser(ISyncContext $ctx, User $user)
- * @method User getUser(ISyncContext $ctx, int|string|null $id)
- * @method User updateUser(ISyncContext $ctx, User $user)
- * @method User deleteUser(ISyncContext $ctx, User $user)
- * @method iterable<User> getUsers(ISyncContext $ctx)
+ * @method Album createAlbum(SyncContextInterface $ctx, Album $album)
+ * @method Album getAlbum(SyncContextInterface $ctx, int|string|null $id)
+ * @method Album updateAlbum(SyncContextInterface $ctx, Album $album)
+ * @method Album deleteAlbum(SyncContextInterface $ctx, Album $album)
+ * @method iterable<Album> getAlbums(SyncContextInterface $ctx)
+ * @method Comment createComment(SyncContextInterface $ctx, Comment $comment)
+ * @method Comment getComment(SyncContextInterface $ctx, int|string|null $id)
+ * @method Comment updateComment(SyncContextInterface $ctx, Comment $comment)
+ * @method Comment deleteComment(SyncContextInterface $ctx, Comment $comment)
+ * @method iterable<Comment> getComments(SyncContextInterface $ctx)
+ * @method Photo createPhoto(SyncContextInterface $ctx, Photo $photo)
+ * @method Photo getPhoto(SyncContextInterface $ctx, int|string|null $id)
+ * @method Photo updatePhoto(SyncContextInterface $ctx, Photo $photo)
+ * @method Photo deletePhoto(SyncContextInterface $ctx, Photo $photo)
+ * @method iterable<Photo> getPhotos(SyncContextInterface $ctx)
+ * @method Post createPost(SyncContextInterface $ctx, Post $post)
+ * @method Post getPost(SyncContextInterface $ctx, int|string|null $id)
+ * @method Post updatePost(SyncContextInterface $ctx, Post $post)
+ * @method Post deletePost(SyncContextInterface $ctx, Post $post)
+ * @method iterable<Post> getPosts(SyncContextInterface $ctx)
+ * @method Task createTask(SyncContextInterface $ctx, Task $task)
+ * @method Task updateTask(SyncContextInterface $ctx, Task $task)
+ * @method Task deleteTask(SyncContextInterface $ctx, Task $task)
+ * @method iterable<Task> getTasks(SyncContextInterface $ctx)
+ * @method User createUser(SyncContextInterface $ctx, User $user)
+ * @method User getUser(SyncContextInterface $ctx, int|string|null $id)
+ * @method User updateUser(SyncContextInterface $ctx, User $user)
+ * @method User deleteUser(SyncContextInterface $ctx, User $user)
+ * @method iterable<User> getUsers(SyncContextInterface $ctx)
  */
 class JsonPlaceholderApi extends HttpSyncProvider implements
     SingletonInterface,
@@ -173,7 +173,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     /**
      * @param int|string|null $id
      */
-    public function getTask(ISyncContext $ctx, $id): Task
+    public function getTask(SyncContextInterface $ctx, $id): Task
     {
         return $this->run(
             $ctx,

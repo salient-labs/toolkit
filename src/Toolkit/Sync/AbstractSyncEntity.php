@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Concept;
+namespace Salient\Sync;
 
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ListConformity;
@@ -33,17 +33,16 @@ use Salient\Iterator\Contract\FluentIteratorInterface;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Salient\Sync\Catalog\SyncEntityState;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncEntityProvider;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncEntityProviderInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\Support\SyncSerializeRules as SerializeRules;
-use Salient\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\SyncSerializeRules as SerializeRules;
+use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
 use DateTimeInterface;
 use Generator;
@@ -53,14 +52,14 @@ use ReflectionClass;
 /**
  * Represents the state of an entity in an external system
  *
- * {@see SyncEntity} implements {@see Readable} and {@see Writable}, but
+ * {@see AbstractSyncEntity} implements {@see Readable} and {@see Writable}, but
  * `protected` properties are not accessible by default. Override
- * {@see SyncEntity::getReadableProperties()} and/or
- * {@see SyncEntity::getWritableProperties()} to change this.
+ * {@see AbstractSyncEntity::getReadableProperties()} and/or
+ * {@see AbstractSyncEntity::getWritableProperties()} to change this.
  *
  * The following "magic" property methods are discovered automatically and don't
- * need to be returned by {@see SyncEntity::getReadableProperties()} or
- * {@see SyncEntity::getWritableProperties()}:
+ * need to be returned by {@see AbstractSyncEntity::getReadableProperties()} or
+ * {@see AbstractSyncEntity::getWritableProperties()}:
  * - `protected function _get<PropertyName>()`
  * - `protected function _isset<PropertyName>()` (optional; falls back to
  *   `_get<PropertyName>()` if not declared)
@@ -69,19 +68,19 @@ use ReflectionClass;
  *   `_set<PropertyName>(null)` if not declared)
  *
  * Accessible properties are mapped to associative arrays with snake_case keys
- * when {@see SyncEntity} objects are serialized. Override
- * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
- * nested entities.
+ * when {@see AbstractSyncEntity} objects are serialized. Override
+ * {@see AbstractSyncEntity::buildSerializeRules()} to provide serialization
+ * rules for nested entities.
  */
-abstract class SyncEntity extends AbstractEntity implements ISyncEntity, NormaliserFactory
+abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityInterface, NormaliserFactory
 {
-    /** @use ProvidableTrait<ISyncProvider,ISyncContext> */
+    /** @use ProvidableTrait<SyncProviderInterface,SyncContextInterface> */
     use ConstructibleTrait, HasReadableProperties, HasWritableProperties, ExtensibleTrait, ProvidableTrait, HasNormaliser, RequiresContainer;
 
     /**
      * The unique identifier assigned to the entity by its provider
      *
-     * @see ISyncEntity::id()
+     * @see SyncEntityInterface::id()
      *
      * @var int|string|null
      */
@@ -90,19 +89,19 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     /**
      * The unique identifier assigned to the entity by its canonical backend
      *
-     * @see ISyncEntity::canonicalId()
+     * @see SyncEntityInterface::canonicalId()
      *
      * @var int|string|null
      */
     public $CanonicalId;
 
     /**
-     * @var ISyncProvider|null
+     * @var SyncProviderInterface|null
      */
     private $Provider;
 
     /**
-     * @var ISyncContext|null
+     * @var SyncContextInterface|null
      */
     private $Context;
 
@@ -114,14 +113,14 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     /**
      * Entity => entity type ID
      *
-     * @var array<class-string<SyncEntity>,int>
+     * @var array<class-string<AbstractSyncEntity>,int>
      */
     private static $EntityTypeId = [];
 
     /**
      * Entity => [ property name => normalised property name ]
      *
-     * @var array<class-string<SyncEntity>,array<string,string>>
+     * @var array<class-string<AbstractSyncEntity>,array<string,string>>
      */
     private static $NormalisedPropertyMap = [];
 
@@ -179,10 +178,11 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
      * Override to specify prefixes to remove when normalising field/property
      * names
      *
-     * Entity names are removed by default, e.g. for a {@see SyncEntity}
-     * subclass called `User`, "User" is removed to ensure fields like "USER_ID"
-     * and "USER_NAME" match properties like "Id" and "Name". For a subclass of
-     * `User` called `AdminUser`, both "User" and "AdminUser" are removed.
+     * Entity names are removed by default, e.g. for an
+     * {@see AbstractSyncEntity} subclass called `User`, "User" is removed to
+     * ensure fields like "USER_ID" and "USER_NAME" match properties like "Id"
+     * and "Name". For a subclass of `User` called `AdminUser`, both "User" and
+     * "AdminUser" are removed.
      *
      * Return `null` to suppress prefix removal.
      *
@@ -219,7 +219,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     /**
      * @inheritDoc
      */
-    final public static function defaultProvider(?ContainerInterface $container = null): ISyncProvider
+    final public static function defaultProvider(?ContainerInterface $container = null): SyncProviderInterface
     {
         return self::requireContainer($container)->get(
             SyncIntrospector::entityToProvider(static::class)
@@ -229,7 +229,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     /**
      * @inheritDoc
      */
-    final public static function withDefaultProvider(?ContainerInterface $container = null, ?ISyncContext $context = null): ISyncEntityProvider
+    final public static function withDefaultProvider(?ContainerInterface $container = null, ?SyncContextInterface $context = null): SyncEntityProviderInterface
     {
         return static::defaultProvider($container)->with(
             static::class, $context
@@ -251,14 +251,15 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     /**
      * Get a closure that normalises a property name
      *
-     * If {@see SyncEntity::getRemovablePrefixes()} doesn't return any prefixes,
-     * a closure that converts the property name to snake_case is returned.
+     * If {@see AbstractSyncEntity::getRemovablePrefixes()} doesn't return any
+     * prefixes, a closure that converts the property name to snake_case is
+     * returned.
      *
      * Otherwise, the closure converts the property name to snake_case, and if
      * `$greedy` is `true` (the default) and the property name doesn't match one
      * of the provided `$hints`, prefixes are removed before it is returned.
      *
-     * If a prefix returned by {@see SyncEntity::getRemovablePrefixes()}
+     * If a prefix returned by {@see AbstractSyncEntity::getRemovablePrefixes()}
      * contains multiple words (e.g. "admin_user_group"), additional prefixes to
      * remove are derived by shifting each word off the beginning of the prefix
      * (e.g. "user_group" and "group").
@@ -416,7 +417,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     }
 
     /**
-     * @param SyncEntity|DeferredEntity<SyncEntity>|DeferredRelationship<SyncEntity>|DateTimeInterface|mixed[] $node
+     * @param AbstractSyncEntity|DeferredEntity<AbstractSyncEntity>|DeferredRelationship<AbstractSyncEntity>|DateTimeInterface|mixed[] $node
      * @param string[] $path
      * @param SerializeRules<static> $rules
      * @param array<int,true> $parents
@@ -440,14 +441,14 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
             return;
         }
 
-        if ($node instanceof SyncEntity) {
+        if ($node instanceof AbstractSyncEntity) {
             if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
                 $node = $node->toLink(LinkType::INTERNAL);
                 return;
             }
 
             if ($rules->getDetectRecursion()) {
-                // Prevent infinite recursion by replacing each SyncEntity
+                // Prevent infinite recursion by replacing each sync entity
                 // descended from itself with a link
                 if ($parents[spl_object_id($node)] ?? false) {
                     $node = $node->toLink(LinkType::DEFAULT);
@@ -563,12 +564,12 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
                 ?: ($this->getProvider() ? $this->getProvider()->dateFormatter() : null)
                 ?: new DateFormatter())->format($node);
         } else {
-            throw new UnexpectedValueException('Array or SyncEntity expected: ' . print_r($node, true));
+            throw new UnexpectedValueException('Array or AbstractSyncEntity expected: ' . print_r($node, true));
         }
     }
 
     /**
-     * @param SyncEntity[]|SyncEntity|null $node
+     * @param AbstractSyncEntity[]|AbstractSyncEntity|null $node
      * @param string[] $path
      */
     private function _serializeId(&$node, array $path): void
@@ -577,8 +578,8 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
             return;
         }
 
-        if (Arr::of($node, SyncEntity::class, true) && Arr::isIndexed($node, true)) {
-            /** @var SyncEntity $child */
+        if (Arr::of($node, AbstractSyncEntity::class, true) && Arr::isIndexed($node, true)) {
+            /** @var AbstractSyncEntity $child */
             foreach ($node as &$child) {
                 $child = $child->Id;
             }
@@ -586,8 +587,8 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
             return;
         }
 
-        if (!($node instanceof SyncEntity)) {
-            throw new UnexpectedValueException('Cannot replace (not a SyncEntity): ' . implode('.', $path));
+        if (!($node instanceof AbstractSyncEntity)) {
+            throw new UnexpectedValueException('Cannot replace (not an AbstractSyncEntity): ' . implode('.', $path));
         }
 
         $node = $node->Id;
@@ -646,8 +647,8 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     }
 
     /**
-     * @param ISyncProvider $provider
-     * @param ISyncContext|null $context
+     * @param SyncProviderInterface $provider
+     * @param SyncContextInterface|null $context
      */
     final public static function provide(
         array $data,
@@ -671,8 +672,8 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
     }
 
     /**
-     * @param ISyncProvider $provider
-     * @param ISyncContext|null $context
+     * @param SyncProviderInterface $provider
+     * @param SyncContextInterface|null $context
      */
     final public static function provideList(
         iterable $list,
@@ -700,7 +701,7 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
             return null;
         }
 
-        if ($providerOrContext instanceof ISyncProvider) {
+        if ($providerOrContext instanceof SyncProviderInterface) {
             $provider = $providerOrContext;
             $context = $provider->container();
         } else {
@@ -781,9 +782,9 @@ abstract class SyncEntity extends AbstractEntity implements ISyncEntity, Normali
 
     /**
      * @param iterable<array-key,mixed[]> $list
-     * @param ISyncProvider $provider
+     * @param SyncProviderInterface $provider
      * @param ListConformity::* $conformity
-     * @param ISyncContext|null $context
+     * @param SyncContextInterface|null $context
      * @return Generator<array-key,static>
      */
     private static function _provideList(

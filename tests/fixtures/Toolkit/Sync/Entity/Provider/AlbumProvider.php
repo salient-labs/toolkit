@@ -2,19 +2,19 @@
 
 namespace Salient\Tests\Sync\Entity\Provider;
 
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Tests\Sync\Entity\Album;
 
 /**
  * Syncs Album objects with a backend
  *
- * @method Album createAlbum(ISyncContext $ctx, Album $album)
- * @method Album getAlbum(ISyncContext $ctx, int|string|null $id)
- * @method Album updateAlbum(ISyncContext $ctx, Album $album)
- * @method Album deleteAlbum(ISyncContext $ctx, Album $album)
- * @method iterable<Album> getAlbums(ISyncContext $ctx)
+ * @method Album createAlbum(SyncContextInterface $ctx, Album $album)
+ * @method Album getAlbum(SyncContextInterface $ctx, int|string|null $id)
+ * @method Album updateAlbum(SyncContextInterface $ctx, Album $album)
+ * @method Album deleteAlbum(SyncContextInterface $ctx, Album $album)
+ * @method iterable<Album> getAlbums(SyncContextInterface $ctx)
  *
  * @generated
  */
-interface AlbumProvider extends ISyncProvider {}
+interface AlbumProvider extends SyncProviderInterface {}

@@ -9,20 +9,20 @@ use Salient\Core\Contract\Providable;
 use Salient\Core\Contract\ProvidableEntityInterface;
 use Salient\Core\Contract\Relatable;
 use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
-use Salient\Sync\Concept\SyncEntity;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\Support\SyncSerializeRules as SerializeRules;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\AbstractSyncEntity;
+use Salient\Sync\SyncSerializeRules as SerializeRules;
+use Salient\Sync\SyncStore;
 use JsonSerializable;
 
 /**
  * Represents the state of an entity in an external system
  *
- * @see SyncEntity
+ * @see AbstractSyncEntity
  *
- * @extends ProvidableEntityInterface<ISyncProvider,ISyncContext>
+ * @extends ProvidableEntityInterface<SyncProviderInterface,SyncContextInterface>
  */
-interface ISyncEntity extends
+interface SyncEntityInterface extends
     Identifiable,
     Nameable,
     ProvidableEntityInterface,
@@ -37,15 +37,15 @@ interface ISyncEntity extends
     /**
      * Get an instance of the entity's default provider
      */
-    public static function defaultProvider(?ContainerInterface $container = null): ISyncProvider;
+    public static function defaultProvider(?ContainerInterface $container = null): SyncProviderInterface;
 
     /**
      * Get an interface to perform sync operations on the entity with its
      * default provider
      *
-     * @return ISyncEntityProvider<static>
+     * @return SyncEntityProviderInterface<static>
      */
-    public static function withDefaultProvider(?ContainerInterface $container = null, ?ISyncContext $context = null): ISyncEntityProvider;
+    public static function withDefaultProvider(?ContainerInterface $container = null, ?SyncContextInterface $context = null): SyncEntityProviderInterface;
 
     /**
      * Get the entity's default serialization rules
@@ -80,7 +80,7 @@ interface ISyncEntity extends
      *
      * - `null` if `$nameOrId` is `null`
      * - `$nameOrId` if it is a valid identifier for the entity in the given
-     *   provider (see {@see ISyncProvider::isValidIdentifier()}), or
+     *   provider (see {@see SyncProviderInterface::isValidIdentifier()}), or
      * - the entity ID of the entity to which `$nameOrId` resolves
      *
      * A {@see SyncEntityNotFoundException} is thrown if:
@@ -89,7 +89,7 @@ interface ISyncEntity extends
      * - there are multiple matching entities
      *
      * @param int|string|null $nameOrId
-     * @param ISyncProvider|ISyncContext $providerOrContext
+     * @param SyncProviderInterface|SyncContextInterface $providerOrContext
      * @return int|string|null
      */
     public static function idFromNameOrId(
@@ -126,12 +126,12 @@ interface ISyncEntity extends
     /**
      * Serialize the entity and any nested entities
      *
-     * The entity's {@see SerializeRules} are applied to each {@see ISyncEntity}
-     * encountered during this recursive operation.
+     * The entity's {@see SerializeRules} are applied to each
+     * {@see SyncEntityInterface} encountered during this recursive operation.
      *
      * @return array<string,mixed>
      *
-     * @see ISyncEntity::getSerializeRules()
+     * @see SyncEntityInterface::getSerializeRules()
      */
     public function toArray(): array;
 

@@ -3,28 +3,28 @@
 namespace Salient\Sync\Exception;
 
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * Thrown when a sync operation is unable to resolve its own parameters from the
  * context object it receives
  */
-class SyncInvalidContextException extends SyncException
+class SyncInvalidContextException extends AbstractSyncException
 {
     /**
-     * @var ISyncContext
+     * @var SyncContextInterface
      */
     protected $Context;
 
     /**
-     * @var ISyncProvider
+     * @var SyncProviderInterface
      */
     protected $Provider;
 
     /**
-     * @var class-string<ISyncEntity>
+     * @var class-string<SyncEntityInterface>
      */
     protected $Entity;
 
@@ -34,10 +34,10 @@ class SyncInvalidContextException extends SyncException
     protected $Operation;
 
     /**
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<SyncEntityInterface> $entity
      * @param SyncOperation::* $operation
      */
-    public function __construct(string $message, ISyncContext $context, ISyncProvider $provider, string $entity, $operation)
+    public function __construct(string $message, SyncContextInterface $context, SyncProviderInterface $provider, string $entity, $operation)
     {
         $this->Context = clone $context;
         $this->Provider = $provider;

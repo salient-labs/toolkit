@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Concept;
+namespace Salient\Sync;
 
 use Salient\Cache\CacheStore;
 use Salient\Core\Contract\DateFormatterInterface;
@@ -13,16 +13,14 @@ use Salient\Curler\Curler;
 use Salient\Curler\CurlerBuilder;
 use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Http\HttpHeaders;
-use Salient\Sync\Contract\ISyncDefinition;
-use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\SyncDefinitionInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
-use Salient\Sync\Support\HttpSyncDefinition;
-use Salient\Sync\Support\HttpSyncDefinitionBuilder;
 
 /**
  * Base class for HTTP-based RESTful API providers
  */
-abstract class HttpSyncProvider extends SyncProvider
+abstract class HttpSyncProvider extends AbstractSyncProvider
 {
     /**
      * Get a Curler instance bound to an API endpoint
@@ -78,14 +76,14 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @return ISyncDefinition<T,static>
+     * @return SyncDefinitionInterface<T,static>
      */
-    final public function getDefinition(string $entity): ISyncDefinition
+    final public function getDefinition(string $entity): SyncDefinitionInterface
     {
-        /** @var ISyncDefinition<T,static> */
+        /** @var SyncDefinitionInterface<T,static> */
         $def = $this
             ->buildHttpDefinition(
                 $entity,
@@ -181,7 +179,7 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * Return `$defB` if no sync operations are implemented for the entity.
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
      * @param HttpSyncDefinitionBuilder<T,static> $defB A definition builder

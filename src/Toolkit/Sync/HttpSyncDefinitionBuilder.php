@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Support;
+namespace Salient\Sync;
 
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
@@ -13,10 +13,8 @@ use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\Catalog\SyncEntitySource;
 use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Concept\HttpSyncProvider;
-use Salient\Sync\Concept\SyncDefinition;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
 use Closure;
 
 /**
@@ -27,20 +25,20 @@ use Closure;
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
  * @method $this headers(?HttpHeadersInterface $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
  * @method $this pager(?ICurlerPager $value) The pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
- * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
- * @method $this conformity(ListConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
- * @method $this filterPolicy(FilterPolicy::*|null $value) The action to take when filters are unclaimed by the provider (see {@see SyncDefinition::$FilterPolicy})
+ * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
+ * @method $this conformity(ListConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
+ * @method $this filterPolicy(FilterPolicy::*|null $value) The action to take when filters are unclaimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
  * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array<OP::*,HttpRequestMethod::*> $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
  * @method $this curlerProperties(array<CurlerProperty::*,mixed> $value) An array that maps Curler property names to values (see {@see HttpSyncDefinition::$CurlerProperties})
  * @method $this syncOneEntityPerRequest(bool $value = true) If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)
- * @method $this overrides(array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $value) An array that maps sync operations to closures that override other implementations (see {@see SyncDefinition::$Overrides})
- * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) An array that maps provider (backend) keys to one or more entity keys (see {@see SyncDefinition::$KeyMap})
+ * @method $this overrides(array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $value) An array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})
+ * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) An array that maps provider (backend) keys to one or more entity keys (see {@see AbstractSyncDefinition::$KeyMap})
  * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Passed to the array mapper if `$keyMap` is provided
- * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see SyncDefinition::$ReadFromReadList})
+ * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromReadList})
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  * @template TProvider of HttpSyncProvider
  *
  * @extends AbstractBuilder<HttpSyncDefinition<TEntity,TProvider>>
@@ -58,9 +56,9 @@ final class HttpSyncDefinitionBuilder extends AbstractBuilder
     }
 
     /**
-     * The ISyncEntity being serviced
+     * The SyncEntityInterface being serviced
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $value
      * @return $this<T,TProvider>
@@ -71,7 +69,7 @@ final class HttpSyncDefinitionBuilder extends AbstractBuilder
     }
 
     /**
-     * The ISyncProvider servicing the entity
+     * The SyncProviderInterface servicing the entity
      *
      * @template T of HttpSyncProvider
      *
@@ -86,9 +84,9 @@ final class HttpSyncDefinitionBuilder extends AbstractBuilder
     /**
      * A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
-     * @param PipelineInterface<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
+     * @param PipelineInterface<mixed[],T,array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */
     public function pipelineFromBackend(?PipelineInterface $value)
@@ -99,9 +97,9 @@ final class HttpSyncDefinitionBuilder extends AbstractBuilder
     /**
      * A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
-     * @param PipelineInterface<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
+     * @param PipelineInterface<T,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>|null $value
      * @return $this<T,TProvider>
      */
     public function pipelineToBackend(?PipelineInterface $value)

@@ -5,7 +5,7 @@ namespace Salient\Sync\Catalog;
 use Salient\Core\AbstractEnumeration;
 
 /**
- * Serialized sync entity link types
+ * Serialized sync entity relationship data formats, inspired by JSON-LD
  *
  * @extends AbstractEnumeration<int>
  */

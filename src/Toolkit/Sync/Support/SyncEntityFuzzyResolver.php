@@ -7,20 +7,20 @@ use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
 use Salient\Core\Catalog\TextComparisonFlag;
 use Salient\Core\Catalog\TextComparisonFlag as Flag;
 use Salient\Core\Utility\Str;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncEntityProvider;
-use Salient\Sync\Contract\ISyncEntityResolver;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncEntityProviderInterface;
+use Salient\Sync\Contract\SyncEntityResolverInterface;
 use Closure;
 use LogicException;
 
 /**
  * Resolves a name to an entity using one or more text comparison algorithms
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  *
- * @implements ISyncEntityResolver<TEntity>
+ * @implements SyncEntityResolverInterface<TEntity>
  */
-final class SyncEntityFuzzyResolver implements ISyncEntityResolver
+final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
 {
     private const ALGORITHMS = [
         Algorithm::SAME,
@@ -32,7 +32,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     ];
 
     /**
-     * @var ISyncEntityProvider<TEntity>
+     * @var SyncEntityProviderInterface<TEntity>
      */
     private $EntityProvider;
 
@@ -78,14 +78,14 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     /**
      * Creates a new SyncEntityFuzzyResolver object
      *
-     * @param ISyncEntityProvider<TEntity> $entityProvider
+     * @param SyncEntityProviderInterface<TEntity> $entityProvider
      * @param int-mask-of<TextComparisonAlgorithm::*|TextComparisonFlag::*> $algorithm
      * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      */
     public function __construct(
-        ISyncEntityProvider $entityProvider,
+        SyncEntityProviderInterface $entityProvider,
         ?string $nameProperty = null,
         int $algorithm =
             TextComparisonAlgorithm::SAME
@@ -138,7 +138,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     /**
      * @inheritDoc
      */
-    public function getByName(string $name, float &$uncertainty = null): ?ISyncEntity
+    public function getByName(string $name, float &$uncertainty = null): ?SyncEntityInterface
     {
         if ($this->Entities === null) {
             $this->loadEntities();
@@ -301,7 +301,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
      * @param array{TEntity,string,mixed|null,...} $entry
      * @return TEntity
      */
-    private function cacheResult(string $name, ?array $entry, ?float &$uncertainty): ?ISyncEntity
+    private function cacheResult(string $name, ?array $entry, ?float &$uncertainty): ?SyncEntityInterface
     {
         if ($entry === null) {
             $uncertainty = null;

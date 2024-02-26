@@ -7,8 +7,8 @@ use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Package;
-use Salient\Sync\Contract\ISyncClassResolver;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\Contract\SyncClassResolverInterface;
+use Salient\Sync\SyncStore;
 
 /**
  * A service container for applications
@@ -157,7 +157,7 @@ interface ApplicationInterface extends ContainerInterface
      * `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
-     * @param class-string<ISyncClassResolver>|null $resolver
+     * @param class-string<SyncClassResolverInterface>|null $resolver
      * @return $this
      */
     public function syncNamespace(

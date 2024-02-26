@@ -3,9 +3,9 @@
 namespace Salient\Tests\Sync;
 
 use Salient\Core\Utility\Pcre;
-use Salient\Sync\Contract\ISyncClassResolver;
+use Salient\Sync\Contract\SyncClassResolverInterface;
 
-class SyncClassResolver implements ISyncClassResolver
+class SyncClassResolver implements SyncClassResolverInterface
 {
     public static function entityToProvider(string $entity): string
     {

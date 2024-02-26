@@ -5,7 +5,7 @@ namespace Salient\Sync\Catalog;
 use Salient\Core\AbstractEnumeration;
 
 /**
- * Sync entity hydration policies
+ * Policies for hydration of sync entities and relationships
  *
  * @extends AbstractEnumeration<int>
  */

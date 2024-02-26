@@ -5,4 +5,4 @@ namespace Salient\Sync\Exception;
 /**
  * Thrown when an entity store error occurs
  */
-class SyncStoreException extends SyncException {}
+class SyncStoreException extends AbstractSyncException {}

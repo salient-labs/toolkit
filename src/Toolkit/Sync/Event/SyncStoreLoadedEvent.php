@@ -5,4 +5,4 @@ namespace Salient\Sync\Event;
 /**
  * Dispatched when an entity store is loaded
  */
-class SyncStoreLoadedEvent extends SyncStoreEvent {}
+class SyncStoreLoadedEvent extends AbstractSyncStoreEvent {}

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Support;
+namespace Salient\Sync;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Core\Concern\HasBuilder;
@@ -10,8 +10,8 @@ use Salient\Core\Contract\Comparable;
 use Salient\Core\Contract\Immutable;
 use Salient\Core\Contract\Readable;
 use Salient\Sync\Catalog\SyncErrorType;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * An error that occurred during a sync operation
@@ -20,9 +20,9 @@ use Salient\Sync\Contract\ISyncProvider;
  * @property-read string $Message An sprintf() format string that explains the error
  * @property-read mixed[] $Values Values passed to sprintf() with the message format string
  * @property-read Level::* $Level
- * @property-read ISyncEntity|null $Entity The entity associated with the error
+ * @property-read SyncEntityInterface|null $Entity The entity associated with the error
  * @property-read string|null $EntityName The display name of the entity associated with the error
- * @property-read ISyncProvider|null $Provider The sync provider associated with the error
+ * @property-read SyncProviderInterface|null $Provider The sync provider associated with the error
  * @property-read int $Count How many times the error has been reported
  *
  * @implements Buildable<SyncErrorBuilder>
@@ -71,7 +71,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
     /**
      * The entity associated with the error
      *
-     * @var ISyncEntity|null
+     * @var SyncEntityInterface|null
      */
     protected $Entity;
 
@@ -82,14 +82,14 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
      *
      * @var string|null
      *
-     * @see ISyncEntity::uri()
+     * @see SyncEntityInterface::uri()
      */
     protected $EntityName;
 
     /**
      * The sync provider associated with the error
      *
-     * @var ISyncProvider|null
+     * @var SyncProviderInterface|null
      */
     protected $Provider;
 
@@ -110,9 +110,9 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
         string $message,
         array $values = [],
         int $level = Level::ERROR,
-        ?ISyncEntity $entity = null,
+        ?SyncEntityInterface $entity = null,
         ?string $entityName = null,
-        ?ISyncProvider $provider = null
+        ?SyncProviderInterface $provider = null
     ) {
         $this->EntityName = $entityName ?? ($entity ? $entity->uri() : null);
         $this->ErrorType = $errorType;

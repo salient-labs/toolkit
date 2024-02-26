@@ -9,19 +9,20 @@ use Salient\Iterator\IterableIterator;
 use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncDefinition;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncEntityProvider;
-use Salient\Sync\Contract\ISyncEntityResolver;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncDefinitionInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncEntityProviderInterface;
+use Salient\Sync\Contract\SyncEntityResolverInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
+use Salient\Sync\SyncStore;
 use Generator;
 use LogicException;
 
 /**
- * An interface to an ISyncProvider's implementation of sync operations for an
- * ISyncEntity class
+ * An interface to a SyncProviderInterface's implementation of sync operations
+ * for an SyncEntityInterface class
  *
  * So you can do this:
  *
@@ -37,12 +38,12 @@ use LogicException;
  * $faculties = Faculty::withDefaultProvider()->getList();
  * ```
  *
- * @template TEntity of ISyncEntity
- * @template TProvider of ISyncProvider
+ * @template TEntity of SyncEntityInterface
+ * @template TProvider of SyncProviderInterface
  *
- * @implements ISyncEntityProvider<TEntity>
+ * @implements SyncEntityProviderInterface<TEntity>
  */
-final class SyncEntityProvider implements ISyncEntityProvider
+final class SyncEntityProvider implements SyncEntityProviderInterface
 {
     /**
      * @var class-string<TEntity>
@@ -50,19 +51,20 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Entity;
 
     /**
-     * @todo Remove `ISyncProvider&` when Intelephense generics issues are fixed
+     * @todo Remove `SyncProviderInterface&` when Intelephense generics issues
+     * are fixed
      *
-     * @var ISyncProvider&TProvider
+     * @var SyncProviderInterface&TProvider
      */
     private $Provider;
 
     /**
-     * @var ISyncDefinition<TEntity,TProvider>
+     * @var SyncDefinitionInterface<TEntity,TProvider>
      */
     private $Definition;
 
     /**
-     * @var ISyncContext
+     * @var SyncContextInterface
      */
     private $Context;
 
@@ -74,17 +76,21 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
-     * @param ISyncDefinition<TEntity,TProvider> $definition
+     * @param SyncDefinitionInterface<TEntity,TProvider> $definition
      */
     public function __construct(
         ContainerInterface $container,
         string $entity,
-        ISyncProvider $provider,
-        ISyncDefinition $definition,
-        ?ISyncContext $context = null
+        SyncProviderInterface $provider,
+        SyncDefinitionInterface $definition,
+        ?SyncContextInterface $context = null
     ) {
-        if (!is_a($entity, ISyncEntity::class, true)) {
-            throw new LogicException("Does not implement ISyncEntity: $entity");
+        if (!is_a($entity, SyncEntityInterface::class, true)) {
+            throw new LogicException(sprintf(
+                'Does not implement %s: %s',
+                SyncEntityInterface::class,
+                $entity,
+            ));
         }
 
         $entityProvider = SyncIntrospector::entityToProvider($entity);
@@ -102,7 +108,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @inheritDoc
      */
-    public function getProvider(): ISyncProvider
+    public function getProvider(): SyncProviderInterface
     {
         return $this->Provider;
     }
@@ -110,7 +116,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @inheritDoc
      */
-    public function requireProvider(): ISyncProvider
+    public function requireProvider(): SyncProviderInterface
     {
         return $this->Provider;
     }
@@ -214,26 +220,26 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Add an entity to the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::CREATE} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1.
-     * public function createFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
+     * public function createFaculty(SyncContextInterface $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function create_Faculty(ISyncContext $ctx, Faculty $entity): Faculty;
+     * public function create_Faculty(SyncContextInterface $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter after `ISyncContext $ctx`:
+     * The first parameter after `SyncContextInterface $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be the class of the
      *   entity being created
      * - must be required
      */
-    public function create($entity, ...$args): ISyncEntity
+    public function create($entity, ...$args): SyncEntityInterface
     {
         return $this->run(SyncOperation::CREATE, $entity, ...$args);
     }
@@ -241,20 +247,20 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Get an entity from the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::READ} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1.
-     * public function getFaculty(ISyncContext $ctx, $id): Faculty;
+     * public function getFaculty(SyncContextInterface $ctx, $id): Faculty;
      *
      * // 2.
-     * public function get_Faculty(ISyncContext $ctx, $id): Faculty;
+     * public function get_Faculty(SyncContextInterface $ctx, $id): Faculty;
      * ```
      *
-     * The first parameter after `ISyncContext $ctx`:
+     * The first parameter after `SyncContextInterface $ctx`:
      * - must be defined
      * - must not have a native type declaration, but may be tagged as an
      *   `int|string|null` parameter for static analysis purposes
@@ -262,7 +268,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * @param int|string|null $id
      */
-    public function get($id, ...$args): ISyncEntity
+    public function get($id, ...$args): SyncEntityInterface
     {
         $offline = $this->Context->getOffline();
         if ($offline !== false) {
@@ -283,26 +289,26 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Update an entity in the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::UPDATE} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1.
-     * public function updateFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
+     * public function updateFaculty(SyncContextInterface $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function update_Faculty(ISyncContext $ctx, Faculty $entity): Faculty;
+     * public function update_Faculty(SyncContextInterface $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter after `ISyncContext $ctx`:
+     * The first parameter after `SyncContextInterface $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be the class of the
      *   entity being updated
      * - must be required
      */
-    public function update($entity, ...$args): ISyncEntity
+    public function update($entity, ...$args): SyncEntityInterface
     {
         return $this->run(SyncOperation::UPDATE, $entity, ...$args);
     }
@@ -310,20 +316,20 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Delete an entity from the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::DELETE} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1.
-     * public function deleteFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
+     * public function deleteFaculty(SyncContextInterface $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function delete_Faculty(ISyncContext $ctx, Faculty $entity): Faculty;
+     * public function delete_Faculty(SyncContextInterface $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter after `ISyncContext $ctx`:
+     * The first parameter after `SyncContextInterface $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be the class of the
      *   entity being deleted
@@ -332,7 +338,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * The return value:
      * - must represent the final state of the entity before it was deleted
      */
-    public function delete($entity, ...$args): ISyncEntity
+    public function delete($entity, ...$args): SyncEntityInterface
     {
         return $this->run(SyncOperation::DELETE, $entity, ...$args);
     }
@@ -340,20 +346,20 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Add a list of entities to the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::CREATE_LIST} operation, e.g. one of the following
      * for a `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1. With a plural entity name
-     * public function createFaculties(ISyncContext $ctx, iterable $entities): iterable;
+     * public function createFaculties(SyncContextInterface $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function createList_Faculty(ISyncContext $ctx, iterable $entities): iterable;
+     * public function createList_Faculty(SyncContextInterface $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter after `ISyncContext $ctx`:
+     * The first parameter after `SyncContextInterface $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be `iterable`
      * - must be required
@@ -369,17 +375,17 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Get a list of entities from the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::READ_LIST} operation, e.g. one of the following for
      * a `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1. With a plural entity name
-     * public function getFaculties(ISyncContext $ctx): iterable;
+     * public function getFaculties(SyncContextInterface $ctx): iterable;
      *
      * // 2. With a singular name
-     * public function getList_Faculty(ISyncContext $ctx): iterable;
+     * public function getList_Faculty(SyncContextInterface $ctx): iterable;
      * ```
      *
      * @return FluentIteratorInterface<array-key,TEntity>
@@ -392,20 +398,20 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Update a list of entities in the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::UPDATE_LIST} operation, e.g. one of the following
      * for a `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1. With a plural entity name
-     * public function updateFaculties(ISyncContext $ctx, iterable $entities): iterable;
+     * public function updateFaculties(SyncContextInterface $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function updateList_Faculty(ISyncContext $ctx, iterable $entities): iterable;
+     * public function updateList_Faculty(SyncContextInterface $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter after `ISyncContext $ctx`:
+     * The first parameter after `SyncContextInterface $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be `iterable`
      * - must be required
@@ -421,20 +427,20 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Delete a list of entities from the backend
      *
-     * The underlying {@see ISyncProvider} must implement the
+     * The underlying {@see SyncProviderInterface} must implement the
      * {@see SyncOperation::DELETE_LIST} operation, e.g. one of the following
      * for a `Faculty` entity:
      *
      * ```php
      * <?php
      * // 1. With a plural entity name
-     * public function deleteFaculties(ISyncContext $ctx, iterable $entities): iterable;
+     * public function deleteFaculties(SyncContextInterface $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function deleteList_Faculty(ISyncContext $ctx, iterable $entities): iterable;
+     * public function deleteList_Faculty(SyncContextInterface $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter after `ISyncContext $ctx`:
+     * The first parameter after `SyncContextInterface $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be `iterable`
      * - must be required
@@ -588,7 +594,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
         bool $requireOneMatch = false
-    ): ISyncEntityResolver {
+    ): SyncEntityResolverInterface {
         if ($nameProperty !== null &&
                 $algorithm === TextComparisonAlgorithm::SAME &&
                 $weightProperty === null &&

@@ -8,38 +8,41 @@ use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Concept\SyncProvider;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
+use Salient\Sync\AbstractSyncProvider;
 
 /**
  * The context within which sync entities are instantiated by a provider
  *
- * @extends ProviderContextInterface<ISyncProvider,ISyncEntity>
+ * @extends ProviderContextInterface<SyncProviderInterface,SyncEntityInterface>
  */
-interface ISyncContext extends ProviderContextInterface
+interface SyncContextInterface extends ProviderContextInterface
 {
     /**
      * Normalise optional sync operation arguments and apply them to the context
      *
      * If, after removing the operation's mandatory arguments from `$args`, the
      * remaining values match one of the following signatures, they are mapped
-     * to a filter surfaced by {@see ISyncContext::getFilters()},
-     * {@see ISyncContext::getFilter()} and {@see ISyncContext::claimFilter()}:
+     * to a filter surfaced by {@see SyncContextInterface::getFilters()},
+     * {@see SyncContextInterface::getFilter()} and
+     * {@see SyncContextInterface::claimFilter()}:
      *
      * 1. One array argument (`fn(...$mandatoryArgs, array $filter)`)
      *
      *    - Alphanumeric keys are converted to snake_case
      *    - Keys containing characters other than letters, numbers, hyphens and
      *      underscores, e.g. `'$orderby'`, are left as-is
-     *    - {@see ISyncEntity} objects are replaced with their respective IDs
+     *    - {@see SyncEntityInterface} objects are replaced with their
+     *      respective IDs
      *    - Empty keys (`''` after snake_case conversion) are invalid
      *
      * 2. A list of identifiers (`fn(...$mandatoryArgs, int|string ...$ids)`)
      *
      *    - Converted to `[ 'id' => $ids ]`
      *
-     * 3. A list of entities (`fn(...$mandatoryArgs, ISyncEntity ...$entities)`)
+     * 3. A list of entities (`fn(...$mandatoryArgs, SyncEntityInterface
+     *    ...$entities)`)
      *
      *    - Entities are grouped by snake_case {@see Providable::getService()}
      *      basename and replaced with their IDs, e.g. `['faculty' => [42, 71],
@@ -52,17 +55,17 @@ interface ISyncContext extends ProviderContextInterface
      * If `$args` doesn't match any of these, a
      * {@see SyncInvalidFilterException} is thrown.
      *
-     * Using {@see ISyncContext::claimFilter()} to claim filters is recommended.
-     * Depending on the provider's {@see FilterPolicy}, unclaimed filters may
-     * cause requests to fail.
+     * Using {@see SyncContextInterface::claimFilter()} to claim filters is
+     * recommended. Depending on the provider's {@see FilterPolicy}, unclaimed
+     * filters may cause requests to fail.
      *
      * When a filter is claimed, it is removed from the context.
-     * {@see ISyncContext::getFilters()} and {@see ISyncContext::getFilter()}
-     * only return unclaimed filters.
+     * {@see SyncContextInterface::getFilters()} and
+     * {@see SyncContextInterface::getFilter()} only return unclaimed filters.
      *
      * @param SyncOperation::* $operation
      * @param mixed ...$args Sync operation arguments, NOT including the
-     * {@see ISyncContext} argument.
+     * {@see SyncContextInterface} argument.
      * @return static
      */
     public function withArgs($operation, ...$args);
@@ -71,12 +74,12 @@ interface ISyncContext extends ProviderContextInterface
      * Use a callback to enforce the provider's unclaimed filter policy
      *
      * Allows providers to enforce their {@see FilterPolicy} by calling
-     * {@see ISyncContext::applyFilterPolicy()} in scenarios where enforcement
-     * before a sync operation starts isn't possible.
+     * {@see SyncContextInterface::applyFilterPolicy()} in scenarios where
+     * enforcement before a sync operation starts isn't possible.
      *
-     * @see ISyncContext::applyFilterPolicy()
+     * @see SyncContextInterface::applyFilterPolicy()
      *
-     * @param (callable(ISyncContext, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
+     * @param (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
      * @return static
      */
     public function withFilterPolicyCallback(?callable $callback);
@@ -120,8 +123,8 @@ interface ISyncContext extends ProviderContextInterface
      * Apply the given hydration policy to the context
      *
      * @param HydrationPolicy::* $policy
-     * @param class-string<ISyncEntity>|null $entity Limit the scope of the
-     * change to an entity and its subclasses.
+     * @param class-string<SyncEntityInterface>|null $entity Limit the scope of
+     * the change to an entity and its subclasses.
      * @param array<int<1,max>>|int<1,max>|null $depth Limit the scope of the
      * change to entities at a given `$depth` from the current context.
      * @return static
@@ -136,27 +139,27 @@ interface ISyncContext extends ProviderContextInterface
      * Push the entity propagating the context onto the stack after checking if
      * it is already present
      *
-     * {@see ISyncContext::maybeThrowRecursionException()} fails with an
+     * {@see SyncContextInterface::maybeThrowRecursionException()} fails with an
      * exception if `$entity` is already in the stack.
      *
      * @return static
      */
-    public function pushWithRecursionCheck(ISyncEntity $entity);
+    public function pushWithRecursionCheck(SyncEntityInterface $entity);
 
     /**
      * Throw an exception if recursion is detected
      *
      * @throws SyncEntityRecursionException if
-     * {@see ISyncContext::pushWithRecursionCheck()} detected recursion.
+     * {@see SyncContextInterface::pushWithRecursionCheck()} detected recursion.
      */
     public function maybeThrowRecursionException(): void;
 
     /**
      * Run the unclaimed filter policy callback
      *
-     * {@see SyncProvider::run()} calls this method on your behalf and is
-     * recommended for providers where sync operations are performed by declared
-     * methods.
+     * {@see AbstractSyncProvider::run()} calls this method on your behalf and
+     * is recommended for providers where sync operations are performed by
+     * declared methods.
      *
      * Example:
      *
@@ -164,7 +167,7 @@ interface ISyncContext extends ProviderContextInterface
      * <?php
      * class Provider extends HttpSyncProvider
      * {
-     *     public function getEntities(ISyncContext $ctx): iterable
+     *     public function getEntities(SyncContextInterface $ctx): iterable
      *     {
      *         // Claim filter values
      *         $start = $ctx->claimFilter('start_date');
@@ -189,7 +192,7 @@ interface ISyncContext extends ProviderContextInterface
      * Get the filters passed to the context via optional sync operation
      * arguments
      *
-     * @see ISyncContext::withArgs()
+     * @see SyncContextInterface::withArgs()
      *
      * @return array<string,mixed>
      */
@@ -204,9 +207,10 @@ interface ISyncContext extends ProviderContextInterface
      * if there is no matching filter.
      *
      * @return mixed `null` if the value has been claimed via
-     * {@see ISyncContext::claimFilter()} or wasn't passed to the operation.
+     * {@see SyncContextInterface::claimFilter()} or wasn't passed to the
+     * operation.
      *
-     * @see ISyncContext::withArgs()
+     * @see SyncContextInterface::withArgs()
      */
     public function getFilter(string $key, bool $orValue = true);
 
@@ -214,9 +218,9 @@ interface ISyncContext extends ProviderContextInterface
      * Get the value of a filter passed to the context via optional sync
      * operation arguments
      *
-     * Unlike other {@see ISyncContext} methods,
-     * {@see ISyncContext::claimFilter()} modifies the object it is called on
-     * instead of returning a modified instance.
+     * Unlike other {@see SyncContextInterface} methods,
+     * {@see SyncContextInterface::claimFilter()} modifies the object it is
+     * called on instead of returning a modified instance.
      *
      * If `$orValue` is `true` and a value for `$key` has been applied to the
      * context via {@see ProviderContextInterface::withValue()}, it is returned
@@ -225,7 +229,7 @@ interface ISyncContext extends ProviderContextInterface
      * @return mixed `null` if the value has already been claimed or wasn't
      * passed to the operation.
      *
-     * @see ISyncContext::withArgs()
+     * @see SyncContextInterface::withArgs()
      */
     public function claimFilter(string $key, bool $orValue = true);
 
@@ -253,7 +257,7 @@ interface ISyncContext extends ProviderContextInterface
     /**
      * Get the hydration policy applied to the context for a given sync entity
      *
-     * @param class-string<ISyncEntity>|null $entity
+     * @param class-string<SyncEntityInterface>|null $entity
      * @return HydrationPolicy::*
      */
     public function getHydrationPolicy(?string $entity): int;

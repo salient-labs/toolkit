@@ -7,7 +7,7 @@ use Salient\Core\Contract\SerializeRulesInterface;
 /**
  * Instructions for serializing nested sync entities
  */
-interface ISyncSerializeRules extends SerializeRulesInterface
+interface SyncSerializeRulesInterface extends SerializeRulesInterface
 {
     /**
      * Values are being serialized for an entity store
@@ -17,7 +17,7 @@ interface ISyncSerializeRules extends SerializeRulesInterface
     /**
      * A bitmask of enabled flags
      *
-     * @return int-mask-of<ISyncSerializeRules::*>
+     * @return int-mask-of<SyncSerializeRulesInterface::*>
      */
     public function getFlags(): int;
 

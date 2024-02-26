@@ -7,9 +7,9 @@ use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 use Salient\Core\IntrospectionClass;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Concept\SyncProvider;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Sync\AbstractSyncProvider;
 use Closure;
 use ReflectionClass;
 
@@ -32,7 +32,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
      */
     public $IsSyncProvider;
 
-    // Related to `SyncEntity`:
+    // Related to `SyncEntityInterface`:
 
     /**
      * @var string|null
@@ -46,26 +46,26 @@ final class SyncIntrospectionClass extends IntrospectionClass
      */
     public $EntityPlural;
 
-    // Related to `SyncProvider`:
+    // Related to `SyncProviderInterface`:
 
     /**
-     * Interfaces that extend ISyncProvider
+     * Interfaces that extend SyncProviderInterface
      *
-     * @var array<class-string<ISyncProvider>>
+     * @var array<class-string<SyncProviderInterface>>
      */
     public $SyncProviderInterfaces = [];
 
     /**
-     * Entities serviced by ISyncProvider interfaces
+     * Entities serviced by SyncProviderInterface interfaces
      *
-     * @var array<class-string<ISyncEntity>>
+     * @var array<class-string<SyncEntityInterface>>
      */
     public $SyncProviderEntities = [];
 
     /**
      * Unambiguous kebab-case entity basename => entity
      *
-     * @var array<string,class-string<ISyncEntity>>
+     * @var array<string,class-string<SyncEntityInterface>>
      */
     public $SyncProviderEntityBasenames = [];
 
@@ -82,7 +82,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
      * Used only to map "magic" method names to sync operations. Providers
      * aren't required to service any of them.
      *
-     * @var array<string,array{0:SyncOperation::*,1:class-string<ISyncEntity>}>
+     * @var array<string,array{0:SyncOperation::*,1:class-string<SyncEntityInterface>}>
      */
     public $SyncOperationMagicMethods = [];
 
@@ -110,7 +110,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
     /**
      * Entity => sync operation => closure
      *
-     * @var array<class-string<ISyncEntity>,array<SyncOperation::*,Closure|null>>
+     * @var array<class-string<SyncEntityInterface>,array<SyncOperation::*,Closure|null>>
      */
     public $DeclaredSyncOperationClosures = [];
 
@@ -128,8 +128,8 @@ final class SyncIntrospectionClass extends IntrospectionClass
     {
         parent::__construct($class);
         $class = $this->Reflector;
-        $this->IsSyncEntity = $class->implementsInterface(ISyncEntity::class);
-        $this->IsSyncProvider = $class->implementsInterface(ISyncProvider::class);
+        $this->IsSyncEntity = $class->implementsInterface(SyncEntityInterface::class);
+        $this->IsSyncProvider = $class->implementsInterface(SyncProviderInterface::class);
 
         if ($this->IsSyncEntity) {
             $this->EntityNoun = Get::basename($this->Class);
@@ -143,18 +143,18 @@ final class SyncIntrospectionClass extends IntrospectionClass
             return;
         }
 
-        $namespace = (new ReflectionClass(SyncProvider::class))->getNamespaceName();
+        $namespace = (new ReflectionClass(AbstractSyncProvider::class))->getNamespaceName();
         foreach ($class->getInterfaces() as $name => $interface) {
-            if (!$interface->isSubclassOf(ISyncProvider::class)) {
+            if (!$interface->isSubclassOf(SyncProviderInterface::class)) {
                 continue;
             }
 
-            // Add ISyncProvider interfaces to SyncProviderInterfaces
+            // Add SyncProviderInterface interfaces to SyncProviderInterfaces
             $this->SyncProviderInterfaces[] = $name;
 
             // Add the entities they service to SyncProviderEntities
             foreach (SyncIntrospector::providerToEntity($name) as $entity) {
-                if (!is_a($entity, ISyncEntity::class, true)) {
+                if (!is_a($entity, SyncEntityInterface::class, true)) {
                     continue;
                 }
                 $entity = SyncIntrospector::get($entity);

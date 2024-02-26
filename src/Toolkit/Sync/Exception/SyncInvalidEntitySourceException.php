@@ -4,21 +4,21 @@ namespace Salient\Sync\Exception;
 
 use Salient\Sync\Catalog\SyncEntitySource;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * Thrown when an invalid data source is provided for the return value of a sync
  * operation
  */
-class SyncInvalidEntitySourceException extends SyncException
+class SyncInvalidEntitySourceException extends AbstractSyncException
 {
     /**
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<SyncEntityInterface> $entity
      * @param SyncOperation::* $operation
      * @param SyncEntitySource::*|null $source
      */
-    public function __construct(ISyncProvider $provider, string $entity, $operation, ?int $source)
+    public function __construct(SyncProviderInterface $provider, string $entity, $operation, ?int $source)
     {
         parent::__construct(sprintf(
             "%s gave unsupported SyncEntitySource '%s' for SyncOperation::%s on %s",

@@ -3,16 +3,16 @@
 namespace Salient\Tests\Sync\Entity;
 
 use Salient\Core\Catalog\Cardinality;
-use Salient\Sync\Concept\SyncEntity;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
+use Salient\Sync\AbstractSyncEntity;
 
 /**
  * Represents the state of a User entity in a backend
  *
  * @generated
  */
-class User extends SyncEntity
+class User extends AbstractSyncEntity
 {
     /**
      * @var int|string|null

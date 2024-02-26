@@ -7,4 +7,4 @@ use Salient\Core\AbstractException;
 /**
  * Base class for sync exceptions
  */
-abstract class SyncException extends AbstractException {}
+abstract class AbstractSyncException extends AbstractException {}

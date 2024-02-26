@@ -7,10 +7,10 @@ use Salient\Cli\CliCommand;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\SyncStore;
 
 /**
  * Base class for generic sync commands
@@ -27,7 +27,7 @@ abstract class AbstractSyncCommand extends CliCommand
      *
      * Unambiguous kebab-case entity basename => entity
      *
-     * @var array<string,class-string<ISyncEntity>>
+     * @var array<string,class-string<SyncEntityInterface>>
      */
     protected $Entities = [];
 
@@ -36,7 +36,7 @@ abstract class AbstractSyncCommand extends CliCommand
      *
      * Unambiguous kebab-case provider basename => provider
      *
-     * @var array<string,class-string<ISyncProvider>>
+     * @var array<string,class-string<SyncProviderInterface>>
      */
     protected $Providers = [];
 
@@ -45,7 +45,7 @@ abstract class AbstractSyncCommand extends CliCommand
      *
      * Unambiguous kebab-case provider basename => provider
      *
-     * @var array<string,class-string<ISyncProvider>>
+     * @var array<string,class-string<SyncProviderInterface>>
      */
     protected $EntityProviders = [];
 
@@ -59,7 +59,7 @@ abstract class AbstractSyncCommand extends CliCommand
         $providers = [];
         $entityProviders = [];
         foreach ($this->App->getProviders() as $provider) {
-            if (!is_a($provider, ISyncProvider::class, true)) {
+            if (!is_a($provider, SyncProviderInterface::class, true)) {
                 continue;
             }
 

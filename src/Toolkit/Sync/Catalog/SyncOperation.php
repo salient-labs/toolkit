@@ -116,7 +116,7 @@ final class SyncOperation extends AbstractConvertibleEnumeration
      */
     public static function isList($operation): bool
     {
-        return in_array($operation, SyncOperations::ALL_LIST, true);
+        return in_array($operation, SyncOperationGroup::ALL_LIST, true);
     }
 
     /**
@@ -127,7 +127,7 @@ final class SyncOperation extends AbstractConvertibleEnumeration
      */
     public static function isRead($operation): bool
     {
-        return in_array($operation, SyncOperations::ALL_READ, true);
+        return in_array($operation, SyncOperationGroup::ALL_READ, true);
     }
 
     /**
@@ -139,6 +139,6 @@ final class SyncOperation extends AbstractConvertibleEnumeration
      */
     public static function isWrite($operation): bool
     {
-        return in_array($operation, SyncOperations::ALL_WRITE, true);
+        return in_array($operation, SyncOperationGroup::ALL_WRITE, true);
     }
 }

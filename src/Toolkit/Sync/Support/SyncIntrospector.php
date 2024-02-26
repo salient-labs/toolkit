@@ -17,9 +17,10 @@ use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Sync\SyncStore;
 use Closure;
 use LogicException;
 
@@ -31,7 +32,7 @@ use LogicException;
  *
  * @template TClass of object
  *
- * @extends Introspector<TClass,ISyncProvider,ISyncEntity,ISyncContext>
+ * @extends Introspector<TClass,SyncProviderInterface,SyncEntityInterface,SyncContextInterface>
  */
 final class SyncIntrospector extends Introspector
 {
@@ -51,8 +52,8 @@ final class SyncIntrospector extends Introspector
     /**
      * Get the name of a sync entity's provider interface
      *
-     * @param class-string<ISyncEntity> $entity
-     * @return class-string<ISyncProvider>
+     * @param class-string<SyncEntityInterface> $entity
+     * @return class-string<SyncProviderInterface>
      */
     public static function entityToProvider(string $entity, ?SyncStore $store = null): string
     {
@@ -71,8 +72,8 @@ final class SyncIntrospector extends Introspector
     /**
      * Get the names of sync entities serviced by a provider interface
      *
-     * @param class-string<ISyncProvider> $provider
-     * @return array<class-string<ISyncEntity>>
+     * @param class-string<SyncProviderInterface> $provider
+     * @return array<class-string<SyncEntityInterface>>
      */
     public static function providerToEntity(string $provider, ?SyncStore $store = null): array
     {
@@ -104,9 +105,9 @@ final class SyncIntrospector extends Introspector
         return new static(
             $service,
             $container->getName($service),
-            ISyncProvider::class,
-            ISyncEntity::class,
-            ISyncContext::class,
+            SyncProviderInterface::class,
+            SyncEntityInterface::class,
+            SyncContextInterface::class,
         );
     }
 
@@ -121,9 +122,9 @@ final class SyncIntrospector extends Introspector
         return new static(
             $class,
             $class,
-            ISyncProvider::class,
-            ISyncEntity::class,
-            ISyncContext::class,
+            SyncProviderInterface::class,
+            SyncEntityInterface::class,
+            SyncContextInterface::class,
         );
     }
 
@@ -137,7 +138,8 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * Get a list of ISyncProvider interfaces implemented by the provider
+     * Get a list of SyncProviderInterface interfaces implemented by the
+     * provider
      *
      * @return string[]|null
      */
@@ -149,7 +151,7 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * Get a list of ISyncEntity classes serviced by the provider
+     * Get a list of SyncEntityInterface classes serviced by the provider
      *
      * @return string[]|null
      */
@@ -162,9 +164,9 @@ final class SyncIntrospector extends Introspector
 
     /**
      * Get an array that maps unambiguous lowercase entity basenames to
-     * ISyncEntity classes serviced by the provider
+     * SyncEntityInterface classes serviced by the provider
      *
-     * @return array<string,class-string<ISyncEntity>>|null
+     * @return array<string,class-string<SyncEntityInterface>>|null
      */
     public function getSyncProviderEntityBasenames(): ?array
     {
@@ -174,7 +176,7 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * Get a closure that creates ISyncProvider-serviced instances of the class
+     * Get a closure that creates SyncProviderInterface-serviced instances of the class
      * from arrays
      *
      * Wraps {@see SyncIntrospector::getCreateSyncEntityFromSignatureClosure()}
@@ -182,7 +184,7 @@ final class SyncIntrospector extends Introspector
      *
      * @param bool $strict If `true`, the closure will throw an exception if it
      * receives any data that would be discarded.
-     * @return Closure(mixed[], ISyncProvider, ISyncContext): TClass
+     * @return Closure(mixed[], SyncProviderInterface, SyncContextInterface): TClass
      */
     public function getCreateSyncEntityFromClosure(bool $strict = false): Closure
     {
@@ -197,8 +199,8 @@ final class SyncIntrospector extends Introspector
         $closure =
             function (
                 array $array,
-                ISyncProvider $provider,
-                ISyncContext $context
+                SyncProviderInterface $provider,
+                SyncContextInterface $context
             ) use ($strict) {
                 $keys = array_keys($array);
                 $closure = $this->getCreateSyncEntityFromSignatureClosure($keys, $strict);
@@ -211,13 +213,13 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * Get a closure that creates ISyncProvider-serviced instances of the class
+     * Get a closure that creates SyncProviderInterface-serviced instances of the class
      * from arrays with a given signature
      *
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], ISyncProvider, ISyncContext): TClass
+     * @return Closure(mixed[], SyncProviderInterface, SyncContextInterface): TClass
      */
     public function getCreateSyncEntityFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -244,8 +246,8 @@ final class SyncIntrospector extends Introspector
         return
             static function (
                 array $array,
-                ISyncProvider $provider,
-                ISyncContext $context
+                SyncProviderInterface $provider,
+                SyncContextInterface $context
             ) use ($closure, $service) {
                 return $closure(
                     $array,
@@ -266,15 +268,16 @@ final class SyncIntrospector extends Introspector
      * a declared method, otherwise creates a closure for the operation and
      * binds it to `$provider`.
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param SyncOperation::* $operation
      * @param class-string<T>|static<T> $entity
-     * @return (Closure(ISyncContext, mixed...): (iterable<T>|T))|null
+     * @return (Closure(SyncContextInterface, mixed...): (iterable<T>|T))|null
      * @throws LogicException if the {@see SyncIntrospector} and `$entity` don't
-     * respectively represent an {@see ISyncProvider} and {@see ISyncEntity}.
+     * respectively represent a {@see SyncProviderInterface} and
+     * {@see SyncEntityInterface}.
      */
-    public function getDeclaredSyncOperationClosure($operation, $entity, ISyncProvider $provider): ?Closure
+    public function getDeclaredSyncOperationClosure($operation, $entity, SyncProviderInterface $provider): ?Closure
     {
         if (!($entity instanceof SyncIntrospector)) {
             $entity = static::get($entity);
@@ -289,7 +292,7 @@ final class SyncIntrospector extends Introspector
 
             if (!$_entity->IsSyncEntity) {
                 throw new LogicException(
-                    sprintf('%s does not implement %s', $_entity->Class, ISyncEntity::class)
+                    sprintf('%s does not implement %s', $_entity->Class, SyncEntityInterface::class)
                 );
             }
 
@@ -308,15 +311,16 @@ final class SyncIntrospector extends Introspector
      * "magic" method
      *
      * Returns `null` if:
-     * - the {@see SyncIntrospector} was not created for an
-     *   {@see ISyncProvider},
-     * - the {@see ISyncProvider} class has already has `$method`, or
-     * - `$method` doesn't resolve to an unambiguous sync operation on an
-     *   {@see ISyncEntity} class serviced by the {@see ISyncProvider} class
+     * - the {@see SyncIntrospector} was not created for a
+     *   {@see SyncProviderInterface},
+     * - the {@see SyncProviderInterface} class already has `$method`, or
+     * - `$method` doesn't resolve to an unambiguous sync operation on a
+     *   {@see SyncEntityInterface} class serviced by the
+     *   {@see SyncProviderInterface} class
      *
-     * @return Closure(ISyncContext, mixed...)|null
+     * @return Closure(SyncContextInterface, mixed...)|null
      */
-    public function getMagicSyncOperationClosure(string $method, ISyncProvider $provider): ?Closure
+    public function getMagicSyncOperationClosure(string $method, SyncProviderInterface $provider): ?Closure
     {
         if (!$this->_Class->IsSyncProvider) {
             return null;
@@ -331,8 +335,8 @@ final class SyncIntrospector extends Introspector
                 $entity = $operation[1];
                 $operation = $operation[0];
                 $closure =
-                    function (ISyncContext $ctx, ...$args) use ($entity, $operation) {
-                        /** @var ISyncProvider $this */
+                    function (SyncContextInterface $ctx, ...$args) use ($entity, $operation) {
+                        /** @var SyncProviderInterface $this */
                         return $this->with($entity, $ctx)->run($operation, ...$args);
                     };
             }
@@ -344,7 +348,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, ContainerInterface, ISyncProvider|null, ISyncContext|null, DateFormatter|null, Treeable|null): TClass
+     * @return Closure(mixed[], string|null, ContainerInterface, SyncProviderInterface|null, SyncContextInterface|null, DateFormatter|null, Treeable|null): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -373,8 +377,8 @@ final class SyncIntrospector extends Introspector
                 array $array,
                 ?string $service,
                 ContainerInterface $container,
-                ?ISyncProvider $provider,
-                ?ISyncContext $context,
+                ?SyncProviderInterface $provider,
+                ?SyncContextInterface $context,
                 ?DateFormatter $dateFormatter,
                 ?Treeable $parent
             ) use ($constructor, $updater, $resolver) {
@@ -392,8 +396,8 @@ final class SyncIntrospector extends Introspector
                 array $array,
                 ?string $service,
                 ContainerInterface $container,
-                ?ISyncProvider $provider,
-                ?ISyncContext $context,
+                ?SyncProviderInterface $provider,
+                ?SyncContextInterface $context,
                 ?DateFormatter $dateFormatter,
                 ?Treeable $parent
             ) use (
@@ -505,11 +509,11 @@ final class SyncIntrospector extends Introspector
                 }
 
                 foreach ($relationships as $match => $relationship) {
-                    if (!is_a($relationship, ISyncEntity::class, true)) {
+                    if (!is_a($relationship, SyncEntityInterface::class, true)) {
                         throw new LogicException(sprintf(
                             '%s does not implement %s',
                             $relationship,
-                            ISyncEntity::class,
+                            SyncEntityInterface::class,
                         ));
                     }
 
@@ -534,11 +538,11 @@ final class SyncIntrospector extends Introspector
             // Check for absent one-to-many relationships to hydrate
             if ($missing && $idKey !== null && $forNewInstance) {
                 foreach ($missing as $key => $relationship) {
-                    if (!is_a($relationship, ISyncEntity::class, true)) {
+                    if (!is_a($relationship, SyncEntityInterface::class, true)) {
                         throw new LogicException(sprintf(
                             '%s does not implement %s',
                             $relationship,
-                            ISyncEntity::class,
+                            SyncEntityInterface::class,
                         ));
                     }
 
@@ -613,11 +617,11 @@ final class SyncIntrospector extends Introspector
                     : null;
 
             if ($relationship !== null &&
-                    !is_a($relationship, ISyncEntity::class, true)) {
+                    !is_a($relationship, SyncEntityInterface::class, true)) {
                 throw new LogicException(sprintf(
                     '%s does not implement %s',
                     $relationship,
-                    ISyncEntity::class,
+                    SyncEntityInterface::class,
                 ));
             }
 
@@ -650,8 +654,8 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @param class-string<ISyncEntity&Relatable>|null $relationship
-     * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
+     * @param class-string<SyncEntityInterface&Relatable>|null $relationship
+     * @return Closure(mixed[], ?string, TClass, ?SyncProviderInterface, ?SyncContextInterface): void
      */
     private function getRelationshipClosure(
         string $key,
@@ -677,8 +681,8 @@ final class SyncIntrospector extends Introspector
                 array $data,
                 ?string $service,
                 $entity,
-                ?ISyncProvider $provider,
-                ?ISyncContext $context
+                ?SyncProviderInterface $provider,
+                ?SyncContextInterface $context
             ) use (
                 $key,
                 $isList,
@@ -690,9 +694,9 @@ final class SyncIntrospector extends Introspector
                 if (
                     $data[$key] === null ||
                     (Arr::isList($data[$key]) xor $isList) ||
-                    !($entity instanceof ISyncEntity) ||
-                    !($provider instanceof ISyncProvider) ||
-                    !($context instanceof ISyncContext)
+                    !($entity instanceof SyncEntityInterface) ||
+                    !($provider instanceof SyncProviderInterface) ||
+                    !($context instanceof SyncContextInterface)
                 ) {
                     $entity->{$property} = $data[$key];
                     return;
@@ -711,7 +715,7 @@ final class SyncIntrospector extends Introspector
                             return;
                         }
 
-                        /** @var ISyncEntity&Treeable $entity */
+                        /** @var SyncEntityInterface&Treeable $entity */
                         DeferredEntity::deferList(
                             $provider,
                             $context->pushWithRecursionCheck($entity),
@@ -719,7 +723,7 @@ final class SyncIntrospector extends Introspector
                             $data[$key],
                             $replace,
                             static function ($child) use ($entity): void {
-                                /** @var ISyncEntity&Treeable $child */
+                                /** @var SyncEntityInterface&Treeable $child */
                                 $entity->addChild($child);
                             },
                         );
@@ -739,9 +743,9 @@ final class SyncIntrospector extends Introspector
                         return;
                     }
 
-                    /** @var array<ISyncEntity&Treeable> $entities */
+                    /** @var array<SyncEntityInterface&Treeable> $entities */
                     foreach ($entities as $child) {
-                        /** @var ISyncEntity&Treeable $entity */
+                        /** @var SyncEntityInterface&Treeable $entity */
                         $entity->addChild($child);
                     }
                     return;
@@ -759,7 +763,7 @@ final class SyncIntrospector extends Introspector
                         return;
                     }
 
-                    /** @var ISyncEntity&Treeable $entity */
+                    /** @var SyncEntityInterface&Treeable $entity */
                     DeferredEntity::defer(
                         $provider,
                         $context->pushWithRecursionCheck($entity),
@@ -767,7 +771,7 @@ final class SyncIntrospector extends Introspector
                         $data[$key],
                         $replace,
                         static function ($parent) use ($entity): void {
-                            /** @var ISyncEntity&Treeable $parent */
+                            /** @var SyncEntityInterface&Treeable $parent */
                             $entity->setParent($parent);
                         },
                     );
@@ -787,16 +791,16 @@ final class SyncIntrospector extends Introspector
                 }
 
                 /**
-                 * @var ISyncEntity&Treeable $entity
-                 * @var ISyncEntity&Treeable $related
+                 * @var SyncEntityInterface&Treeable $entity
+                 * @var SyncEntityInterface&Treeable $related
                  */
                 $entity->setParent($related);
             };
     }
 
     /**
-     * @param class-string<ISyncEntity&Relatable> $relationship
-     * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
+     * @param class-string<SyncEntityInterface&Relatable> $relationship
+     * @return Closure(mixed[], ?string, TClass, ?SyncProviderInterface, ?SyncContextInterface): void
      */
     private function getHydrator(
         string $idKey,
@@ -813,8 +817,8 @@ final class SyncIntrospector extends Introspector
                 array $data,
                 ?string $service,
                 $entity,
-                ?ISyncProvider $provider,
-                ?ISyncContext $context
+                ?SyncProviderInterface $provider,
+                ?SyncContextInterface $context
             ) use (
                 $idKey,
                 $relationship,
@@ -825,8 +829,8 @@ final class SyncIntrospector extends Introspector
                 $entityProvider
             ): void {
                 if (
-                    !($context instanceof ISyncContext) ||
-                    !($provider instanceof ISyncProvider) ||
+                    !($context instanceof SyncContextInterface) ||
+                    !($provider instanceof SyncProviderInterface) ||
                     !is_a($provider, $entityProvider) ||
                     $data[$idKey] === null
                 ) {
@@ -856,7 +860,7 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
 
-                /** @var ISyncEntity&Treeable $entity */
+                /** @var SyncEntityInterface&Treeable $entity */
                 DeferredRelationship::defer(
                     $provider,
                     $context->pushWithRecursionCheck($entity),
@@ -872,7 +876,7 @@ final class SyncIntrospector extends Introspector
                             return;
                         }
                         foreach ($entities as $child) {
-                            /** @var ISyncEntity&Treeable $child */
+                            /** @var SyncEntityInterface&Treeable $child */
                             $entity->addChild($child);
                         }
                     },
@@ -882,7 +886,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param SyncOperation::* $operation
-     * @param static<ISyncEntity> $entity
+     * @param static<SyncEntityInterface> $entity
      */
     private function getSyncOperationMethod($operation, SyncIntrospector $entity): ?string
     {
@@ -968,7 +972,7 @@ final class SyncIntrospector extends Introspector
     {
         if (!$this->_Class->IsSyncProvider) {
             throw new LogicException(
-                sprintf('%s does not implement %s', $this->_Class->Class, ISyncProvider::class)
+                sprintf('%s does not implement %s', $this->_Class->Class, SyncProviderInterface::class)
             );
         }
     }

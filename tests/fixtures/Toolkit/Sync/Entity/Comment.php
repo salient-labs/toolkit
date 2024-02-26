@@ -3,15 +3,15 @@
 namespace Salient\Tests\Sync\Entity;
 
 use Salient\Core\Catalog\Cardinality;
-use Salient\Sync\Concept\SyncEntity;
 use Salient\Sync\Support\DeferredEntity;
+use Salient\Sync\AbstractSyncEntity;
 
 /**
  * Represents the state of a Comment entity in a backend
  *
  * @generated
  */
-class Comment extends SyncEntity
+class Comment extends AbstractSyncEntity
 {
     /**
      * @var int|string|null

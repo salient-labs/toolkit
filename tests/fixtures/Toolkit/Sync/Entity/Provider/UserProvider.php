@@ -2,19 +2,19 @@
 
 namespace Salient\Tests\Sync\Entity\Provider;
 
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Tests\Sync\Entity\User;
 
 /**
  * Syncs User objects with a backend
  *
- * @method User createUser(ISyncContext $ctx, User $user)
- * @method User getUser(ISyncContext $ctx, int|string|null $id)
- * @method User updateUser(ISyncContext $ctx, User $user)
- * @method User deleteUser(ISyncContext $ctx, User $user)
- * @method iterable<User> getUsers(ISyncContext $ctx)
+ * @method User createUser(SyncContextInterface $ctx, User $user)
+ * @method User getUser(SyncContextInterface $ctx, int|string|null $id)
+ * @method User updateUser(SyncContextInterface $ctx, User $user)
+ * @method User deleteUser(SyncContextInterface $ctx, User $user)
+ * @method iterable<User> getUsers(SyncContextInterface $ctx)
  *
  * @generated
  */
-interface UserProvider extends ISyncProvider {}
+interface UserProvider extends SyncProviderInterface {}

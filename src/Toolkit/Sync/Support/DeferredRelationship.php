@@ -3,9 +3,10 @@
 namespace Salient\Sync\Support;
 
 use Salient\Core\Utility\Get;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Sync\SyncStore;
 use ArrayIterator;
 use IteratorAggregate;
 use LogicException;
@@ -14,7 +15,7 @@ use Traversable;
 /**
  * The promise of a sync entity relationship that hasn't been retrieved yet
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  *
  * @implements IteratorAggregate<array-key,TEntity>
  */
@@ -23,14 +24,14 @@ final class DeferredRelationship implements IteratorAggregate
     /**
      * The provider servicing the entity
      *
-     * @var ISyncProvider
+     * @var SyncProviderInterface
      */
     private $Provider;
 
     /**
      * The context within which the provider is servicing the entity
      *
-     * @var ISyncContext|null
+     * @var SyncContextInterface|null
      */
     private $Context;
 
@@ -44,7 +45,7 @@ final class DeferredRelationship implements IteratorAggregate
     /**
      * The entity for which the relationship is deferred
      *
-     * @var class-string<ISyncEntity>
+     * @var class-string<SyncEntityInterface>
      */
     private $ForEntity;
 
@@ -90,15 +91,15 @@ final class DeferredRelationship implements IteratorAggregate
      * Creates a new DeferredRelationship object
      *
      * @param class-string<TEntity> $entity
-     * @param class-string<ISyncEntity> $forEntity
+     * @param class-string<SyncEntityInterface> $forEntity
      * @param int|string $forEntityId
      * @param array<string,mixed>|null $filter
      * @param array<TEntity>|DeferredRelationship<TEntity>|null $replace
      * @param (callable(TEntity[]): void)|null $callback
      */
     private function __construct(
-        ISyncProvider $provider,
-        ?ISyncContext $context,
+        SyncProviderInterface $provider,
+        ?SyncContextInterface $context,
         string $entity,
         string $forEntity,
         string $forEntityProperty,
@@ -206,11 +207,11 @@ final class DeferredRelationship implements IteratorAggregate
     /**
      * Defer retrieval of a sync entity relationship
      *
-     * @param ISyncProvider $provider The provider servicing the entity.
-     * @param ISyncContext|null $context The context within which the provider
+     * @param SyncProviderInterface $provider The provider servicing the entity.
+     * @param SyncContextInterface|null $context The context within which the provider
      * is servicing the entity.
      * @param class-string<TEntity> $entity The entity to instantiate.
-     * @param class-string<ISyncEntity> $forEntity The entity for which the
+     * @param class-string<SyncEntityInterface> $forEntity The entity for which the
      * relationship is deferred.
      * @param string $forEntityProperty The entity property for which the
      * relationship is deferred.
@@ -225,8 +226,8 @@ final class DeferredRelationship implements IteratorAggregate
      * ignored and the resolved relationship is passed to the callback.
      */
     public static function defer(
-        ISyncProvider $provider,
-        ?ISyncContext $context,
+        SyncProviderInterface $provider,
+        ?SyncContextInterface $context,
         string $entity,
         string $forEntity,
         string $forEntityProperty,
@@ -251,7 +252,7 @@ final class DeferredRelationship implements IteratorAggregate
     /**
      * Get the context within which the provider is servicing the entity
      */
-    public function getContext(): ?ISyncContext
+    public function getContext(): ?SyncContextInterface
     {
         return $this->Context;
     }
