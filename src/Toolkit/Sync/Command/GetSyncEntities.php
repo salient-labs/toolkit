@@ -12,15 +12,15 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Json;
 use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\Support\SyncSerializeRules;
+use Salient\Sync\SyncSerializeRules;
 
 /**
  * A generic sync entity retrieval command
  *
- * @template T of ISyncEntity
+ * @template T of SyncEntityInterface
  */
 final class GetSyncEntities extends AbstractSyncCommand
 {
@@ -129,7 +129,7 @@ final class GetSyncEntities extends AbstractSyncCommand
 
         $filter = Get::filter($this->Filter);
 
-        /** @var ISyncProvider */
+        /** @var SyncProviderInterface */
         $provider = $this->App->get($this->Providers[$provider]);
 
         $entityUri = $this->Store->getEntityTypeUri($entity);
@@ -181,7 +181,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 $result,
                 true,
                 null,
-                fn(ISyncEntity $entity) => $entity->toArrayWith($rules),
+                fn(SyncEntityInterface $entity) => $entity->toArrayWith($rules),
                 $count,
                 $tty ? \PHP_EOL : "\r\n",
                 !$tty,
@@ -189,7 +189,7 @@ final class GetSyncEntities extends AbstractSyncCommand
             );
         } elseif (!is_iterable($result) || !$this->Stream) {
             $result = (array) $result;
-            /** @var ISyncEntity $entity */
+            /** @var SyncEntityInterface $entity */
             foreach ($result as &$entity) {
                 $entity = $entity->toArrayWith($rules);
             }

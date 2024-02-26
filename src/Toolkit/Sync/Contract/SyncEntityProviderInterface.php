@@ -10,14 +10,14 @@ use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
 
 /**
- * Provides an entity-agnostic interface to an ISyncProvider's implementation of
- * sync operations for an entity
+ * Provides an entity-agnostic interface to a SyncProviderInterface's
+ * implementation of sync operations for an entity
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  *
- * @extends HasProvider<ISyncProvider>
+ * @extends HasProvider<SyncProviderInterface>
  */
-interface ISyncEntityProvider extends HasProvider
+interface SyncEntityProviderInterface extends HasProvider
 {
     /**
      * Get the sync entity being serviced
@@ -49,7 +49,7 @@ interface ISyncEntityProvider extends HasProvider
      * @param mixed ...$args
      * @return TEntity
      */
-    public function create($entity, ...$args): ISyncEntity;
+    public function create($entity, ...$args): SyncEntityInterface;
 
     /**
      * Get an entity from the backend
@@ -58,7 +58,7 @@ interface ISyncEntityProvider extends HasProvider
      * @param mixed ...$args
      * @return TEntity
      */
-    public function get($id, ...$args): ISyncEntity;
+    public function get($id, ...$args): SyncEntityInterface;
 
     /**
      * Update an entity in the backend
@@ -67,7 +67,7 @@ interface ISyncEntityProvider extends HasProvider
      * @param mixed ...$args
      * @return TEntity
      */
-    public function update($entity, ...$args): ISyncEntity;
+    public function update($entity, ...$args): SyncEntityInterface;
 
     /**
      * Delete an entity from the backend
@@ -76,7 +76,7 @@ interface ISyncEntityProvider extends HasProvider
      * @param mixed ...$args
      * @return TEntity
      */
-    public function delete($entity, ...$args): ISyncEntity;
+    public function delete($entity, ...$args): SyncEntityInterface;
 
     /**
      * Add a list of entities to the backend
@@ -167,7 +167,7 @@ interface ISyncEntityProvider extends HasProvider
      * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
-     * @return ISyncEntityResolver<TEntity>
+     * @return SyncEntityResolverInterface<TEntity>
      */
     public function getResolver(
         ?string $nameProperty = null,
@@ -175,7 +175,7 @@ interface ISyncEntityProvider extends HasProvider
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
         bool $requireOneMatch = false
-    ): ISyncEntityResolver;
+    ): SyncEntityResolverInterface;
 
     /**
      * Perform sync operations on the backend directly, ignoring any entities in
@@ -234,7 +234,7 @@ interface ISyncEntityProvider extends HasProvider
      * Apply the given hydration policy to entities returned by the backend
      *
      * @param HydrationPolicy::* $policy
-     * @param class-string<ISyncEntity>|null $entity
+     * @param class-string<SyncEntityInterface>|null $entity
      * @param array<int<1,max>>|int<1,max>|null $depth
      * @return $this
      */

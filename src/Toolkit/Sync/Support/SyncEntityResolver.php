@@ -2,22 +2,22 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncEntityProvider;
-use Salient\Sync\Contract\ISyncEntityResolver;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncEntityProviderInterface;
+use Salient\Sync\Contract\SyncEntityResolverInterface;
 use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 
 /**
  * Resolves a name to an entity
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  *
- * @implements ISyncEntityResolver<TEntity>
+ * @implements SyncEntityResolverInterface<TEntity>
  */
-final class SyncEntityResolver implements ISyncEntityResolver
+final class SyncEntityResolver implements SyncEntityResolverInterface
 {
     /**
-     * @var ISyncEntityProvider<TEntity>
+     * @var SyncEntityProviderInterface<TEntity>
      */
     private $EntityProvider;
 
@@ -27,15 +27,15 @@ final class SyncEntityResolver implements ISyncEntityResolver
     private $NameProperty;
 
     /**
-     * @param ISyncEntityProvider<TEntity> $entityProvider
+     * @param SyncEntityProviderInterface<TEntity> $entityProvider
      */
-    public function __construct(ISyncEntityProvider $entityProvider, string $nameProperty)
+    public function __construct(SyncEntityProviderInterface $entityProvider, string $nameProperty)
     {
         $this->EntityProvider = $entityProvider;
         $this->NameProperty = $nameProperty;
     }
 
-    public function getByName(string $name, ?float &$uncertainty = null): ?ISyncEntity
+    public function getByName(string $name, ?float &$uncertainty = null): ?SyncEntityInterface
     {
         $match = null;
         foreach ([[[$this->NameProperty => $name]], []] as $args) {

@@ -12,7 +12,7 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
 use Salient\Http\Catalog\HttpRequestMethod;
-use Salient\Sync\Concept\HttpSyncProvider;
+use Salient\Sync\HttpSyncProvider;
 
 /**
  * Sends HTTP requests to HTTP sync providers

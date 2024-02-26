@@ -7,30 +7,30 @@ use Salient\Sync\Catalog\SyncOperation;
 use Closure;
 
 /**
- * Provides direct access to an ISyncProvider's implementation of sync
- * operations for an entity
+ * Provides direct access to a provider's implementation of sync operations for
+ * an entity
  *
- * @template TEntity of ISyncEntity
- * @template TProvider of ISyncProvider
+ * @template TEntity of SyncEntityInterface
+ * @template TProvider of SyncProviderInterface
  */
-interface ISyncDefinition extends Immutable
+interface SyncDefinitionInterface extends Immutable
 {
     /**
      * Get a closure that uses the provider to perform a sync operation on the
      * entity
      *
      * @param SyncOperation::* $operation
-     * @return (Closure(ISyncContext, mixed...): (iterable<TEntity>|TEntity))|null `null` if `$operation` is not supported, otherwise a closure with the correct signature for the sync operation.
+     * @return (Closure(SyncContextInterface, mixed...): (iterable<TEntity>|TEntity))|null `null` if `$operation` is not supported, otherwise a closure with the correct signature for the sync operation.
      * @phpstan-return (
      *     $operation is SyncOperation::READ
-     *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
+     *     ? (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)
      *     : (
      *         $operation is SyncOperation::READ_LIST
-     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
+     *         ? (Closure(SyncContextInterface, mixed...): iterable<TEntity>)
      *         : (
      *             $operation is SyncOperation::CREATE|SyncOperation::UPDATE|SyncOperation::DELETE
-     *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
-     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *             ? (Closure(SyncContextInterface, TEntity, mixed...): TEntity)
+     *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
      *     )
      * )|null

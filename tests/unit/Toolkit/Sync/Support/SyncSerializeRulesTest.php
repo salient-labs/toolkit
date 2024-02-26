@@ -3,7 +3,7 @@
 namespace Salient\Tests\Sync\Support;
 
 use Salient\Container\Container;
-use Salient\Sync\Support\SyncSerializeRulesBuilder;
+use Salient\Sync\SyncSerializeRulesBuilder;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;

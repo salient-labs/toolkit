@@ -2,23 +2,23 @@
 
 namespace Salient\Sync\Exception;
 
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Throwable;
 
 /**
  * Thrown by a sync provider when it can't establish a connection with its
  * backend
  */
-class SyncProviderBackendUnreachableException extends SyncException
+class SyncProviderBackendUnreachableException extends AbstractSyncException
 {
     /**
-     * @var ISyncProvider|null
+     * @var SyncProviderInterface|null
      */
     protected $Provider;
 
     public function __construct(
         string $message = '',
-        ?ISyncProvider $provider = null,
+        ?SyncProviderInterface $provider = null,
         ?Throwable $previous = null
     ) {
         $this->Provider = $provider;

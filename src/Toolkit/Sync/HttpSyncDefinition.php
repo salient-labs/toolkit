@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Support;
+namespace Salient\Sync;
 
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
@@ -23,10 +23,8 @@ use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\Catalog\SyncEntitySource;
 use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Concept\HttpSyncProvider;
-use Salient\Sync\Concept\SyncDefinition;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;
@@ -48,16 +46,17 @@ use LogicException;
  * If more than one implementation of a sync operation is available for an
  * entity, the order of precedence is as follows:
  *
- * 1. The callback in {@see SyncDefinition::$Overrides} for the operation
+ * 1. The callback in {@see AbstractSyncDefinition::$Overrides} for the
+ *    operation
  * 2. The provider method declared for the operation, e.g.
  *    `Provider::getFaculties()` or `Provider::createUser()`
- * 3. The closure returned by {@see SyncDefinition::getClosure()} for the
- *    operation
+ * 3. The closure returned by {@see AbstractSyncDefinition::getClosure()} for
+ *    the operation
  *
  * If no implementations are found, {@see SyncOperationNotImplementedException}
  * is thrown.
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  * @template TProvider of HttpSyncProvider
  *
  * @property-read string[]|string|null $Path The path to the provider endpoint servicing the entity, e.g. "/v1/user"
@@ -68,12 +67,12 @@ use LogicException;
  * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap An array that maps sync operations to HTTP request methods
  * @property-read array<CurlerProperty::*,mixed> $CurlerProperties An array that maps Curler property names to values
  * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
- * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
+ * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
  *
- * @extends SyncDefinition<TEntity,TProvider>
+ * @extends AbstractSyncDefinition<TEntity,TProvider>
  * @implements Buildable<HttpSyncDefinitionBuilder<TEntity,TProvider>>
  */
-final class HttpSyncDefinition extends SyncDefinition implements Buildable
+final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildable
 {
     /** @use HasBuilder<HttpSyncDefinitionBuilder<TEntity,TProvider>> */
     use HasBuilder;
@@ -102,14 +101,14 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * Must not include the provider's base URL.
      *
      * Values for named parameters (e.g. `groupId` in `"/group/:groupId/users"`)
-     * are taken from the {@see ISyncContext} object received by the sync
-     * operation. The first matching value is used:
+     * are taken from the {@see SyncContextInterface} object received by the
+     * sync operation. The first matching value is used:
      *
      * - Values applied explicitly via
      *   {@see ProviderContextInterface::withValue()} or implicitly via
      *   {@see ProviderContextInterface::push()}
      * - Unclaimed filters passed to the operation via
-     *   {@see ISyncContext::withArgs()}
+     *   {@see SyncContextInterface::withArgs()}
      *
      * Names are normalised for comparison by converting them to snake_case and
      * removing any `_id` suffixes.
@@ -228,7 +227,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * The callback must return the {@see HttpSyncDefinition} it receives even
      * if no request- or context-specific changes are needed.
      *
-     * @var (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null
+     * @var (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null
      */
     protected $Callback;
 
@@ -243,16 +242,16 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @param array<OP::*> $operations
      * @param string[]|string|null $path
      * @param mixed[]|null $query
-     * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
+     * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @param array<CurlerProperty::*,mixed> $curlerProperties
-     * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
+     * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
-     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
@@ -442,7 +441,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                 : fn(Curler $curler, ?array $query, $payload = null) =>
                     $this->getHttpOperationClosure($operation)($curler, $query, $payload);
         $httpRunner =
-            fn(ISyncContext $ctx, ...$args) =>
+            fn(SyncContextInterface $ctx, ...$args) =>
                 $this->runHttpOperation($httpClosure, $operation, $ctx, ...$args);
 
         switch ($operation) {
@@ -450,7 +449,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
             case OP::UPDATE:
             case OP::DELETE:
                 return
-                    fn(ISyncContext $ctx, ISyncEntity $entity, ...$args): ISyncEntity =>
+                    fn(SyncContextInterface $ctx, SyncEntityInterface $entity, ...$args): SyncEntityInterface =>
                         $this
                             ->getPipelineToBackend()
                             ->send($entity, [$operation, $ctx, $entity, ...$args])
@@ -461,7 +460,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
 
             case OP::READ:
                 return
-                    fn(ISyncContext $ctx, $id, ...$args): ISyncEntity =>
+                    fn(SyncContextInterface $ctx, $id, ...$args): SyncEntityInterface =>
                         $this
                             ->getPipelineFromBackend()
                             ->send(($httpRunner)($ctx, $id, ...$args), [$operation, $ctx, $id, ...$args])
@@ -472,14 +471,14 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
             case OP::UPDATE_LIST:
             case OP::DELETE_LIST:
                 return
-                    function (ISyncContext $ctx, iterable $entities, ...$args) use ($operation, $httpRunner): iterable {
+                    function (SyncContextInterface $ctx, iterable $entities, ...$args) use ($operation, $httpRunner): iterable {
                         $entity = null;
                         if ($this->SyncOneEntityPerRequest) {
                             $payload = &$entity;
-                            $after = function (ISyncEntity $e) use (&$entity) { return $entity = $e; };
+                            $after = function (SyncEntityInterface $e) use (&$entity) { return $entity = $e; };
                         } else {
                             $payload = [];
-                            $after = function (ISyncEntity $e) use (&$entity, &$payload) { return $payload[] = $entity = $e; };
+                            $after = function (SyncEntityInterface $e) use (&$entity, &$payload) { return $payload[] = $entity = $e; };
                         }
                         $then = function ($data) use ($operation, $httpRunner, $ctx, $args, &$payload) {
                             return $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $payload, $operation);
@@ -502,7 +501,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
 
             case OP::READ_LIST:
                 return
-                    fn(ISyncContext $ctx, ...$args): iterable =>
+                    fn(SyncContextInterface $ctx, ...$args): iterable =>
                         $this
                             ->getPipelineFromBackend()
                             ->stream(($httpRunner)($ctx, ...$args), [$operation, $ctx, ...$args])
@@ -559,7 +558,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
      * @param mixed ...$args
      * @return mixed[]
      */
-    private function runHttpOperation(Closure $httpClosure, $operation, ISyncContext $ctx, ...$args)
+    private function runHttpOperation(Closure $httpClosure, $operation, SyncContextInterface $ctx, ...$args)
     {
         $def =
             $this->Callback === null
@@ -695,7 +694,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
 
         $entity = $args[0] ?? null;
 
-        if (!($entity instanceof ISyncEntity)) {
+        if (!($entity instanceof SyncEntityInterface)) {
             return null;
         }
 
@@ -740,7 +739,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
 
     /**
      * @param OP::* $operation
-     * @return PipelineInterface<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
+     * @return PipelineInterface<mixed[],TEntity,array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>
      */
     private function getRoundTripPipeline($operation): PipelineInterface
     {

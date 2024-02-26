@@ -2,19 +2,19 @@
 
 namespace Salient\Tests\Sync\Entity\Provider;
 
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Tests\Sync\Entity\Photo;
 
 /**
  * Syncs Photo objects with a backend
  *
- * @method Photo createPhoto(ISyncContext $ctx, Photo $photo)
- * @method Photo getPhoto(ISyncContext $ctx, int|string|null $id)
- * @method Photo updatePhoto(ISyncContext $ctx, Photo $photo)
- * @method Photo deletePhoto(ISyncContext $ctx, Photo $photo)
- * @method iterable<Photo> getPhotos(ISyncContext $ctx)
+ * @method Photo createPhoto(SyncContextInterface $ctx, Photo $photo)
+ * @method Photo getPhoto(SyncContextInterface $ctx, int|string|null $id)
+ * @method Photo updatePhoto(SyncContextInterface $ctx, Photo $photo)
+ * @method Photo deletePhoto(SyncContextInterface $ctx, Photo $photo)
+ * @method iterable<Photo> getPhotos(SyncContextInterface $ctx)
  *
  * @generated
  */
-interface PhotoProvider extends ISyncProvider {}
+interface PhotoProvider extends SyncProviderInterface {}

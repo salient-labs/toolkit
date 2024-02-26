@@ -10,9 +10,9 @@ use Salient\Core\ProviderContext;
 use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use LogicException;
@@ -20,9 +20,9 @@ use LogicException;
 /**
  * The context within which sync entities are instantiated by a provider
  *
- * @extends ProviderContext<ISyncProvider,ISyncEntity>
+ * @extends ProviderContext<SyncProviderInterface,SyncEntityInterface>
  */
-final class SyncContext extends ProviderContext implements ISyncContext
+final class SyncContext extends ProviderContext implements SyncContextInterface
 {
     /**
      * @var array<string,mixed>
@@ -35,7 +35,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     protected array $FilterKeys = [];
 
     /**
-     * @var (callable(ISyncContext, ?bool &$returnEmpty, array{}|null &$empty): void)|null
+     * @var (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null
      */
     protected $FilterPolicyCallback;
 
@@ -49,7 +49,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * Entity => depth => policy
      *
-     * @var array<class-string<ISyncEntity>,array<int<0,max>,int&HydrationPolicy::*>>
+     * @var array<class-string<SyncEntityInterface>,array<int<0,max>,int&HydrationPolicy::*>>
      */
     protected array $EntityHydrationPolicy = [];
 
@@ -58,7 +58,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
      */
     protected array $FallbackHydrationPolicy = [0 => HydrationPolicy::DEFER];
 
-    protected ?ISyncEntity $LastRecursedInto = null;
+    protected ?SyncEntityInterface $LastRecursedInto = null;
 
     /**
      * @inheritDoc
@@ -149,11 +149,11 @@ final class SyncContext extends ProviderContext implements ISyncContext
             return $this->applyFilters(['id' => $args]);
         }
 
-        if (Arr::of($args, ISyncEntity::class)) {
+        if (Arr::of($args, SyncEntityInterface::class)) {
             return $this->applyFilters(
                 array_merge_recursive(
                     ...array_map(
-                        fn(ISyncEntity $entity): array => [
+                        fn(SyncEntityInterface $entity): array => [
                             Str::toSnakeCase(
                                 Get::basename(
                                     $entity->getService()
@@ -206,7 +206,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function pushWithRecursionCheck(ISyncEntity $entity)
+    public function pushWithRecursionCheck(SyncEntityInterface $entity)
     {
         return $this
             ->push($entity)
@@ -318,17 +318,17 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @template T
      *
-     * @param ISyncEntity|ISyncEntity[]|T $value
+     * @param SyncEntityInterface|SyncEntityInterface[]|T $value
      * @return int|string|array<int|string>|T
      */
     private function reduceFilterValue($value)
     {
-        if ($value instanceof ISyncEntity) {
+        if ($value instanceof SyncEntityInterface) {
             return $value->id();
         }
-        if (Arr::of($value, ISyncEntity::class)) {
+        if (Arr::of($value, SyncEntityInterface::class)) {
             $ids = [];
-            /** @var ISyncEntity $entity */
+            /** @var SyncEntityInterface $entity */
             foreach ($value as $entity) {
                 $ids[] = $entity->id();
             }
@@ -373,7 +373,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
 
     /**
      * @param int&HydrationPolicy::* $policy
-     * @param class-string<ISyncEntity>|null $entity
+     * @param class-string<SyncEntityInterface>|null $entity
      * @param array<int<1,max>>|int<1,max>|null $depth
      */
     private function applyHydrationPolicy(

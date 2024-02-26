@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Support;
+namespace Salient\Sync;
 
 use Salient\Core\AbstractBuilder;
 use Salient\Core\DateFormatter;
-use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\SyncEntityInterface;
 use Closure;
 
 /**
@@ -21,7 +21,7 @@ use Closure;
  * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
  * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
  *
- * @template-covariant TEntity of ISyncEntity
+ * @template-covariant TEntity of SyncEntityInterface
  *
  * @extends AbstractBuilder<SyncSerializeRules<TEntity>>
  *
@@ -38,9 +38,9 @@ final class SyncSerializeRulesBuilder extends AbstractBuilder
     }
 
     /**
-     * The class name of the SyncEntity being serialized (required)
+     * The class name of the AbstractSyncEntity being serialized (required)
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $value
      * @return $this<T>
@@ -53,7 +53,7 @@ final class SyncSerializeRulesBuilder extends AbstractBuilder
     /**
      * Inherit rules from another instance
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param SyncSerializeRules<T>|null $value
      * @return $this<T>

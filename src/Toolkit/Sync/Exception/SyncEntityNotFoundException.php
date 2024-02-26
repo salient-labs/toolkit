@@ -3,21 +3,21 @@
 namespace Salient\Sync\Exception;
 
 use Salient\Core\Utility\Format;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Throwable;
 
 /**
  * Thrown when an entity doesn't exist in a backend
  */
-class SyncEntityNotFoundException extends SyncException
+class SyncEntityNotFoundException extends AbstractSyncException
 {
     /**
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<SyncEntityInterface> $entity
      * @param int|string|array<string,mixed> $id
      */
     public function __construct(
-        ISyncProvider $provider,
+        SyncProviderInterface $provider,
         string $entity,
         $id,
         ?Throwable $previous = null

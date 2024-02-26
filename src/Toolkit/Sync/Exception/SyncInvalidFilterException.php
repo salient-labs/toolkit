@@ -3,15 +3,15 @@
 namespace Salient\Sync\Exception;
 
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\ISyncContext;
+use Salient\Sync\Contract\SyncContextInterface;
 
 /**
  * Thrown when the non-mandatory arguments passed to a sync operation do not
  * represent a valid filter
  *
- * See {@see ISyncContext::withArgs()} for valid signatures.
+ * See {@see SyncContextInterface::withArgs()} for valid signatures.
  */
-class SyncInvalidFilterException extends SyncException
+class SyncInvalidFilterException extends AbstractSyncException
 {
     /**
      * @var mixed[]

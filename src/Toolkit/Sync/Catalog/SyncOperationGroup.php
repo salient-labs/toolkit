@@ -9,7 +9,7 @@ use Salient\Core\AbstractEnumeration;
  *
  * @extends AbstractEnumeration<int[]>
  */
-final class SyncOperations extends AbstractEnumeration
+final class SyncOperationGroup extends AbstractEnumeration
 {
     public const ALL = [
         SyncOperation::CREATE,

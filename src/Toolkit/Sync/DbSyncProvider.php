@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Concept;
+namespace Salient\Sync;
 
 use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
@@ -10,19 +10,17 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 use Salient\Core\SqlQuery;
 use Salient\Db\DbConnector;
-use Salient\Sync\Contract\ISyncDefinition;
-use Salient\Sync\Contract\ISyncEntity;
+use Salient\Sync\Contract\SyncDefinitionInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
-use Salient\Sync\Support\DbSyncDefinition;
-use Salient\Sync\Support\DbSyncDefinitionBuilder;
 use ADOConnection;
 use ADODB_Exception;
 
 /**
  * Base class for providers with traditional database backends
  */
-abstract class DbSyncProvider extends SyncProvider
+abstract class DbSyncProvider extends AbstractSyncProvider
 {
     private DbConnector $DbConnector;
 
@@ -61,14 +59,14 @@ abstract class DbSyncProvider extends SyncProvider
     }
 
     /**
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @return ISyncDefinition<T,static>
+     * @return SyncDefinitionInterface<T,static>
      */
-    final public function getDefinition(string $entity): ISyncDefinition
+    final public function getDefinition(string $entity): SyncDefinitionInterface
     {
-        /** @var ISyncDefinition<T,static> */
+        /** @var SyncDefinitionInterface<T,static> */
         $def = $this
             ->buildDbDefinition(
                 $entity,
@@ -139,7 +137,7 @@ abstract class DbSyncProvider extends SyncProvider
      *
      * @param array<array<string,mixed>> $rows The recordset retrieved from the
      * backend.
-     * @param class-string<ISyncEntity> $entity The requested entity.
+     * @param class-string<SyncEntityInterface> $entity The requested entity.
      * @param int|string $id The identifier of the requested entity.
      * @return array<string,mixed>
      */
@@ -159,7 +157,7 @@ abstract class DbSyncProvider extends SyncProvider
      *
      * Return `$defB` if no sync operations are implemented for the entity.
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
      * @param DbSyncDefinitionBuilder<T,static> $defB A definition builder

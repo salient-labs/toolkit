@@ -10,9 +10,9 @@ use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\SyncIntrospector;
 
 /**
@@ -111,11 +111,11 @@ class GenerateSyncProvider extends GenerateCommand
             $class
         );
 
-        if (!is_a($fqcn, ISyncEntity::class, true)) {
+        if (!is_a($fqcn, SyncEntityInterface::class, true)) {
             throw new CliInvalidArgumentsException(
                 sprintf(
                     'does not implement %s: %s',
-                    ISyncEntity::class,
+                    SyncEntityInterface::class,
                     $fqcn,
                 ),
             );
@@ -133,8 +133,8 @@ class GenerateSyncProvider extends GenerateCommand
         $this->OutputNamespace = $namespace;
 
         $service = $this->getFqcnAlias($fqcn, $class);
-        $context = $this->getFqcnAlias(ISyncContext::class);
-        $this->Extends[] = $this->getFqcnAlias(ISyncProvider::class);
+        $context = $this->getFqcnAlias(SyncContextInterface::class);
+        $this->Extends[] = $this->getFqcnAlias(SyncProviderInterface::class);
 
         if ($this->Description === null) {
             $this->Description = sprintf(

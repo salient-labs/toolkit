@@ -16,10 +16,10 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Catalog\HttpRequestMethod;
-use Salient\Sync\Concept\HttpSyncProvider;
-use Salient\Sync\Concept\SyncEntity;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
+use Salient\Sync\AbstractSyncEntity;
+use Salient\Sync\HttpSyncProvider;
 use Closure;
 use DateTimeImmutable;
 
@@ -218,7 +218,7 @@ EOF)
             );
         }
 
-        $this->Extends[] = $this->getFqcnAlias(SyncEntity::class);
+        $this->Extends[] = $this->getFqcnAlias(AbstractSyncEntity::class);
         if ($this->ParentProperty !== null) {
             $this->Implements[] = $this->getFqcnAlias(Treeable::class);
             $this->Uses[] = $this->getFqcnAlias(TreeableTrait::class);
@@ -290,7 +290,7 @@ EOF)
             }
         }
 
-        $entityClass = new class extends SyncEntity {
+        $entityClass = new class extends AbstractSyncEntity {
             /**
              * @var string
              */

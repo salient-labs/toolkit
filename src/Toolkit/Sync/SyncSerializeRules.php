@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Support;
+namespace Salient\Sync;
 
 use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasBuilder;
@@ -13,9 +13,9 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\DateFormatter;
-use Salient\Sync\Concept\SyncEntity;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncSerializeRules;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncSerializeRulesInterface;
+use Salient\Sync\Support\SyncIntrospector;
 use Closure;
 use LogicException;
 
@@ -53,7 +53,7 @@ use LogicException;
  * 1. the path or key to act upon (`string`; required)
  * 2. a new name for the key (`int|string`; optional)
  * 3. a closure to return a new value for the key (`Closure`; optional; not
- *    required for {@see SyncEntity} objects)
+ *    required for {@see AbstractSyncEntity} objects)
  *
  * Optional elements may be omitted.
  *
@@ -76,9 +76,9 @@ use LogicException;
  * ];
  * ```
  *
- * @template-covariant TEntity of ISyncEntity
+ * @template-covariant TEntity of SyncEntityInterface
  *
- * @property-read class-string<TEntity> $Entity The class name of the SyncEntity being serialized (required)
+ * @property-read class-string<TEntity> $Entity The class name of the AbstractSyncEntity being serialized (required)
  * @property-read DateFormatter|null $DateFormatter Override the default date formatter (default: null)
  * @property-read bool|null $IncludeMeta Include undeclared property values? (default: true)
  * @property-read bool|null $SortByKey Sort arrays by key? (default: false)
@@ -92,7 +92,7 @@ use LogicException;
  *
  * @implements Buildable<SyncSerializeRulesBuilder<TEntity>>
  */
-final class SyncSerializeRules implements ISyncSerializeRules, Readable, Immutable, Buildable
+final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable, Immutable, Buildable
 {
     use ReadsProtectedProperties;
     /** @use HasBuilder<SyncSerializeRulesBuilder<TEntity>> */
@@ -100,7 +100,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, Readable, Immutab
     use HasImmutableProperties;
 
     /**
-     * The class name of the SyncEntity being serialized (required)
+     * The class name of the AbstractSyncEntity being serialized (required)
      *
      * @var class-string<TEntity>
      */
@@ -153,7 +153,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, Readable, Immutab
      *
      * @var bool|null
      *
-     * @see SyncEntity::$CanonicalId
+     * @see AbstractSyncEntity::$CanonicalId
      */
     protected $RemoveCanonicalId;
 

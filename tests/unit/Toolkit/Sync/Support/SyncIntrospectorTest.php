@@ -5,7 +5,7 @@ namespace Salient\Tests\Sync\Support;
 use Salient\Container\Container;
 use Salient\Sync\Catalog\SyncOperation;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\SyncStore;
 use Salient\Tests\Sync\Entity\Provider\TaskProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
 use Salient\Tests\Sync\Entity\Task;

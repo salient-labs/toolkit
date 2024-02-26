@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Support;
+namespace Salient\Sync;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
@@ -17,13 +17,16 @@ use Salient\Core\AbstractStore;
 use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncErrorType;
-use Salient\Sync\Contract\ISyncClassResolver;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncClassResolverInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Event\SyncStoreLoadedEvent;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
 use Salient\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Salient\Sync\Exception\SyncStoreException;
+use Salient\Sync\Support\DeferredEntity;
+use Salient\Sync\Support\DeferredRelationship;
+use Salient\Sync\Support\SyncErrorCollection;
 use LogicException;
 use ReflectionClass;
 
@@ -55,7 +58,7 @@ final class SyncStore extends AbstractStore
     /**
      * Provider ID => provider
      *
-     * @var array<int,ISyncProvider>
+     * @var array<int,SyncProviderInterface>
      */
     private $Providers = [];
 
@@ -98,14 +101,14 @@ final class SyncStore extends AbstractStore
     /**
      * Prefix => resolver
      *
-     * @var array<string,class-string<ISyncClassResolver>>|null
+     * @var array<string,class-string<SyncClassResolverInterface>>|null
      */
     private $NamespaceResolversByPrefix;
 
     /**
      * Provider ID => entity type ID => entity ID => entity
      *
-     * @var array<int,array<int,array<int|string,ISyncEntity>>>
+     * @var array<int,array<int,array<int|string,SyncEntityInterface>>>
      */
     private $Entities;
 
@@ -119,7 +122,7 @@ final class SyncStore extends AbstractStore
     /**
      * Provider ID => entity type ID => entity ID => [ deferred entity ]
      *
-     * @var array<int,array<int,array<int|string,array<DeferredEntity<ISyncEntity>>>>>
+     * @var array<int,array<int,array<int|string,array<DeferredEntity<SyncEntityInterface>>>>>
      */
     private $DeferredEntities = [];
 
@@ -127,7 +130,7 @@ final class SyncStore extends AbstractStore
      * Provider ID => entity type ID => requesting entity type ID => requesting
      * entity property => requesting entity ID => [ deferred relationship ]
      *
-     * @var array<int,array<int,array<int,array<string,array<int|string,DeferredRelationship<ISyncEntity>[]>>>>>
+     * @var array<int,array<int,array<int,array<string,array<int|string,DeferredRelationship<SyncEntityInterface>[]>>>>>
      */
     private $DeferredRelationships = [];
 
@@ -171,14 +174,14 @@ final class SyncStore extends AbstractStore
     /**
      * Deferred provider registrations
      *
-     * @var ISyncProvider[]
+     * @var SyncProviderInterface[]
      */
     private $DeferredProviders = [];
 
     /**
      * Deferred entity type registrations
      *
-     * @var class-string<ISyncEntity>[]
+     * @var class-string<SyncEntityInterface>[]
      */
     private $DeferredEntityTypes = [];
 
@@ -187,7 +190,7 @@ final class SyncStore extends AbstractStore
      *
      * Prefix => [ namespace base URI, PHP namespace, class resolver ]
      *
-     * @var array<string,array{string,string,class-string<ISyncClassResolver>|null}>
+     * @var array<string,array{string,string,class-string<SyncClassResolverInterface>|null}>
      */
     private $DeferredNamespaces = [];
 
@@ -352,13 +355,13 @@ final class SyncStore extends AbstractStore
      * Register a sync provider and set its provider ID
      *
      * If a sync run has started, the provider is registered immediately and its
-     * provider ID is passed to {@see ISyncProvider::setProviderId()} before
-     * {@see SyncStore::provider()} returns. Otherwise, registration is deferred
-     * until a sync run starts.
+     * provider ID is passed to {@see SyncProviderInterface::setProviderId()}
+     * before {@see SyncStore::provider()} returns. Otherwise, registration is
+     * deferred until a sync run starts.
      *
      * @return $this
      */
-    public function provider(ISyncProvider $provider)
+    public function provider(SyncProviderInterface $provider)
     {
         // Don't start a run just to register a provider
         if ($this->RunId === null) {
@@ -423,7 +426,7 @@ final class SyncStore extends AbstractStore
      * Get the provider ID of a registered sync provider, starting a run if
      * necessary
      */
-    public function getProviderId(ISyncProvider $provider): int
+    public function getProviderId(SyncProviderInterface $provider): int
     {
         if ($this->RunId === null) {
             $this->check();
@@ -443,7 +446,7 @@ final class SyncStore extends AbstractStore
     /**
      * Get a registered sync provider
      */
-    public function getProvider(string $hash): ?ISyncProvider
+    public function getProvider(string $hash): ?SyncProviderInterface
     {
         // Don't start a run just to get a provider
         if ($this->RunId === null) {
@@ -465,7 +468,7 @@ final class SyncStore extends AbstractStore
     /**
      * Get the stable identifier of a sync provider
      */
-    public function getProviderHash(ISyncProvider $provider): string
+    public function getProviderHash(SyncProviderInterface $provider): string
     {
         $class = get_class($provider);
         return Get::binaryHash(implode("\0", [
@@ -481,11 +484,11 @@ final class SyncStore extends AbstractStore
      * match the declared name of the sync entity class.
      *
      * If a sync run has started, the entity type is registered immediately and
-     * its ID is passed to {@see ISyncEntity::setEntityTypeId()} before
+     * its ID is passed to {@see SyncEntityInterface::setEntityTypeId()} before
      * {@see SyncStore::entityType()} returns. Otherwise, registration is
      * deferred until a sync run starts.
      *
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<SyncEntityInterface> $entity
      * @return $this
      */
     public function entityType(string $entity)
@@ -510,9 +513,10 @@ final class SyncStore extends AbstractStore
             ));
         }
 
-        if (!$class->implementsInterface(ISyncEntity::class)) {
+        if (!$class->implementsInterface(SyncEntityInterface::class)) {
             throw new LogicException(sprintf(
-                'Does not implement ISyncEntity: %s',
+                'Does not implement %s: %s',
+                SyncEntityInterface::class,
                 $entity,
             ));
         }
@@ -574,7 +578,7 @@ final class SyncStore extends AbstractStore
      * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
-     * @param class-string<ISyncClassResolver>|null $resolver
+     * @param class-string<SyncClassResolverInterface>|null $resolver
      * @return $this
      */
     public function namespace(
@@ -654,7 +658,7 @@ final class SyncStore extends AbstractStore
     /**
      * Get the canonical URI of a sync entity type
      *
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<SyncEntityInterface> $entity
      * @return string|null `null` if `$entity` is not in a registered sync
      * entity namespace.
      *
@@ -678,7 +682,7 @@ final class SyncStore extends AbstractStore
     /**
      * Get the namespace of a sync entity type
      *
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<SyncEntityInterface> $entity
      * @return string|null `null` if `$entity` is not in a registered sync
      * entity namespace.
      *
@@ -692,8 +696,8 @@ final class SyncStore extends AbstractStore
     /**
      * Get the class resolver for an entity or provider's namespace
      *
-     * @param class-string<ISyncEntity|ISyncProvider> $class
-     * @return class-string<ISyncClassResolver>|null
+     * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
+     * @return class-string<SyncClassResolverInterface>|null
      */
     public function getNamespaceResolver(string $class): ?string
     {
@@ -710,8 +714,8 @@ final class SyncStore extends AbstractStore
     }
 
     /**
-     * @param class-string<ISyncEntity|ISyncProvider> $class
-     * @param class-string<ISyncClassResolver>|null $resolver
+     * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
+     * @param class-string<SyncClassResolverInterface>|null $resolver
      */
     private function classToNamespace(
         string $class,
@@ -754,7 +758,7 @@ final class SyncStore extends AbstractStore
      * Sync entities are uniquely identified by provider ID, entity type, and
      * entity ID. They cannot be registered multiple times.
      *
-     * @param class-string<ISyncEntity> $entityType
+     * @param class-string<SyncEntityInterface> $entityType
      * @param int|string $entityId
      * @return $this
      */
@@ -762,7 +766,7 @@ final class SyncStore extends AbstractStore
         int $providerId,
         string $entityType,
         $entityId,
-        ISyncEntity $entity
+        SyncEntityInterface $entity
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         if (isset($this->Entities[$providerId][$entityTypeId][$entityId])) {
@@ -787,7 +791,7 @@ final class SyncStore extends AbstractStore
     /**
      * Get a previously registered and/or stored sync entity
      *
-     * @param class-string<ISyncEntity> $entityType
+     * @param class-string<SyncEntityInterface> $entityType
      * @param int|string $entityId
      * @param bool|null $offline If `null` (the default), the local entity store
      * is used if its copy of the entity is sufficiently fresh, or if the
@@ -800,7 +804,7 @@ final class SyncStore extends AbstractStore
         string $entityType,
         $entityId,
         ?bool $offline = null
-    ): ?ISyncEntity {
+    ): ?SyncEntityInterface {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
         if ($entity || $offline === false) {
@@ -816,7 +820,7 @@ final class SyncStore extends AbstractStore
      * already been registered, `$deferred` is resolved immediately, otherwise
      * it is added to the deferred entity queue.
      *
-     * @template TEntity of ISyncEntity
+     * @template TEntity of SyncEntityInterface
      *
      * @param class-string<TEntity> $entityType
      * @param int|string $entityId
@@ -867,10 +871,10 @@ final class SyncStore extends AbstractStore
     /**
      * Register a deferred relationship
      *
-     * @template TEntity of ISyncEntity
+     * @template TEntity of SyncEntityInterface
      *
      * @param class-string<TEntity> $entityType
-     * @param class-string<ISyncEntity> $forEntityType
+     * @param class-string<SyncEntityInterface> $forEntityType
      * @param int|string $forEntityId
      * @param DeferredRelationship<TEntity> $deferred
      * @return $this
@@ -929,8 +933,8 @@ final class SyncStore extends AbstractStore
      * Resolve deferred sync entities and relationships recursively until no
      * deferrals remain
      *
-     * @param class-string<ISyncEntity>|null $entityType
-     * @return ISyncEntity[]|null
+     * @param class-string<SyncEntityInterface>|null $entityType
+     * @return SyncEntityInterface[]|null
      */
     public function resolveDeferred(
         ?int $fromCheckpoint = null,
@@ -992,8 +996,8 @@ final class SyncStore extends AbstractStore
      * Resolve deferred sync entities from their respective providers and/or the
      * local entity store
      *
-     * @param class-string<ISyncEntity>|null $entityType
-     * @return ISyncEntity[]
+     * @param class-string<SyncEntityInterface>|null $entityType
+     * @return SyncEntityInterface[]
      */
     public function resolveDeferredEntities(
         ?int $fromCheckpoint = null,
@@ -1046,9 +1050,9 @@ final class SyncStore extends AbstractStore
      * Resolve deferred relationships from their respective providers and/or the
      * local entity store
      *
-     * @param class-string<ISyncEntity>|null $entityType
-     * @param class-string<ISyncEntity>|null $forEntityType
-     * @return array<ISyncEntity[]>
+     * @param class-string<SyncEntityInterface>|null $entityType
+     * @param class-string<SyncEntityInterface>|null $forEntityType
+     * @return array<SyncEntityInterface[]>
      */
     public function resolveDeferredRelationships(
         ?int $fromCheckpoint = null,
@@ -1116,7 +1120,7 @@ final class SyncStore extends AbstractStore
     public function checkHeartbeats(
         int $ttl = 300,
         bool $failEarly = true,
-        ISyncProvider ...$providers
+        SyncProviderInterface ...$providers
     ) {
         $this->check();
 
@@ -1129,7 +1133,7 @@ final class SyncStore extends AbstractStore
         }
 
         $failed = [];
-        /** @var ISyncProvider $provider */
+        /** @var SyncProviderInterface $provider */
         foreach ($providers as $provider) {
             $name = $provider->name();
             $id = $provider->getProviderId();

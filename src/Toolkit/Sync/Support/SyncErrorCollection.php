@@ -7,6 +7,7 @@ use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Utility\Arr;
 use Salient\Sync\Catalog\SyncErrorType as ErrorType;
+use Salient\Sync\SyncError;
 use JsonSerializable;
 
 /**

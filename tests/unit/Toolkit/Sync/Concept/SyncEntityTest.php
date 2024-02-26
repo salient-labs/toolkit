@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Sync\Concept;
 
-use Salient\Sync\Contract\ISyncEntityProvider;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityProviderInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
+use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
@@ -24,8 +24,8 @@ final class SyncEntityTest extends SyncTestCase
         $this->assertSame($provider, $postProvider);
         $this->assertSame($provider, $postEntityProvider->getProvider());
         $this->assertSame($provider, $userEntityProvider->getProvider());
-        $this->assertInstanceOf(ISyncEntityProvider::class, $postEntityProvider);
-        $this->assertInstanceOf(ISyncEntityProvider::class, $userEntityProvider);
+        $this->assertInstanceOf(SyncEntityProviderInterface::class, $postEntityProvider);
+        $this->assertInstanceOf(SyncEntityProviderInterface::class, $userEntityProvider);
     }
 
     /**
@@ -48,7 +48,7 @@ final class SyncEntityTest extends SyncTestCase
 
         $uncertainty = -1.0;
 
-        /** @var ISyncProvider */
+        /** @var SyncProviderInterface */
         $provider = [$entity, 'defaultProvider']($this->App);
         $actual = [$entity, 'idFromNameOrId']($nameOrId, $provider, $uncertaintyThreshold, $nameProperty, $uncertainty);
         $this->assertSame($expected, $actual);

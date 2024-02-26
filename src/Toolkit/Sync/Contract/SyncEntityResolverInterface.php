@@ -5,9 +5,9 @@ namespace Salient\Sync\Contract;
 /**
  * Resolves a name to an entity
  *
- * @template TEntity of ISyncEntity
+ * @template TEntity of SyncEntityInterface
  */
-interface ISyncEntityResolver
+interface SyncEntityResolverInterface
 {
     /**
      * Resolve a name to an entity
@@ -17,5 +17,5 @@ interface ISyncEntityResolver
     public function getByName(
         string $name,
         ?float &$uncertainty = null
-    ): ?ISyncEntity;
+    ): ?SyncEntityInterface;
 }

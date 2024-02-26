@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Concept;
+namespace Salient\Sync;
 
 use Salient\Container\Contract\HasContextualBindings;
 use Salient\Container\Contract\HasServices;
@@ -12,29 +12,28 @@ use Salient\Core\Utility\Str;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
 use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Contract\ISyncContext;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncContextInterface;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
 use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
  */
-abstract class SyncProvider extends AbstractProvider implements ISyncProvider, HasServices, HasContextualBindings
+abstract class AbstractSyncProvider extends AbstractProvider implements SyncProviderInterface, HasServices, HasContextualBindings
 {
     /**
      * Get a dependency substitution map for the provider
      *
      * {@inheritDoc}
      *
-     * Override this method to bind any {@see ISyncEntity} classes customised
-     * for the provider to their generic parent classes, e.g.:
+     * Override this method to bind any {@see SyncEntityInterface} classes
+     * customised for the provider to their generic parent classes, e.g.:
      *
      * ```php
      * <?php
@@ -83,7 +82,7 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): ISyncContext
+    public function getContext(?ContainerInterface $container = null): SyncContextInterface
     {
         if (!$container) {
             $container = $this->App;
@@ -155,7 +154,7 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
      * <?php
      * class Provider extends HttpSyncProvider
      * {
-     *     public function getEntities(ISyncContext $ctx): iterable
+     *     public function getEntities(SyncContextInterface $ctx): iterable
      *     {
      *         // Claim filter values
      *         $start = $ctx->claimFilter('start_date');
@@ -177,12 +176,12 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
      * }
      * ```
      *
-     * @template T of iterable<ISyncEntity>|ISyncEntity
+     * @template T of iterable<SyncEntityInterface>|SyncEntityInterface
      *
      * @param callable(): T $operation
      * @return T
      */
-    protected function run(ISyncContext $context, callable $operation)
+    protected function run(SyncContextInterface $context, callable $operation)
     {
         $context->applyFilterPolicy($returnEmpty, $empty);
         if ($returnEmpty) {
@@ -195,10 +194,10 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
     /**
      * Get a new pipeline for mapping provider data to entities
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @return PipelineInterface<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
+     * @return PipelineInterface<mixed[],T,array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>
      */
     protected function pipelineFrom(string $entity): PipelineInterface
     {
@@ -208,10 +207,10 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
     /**
      * Get a new pipeline for mapping entities to provider data
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @return PipelineInterface<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
+     * @return PipelineInterface<T,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>
      */
     protected function pipelineTo(string $entity): PipelineInterface
     {
@@ -222,7 +221,7 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
      * Use the provider's container to get a serialization rules builder
      * for an entity
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
      * @return SerializeRulesBuilder<T>
@@ -242,14 +241,14 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
     }
 
     /**
-     * @template TEntity of ISyncEntity
+     * @template TEntity of SyncEntityInterface
      *
      * @param class-string<TEntity> $entity
      * @return SyncEntityProvider<TEntity,static>
      */
     final public function with(string $entity, $context = null): SyncEntityProvider
     {
-        if ($context instanceof ISyncContext) {
+        if ($context instanceof SyncContextInterface) {
             $context->maybeThrowRecursionException();
             $container = $context->container();
         } else {
@@ -259,7 +258,7 @@ abstract class SyncProvider extends AbstractProvider implements ISyncProvider, H
 
         $container = $container->inContextOf(static::class);
 
-        $context = $context instanceof ISyncContext
+        $context = $context instanceof SyncContextInterface
             ? $context->withContainer($container)
             : $this->getContext($container);
 

@@ -2,16 +2,16 @@
 
 namespace Salient\Sync\Exception;
 
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncProvider;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncProviderInterface;
 use Throwable;
 
 /**
  * Thrown when an entity has invalid data or is not the droid you're looking for
  */
-class SyncInvalidEntityException extends SyncException
+class SyncInvalidEntityException extends AbstractSyncException
 {
-    protected ISyncProvider $Provider;
+    protected SyncProviderInterface $Provider;
 
     protected string $EntityType;
 
@@ -20,19 +20,19 @@ class SyncInvalidEntityException extends SyncException
      */
     protected $EntityId;
 
-    protected ?ISyncEntity $Entity;
+    protected ?SyncEntityInterface $Entity;
 
     /**
      * Creates a new SyncInvalidEntityException object
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entityType
      * @param T|int|string|null $entityOrId
      */
     public function __construct(
         string $message,
-        ISyncProvider $provider,
+        SyncProviderInterface $provider,
         string $entityType,
         $entityOrId,
         ?Throwable $previous = null
@@ -40,7 +40,7 @@ class SyncInvalidEntityException extends SyncException
         $this->Provider = $provider;
         $this->EntityType = $entityType;
 
-        if ($entityOrId instanceof ISyncEntity) {
+        if ($entityOrId instanceof SyncEntityInterface) {
             $this->Entity = $entityOrId;
             $this->EntityId = $this->Entity->id();
         } else {

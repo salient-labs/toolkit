@@ -4,7 +4,7 @@ namespace Salient\Tests\Sync;
 
 use Salient\Container\Application;
 use Salient\Core\Utility\File;
-use Salient\Sync\Support\SyncStore;
+use Salient\Sync\SyncStore;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\TestCase;
 

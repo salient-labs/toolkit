@@ -4,9 +4,9 @@ namespace Salient\Tests\Sync\Support;
 
 use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
 use Salient\Core\Catalog\TextComparisonFlag as Flag;
-use Salient\Sync\Contract\ISyncEntity;
-use Salient\Sync\Contract\ISyncEntityProvider;
-use Salient\Sync\Contract\ISyncEntityResolver;
+use Salient\Sync\Contract\SyncEntityInterface;
+use Salient\Sync\Contract\SyncEntityProviderInterface;
+use Salient\Sync\Contract\SyncEntityResolverInterface;
 use Salient\Sync\Support\SyncEntityFuzzyResolver;
 use Salient\Sync\Support\SyncEntityResolver;
 use Salient\Tests\Sync\Entity\User;
@@ -17,10 +17,10 @@ final class SyncEntityResolverTest extends SyncTestCase
     /**
      * @dataProvider getByNameProvider
      *
-     * @template T of ISyncEntity
+     * @template T of SyncEntityInterface
      *
      * @param array<array{string|null,float|null}> $expected
-     * @param class-string<ISyncEntityResolver<T>> $resolver
+     * @param class-string<SyncEntityResolverInterface<T>> $resolver
      * @param class-string<T> $entity
      * @param mixed[] $args
      * @param string[] $names
@@ -33,9 +33,9 @@ final class SyncEntityResolverTest extends SyncTestCase
         array $args,
         array $names
     ): void {
-        /** @var ISyncEntityProvider<T> */
+        /** @var SyncEntityProviderInterface<T> */
         $provider = [$entity, 'withDefaultProvider']($this->App);
-        /** @var ISyncEntityResolver<T> */
+        /** @var SyncEntityResolverInterface<T> */
         $resolver = new $resolver($provider, $propertyName, ...$args);
         foreach ($names as $name) {
             $uncertainty = -1;
@@ -49,7 +49,7 @@ final class SyncEntityResolverTest extends SyncTestCase
     }
 
     /**
-     * @return array<string,array{array<array{string|null,float|null}>,class-string<ISyncEntityResolver<ISyncEntity>>,class-string<ISyncEntity>,string,mixed[],string[]}>
+     * @return array<string,array{array<array{string|null,float|null}>,class-string<SyncEntityResolverInterface<SyncEntityInterface>>,class-string<SyncEntityInterface>,string,mixed[],string[]}>
      */
     public static function getByNameProvider(): array
     {

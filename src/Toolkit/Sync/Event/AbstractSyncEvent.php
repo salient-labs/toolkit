@@ -5,4 +5,4 @@ namespace Salient\Sync\Event;
 /**
  * Base class for sync events
  */
-abstract class SyncEvent {}
+abstract class AbstractSyncEvent {}
