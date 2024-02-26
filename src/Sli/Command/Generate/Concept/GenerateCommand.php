@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Command\Generate\Concept;
+namespace Salient\Sli\Command\Generate\Concept;
 
-use Lkrms\LkUtil\Command\Concept\Command;
-use Lkrms\LkUtil\Support\TokenExtractor;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
@@ -26,6 +24,8 @@ use Salient\Core\ProviderContext;
 use Salient\PhpDoc\PhpDoc;
 use Salient\PhpDoc\PhpDocTag;
 use Salient\PhpDoc\PhpDocTemplateTag;
+use Salient\Sli\Command\Concept\Command;
+use Salient\Sli\Support\TokenExtractor;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use ReflectionClass;

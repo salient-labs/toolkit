@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Catalog;
+namespace Salient\Sli\Catalog;
 
 use Salient\Core\AbstractDictionary;
 
 /**
- * Environment variables used by lk-util commands
+ * Environment variables used by sli commands
  *
  * @extends AbstractDictionary<string>
  */

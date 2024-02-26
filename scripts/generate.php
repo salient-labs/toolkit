@@ -1,12 +1,6 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\LkUtil\Catalog\EnvVar;
-use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
-use Lkrms\LkUtil\Command\Generate\GenerateFacade;
-use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
-use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Salient\Cache\CacheStore;
 use Salient\Cli\CliApplication;
 use Salient\Cli\CliOption;
@@ -37,6 +31,12 @@ use Salient\Curler\Support\CurlerPage;
 use Salient\Curler\Support\CurlerPageBuilder;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerBuilder;
+use Salient\Sli\Catalog\EnvVar;
+use Salient\Sli\Command\Generate\Concept\GenerateCommand;
+use Salient\Sli\Command\Generate\GenerateBuilder;
+use Salient\Sli\Command\Generate\GenerateFacade;
+use Salient\Sli\Command\Generate\GenerateSyncEntity;
+use Salient\Sli\Command\Generate\GenerateSyncProvider;
 use Salient\Sync\DbSyncDefinition;
 use Salient\Sync\DbSyncDefinitionBuilder;
 use Salient\Sync\HttpSyncDefinition;

@@ -19,7 +19,7 @@
       cacheDirectory="build/cache/coverage"
       pathCoverage="false">
     <include>
-      <directory suffix=".php">src</directory>
+      <directory suffix=".php">src/Toolkit</directory>
     </include>
     <report>
       <html outputDirectory="build/coverage" />

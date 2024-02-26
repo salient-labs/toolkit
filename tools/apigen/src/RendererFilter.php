@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\ApiGen;
+namespace Salient\ApiGen;
 
 use ApiGen\Renderer\Filter;
 

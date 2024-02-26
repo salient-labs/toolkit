@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Command\Http;
+namespace Salient\Sli\Command\Http;
 
-use Lkrms\LkUtil\Command\Concept\Command;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\CliOption;
@@ -12,6 +11,7 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
 use Salient\Http\Catalog\HttpRequestMethod;
+use Salient\Sli\Command\Concept\Command;
 use Salient\Sync\HttpSyncProvider;
 
 /**

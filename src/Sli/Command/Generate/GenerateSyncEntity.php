@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Command\Generate;
+namespace Salient\Sli\Command\Generate;
 
-use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
@@ -16,6 +15,7 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Catalog\HttpRequestMethod;
+use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\AbstractSyncEntity;

@@ -7,11 +7,10 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/tests/unit',
         __DIR__ . '/tests/fixtures',
         __DIR__ . '/tests/3rdparty',
-        __DIR__ . '/lk-util',
         __DIR__ . '/scripts',
     ])
     ->append([
-        __DIR__ . '/bin/lk-util',
+        __DIR__ . '/bin/sli',
         __DIR__ . '/bootstrap.php',
         __DIR__ . '/tests/phpstan-conditional.php',
     ])

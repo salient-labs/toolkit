@@ -5,11 +5,11 @@ parameters:
 	excludeTagged: [internal]
 	outputDir: %workingDir%/docs/api
 	themeDir: theme
-	title: lkrms/util
+	title: salient/toolkit
 
 services:
 	analyzer.filter:
-		factory: Lkrms\ApiGen\AnalyzerFilter(excludeProtected: %excludeProtected%, excludePrivate: %excludePrivate%, excludeTagged: %excludeTagged%)
+		factory: Salient\ApiGen\AnalyzerFilter(excludeProtected: %excludeProtected%, excludePrivate: %excludePrivate%, excludeTagged: %excludeTagged%)
 
 	renderer.filter:
-		factory: Lkrms\ApiGen\RendererFilter
+		factory: Salient\ApiGen\RendererFilter

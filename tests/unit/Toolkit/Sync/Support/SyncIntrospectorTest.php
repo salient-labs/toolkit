@@ -56,7 +56,7 @@ final class SyncIntrospectorTest extends TestCase
     {
         return (new SyncStore())->namespace(
             'component',
-            'https://sync.lkrms.github.io/component',
+            'https://sync.salient-labs.github.io/component',
             'Component\Sync',
             SyncClassResolver::class
         );

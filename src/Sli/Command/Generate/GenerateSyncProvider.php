@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Command\Generate;
+namespace Salient\Sli\Command\Generate;
 
-use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
+use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use Salient\Sync\Catalog\SyncOperation;
 use Salient\Sync\Contract\SyncContextInterface;
 use Salient\Sync\Contract\SyncEntityInterface;

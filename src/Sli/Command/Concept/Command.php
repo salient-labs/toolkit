@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Command\Concept;
+namespace Salient\Sli\Command\Concept;
 
-use Lkrms\LkUtil\Catalog\EnvVar;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
 use Salient\Core\Contract\ProviderInterface;
@@ -11,10 +10,11 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
+use Salient\Sli\Catalog\EnvVar;
 use JsonException;
 
 /**
- * Base class for lk-util commands
+ * Base class for sli commands
  */
 abstract class Command extends CliCommand
 {

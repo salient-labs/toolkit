@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Command\Generate;
+namespace Salient\Sli\Command\Generate;
 
-use Lkrms\LkUtil\Catalog\EnvVar;
-use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\CliOption;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\AbstractFacade;
 use Salient\PhpDoc\PhpDoc;
+use Salient\Sli\Catalog\EnvVar;
+use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use ReflectionMethod;
 use ReflectionParameter;
 
