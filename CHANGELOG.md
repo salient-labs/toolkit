@@ -12,6 +12,89 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.48] - 2024-02-26
+
+### Added
+
+- Add `BadMethodCallException`
+
+### Changed
+
+- Return `null` from `Cache::getInstanceOf()`, `Cache::getArray()`, `Cache::getInt()`, `Cache::getString()` instead of throwing an exception when the cached item is of the wrong type
+- In `SqliteStore`, implement `Unloadable`, throw an exception if `getFilename()` is called when the database is not open, improve documentation
+- In `ImmutableArrayAccess`, throw `BadMethodCallException` instead of `LogicException`
+- Use `ImmutableArrayAccess` in `ConfigurationManager`
+- Make `HasBuilder::getBuilder()` protected
+- Improve `ContainerInterface::getAs()` generics
+- Ignore `@throws` tags in `PhpDoc::hasDetail()`
+- Move remaining classes, interfaces and traits to `Salient`
+- Rename:
+  - `ArrayKeyConformity` -> `ListConformity`
+  - `Entity` -> `AbstractEntity`
+  - `HasDateProperties` -> `Temporal`
+  - `HasDescription` -> `Describable`
+  - `HasIdentifier` -> `Identifiable`
+  - `HasJsonSchema` -> `JsonSchemaInterface`
+  - `HasName` -> `Nameable`
+  - `HasParentProperty` -> `Treeable`
+  - `HasProviderContext` -> `ProviderContextAwareInterface`
+  - `IConstructible` -> `Constructible`
+  - `IEntity` -> `EntityInterface`
+  - `IExtensible` -> `Extensible`
+  - `IProvidable` -> `Providable`
+  - `IProvider` -> `ProviderInterface`
+  - `IProviderContext` -> `ProviderContextInterface`
+  - `IProviderEntity` -> `ProvidableEntityInterface`
+  - `IRelatable` -> `Relatable`
+  - `IResolvable` -> `Normalisable`
+  - `ISerializeRules` -> `SerializeRulesInterface`
+  - `ITreeable` -> `HierarchyInterface`
+  - `Provider` -> `AbstractProvider`
+  - `ReceivesProvider` -> `ProviderAwareInterface`
+  - `RelationshipType` -> `Cardinality`
+  - `ReturnsNormaliser` -> `NormaliserFactory`
+  - `SqliteStore` -> `AbstractStore`
+  - `TtyControlSequence` -> `EscapeSequence`
+  - `ImmutableArrayAccess` -> `ImmutableArrayAccessTrait`
+  - `ICollection` -> `CollectionInterface`
+  - `TCollection` -> `CollectionTrait`
+  - `TImmutableCollection` -> `ImmutableCollectionTrait`
+  - `TypedCollection` -> `AbstractTypedCollection`
+  - `IList` -> `ListInterface`
+  - `TList` -> `ListTrait`
+  - `TImmutableList` -> `ImmutableListTrait`
+  - `TypedList` -> `AbstractTypedList`
+  - `TReadableCollection` -> `ReadableCollectionTrait`
+  - `HasParent` -> `TreeableTrait`
+  - `IComparable` -> `Comparable`
+  - `IStoppableEvent` -> `StoppableEventInterface`
+  - `TConstructible` -> `ConstructibleTrait`
+  - `TExtensible` -> `ExtensibleTrait`
+  - `TProvidable` -> `ProvidableTrait`
+  - `TStoppableEvent` -> `StoppableEventTrait`
+- Do not extend `Normalisable` from `NormaliserFactory`
+- Extend `HasProvider` from `ProviderAwareInterface`
+- Merge `HasChildrenProperty` into `Treeable`
+- Merge `HasProviderContext` into `ProviderContextAwareInterface`
+- Merge `HasService` into `ServiceAwareInterface`
+- Rename `HasProvider::provider()` to `getProvider()`
+- Rename `HierarchyInterface::countDescendants()` to `getDescendantCount()`
+- Rename `NormaliserFactory::normaliser()` to `getNormaliser()`
+- Rename `ProviderContextAwareInterface::context()` to `getContext()`
+- Rename `ServiceAwareInterface::service()` to `getService()`
+- Move `IEntity::plural()` to `ISyncEntity`
+- Move `SerializeRulesInterface::getFlags()` to `ISyncSerializeRules`
+
+### Removed
+
+- Remove `Sys::sqliteHasUpsert()`
+- Remove `Buildable::getBuilder()`
+- Remove `TokenExtractor` (moved to `Lkrms\LkUtil` namespace)
+
+### Fixed
+
+- `Cache`: fix issue where an exception is thrown when an instance of a class that no longer exists is returned from the cache
+
 ## [v0.21.47] - 2024-02-23
 
 ### Changed
@@ -1861,6 +1944,7 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.48]: https://github.com/lkrms/php-util/compare/v0.21.47...v0.21.48
 [v0.21.47]: https://github.com/lkrms/php-util/compare/v0.21.46...v0.21.47
 [v0.21.46]: https://github.com/lkrms/php-util/compare/v0.21.45...v0.21.46
 [v0.21.45]: https://github.com/lkrms/php-util/compare/v0.21.44...v0.21.45
