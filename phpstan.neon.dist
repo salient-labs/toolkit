@@ -5,8 +5,7 @@ includes:
 parameters:
 	level: 6
 	paths:
-		- bin/lk-util
-		- lk-util
+		- bin/sli
 		- scripts
 		- src
 		- stubs

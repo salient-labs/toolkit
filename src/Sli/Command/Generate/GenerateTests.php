@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Command\Generate;
+namespace Salient\Sli\Command\Generate;
 
-use Lkrms\LkUtil\Catalog\EnvVar;
-use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use PHPUnit\Framework\TestCase;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\CliOption;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
+use Salient\Sli\Catalog\EnvVar;
+use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 
 /**
  * Generates PHPUnit tests

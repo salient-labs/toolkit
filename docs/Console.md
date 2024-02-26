@@ -77,14 +77,14 @@ The following Markdown-like syntax is supported in [Console][Console] messages:
 | Inline code  | `` ` `` text `` ` ``                                   | <code>Bold</code>                     | `` The input format can be specified using the `-f/--from` option. ``     |
 | Code block   | ` ``` `<br>text<br>` ``` `                             | <pre><code>Unchanged</code></pre>     | <pre><code>\`\`\`&#10;$baz = Foo::bar();&#10;\`\`\`</code></pre>          |
 
-[Application]: https://lkrms.github.io/php-util/Salient.Container.Application.html
-[CliApplication]: https://lkrms.github.io/php-util/Salient.Cli.CliApplication.html
-[Console]: https://lkrms.github.io/php-util/Salient.Core.Facade.Console.html
+[Application]: https://salient-labs.github.io/toolkit/Salient.Container.Application.html
+[CliApplication]: https://salient-labs.github.io/toolkit/Salient.Cli.CliApplication.html
+[Console]: https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html
 [ConsoleWriter]:
-  https://lkrms.github.io/php-util/Salient.Console.ConsoleWriter.html
+  https://salient-labs.github.io/toolkit/Salient.Console.ConsoleWriter.html
 [logOutput]:
-  https://lkrms.github.io/php-util/Salient.Container.Application.html#_logOutput
+  https://salient-labs.github.io/toolkit/Salient.Container.Application.html#_logOutput
 [registerStdioTargets]:
-  https://lkrms.github.io/php-util/Salient.Console.ConsoleWriter.html#_registerStdioTargets
+  https://salient-labs.github.io/toolkit/Salient.Console.ConsoleWriter.html#_registerStdioTargets
 [registerTarget]:
-  https://lkrms.github.io/php-util/Salient.Console.ConsoleWriter.html#_registerTarget
+  https://salient-labs.github.io/toolkit/Salient.Console.ConsoleWriter.html#_registerTarget

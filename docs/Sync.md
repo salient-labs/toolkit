@@ -21,10 +21,10 @@ implemented the `Acme\Sync\Provider\UserProvider` interface, for example.
 The entity provider interface doesn't need to have declared methods (although
 entities can be serviced this way if needed), but it does need to exist.
 
-`lk-util` makes it easy to generate a provider interface:
+`sli` makes it easy to generate a provider interface:
 
 ```shell
-vendor/bin/lk-util generate sync provider --magic --op 'get,get-list' 'Acme\Sync\User'
+vendor/bin/sli generate sync provider --magic --op 'get,get-list' 'Acme\Sync\User'
 ```
 
 #### Class resolvers
@@ -73,19 +73,19 @@ The first value passed is always the current [SyncContextInterface] and
     recommendations, including recognised signatures.
 
 [getDefinition]:
-  https://lkrms.github.io/php-util/Salient.Sync.Contract.SyncProviderInterface.html#_getDefinition
+  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncProviderInterface.html#_getDefinition
 [SyncContextInterface]:
-  https://lkrms.github.io/php-util/Salient.Sync.Contract.SyncContextInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncContextInterface.html
 [SyncEntityInterface]:
-  https://lkrms.github.io/php-util/Salient.Sync.Contract.SyncEntityInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncEntityInterface.html
 [SyncProviderInterface]:
-  https://lkrms.github.io/php-util/Salient.Sync.Contract.SyncProviderInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncProviderInterface.html
 [SyncClassResolverInterface]:
-  https://lkrms.github.io/php-util/Salient.Sync.Contract.SyncClassResolverInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncClassResolverInterface.html
 [SyncOperation]:
-  https://lkrms.github.io/php-util/Salient.Sync.Catalog.SyncOperation.html
+  https://salient-labs.github.io/toolkit/Salient.Sync.Catalog.SyncOperation.html
 [withArgs]:
-  https://lkrms.github.io/php-util/Salient.Sync.Contract.SyncContextInterface.html#_withArgs
+  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncContextInterface.html#_withArgs
 [namespace]:
-  https://lkrms.github.io/php-util/Salient.Sync.SyncStore.html#_namespace
+  https://salient-labs.github.io/toolkit/Salient.Sync.SyncStore.html#_namespace
 [SyncClassResolver.php]: ../tests/fixtures/Toolkit/Sync/SyncClassResolver.php

@@ -1,10 +1,10 @@
 ## Using the CLI utility
 
-`lkrms/util` includes code generators and other command-line tools you can use
-by running `lk-util` from your project's `vendor/bin` directory.
+`salient/toolkit` includes code generators and other command-line tools you can
+use by running `sli` from your project's `vendor/bin` directory.
 
-For a list of available subcommands, run `lk-util` with no arguments. For usage
-information, run `lk-util help <subcommand>` or add `--help` to any subcommand.
+For a list of available subcommands, run `sli` with no arguments. For usage
+information, run `sli help <subcommand>` or add `--help` to any subcommand.
 
 ### Environment variables
 

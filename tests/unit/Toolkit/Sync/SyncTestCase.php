@@ -37,7 +37,7 @@ abstract class SyncTestCase extends TestCase
                 ->startSync(__METHOD__, [])
                 ->syncNamespace(
                     'salient-tests',
-                    'https://lkrms.github.io/php-util/tests/entity',
+                    'https://salient-labs.github.io/toolkit/tests/entity',
                     'Salient\Tests\Sync\Entity'
                 )
                 ->provider(JsonPlaceholderApi::class);

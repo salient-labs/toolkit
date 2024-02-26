@@ -27,4 +27,4 @@ changelog_path=tools/changelog
 
 run "$changelog_path" \
     --output CHANGELOG.md \
-    lkrms/php-util
+    salient-labs/toolkit

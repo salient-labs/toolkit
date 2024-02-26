@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\LkUtil\Support;
+namespace Salient\Sli\Support;
 
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\File;

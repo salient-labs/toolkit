@@ -1,8 +1,18 @@
 {
-    "name": "lkrms/util",
+    "name": "salient/toolkit",
     "type": "library",
     "license": "MIT",
     "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
+    "support": {
+        "issues": "https://github.com/salient-labs/toolkit/issues",
+        "source": "https://github.com/salient-labs/toolkit"
+    },
+    "authors": [
+        {
+            "name": "Luke Arms",
+            "email": "luke@linacreative.com"
+        }
+    ],
     "require": {
         "php": ">=7.4",
         "composer-runtime-api": "^2.2",
@@ -51,7 +61,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lkrms\\LkUtil\\": "lk-util/",
+            "Salient\\Sli\\": "src/Sli/",
             "Salient\\Tests\\": [
                 "tests/unit/Toolkit/",
                 "tests/fixtures/Toolkit/",
@@ -64,7 +74,7 @@
         ]
     },
     "bin": [
-        "bin/lk-util"
+        "bin/sli"
     ],
     "config": {
         "sort-packages": true,

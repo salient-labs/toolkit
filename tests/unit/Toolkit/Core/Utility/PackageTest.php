@@ -42,7 +42,7 @@ final class PackageTest extends TestCase
 
     public function testName(): void
     {
-        $this->assertSame('lkrms/util', Package::name());
+        $this->assertSame('salient/toolkit', Package::name());
     }
 
     /**

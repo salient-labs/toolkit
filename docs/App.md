@@ -29,7 +29,7 @@ application data.
     the default
 
 
-[Application]: https://lkrms.github.io/php-util/Salient.Container.Application.html
-[CliApplication]: https://lkrms.github.io/php-util/Salient.Cli.CliApplication.html
+[Application]: https://salient-labs.github.io/toolkit/Salient.Container.Application.html
+[CliApplication]: https://salient-labs.github.io/toolkit/Salient.Cli.CliApplication.html
 [xdg-base-spec]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
