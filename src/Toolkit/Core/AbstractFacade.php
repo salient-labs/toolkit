@@ -148,7 +148,9 @@ abstract class AbstractFacade implements FacadeInterface
             ));
         }
 
-        $container = Container::maybeGetGlobalContainer();
+        $container = Container::hasGlobalContainer()
+            ? Container::getGlobalContainer()
+            : null;
 
         $instance ??= $container
             ? self::getInstanceFromContainer($container, $serviceName)
@@ -280,7 +282,10 @@ abstract class AbstractFacade implements FacadeInterface
         }
 
         if (static::class !== App::class) {
-            $container = Container::maybeGetGlobalContainer();
+            $container = Container::hasGlobalContainer()
+                ? Container::getGlobalContainer()
+                : null;
+
             if ($container) {
                 $serviceName = self::getServiceName();
                 if (

@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Container\Container;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Contract\Constructible;
@@ -18,6 +17,8 @@ use Generator;
  */
 trait ConstructibleTrait
 {
+    use RequiresContainer;
+
     /**
      * Create an instance of the class from an array
      *
@@ -37,11 +38,12 @@ trait ConstructibleTrait
      * {@see Treeable::setParent()}.
      * @return static
      */
-    final public static function construct(array $data, ?ContainerInterface $container = null, $parent = null)
-    {
-        if (!$container) {
-            $container = Container::requireGlobalContainer();
-        }
+    final public static function construct(
+        array $data,
+        ?ContainerInterface $container = null,
+        $parent = null
+    ) {
+        $container = self::requireContainer($container);
 
         return Introspector::getService($container, static::class)
             ->getCreateFromClosure()($data, $container, null, $parent);
@@ -69,9 +71,7 @@ trait ConstructibleTrait
         ?ContainerInterface $container = null,
         $parent = null
     ): Generator {
-        if (!$container) {
-            $container = Container::requireGlobalContainer();
-        }
+        $container = self::requireContainer($container);
 
         $closure = null;
         foreach ($list as $key => $data) {
