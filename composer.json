@@ -23,6 +23,9 @@
         "psr/http-message": "^1.1 || ^2",
         "psr/log": "^1"
     },
+    "conflict": {
+        "lkrms/util": "*"
+    },
     "suggest": {
         "adodb/adodb-php": "Required for access to databases",
         "league/oauth2-client": "Required for integration with OAuth 2.0 service providers",
