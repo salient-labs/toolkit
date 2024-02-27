@@ -3,6 +3,13 @@
 namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Container\Contract\ContainerAwareInterface;
+use Salient\Container\Contract\HasBindings;
+use Salient\Container\Contract\HasContainer;
+use Salient\Container\Contract\HasContextualBindings;
+use Salient\Container\Contract\HasServices;
+use Salient\Container\Contract\ServiceAwareInterface;
+use Salient\Container\Contract\SingletonInterface;
 use Salient\Container\Exception\ContainerServiceNotFoundException;
 use Salient\Container\Application;
 use Salient\Container\ApplicationInterface;
@@ -12,6 +19,7 @@ use Salient\Container\ServiceLifetime;
 use Salient\Core\Contract\Chainable;
 use Salient\Core\Facade\App;
 use Salient\Tests\TestCase;
+use LogicException;
 use stdClass;
 
 final class ContainerTest extends TestCase
@@ -143,8 +151,8 @@ final class ContainerTest extends TestCase
         $this->assertSame(A::class, $o2->getService());
 
         // `TestServiceImplB` is only bound to itself, so the container can't
-        // inject `ITestService1` into `A::construct()` unless it's passed as a
-        // parameter
+        // inject `ITestService1` into `A::__construct()` unless it's passed as
+        // a parameter
         $container = (new Container())->inContextOf(TestServiceImplB::class);
         $ts2 = $container->get(TestServiceImplB::class);
         $o3 = $container->get(A::class, [$ts2]);
@@ -386,5 +394,273 @@ final class ContainerTest extends TestCase
         $this->assertInstanceOf(FancyOffice::class, $orgUnit->MainOffice);
         $this->assertNotInstanceOf(FancyOffice::class, $manager->Office);
         $this->assertSame($manager->Office, $admin->Office);
+    }
+}
+
+interface ITestService1 {}
+
+interface ITestService2 {}
+
+interface I {}
+
+class TestServiceImplA implements HasServices, HasContextualBindings, ITestService1, ITestService2
+{
+    public static function getServices(): array
+    {
+        return [ITestService1::class, ITestService2::class];
+    }
+
+    public static function getContextualBindings(): array
+    {
+        return [A::class => B::class];
+    }
+}
+
+class TestServiceImplB extends TestServiceImplA implements SingletonInterface {}
+
+/**
+ * @template T of ContainerInterface
+ *
+ * @implements HasContainer<T>
+ */
+class A implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
+{
+    use TestTrait;
+
+    public ITestService1 $TestService;
+
+    public function __construct(ITestService1 $testService)
+    {
+        $this->TestService = $testService;
+    }
+}
+
+/**
+ * @template T of ContainerInterface
+ *
+ * @extends A<T>
+ */
+class B extends A {}
+
+/**
+ * @template T of ContainerInterface
+ *
+ * @implements HasContainer<T>
+ */
+class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
+{
+    use TestTrait;
+
+    /**
+     * @var A<T>
+     */
+    public A $a;
+
+    /**
+     * @param A<T> $a
+     */
+    public function __construct(A $a)
+    {
+        $this->a = $a;
+    }
+}
+
+/**
+ * @template T of ContainerInterface
+ *
+ * @extends C<T>
+ */
+class D extends C {}
+
+/**
+ * @phpstan-require-implements ContainerAwareInterface
+ * @phpstan-require-implements ServiceAwareInterface
+ */
+trait TestTrait
+{
+    protected ?ContainerInterface $Container = null;
+
+    protected ?string $Service = null;
+
+    protected int $SetServiceCount = 0;
+
+    public function getService(): string
+    {
+        return $this->Service ?? static::class;
+    }
+
+    public function app(): ContainerInterface
+    {
+        return $this->container();
+    }
+
+    public function container(): ContainerInterface
+    {
+        return $this->Container ??= new Container();
+    }
+
+    public function setContainer(ContainerInterface $container): void
+    {
+        if ($this->Container !== null) {
+            throw new LogicException('Container already set');
+        }
+        $this->Container = $container;
+    }
+
+    public function setService(string $service): void
+    {
+        $this->Service = $service;
+        $this->SetServiceCount++;
+    }
+
+    public function getSetServiceCount(): int
+    {
+        return $this->SetServiceCount;
+    }
+}
+
+class OrgUnit implements HasServices, HasContextualBindings
+{
+    public Office $MainOffice;
+
+    public Department $Department;
+
+    public Staff $Manager;
+
+    public User $Admin;
+
+    public function __construct(Office $mainOffice, Department $department, Staff $manager, User $admin)
+    {
+        $this->MainOffice = $mainOffice;
+        $this->Department = $department;
+        $this->Manager = $manager;
+        $this->Admin = $admin;
+    }
+
+    public static function getServices(): array
+    {
+        return [];
+    }
+
+    public static function getContextualBindings(): array
+    {
+        return [
+            Office::class => FancyOffice::class,
+            User::class => DepartmentStaff::class,
+            Staff::class => DepartmentStaff::class,
+        ];
+    }
+}
+
+class User
+{
+    public int $Id;
+
+    public Office $Office;
+
+    public function __construct(IdGenerator $idGenerator, Office $office)
+    {
+        $this->Id = $idGenerator->getNext(__CLASS__);
+        $this->Office = $office;
+    }
+}
+
+class Staff extends User
+{
+    public int $StaffId;
+
+    public function __construct(IdGenerator $idGenerator, Office $office)
+    {
+        parent::__construct($idGenerator, $office);
+        $this->StaffId = $idGenerator->getNext(__CLASS__);
+    }
+}
+
+class DepartmentStaff extends Staff
+{
+    public Department $Department;
+
+    public function __construct(IdGenerator $idGenerator, Office $office, Department $department)
+    {
+        parent::__construct($idGenerator, $office);
+        $this->Department = $department;
+    }
+}
+
+class Department
+{
+    public int $Id;
+
+    public ?string $Name;
+
+    public Office $MainOffice;
+
+    public function __construct(IdGenerator $idGenerator, Office $mainOffice, ?string $name = null)
+    {
+        $this->Id = $idGenerator->getNext(__CLASS__);
+        $this->Name = $name;
+        $this->MainOffice = $mainOffice;
+    }
+}
+
+class Office
+{
+    public int $Id;
+
+    public ?string $Name;
+
+    public function __construct(IdGenerator $idGenerator, ?string $name = null)
+    {
+        $this->Id = $idGenerator->getNext(__CLASS__);
+        $this->Name = $name;
+    }
+}
+
+class FancyOffice extends Office {}
+
+class IdGenerator
+{
+    /**
+     * @var array<string,int>
+     */
+    private array $Counters = [];
+
+    public function getNext(string $type): int
+    {
+        $this->Counters[$type] ??= 100 * (count($this->Counters) + 1);
+
+        return $this->Counters[$type]++;
+    }
+}
+
+class ServiceProviderPlain {}
+
+class ServiceProviderWithBindings implements HasBindings
+{
+    public static function getBindings(): array
+    {
+        return [
+            User::class => DepartmentStaff::class,
+            Staff::class => DepartmentStaff::class,
+        ];
+    }
+
+    public static function getSingletons(): array
+    {
+        return [
+            IdGenerator::class,
+        ];
+    }
+}
+
+class ServiceProviderWithContextualBindings implements HasContextualBindings
+{
+    public static function getContextualBindings(): array
+    {
+        return [
+            Office::class => FancyOffice::class,
+            User::class => DepartmentStaff::class,
+            Staff::class => DepartmentStaff::class,
+        ];
     }
 }
