@@ -7,7 +7,8 @@ namespace Salient\Tests\Core\Utility\Reflect;
  */
 class MyClass extends MyBaseClass implements MyInterface
 {
-    use MyTrait, MyReusedTrait;
+    use MyTrait;
+    use MyReusedTrait;
 
     public const MY_CONSTANT = 'my constant';
 

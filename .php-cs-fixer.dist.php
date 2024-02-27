@@ -57,6 +57,7 @@ return (new PhpCsFixer\Config())
         'phpdoc_trim_consecutive_blank_line_separation' => true,
         'phpdoc_types_order' => ['null_adjustment' => 'always_last', 'sort_algorithm' => 'none'],
         'single_import_per_statement' => true,
+        'single_trait_insert_per_statement' => true,
         'yoda_style' => ['equal' => false, 'identical' => false],
     ])
     ->setFinder($finder)

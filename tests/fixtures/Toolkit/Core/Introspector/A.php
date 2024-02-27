@@ -14,7 +14,10 @@ use Salient\Core\Contract\Writable;
 
 class A implements Readable, Writable, Extensible, Normalisable, NormaliserFactory
 {
-    use ReadsProtectedProperties, HasWritableProperties, ExtensibleTrait, HasNormaliser;
+    use ReadsProtectedProperties;
+    use HasWritableProperties;
+    use ExtensibleTrait;
+    use HasNormaliser;
 
     /**
      * @inheritDoc

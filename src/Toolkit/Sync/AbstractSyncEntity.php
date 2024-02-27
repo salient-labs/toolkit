@@ -74,8 +74,14 @@ use ReflectionClass;
  */
 abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityInterface, NormaliserFactory
 {
+    use ConstructibleTrait;
+    use HasReadableProperties;
+    use HasWritableProperties;
+    use ExtensibleTrait;
     /** @use ProvidableTrait<SyncProviderInterface,SyncContextInterface> */
-    use ConstructibleTrait, HasReadableProperties, HasWritableProperties, ExtensibleTrait, ProvidableTrait, HasNormaliser, RequiresContainer;
+    use ProvidableTrait;
+    use HasNormaliser;
+    use RequiresContainer;
 
     /**
      * The unique identifier assigned to the entity by its provider
