@@ -2,7 +2,8 @@
 
 namespace Salient\Sync;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Catalog\Sync\SyncErrorType;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Comparable;
 use Salient\Contract\Core\Immutable;
@@ -11,7 +12,6 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Sync\Catalog\SyncErrorType;
 
 /**
  * An error that occurred during a sync operation

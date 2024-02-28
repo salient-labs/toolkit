@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Console\Catalog\ConsoleTag as Tag;
+use Salient\Catalog\Console\ConsoleTag as Tag;
 use Salient\Console\Contract\ConsoleFormatInterface;
 use Salient\Console\Contract\ConsoleFormatterFactory;
 use Salient\Console\Contract\ConsoleTagFormatFactory;

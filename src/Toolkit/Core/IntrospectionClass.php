@@ -2,6 +2,8 @@
 
 namespace Salient\Core;
 
+use Salient\Catalog\Core\Cardinality;
+use Salient\Catalog\Core\NormaliserFlag;
 use Salient\Contract\Core\Extensible;
 use Salient\Contract\Core\Normalisable;
 use Salient\Contract\Core\NormaliserFactory;
@@ -11,8 +13,6 @@ use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\Temporal;
 use Salient\Contract\Core\Treeable;
 use Salient\Contract\Core\Writable;
-use Salient\Core\Catalog\Cardinality;
-use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;

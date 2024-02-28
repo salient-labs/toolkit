@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Console\ConsoleFormatter as Formatter;
 
 /**

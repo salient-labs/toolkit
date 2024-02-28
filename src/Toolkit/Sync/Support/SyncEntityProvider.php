@@ -2,6 +2,10 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Catalog\Core\TextComparisonAlgorithm;
+use Salient\Catalog\Sync\DeferralPolicy;
+use Salient\Catalog\Sync\HydrationPolicy;
+use Salient\Catalog\Sync\SyncOperation;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Sync\SyncContextInterface;
@@ -10,11 +14,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Catalog\TextComparisonAlgorithm;
 use Salient\Iterator\IterableIterator;
-use Salient\Sync\Catalog\DeferralPolicy;
-use Salient\Sync\Catalog\HydrationPolicy;
-use Salient\Sync\Catalog\SyncOperation;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\SyncStore;
 use Generator;

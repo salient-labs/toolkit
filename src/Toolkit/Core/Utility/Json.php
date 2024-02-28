@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Catalog\JsonDecodeFlag;
-use Salient\Core\Catalog\JsonEncodeFlag;
+use Salient\Catalog\Core\JsonDecodeFlag;
+use Salient\Catalog\Core\JsonEncodeFlag;
 use Salient\Core\AbstractUtility;
 
 /**

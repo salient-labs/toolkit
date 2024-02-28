@@ -2,8 +2,8 @@
 
 namespace Salient\Sync\Command;
 
-use Salient\Cli\Catalog\CliOptionType;
-use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Catalog\Cli\CliOptionType;
+use Salient\Catalog\Cli\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Contract\Sync\SyncProviderInterface;

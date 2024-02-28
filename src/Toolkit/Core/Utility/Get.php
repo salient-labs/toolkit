@@ -3,13 +3,13 @@
 namespace Salient\Core\Utility;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Catalog\Core\Char;
+use Salient\Catalog\Core\CopyFlag;
+use Salient\Catalog\Core\QueryFlag;
+use Salient\Catalog\Core\Regex;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Core\Catalog\Char;
-use Salient\Core\Catalog\CopyFlag;
-use Salient\Core\Catalog\QueryFlag;
-use Salient\Core\Catalog\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\UncloneableObjectException;

@@ -3,11 +3,11 @@
 namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Catalog\Core\EnvFlag;
 use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Facade\Config;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;

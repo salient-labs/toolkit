@@ -2,13 +2,13 @@
 
 namespace Salient\Core;
 
+use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Identifiable;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Treeable;
-use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;

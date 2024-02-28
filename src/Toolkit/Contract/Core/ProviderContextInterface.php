@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Core;
 
+use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
-use Salient\Core\Catalog\ListConformity;
 
 /**
  * The context within which entities of a given type are instantiated by a

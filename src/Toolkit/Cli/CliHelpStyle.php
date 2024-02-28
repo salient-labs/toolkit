@@ -2,9 +2,9 @@
 
 namespace Salient\Cli;
 
-use Salient\Cli\Catalog\CliHelpSectionName;
-use Salient\Cli\Catalog\CliHelpTarget;
-use Salient\Cli\Catalog\CliOptionVisibility;
+use Salient\Catalog\Cli\CliHelpSectionName;
+use Salient\Catalog\Cli\CliHelpTarget;
+use Salient\Catalog\Cli\CliOptionVisibility;
 use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 use Salient\Console\Support\ConsoleManPageFormat as ManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;

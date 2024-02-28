@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Sync\Support;
 
+use Salient\Catalog\Core\TextComparisonAlgorithm as Algorithm;
+use Salient\Catalog\Core\TextComparisonFlag as Flag;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
-use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
-use Salient\Core\Catalog\TextComparisonFlag as Flag;
 use Salient\Sync\Support\SyncEntityFuzzyResolver;
 use Salient\Sync\Support\SyncEntityResolver;
 use Salient\Tests\Sync\Entity\User;

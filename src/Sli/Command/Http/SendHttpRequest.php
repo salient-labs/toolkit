@@ -2,15 +2,15 @@
 
 namespace Salient\Sli\Command\Http;
 
-use Salient\Cli\Catalog\CliOptionType;
-use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Catalog\Cli\CliOptionType;
+use Salient\Catalog\Cli\CliOptionValueType;
+use Salient\Catalog\Http\HttpRequestMethod;
 use Salient\Cli\CliOption;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
-use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Sli\Command\Concept\Command;
 use Salient\Sync\HttpSyncProvider;
 

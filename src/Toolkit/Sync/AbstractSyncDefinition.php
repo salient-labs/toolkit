@@ -2,6 +2,12 @@
 
 namespace Salient\Sync;
 
+use Salient\Catalog\Core\ArrayMapperFlag;
+use Salient\Catalog\Core\ListConformity;
+use Salient\Catalog\Sync\FilterPolicy;
+use Salient\Catalog\Sync\SyncEntitySource;
+use Salient\Catalog\Sync\SyncOperation as OP;
+use Salient\Catalog\Sync\SyncOperationGroup;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
@@ -10,16 +16,10 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
-use Salient\Sync\Catalog\FilterPolicy;
-use Salient\Sync\Catalog\SyncEntitySource;
-use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Catalog\SyncOperationGroup;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 use Salient\Sync\Support\SyncIntrospector;

@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Cli\Catalog\CliHelpSectionName;
+use Salient\Catalog\Cli\CliHelpSectionName;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliHelpStyle;
 use Salient\Contract\Container\HasContainer;

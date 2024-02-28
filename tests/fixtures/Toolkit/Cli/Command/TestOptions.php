@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Cli\Command;
 
-use Salient\Cli\Catalog\CliOptionType;
-use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Catalog\Cli\CliOptionType;
+use Salient\Catalog\Cli\CliOptionValueType;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
 use Salient\Core\Utility\Arr;

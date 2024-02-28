@@ -2,8 +2,8 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleMessageType as MessageType;
+use Salient\Catalog\Console\ConsoleMessageType as MessageType;
+use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 
 /**

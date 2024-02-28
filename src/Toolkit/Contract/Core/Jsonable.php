@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\Catalog\JsonEncodeFlag;
+use Salient\Catalog\Core\JsonEncodeFlag;
 
 interface Jsonable
 {

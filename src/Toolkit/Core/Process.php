@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Catalog\FileDescriptor;
+use Salient\Catalog\Core\FileDescriptor;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;

@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Http;
 
+use Salient\Catalog\Http\HttpHeader;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Http\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers

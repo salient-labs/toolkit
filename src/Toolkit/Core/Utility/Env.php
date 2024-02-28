@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Catalog\EnvFlag;
-use Salient\Core\Catalog\Regex;
+use Salient\Catalog\Core\EnvFlag;
+use Salient\Catalog\Core\Regex;
 use Salient\Core\Exception\InvalidDotEnvSyntaxException;
 use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Exception\RuntimeException;

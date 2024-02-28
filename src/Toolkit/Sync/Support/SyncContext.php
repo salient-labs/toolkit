@@ -2,6 +2,9 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Catalog\Sync\DeferralPolicy;
+use Salient\Catalog\Sync\HydrationPolicy;
+use Salient\Catalog\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
@@ -10,9 +13,6 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\ProviderContext;
-use Salient\Sync\Catalog\DeferralPolicy;
-use Salient\Sync\Catalog\HydrationPolicy;
-use Salient\Sync\Catalog\SyncOperation;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use LogicException;

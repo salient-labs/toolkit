@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Catalog\Sync\SyncOperation;
 use Salient\Contract\Core\Immutable;
-use Salient\Sync\Catalog\SyncOperation;
 use Closure;
 
 /**

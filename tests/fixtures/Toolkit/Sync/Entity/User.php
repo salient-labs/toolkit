@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Sync\Entity;
 
-use Salient\Core\Catalog\Cardinality;
+use Salient\Catalog\Core\Cardinality;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\AbstractSyncEntity;

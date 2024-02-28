@@ -2,19 +2,19 @@
 
 namespace Salient\Cli;
 
-use Salient\Cli\Catalog\CliOptionType;
-use Salient\Cli\Catalog\CliOptionValueType;
-use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
-use Salient\Cli\Catalog\CliOptionVisibility;
+use Salient\Catalog\Cli\CliOptionType;
+use Salient\Catalog\Cli\CliOptionValueType;
+use Salient\Catalog\Cli\CliOptionValueUnknownPolicy;
+use Salient\Catalog\Cli\CliOptionVisibility;
+use Salient\Catalog\Console\ConsoleMessageType as MessageType;
+use Salient\Catalog\Core\Char;
+use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Contract\Core\Readable;
-use Salient\Core\Catalog\Char;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Facade\Console;

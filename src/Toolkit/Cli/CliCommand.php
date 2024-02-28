@@ -2,10 +2,10 @@
 
 namespace Salient\Cli;
 
-use Salient\Cli\Catalog\CliHelpSectionName;
-use Salient\Cli\Catalog\CliHelpTarget;
-use Salient\Cli\Catalog\CliOptionValueType;
-use Salient\Cli\Catalog\CliOptionVisibility;
+use Salient\Catalog\Cli\CliHelpSectionName;
+use Salient\Catalog\Cli\CliHelpTarget;
+use Salient\Catalog\Cli\CliOptionValueType;
+use Salient\Catalog\Cli\CliOptionVisibility;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
 use Salient\Contract\Cli\CliApplicationInterface;

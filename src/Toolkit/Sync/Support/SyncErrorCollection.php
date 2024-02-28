@@ -2,11 +2,11 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Catalog\Sync\SyncErrorType as ErrorType;
 use Salient\Collection\AbstractTypedCollection;
-use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Utility\Arr;
-use Salient\Sync\Catalog\SyncErrorType as ErrorType;
 use Salient\Sync\SyncError;
 use JsonSerializable;
 

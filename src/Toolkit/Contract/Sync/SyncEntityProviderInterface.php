@@ -2,12 +2,12 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Catalog\Core\TextComparisonAlgorithm;
+use Salient\Catalog\Core\TextComparisonFlag;
+use Salient\Catalog\Sync\HydrationPolicy;
+use Salient\Catalog\Sync\SyncOperation;
 use Salient\Contract\Core\HasProvider;
 use Salient\Contract\Iterator\FluentIteratorInterface;
-use Salient\Core\Catalog\TextComparisonAlgorithm;
-use Salient\Core\Catalog\TextComparisonFlag;
-use Salient\Sync\Catalog\HydrationPolicy;
-use Salient\Sync\Catalog\SyncOperation;
 
 /**
  * Provides an entity-agnostic interface to a SyncProviderInterface's
