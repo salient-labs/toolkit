@@ -2,6 +2,7 @@
 
 namespace Salient\Container\Event;
 
+use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
 use Salient\Contract\Container\ContainerInterface;
 
 /**
@@ -9,7 +10,7 @@ use Salient\Contract\Container\ContainerInterface;
  *
  * @api
  */
-class BeforeGlobalContainerSetEvent extends ContainerEvent
+class BeforeGlobalContainerSetEvent extends ContainerEvent implements BeforeGlobalContainerSetEventInterface
 {
     protected ?ContainerInterface $Container;
 
