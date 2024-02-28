@@ -3,11 +3,11 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Facade\Console;
-use Lkrms\Facade\Err;
-use Lkrms\Http\HttpResponse;
-use Lkrms\Http\HttpServer;
-use Lkrms\Http\HttpServerRequest;
+use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Err;
+use Salient\Http\HttpResponse;
+use Salient\Http\HttpServer;
+use Salient\Http\HttpServerRequest;
 
 require __DIR__ . '/../../vendor/autoload.php';
 

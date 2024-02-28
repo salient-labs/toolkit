@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Sync\Entity\Provider;
 
-use Salient\Sync\Contract\SyncContextInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Tests\Sync\Entity\Comment;
 
 /**

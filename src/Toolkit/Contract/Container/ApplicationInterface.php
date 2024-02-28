@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Container;
+namespace Salient\Contract\Container;
 
 use Salient\Cache\CacheStore;
 use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Package;
-use Salient\Sync\Contract\SyncClassResolverInterface;
 use Salient\Sync\SyncStore;
 
 /**

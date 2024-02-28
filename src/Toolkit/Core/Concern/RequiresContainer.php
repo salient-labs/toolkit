@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Facade\App;
 
 /**

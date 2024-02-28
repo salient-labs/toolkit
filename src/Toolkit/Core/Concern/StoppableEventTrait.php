@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Contract\StoppableEventInterface;
+use Salient\Contract\Core\StoppableEventInterface;
 
 /**
  * Implements IStoppableEvent

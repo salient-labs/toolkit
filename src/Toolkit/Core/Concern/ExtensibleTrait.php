@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Contract\Extensible;
+use Salient\Contract\Core\Extensible;
 use Salient\Core\Introspector as IS;
 
 /**

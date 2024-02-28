@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Contract;
+namespace Salient\Contract\Sync;
 
 /**
  * Resolves sync entity classes to their respective provider interfaces, and

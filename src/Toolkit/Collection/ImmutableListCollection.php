@@ -2,7 +2,8 @@
 
 namespace Salient\Collection;
 
-use Salient\Core\Contract\Immutable;
+use Salient\Contract\Collection\ListInterface;
+use Salient\Contract\Core\Immutable;
 
 /**
  * An immutable array-like list of items

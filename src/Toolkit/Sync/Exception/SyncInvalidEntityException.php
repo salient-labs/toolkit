@@ -2,8 +2,8 @@
 
 namespace Salient\Sync\Exception;
 
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Throwable;
 
 /**

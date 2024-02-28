@@ -5,7 +5,7 @@ namespace Salient\Core;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
-use Salient\Core\Contract\Nameable;
+use Salient\Contract\Core\Nameable;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
 use Generator;

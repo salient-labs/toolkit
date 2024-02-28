@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Container\Contract;
-
-use Salient\Container\ContainerInterface;
+namespace Salient\Contract\Container;
 
 /**
  * @template T of ContainerInterface

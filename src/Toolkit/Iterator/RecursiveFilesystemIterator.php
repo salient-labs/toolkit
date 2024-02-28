@@ -2,11 +2,11 @@
 
 namespace Salient\Iterator;
 
-use Salient\Core\Contract\Immutable;
+use Salient\Contract\Core\Immutable;
+use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Pcre;
 use Salient\Iterator\Concern\FluentIteratorTrait;
-use Salient\Iterator\Contract\FluentIteratorInterface;
 use AppendIterator;
 use CallbackFilterIterator;
 use Countable;

@@ -73,19 +73,19 @@ The first value passed is always the current [SyncContextInterface] and
     recommendations, including recognised signatures.
 
 [getDefinition]:
-  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncProviderInterface.html#_getDefinition
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncProviderInterface.html#_getDefinition
 [SyncContextInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncContextInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html
 [SyncEntityInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncEntityInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncEntityInterface.html
 [SyncProviderInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncProviderInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncProviderInterface.html
 [SyncClassResolverInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncClassResolverInterface.html
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncClassResolverInterface.html
 [SyncOperation]:
   https://salient-labs.github.io/toolkit/Salient.Sync.Catalog.SyncOperation.html
 [withArgs]:
-  https://salient-labs.github.io/toolkit/Salient.Sync.Contract.SyncContextInterface.html#_withArgs
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withArgs
 [namespace]:
   https://salient-labs.github.io/toolkit/Salient.Sync.SyncStore.html#_namespace
 [SyncClassResolver.php]: ../tests/fixtures/Toolkit/Sync/SyncClassResolver.php

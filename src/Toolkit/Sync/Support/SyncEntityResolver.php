@@ -2,9 +2,9 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncEntityProviderInterface;
-use Salient\Sync\Contract\SyncEntityResolverInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncEntityProviderInterface;
+use Salient\Contract\Sync\SyncEntityResolverInterface;
 use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 
 /**

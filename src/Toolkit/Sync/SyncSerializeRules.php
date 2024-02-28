@@ -2,19 +2,19 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Core\Buildable;
+use Salient\Contract\Core\Immutable;
+use Salient\Contract\Core\Readable;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\Buildable;
-use Salient\Core\Contract\Immutable;
-use Salient\Core\Contract\Readable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\DateFormatter;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncSerializeRulesInterface;
 use Salient\Sync\Support\SyncIntrospector;
 use Closure;
 use LogicException;

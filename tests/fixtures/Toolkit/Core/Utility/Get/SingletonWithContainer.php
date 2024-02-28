@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Core\Utility\Get;
 
-use Salient\Container\Contract\HasContextualBindings;
-use Salient\Container\Contract\HasServices;
-use Salient\Container\Contract\SingletonInterface;
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Container\HasContextualBindings;
+use Salient\Contract\Container\HasServices;
+use Salient\Contract\Container\SingletonInterface;
 
 class SingletonWithContainer implements HasServices, HasContextualBindings, SingletonInterface
 {

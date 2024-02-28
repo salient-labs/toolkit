@@ -9,7 +9,7 @@ use Salient\Cli\Catalog\CliOptionVisibility;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
 use Salient\Container\Container;
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\AbstractBuilder;
 use Salient\Tests\TestCase;
 use ReflectionClass;

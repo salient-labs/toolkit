@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Cli\Contract;
+namespace Salient\Contract\Cli;
 
 use Salient\Cli\Catalog\CliHelpSectionName;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliHelpStyle;
-use Salient\Container\Contract\HasContainer;
-use Salient\Core\Contract\Describable;
-use Salient\Core\Contract\Nameable;
+use Salient\Contract\Container\HasContainer;
+use Salient\Contract\Core\Describable;
+use Salient\Contract\Core\Nameable;
 use LogicException;
 
 /**

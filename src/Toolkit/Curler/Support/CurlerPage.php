@@ -2,10 +2,10 @@
 
 namespace Salient\Curler\Support;
 
+use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Exception\AssertionFailedException;
 use Salient\Curler\Contract\ICurlerPage;
 use Salient\Curler\Curler;
-use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * Implements ICurlerPage

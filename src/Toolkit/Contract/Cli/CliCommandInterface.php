@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Cli\Contract;
+namespace Salient\Contract\Cli;
 
-use Salient\Core\Contract\JsonSchemaInterface;
+use Salient\Contract\Core\JsonSchemaInterface;
 
 /**
  * A runnable CLI command

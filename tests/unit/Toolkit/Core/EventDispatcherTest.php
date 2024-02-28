@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Core\Contract\Nameable;
+use Salient\Contract\Core\Nameable;
 use Salient\Core\Facade\Event;
 use Salient\Core\EventDispatcher;
 use Salient\Tests\Core\EventDispatcher\BaseEvent;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Container\Contract;
+namespace Salient\Contract\Container;
 
 /**
  * For classes that need to know when they are used to resolve a service from a

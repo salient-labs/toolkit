@@ -2,10 +2,10 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\FacadeAwareInterface;
+use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\UnloadsFacades;
-use Salient\Core\Contract\FacadeAwareInterface;
-use Salient\Core\Contract\FacadeInterface;
-use Salient\Core\Contract\Unloadable;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Utility\File;
 use LogicException;

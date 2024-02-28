@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Collection\CollectionInterface;
+use Salient\Contract\Collection\CollectionInterface;
 use Salient\Core\Catalog\MimeType;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;

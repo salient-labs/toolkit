@@ -2,8 +2,8 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\SyncContextInterface;
 
 /**
  * Thrown when the non-mandatory arguments passed to a sync operation do not

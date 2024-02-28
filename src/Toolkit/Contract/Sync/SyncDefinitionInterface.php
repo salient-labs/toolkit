@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Contract;
+namespace Salient\Contract\Sync;
 
-use Salient\Core\Contract\Immutable;
+use Salient\Contract\Core\Immutable;
 use Salient\Sync\Catalog\SyncOperation;
 use Closure;
 

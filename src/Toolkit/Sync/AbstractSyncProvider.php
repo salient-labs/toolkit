@@ -2,19 +2,19 @@
 
 namespace Salient\Sync;
 
-use Salient\Container\Contract\HasContextualBindings;
-use Salient\Container\Contract\HasServices;
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Container\HasContextualBindings;
+use Salient\Contract\Container\HasServices;
+use Salient\Contract\Pipeline\PipelineInterface;
+use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Catalog\Regex;
-use Salient\Core\Contract\PipelineInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
 use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Contract\SyncContextInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;

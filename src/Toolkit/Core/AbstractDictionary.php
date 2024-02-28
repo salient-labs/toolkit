@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Contract\DictionaryInterface;
+use Salient\Contract\Core\DictionaryInterface;
 
 /**
  * Base class for dictionaries

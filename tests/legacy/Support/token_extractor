@@ -3,11 +3,11 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Facade\Err;
-use Lkrms\Support\TokenExtractor;
 use My\Full\Classname as Another;
 use My\Full\Classname as AnotherClass, My\Full\Classname;
 use My\Full\NSname;
+use Salient\Core\Facade\Err;
+use Salient\Sli\Support\TokenExtractor;
 use some\namespace\{ClassA, ClassB, ClassC as C, special\ClassD as D};
 use ArrayObject;
 

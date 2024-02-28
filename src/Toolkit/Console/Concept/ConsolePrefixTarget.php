@@ -4,7 +4,7 @@ namespace Salient\Console\Concept;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleTag as Tag;
-use Salient\Console\Contract\ConsoleTargetPrefixInterface;
+use Salient\Contract\Console\ConsoleTargetPrefixInterface;
 
 /**
  * Base class for console output targets that apply an optional prefix to each

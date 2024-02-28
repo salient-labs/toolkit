@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http\Contract;
+namespace Salient\Contract\Http;
 
-use Salient\Collection\CollectionInterface;
-use Salient\Core\Contract\Arrayable;
+use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Core\Arrayable;
 use Salient\Http\Catalog\HttpHeader;
 
 /**

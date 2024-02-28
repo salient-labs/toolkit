@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Contract\FacadeAwareInterface;
-use Salient\Core\Contract\FacadeInterface;
+use Salient\Contract\Core\FacadeAwareInterface;
+use Salient\Contract\Core\FacadeInterface;
 use Salient\Core\Utility\Get;
 use LogicException;
 

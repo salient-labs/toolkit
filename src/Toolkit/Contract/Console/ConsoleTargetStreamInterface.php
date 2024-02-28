@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Contract;
+namespace Salient\Contract\Console;
 
 /**
  * A console output target with an underlying PHP stream

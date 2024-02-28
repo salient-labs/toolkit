@@ -2,9 +2,9 @@
 
 namespace Salient\PhpDoc;
 
+use Salient\Contract\Core\Readable;
 use Salient\Core\Catalog\Regex;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\Readable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Pcre;

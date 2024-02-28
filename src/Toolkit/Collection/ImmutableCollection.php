@@ -2,8 +2,9 @@
 
 namespace Salient\Collection;
 
-use Salient\Core\Contract\Arrayable;
-use Salient\Core\Contract\Immutable;
+use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\Immutable;
 
 /**
  * An immutable array-like collection of items

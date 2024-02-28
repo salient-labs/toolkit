@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Container\Contract;
-
-use Salient\Container\ContainerInterface;
+namespace Salient\Contract\Container;
 
 /**
  * For classes that need to know when they are instantiated by a container

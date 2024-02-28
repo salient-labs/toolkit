@@ -2,6 +2,7 @@
 
 namespace Salient\Collection;
 
+use Salient\Contract\Collection\CollectionInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 

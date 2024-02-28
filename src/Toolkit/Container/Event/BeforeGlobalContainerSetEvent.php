@@ -2,7 +2,7 @@
 
 namespace Salient\Container\Event;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
 
 /**
  * Dispatched before the global container is set or unset

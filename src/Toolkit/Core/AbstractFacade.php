@@ -4,11 +4,11 @@ namespace Salient\Core;
 
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Container\Container;
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\FacadeAwareInterface;
+use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasUnderlyingService;
-use Salient\Core\Contract\FacadeAwareInterface;
-use Salient\Core\Contract\FacadeInterface;
-use Salient\Core\Contract\Unloadable;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Get;

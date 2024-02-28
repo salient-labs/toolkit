@@ -1,17 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Container;
+namespace Salient\Contract\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
-use Salient\Container\Contract\ContainerAwareInterface;
-use Salient\Container\Contract\HasBindings;
-use Salient\Container\Contract\HasContextualBindings;
-use Salient\Container\Contract\HasServices;
-use Salient\Container\Contract\ServiceAwareInterface;
-use Salient\Container\Contract\SingletonInterface;
 use Salient\Container\Exception\ContainerUnusableArgumentsException;
-use Salient\Core\Contract\Chainable;
-use Salient\Core\Contract\Unloadable;
+use Salient\Container\ServiceLifetime;
+use Salient\Contract\Core\Chainable;
+use Salient\Contract\Core\Unloadable;
 
 /**
  * A service container with contextual bindings

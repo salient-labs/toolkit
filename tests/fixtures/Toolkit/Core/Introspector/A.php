@@ -2,15 +2,15 @@
 
 namespace Salient\Tests\Core\Introspector;
 
+use Salient\Contract\Core\Extensible;
+use Salient\Contract\Core\Normalisable;
+use Salient\Contract\Core\NormaliserFactory;
+use Salient\Contract\Core\Readable;
+use Salient\Contract\Core\Writable;
 use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\Extensible;
-use Salient\Core\Contract\Normalisable;
-use Salient\Core\Contract\NormaliserFactory;
-use Salient\Core\Contract\Readable;
-use Salient\Core\Contract\Writable;
 
 class A implements Readable, Writable, Extensible, Normalisable, NormaliserFactory
 {

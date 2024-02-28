@@ -2,10 +2,10 @@
 
 namespace Salient\Curler\Support;
 
+use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\AbstractBuilder;
 use Salient\Curler\Contract\ICurlerPage;
 use Salient\Curler\Curler;
-use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * A fluent CurlerPage factory

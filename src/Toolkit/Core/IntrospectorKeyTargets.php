@@ -2,10 +2,10 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\ProviderContextInterface;
-use Salient\Core\Contract\ProviderInterface;
-use Salient\Core\Contract\Readable;
 use Closure;
 
 /**

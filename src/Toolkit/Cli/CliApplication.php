@@ -4,15 +4,15 @@ namespace Salient\Cli;
 
 use Salient\Cli\Catalog\CliHelpSectionName;
 use Salient\Cli\Catalog\CliHelpTarget;
-use Salient\Cli\Contract\CliApplicationInterface;
-use Salient\Cli\Contract\CliCommandInterface;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Console\Support\ConsoleManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Container\Application;
+use Salient\Contract\Cli\CliApplicationInterface;
+use Salient\Contract\Cli\CliCommandInterface;
+use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Core\Catalog\EnvFlag;
-use Salient\Core\Contract\JsonSchemaInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Assert;

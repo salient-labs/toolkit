@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Contract;
+namespace Salient\Contract\Core;
 
 /**
  * Has declared or undeclared properties that accept date and time values

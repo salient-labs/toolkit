@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Facade\Err;
+use Salient\Core\Facade\Err;
 use Salient\Core\Utility\File;
 
 require __DIR__ . '/../vendor/autoload.php';

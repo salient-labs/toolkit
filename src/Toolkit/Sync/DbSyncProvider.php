@@ -2,7 +2,9 @@
 
 namespace Salient\Sync;
 
-use Salient\Core\Contract\ProviderInterface;
+use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Sync\SyncDefinitionInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Arr;
@@ -10,8 +12,6 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 use Salient\Core\SqlQuery;
 use Salient\Db\DbConnector;
-use Salient\Sync\Contract\SyncDefinitionInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
 use ADOConnection;

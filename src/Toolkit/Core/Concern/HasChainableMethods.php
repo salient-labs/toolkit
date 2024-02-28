@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Contract\Chainable;
+use Salient\Contract\Core\Chainable;
 
 /**
  * Implements Chainable

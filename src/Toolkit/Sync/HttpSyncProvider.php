@@ -3,7 +3,10 @@
 namespace Salient\Sync;
 
 use Salient\Cache\CacheStore;
-use Salient\Core\Contract\DateFormatterInterface;
+use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Sync\SyncDefinitionInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
@@ -11,10 +14,7 @@ use Salient\Curler\Contract\ICurlerPager;
 use Salient\Curler\Exception\CurlerCurlErrorException;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerBuilder;
-use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Http\HttpHeaders;
-use Salient\Sync\Contract\SyncDefinitionInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
 
 /**

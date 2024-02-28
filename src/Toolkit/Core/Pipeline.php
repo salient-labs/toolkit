@@ -2,14 +2,14 @@
 
 namespace Salient\Core;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Pipeline\EntityPipelineInterface;
+use Salient\Contract\Pipeline\PipeInterface;
+use Salient\Contract\Pipeline\PipelineInterface;
+use Salient\Contract\Pipeline\StreamPipelineInterface;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Contract\EntityPipelineInterface;
-use Salient\Core\Contract\PipeInterface;
-use Salient\Core\Contract\PipelineInterface;
-use Salient\Core\Contract\StreamPipelineInterface;
 use Salient\Core\Facade\App;
 use Salient\Core\Utility\Get;
 use Closure;

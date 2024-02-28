@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Contract;
+namespace Salient\Contract\Core;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\AbstractBuilder;
 

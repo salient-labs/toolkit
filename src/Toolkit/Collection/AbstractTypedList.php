@@ -2,6 +2,8 @@
 
 namespace Salient\Collection;
 
+use Salient\Contract\Collection\ListInterface;
+
 /**
  * Base class for lists of items of a given type
  *

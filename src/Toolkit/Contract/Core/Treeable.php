@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Contract;
+namespace Salient\Contract\Core;
 
 /**
  * Has a parent and children of the same type and can be traversed towards them

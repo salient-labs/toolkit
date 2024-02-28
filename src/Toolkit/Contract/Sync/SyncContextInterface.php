@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Contract;
+namespace Salient\Contract\Sync;
 
-use Salient\Core\Contract\Providable;
-use Salient\Core\Contract\ProviderContextInterface;
+use Salient\Contract\Core\Providable;
+use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Collection;
+namespace Salient\Contract\Collection;
 
-use Salient\Core\Contract\Arrayable;
-use Salient\Core\Contract\Jsonable;
+use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\Jsonable;
 use ArrayAccess;
 use Countable;
 use IteratorAggregate;

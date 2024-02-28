@@ -6,9 +6,9 @@ use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Catalog\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Inflect;
-use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * A generic sync provider heartbeat check command

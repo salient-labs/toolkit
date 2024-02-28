@@ -4,7 +4,7 @@ namespace Salient\Core\Concern;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
-use Salient\Core\Contract\MultipleErrorExceptionInterface;
+use Salient\Contract\Core\MultipleErrorExceptionInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Get;

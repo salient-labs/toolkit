@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Container\Contract;
+namespace Salient\Contract\Container;
 
 /**
  * Implemented by service providers that specify which of their interfaces can

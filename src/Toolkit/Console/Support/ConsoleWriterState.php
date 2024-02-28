@@ -4,9 +4,9 @@ namespace Salient\Console\Support;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
-use Salient\Console\Contract\ConsoleTargetInterface as Target;
-use Salient\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Console\ConsoleWriter;
+use Salient\Contract\Console\ConsoleTargetInterface as Target;
+use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 
 /**
  * ConsoleWriter state information

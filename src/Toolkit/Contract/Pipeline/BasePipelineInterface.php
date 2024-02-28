@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Contract;
+namespace Salient\Contract\Pipeline;
 
+use Salient\Contract\Core\Chainable;
+use Salient\Contract\Core\Immutable;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Closure;
 

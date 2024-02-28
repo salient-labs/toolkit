@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Contract;
+namespace Salient\Contract\Sync;
 
-use Salient\Container\ContainerInterface;
-use Salient\Core\Contract\ProviderInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\ProviderInterface;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\AbstractSyncProvider;
 use Salient\Sync\SyncStore;

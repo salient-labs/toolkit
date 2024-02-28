@@ -2,19 +2,19 @@
 
 namespace Salient\Core;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\Extensible;
+use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\Normalisable;
+use Salient\Contract\Core\NormaliserFactory;
+use Salient\Contract\Core\Providable;
+use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Core\Relatable;
+use Salient\Contract\Core\SerializeRulesInterface;
+use Salient\Contract\Core\Treeable;
 use Salient\Core\Catalog\NormaliserFlag;
-use Salient\Core\Contract\DateFormatterInterface;
-use Salient\Core\Contract\Extensible;
-use Salient\Core\Contract\Nameable;
-use Salient\Core\Contract\Normalisable;
-use Salient\Core\Contract\NormaliserFactory;
-use Salient\Core\Contract\Providable;
-use Salient\Core\Contract\ProviderContextInterface;
-use Salient\Core\Contract\ProviderInterface;
-use Salient\Core\Contract\Relatable;
-use Salient\Core\Contract\SerializeRulesInterface;
-use Salient\Core\Contract\Treeable;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

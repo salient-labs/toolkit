@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Exception;
 
+use Salient\Contract\Core\ExceptionInterface;
 use Salient\Core\Concern\ExceptionTrait;
-use Salient\Core\Contract\ExceptionInterface;
 
 /**
  * @api

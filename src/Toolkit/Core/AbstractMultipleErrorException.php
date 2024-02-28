@@ -2,8 +2,8 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\MultipleErrorExceptionInterface;
 use Salient\Core\Concern\MultipleErrorExceptionTrait;
-use Salient\Core\Contract\MultipleErrorExceptionInterface;
 
 /**
  * Base class for runtime exceptions that represent multiple errors

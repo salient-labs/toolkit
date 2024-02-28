@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Iterator\Contract;
+namespace Salient\Contract\Iterator;
 
-use Salient\Core\Contract\Arrayable;
+use Salient\Contract\Core\Arrayable;
 use Traversable;
 
 /**

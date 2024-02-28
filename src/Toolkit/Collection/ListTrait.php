@@ -2,7 +2,8 @@
 
 namespace Salient\Collection;
 
-use Salient\Core\Contract\Arrayable;
+use Salient\Contract\Collection\ListInterface;
+use Salient\Contract\Core\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Get;
 

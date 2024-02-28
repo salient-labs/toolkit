@@ -3,9 +3,9 @@
 namespace Salient\Tests\Core\Utility;
 
 use Salient\Container\Container;
+use Salient\Contract\Core\Arrayable;
 use Salient\Core\Catalog\CopyFlag;
 use Salient\Core\Catalog\QueryFlag;
-use Salient\Core\Contract\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\UncloneableObjectException;
 use Salient\Core\Utility\Get;

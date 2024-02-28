@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Core\AbstractFacade;
 
+use Salient\Contract\Core\FacadeAwareInterface;
+use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasFacade;
-use Salient\Core\Contract\FacadeAwareInterface;
-use Salient\Core\Contract\FacadeInterface;
-use Salient\Core\Contract\Unloadable;
 
 /**
  * @implements FacadeAwareInterface<FacadeInterface<self>>

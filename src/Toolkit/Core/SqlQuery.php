@@ -2,10 +2,10 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\Chainable;
+use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
-use Salient\Core\Contract\Chainable;
-use Salient\Core\Contract\Readable;
 use LogicException;
 
 /**

@@ -2,14 +2,14 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Extensible;
+use Salient\Contract\Core\Providable;
+use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Core\Catalog\ListConformity;
-use Salient\Core\Contract\Extensible;
-use Salient\Core\Contract\Providable;
-use Salient\Core\Contract\ProviderContextInterface;
-use Salient\Core\Contract\ProviderInterface;
 use Salient\Core\Introspector;
-use Salient\Iterator\Contract\FluentIteratorInterface;
 use Salient\Iterator\IterableIterator;
 use Generator;
 use LogicException;

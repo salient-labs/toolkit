@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Contract;
+namespace Salient\Contract\Console;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\ConsoleFormatter as Formatter;

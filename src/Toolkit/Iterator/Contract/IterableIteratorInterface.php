@@ -2,6 +2,8 @@
 
 namespace Salient\Iterator\Contract;
 
+use Salient\Contract\Iterator\FluentIteratorInterface;
+
 /**
  * @template TKey of array-key
  * @template TValue

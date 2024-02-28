@@ -2,11 +2,11 @@
 
 namespace Salient\Curler;
 
-use Salient\Core\Contract\DateFormatterInterface;
+use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\AbstractBuilder;
 use Salient\Curler\Catalog\CurlerProperty;
 use Salient\Curler\Contract\ICurlerPager;
-use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * A fluent Curler factory

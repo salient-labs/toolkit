@@ -2,7 +2,7 @@
 
 namespace Salient\Sync\Exception;
 
-use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\SyncStore;
 
 /**

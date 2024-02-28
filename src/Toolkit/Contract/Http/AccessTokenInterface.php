@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http\Contract;
+namespace Salient\Contract\Http;
 
 interface AccessTokenInterface
 {

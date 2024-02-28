@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Cli\Contract;
+namespace Salient\Contract\Cli;
 
-use Salient\Container\ApplicationInterface;
+use Salient\Contract\Container\ApplicationInterface;
 use LogicException;
 
 /**

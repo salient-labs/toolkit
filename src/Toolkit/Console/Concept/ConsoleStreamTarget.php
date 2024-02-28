@@ -7,11 +7,11 @@ use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Console\Catalog\ConsoleMessageTypeGroup as MessageTypeGroup;
 use Salient\Console\Catalog\ConsoleTag as Tag;
-use Salient\Console\Contract\ConsoleTargetStreamInterface;
 use Salient\Console\Support\ConsoleFormat as Format;
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
+use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Core\Catalog\EscapeSequence as Colour;
 
 /**

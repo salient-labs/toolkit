@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Contract;
+namespace Salient\Contract\Sync;
 
-use Salient\Container\ContainerInterface;
-use Salient\Core\Contract\Identifiable;
-use Salient\Core\Contract\Nameable;
-use Salient\Core\Contract\Providable;
-use Salient\Core\Contract\ProvidableEntityInterface;
-use Salient\Core\Contract\Relatable;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Identifiable;
+use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\Providable;
+use Salient\Contract\Core\ProvidableEntityInterface;
+use Salient\Contract\Core\Relatable;
 use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\AbstractSyncEntity;

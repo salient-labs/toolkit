@@ -8,7 +8,7 @@ use Salient\Cli\CliOptionBuilder;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\ConsoleWriter;
 use Salient\Container\Container;
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;

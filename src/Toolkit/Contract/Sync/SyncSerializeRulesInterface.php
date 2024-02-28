@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Contract;
+namespace Salient\Contract\Sync;
 
-use Salient\Core\Contract\SerializeRulesInterface;
+use Salient\Contract\Core\SerializeRulesInterface;
 
 /**
  * Instructions for serializing nested sync entities

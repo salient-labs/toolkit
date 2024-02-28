@@ -5,6 +5,8 @@ namespace Salient\Sync\Command;
 use Salient\Cli\Catalog\CliOptionType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
@@ -12,8 +14,6 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Json;
 use Salient\Sync\Catalog\DeferralPolicy;
 use Salient\Sync\Catalog\HydrationPolicy;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncSerializeRules;
 

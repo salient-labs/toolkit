@@ -3,12 +3,11 @@
 
 namespace Lkrms\Tests\Template;
 
-use Lkrms\Facade\Err;
+use Salient\Contract\Core\Readable;
+use Salient\Contract\Core\Writable;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
-use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\Readable;
-use Salient\Core\Contract\Writable;
+use Salient\Core\Facade\Err;
 use RuntimeException;
 use Throwable;
 

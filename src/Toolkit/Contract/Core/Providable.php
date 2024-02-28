@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Contract;
+namespace Salient\Contract\Core;
 
-use Salient\Container\Contract\ServiceAwareInterface;
+use Salient\Contract\Container\ServiceAwareInterface;
+use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Core\Catalog\ListConformity;
-use Salient\Iterator\Contract\FluentIteratorInterface;
 
 /**
  * Serviced by a provider

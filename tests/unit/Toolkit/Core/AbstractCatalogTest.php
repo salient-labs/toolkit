@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Core\Contract\ConvertibleEnumerationInterface;
-use Salient\Core\Contract\EnumerationInterface;
+use Salient\Contract\Core\ConvertibleEnumerationInterface;
+use Salient\Contract\Core\EnumerationInterface;
 use Salient\Tests\Core\AbstractCatalog\MyArrayEnum;
 use Salient\Tests\Core\AbstractCatalog\MyConvertibleEnum;
 use Salient\Tests\Core\AbstractCatalog\MyDictionary;

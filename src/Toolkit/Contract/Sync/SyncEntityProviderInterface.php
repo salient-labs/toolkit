@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync\Contract;
+namespace Salient\Contract\Sync;
 
+use Salient\Contract\Core\HasProvider;
+use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Core\Catalog\TextComparisonAlgorithm;
 use Salient\Core\Catalog\TextComparisonFlag;
-use Salient\Core\Contract\HasProvider;
-use Salient\Iterator\Contract\FluentIteratorInterface;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
 

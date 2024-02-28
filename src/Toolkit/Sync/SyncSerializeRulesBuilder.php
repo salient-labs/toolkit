@@ -2,9 +2,9 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\AbstractBuilder;
 use Salient\Core\DateFormatter;
-use Salient\Sync\Contract\SyncEntityInterface;
 use Closure;
 
 /**
