@@ -14,3 +14,5 @@ parameters:
 		- tests/unit
 		- tests/phpstan-conditional.php
 		- bootstrap.php
+	universalObjectCratesClasses:
+		- Salient\Core\Contract\Extensible

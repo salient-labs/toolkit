@@ -12,7 +12,6 @@ use Salient\Container\Contract\HasServices;
 use Salient\Container\Contract\ServiceAwareInterface;
 use Salient\Container\Contract\SingletonInterface;
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
-use Salient\Container\Exception\ContainerNotFoundException;
 use Salient\Container\Exception\ContainerServiceNotFoundException;
 use Salient\Container\Exception\ContainerUnusableArgumentsException;
 use Salient\Container\Exception\InvalidContainerBindingException;
@@ -140,32 +139,6 @@ class Container implements ContainerInterface, FacadeAwareInterface
     {
         if (self::$GlobalContainer === null) {
             self::setGlobalContainer(new static());
-        }
-
-        return self::$GlobalContainer;
-    }
-
-    /**
-     * Get the global container if set
-     *
-     * @api
-     */
-    final public static function maybeGetGlobalContainer(): ?ContainerInterface
-    {
-        return self::$GlobalContainer;
-    }
-
-    /**
-     * Get the global container if set, otherwise throw an exception
-     *
-     * @api
-     *
-     * @throws ContainerNotFoundException if the global container is not set.
-     */
-    final public static function requireGlobalContainer(): ContainerInterface
-    {
-        if (self::$GlobalContainer === null) {
-            throw new ContainerNotFoundException();
         }
 
         return self::$GlobalContainer;

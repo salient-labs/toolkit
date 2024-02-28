@@ -1,19 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Core\Utility\Reflect;
 
 use Salient\Core\Utility\Reflect;
-use Salient\Tests\Core\Utility\Reflect\MyBaseClass;
-use Salient\Tests\Core\Utility\Reflect\MyBaseInterface;
-use Salient\Tests\Core\Utility\Reflect\MyBaseTrait;
-use Salient\Tests\Core\Utility\Reflect\MyClass;
-use Salient\Tests\Core\Utility\Reflect\MyClassWithDnfTypes;
-use Salient\Tests\Core\Utility\Reflect\MyClassWithUnionsAndIntersections;
-use Salient\Tests\Core\Utility\Reflect\MyInterface;
-use Salient\Tests\Core\Utility\Reflect\MyOtherInterface;
-use Salient\Tests\Core\Utility\Reflect\MyReusedTrait;
-use Salient\Tests\Core\Utility\Reflect\MySubclass;
-use Salient\Tests\Core\Utility\Reflect\MyTrait;
 use Salient\Tests\TestCase;
 use Generator;
 use ReflectionClass;
@@ -496,4 +485,226 @@ final class ReflectTest extends TestCase
             ];
         }
     }
+}
+
+/**
+ * MyBaseInterface
+ */
+interface MyBaseInterface
+{
+    /**
+     * MyBaseInterface::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod();
+}
+
+/**
+ * MyInterface
+ */
+interface MyInterface extends MyBaseInterface
+{
+    /**
+     * MyInterface::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod();
+}
+
+/**
+ * MyOtherInterface
+ */
+interface MyOtherInterface
+{
+    /**
+     * MyOtherInterface::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod();
+}
+
+/**
+ * MyReusedTrait
+ */
+trait MyReusedTrait
+{
+    /**
+     * MyReusedTrait::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
+     */
+    public $MyDocumentedProperty;
+
+    /**
+     * MyReusedTrait::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod() {}
+}
+
+/**
+ * MyBaseTrait
+ */
+trait MyBaseTrait
+{
+    use MyReusedTrait;
+
+    /**
+     * MyBaseTrait::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
+     */
+    public $MyDocumentedProperty;
+
+    /**
+     * MyBaseTrait::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod() {}
+}
+
+/**
+ * MyTrait
+ */
+trait MyTrait
+{
+    use MyBaseTrait;
+
+    /**
+     * MyTrait::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
+     */
+    public $MyDocumentedProperty;
+
+    /**
+     * MyTrait::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod() {}
+}
+
+/**
+ * MyBaseClass
+ */
+abstract class MyBaseClass
+{
+    /**
+     * MyBaseClass::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
+     */
+    public $MyDocumentedProperty;
+
+    /**
+     * @var mixed
+     * @phpstan-ignore-next-line
+     */
+    private $MyPrivateProperty1;
+
+    /**
+     * @var mixed
+     * @phpstan-ignore-next-line
+     */
+    private $MyPrivateProperty2;
+
+    /**
+     * MyBaseClass::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod() {}
+}
+
+/**
+ * MyClass
+ */
+class MyClass extends MyBaseClass implements MyInterface
+{
+    use MyTrait;
+    use MyReusedTrait;
+
+    public const MY_CONSTANT = 'my constant';
+
+    /**
+     * @var int|string
+     */
+    public $Id;
+
+    /**
+     * @var int|null
+     */
+    public $AltId;
+
+    /**
+     * @var string
+     */
+    public $Name;
+
+    /**
+     * @var MyClass|null
+     */
+    public $Parent;
+
+    /**
+     * @var MyClass|null
+     */
+    public $AltParent;
+
+    /**
+     * @var mixed
+     */
+    protected $MyPrivateProperty2;
+
+    /**
+     * @param int|string $id
+     */
+    public function __construct($id, ?int $altId, string $name, ?MyClass $parent, MyClass $altParent = null)
+    {
+        $this->Id = $id;
+        $this->AltId = $altId;
+        $this->Name = $name;
+        $this->Parent = $parent;
+        $this->AltParent = $altParent;
+    }
+
+    /**
+     * MyClass::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
+     */
+    public $MyDocumentedProperty;
+
+    /**
+     * MyClass::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod() {}
+}
+
+/**
+ * MySubclass
+ */
+class MySubclass extends MyClass implements MyOtherInterface
+{
+    /**
+     * MySubclass::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
+     */
+    public $MyDocumentedProperty;
+
+    /**
+     * MySubclass::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod() {}
 }
