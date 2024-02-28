@@ -1,0 +1,93 @@
+<?php
+
+abstract class ADOConnection
+{
+    /**
+     * @var string|false
+     */
+    public $sysTimeStamp = false;
+
+    /**
+     * @param string $parameter
+     * @param mixed $value
+     * @return bool
+     */
+    public function setConnectionParameter(
+        $parameter,
+        $value
+    ) {}
+
+    /**
+     * @param string $argHostname
+     * @param string $argUsername
+     * @param string $argPassword
+     * @param string $argDatabaseName
+     * @param bool $forceNew
+     * @return bool
+     */
+    public function Connect(
+        $argHostname = '',
+        $argUsername = '',
+        $argPassword = '',
+        $argDatabaseName = '',
+        $forceNew = false
+    ) {}
+
+    /**
+     * @param string $sql
+     * @return mixed|false
+     */
+    public function Prepare($sql) {}
+
+    /**
+     * @param int $mode
+     * @return int
+     */
+    public function SetFetchMode($mode) {}
+
+    /**
+     * @param mixed $name
+     * @param string $type
+     * @return string
+     */
+    public function Param($name, $type = 'C') {}
+
+    /**
+     * @param string $sql
+     * @param array<string,mixed>|bool $inputarr
+     * @return ADORecordSet|false
+     */
+    public function Execute($sql, $inputarr = false) {}
+
+    /**
+     * @param string $seqname
+     * @param int $startID
+     * @return int
+     */
+    public function GenID($seqname = 'adodbseq', $startID = 1) {}
+
+    /**
+     * @param string $sql
+     * @param array<string,mixed>|bool $inputarr
+     * @return mixed[]|false
+     */
+    public function GetAll($sql, $inputarr = false) {}
+
+    /**
+     * @param string $sql
+     * @param array<string,mixed>|bool $inputarr
+     * @return mixed
+     */
+    public function GetOne($sql, $inputarr = false) {}
+
+    /**
+     * @return mixed
+     */
+    public function Close() {}
+
+    /**
+     * @param mixed $d
+     * @return string
+     */
+    public function BindDate($d) {}
+}

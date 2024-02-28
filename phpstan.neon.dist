@@ -1,9 +1,8 @@
 includes:
-	- phpstan-baseline.neon
 	- tests/phpstan-conditional.php
 
 parameters:
-	level: 6
+	level: 9
 	paths:
 		- bin/sli
 		- scripts
@@ -14,5 +13,8 @@ parameters:
 		- tests/unit
 		- tests/phpstan-conditional.php
 		- bootstrap.php
+	stubFiles:
+		- stubs/ADOConnection.stub
+		- stubs/ADORecordSet.stub
 	universalObjectCratesClasses:
 		- Salient\Contract\Core\Extensible

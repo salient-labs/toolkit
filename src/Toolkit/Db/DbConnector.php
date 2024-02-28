@@ -4,6 +4,7 @@ namespace Salient\Db;
 
 use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Format;
@@ -116,16 +117,16 @@ final class DbConnector implements Readable
     }
 
     /**
-     * @param array<string,string|int|bool> $attributes
+     * @param array<string,string|int|bool|null> $attributes
      */
     private function getConnectionString(array $attributes, bool $enclose = true): string
     {
         $parts = [];
         foreach ($attributes as $keyword => $value) {
-            if (is_int($value)) {
-                $value = (string) $value;
-            } elseif (is_bool($value)) {
+            if (is_bool($value)) {
                 $value = Format::bool($value);
+            } else {
+                $value = (string) $value;
             }
             if (($enclose && strpos($value, '}') !== false) ||
                     (!$enclose && strpos($value, ';') !== false)) {
@@ -146,7 +147,11 @@ final class DbConnector implements Readable
 
     public function getConnection(int $timeout = 15): ADOConnection
     {
-        $db = ADONewConnection($this->AdodbDriver);
+        $db = $this->throwOnFailure(
+            ADONewConnection($this->AdodbDriver),
+            'Error connecting to database',
+        );
+
         $db->SetFetchMode(ADODB_FETCH_ASSOC);
 
         switch ($this->Driver) {
@@ -185,22 +190,38 @@ final class DbConnector implements Readable
                 $db->setConnectionParameter('CharacterSet', 'UTF-8');
                 $db->setConnectionParameter(
                     'TrustServerCertificate',
-                    // @phpstan-ignore-next-line
                     Env::getBool('mssql_trust_server_certificate', false),
                 );
-                // @phpstan-ignore-next-line
                 $db->setConnectionParameter('LoginTimeout', $timeout);
                 // No break
             default:
                 $db->Connect(
-                    $this->Hostname,
-                    $this->Username,
-                    $this->Password,
-                    $this->Database,
+                    (string) $this->Hostname,
+                    (string) $this->Username,
+                    (string) $this->Password,
+                    (string) $this->Database,
                 );
                 break;
         }
 
         return $db;
+    }
+
+    /**
+     * @template T
+     *
+     * @param T $result
+     * @param string|int|float ...$args
+     * @return (T is false ? never : T)
+     * @phpstan-param T|false $result
+     * @phpstan-return ($result is false ? never : T)
+     */
+    private static function throwOnFailure($result, string $message, ...$args)
+    {
+        if ($result === false) {
+            throw new RuntimeException(sprintf($message, ...$args));
+        }
+
+        return $result;
     }
 }

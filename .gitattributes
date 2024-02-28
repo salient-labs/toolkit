@@ -8,6 +8,8 @@
 /.vscode export-ignore
 /docs export-ignore
 /phpstan* export-ignore
+/phpstan-baseline-7.4.neon linguist-generated
+/phpstan-baseline-8.3.neon linguist-generated
 /phpunit* export-ignore
 /scripts export-ignore
 /src/Toolkit/Cli/CliOptionBuilder.php linguist-generated
@@ -25,6 +27,7 @@
 /src/Toolkit/Sync/HttpSyncDefinitionBuilder.php linguist-generated
 /src/Toolkit/Sync/SyncErrorBuilder.php linguist-generated
 /src/Toolkit/Sync/SyncSerializeRulesBuilder.php linguist-generated
+/stubs/*.stub export-ignore
 /tests export-ignore
 /tests/data/entity/albums.json linguist-generated
 /tests/data/entity/comments.json linguist-generated

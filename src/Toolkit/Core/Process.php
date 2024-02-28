@@ -78,7 +78,7 @@ final class Process
     private $Process;
 
     /**
-     * @var array<FileDescriptor::*,resource>
+     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource>
      */
     private array $Pipes;
 
@@ -197,14 +197,17 @@ final class Process
 
         $this->StartTime = hrtime(true);
 
-        $process = $this->throwOnFailure(@proc_open(
-            $this->Command,
-            $descriptors,
-            $pipes,
-            $this->Cwd,
-            $this->Env,
-            self::OPTIONS,
-        ));
+        $process = $this->throwOnFalse(
+            @proc_open(
+                $this->Command,
+                $descriptors,
+                $pipes,
+                $this->Cwd,
+                $this->Env,
+                self::OPTIONS,
+            ),
+            'Error running process: %s',
+        );
 
         if (isset($pipes[FileDescriptor::IN])) {
             File::close($pipes[FileDescriptor::IN]);
@@ -318,7 +321,7 @@ final class Process
             return $this;
         }
 
-        $this->ProcessStatus = $this->throwOnFailure(
+        $this->ProcessStatus = $this->throwOnFalse(
             @proc_get_status($this->Process),
             'Error getting process status: %s',
         );
@@ -361,17 +364,17 @@ final class Process
             $sec = $wait ? $this->Sec : 0;
             $usec = $wait ? $this->Usec : 0;
 
-            $this->throwOnFailure(
+            $this->throwOnFalse(
                 @stream_select($read, $write, $except, $sec, $usec),
                 'Error checking for process output: %s',
             );
         }
 
         foreach ($read as $pipe) {
-            /** @var FileDescriptor::* */
+            /** @var FileDescriptor::OUT|FileDescriptor::ERR */
             $i = Arr::keyOf($pipe, $this->Pipes);
 
-            $data = $this->throwOnFailure(
+            $data = $this->throwOnFalse(
                 @stream_get_contents($pipe),
                 'Error reading process output: %s',
             );
@@ -437,7 +440,7 @@ final class Process
             // @codeCoverageIgnoreEnd
         }
 
-        $this->throwOnFailure(
+        $this->throwOnFalse(
             @proc_terminate($this->Process),
             'Error terminating process: %s',
         );
@@ -468,7 +471,7 @@ final class Process
             $result = @proc_close($this->Process);
             if ($result === -1 && is_resource($this->Process)) {
                 // @codeCoverageIgnoreStart
-                $this->throwOnFailure($result, 'Error closing process: %s', -1);
+                $this->throwOnFailure($result, 'Error closing process: %s');
                 // @codeCoverageIgnoreEnd
             }
         }
@@ -519,19 +522,44 @@ final class Process
     }
 
     /**
-     * @template TSuccess
-     * @template TFailure of false|-1
+     * @template T
      *
-     * @param TSuccess|TFailure $result
-     * @param TFailure $failure
-     * @return ($result is TFailure ? never : TSuccess)
+     * @param T $result
+     * @return (T is false ? never : T)
+     * @phpstan-param T|false $result
+     * @phpstan-return ($result is false ? never : T)
      */
-    private function throwOnFailure($result, string $message = 'Error running process: %s', $failure = false)
+    private function throwOnFalse($result, string $message)
     {
-        if ($result !== $failure) {
-            return $result;
+        if ($result === false) {
+            $this->doThrowOnFailure($message);
         }
 
+        return $result;
+    }
+
+    /**
+     * @template T
+     *
+     * @param T $result
+     * @return (T is -1 ? never : T)
+     * @phpstan-param T|-1 $result
+     * @phpstan-return ($result is -1 ? never : T)
+     */
+    private function throwOnFailure($result, string $message)
+    {
+        if ($result === -1) {
+            $this->doThrowOnFailure($message);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return never
+     */
+    private function doThrowOnFailure(string $message): void
+    {
         $error = error_get_last();
         if ($error) {
             throw new ProcessException($error['message']);

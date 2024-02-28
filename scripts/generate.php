@@ -194,6 +194,13 @@ foreach ($providers as $class => $providerArgs) {
     generated($generateProvider);
 }
 
+foreach (File::find()
+        ->in(dirname(__DIR__))
+        ->include('%/phpstan-baseline.*\.neon$%')
+        ->doNotRecurse() as $file) {
+    generated((string) $file);
+}
+
 $file = dirname(__DIR__) . '/.gitattributes';
 $attributes = Pcre::grep(
     '/(^#| linguist-generated$)/',

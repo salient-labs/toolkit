@@ -13,6 +13,7 @@
         ".php-cs-fixer.dist.php",
         "bootstrap.php"
     ],
+    "includeIfPhp": "/\\.stub$/",
     "enable": [
         "preserve-one-line",
         "strict-lists"
