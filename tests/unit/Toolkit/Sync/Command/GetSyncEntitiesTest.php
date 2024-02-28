@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Sync\Command;
 
-use Salient\Cli\Contract\CliApplicationInterface;
-use Salient\Cli\Contract\CliCommandInterface;
+use Salient\Contract\Cli\CliApplicationInterface;
+use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Sync\Command\GetSyncEntities;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\CommandTestCase;

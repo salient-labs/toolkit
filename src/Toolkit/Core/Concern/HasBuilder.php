@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Container\ContainerInterface;
-use Salient\Core\Contract\Buildable;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Buildable;
 use Salient\Core\AbstractBuilder;
 
 /**

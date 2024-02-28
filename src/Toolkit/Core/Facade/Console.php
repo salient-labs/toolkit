@@ -6,10 +6,10 @@ use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
-use Salient\Console\Contract\ConsoleTargetInterface as Target;
-use Salient\Console\Contract\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Console\ConsoleWriter;
+use Salient\Contract\Console\ConsoleTargetInterface as Target;
+use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Core\AbstractFacade;
 use Throwable;
 

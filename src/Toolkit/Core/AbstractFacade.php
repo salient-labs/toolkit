@@ -2,13 +2,13 @@
 
 namespace Salient\Core;
 
-use Salient\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Container\Container;
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\FacadeAwareInterface;
+use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasUnderlyingService;
-use Salient\Core\Contract\FacadeAwareInterface;
-use Salient\Core\Contract\FacadeInterface;
-use Salient\Core\Contract\Unloadable;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Get;
@@ -175,7 +175,7 @@ abstract class AbstractFacade implements FacadeInterface
             }
 
             $listenerId = $dispatcher->listen(
-                static function (BeforeGlobalContainerSetEvent $event): void {
+                static function (BeforeGlobalContainerSetEventInterface $event): void {
                     if ($container = $event->container()) {
                         App::swap($container);
                     }
@@ -187,7 +187,7 @@ abstract class AbstractFacade implements FacadeInterface
             }
 
             $listenerId = $dispatcher->listen(
-                static function (BeforeGlobalContainerSetEvent $event) use ($serviceName, $instance): void {
+                static function (BeforeGlobalContainerSetEventInterface $event) use ($serviceName, $instance): void {
                     if ($container = $event->container()) {
                         $container->instanceIf($serviceName, $instance);
                     }

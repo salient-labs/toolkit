@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Sync\Concept;
 
-use Salient\Sync\Contract\SyncEntityProviderInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
+use Salient\Contract\Sync\SyncEntityProviderInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Salient\Tests\Sync\Entity\Post;

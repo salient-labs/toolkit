@@ -2,9 +2,10 @@
 
 namespace Salient\Collection;
 
-use Salient\Core\Contract\Arrayable;
-use Salient\Core\Contract\Comparable;
-use Salient\Core\Contract\Jsonable;
+use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\Comparable;
+use Salient\Contract\Core\Jsonable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Json;
 use ArrayIterator;

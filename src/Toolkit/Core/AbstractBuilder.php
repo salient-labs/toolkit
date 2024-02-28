@@ -2,10 +2,10 @@
 
 namespace Salient\Core;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Chainable;
+use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Contract\Chainable;
-use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Facade\App;

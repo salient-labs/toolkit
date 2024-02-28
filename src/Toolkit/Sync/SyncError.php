@@ -3,15 +3,15 @@
 namespace Salient\Sync;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Contract\Core\Buildable;
+use Salient\Contract\Core\Comparable;
+use Salient\Contract\Core\Immutable;
+use Salient\Contract\Core\Readable;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\Buildable;
-use Salient\Core\Contract\Comparable;
-use Salient\Core\Contract\Immutable;
-use Salient\Core\Contract\Readable;
 use Salient\Sync\Catalog\SyncErrorType;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * An error that occurred during a sync operation

@@ -7,6 +7,7 @@ use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Salient\Console\Catalog\ConsoleMessageType as MessageType;
 use Salient\Console\Target\StreamTarget;
+use Salient\Contract\Container\ApplicationInterface;
 use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidEnvironmentException;

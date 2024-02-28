@@ -2,10 +2,10 @@
 
 namespace Salient\Console\Concept;
 
-use Salient\Console\Contract\ConsoleTargetInterface;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleTargetInterface;
 
 /**
  * Base class for console output targets

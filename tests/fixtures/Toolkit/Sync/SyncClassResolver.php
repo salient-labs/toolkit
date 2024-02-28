@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Sync;
 
+use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Core\Utility\Pcre;
-use Salient\Sync\Contract\SyncClassResolverInterface;
 
 class SyncClassResolver implements SyncClassResolverInterface
 {

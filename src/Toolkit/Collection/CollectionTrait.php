@@ -2,7 +2,8 @@
 
 namespace Salient\Collection;
 
-use Salient\Core\Contract\Arrayable;
+use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Core\Arrayable;
 
 /**
  * Implements CollectionInterface

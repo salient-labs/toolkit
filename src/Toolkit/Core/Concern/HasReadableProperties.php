@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Contract\Readable;
+use Salient\Contract\Core\Readable;
 use Salient\Core\Introspector;
 
 /**

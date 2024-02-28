@@ -2,10 +2,10 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\SyncContextInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * Thrown when a sync operation cannot proceed because it received invalid data

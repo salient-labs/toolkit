@@ -2,14 +2,14 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncEntityProviderInterface;
+use Salient\Contract\Sync\SyncEntityResolverInterface;
 use Salient\Core\Catalog\TextComparisonAlgorithm;
 use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
 use Salient\Core\Catalog\TextComparisonFlag;
 use Salient\Core\Catalog\TextComparisonFlag as Flag;
 use Salient\Core\Utility\Str;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncEntityProviderInterface;
-use Salient\Sync\Contract\SyncEntityResolverInterface;
 use Closure;
 use LogicException;
 

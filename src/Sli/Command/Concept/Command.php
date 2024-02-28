@@ -4,7 +4,7 @@ namespace Salient\Sli\Command\Concept;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
-use Salient\Core\Contract\ProviderInterface;
+use Salient\Contract\Core\ProviderInterface;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;

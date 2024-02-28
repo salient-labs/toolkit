@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Introspector;
 
+use Salient\Contract\Core\Constructible;
 use Salient\Core\Concern\ConstructibleTrait;
-use Salient\Core\Contract\Constructible;
 use DateTimeImmutable;
 
 class B extends A implements Constructible

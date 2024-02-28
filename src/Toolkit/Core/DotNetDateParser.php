@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Contract\DateParserInterface;
+use Salient\Contract\Core\DateParserInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use DateTimeImmutable;

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\EventDispatcher;
 
-use Salient\Core\Contract\Nameable;
+use Salient\Contract\Core\Nameable;
 
 class NamedEvent extends BaseEvent implements Nameable
 {

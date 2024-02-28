@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Contract\DateParserInterface;
+use Salient\Contract\Core\DateParserInterface;
 use DateTimeImmutable;
 use DateTimeZone;
 

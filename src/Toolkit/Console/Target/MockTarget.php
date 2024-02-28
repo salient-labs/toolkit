@@ -3,9 +3,9 @@
 namespace Salient\Console\Target;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Contract\ConsoleTargetStreamInterface;
 use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Core\Utility\File;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\Introspector;
 
-use Salient\Core\Contract\Normalisable;
+use Salient\Contract\Core\Normalisable;
 use Salient\Core\Utility\Str;
 
 class ResolvableB implements Normalisable

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\AbstractFacade;
 
-use Salient\Core\Contract\Unloadable;
+use Salient\Contract\Core\Unloadable;
 
 class MyServiceClass implements Unloadable
 {

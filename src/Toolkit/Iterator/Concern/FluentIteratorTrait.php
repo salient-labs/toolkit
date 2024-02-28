@@ -2,7 +2,7 @@
 
 namespace Salient\Iterator\Concern;
 
-use Salient\Iterator\Contract\FluentIteratorInterface;
+use Salient\Contract\Iterator\FluentIteratorInterface;
 use ArrayAccess;
 
 /**

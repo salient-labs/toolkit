@@ -3,8 +3,8 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Facade\Err;
-use Lkrms\Support\SqlQuery;
+use Salient\Core\Facade\Err;
+use Salient\Core\SqlQuery;
 use DateTime;
 
 require __DIR__ . '/../vendor/autoload.php';

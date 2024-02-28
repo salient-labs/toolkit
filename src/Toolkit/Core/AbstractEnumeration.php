@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Contract\EnumerationInterface;
+use Salient\Contract\Core\EnumerationInterface;
 
 /**
  * Base class for enumerations

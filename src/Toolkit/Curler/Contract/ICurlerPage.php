@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Contract;
 
-use Salient\Http\Contract\HttpHeadersInterface;
+use Salient\Contract\Http\HttpHeadersInterface;
 
 interface ICurlerPage
 {

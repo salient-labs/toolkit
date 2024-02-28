@@ -2,7 +2,7 @@
 
 namespace Salient\Container;
 
-use Salient\Container\Contract\SingletonInterface;
+use Salient\Contract\Container\SingletonInterface;
 use Salient\Core\AbstractEnumeration;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Contract\ConvertibleEnumerationInterface;
+use Salient\Contract\Core\ConvertibleEnumerationInterface;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
 use LogicException;

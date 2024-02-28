@@ -2,19 +2,19 @@
 
 namespace Salient\Http;
 
-use Salient\Collection\CollectionInterface;
 use Salient\Collection\ReadableCollectionTrait;
+use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\Immutable;
+use Salient\Contract\Http\AccessTokenInterface;
+use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
-use Salient\Core\Contract\Arrayable;
-use Salient\Core\Contract\Immutable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Catalog\HttpHeader;
-use Salient\Http\Contract\AccessTokenInterface;
-use Salient\Http\Contract\HttpHeadersInterface;
 use Generator;
 use LogicException;
 

@@ -2,13 +2,13 @@
 
 namespace Salient\Sync\Command;
 
-use Salient\Cli\Contract\CliApplicationInterface;
 use Salient\Cli\CliCommand;
+use Salient\Contract\Cli\CliApplicationInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncStore;
 

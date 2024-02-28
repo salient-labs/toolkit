@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Utility;
 
+use Salient\Contract\Core\Jsonable;
 use Salient\Core\Catalog\SortFlag;
-use Salient\Core\Contract\Jsonable;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Json;
 use Salient\Tests\TestCase;
@@ -1625,7 +1625,7 @@ final class ArrTest extends TestCase
                 [],
             ],
             [
-                [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}', Stringable::class, '{"Salient\\\\Core\\\\Contract\\\\Jsonable":true}'],
+                [null, 0, 3.14, true, false, '', 'a', '[1,2,3]', '{"foo":"bar"}', Stringable::class, '{"Salient\\\\Contract\\\\Core\\\\Jsonable":true}'],
                 [null, 0, 3.14, true, false, '', 'a', [1, 2, 3], ['foo' => 'bar'], $a, $b],
             ],
             [

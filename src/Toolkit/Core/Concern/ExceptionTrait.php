@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Contract\ExceptionInterface;
+use Salient\Contract\Core\ExceptionInterface;
 use Throwable;
 
 /**

@@ -3,10 +3,10 @@
 namespace Salient\Sync;
 
 use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\AbstractBuilder;
 use Salient\Sync\Catalog\SyncErrorType;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * A fluent SyncError factory

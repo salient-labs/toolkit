@@ -5,11 +5,11 @@ namespace Salient\Http;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Str;
 use Salient\Http\Catalog\HttpHeader;
 use Salient\Http\Catalog\HttpRequestMethod;
-use Salient\Http\Contract\HttpHeadersInterface;
 use Stringable;
 
 /**

@@ -2,10 +2,10 @@
 
 namespace Salient\Core;
 
-use Salient\Container\ContainerInterface;
-use Salient\Core\Contract\DateFormatterInterface;
-use Salient\Core\Contract\ProviderContextInterface;
-use Salient\Core\Contract\ProviderInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Core\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 
 /**

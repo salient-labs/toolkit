@@ -2,9 +2,9 @@
 
 namespace Salient\Http;
 
+use Salient\Contract\Core\Readable;
+use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\Readable;
-use Salient\Http\Contract\HttpHeadersInterface;
 
 /**
  * An HTTP request

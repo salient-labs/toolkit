@@ -2,13 +2,16 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Core\Buildable;
+use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Pipeline\PipelineInterface;
+use Salient\Contract\Pipeline\StreamPipelineInterface;
+use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Catalog\ArrayMapperFlag;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Contract\Buildable;
-use Salient\Core\Contract\PipelineInterface;
-use Salient\Core\Contract\ProviderContextInterface;
-use Salient\Core\Contract\StreamPipelineInterface;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Pcre;
@@ -19,12 +22,9 @@ use Salient\Curler\Contract\ICurlerPager;
 use Salient\Curler\Exception\CurlerHttpErrorException;
 use Salient\Curler\Curler;
 use Salient\Http\Catalog\HttpRequestMethod;
-use Salient\Http\Contract\HttpHeadersInterface;
 use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\Catalog\SyncEntitySource;
 use Salient\Sync\Catalog\SyncOperation as OP;
-use Salient\Sync\Contract\SyncContextInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;

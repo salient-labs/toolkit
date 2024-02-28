@@ -5,8 +5,8 @@
 ```php
 <?php
 
+use Salient\Contract\Core\Buildable;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Contract\Buildable;
 use Salient\Core\AbstractBuilder;
 
 /**

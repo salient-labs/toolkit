@@ -2,10 +2,10 @@
 
 namespace Salient\Core\Facade;
 
+use Salient\Contract\Sync\SyncClassResolverInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\AbstractFacade;
-use Salient\Sync\Contract\SyncClassResolverInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncErrorCollection;

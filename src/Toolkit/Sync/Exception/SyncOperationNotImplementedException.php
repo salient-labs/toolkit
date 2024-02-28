@@ -2,9 +2,9 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 
 /**
  * Thrown when an unimplemented sync operation is attempted

@@ -4,9 +4,9 @@ namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Container\Application;
-use Salient\Container\ApplicationInterface;
 use Salient\Container\Container;
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ApplicationInterface;
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Catalog\EnvFlag;
 use Salient\Core\Facade\Config;
 use Salient\Core\Utility\Env;

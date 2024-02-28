@@ -2,11 +2,14 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Container\ContainerInterface;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Providable;
+use Salient\Contract\Core\Relatable;
+use Salient\Contract\Core\Treeable;
+use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Catalog\Regex;
-use Salient\Core\Contract\Providable;
-use Salient\Core\Contract\Relatable;
-use Salient\Core\Contract\Treeable;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
@@ -17,9 +20,6 @@ use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
 use Salient\Sync\Catalog\HydrationPolicy;
 use Salient\Sync\Catalog\SyncOperation;
-use Salient\Sync\Contract\SyncContextInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\SyncStore;
 use Closure;
 use LogicException;

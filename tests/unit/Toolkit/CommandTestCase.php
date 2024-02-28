@@ -2,12 +2,12 @@
 
 namespace Salient\Tests;
 
-use Salient\Cli\Contract\CliApplicationInterface;
-use Salient\Cli\Contract\CliCommandInterface;
 use Salient\Cli\CliApplication;
 use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Salient\Console\Target\MockTarget;
+use Salient\Contract\Cli\CliApplicationInterface;
+use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 

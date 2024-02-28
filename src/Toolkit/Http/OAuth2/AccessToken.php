@@ -2,12 +2,12 @@
 
 namespace Salient\Http\OAuth2;
 
+use Salient\Contract\Core\Immutable;
+use Salient\Contract\Core\Readable;
+use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Contract\Immutable;
-use Salient\Core\Contract\Readable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Date;
-use Salient\Http\Contract\AccessTokenInterface;
 use DateTimeImmutable;
 use DateTimeInterface;
 

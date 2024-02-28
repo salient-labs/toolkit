@@ -2,10 +2,10 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
-use Salient\Sync\Contract\SyncContextInterface;
-use Salient\Sync\Contract\SyncEntityInterface;
-use Salient\Sync\Contract\SyncProviderInterface;
 use Salient\Sync\SyncStore;
 use LogicException;
 

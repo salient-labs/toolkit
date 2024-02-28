@@ -2,6 +2,8 @@
 
 namespace Salient\Collection;
 
+use Salient\Contract\Collection\ListInterface;
+
 /**
  * An array-like list of items
  *
