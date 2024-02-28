@@ -12,6 +12,21 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.1] - 2024-02-28
+
+### Changed
+
+- Add `lkrms/util` to `conflict` in `composer.json`
+- Decouple `RequiresContainer` trait from `Container` by falling back to `App::getInstance()`, which can be bound to any implementation
+- Similarly, use `RequiresContainer` to decouple `ConstructibleTrait` from `Container`
+- `ConstructibleTrait`: always throw an exception if values are not used
+- `Constructible`: add `$parent` parameters, method documentation
+
+### Removed
+
+- Remove `maybeGetGlobalContainer()` and `requireGlobalContainer()` methods from `Container`
+- Remove `ContainerNotFoundException`
+
 ## [v0.99.0] - 2024-02-26
 
 This is the first release of `salient/toolkit`, the PHP toolkit formerly known as `lkrms/util`.
@@ -1972,6 +1987,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.1]: https://github.com/salient-labs/toolkit/compare/v0.99.0...v0.99.1
 [v0.99.0]: https://github.com/salient-labs/toolkit/compare/v0.21.49...v0.99.0
 [v0.21.49]: https://github.com/salient-labs/toolkit/compare/v0.21.48...v0.21.49
 [v0.21.48]: https://github.com/salient-labs/toolkit/compare/v0.21.47...v0.21.48
