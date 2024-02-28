@@ -1485,7 +1485,7 @@ final class Curler implements Readable, Writable, Buildable
      */
     private static function collateNested($data, array $path, array &$entities): void
     {
-        if (empty($path)) {
+        if (!$path) {
             $entities = array_merge($entities, Arr::listWrap($data));
         } elseif (Arr::isList($data, true)) {
             foreach ($data as $nested) {
