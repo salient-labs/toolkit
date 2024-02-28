@@ -2,10 +2,10 @@
 
 namespace Salient\Cli;
 
-use Salient\Cli\Catalog\CliOptionType;
-use Salient\Cli\Catalog\CliOptionValueType;
-use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
-use Salient\Cli\Catalog\CliOptionVisibility;
+use Salient\Catalog\Cli\CliOptionType;
+use Salient\Catalog\Cli\CliOptionValueType;
+use Salient\Catalog\Cli\CliOptionValueUnknownPolicy;
+use Salient\Catalog\Cli\CliOptionVisibility;
 use Salient\Core\AbstractBuilder;
 
 /**

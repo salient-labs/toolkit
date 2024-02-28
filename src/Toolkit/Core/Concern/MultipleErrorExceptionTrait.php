@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleMessageType as MessageType;
+use Salient\Catalog\Console\ConsoleMessageType as MessageType;
+use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Contract\Core\MultipleErrorExceptionInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Format;

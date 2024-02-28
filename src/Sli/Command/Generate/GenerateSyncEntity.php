@@ -2,19 +2,19 @@
 
 namespace Salient\Sli\Command\Generate;
 
-use Salient\Cli\Catalog\CliOptionType;
-use Salient\Cli\Catalog\CliOptionValueType;
+use Salient\Catalog\Cli\CliOptionType;
+use Salient\Catalog\Cli\CliOptionValueType;
+use Salient\Catalog\Core\Cardinality;
+use Salient\Catalog\Http\HttpRequestMethod;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Contract\Core\Treeable;
-use Salient\Core\Catalog\Cardinality;
 use Salient\Core\Concern\TreeableTrait;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;

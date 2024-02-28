@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\Catalog\Cardinality;
+use Salient\Catalog\Core\Cardinality;
 
 /**
  * Has one-to-one and one-to-many relationships with other classes implementing

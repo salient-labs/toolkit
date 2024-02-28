@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Catalog\Sync\FilterPolicy;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\ProviderInterface;
-use Salient\Sync\Catalog\FilterPolicy;
 use Salient\Sync\AbstractSyncProvider;
 use Salient\Sync\SyncStore;
 

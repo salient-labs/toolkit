@@ -3,7 +3,7 @@
 namespace Salient\Sli\Command\Generate;
 
 use PHPUnit\Framework\TestCase;
-use Salient\Cli\Catalog\CliOptionType;
+use Salient\Catalog\Cli\CliOptionType;
 use Salient\Cli\CliOption;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;

@@ -2,12 +2,12 @@
 
 namespace Salient\Sync;
 
+use Salient\Catalog\Core\NormaliserFlag;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
-use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;

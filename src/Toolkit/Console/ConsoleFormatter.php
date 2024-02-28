@@ -2,9 +2,9 @@
 
 namespace Salient\Console;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleMessageType as MessageType;
-use Salient\Console\Catalog\ConsoleTag as Tag;
+use Salient\Catalog\Console\ConsoleMessageType as MessageType;
+use Salient\Catalog\Console\ConsoleTag as Tag;
+use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Console\Contract\ConsoleFormatInterface as Format;
 use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 use Salient\Console\Support\ConsoleMessageAttributes as MessageAttributes;

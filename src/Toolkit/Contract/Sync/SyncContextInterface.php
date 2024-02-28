@@ -2,12 +2,12 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Catalog\Sync\DeferralPolicy;
+use Salient\Catalog\Sync\FilterPolicy;
+use Salient\Catalog\Sync\HydrationPolicy;
+use Salient\Catalog\Sync\SyncOperation;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
-use Salient\Sync\Catalog\DeferralPolicy;
-use Salient\Sync\Catalog\FilterPolicy;
-use Salient\Sync\Catalog\HydrationPolicy;
-use Salient\Sync\Catalog\SyncOperation;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use Salient\Sync\AbstractSyncProvider;

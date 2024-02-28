@@ -2,19 +2,19 @@
 
 namespace Salient\Sync;
 
+use Salient\Catalog\Core\ArrayMapperFlag;
+use Salient\Catalog\Core\ListConformity;
+use Salient\Catalog\Http\HttpRequestMethod;
+use Salient\Catalog\Sync\FilterPolicy;
+use Salient\Catalog\Sync\SyncEntitySource;
+use Salient\Catalog\Sync\SyncOperation as OP;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\ListConformity;
 use Salient\Core\AbstractBuilder;
 use Salient\Curler\Catalog\CurlerProperty;
 use Salient\Curler\Contract\ICurlerPager;
-use Salient\Http\Catalog\HttpRequestMethod;
-use Salient\Sync\Catalog\FilterPolicy;
-use Salient\Sync\Catalog\SyncEntitySource;
-use Salient\Sync\Catalog\SyncOperation as OP;
 use Closure;
 
 /**

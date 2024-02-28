@@ -2,6 +2,7 @@
 
 namespace Salient\Http;
 
+use Salient\Catalog\Http\HttpHeader;
 use Salient\Collection\ReadableCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
@@ -14,7 +15,6 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use Salient\Http\Catalog\HttpHeader;
 use Generator;
 use LogicException;
 

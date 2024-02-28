@@ -3,13 +3,16 @@
 namespace Salient\Curler;
 
 use Salient\Cache\CacheStore;
+use Salient\Catalog\Core\MimeType;
+use Salient\Catalog\Core\QueryFlag;
+use Salient\Catalog\Http\HttpHeader;
+use Salient\Catalog\Http\HttpHeaderGroup;
+use Salient\Catalog\Http\HttpRequestMethod;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Core\Writable;
 use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Core\Catalog\MimeType;
-use Salient\Core\Catalog\QueryFlag;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\HasReadableProperties;
@@ -30,9 +33,6 @@ use Salient\Curler\Exception\CurlerCurlErrorException;
 use Salient\Curler\Exception\CurlerHttpErrorException;
 use Salient\Curler\Exception\CurlerInvalidResponseException;
 use Salient\Curler\Exception\CurlerUnexpectedResponseException;
-use Salient\Http\Catalog\HttpHeader;
-use Salient\Http\Catalog\HttpHeaderGroup;
-use Salient\Http\Catalog\HttpRequestMethod;
 use Salient\Http\HttpHeaders;
 use Salient\Iterator\RecursiveCallbackIterator;
 use Salient\Iterator\RecursiveMutableGraphIterator;

@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Http;
 
+use Salient\Catalog\Core\MimeType;
+use Salient\Catalog\Http\HttpHeader;
+use Salient\Catalog\Http\HttpHeaderGroup;
 use Salient\Contract\Collection\CollectionInterface;
-use Salient\Core\Catalog\MimeType;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
-use Salient\Http\Catalog\HttpHeader;
-use Salient\Http\Catalog\HttpHeaderGroup;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\HttpHeaders;
 use Salient\Tests\TestCase;

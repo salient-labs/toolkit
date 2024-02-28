@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Pipeline;
 
-use Salient\Core\Catalog\ListConformity;
+use Salient\Catalog\Core\ListConformity;
 
 /**
  * @template TInput

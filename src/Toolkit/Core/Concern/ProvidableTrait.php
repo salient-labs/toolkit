@@ -2,13 +2,13 @@
 
 namespace Salient\Core\Concern;
 
+use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Extensible;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Iterator\FluentIteratorInterface;
-use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Introspector;
 use Salient\Iterator\IterableIterator;
 use Generator;

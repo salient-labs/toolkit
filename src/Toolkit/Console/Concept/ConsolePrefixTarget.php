@@ -2,8 +2,8 @@
 
 namespace Salient\Console\Concept;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleTag as Tag;
+use Salient\Catalog\Console\ConsoleTag as Tag;
+use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleTargetPrefixInterface;
 
 /**

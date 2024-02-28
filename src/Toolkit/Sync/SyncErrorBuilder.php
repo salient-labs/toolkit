@@ -2,11 +2,11 @@
 
 namespace Salient\Sync;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Catalog\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\AbstractBuilder;
-use Salient\Sync\Catalog\SyncErrorType;
 
 /**
  * A fluent SyncError factory

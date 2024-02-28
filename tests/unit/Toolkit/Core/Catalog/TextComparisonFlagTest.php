@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Catalog;
 
-use Salient\Core\Catalog\TextComparisonAlgorithm;
-use Salient\Core\Catalog\TextComparisonFlag;
+use Salient\Catalog\Core\TextComparisonAlgorithm;
+use Salient\Catalog\Core\TextComparisonFlag;
 use Salient\Tests\TestCase;
 use ReflectionClass;
 

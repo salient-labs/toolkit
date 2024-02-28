@@ -2,13 +2,13 @@
 
 namespace Salient\Core;
 
+use Salient\Catalog\Core\ArrayMapperFlag;
+use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Pipeline\PipeInterface;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Pipeline\StreamPipelineInterface;
-use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Facade\App;
 use Salient\Core\Utility\Get;

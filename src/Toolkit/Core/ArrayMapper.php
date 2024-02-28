@@ -2,8 +2,8 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\ListConformity;
+use Salient\Catalog\Core\ArrayMapperFlag;
+use Salient\Catalog\Core\ListConformity;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 

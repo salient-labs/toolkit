@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Sync\Provider;
 
+use Salient\Catalog\Sync\SyncOperation as OP;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -10,7 +11,6 @@ use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Env;
 use Salient\Core\DateFormatter;
 use Salient\Curler\CurlerBuilder;
-use Salient\Sync\Catalog\SyncOperation as OP;
 use Salient\Sync\HttpSyncDefinitionBuilder;
 use Salient\Sync\HttpSyncProvider;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;

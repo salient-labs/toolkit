@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Cli;
 
+use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Catalog\Core\MessageLevelGroup as LevelGroup;
 use Salient\Cli\CliApplication;
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Salient\Console\Target\MockTarget;
 use Salient\Container\Application;
 use Salient\Contract\Cli\CliApplicationInterface;

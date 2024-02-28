@@ -2,8 +2,11 @@
 
 namespace Salient\Sync;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleMessageType as MessageType;
+use Salient\Catalog\Console\ConsoleMessageType as MessageType;
+use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Catalog\Sync\DeferralPolicy;
+use Salient\Catalog\Sync\HydrationPolicy;
+use Salient\Catalog\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
@@ -17,9 +20,6 @@ use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractStore;
-use Salient\Sync\Catalog\DeferralPolicy;
-use Salient\Sync\Catalog\HydrationPolicy;
-use Salient\Sync\Catalog\SyncErrorType;
 use Salient\Sync\Event\SyncStoreLoadedEvent;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
 use Salient\Sync\Exception\SyncProviderHeartbeatCheckFailedException;

@@ -2,8 +2,8 @@
 
 namespace Salient\PhpDoc;
 
+use Salient\Catalog\Core\Regex;
 use Salient\Contract\Core\Readable;
-use Salient\Core\Catalog\Regex;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\UnexpectedValueException;

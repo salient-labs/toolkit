@@ -2,10 +2,10 @@
 <?php declare(strict_types=1);
 
 use Salient\Cache\CacheStore;
+use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Cli\CliApplication;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
-use Salient\Console\Catalog\ConsoleLevel as Level;
 use Salient\Console\ConsoleWriter;
 use Salient\Container\Container;
 use Salient\Contract\Container\ContainerInterface;

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\PhpDoc;
 
-use Salient\Core\Catalog\Regex;
+use Salient\Catalog\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;

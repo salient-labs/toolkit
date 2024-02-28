@@ -2,6 +2,7 @@
 
 namespace Salient\Core;
 
+use Salient\Catalog\Core\NormaliserFlag;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Extensible;
@@ -14,7 +15,6 @@ use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\SerializeRulesInterface;
 use Salient\Contract\Core\Treeable;
-use Salient\Core\Catalog\NormaliserFlag;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

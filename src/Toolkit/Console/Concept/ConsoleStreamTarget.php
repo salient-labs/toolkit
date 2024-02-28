@@ -2,17 +2,17 @@
 
 namespace Salient\Console\Concept;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
-use Salient\Console\Catalog\ConsoleMessageType as MessageType;
-use Salient\Console\Catalog\ConsoleMessageTypeGroup as MessageTypeGroup;
-use Salient\Console\Catalog\ConsoleTag as Tag;
+use Salient\Catalog\Console\ConsoleMessageType as MessageType;
+use Salient\Catalog\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
+use Salient\Catalog\Console\ConsoleTag as Tag;
+use Salient\Catalog\Core\EscapeSequence as Colour;
+use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Catalog\Core\MessageLevelGroup as LevelGroup;
 use Salient\Console\Support\ConsoleFormat as Format;
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
-use Salient\Core\Catalog\EscapeSequence as Colour;
 
 /**
  * Base class for console output targets with an underlying PHP stream

@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Core;
 
+use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Core\Catalog\ListConformity;
 
 /**
  * @api

@@ -2,16 +2,16 @@
 
 namespace Salient\Sync;
 
+use Salient\Catalog\Core\ArrayMapperFlag;
+use Salient\Catalog\Core\ListConformity;
+use Salient\Catalog\Sync\FilterPolicy;
+use Salient\Catalog\Sync\SyncEntitySource;
+use Salient\Catalog\Sync\SyncOperation as OP;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Core\Catalog\ArrayMapperFlag;
-use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Sync\Catalog\FilterPolicy;
-use Salient\Sync\Catalog\SyncEntitySource;
-use Salient\Sync\Catalog\SyncOperation as OP;
 use Closure;
 use LogicException;
 

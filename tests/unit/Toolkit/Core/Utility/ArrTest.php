@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Utility;
 
+use Salient\Catalog\Core\SortFlag;
 use Salient\Contract\Core\Jsonable;
-use Salient\Core\Catalog\SortFlag;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Json;
 use Salient\Tests\TestCase;

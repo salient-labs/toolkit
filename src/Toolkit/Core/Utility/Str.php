@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Catalog\Char;
-use Salient\Core\Catalog\Regex;
+use Salient\Catalog\Core\Char;
+use Salient\Catalog\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 

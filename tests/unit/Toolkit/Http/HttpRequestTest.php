@@ -3,8 +3,8 @@
 namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface;
+use Salient\Catalog\Http\HttpHeader;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Http\Catalog\HttpHeader;
 use Salient\Http\HttpRequest;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;

@@ -2,6 +2,12 @@
 
 namespace Salient\Sync;
 
+use Salient\Catalog\Core\ListConformity;
+use Salient\Catalog\Core\NormaliserFlag;
+use Salient\Catalog\Core\TextComparisonAlgorithm as Algorithm;
+use Salient\Catalog\Core\TextComparisonFlag as Flag;
+use Salient\Catalog\Sync\SyncEntityLinkType as LinkType;
+use Salient\Catalog\Sync\SyncEntityState;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Describable;
 use Salient\Contract\Core\NormaliserFactory;
@@ -14,10 +20,6 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Catalog\ListConformity;
-use Salient\Core\Catalog\NormaliserFlag;
-use Salient\Core\Catalog\TextComparisonAlgorithm as Algorithm;
-use Salient\Core\Catalog\TextComparisonFlag as Flag;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;
@@ -35,8 +37,6 @@ use Salient\Core\Utility\Str;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
 use Salient\Iterator\IterableIterator;
-use Salient\Sync\Catalog\SyncEntityLinkType as LinkType;
-use Salient\Sync\Catalog\SyncEntityState;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;

@@ -2,10 +2,10 @@
 
 namespace Salient\Core\Facade;
 
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
-use Salient\Console\Catalog\ConsoleMessageType as MessageType;
-use Salient\Console\Catalog\ConsoleTargetTypeFlag as TargetTypeFlag;
+use Salient\Catalog\Console\ConsoleMessageType as MessageType;
+use Salient\Catalog\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
+use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Catalog\Core\MessageLevelGroup as LevelGroup;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Console\ConsoleWriter;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
