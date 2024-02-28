@@ -5,8 +5,6 @@ namespace Salient\Core\Concern;
 use Salient\Container\ContainerInterface;
 use Salient\Core\Catalog\ListConformity;
 use Salient\Core\Contract\Constructible;
-use Salient\Core\Contract\Extensible;
-use Salient\Core\Contract\Treeable;
 use Salient\Core\Introspector;
 use Generator;
 
@@ -14,29 +12,17 @@ use Generator;
  * Implements Constructible
  *
  * @see Constructible
+ *
+ * @api
+ *
+ * @phpstan-require-implements Constructible
  */
 trait ConstructibleTrait
 {
     use RequiresContainer;
 
     /**
-     * Create an instance of the class from an array
-     *
-     * The constructor (if any) is invoked with parameters taken from `$data`.
-     * If `$data` values remain, they are assigned to writable properties. If
-     * further values remain and the class implements {@see Extensible}, they
-     * are assigned via {@see Extensible::setMetaProperty()}.
-     *
-     * Array keys, constructor parameters and public property names are
-     * normalised for comparison.
-     *
-     * @param mixed[] $data
-     * @param ContainerInterface|null $container Used to create the instance if
-     * set.
-     * @param (Treeable&static)|null $parent If the class implements
-     * {@see Treeable}, pass `$parent` to the instance via
-     * {@see Treeable::setParent()}.
-     * @return static
+     * @inheritDoc
      */
     final public static function construct(
         array $data,
@@ -46,24 +32,11 @@ trait ConstructibleTrait
         $container = self::requireContainer($container);
 
         return Introspector::getService($container, static::class)
-            ->getCreateFromClosure()($data, $container, null, $parent);
+            ->getCreateFromClosure(true)($data, $container, null, $parent);
     }
 
     /**
-     * Create traversable instances from traversable arrays
-     *
-     * See {@see ConstructibleTrait::construct()} for more information.
-     *
-     * @param iterable<mixed[]> $list
-     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
-     * or {@see ListConformity::PARTIAL} wherever possible to improve
-     * performance.
-     * @param ContainerInterface|null $container Used to create each instance if
-     * set.
-     * @param (Treeable&static)|null $parent If the class implements
-     * {@see Treeable}, pass `$parent` to each instance via
-     * {@see Treeable::setParent()}.
-     * @return Generator<static>
+     * @inheritDoc
      */
     final public static function constructList(
         iterable $list,
