@@ -179,6 +179,40 @@ final class Env extends AbstractUtility
     }
 
     /**
+     * Get a class name from the environment
+     *
+     * @template TClass of object
+     * @template T of class-string<TClass>|null|false
+     *
+     * @param class-string<TClass> $class
+     * @param T|Closure(): T $default
+     * @return (T is class-string<TClass> ? class-string<TClass> : (T is null ? class-string<TClass>|null : class-string<TClass>|never))
+     */
+    public static function getClass(string $name, string $class, $default = false)
+    {
+        $value = self::_get($name);
+
+        if ($value === false) {
+            $default = Get::value($default);
+            if ($default === false) {
+                self::throwValueNotFoundException($name);
+            }
+
+            return $default;
+        }
+
+        if (!is_a($value, $class, true)) {
+            throw new InvalidEnvironmentException(sprintf(
+                '%s does not inherit %s',
+                $value,
+                $class,
+            ));
+        }
+
+        return $value;
+    }
+
+    /**
      * Get an integer value from the environment
      *
      * @template T of int|null|false

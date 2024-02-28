@@ -212,4 +212,25 @@ final class EnvTest extends TestCase
             '[nullable] unset -> bool, default true' => [true, 'getNullableBool', ['default' => true]],
         ];
     }
+
+    public function testGetClass(): void
+    {
+        $_ENV[__METHOD__] = static::class;
+        $this->assertSame(static::class, Env::getClass(__METHOD__, TestCase::class));
+
+        $this->expectException(InvalidEnvironmentException::class);
+        $this->expectExceptionMessage(TestCase::class . ' does not inherit ' . static::class);
+        $_ENV[__METHOD__] = TestCase::class;
+        Env::getClass(__METHOD__, static::class);
+    }
+
+    public function testGetClassWithUnsetVariable(): void
+    {
+        unset($_ENV[__METHOD__]);
+        $this->assertSame(static::class, Env::getClass(__METHOD__, TestCase::class, static::class));
+
+        $this->expectException(InvalidEnvironmentException::class);
+        $this->expectExceptionMessage('Value not found in environment: ' . __METHOD__);
+        Env::getClass(__METHOD__, TestCase::class);
+    }
 }
