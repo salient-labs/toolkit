@@ -55,6 +55,20 @@ final class Test extends AbstractUtility
     }
 
     /**
+     * True if a value is an integer or would be cast to an integer if used as
+     * an array key
+     *
+     * @param mixed $value
+     */
+    public static function isNumericKey($value): bool
+    {
+        return is_int($value) ||
+            is_float($value) ||
+            is_bool($value) ||
+            (is_string($value) && Pcre::match('/^(-?[1-9][0-9]*|0)$/', $value));
+    }
+
+    /**
      * True if a value is a valid date string
      *
      * @param mixed $value

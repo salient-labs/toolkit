@@ -37,6 +37,8 @@ final class Get extends AbstractUtility
      *
      * @param T $value
      * @return (T is null ? never : T)
+     * @phpstan-param T|null $value
+     * @phpstan-return ($value is null ? never : T)
      */
     public static function notNull($value)
     {

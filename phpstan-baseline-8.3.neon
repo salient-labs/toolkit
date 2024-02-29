@@ -1051,7 +1051,7 @@ parameters:
 			path: src/Toolkit/Core/Pipeline.php
 
 		-
-			message: "#^Parameter \\#1 \\$in of method Salient\\\\Core\\\\ArrayMapper\\:\\:map\\(\\) expects array, TInput\\|TOutput given\\.$#"
+			message: "#^Parameter \\#1 \\$in of method Salient\\\\Core\\\\ArrayMapper\\:\\:map\\(\\) expects array, TInput given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Pipeline.php
 
@@ -1861,13 +1861,13 @@ parameters:
 			path: src/Toolkit/PhpDoc/PhpDocTag.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\AbstractSyncDefinition\\:\\:getSyncOperationClosure\\(\\) should return \\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, int\\|string\\|null, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, TEntity, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, iterable\\<TEntity\\>, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|null but returns Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\.$#"
-			count: 2
+			message: "#^Else branch is unreachable because ternary operator condition is always true\\.$#"
+			count: 1
 			path: src/Toolkit/Sync/AbstractSyncDefinition.php
 
 		-
-			message: "#^Parameter \\#1 \\$closure of method Salient\\\\Contract\\\\Pipeline\\\\BasePipelineInterface\\<array,TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:then\\(\\) expects Closure\\(array\\|TEntity, Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface\\<array, TEntity, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\>, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\)\\: TEntity, Closure\\(array, Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface, mixed\\)\\: TEntity given\\.$#"
-			count: 1
+			message: "#^Method Salient\\\\Sync\\\\AbstractSyncDefinition\\:\\:getSyncOperationClosure\\(\\) should return \\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, int\\|string\\|null, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, TEntity, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, iterable\\<TEntity\\>, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|null but returns Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\.$#"
+			count: 2
 			path: src/Toolkit/Sync/AbstractSyncDefinition.php
 
 		-
@@ -2116,13 +2116,8 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncContext.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\Support\\\\SyncContext\\:\\:reduceFilterValue\\(\\) should return array\\<int\\|string\\>\\|int\\|string\\|T but returns array\\<int\\<0, max\\>, int\\|string\\|null\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncContext.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\Support\\\\SyncContext\\:\\:reduceFilterValue\\(\\) should return array\\<int\\|string\\>\\|int\\|string\\|T but returns int\\|string\\|null\\.$#"
-			count: 1
+			message: "#^Method Salient\\\\Sync\\\\Support\\\\SyncContext\\:\\:doGetFilter\\(\\) should return array\\<bool\\|DateTimeInterface\\|float\\|int\\|string\\|null\\>\\|bool\\|DateTimeInterface\\|float\\|int\\|string\\|null but returns mixed\\.$#"
+			count: 2
 			path: src/Toolkit/Sync/Support/SyncContext.php
 
 		-

@@ -8,13 +8,16 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Test;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
+use DateTimeInterface;
 use LogicException;
 
 /**
@@ -25,7 +28,7 @@ use LogicException;
 final class SyncContext extends ProviderContext implements SyncContextInterface
 {
     /**
-     * @var array<string,mixed>
+     * @var array<string,(int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null>
      */
     protected array $Filters = [];
 
@@ -121,17 +124,17 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
 
         if (is_array($args[0]) && count($args) === 1) {
             foreach ($args[0] as $key => $value) {
-                if (Pcre::match('/[^[:alnum:]_-]/', $key)) {
-                    $filters[$key] = $this->reduceFilterValue($value);
+                if (Pcre::match('/[^[:alnum:]_-]/', (string) $key)) {
+                    $filters[$key] = $this->normaliseFilterValue($value);
                     continue;
                 }
 
-                $key = Str::toSnakeCase($key);
-                if ($key === '') {
+                $key = Str::toSnakeCase((string) $key);
+                if ($key === '' || Test::isNumericKey($key)) {
                     throw new SyncInvalidFilterException(...$args);
                 }
 
-                $filters[$key] = $this->reduceFilterValue($value);
+                $filters[$key] = $this->normaliseFilterValue($value);
 
                 if (substr($key, -3) !== '_id') {
                     continue;
@@ -142,6 +145,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                     $filterKeys[$name] = $key;
                 }
             }
+
             return $this->applyFilters($filters ?? [], $filterKeys ?? []);
         }
 
@@ -304,7 +308,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     }
 
     /**
-     * @param array<string,mixed> $filters
+     * @param array<string,(int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null> $filters
      * @param array<string,string> $filterKeys
      * @return $this
      */
@@ -316,29 +320,78 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     }
 
     /**
-     * @template T
-     *
-     * @param SyncEntityInterface|SyncEntityInterface[]|T $value
-     * @return int|string|array<int|string>|T
+     * @param mixed $value
+     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
      */
-    private function reduceFilterValue($value)
+    private function normaliseFilterValue($value)
     {
+        if (
+            $value === null ||
+            $value === [] ||
+            $value instanceof DateTimeInterface ||
+            is_scalar($value)
+        ) {
+            return $value;
+        }
+
         if ($value instanceof SyncEntityInterface) {
-            return $value->id();
+            return $this->normaliseFilterEntity($value);
         }
-        if (Arr::of($value, SyncEntityInterface::class)) {
-            $ids = [];
-            /** @var SyncEntityInterface $entity */
-            foreach ($value as $entity) {
-                $ids[] = $entity->id();
+
+        if (is_array($value)) {
+            $invalid = false;
+            foreach ($value as &$entry) {
+                if (
+                    $entry === null ||
+                    $entry instanceof DateTimeInterface ||
+                    is_scalar($entry)
+                ) {
+                    continue;
+                }
+
+                if ($entry instanceof SyncEntityInterface) {
+                    $entry = $this->normaliseFilterEntity($entry);
+                    continue;
+                }
+
+                $invalid = true;
+                break;
             }
-            return $ids;
+
+            if (!$invalid) {
+                return $value;
+            }
         }
-        return $value;
+
+        throw new InvalidArgumentException('Invalid filter value');
     }
 
     /**
-     * @return mixed
+     * @return array-key
+     */
+    private function normaliseFilterEntity(SyncEntityInterface $entity)
+    {
+        $id = $entity->id();
+
+        if ($id === null) {
+            throw new InvalidArgumentException(sprintf(
+                '%s has no identifier',
+                get_class($entity),
+            ));
+        }
+
+        if ($entity->getProvider() === $this->Provider) {
+            return $id;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            '%s has a different provider',
+            get_class($entity),
+        ));
+    }
+
+    /**
+     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
      */
     private function doGetFilter(string $key, bool $orValue, bool $claim = false)
     {

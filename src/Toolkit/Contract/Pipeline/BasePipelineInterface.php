@@ -51,7 +51,7 @@ interface BasePipelineInterface extends Chainable, Immutable
      *   {@see PipelineInterface::then()}, if applicable
      * - throw an exception
      *
-     * @param (Closure(TInput|TOutput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>> ...$pipes
+     * @param (Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>> ...$pipes
      * @return static
      */
     public function through(...$pipes);
@@ -59,7 +59,7 @@ interface BasePipelineInterface extends Chainable, Immutable
     /**
      * Add a simple closure to the pipeline
      *
-     * @param Closure(TInput|TOutput $payload, static $pipeline, TArgument $arg): (TInput|TOutput) $closure
+     * @param (Closure(TInput $payload, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, static $pipeline, TArgument $arg): TOutput) $closure
      * @return static
      */
     public function throughClosure(Closure $closure);
@@ -80,7 +80,7 @@ interface BasePipelineInterface extends Chainable, Immutable
      * This method can only be called once per pipeline, and only if
      * {@see StreamPipelineInterface::collectThen()} is not also called.
      *
-     * @param Closure(TInput|TOutput $result, static $pipeline, TArgument $arg): TOutput $closure
+     * @param (Closure(TInput $result, static $pipeline, TArgument $arg): TOutput)|(Closure(TOutput $result, static $pipeline, TArgument $arg): TOutput) $closure
      * @return static
      */
     public function then(Closure $closure);
@@ -88,7 +88,7 @@ interface BasePipelineInterface extends Chainable, Immutable
     /**
      * Apply a closure to each result if then() hasn't already been called
      *
-     * @param Closure(TInput|TOutput $result, static $pipeline, TArgument $arg): TOutput $closure
+     * @param (Closure(TInput $result, static $pipeline, TArgument $arg): TOutput)|(Closure(TOutput $result, static $pipeline, TArgument $arg): TOutput) $closure
      * @return static
      */
     public function thenIf(Closure $closure);

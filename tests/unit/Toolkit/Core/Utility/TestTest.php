@@ -106,4 +106,38 @@ final class TestTest extends TestCase
             [true, 71],
         ];
     }
+
+    /**
+     * @dataProvider isNumericKeyProvider
+     *
+     * @param mixed $value
+     */
+    public function testIsNumericKey(bool $expected, $value): void
+    {
+        $this->assertSame($expected, is_int(array_key_first([$value => 'foo'])));
+        $this->assertSame($expected, Test::isNumericKey($value));
+    }
+
+    /**
+     * @return array<array{bool,mixed}>
+     */
+    public static function isNumericKeyProvider(): array
+    {
+        return [
+            [false, null],
+            [false, ''],
+            [true, '-1'],
+            [false, '-0'],
+            [true, '0'],
+            [false, '+0'],
+            [false, '+1'],
+            [true, '123'],
+            [false, '0755'],
+            [false, 'abc'],
+            [true, 123],
+            [true, 12.34],
+            [true, true],
+            [true, false],
+        ];
+    }
 }

@@ -59,7 +59,7 @@ final class Pipeline implements
     private ?Closure $After = null;
 
     /**
-     * @var array<(Closure(TInput|TOutput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>>>
+     * @var array<(Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>>>
      */
     private array $Pipes = [];
 
@@ -74,7 +74,7 @@ final class Pipeline implements
     private array $ArrayMappers;
 
     /**
-     * @var (Closure(TInput|TOutput $result, static $pipeline, TArgument $arg): TOutput)|null
+     * @var (Closure(TInput $result, static $pipeline, TArgument $arg): TOutput)|(Closure(TOutput $result, static $pipeline, TArgument $arg): TOutput)|null
      */
     private ?Closure $Then = null;
 
