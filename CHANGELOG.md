@@ -12,6 +12,20 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.3] - 2024-02-29
+
+### Added
+
+- Add `Env::getClass()`, `Get::notNull()`
+- Add `SyncStoreLoadedEventInterface`
+
+### Changed
+
+- Consolidate `Salient\Catalog` into `Salient\Contract`
+- Adopt PHPStan level 9 (albeit with 932 errors in baseline)
+- `DbConnector`: improve error handling, add stubs to fix ADOdb type issues
+- Work around buggy implementations of `@template` in PHPStan and Intelephense in `throwOnFailure()` methods of `DbConnector`, `File` and `Process`
+
 ## [v0.99.2] - 2024-02-28
 
 ### Added
@@ -1997,6 +2011,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.3]: https://github.com/salient-labs/toolkit/compare/v0.99.2...v0.99.3
 [v0.99.2]: https://github.com/salient-labs/toolkit/compare/v0.99.1...v0.99.2
 [v0.99.1]: https://github.com/salient-labs/toolkit/compare/v0.99.0...v0.99.1
 [v0.99.0]: https://github.com/salient-labs/toolkit/compare/v0.21.49...v0.99.0
