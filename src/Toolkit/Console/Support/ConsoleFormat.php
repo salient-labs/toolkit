@@ -2,10 +2,10 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Catalog\Console\ConsoleTag as Tag;
-use Salient\Catalog\Core\EscapeSequence as Colour;
 use Salient\Console\Contract\ConsoleFormatInterface;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
+use Salient\Contract\Console\ConsoleTag as Tag;
+use Salient\Contract\Core\EscapeSequence as Colour;
 
 /**
  * Applies inline character sequences to console output

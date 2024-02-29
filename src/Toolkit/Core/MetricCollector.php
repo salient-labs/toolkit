@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Catalog\Core\Metric;
+use Salient\Contract\Core\Metric;
 use LogicException;
 
 /**

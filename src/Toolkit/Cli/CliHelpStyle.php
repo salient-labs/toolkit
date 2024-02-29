@@ -2,13 +2,13 @@
 
 namespace Salient\Cli;
 
-use Salient\Catalog\Cli\CliHelpSectionName;
-use Salient\Catalog\Cli\CliHelpTarget;
-use Salient\Catalog\Cli\CliOptionVisibility;
 use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 use Salient\Console\Support\ConsoleManPageFormat as ManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Cli\CliHelpSectionName;
+use Salient\Contract\Cli\CliHelpTarget;
+use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Pcre;

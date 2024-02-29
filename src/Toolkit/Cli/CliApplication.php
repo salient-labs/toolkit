@@ -2,9 +2,6 @@
 
 namespace Salient\Cli;
 
-use Salient\Catalog\Cli\CliHelpSectionName;
-use Salient\Catalog\Cli\CliHelpTarget;
-use Salient\Catalog\Core\EnvFlag;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Console\Support\ConsoleManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat;
@@ -12,6 +9,9 @@ use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Container\Application;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
+use Salient\Contract\Cli\CliHelpSectionName;
+use Salient\Contract\Cli\CliHelpTarget;
+use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;

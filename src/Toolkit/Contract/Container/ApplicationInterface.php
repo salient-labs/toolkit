@@ -3,7 +3,7 @@
 namespace Salient\Contract\Container;
 
 use Salient\Cache\CacheStore;
-use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Env;

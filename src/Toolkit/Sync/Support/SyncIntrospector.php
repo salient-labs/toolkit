@@ -2,15 +2,15 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Catalog\Core\Regex;
-use Salient\Catalog\Sync\HydrationPolicy;
-use Salient\Catalog\Sync\SyncOperation;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Providable;
+use Salient\Contract\Core\Regex;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\Treeable;
+use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;

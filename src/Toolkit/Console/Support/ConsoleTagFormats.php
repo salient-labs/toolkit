@@ -2,9 +2,9 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Catalog\Console\ConsoleTag as Tag;
 use Salient\Console\Contract\ConsoleFormatInterface as Format;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
+use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Core\Concern\HasImmutableProperties;
 
 /**

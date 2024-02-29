@@ -2,14 +2,14 @@
 
 namespace Salient\Sync;
 
-use Salient\Catalog\Core\Regex;
-use Salient\Catalog\Sync\SyncOperation as OP;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
+use Salient\Contract\Core\Regex;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;

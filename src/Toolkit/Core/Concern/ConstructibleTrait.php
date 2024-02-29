@@ -2,9 +2,9 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Constructible;
+use Salient\Contract\Core\ListConformity;
 use Salient\Core\Introspector;
 use Generator;
 

@@ -2,9 +2,6 @@
 
 namespace Salient\Console;
 
-use Salient\Catalog\Console\ConsoleMessageType as MessageType;
-use Salient\Catalog\Console\ConsoleTag as Tag;
-use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Console\Contract\ConsoleFormatInterface as Format;
 use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 use Salient\Console\Support\ConsoleMessageAttributes as MessageAttributes;
@@ -12,7 +9,10 @@ use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Pcre;

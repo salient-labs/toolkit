@@ -2,12 +2,12 @@
 
 namespace Salient\Http;
 
-use Salient\Catalog\Http\HttpHeader;
 use Salient\Collection\ReadableCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\AccessTokenInterface;
+use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;

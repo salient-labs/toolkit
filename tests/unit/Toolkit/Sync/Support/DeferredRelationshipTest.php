@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Sync\Support;
 
-use Salient\Catalog\Sync\HydrationPolicy;
+use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Tests\Sync\Entity\Provider\AlbumProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Sync\Support;
 
-use Salient\Catalog\Core\Regex;
+use Salient\Contract\Core\Regex;
 use Salient\Core\Utility\Pcre;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;

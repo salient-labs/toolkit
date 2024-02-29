@@ -4,9 +4,9 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
-use Salient\Catalog\Http\HttpProtocolVersion;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpProtocolVersion;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;

@@ -2,7 +2,7 @@
 
 namespace Salient\PhpDoc;
 
-use Salient\Catalog\Core\Regex;
+use Salient\Contract\Core\Regex;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 

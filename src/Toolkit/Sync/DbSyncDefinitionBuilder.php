@@ -2,14 +2,14 @@
 
 namespace Salient\Sync;
 
-use Salient\Catalog\Core\ArrayMapperFlag;
-use Salient\Catalog\Core\ListConformity;
-use Salient\Catalog\Sync\FilterPolicy;
-use Salient\Catalog\Sync\SyncEntitySource;
-use Salient\Catalog\Sync\SyncOperation as OP;
+use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Pipeline\PipelineInterface;
+use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncEntitySource;
+use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\AbstractBuilder;
 use Closure;
 

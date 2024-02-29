@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Catalog\Core\Regex;
+use Salient\Contract\Core\Regex;
 use Salient\Core\AbstractUtility;
 use Stringable;
 

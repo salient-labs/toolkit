@@ -2,13 +2,13 @@
 
 namespace Salient\Sync;
 
-use Salient\Catalog\Console\ConsoleMessageType as MessageType;
-use Salient\Catalog\Core\MessageLevel as Level;
-use Salient\Catalog\Sync\DeferralPolicy;
-use Salient\Catalog\Sync\HydrationPolicy;
-use Salient\Catalog\Sync\SyncErrorType;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Sync\DeferralPolicy;
+use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Console;

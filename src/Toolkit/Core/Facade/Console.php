@@ -2,14 +2,14 @@
 
 namespace Salient\Core\Facade;
 
-use Salient\Catalog\Console\ConsoleMessageType as MessageType;
-use Salient\Catalog\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
-use Salient\Catalog\Core\MessageLevel as Level;
-use Salient\Catalog\Core\MessageLevelGroup as LevelGroup;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Console\ConsoleWriter;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
 use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
+use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\AbstractFacade;
 use Throwable;
 

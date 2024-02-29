@@ -2,10 +2,10 @@
 
 namespace Salient\Sync\Command;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Cli\CliOptionValueType;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Inflect;

@@ -2,11 +2,11 @@
 
 namespace Salient\Core;
 
-use Salient\Catalog\Core\Cardinality;
-use Salient\Catalog\Core\NormaliserFlag;
+use Salient\Contract\Core\Cardinality;
 use Salient\Contract\Core\Extensible;
 use Salient\Contract\Core\Normalisable;
 use Salient\Contract\Core\NormaliserFactory;
+use Salient\Contract\Core\NormaliserFlag;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Core\Relatable;

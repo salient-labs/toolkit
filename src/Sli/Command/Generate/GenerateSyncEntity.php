@@ -2,13 +2,13 @@
 
 namespace Salient\Sli\Command\Generate;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Cli\CliOptionValueType;
-use Salient\Catalog\Core\Cardinality;
-use Salient\Catalog\Http\HttpRequestMethod;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Cli\CliOptionValueType;
+use Salient\Contract\Core\Cardinality;
 use Salient\Contract\Core\Treeable;
+use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Concern\TreeableTrait;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

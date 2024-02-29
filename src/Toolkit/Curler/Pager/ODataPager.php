@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Pager;
 
-use Salient\Catalog\Http\HttpHeader;
+use Salient\Contract\Http\HttpHeader;
 use Salient\Core\Utility\Pcre;
 use Salient\Curler\Contract\ICurlerPage;
 use Salient\Curler\Contract\ICurlerPager;

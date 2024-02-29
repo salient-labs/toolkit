@@ -2,19 +2,19 @@
 
 namespace Salient\Sync;
 
-use Salient\Catalog\Core\ArrayMapperFlag;
-use Salient\Catalog\Core\ListConformity;
-use Salient\Catalog\Sync\FilterPolicy;
-use Salient\Catalog\Sync\SyncEntitySource;
-use Salient\Catalog\Sync\SyncOperation as OP;
-use Salient\Catalog\Sync\SyncOperationGroup;
+use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\Chainable;
+use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Pipeline\PipelineInterface;
+use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncEntitySource;
+use Salient\Contract\Sync\SyncOperation as OP;
+use Salient\Contract\Sync\SyncOperationGroup;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;

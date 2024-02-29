@@ -2,13 +2,13 @@
 
 namespace Salient\Core;
 
-use Salient\Catalog\Core\NormaliserFlag;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Extensible;
 use Salient\Contract\Core\Nameable;
 use Salient\Contract\Core\Normalisable;
 use Salient\Contract\Core\NormaliserFactory;
+use Salient\Contract\Core\NormaliserFlag;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;

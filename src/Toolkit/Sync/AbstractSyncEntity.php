@@ -2,23 +2,23 @@
 
 namespace Salient\Sync;
 
-use Salient\Catalog\Core\ListConformity;
-use Salient\Catalog\Core\NormaliserFlag;
-use Salient\Catalog\Core\TextComparisonAlgorithm as Algorithm;
-use Salient\Catalog\Core\TextComparisonFlag as Flag;
-use Salient\Catalog\Sync\SyncEntityLinkType as LinkType;
-use Salient\Catalog\Sync\SyncEntityState;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Describable;
+use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFactory;
+use Salient\Contract\Core\NormaliserFlag;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Readable;
+use Salient\Contract\Core\TextComparisonAlgorithm as Algorithm;
+use Salient\Contract\Core\TextComparisonFlag as Flag;
 use Salient\Contract\Core\Writable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
+use Salient\Contract\Sync\SyncEntityState;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;

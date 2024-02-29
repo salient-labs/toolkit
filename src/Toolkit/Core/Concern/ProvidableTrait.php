@@ -2,9 +2,9 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Extensible;
+use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;

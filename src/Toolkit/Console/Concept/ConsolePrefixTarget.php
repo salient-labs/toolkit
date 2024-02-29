@@ -2,9 +2,9 @@
 
 namespace Salient\Console\Concept;
 
-use Salient\Catalog\Console\ConsoleTag as Tag;
-use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Console\ConsoleTargetPrefixInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 
 /**
  * Base class for console output targets that apply an optional prefix to each

@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Http;
 
-use Salient\Catalog\Http\HttpHeader;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 
