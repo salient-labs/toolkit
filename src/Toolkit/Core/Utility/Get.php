@@ -31,6 +31,23 @@ use UnitEnum;
 final class Get extends AbstractUtility
 {
     /**
+     * Throw an exception if a value is null, otherwise return it
+     *
+     * @template T
+     *
+     * @param T $value
+     * @return (T is null ? never : T)
+     */
+    public static function notNull($value)
+    {
+        if ($value === null) {
+            throw new InvalidArgumentException('$value cannot be null');
+        }
+
+        return $value;
+    }
+
+    /**
      * Cast a value to boolean, converting boolean strings and preserving null
      *
      * @see Test::isBoolValue()

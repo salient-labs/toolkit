@@ -13,6 +13,8 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/bin/sli',
         __DIR__ . '/bootstrap.php',
         __DIR__ . '/tests/phpstan-conditional.php',
+        __DIR__ . '/stubs/ADOConnection.stub',
+        __DIR__ . '/stubs/ADORecordSet.stub',
     ])
     ->notPath('Utility/Reflect/MyClassWithDnfTypes.php');
 
