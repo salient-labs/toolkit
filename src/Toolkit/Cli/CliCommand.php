@@ -2,14 +2,14 @@
 
 namespace Salient\Cli;
 
-use Salient\Catalog\Cli\CliHelpSectionName;
-use Salient\Catalog\Cli\CliHelpTarget;
-use Salient\Catalog\Cli\CliOptionValueType;
-use Salient\Catalog\Cli\CliOptionVisibility;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
+use Salient\Contract\Cli\CliHelpSectionName;
+use Salient\Contract\Cli\CliHelpTarget;
+use Salient\Contract\Cli\CliOptionValueType;
+use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;

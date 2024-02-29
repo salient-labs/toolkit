@@ -3,16 +3,16 @@
 namespace Salient\Curler;
 
 use Salient\Cache\CacheStore;
-use Salient\Catalog\Core\MimeType;
-use Salient\Catalog\Core\QueryFlag;
-use Salient\Catalog\Http\HttpHeader;
-use Salient\Catalog\Http\HttpHeaderGroup;
-use Salient\Catalog\Http\HttpRequestMethod;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\MimeType;
+use Salient\Contract\Core\QueryFlag;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Core\Writable;
+use Salient\Contract\Http\HttpHeader;
+use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\HasReadableProperties;

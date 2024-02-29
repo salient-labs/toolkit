@@ -2,9 +2,9 @@
 
 namespace Salient\Core;
 
-use Salient\Catalog\Core\ArrayMapperFlag;
-use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Pipeline\PipeInterface;
 use Salient\Contract\Pipeline\PipelineInterface;

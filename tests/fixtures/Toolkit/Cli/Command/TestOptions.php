@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Cli\Command;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Cli\CliOptionValueType;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Json;

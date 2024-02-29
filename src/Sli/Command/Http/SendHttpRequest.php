@@ -2,10 +2,10 @@
 
 namespace Salient\Sli\Command\Http;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Cli\CliOptionValueType;
-use Salient\Catalog\Http\HttpRequestMethod;
 use Salient\Cli\CliOption;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Cli\CliOptionValueType;
+use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;

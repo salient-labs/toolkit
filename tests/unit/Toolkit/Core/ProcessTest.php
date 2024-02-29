@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Catalog\Core\FileDescriptor;
+use Salient\Contract\Core\FileDescriptor;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;
 use Salient\Core\Facade\Profile;

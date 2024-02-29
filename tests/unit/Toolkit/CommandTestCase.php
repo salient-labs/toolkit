@@ -2,12 +2,12 @@
 
 namespace Salient\Tests;
 
-use Salient\Catalog\Core\MessageLevel as Level;
-use Salient\Catalog\Core\MessageLevelGroup as LevelGroup;
 use Salient\Cli\CliApplication;
 use Salient\Console\Target\MockTarget;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 

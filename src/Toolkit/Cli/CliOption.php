@@ -2,18 +2,18 @@
 
 namespace Salient\Cli;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Cli\CliOptionValueType;
-use Salient\Catalog\Cli\CliOptionValueUnknownPolicy;
-use Salient\Catalog\Cli\CliOptionVisibility;
-use Salient\Catalog\Console\ConsoleMessageType as MessageType;
-use Salient\Catalog\Core\Char;
-use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Cli\CliOptionValueType;
+use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
+use Salient\Contract\Cli\CliOptionVisibility;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Buildable;
+use Salient\Contract\Core\Char;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\JsonSchemaInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
@@ -96,6 +96,21 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     private const VALUE_OPTIONAL_INDEX = [
         CliOptionType::VALUE_OPTIONAL => true,
         CliOptionType::ONE_OF_OPTIONAL => true,
+    ];
+
+    /**
+     * @var array<CliOptionValueType::*,string>
+     */
+    private const JSON_SCHEMA_TYPE_MAP = [
+        CliOptionValueType::BOOLEAN => 'boolean',
+        CliOptionValueType::INTEGER => 'integer',
+        CliOptionValueType::STRING => 'string',
+        CliOptionValueType::DATE => 'string',
+        CliOptionValueType::PATH => 'string',
+        CliOptionValueType::FILE => 'string',
+        CliOptionValueType::DIRECTORY => 'string',
+        CliOptionValueType::PATH_OR_DASH => 'string',
+        CliOptionValueType::FILE_OR_DASH => 'string',
     ];
 
     /**
@@ -587,7 +602,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         if ($this->IsOneOf) {
             $type['enum'] = $this->normaliseForSchema(array_values($this->AllowedValues));
         } else {
-            $type['type'][] = CliOptionValueType::toJsonSchemaType($this->ValueType);
+            $type['type'][] = $this->getJsonSchemaType();
         }
 
         if ($this->ValueOptional) {
@@ -642,6 +657,11 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         }
 
         return $schema;
+    }
+
+    private function getJsonSchemaType(): string
+    {
+        return self::JSON_SCHEMA_TYPE_MAP[$this->ValueType];
     }
 
     /**

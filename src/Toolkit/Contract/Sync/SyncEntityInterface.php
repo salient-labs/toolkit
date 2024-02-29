@@ -2,13 +2,13 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Catalog\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Identifiable;
 use Salient\Contract\Core\Nameable;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProvidableEntityInterface;
 use Salient\Contract\Core\Relatable;
+use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\AbstractSyncEntity;
 use Salient\Sync\SyncSerializeRules as SerializeRules;

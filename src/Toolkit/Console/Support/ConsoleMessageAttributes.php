@@ -2,8 +2,8 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Catalog\Console\ConsoleMessageType as MessageType;
-use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
 
 /**

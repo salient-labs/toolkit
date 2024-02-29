@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Core\MessageLevel as Level;
 
 /**
  * A console output target

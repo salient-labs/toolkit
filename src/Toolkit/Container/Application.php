@@ -3,12 +3,12 @@
 namespace Salient\Container;
 
 use Salient\Cache\CacheStore;
-use Salient\Catalog\Console\ConsoleMessageType as MessageType;
-use Salient\Catalog\Core\EnvFlag;
-use Salient\Catalog\Core\MessageLevel as Level;
-use Salient\Catalog\Core\MessageLevelGroup as LevelGroup;
 use Salient\Console\Target\StreamTarget;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
+use Salient\Contract\Core\EnvFlag;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Facade\Cache;

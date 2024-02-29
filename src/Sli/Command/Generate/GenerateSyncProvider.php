@@ -2,12 +2,12 @@
 
 namespace Salient\Sli\Command\Generate;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Sync\SyncOperation;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;

@@ -83,7 +83,7 @@ The first value passed is always the current [SyncContextInterface] and
 [SyncClassResolverInterface]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncClassResolverInterface.html
 [SyncOperation]:
-  https://salient-labs.github.io/toolkit/Salient.Sync.Catalog.SyncOperation.html
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncOperation.html
 [withArgs]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withArgs
 [namespace]:

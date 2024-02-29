@@ -7,7 +7,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use Salient\Cache\CacheStore;
-use Salient\Catalog\Http\HttpRequestMethod as Method;
+use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;

@@ -2,11 +2,11 @@
 
 namespace Salient\Sync\Command;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Sync\DeferralPolicy;
-use Salient\Catalog\Sync\HydrationPolicy;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Sync\DeferralPolicy;
+use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;

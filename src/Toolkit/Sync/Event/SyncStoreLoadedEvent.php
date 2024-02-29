@@ -2,7 +2,9 @@
 
 namespace Salient\Sync\Event;
 
+use Salient\Contract\Sync\SyncStoreLoadedEventInterface;
+
 /**
  * Dispatched when an entity store is loaded
  */
-class SyncStoreLoadedEvent extends AbstractSyncStoreEvent {}
+class SyncStoreLoadedEvent extends AbstractSyncStoreEvent implements SyncStoreLoadedEventInterface {}

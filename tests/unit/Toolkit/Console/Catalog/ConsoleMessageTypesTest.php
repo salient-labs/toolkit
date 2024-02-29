@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Console\Catalog;
 
-use Salient\Catalog\Console\ConsoleMessageType as MessageType;
-use Salient\Catalog\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
 use Salient\Tests\TestCase;
 
 final class ConsoleMessageTypesTest extends TestCase

@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Sync\Provider;
 
-use Salient\Catalog\Sync\SyncOperation as OP;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Env;
 use Salient\Core\DateFormatter;

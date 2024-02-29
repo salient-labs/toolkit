@@ -2,10 +2,10 @@
 
 namespace Salient\Console\Target;
 
-use Salient\Catalog\Core\MessageLevel as Level;
 use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Utility\File;
 
 /**

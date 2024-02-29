@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Catalog\Core\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
 

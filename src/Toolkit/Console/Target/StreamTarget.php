@@ -2,9 +2,9 @@
 
 namespace Salient\Console\Target;
 
-use Salient\Catalog\Core\EscapeSequence;
 use Salient\Console\Concept\ConsoleStreamTarget;
 use Salient\Console\Exception\ConsoleInvalidTargetException;
+use Salient\Contract\Core\EscapeSequence;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;

@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Salient\Catalog\Core\CopyFlag;
-use Salient\Catalog\Core\QueryFlag;
 use Salient\Container\Container;
 use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\CopyFlag;
+use Salient\Contract\Core\QueryFlag;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\UncloneableObjectException;
 use Salient\Core\Utility\Get;

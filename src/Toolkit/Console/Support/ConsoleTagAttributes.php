@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Catalog\Console\ConsoleTag as Tag;
+use Salient\Contract\Console\ConsoleTag as Tag;
 
 /**
  * Tag attributes

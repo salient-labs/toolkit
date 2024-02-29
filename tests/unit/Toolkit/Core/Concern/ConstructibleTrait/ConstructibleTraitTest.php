@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Core\Concern\ConstructibleTrait;
 
-use Salient\Catalog\Core\ListConformity;
 use Salient\Container\Container;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Constructible;
 use Salient\Contract\Core\Extensible;
+use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\Normalisable;
 use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\Readable;

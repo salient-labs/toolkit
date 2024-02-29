@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Catalog\Core\SortFlag;
 use Salient\Contract\Core\Jsonable;
+use Salient\Contract\Core\SortFlag;
 use Salient\Core\AbstractUtility;
 use ArrayAccess;
 use OutOfRangeException;

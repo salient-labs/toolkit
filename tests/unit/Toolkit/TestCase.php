@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Catalog\Core\MessageLevel as Level;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Closure;

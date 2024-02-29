@@ -2,9 +2,9 @@
 
 namespace Salient\Http;
 
-use Salient\Catalog\Http\HttpRequestMethodGroup;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\Readable;
+use Salient\Contract\Http\HttpRequestMethodGroup;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Pcre;

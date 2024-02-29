@@ -2,12 +2,12 @@
 
 namespace Salient\Sli\Command\Generate\Concept;
 
-use Salient\Catalog\Cli\CliOptionType;
-use Salient\Catalog\Core\MessageLevel as Level;
-use Salient\Catalog\Core\Regex;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\Regex;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;

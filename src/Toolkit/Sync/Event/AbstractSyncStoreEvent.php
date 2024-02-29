@@ -2,12 +2,13 @@
 
 namespace Salient\Sync\Event;
 
+use Salient\Contract\Sync\SyncStoreEventInterface;
 use Salient\Sync\SyncStore;
 
 /**
  * Base class for entity store events
  */
-abstract class AbstractSyncStoreEvent extends AbstractSyncEvent
+abstract class AbstractSyncStoreEvent extends AbstractSyncEvent implements SyncStoreEventInterface
 {
     protected SyncStore $Store;
 

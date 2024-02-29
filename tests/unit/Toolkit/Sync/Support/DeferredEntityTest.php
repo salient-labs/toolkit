@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Sync\Support;
 
-use Salient\Catalog\Sync\DeferralPolicy;
+use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Tests\Sync\Entity\Provider\PostProvider;
 use Salient\Tests\Sync\Entity\Post;
