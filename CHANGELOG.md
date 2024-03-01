@@ -12,6 +12,22 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.4] - 2024-03-01
+
+### Added
+
+- Add `Test::isNumericKey()`
+
+### Changed
+
+- In pipelines, accept closures with narrower parameter types
+- In sync contexts, reject numeric keys in filters and specify the structure of a valid filter
+- Add more `@template` workarounds for PHPStan and Intelephense
+
+### Fixed
+
+- Fix issue where `HasImmutableProperties` creates unnecessary clones when `null` is assigned
+
 ## [v0.99.3] - 2024-02-29
 
 ### Added
@@ -2011,6 +2027,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.4]: https://github.com/salient-labs/toolkit/compare/v0.99.3...v0.99.4
 [v0.99.3]: https://github.com/salient-labs/toolkit/compare/v0.99.2...v0.99.3
 [v0.99.2]: https://github.com/salient-labs/toolkit/compare/v0.99.1...v0.99.2
 [v0.99.1]: https://github.com/salient-labs/toolkit/compare/v0.99.0...v0.99.1
