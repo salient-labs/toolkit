@@ -114,8 +114,17 @@ final class TestTest extends TestCase
      */
     public function testIsNumericKey(bool $expected, $value): void
     {
+        if (is_float($value)) {
+            $level = error_reporting();
+            error_reporting($level & ~\E_DEPRECATED);
+        }
+
         $this->assertSame($expected, is_int(array_key_first([$value => 'foo'])));
         $this->assertSame($expected, Test::isNumericKey($value));
+
+        if (isset($level)) {
+            error_reporting($level);
+        }
     }
 
     /**
