@@ -10,11 +10,9 @@ use stdClass;
 
 final class CacheStoreTest extends TestCase
 {
-    private ?string $Dir;
-
-    private ?string $File;
-
-    private ?CacheStore $Cache;
+    private string $Dir;
+    private string $File;
+    private CacheStore $Cache;
 
     public function testWithoutExpiration(): void
     {
@@ -187,11 +185,10 @@ final class CacheStoreTest extends TestCase
     protected function tearDown(): void
     {
         $this->Cache->close();
-        File::pruneDir($this->Dir);
-        rmdir($this->Dir);
+        File::deleteDir($this->Dir, true);
 
-        $this->Cache = null;
-        $this->File = null;
-        $this->Dir = null;
+        unset($this->Cache);
+        unset($this->File);
+        unset($this->Dir);
     }
 }

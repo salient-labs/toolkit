@@ -62,8 +62,7 @@ final class ApplicationTest extends TestCase
         $app->unload();
         Config::unload();
 
-        File::pruneDir($basePath);
-        rmdir($basePath);
+        File::deleteDir($basePath, true);
     }
 
     /**
@@ -73,7 +72,9 @@ final class ApplicationTest extends TestCase
     {
         // realpath provides cross-platform normalisation here
         $basePath = realpath(File::createTempDir()) ?: '';
-        $homeDir = realpath(Env::home()) ?: '';
+        $homeDir = Env::home();
+        $this->assertNotNull($homeDir);
+        $homeDir = realpath($homeDir) ?: '';
         $this->assertDirectoryExists($basePath);
         $this->assertDirectoryExists($homeDir);
 
@@ -102,7 +103,6 @@ final class ApplicationTest extends TestCase
         $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getTempPath(false));
         $app->unload();
 
-        File::pruneDir($basePath);
-        rmdir($basePath);
+        File::deleteDir($basePath, true);
     }
 }

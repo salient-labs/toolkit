@@ -135,7 +135,7 @@ final class PackageTest extends TestCase
         );
         $this->assertSame(
             InstalledVersions::getPrettyVersion('phpstan/phpstan')
-                . '-' . substr(InstalledVersions::getReference('phpstan/phpstan'), 0, 8),
+                . '-' . substr((string) InstalledVersions::getReference('phpstan/phpstan'), 0, 8),
             Package::packageVersion('phpstan/phpstan', true, true)
         );
         $this->assertNull(Package::packageVersion('composer/composer'));

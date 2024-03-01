@@ -172,7 +172,8 @@ class Uri implements UriInterface, Stringable, JsonSerializable
      */
     public function toParts(): array
     {
-        return Arr::whereNotNull([
+        /** @var array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} */
+        $parts = Arr::whereNotNull([
             'scheme' => $this->Scheme,
             'host' => $this->Host,
             'port' => $this->getPort(),
@@ -182,6 +183,8 @@ class Uri implements UriInterface, Stringable, JsonSerializable
             'query' => $this->Query,
             'fragment' => $this->Fragment,
         ]);
+
+        return $parts;
     }
 
     /**
@@ -546,7 +549,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
 
     private function filterScheme(?string $scheme, bool $validate = true): ?string
     {
-        if ((string) $scheme === '') {
+        if ($scheme === null || $scheme === '') {
             return null;
         }
 
@@ -561,7 +564,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
 
     private function filterUserInfoPart(?string $part): ?string
     {
-        if ((string) $part === '') {
+        if ($part === null || $part === '') {
             return $part;
         }
 
@@ -570,7 +573,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
 
     private function filterHost(?string $host, bool $validate = true): ?string
     {
-        if ((string) $host === '') {
+        if ($host === null || $host === '') {
             return $host;
         }
 
@@ -595,7 +598,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
      */
     private function filterPort($port): ?int
     {
-        if ((string) $port === '') {
+        if ($port === null || $port === '') {
             return null;
         }
 
@@ -611,7 +614,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
 
     private function filterPath(?string $path): string
     {
-        if ((string) $path === '') {
+        if ($path === null || $path === '') {
             return '';
         }
 
@@ -620,7 +623,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
 
     private function filterQueryOrFragment(?string $part): ?string
     {
-        if ((string) $part === '') {
+        if ($part === null || $part === '') {
             return $part;
         }
 
@@ -663,7 +666,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     {
         return Pcre::replaceCallback(
             '/%(2[de]|5f|7e|3[0-9]|[46][1-9a-f]|[57][0-9a])/i',
-            fn(array $matches) => chr(hexdec($matches[1])),
+            fn(array $matches) => chr((int) hexdec($matches[1])),
             $part
         );
     }

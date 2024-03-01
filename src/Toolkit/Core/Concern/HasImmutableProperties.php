@@ -2,6 +2,8 @@
 
 namespace Salient\Core\Concern;
 
+use ReflectionProperty;
+
 trait HasImmutableProperties
 {
     /**
@@ -22,12 +24,27 @@ trait HasImmutableProperties
      */
     protected function withPropertyValue(string $property, $value)
     {
-        if (isset($this->$property) && $value === $this->$property) {
+        if ((
+            isset($this->$property) ||
+            ($value === null && $this->propertyIsInitialized($property))
+        ) && $value === $this->$property) {
             return $this;
         }
 
         $clone = $this->clone();
         $clone->$property = $value;
         return $clone;
+    }
+
+    private function propertyIsInitialized(string $property): bool
+    {
+        if (!property_exists($this, $property)) {
+            return false;
+        }
+
+        $property = new ReflectionProperty($this, $property);
+        $property->setAccessible(true);
+
+        return $property->isInitialized($this);
     }
 }

@@ -347,6 +347,12 @@ final class StrTest extends TestCase
     public static function toCaseProvider(): array
     {
         return [
+            ['', null, '', '', '', ''],
+            ['0', null, '0', '0', '0', '0'],
+            [' 0 ', null, '0', '0', '0', '0'],
+            ['0.00', null, '0_00', '0-00', '000', '000'],
+            ['2e5', null, '2e5', '2e5', '2e5', '2e5'],
+            ['2.0e5', null, '2_0e5', '2-0e5', '20e5', '20e5'],
             ['**two words**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
             ['**Two_Words**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
             ['**TWO-WORDS**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],

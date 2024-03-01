@@ -10,9 +10,9 @@ use Salient\Tests\TestCase;
 
 abstract class SyncTestCase extends TestCase
 {
-    protected ?string $BasePath;
-    protected ?Application $App;
-    protected ?SyncStore $Store;
+    protected string $BasePath;
+    protected Application $App;
+    protected SyncStore $Store;
 
     /**
      * @param array<string,int> $expected
@@ -52,12 +52,11 @@ abstract class SyncTestCase extends TestCase
             ->stopSync()
             ->unload();
 
-        $this->App = null;
-        $this->Store = null;
+        unset($this->App);
+        unset($this->Store);
 
-        File::pruneDir($this->BasePath);
-        rmdir($this->BasePath);
+        File::deleteDir($this->BasePath, true);
 
-        $this->BasePath = null;
+        unset($this->BasePath);
     }
 }

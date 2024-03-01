@@ -57,7 +57,7 @@ final class HttpResponse implements Readable
         $this->Body = $body;
         $this->StatusCode = $statusCode;
         $this->ReasonPhrase = $reasonPhrase;
-        $this->Headers = $headers->set('Content-Length', (string) strlen($this->Body));
+        $this->Headers = $headers->set('Content-Length', (string) strlen((string) $this->Body));
         $this->ProtocolVersion = $protocolVersion;
     }
 

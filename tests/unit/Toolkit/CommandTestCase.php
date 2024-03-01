@@ -76,9 +76,7 @@ abstract class CommandTestCase extends TestCase
             $this->makeCommandAssertions($app, $command, ...func_get_args());
         } finally {
             $app->unload();
-
-            File::pruneDir($basePath);
-            rmdir($basePath);
+            File::deleteDir($basePath, true);
 
             Console::deregisterTarget($target);
             Console::unload();

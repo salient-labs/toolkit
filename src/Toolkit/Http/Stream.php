@@ -248,6 +248,10 @@ class Stream implements StreamInterface, Stringable
         return $result;
     }
 
+    /**
+     * @phpstan-assert resource $this->Stream
+     * @phpstan-assert true $this->IsReadable
+     */
     protected function assertIsReadable(): void
     {
         $this->assertHasStream();
@@ -257,6 +261,9 @@ class Stream implements StreamInterface, Stringable
         }
     }
 
+    /**
+     * @phpstan-assert resource $this->Stream
+     */
     protected function assertHasStream(): void
     {
         if (!$this->Stream) {

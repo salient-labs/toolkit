@@ -598,6 +598,7 @@ final class Env extends AbstractUtility
                 continue;
             }
 
+            /** @var string */
             $name = $match['name'];
             if (
                 array_key_exists($name, $_ENV) ||

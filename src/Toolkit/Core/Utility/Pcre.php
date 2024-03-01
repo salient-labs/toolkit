@@ -255,7 +255,7 @@ final class Pcre extends AbstractUtility
         string $characters,
         ?string $delimiter = null
     ): string {
-        $orDelimiter = (string) $delimiter === ''
+        $orDelimiter = $delimiter === null || $delimiter === ''
             ? ''
             : '|' . preg_quote($delimiter, '/');
 

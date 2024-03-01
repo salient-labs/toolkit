@@ -161,7 +161,7 @@ class HttpRequest extends HttpMessage implements RequestInterface
      */
     private function filterRequestTarget(?string $requestTarget): ?string
     {
-        if ((string) $requestTarget === '') {
+        if ($requestTarget === null || $requestTarget === '') {
             return null;
         }
 

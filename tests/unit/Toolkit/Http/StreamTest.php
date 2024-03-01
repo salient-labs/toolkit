@@ -241,8 +241,7 @@ final class StreamTest extends TestCase
             }
             if ($temp) {
                 $dir = dirname($file);
-                File::pruneDir($dir);
-                rmdir($dir);
+                File::deleteDir($dir, true);
             }
         }
     }
@@ -327,8 +326,7 @@ final class StreamTest extends TestCase
             $stream->getContents();
         } finally {
             $stream->close();
-            File::pruneDir($dir);
-            rmdir($dir);
+            File::deleteDir($dir, true);
         }
     }
 
@@ -345,8 +343,7 @@ final class StreamTest extends TestCase
             $stream->write('foo');
         } finally {
             $stream->close();
-            File::pruneDir($dir);
-            rmdir($dir);
+            File::deleteDir($dir, true);
         }
     }
 

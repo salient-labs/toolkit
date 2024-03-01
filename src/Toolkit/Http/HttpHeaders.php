@@ -162,9 +162,12 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
             }
         }
 
-        return $extend
-            ? $this->extendLast($line)->with('Carry', $carry)
-            : $this->add($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
+        if ($extend) {
+            return $this->extendLast($line)->with('Carry', $carry);
+        }
+
+        /** @var string $name */
+        return $this->add($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
     }
 
     /**

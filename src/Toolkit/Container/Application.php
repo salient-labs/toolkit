@@ -353,7 +353,7 @@ class Application extends Container implements ApplicationInterface
             Err::silencePath($adodb);
         }
 
-        if ((string) $configDir !== '') {
+        if ($configDir !== null && $configDir !== '') {
             if (!File::isAbsolute($configDir)) {
                 $configDir = "{$this->BasePath}/{$configDir}";
             }

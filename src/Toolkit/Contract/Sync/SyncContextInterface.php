@@ -7,6 +7,7 @@ use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use Salient\Sync\AbstractSyncProvider;
+use DateTimeInterface;
 
 /**
  * The context within which sync entities are instantiated by a provider
@@ -26,12 +27,13 @@ interface SyncContextInterface extends ProviderContextInterface
      *
      * 1. One array argument (`fn(...$mandatoryArgs, array $filter)`)
      *
-     *    - Alphanumeric keys are converted to snake_case
-     *    - Keys containing characters other than letters, numbers, hyphens and
-     *      underscores, e.g. `'$orderby'`, are left as-is
-     *    - {@see SyncEntityInterface} objects are replaced with their
+     *    - Keys containing only letters, numbers, hyphens and underscores are
+     *      converted to snake_case
+     *    - Keys containing other characters, e.g. `'$orderby'`, are left as-is
+     *    - {@see SyncEntityInterface} instances are replaced with their
      *      respective IDs
-     *    - Empty keys (`''` after snake_case conversion) are invalid
+     *    - Empty and numeric keys (e.g. `''` or `'42'` after snake_case
+     *      conversion) are invalid
      *
      * 2. A list of identifiers (`fn(...$mandatoryArgs, int|string ...$ids)`)
      *
@@ -190,7 +192,7 @@ interface SyncContextInterface extends ProviderContextInterface
      *
      * @see SyncContextInterface::withArgs()
      *
-     * @return array<string,mixed>
+     * @return array<string,(int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null>
      */
     public function getFilters(): array;
 
@@ -202,7 +204,8 @@ interface SyncContextInterface extends ProviderContextInterface
      * context via {@see ProviderContextInterface::withValue()}, it is returned
      * if there is no matching filter.
      *
-     * @return mixed `null` if the value has been claimed via
+     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
+     * `null` if the value has been claimed via
      * {@see SyncContextInterface::claimFilter()} or wasn't passed to the
      * operation.
      *
@@ -222,10 +225,11 @@ interface SyncContextInterface extends ProviderContextInterface
      * context via {@see ProviderContextInterface::withValue()}, it is returned
      * if there is no matching filter.
      *
-     * @return mixed `null` if the value has already been claimed or wasn't
-     * passed to the operation.
-     *
      * @see SyncContextInterface::withArgs()
+     *
+     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
+     * `null` if the value has already been claimed or wasn't passed to the
+     * operation.
      */
     public function claimFilter(string $key, bool $orValue = true);
 

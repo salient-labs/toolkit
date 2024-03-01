@@ -50,7 +50,7 @@ final class ConsoleFormat implements ConsoleFormatInterface
      */
     public function apply(?string $text, $attributes = null): string
     {
-        if ((string) $text === '') {
+        if ($text === null || $text === '') {
             return '';
         }
 

@@ -395,6 +395,7 @@ final class ConsoleFormatter
             }
 
             if ($match['block'] !== null) {
+                /** @var array{fence:string,infostring:string,block:string} $match */
                 // Reinstate unwrapped newlines before blocks
                 if ($unwrap && $string !== '' && $string[-1] !== "\n") {
                     $string[-1] = "\n";
@@ -423,6 +424,7 @@ final class ConsoleFormatter
             }
 
             if ($match['span'] !== null) {
+                /** @var array{backtickstring:string,span:string} $match */
                 $span = $match['span'];
                 // As per CommonMark:
                 // - Convert line endings to spaces

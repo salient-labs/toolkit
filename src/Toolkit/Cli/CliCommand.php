@@ -491,7 +491,7 @@ abstract class CliCommand implements CliCommandInterface
         $synopsis = $this->getSynopsis($style);
 
         $description = $this->getLongDescription();
-        if ((string) $description !== '') {
+        if ($description !== null && $description !== '') {
             $description = $this->prepareHelp($style, $description);
         }
 
