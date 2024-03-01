@@ -355,7 +355,7 @@ EOF)
                     $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]->Description ?? null) : null;
                 }
 
-                $type = ($type ?? '') !== '' ? "$type " : '';
+                $type = $type !== '' ? "$type " : '';
                 $methods[] = " * @method \$this $name($type\$value$default)"
                     . $this->getSummary(
                         $summary,  // Taken from property PHPDoc if set, otherwise constructor PHPDoc if set, otherwise `null`
@@ -515,7 +515,7 @@ EOF)
                 }
                 $docBlocks[$name] = implode(\PHP_EOL, $lines);
             } else {
-                $type = ($type ?? '') !== '' ? "$type " : '';
+                $type = $type !== '' ? "$type " : '';
                 $methods[] = " * @method \$this $name($type\$value$default)"
                     . $this->getSummary(
                         $summary,  // Taken from constructor PHPDoc if set, otherwise property PHPDoc if set, otherwise `null`
@@ -725,8 +725,11 @@ EOF)
             $docBlock[] = ' *';
             foreach ($this->InputClassTemplates as $template => $tag) {
                 $tag = clone $tag;
-                if (!Test::isPhpReservedWord($tag->Type) &&
-                        !array_key_exists($tag->Type, $this->InputClassTemplates)) {
+                if (
+                    $tag->Type !== null &&
+                    !Test::isPhpReservedWord($tag->Type) &&
+                    !array_key_exists($tag->Type, $this->InputClassTemplates)
+                ) {
                     $tag->Type = $this->getPhpDocTypeAlias(
                         $tag,
                         [],

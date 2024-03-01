@@ -45,7 +45,7 @@ final class SendHttpRequest extends Command
     private function getMethod(): string
     {
         return $this->HttpMethod
-            ?? ($this->HttpMethod = Str::upper(Arr::last($this->nameParts())));
+            ??= Str::upper((string) Arr::last($this->nameParts()));
     }
 
     public function description(): string

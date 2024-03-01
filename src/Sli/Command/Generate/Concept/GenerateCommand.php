@@ -99,28 +99,28 @@ abstract class GenerateCommand extends Command
      * The parent of the generated class, or interfaces extended by the
      * generated interface
      *
-     * @var class-string[]
+     * @var string[]
      */
     protected array $Extends = [];
 
     /**
      * Interfaces implemented by the generated class
      *
-     * @var class-string[]
+     * @var string[]
      */
     protected array $Implements = [];
 
     /**
      * Traits used by the generated class
      *
-     * @var class-string[]
+     * @var string[]
      */
     protected array $Uses = [];
 
     /**
      * Modifiers applied to the generated class
      *
-     * @var class-string[]
+     * @var string[]
      */
     protected array $Modifiers = [];
 
@@ -486,11 +486,14 @@ abstract class GenerateCommand extends Command
      * Convert a built-in or user-defined type to a code-safe identifier, using
      * the same alias as the declaring class if possible
      *
+     * @template TReturnFqcn of bool
+     *
      * @param string $type Either a built-in type (e.g. `bool`) or a FQCN.
      * @param string|null $filename File where `$type` is declared (if
      * applicable).
-     * @param bool $returnFqcn If `false`, return `null` instead of `$type` if
-     * the alias has already been claimed.
+     * @param TReturnFqcn $returnFqcn If `false`, return `null` instead of
+     * `$type` if the alias has already been claimed.
+     * @return (TReturnFqcn is true ? string : string|null)
      */
     protected function getTypeAlias(string $type, ?string $filename = null, bool $returnFqcn = true): ?string
     {
@@ -516,10 +519,13 @@ abstract class GenerateCommand extends Command
      * Otherwise, `use $fqcn[ as $alias];` will be queued for output and
      * `$alias` will be returned.
      *
+     * @template TReturnFqcn of bool
+     *
      * @param string|null $alias If `null`, the basename of `$fqcn` will be
      * used.
-     * @param bool $returnFqcn If `false`, return `null` instead of the FQCN if
-     * `$alias` has already been claimed.
+     * @param TReturnFqcn $returnFqcn If `false`, return `null` instead of the
+     * FQCN if `$alias` has already been claimed.
+     * @return (TReturnFqcn is true ? string : string|null)
      */
     protected function getFqcnAlias(string $fqcn, ?string $alias = null, bool $returnFqcn = true): ?string
     {
@@ -669,7 +675,7 @@ abstract class GenerateCommand extends Command
     /**
      * Get an array that maps imports to aliases
      *
-     * @return array<class-string,string|null>
+     * @return array<class-string,string>
      */
     protected function getImportMap(bool $sort = true): array
     {

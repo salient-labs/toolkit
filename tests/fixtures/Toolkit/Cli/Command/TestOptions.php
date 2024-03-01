@@ -181,12 +181,16 @@ class TestOptions extends CliCommand
 
         switch ($this->Action) {
             case self::ACTION_APPLY_VALUES:
-                $data = Json::parseObjectAsArray($this->Data);
+                /** @var string */
+                $data = $this->Data;
+                $data = Json::parseObjectAsArray($data);
                 $this->applyOptionValues($data, true, true, false, true, true);
                 break;
 
             case self::ACTION_APPLY_SCHEMA_VALUES:
-                $data = Json::parseObjectAsArray($this->Data);
+                /** @var string */
+                $data = $this->Data;
+                $data = Json::parseObjectAsArray($data);
                 $this->applyOptionValues($data, true, true, true, true, true);
                 break;
 
@@ -219,7 +223,9 @@ class TestOptions extends CliCommand
             'schemaOptions' => fn() => $this->getOptionValues(true, true, true),
             'hasArg' => function () {
                 foreach ($this->getOptions() as $option) {
-                    if ($this->optionHasArgument($option->Name)) {
+                    /** @var string */
+                    $name = $option->Name;
+                    if ($this->optionHasArgument($name)) {
                         $hasArg[$option->Name] = true;
                     }
                 }

@@ -27,7 +27,7 @@ use LogicException;
 /**
  * Generates closures that perform sync-related operations on a class
  *
- * @property-read string|null $EntityNoun
+ * @property-read string $EntityNoun
  * @property-read string|null $EntityPlural Not set if the plural class name is the same as the singular one
  *
  * @template TClass of object
@@ -892,10 +892,10 @@ final class SyncIntrospector extends Introspector
     {
         $_entity = $entity->_Class;
         $noun = Str::lower($_entity->EntityNoun);
-        $plural = Str::lower($_entity->EntityPlural);
         $methods = [];
 
-        if ($plural) {
+        if ($_entity->EntityPlural !== null) {
+            $plural = Str::lower($_entity->EntityPlural);
             switch ($operation) {
                 case SyncOperation::CREATE_LIST:
                     $methods[] = 'create' . $plural;

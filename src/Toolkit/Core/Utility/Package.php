@@ -121,10 +121,12 @@ final class Package extends AbstractUtility
         if (!InstalledVersions::isInstalled($package)) {
             return null;
         }
+        /** @var string */
+        $version = $pretty
+            ? InstalledVersions::getPrettyVersion($package)
+            : InstalledVersions::getVersion($package);
         return self::formatVersion(
-            $pretty
-                ? InstalledVersions::getPrettyVersion($package)
-                : InstalledVersions::getVersion($package),
+            $version,
             $withReference,
             fn() => self::packageReference($package)
         );

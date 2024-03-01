@@ -156,7 +156,7 @@ final class StreamTarget extends ConsoleStreamTarget
             ));
         }
 
-        if ((string) $path === '') {
+        if ($path === null || $path === '') {
             $path = $this->Path;
         }
 

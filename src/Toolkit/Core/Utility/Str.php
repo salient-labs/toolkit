@@ -267,8 +267,8 @@ final class Str extends AbstractUtility
         ?callable $callback = null
     ): string {
         $notAfterPreserve = '';
-        if ((string) $preserve !== '') {
-            $preserve = Pcre::replace('/[[:alnum:]]/u', '', (string) $preserve);
+        if ($preserve !== null && $preserve !== '') {
+            $preserve = Pcre::replace('/[[:alnum:]]/u', '', $preserve);
             if ($preserve !== '') {
                 // Prevent "key=value" becoming "key= value" when preserving "="
                 // by asserting that when separating words, they must appear:

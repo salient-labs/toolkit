@@ -35,7 +35,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
     // Related to `SyncEntityInterface`:
 
     /**
-     * @var string|null
+     * @var string
      */
     public $EntityNoun;
 
@@ -195,9 +195,9 @@ final class SyncIntrospectionClass extends IntrospectionClass
                 };
 
                 $noun = Str::lower($entity->EntityNoun);
-                $plural = Str::lower($entity->EntityPlural);
 
-                if ($plural) {
+                if ($entity->EntityPlural !== null) {
+                    $plural = Str::lower($entity->EntityPlural);
                     $fn(SyncOperation::CREATE_LIST, 'create' . $plural);
                     $fn(SyncOperation::READ_LIST, 'get' . $plural);
                     $fn(SyncOperation::UPDATE_LIST, 'update' . $plural);

@@ -830,7 +830,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             return $this;
         }
 
-        if ((string) $msg2 === '') {
+        if ($msg2 === null || $msg2 === '') {
             $msg1 = rtrim($msg1, "\r") . "\r";
         } else {
             $msg2 = rtrim($msg2, "\r") . "\r";
@@ -931,6 +931,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
     {
         $msg = array_pop($this->State->GroupMessageStack);
         if ($printMessage &&
+                $msg !== null &&
                 $msg !== '' &&
                 ($msg = Formatter::removeTags($msg)) !== '') {
             $this->write(Level::NOTICE, '', $msg ? "{ $msg } complete" : null, MessageType::GROUP_END);
@@ -1128,7 +1129,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             }
 
             $_msg2 = null;
-            if ((string) $msg2 !== '') {
+            if ($msg2 !== null && $msg2 !== '') {
                 $_msg2 = $msg2HasTags ? $formatter->formatTags($msg2) : $msg2;
                 $_msg2 = strpos($msg2, "\n") !== false
                     ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))

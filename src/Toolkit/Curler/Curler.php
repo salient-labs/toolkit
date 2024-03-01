@@ -632,7 +632,7 @@ final class Curler implements Readable, Writable, Buildable
 
     protected function getEffectiveUrl(): ?string
     {
-        return $this->Handle
+        return $this->Handle !== null
             ? curl_getinfo($this->Handle, \CURLINFO_EFFECTIVE_URL)
             : null;
     }
@@ -951,6 +951,9 @@ final class Curler implements Readable, Writable, Buildable
             ]));
     }
 
+    /**
+     * @phpstan-assert !null $this->ResponseBody
+     */
     protected function execute(bool $close = true, int $depth = 0): string
     {
         if ($this->CacheResponse &&
@@ -982,12 +985,11 @@ final class Curler implements Readable, Writable, Buildable
                 // Console::debug() should print the details of whatever called
                 // one of Curler's public methods, i.e. not execute(), not
                 // get(), but one frame deeper
-                Console::debug(
-                    "{$this->Method} " . rawurldecode($this->getEffectiveUrl()),
-                    null,
-                    null,
-                    $depth + 3
-                );
+                Console::debug(sprintf(
+                    '%s %s',
+                    $this->Method,
+                    rawurldecode($this->getEffectiveUrl() ?? '<no effective url>'),
+                ), null, null, $depth + 3);
             }
 
             // Execute the request
@@ -1331,7 +1333,7 @@ final class Curler implements Readable, Writable, Buildable
 
     private function getRetryAfter(): ?int
     {
-        if (Pcre::match('/^[0-9]+$/', $retryAfter = $this->ResponseHeadersByName['retry-after'] ?? null)) {
+        if (Pcre::match('/^[0-9]+$/', $retryAfter = $this->ResponseHeadersByName['retry-after'] ?? '')) {
             return (int) $retryAfter;
         }
         if (($retryAfter = strtotime($retryAfter)) !== false) {

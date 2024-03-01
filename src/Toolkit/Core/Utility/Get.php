@@ -566,7 +566,8 @@ final class Get extends AbstractUtility
         // `$escapeCharacters`
         if (is_string($value) && (
             Pcre::match('/\v/', $value) || (
-                (string) $escapeCharacters !== '' &&
+                $escapeCharacters !== null &&
+                $escapeCharacters !== '' &&
                 strpbrk($value, $escapeCharacters) !== false
             )
         )) {
@@ -574,7 +575,7 @@ final class Get extends AbstractUtility
 
             // Replace characters in `$escapeCharacters` with the equivalent
             // hexadecimal escape
-            if ((string) $escapeCharacters !== '') {
+            if ($escapeCharacters !== null && $escapeCharacters !== '') {
                 $search = [];
                 $replace = [];
                 foreach (str_split($escapeCharacters) as $character) {

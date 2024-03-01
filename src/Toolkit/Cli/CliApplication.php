@@ -311,7 +311,9 @@ class CliApplication extends Application implements CliApplicationInterface
             // Print usage info if the last remaining $arg is "--help"
             if ($arg === '--help' && !$args) {
                 $usage = $this->getHelp($name, $node);
-                Console::stdout($usage);
+                if ($usage !== null) {
+                    Console::stdout($usage);
+                }
                 return $this;
             }
 
@@ -332,7 +334,9 @@ class CliApplication extends Application implements CliApplicationInterface
                 !Pcre::match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)
             ) {
                 $usage = $this->getUsage($name, $node);
-                Console::out($usage);
+                if ($usage !== null) {
+                    Console::out($usage);
+                }
                 $this->LastExitStatus =
                     $arg === null
                         ? 0
@@ -410,6 +414,7 @@ class CliApplication extends Application implements CliApplicationInterface
             }
             if (
                 $node &&
+                $name !== null &&
                 ($usage = $this->getUsage($name, $node)) !== null
             ) {
                 Console::out("\n" . $usage);
@@ -483,8 +488,10 @@ class CliApplication extends Application implements CliApplicationInterface
         }
 
         $usage = $this->getHelp($name, $node, $style);
-        $usage = $formatter->formatTags($usage);
-        $usage = Str::eolToNative($usage);
-        printf('%s%s', str_replace('\ ', "\u{00A0}", $usage), \PHP_EOL);
+        if ($usage !== null) {
+            $usage = $formatter->formatTags($usage);
+            $usage = Str::eolToNative($usage);
+        }
+        printf('%s%s', str_replace('\ ', "\u{00A0}", (string) $usage), \PHP_EOL);
     }
 }
