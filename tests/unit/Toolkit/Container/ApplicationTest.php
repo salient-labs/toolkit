@@ -62,8 +62,7 @@ final class ApplicationTest extends TestCase
         $app->unload();
         Config::unload();
 
-        File::pruneDir($basePath);
-        rmdir($basePath);
+        File::deleteDir($basePath, true);
     }
 
     /**
@@ -104,7 +103,6 @@ final class ApplicationTest extends TestCase
         $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getTempPath(false));
         $app->unload();
 
-        File::pruneDir($basePath);
-        rmdir($basePath);
+        File::deleteDir($basePath, true);
     }
 }

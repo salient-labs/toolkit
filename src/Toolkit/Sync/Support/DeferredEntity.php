@@ -172,7 +172,9 @@ final class DeferredEntity
     public function replace(SyncEntityInterface $entity): void
     {
         if ($this->Resolved !== null) {
+            // @codeCoverageIgnoreStart
             throw new LogicException('Entity already resolved');
+            // @codeCoverageIgnoreEnd
         }
 
         $this->Resolved = $entity;

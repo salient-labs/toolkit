@@ -55,8 +55,7 @@ abstract class SyncTestCase extends TestCase
         unset($this->App);
         unset($this->Store);
 
-        File::pruneDir($this->BasePath);
-        rmdir($this->BasePath);
+        File::deleteDir($this->BasePath, true);
 
         unset($this->BasePath);
     }
