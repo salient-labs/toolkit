@@ -155,7 +155,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         }
 
         return $closure(
-            $this->Context->withArgs($operation, ...$args),
+            $this->Context->withFilter($operation, ...$args),
             ...$args
         );
     }

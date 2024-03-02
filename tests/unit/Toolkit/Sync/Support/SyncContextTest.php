@@ -32,8 +32,8 @@ final class SyncContextTest extends SyncTestCase
     {
         $context = $this->getContext();
 
-        $this->assertSame($context, $context->withArgs(SyncOperation::READ_LIST));
-        $this->assertSame($context, $context->withArgs(SyncOperation::READ, null));
+        $this->assertSame($context, $context->withFilter(SyncOperation::READ_LIST));
+        $this->assertSame($context, $context->withFilter(SyncOperation::READ, null));
     }
 
     /**
@@ -45,10 +45,10 @@ final class SyncContextTest extends SyncTestCase
     public function testWithArgs($expected, ...$args): void
     {
         $context = $this->getContext();
-        $context2 = $context->withArgs(SyncOperation::READ_LIST, ...$args);
+        $context2 = $context->withFilter(SyncOperation::READ_LIST, ...$args);
 
         $this->assertNotSame($context, $context2);
-        $this->assertSame($expected, $context2->getFilters());
+        $this->assertSame($expected, $context2->getFilter());
     }
 
     /**

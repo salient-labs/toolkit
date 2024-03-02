@@ -818,10 +818,7 @@ final class Arr extends AbstractUtility
      */
     public static function toIndex(array $array, $value = true): array
     {
-        return array_combine(
-            $array,
-            array_fill(0, count($array), $value)
-        );
+        return array_fill_keys($array, $value);
     }
 
     /**
@@ -900,8 +897,10 @@ final class Arr extends AbstractUtility
     /**
      * If a value is not an array, wrap it in one
      *
-     * @param mixed $value
-     * @return mixed[]
+     * @template T
+     *
+     * @param T $value
+     * @return (T is null ? array{} : (T is array ? T : array{T}))
      */
     public static function wrap($value): array
     {

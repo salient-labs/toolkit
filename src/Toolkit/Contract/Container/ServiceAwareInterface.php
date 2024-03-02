@@ -21,9 +21,12 @@ interface ServiceAwareInterface
     public function setService(string $service): void;
 
     /**
-     * Get the service or services resolved with the instance
+     * Get the last service resolved with the instance
      *
-     * @return class-string[]|class-string
+     * If {@see ServiceAwareInterface::setService()} has not been called, the
+     * instance should return its own class name.
+     *
+     * @return class-string
      */
-    public function getService();
+    public function getService(): string;
 }

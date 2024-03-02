@@ -480,6 +480,9 @@ trait TestTrait
 {
     protected ?ContainerInterface $Container = null;
 
+    /**
+     * @var class-string|null
+     */
     protected ?string $Service = null;
 
     protected int $SetServiceCount = 0;

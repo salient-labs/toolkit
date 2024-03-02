@@ -17,6 +17,7 @@ use Salient\Core\Utility\Test;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
+use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
 use DateTimeInterface;
 use LogicException;
 
@@ -27,8 +28,12 @@ use LogicException;
  */
 final class SyncContext extends ProviderContext implements SyncContextInterface
 {
+    private const INTEGER = 1;
+    private const STRING = 2;
+    private const LIST = 8;
+
     /**
-     * @var array<string,(int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null>
+     * @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null>
      */
     protected array $Filters = [];
 
@@ -110,10 +115,10 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     /**
      * @inheritDoc
      */
-    public function withArgs($operation, ...$args)
+    public function withFilter($operation, ...$args)
     {
-        // READ_LIST is the only operation with no mandatory argument after
-        // `SyncContext $ctx`
+        // READ_LIST is the only operation with no mandatory argument after the
+        // `SyncContextInterface` argument
         if ($operation !== SyncOperation::READ_LIST) {
             array_shift($args);
         }
@@ -124,14 +129,14 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
 
         if (is_array($args[0]) && count($args) === 1) {
             foreach ($args[0] as $key => $value) {
-                if (Pcre::match('/[^[:alnum:]_-]/', (string) $key)) {
+                if (is_string($key) && Pcre::match('/[^[:alnum:]_-]/', $key)) {
                     $filters[$key] = $this->normaliseFilterValue($value);
                     continue;
                 }
 
                 $key = Str::toSnakeCase((string) $key);
                 if ($key === '' || Test::isNumericKey($key)) {
-                    throw new SyncInvalidFilterException(...$args);
+                    throw new SyncInvalidFilterSignatureException($operation, ...$args);
                 }
 
                 $filters[$key] = $this->normaliseFilterValue($value);
@@ -172,7 +177,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             );
         }
 
-        throw new SyncInvalidFilterException(...$args);
+        throw new SyncInvalidFilterSignatureException($operation, ...$args);
     }
 
     /**
@@ -239,17 +244,61 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     /**
      * @inheritDoc
      */
-    public function getFilters(): array
+    public function getFilter(?string $key = null, bool $orValue = true)
     {
-        return $this->Filters;
+        if ($key === null) {
+            return $this->Filters;
+        }
+
+        return $this->doGetFilter($key, $orValue);
     }
 
     /**
      * @inheritDoc
      */
-    public function getFilter(string $key, bool $orValue = true)
+    public function getFilterInt(string $key, bool $orValue = true): ?int
     {
-        return $this->doGetFilter($key, $orValue);
+        return $this->doGetFilter($key, $orValue, false, self::INTEGER);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilterString(string $key, bool $orValue = true): ?string
+    {
+        return $this->doGetFilter($key, $orValue, false, self::STRING);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilterArrayKey(string $key, bool $orValue = true)
+    {
+        return $this->doGetFilter($key, $orValue, false, self::INTEGER | self::STRING);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilterIntList(string $key, bool $orValue = true): ?array
+    {
+        return $this->doGetFilter($key, $orValue, false, self::INTEGER | self::LIST);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilterStringList(string $key, bool $orValue = true): ?array
+    {
+        return $this->doGetFilter($key, $orValue, false, self::STRING | self::LIST);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilterArrayKeyList(string $key, bool $orValue = true): ?array
+    {
+        return $this->doGetFilter($key, $orValue, false, self::INTEGER | self::STRING | self::LIST);
     }
 
     /**
@@ -258,6 +307,54 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     public function claimFilter(string $key, bool $orValue = true)
     {
         return $this->doGetFilter($key, $orValue, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimFilterInt(string $key, bool $orValue = true): ?int
+    {
+        return $this->doGetFilter($key, $orValue, true, self::INTEGER);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimFilterString(string $key, bool $orValue = true): ?string
+    {
+        return $this->doGetFilter($key, $orValue, true, self::STRING);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimFilterArrayKey(string $key, bool $orValue = true)
+    {
+        return $this->doGetFilter($key, $orValue, true, self::INTEGER | self::STRING);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimFilterIntList(string $key, bool $orValue = true): ?array
+    {
+        return $this->doGetFilter($key, $orValue, true, self::INTEGER | self::LIST);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimFilterStringList(string $key, bool $orValue = true): ?array
+    {
+        return $this->doGetFilter($key, $orValue, true, self::STRING | self::LIST);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimFilterArrayKeyList(string $key, bool $orValue = true): ?array
+    {
+        return $this->doGetFilter($key, $orValue, true, self::INTEGER | self::STRING | self::LIST);
     }
 
     /**
@@ -308,7 +405,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     }
 
     /**
-     * @param array<string,(int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null> $filters
+     * @param array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> $filters
      * @param array<string,string> $filterKeys
      * @return $this
      */
@@ -321,17 +418,16 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
 
     /**
      * @param mixed $value
-     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
+     * @return (int|string|float|bool|null)[]|int|string|float|bool|null
      */
     private function normaliseFilterValue($value)
     {
-        if (
-            $value === null ||
-            $value === [] ||
-            $value instanceof DateTimeInterface ||
-            is_scalar($value)
-        ) {
+        if ($value === null || $value === [] || is_scalar($value)) {
             return $value;
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format(DateTimeInterface::ATOM);
         }
 
         if ($value instanceof SyncEntityInterface) {
@@ -341,11 +437,12 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         if (is_array($value)) {
             $invalid = false;
             foreach ($value as &$entry) {
-                if (
-                    $entry === null ||
-                    $entry instanceof DateTimeInterface ||
-                    is_scalar($entry)
-                ) {
+                if ($entry === null || is_scalar($entry)) {
+                    continue;
+                }
+
+                if ($entry instanceof DateTimeInterface) {
+                    $entry = $entry->format(DateTimeInterface::ATOM);
                     continue;
                 }
 
@@ -391,15 +488,39 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     }
 
     /**
-     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
+     * @template TType of int-mask-of<self::*>|null
+     *
+     * @param (int|null)&TType $type
+     * @return (
+     *     TType is 1
+     *     ? int
+     *     : (TType is 2
+     *         ? string
+     *         : (TType is 3
+     *             ? int|string
+     *             : (TType is 9
+     *                 ? int[]
+     *                 : (TType is 10
+     *                     ? string[]
+     *                     : (TType is 11
+     *                         ? (int|string)[]
+     *                         : (int|string|float|bool|null)[]|int|string|float|bool
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )|null
      */
-    private function doGetFilter(string $key, bool $orValue, bool $claim = false)
+    private function doGetFilter(string $key, bool $orValue, bool $claim = false, $type = null)
     {
         if (!array_key_exists($key, $this->Filters)) {
             $key = Str::toSnakeCase($key);
             if (!array_key_exists($key, $this->Filters)) {
                 if (substr($key, -3) !== '_id') {
-                    return $orValue ? $this->getValue($key) : null;
+                    return $orValue
+                        ? $this->checkFilterValue($this->getValue($key), $type, 'context')
+                        : null;
                 }
                 $name = Str::toSnakeCase(substr($key, 0, -3));
                 if (array_key_exists($name, $this->FilterKeys)) {
@@ -410,18 +531,93 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 } elseif (array_key_exists($name, $this->Filters)) {
                     $key = $name;
                 } else {
-                    return $orValue ? $this->getValue($key) : null;
+                    return $orValue
+                        ? $this->checkFilterValue($this->getValue($key), $type, 'context')
+                        : null;
                 }
             }
         }
 
-        $value = $this->Filters[$key];
+        $value = $this->checkFilterValue($this->Filters[$key], $type);
 
         if ($claim) {
             unset($this->Filters[$key]);
         }
 
         return $value;
+    }
+
+    /**
+     * @template TValue of (int|string|float|bool|null)[]|int|string|float|bool|null
+     * @template TType of int-mask-of<self::*>|null
+     *
+     * @param TValue $value
+     * @param (int|null)&TType $type
+     * @return (
+     *     TValue is null
+     *     ? (TType is 8|9|10|11 ? array{} : null)
+     *     : (TType is null
+     *         ? TValue
+     *         : (TType is 1
+     *             ? int
+     *             : (TType is 2
+     *                 ? string
+     *                 : (TType is 3
+     *                     ? int|string
+     *                     : (TType is 9
+     *                         ? int[]
+     *                         : (TType is 10
+     *                             ? string[]
+     *                             : (TType is 11
+     *                                 ? (int|string)[]
+     *                                 : (TType is 8
+     *                                     ? (int|string|float|bool|null)[]
+     *                                     : int|string|float|bool
+     *                                 )
+     *                             )
+     *                         )
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )|null
+     */
+    private function checkFilterValue($value, $type, string $scope = 'filter')
+    {
+        if ($value === null) {
+            return $type & self::LIST ? [] : null;
+        }
+
+        if ($type === null) {
+            return $value;
+        }
+
+        if ($type & self::LIST) {
+            /** @var int-mask-of<self::INTEGER|self::STRING> */
+            $type = $type & ~self::LIST;
+            foreach (Arr::wrap($value) as $key => $value) {
+                $list[$key] = $this->checkFilterValue($value, $type);
+            }
+
+            return $list ?? [];
+        }
+
+        $value = Arr::unwrap($value, 1);
+
+        if (is_int($value)) {
+            if ($type & self::INTEGER) {
+                return $value;
+            }
+        } elseif (is_string($value)) {
+            if ($type & self::STRING) {
+                return $value;
+            }
+        } elseif (is_float($value) || is_bool($value)) {
+            return $value;
+        }
+
+        throw new SyncInvalidFilterException(sprintf('Invalid %s value', $scope));
     }
 
     /**
@@ -469,6 +665,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     /**
      * @param HydrationPolicy::* $policy
      * @param array<int<1,max>>|int<1,max>|null $depth
+     * @param int<0,max> $currentDepth
      * @param array<int<0,max>,HydrationPolicy::*> $currentPolicy
      * @return array<int<0,max>,HydrationPolicy::*>
      */
