@@ -483,11 +483,6 @@ final class SyncStore extends AbstractStore
      * For performance reasons, `$entity` is case-sensitive and must exactly
      * match the declared name of the sync entity class.
      *
-     * If a sync run has started, the entity type is registered immediately and
-     * its ID is passed to {@see SyncEntityInterface::setEntityTypeId()} before
-     * {@see SyncStore::entityType()} returns. Otherwise, registration is
-     * deferred until a sync run starts.
-     *
      * @param class-string<SyncEntityInterface> $entity
      * @return $this
      */
@@ -555,7 +550,6 @@ final class SyncStore extends AbstractStore
             throw new SyncStoreException('Error retrieving entity type ID');
         }
 
-        $class->getMethod('setEntityTypeId')->invoke(null, $row[0]);
         $this->EntityTypes[$row[0]] = $entity;
         $this->EntityTypeMap[$entity] = $row[0];
 

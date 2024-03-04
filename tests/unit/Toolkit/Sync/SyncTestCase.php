@@ -2,17 +2,16 @@
 
 namespace Salient\Tests\Sync;
 
-use Salient\Container\Application;
-use Salient\Core\Utility\File;
+use Salient\Container\Container;
 use Salient\Sync\SyncStore;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\TestCase;
 
 abstract class SyncTestCase extends TestCase
 {
-    protected string $BasePath;
-    protected Application $App;
+    protected Container $App;
     protected SyncStore $Store;
+    protected JsonPlaceholderApi $Provider;
 
     /**
      * @param array<string,int> $expected
@@ -29,34 +28,28 @@ abstract class SyncTestCase extends TestCase
 
     protected function setUp(): void
     {
-        $this->BasePath = File::createTempDir();
+        $this->App = (new Container())
+            ->provider(JsonPlaceholderApi::class);
 
-        $this->App =
-            (new Application($this->BasePath))
-                ->startCache()
-                ->startSync(__METHOD__, [])
-                ->syncNamespace(
-                    'salient-tests',
-                    'https://salient-labs.github.io/toolkit/tests/entity',
-                    'Salient\Tests\Sync\Entity'
-                )
-                ->provider(JsonPlaceholderApi::class);
+        $this->Store = $this
+            ->App
+            ->singleton(SyncStore::class)
+            ->get(SyncStore::class)
+            ->namespace(
+                'salient-tests',
+                'https://salient-labs.github.io/toolkit/tests/entity',
+                'Salient\Tests\Sync\Entity',
+            );
 
-        $this->Store = $this->App->get(SyncStore::class);
+        $this->Provider = $this->App->get(JsonPlaceholderApi::class);
     }
 
     protected function tearDown(): void
     {
         $this
             ->App
-            ->stopSync()
             ->unload();
-
         unset($this->App);
         unset($this->Store);
-
-        File::deleteDir($this->BasePath, true);
-
-        unset($this->BasePath);
     }
 }

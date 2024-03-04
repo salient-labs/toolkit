@@ -111,6 +111,11 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:expandAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
+			count: 1
+			path: src/Sli/Command/Generate/GenerateBuilder.php
+
+		-
 			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 7
 			path: src/Sli/Command/Generate/GenerateBuilder.php
@@ -2041,12 +2046,12 @@ parameters:
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemove\\(\\) should return array\\<string, string\\> but returns array\\<string, array\\<Closure\\|string\\>\\|Closure\\|string\\|false\\>\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveCanonicalId\\(\\) should return bool but returns bool\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveCanonicalId\\(\\) should return bool but returns bool\\|null\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveFrom\\(\\) should return array\\<string, string\\> but returns array\\<string, array\\<Closure\\|string\\>\\|Closure\\|string\\|false\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 

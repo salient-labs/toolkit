@@ -4,6 +4,7 @@ namespace Salient\Sli\Command\Generate;
 
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
@@ -373,6 +374,7 @@ EOF)
             }
 
             // If we end up here, we're dealing with a constructor parameter
+            $maps = $this->getMaps();
             $propertyFile = $_constructor->getFileName();
             $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
             $declaringClass = $this->getTypeAlias($_constructor->getDeclaringClass()->getName());
@@ -398,6 +400,7 @@ EOF)
             $_name = $_param->getName();
 
             $tag = $_phpDoc->Params[$_name] ?? null;
+            $fromPhpDoc = false;
             if (($_type = $tag->Type ?? null) !== null) {
                 $templates = [];
                 $type = $this->getPhpDocTypeAlias(
@@ -414,6 +417,7 @@ EOF)
                         $declare = true;
                     }
                 }
+                $fromPhpDoc = true;
             } else {
                 $type = $_param->hasType()
                     ? Reflect::getTypeDeclaration(
@@ -449,6 +453,15 @@ EOF)
                         }
                     }
                     break;
+            }
+
+            if (is_a(
+                $this->expandAlias($type, $fromPhpDoc ? $propertyFile : null),
+                ContainerInterface::class,
+                true
+            )) {
+                $this->setMaps($maps);
+                continue;
             }
 
             $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->Description ?? null) : null;

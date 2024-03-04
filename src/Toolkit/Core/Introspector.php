@@ -593,6 +593,7 @@ class Introspector
             $this->_Class->RequiredArguments,
             $targets->LastParameterIndex + 1,
         );
+
         $args = array_slice($this->_Class->DefaultArguments, 0, $length);
         $class = $this->_Class->Class;
 
@@ -610,6 +611,29 @@ class Introspector
             };
         }
 
+        /** @var array<string,int> Service parameter name => index */
+        $serviceArgs = array_intersect_key(
+            $this->_Class->ParameterIndex,
+            array_flip(array_intersect_key(
+                $this->_Class->Parameters,
+                $this->_Class->ServiceParameters,
+            )),
+        );
+
+        // Reduce `$serviceArgs` to arguments in `$args`
+        $serviceArgs = array_intersect($serviceArgs, array_keys($args));
+
+        // `null` is never applied to service parameters, so remove unmatched
+        // `$args` in service parameter positions and reduce `$serviceArgs` to
+        // matched arguments
+        $missingServiceArgs = array_diff($serviceArgs, $targets->Parameters);
+        $args = array_diff_key($args, array_flip($missingServiceArgs));
+        /** @var array<int,string> Service parameter index => `true` */
+        $serviceArgs = array_fill_keys(array_intersect(
+            $serviceArgs,
+            $targets->Parameters,
+        ), true);
+
         $parameterKeys = $targets->Parameters;
         $passByRefKeys = $targets->PassByRefParameters;
         $notNullableKeys = $targets->NotNullableParameters;
@@ -618,19 +642,32 @@ class Introspector
             array $array,
             ?string $service,
             ContainerInterface $container
-        ) use ($args, $class, $parameterKeys, $passByRefKeys, $notNullableKeys) {
+        ) use (
+            $args,
+            $class,
+            $serviceArgs,
+            $parameterKeys,
+            $passByRefKeys,
+            $notNullableKeys
+        ) {
             foreach ($parameterKeys as $key => $index) {
+                if ($array[$key] === null) {
+                    if ($serviceArgs[$index] ?? false) {
+                        unset($args[$index]);
+                        continue;
+                    }
+                    if ($notNullableKeys[$key] ?? false) {
+                        throw new LogicException(sprintf(
+                            "Argument #%d is not nullable, cannot apply value at key '%s': %s::__construct()",
+                            $index + 1,
+                            $key,
+                            $class,
+                        ));
+                    }
+                }
                 if ($passByRefKeys[$key] ?? false) {
                     $args[$index] = &$array[$key];
                     continue;
-                }
-                if ($array[$key] === null && ($notNullableKeys[$key] ?? false)) {
-                    throw new LogicException(sprintf(
-                        "Argument #%d is not nullable, cannot apply value at key '%s': %s::__construct()",
-                        $index + 1,
-                        $key,
-                        $class,
-                    ));
                 }
                 $args[$index] = $array[$key];
             }

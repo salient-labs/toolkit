@@ -69,6 +69,11 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     protected ?SyncEntityInterface $LastRecursedInto = null;
 
     /**
+     * @var array<class-string,string>
+     */
+    private static array $ServiceKeyMap;
+
+    /**
      * @inheritDoc
      */
     public function withFilterPolicyCallback(?callable $callback)
@@ -128,30 +133,47 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         }
 
         if (is_array($args[0]) && count($args) === 1) {
+            $filters = [];
+            $filterKeys = [];
             foreach ($args[0] as $key => $value) {
-                if (is_string($key) && Pcre::match('/[^[:alnum:]_-]/', $key)) {
-                    $filters[$key] = $this->normaliseFilterValue($value);
-                    continue;
-                }
-
-                $key = Str::toSnakeCase((string) $key);
-                if ($key === '' || Test::isNumericKey($key)) {
+                if (
+                    is_int($key) ||
+                    ($key = trim($key)) === '' ||
+                    Test::isNumericKey($key)
+                ) {
                     throw new SyncInvalidFilterSignatureException($operation, ...$args);
                 }
 
-                $filters[$key] = $this->normaliseFilterValue($value);
+                $normalised = false;
+                if (Pcre::match('/^([[:alnum:]]++($|[ _-]++(?!$)))++$/D', $key)) {
+                    $key = Str::toSnakeCase($key);
+                    $normalised = true;
+                }
 
-                if (substr($key, -3) !== '_id') {
+                $filters[$key] = $value = $this->normaliseFilterValue($value);
+                unset($filterKeys[$key]);
+
+                if (!$normalised || !(
+                    $value === null ||
+                    is_int($value) ||
+                    is_string($value) ||
+                    Arr::ofArrayKey($value, true)
+                )) {
                     continue;
                 }
 
-                $name = Str::toSnakeCase(substr($key, 0, -3));
-                if ($name !== '') {
-                    $filterKeys[$name] = $key;
+                $altKey = substr($key, -3) === '_id'
+                    ? substr($key, 0, -3)
+                    : $key . '_id';
+
+                if (isset($filters[$altKey])) {
+                    continue;
                 }
+
+                $filterKeys[$altKey] = $key;
             }
 
-            return $this->applyFilters($filters ?? [], $filterKeys ?? []);
+            return $this->applyFilters($filters, $filterKeys);
         }
 
         if (Arr::ofArrayKey($args)) {
@@ -159,22 +181,30 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         }
 
         if (Arr::of($args, SyncEntityInterface::class)) {
-            return $this->applyFilters(
-                array_merge_recursive(
-                    ...array_map(
-                        fn(SyncEntityInterface $entity): array => [
-                            Str::toSnakeCase(
-                                Get::basename(
-                                    $entity->getService()
-                                )
-                            ) => [
-                                $entity->id(),
-                            ],
-                        ],
-                        $args
-                    )
-                )
-            );
+            foreach ($args as $entity) {
+                /** @var SyncEntityInterface $entity */
+                $id = $entity->id();
+                if ($id === null) {
+                    throw new SyncInvalidFilterException(sprintf(
+                        '%s has no identifier',
+                        get_class($entity),
+                    ));
+                }
+
+                if ($entity->getProvider() !== $this->Provider) {
+                    throw new SyncInvalidFilterException(sprintf(
+                        '%s does not have same provider',
+                        get_class($entity),
+                    ));
+                }
+
+                $service = $entity->getService();
+                $key = self::$ServiceKeyMap[$service]
+                    ??= Str::toSnakeCase(Get::basename($service));
+                $filters[$key][] = $entity->id();
+            }
+
+            return $this->applyFilters($filters);
         }
 
         throw new SyncInvalidFilterSignatureException($operation, ...$args);
@@ -236,7 +266,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         ) {
             throw new SyncEntityRecursionException(sprintf(
                 'Circular reference detected: %s',
-                $this->LastRecursedInto->uri(),
+                $this->LastRecursedInto->uri($this->Container),
             ));
         }
     }
@@ -514,28 +544,21 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     private function doGetFilter(string $key, bool $orValue, bool $claim = false, $type = null)
     {
-        if (!array_key_exists($key, $this->Filters)) {
-            $key = Str::toSnakeCase($key);
-            if (!array_key_exists($key, $this->Filters)) {
-                if (substr($key, -3) !== '_id') {
-                    return $orValue
-                        ? $this->checkFilterValue($this->getValue($key), $type, 'context')
-                        : null;
-                }
-                $name = Str::toSnakeCase(substr($key, 0, -3));
-                if (array_key_exists($name, $this->FilterKeys)) {
-                    $key = $this->FilterKeys[$name];
-                    if ($claim) {
-                        unset($this->FilterKeys[$name]);
-                    }
-                } elseif (array_key_exists($name, $this->Filters)) {
-                    $key = $name;
-                } else {
-                    return $orValue
-                        ? $this->checkFilterValue($this->getValue($key), $type, 'context')
-                        : null;
-                }
+        if (
+            !array_key_exists($key, $this->Filters) &&
+            !array_key_exists($key = Str::toSnakeCase($key), $this->Filters)
+        ) {
+            if (!array_key_exists($key, $this->FilterKeys)) {
+                return $orValue
+                    ? $this->checkFilterValue($this->getValue($key), $type, 'context')
+                    : null;
             }
+            [$key, $altKey] = [$this->FilterKeys[$key], $key];
+            if ($claim) {
+                unset($this->FilterKeys[$altKey]);
+            }
+        } elseif ($claim && $this->FilterKeys) {
+            $this->FilterKeys = array_diff($this->FilterKeys, [$key]);
         }
 
         $value = $this->checkFilterValue($this->Filters[$key], $type);
@@ -597,7 +620,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             /** @var int-mask-of<self::INTEGER|self::STRING> */
             $type = $type & ~self::LIST;
             foreach (Arr::wrap($value) as $key => $value) {
-                $list[$key] = $this->checkFilterValue($value, $type);
+                $list[$key] = $this->checkFilterValue($value, $type, $scope);
             }
 
             return $list ?? [];
@@ -614,7 +637,9 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 return $value;
             }
         } elseif (is_float($value) || is_bool($value)) {
-            return $value;
+            if (!($type & (self::INTEGER | self::STRING))) {
+                return $value;
+            }
         }
 
         throw new SyncInvalidFilterException(sprintf('Invalid %s value', $scope));

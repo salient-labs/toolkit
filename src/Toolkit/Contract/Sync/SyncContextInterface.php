@@ -25,12 +25,12 @@ interface SyncContextInterface extends ProviderContextInterface
      *
      * 1. An associative array (`fn(..., array<string,mixed> $filter)`)
      *
-     *    - Keys containing only letters, numbers, hyphens and underscores are
-     *      converted to snake_case
-     *    - Empty and numeric keys (e.g. `''` or `'42'` after snake_case
-     *      conversion) are invalid
+     *    - Keys are trimmed
+     *    - Keys that only contain space-, hyphen- or underscore-delimited
+     *      letters and numbers are converted to snake_case
+     *    - Empty and numeric keys are invalid
      *
-     * 2. A list of identifiers (`fn(..., int|string ...$ids)`)
+     * 2. A list of identifiers (`fn(..., [ int ...$ids | string ...$ids ] )`)
      *
      *    - Becomes `[ 'id' => $ids ]`
      *

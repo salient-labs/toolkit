@@ -117,13 +117,6 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     private $State = 0;
 
     /**
-     * Entity => entity type ID
-     *
-     * @var array<class-string<AbstractSyncEntity>,int>
-     */
-    private static $EntityTypeId = [];
-
-    /**
      * Entity => [ property name => normalised property name ]
      *
      * @var array<class-string<AbstractSyncEntity>,array<string,string>>
@@ -318,7 +311,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      */
     final public function toArray(): array
     {
-        return $this->_toArray(static::getSerializeRules());
+        return $this->_toArray(static::getSerializeRules(
+            $this->Provider
+                ? $this->Provider->container()
+                : null
+        ));
     }
 
     /**
@@ -332,13 +329,13 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function toLink(int $type = LinkType::DEFAULT, bool $compact = true): array
+    final public function toLink(?ContainerInterface $container = null, int $type = LinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
             case LinkType::INTERNAL:
             case LinkType::DEFAULT:
                 return [
-                    '@type' => $this->typeUri($compact),
+                    '@type' => $this->typeUri($container, $compact),
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
@@ -346,12 +343,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
             case LinkType::COMPACT:
                 return [
-                    '@id' => $this->uri($compact),
+                    '@id' => $this->uri($container, $compact),
                 ];
 
             case LinkType::FRIENDLY:
                 return Arr::whereNotEmpty([
-                    '@type' => $this->typeUri($compact),
+                    '@type' => $this->typeUri($container, $compact),
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
@@ -370,11 +367,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function uri(bool $compact = true): string
+    final public function uri(?ContainerInterface $container = null, bool $compact = true): string
     {
         return sprintf(
             '%s/%s',
-            $this->typeUri($compact),
+            $this->typeUri($container, $compact),
             $this->Id === null
                 ? spl_object_id($this)
                 : $this->Id
@@ -394,17 +391,19 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * Get the entity store servicing the entity's provider or the Sync facade
      */
-    final protected function store(): SyncStore
+    final protected function store(?ContainerInterface $container = null): SyncStore
     {
         return $this->Provider
             ? $this->Provider->store()
-            : Sync::getInstance();
+            : ($container
+                ? $container->get(SyncStore::class)
+                : Sync::getInstance());
     }
 
-    private function typeUri(bool $compact): string
+    private function typeUri(?ContainerInterface $container, bool $compact): string
     {
         $service = $this->getService();
-        $typeUri = $this->store()->getEntityTypeUri($service, $compact);
+        $typeUri = $this->store($container)->getEntityTypeUri($service, $compact);
 
         return $typeUri
             ?? '/' . str_replace('\\', '/', ltrim($service, '\\'));
@@ -449,7 +448,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         if ($node instanceof AbstractSyncEntity) {
             if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
-                $node = $node->toLink(LinkType::INTERNAL);
+                $node = $node->toLink($rules->container(), LinkType::INTERNAL);
                 return;
             }
 
@@ -457,7 +456,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                 // Prevent infinite recursion by replacing each sync entity
                 // descended from itself with a link
                 if ($parents[spl_object_id($node)] ?? false) {
-                    $node = $node->toLink(LinkType::DEFAULT);
+                    $node = $node->toLink($rules->container(), LinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
 
                     return;
@@ -469,8 +468,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             $node = $node->serialize($rules);
         }
 
-        $delete = $rules->getRemove($class ?? null, null, $path);
-        $replace = $rules->getReplace($class ?? null, null, $path);
+        $delete = $rules->getRemoveFrom($class ?? null, null, $path);
+        $replace = $rules->getReplaceIn($class ?? null, null, $path);
 
         // Don't delete values returned in both lists
         $delete = array_diff_key($delete, $replace);
@@ -624,22 +623,6 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         }
 
         return $array;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public static function setEntityTypeId(int $entityTypeId): void
-    {
-        self::$EntityTypeId[static::class] = $entityTypeId;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public static function getEntityTypeId(): ?int
-    {
-        return self::$EntityTypeId[static::class] ?? null;
     }
 
     /**

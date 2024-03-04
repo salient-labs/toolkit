@@ -2,12 +2,16 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\SerializeRulesInterface;
 
 /**
  * Instructions for serializing nested sync entities
+ *
+ * @extends HasContainer<ContainerInterface>
  */
-interface SyncSerializeRulesInterface extends SerializeRulesInterface
+interface SyncSerializeRulesInterface extends SerializeRulesInterface, HasContainer
 {
     /**
      * Values are being serialized for an entity store
