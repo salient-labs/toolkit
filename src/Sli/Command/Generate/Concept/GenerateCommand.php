@@ -210,7 +210,7 @@ abstract class GenerateCommand extends Command
     protected array $InputFiles;
 
     /**
-     * Filename => [ alias => class name (as imported) ]
+     * Filename => [ lowercase alias => class name (as imported) ]
      *
      * @var array<string,array<string,class-string>>
      */
@@ -349,7 +349,7 @@ abstract class GenerateCommand extends Command
         foreach (array_keys($files) as $file) {
             $extractor = new TokenExtractor($file);
             $useMap = $extractor->getUseMap();
-            $this->InputFileUseMaps[$file] = $useMap;
+            $this->InputFileUseMaps[$file] = array_change_key_case($useMap);
             $this->InputFileTypeMaps[$file] = array_change_key_case(array_flip($useMap));
         }
     }
@@ -470,7 +470,7 @@ abstract class GenerateCommand extends Command
                     return $this->getTypeAlias($t);
                 }
                 return $this->getTypeAlias(
-                    $this->InputFileUseMaps[$filename][$t]
+                    $this->InputFileUseMaps[$filename][Str::lower($t)]
                         ?? '\\' . $namespace . '\\' . $t,
                     $filename
                 );
@@ -581,6 +581,36 @@ abstract class GenerateCommand extends Command
         $this->ImportMap[$_fqcn] = $alias;
 
         return $alias;
+    }
+
+    /**
+     * Get the generated file's alias/import/FQCN maps
+     *
+     * @return array{array<string,string>,array<string,class-string>,array<class-string,string>,array<class-string,class-string>}
+     */
+    protected function getMaps(): array
+    {
+        return [
+            $this->AliasIndex,
+            $this->AliasMap,
+            $this->ImportMap,
+            $this->FqcnMap,
+        ];
+    }
+
+    /**
+     * Restore the generated file's alias/import/FQCN maps
+     *
+     * @param array{array<string,string>,array<string,class-string>,array<class-string,string>,array<class-string,class-string>} $maps
+     */
+    protected function setMaps(array $maps): void
+    {
+        [
+            $this->AliasIndex,
+            $this->AliasMap,
+            $this->ImportMap,
+            $this->FqcnMap
+        ] = $maps;
     }
 
     /**
@@ -719,6 +749,36 @@ abstract class GenerateCommand extends Command
         }
 
         return $map;
+    }
+
+    /**
+     * Get the qualified name of an alias if known
+     *
+     * @return class-string
+     */
+    protected function expandAlias(string $alias, ?string $filename = null): string
+    {
+        $_alias = Str::lower($alias);
+
+        if ($filename !== null) {
+            $fqcn = $this->InputFileUseMaps[$filename][$_alias] ?? null;
+        }
+
+        $fqcn ??= $this->AliasMap[$_alias] ?? null;
+
+        if ($fqcn !== null) {
+            return $fqcn;
+        }
+
+        if (strpos($alias, '\\') !== false || $this->OutputNamespace === '') {
+            /** @var class-string $alias */
+            return $alias;
+        }
+
+        /** @var class-string */
+        $fqcn = $this->OutputNamespace . '\\' . $alias;
+
+        return $fqcn;
     }
 
     /**

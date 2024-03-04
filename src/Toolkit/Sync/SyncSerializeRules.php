@@ -2,19 +2,18 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Buildable;
+use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\Readable;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
-use Salient\Core\DateFormatter;
 use Salient\Sync\Support\SyncIntrospector;
 use Closure;
 use LogicException;
@@ -78,63 +77,50 @@ use LogicException;
  *
  * @template-covariant TEntity of SyncEntityInterface
  *
- * @property-read class-string<TEntity> $Entity The class name of the AbstractSyncEntity being serialized (required)
- * @property-read DateFormatter|null $DateFormatter Override the default date formatter (default: null)
- * @property-read bool|null $IncludeMeta Include undeclared property values? (default: true)
- * @property-read bool|null $SortByKey Sort arrays by key? (default: false)
- * @property-read int|null $MaxDepth Throw an exception when values are nested beyond this depth (default: 99)
- * @property-read bool|null $DetectRecursion Check for recursion? (default: true)
- * @property-read bool|null $RemoveCanonicalId Remove CanonicalId from sync entities? (default: true)
- * @property-read array<array<array<string|Closure>|string>|array<string|Closure>|string> $Remove Values to remove
- * @property-read array<array<array<string|Closure>|string>|array<string|Closure>|string> $Replace Values to replace with IDs
- * @property-read bool|null $RecurseRules Apply path-based rules to every instance of $Entity? (default: true)
- * @property-read int $Flags
- *
  * @implements Buildable<SyncSerializeRulesBuilder<TEntity>>
  */
-final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable, Immutable, Buildable
+final class SyncSerializeRules implements
+    SyncSerializeRulesInterface,
+    Buildable,
+    Immutable
 {
-    use ReadsProtectedProperties;
     /** @use HasBuilder<SyncSerializeRulesBuilder<TEntity>> */
     use HasBuilder;
     use HasImmutableProperties;
+
+    /**
+     * The object's service container
+     */
+    protected ContainerInterface $App;
 
     /**
      * The class name of the AbstractSyncEntity being serialized (required)
      *
      * @var class-string<TEntity>
      */
-    protected $Entity;
+    protected string $Entity;
 
     /**
      * Override the default date formatter (default: null)
-     *
-     * @var DateFormatter|null
      */
-    protected $DateFormatter;
+    protected ?DateFormatterInterface $DateFormatter;
 
     /**
      * Include undeclared property values? (default: true)
-     *
-     * @var bool|null
      */
-    protected $IncludeMeta;
+    protected ?bool $IncludeMeta;
 
     /**
      * Sort arrays by key? (default: false)
-     *
-     * @var bool|null
      */
-    protected $SortByKey;
+    protected ?bool $SortByKey;
 
     /**
      * Throw an exception when values are nested beyond this depth (default: 99)
      *
      * Depth checks are not performed if `MaxDepth` is 0.
-     *
-     * @var int|null
      */
-    protected $MaxDepth;
+    protected ?int $MaxDepth;
 
     /**
      * Check for recursion? (default: true)
@@ -143,19 +129,15 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
      * graph after applying {@see SyncSerializeRules::$Remove} and
      * {@see SyncSerializeRules::$Replace}, disable recursion detection to
      * improve performance and reduce memory consumption.
-     *
-     * @var bool|null
      */
-    protected $DetectRecursion;
+    protected ?bool $DetectRecursion;
 
     /**
      * Remove CanonicalId from sync entities? (default: true)
      *
-     * @var bool|null
-     *
      * @see AbstractSyncEntity::$CanonicalId
      */
-    protected $RemoveCanonicalId;
+    protected ?bool $RemoveCanonicalId;
 
     /**
      * Values to remove
@@ -174,7 +156,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
      *
      * @var array<array<array<string|Closure>|string>|array<string|Closure>|string>
      */
-    protected $Remove;
+    protected array $Remove;
 
     /**
      * Values to replace with IDs
@@ -194,36 +176,31 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
      *
      * @var array<array<array<string|Closure>|string>|array<string|Closure>|string>
      */
-    protected $Replace;
+    protected array $Replace;
 
     /**
      * Apply path-based rules to every instance of $Entity? (default: true)
-     *
-     * @var bool|null
      */
-    protected $RecurseRules;
+    protected ?bool $RecurseRules;
 
-    /**
-     * @var int|null
-     */
-    protected $Flags;
+    protected ?int $Flags;
 
     /**
      * @var array<string,array<string,array<array<array<string|Closure>|string>|array<string|Closure>|string>>>
      */
-    private $RuleCache = [];
+    private array $RuleCache = [];
 
     /**
      * Path => true
      *
      * @var array<string,true>
      */
-    private $RootPaths = [];
+    private array $RootPaths = [];
 
     /**
      * @var SyncIntrospector<TEntity>
      */
-    private $Introspector;
+    private SyncIntrospector $Introspector;
 
     /**
      * @param class-string<TEntity> $entity
@@ -232,8 +209,9 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
      * @param SyncSerializeRules<TEntity>|null $inherit Inherit rules from another instance
      */
     public function __construct(
+        ContainerInterface $app,
         string $entity,
-        ?DateFormatter $dateFormatter = null,
+        ?DateFormatterInterface $dateFormatter = null,
         ?bool $includeMeta = null,
         ?bool $sortByKey = null,
         ?int $maxDepth = null,
@@ -245,6 +223,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
         ?int $flags = null,
         ?SyncSerializeRules $inherit = null
     ) {
+        $this->App = $app;
         $this->Entity = $entity;
         $this->DateFormatter = $dateFormatter;
         $this->IncludeMeta = $includeMeta;
@@ -266,6 +245,22 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
 
         $this->Remove = $this->flattenRules($this->Remove);
         $this->Replace = $this->flattenRules($this->Replace);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function app(): ContainerInterface
+    {
+        return $this->App;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function container(): ContainerInterface
+    {
+        return $this->App;
     }
 
     /**
@@ -294,7 +289,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
      * @param string[] $path
      * @return array<string,string>
      */
-    public function getRemove(?string $class, ?string $untilClass, array $path): array
+    public function getRemoveFrom(?string $class, ?string $untilClass, array $path): array
     {
         return array_map(
             fn($rule) => is_array($rule) ? reset($rule) : $rule,
@@ -309,7 +304,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
      * @param string[] $path
      * @return array<string,array<array<string|Closure>|string>|array<string|Closure>|string>
      */
-    public function getReplace(?string $class, ?string $untilClass, array $path): array
+    public function getReplaceIn(?string $class, ?string $untilClass, array $path): array
     {
         return $this->compileRules($class, $untilClass, $path, $this->Replace, __FUNCTION__);
     }
@@ -530,31 +525,49 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
         $this->RuleCache = [];
     }
 
-    public function getDateFormatter(): ?DateFormatter
+    /**
+     * @inheritDoc
+     */
+    public function getDateFormatter(): ?DateFormatterInterface
     {
         return $this->DateFormatter;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getIncludeMeta(): bool
     {
         return Get::coalesce($this->IncludeMeta, true);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getSortByKey(): bool
     {
         return Get::coalesce($this->SortByKey, false);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMaxDepth(): ?int
     {
         return Get::coalesce($this->MaxDepth, 99);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getDetectRecursion(): bool
     {
         return Get::coalesce($this->DetectRecursion, true);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getRemoveCanonicalId(): bool
     {
         return Get::coalesce($this->RemoveCanonicalId, true);
@@ -565,26 +578,57 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Readable,
         return Get::coalesce($this->RecurseRules, true);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getFlags(): int
     {
         return Get::coalesce($this->Flags, 0);
     }
 
+    /**
+     * @return array<array<array<string|Closure>|string>|array<string|Closure>|string>
+     */
+    public function getRemove(): array
+    {
+        return $this->Remove;
+    }
+
+    /**
+     * @return array<array<array<string|Closure>|string>|array<string|Closure>|string>
+     */
+    public function getReplace(): array
+    {
+        return $this->Replace;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function withIncludeMeta(?bool $value)
     {
         return $this->withPropertyValue('IncludeMeta', $value);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function withSortByKey(?bool $value)
     {
         return $this->withPropertyValue('SortByKey', $value);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function withRemoveCanonicalId(?bool $value)
     {
         return $this->withPropertyValue('RemoveCanonicalId', $value);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function withMaxDepth(?int $value)
     {
         return $this->withPropertyValue('MaxDepth', $value);

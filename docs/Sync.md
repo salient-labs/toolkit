@@ -69,7 +69,7 @@ The first value passed is always the current [SyncContextInterface] and
     Method names must match the entity's unqualified name.
 
 [^3]:
-    See [SyncContextInterface::withArgs()][withArgs] for filter argument
+    See [SyncContextInterface::withFilter()][withFilter] for filter argument
     recommendations, including recognised signatures.
 
 [getDefinition]:
@@ -84,8 +84,8 @@ The first value passed is always the current [SyncContextInterface] and
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncClassResolverInterface.html
 [SyncOperation]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncOperation.html
-[withArgs]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withArgs
+[withFilter]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withFilter
 [namespace]:
   https://salient-labs.github.io/toolkit/Salient.Sync.SyncStore.html#_namespace
 [SyncClassResolver.php]: ../tests/fixtures/Toolkit/Sync/SyncClassResolver.php

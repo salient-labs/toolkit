@@ -12,7 +12,6 @@ use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\AbstractSyncEntity;
 use Salient\Sync\SyncSerializeRules as SerializeRules;
-use Salient\Sync\SyncStore;
 use JsonSerializable;
 
 /**
@@ -53,18 +52,6 @@ interface SyncEntityInterface extends
      * @return SerializeRules<static>
      */
     public static function getSerializeRules(?ContainerInterface $container = null): SerializeRules;
-
-    /**
-     * Called when the entity is registered with an entity store
-     *
-     * @see SyncStore::entityType()
-     */
-    public static function setEntityTypeId(int $entityTypeId): void;
-
-    /**
-     * Get the entity type ID assigned to the entity by the entity store
-     */
-    public static function getEntityTypeId(): ?int;
 
     /**
      * Get the plural form of the entity's class name
@@ -151,12 +138,12 @@ interface SyncEntityInterface extends
      * @param LinkType::* $type
      * @return array<string,int|string>
      */
-    public function toLink(int $type = LinkType::DEFAULT, bool $compact = true): array;
+    public function toLink(?ContainerInterface $container = null, int $type = LinkType::DEFAULT, bool $compact = true): array;
 
     /**
      * Get the entity's canonical location in the form of a URI
      *
      * Inspired by OData.
      */
-    public function uri(bool $compact = true): string;
+    public function uri(?ContainerInterface $container = null, bool $compact = true): string;
 }

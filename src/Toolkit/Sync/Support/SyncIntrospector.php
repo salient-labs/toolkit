@@ -3,6 +3,7 @@
 namespace Salient\Sync\Support;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\Regex;
 use Salient\Contract\Core\Relatable;
@@ -17,7 +18,6 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use Salient\Core\DateFormatter;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
 use Salient\Sync\SyncStore;
@@ -348,7 +348,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, ContainerInterface, SyncProviderInterface|null, SyncContextInterface|null, DateFormatter|null, Treeable|null): TClass
+     * @return Closure(mixed[], string|null, ContainerInterface, SyncProviderInterface|null, SyncContextInterface|null, DateFormatterInterface|null, Treeable|null): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -379,7 +379,7 @@ final class SyncIntrospector extends Introspector
                 ContainerInterface $container,
                 ?SyncProviderInterface $provider,
                 ?SyncContextInterface $context,
-                ?DateFormatter $dateFormatter,
+                ?DateFormatterInterface $dateFormatter,
                 ?Treeable $parent
             ) use ($constructor, $updater, $resolver) {
                 $obj = $constructor($array, $service, $container);
@@ -398,7 +398,7 @@ final class SyncIntrospector extends Introspector
                 ContainerInterface $container,
                 ?SyncProviderInterface $provider,
                 ?SyncContextInterface $context,
-                ?DateFormatter $dateFormatter,
+                ?DateFormatterInterface $dateFormatter,
                 ?Treeable $parent
             ) use (
                 $constructor,

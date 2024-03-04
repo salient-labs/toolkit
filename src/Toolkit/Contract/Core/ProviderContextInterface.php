@@ -54,7 +54,7 @@ interface ProviderContextInterface extends
     /**
      * Apply a value to the context
      *
-     * @param mixed $value
+     * @param (int|string|float|bool|null)[]|int|string|float|bool|null $value
      * @return static
      */
     public function withValue(string $name, $value);
@@ -110,7 +110,7 @@ interface ProviderContextInterface extends
      *
      * Returns `null` if no value for `$name` has been applied to the context.
      *
-     * @return mixed|null
+     * @return (int|string|float|bool|null)[]|int|string|float|bool|null
      */
     public function getValue(string $name);
 

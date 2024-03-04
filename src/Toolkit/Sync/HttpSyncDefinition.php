@@ -108,7 +108,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *   {@see ProviderContextInterface::withValue()} or implicitly via
      *   {@see ProviderContextInterface::push()}
      * - Unclaimed filters passed to the operation via
-     *   {@see SyncContextInterface::withArgs()}
+     *   {@see SyncContextInterface::withFilter()}
      *
      * Names are normalised for comparison by converting them to snake_case and
      * removing any `_id` suffixes.

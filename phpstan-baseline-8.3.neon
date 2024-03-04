@@ -111,6 +111,11 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:expandAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
+			count: 1
+			path: src/Sli/Command/Generate/GenerateBuilder.php
+
+		-
 			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 7
 			path: src/Sli/Command/Generate/GenerateBuilder.php
@@ -301,7 +306,7 @@ parameters:
 			path: src/Toolkit/Cli/CliCommand.php
 
 		-
-			message: "#^Cannot access an offset on array\\|bool\\|int\\|string\\|null\\.$#"
+			message: "#^Cannot access an offset on array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Cli/CliCommand.php
 
@@ -1701,7 +1706,7 @@ parameters:
 			path: src/Toolkit/Sync/DbSyncDefinition.php
 
 		-
-			message: "#^Cannot cast mixed to string\\.$#"
+			message: "#^Cannot cast array\\<bool\\|float\\|int\\|string\\|null\\>\\|bool\\|float\\|int\\|string to string\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
@@ -1799,26 +1804,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:deferredRelationship\\(\\) expects int, int\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/DeferredRelationship.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\Support\\\\SyncContext\\:\\:doApplyHydrationPolicy\\(\\) should return array\\<int\\<0, max\\>, 0\\|1\\|2\\|3\\> but returns array\\<int, 0\\|1\\|2\\|3\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncContext.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\Support\\\\SyncContext\\:\\:doGetFilter\\(\\) should return array\\<bool\\|DateTimeInterface\\|float\\|int\\|string\\|null\\>\\|bool\\|DateTimeInterface\\|float\\|int\\|string\\|null but returns mixed\\.$#"
-			count: 2
-			path: src/Toolkit/Sync/Support/SyncContext.php
-
-		-
-			message: "#^Parameter \\#1 \\$class of static method Salient\\\\Core\\\\Utility\\\\Get\\:\\:basename\\(\\) expects string, array\\<class\\-string\\>\\|class\\-string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncContext.php
-
-		-
-			message: "#^Parameter \\#1 \\$operation of class Salient\\\\Sync\\\\Exception\\\\SyncInvalidFilterException constructor expects 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, mixed given\\.$#"
-			count: 2
-			path: src/Toolkit/Sync/Support/SyncContext.php
 
 		-
 			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"
@@ -2001,12 +1986,12 @@ parameters:
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemove\\(\\) should return array\\<string, string\\> but returns array\\<string, array\\<Closure\\|string\\>\\|Closure\\|string\\|false\\>\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveCanonicalId\\(\\) should return bool but returns bool\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveCanonicalId\\(\\) should return bool but returns bool\\|null\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveFrom\\(\\) should return array\\<string, string\\> but returns array\\<string, array\\<Closure\\|string\\>\\|Closure\\|string\\|false\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 

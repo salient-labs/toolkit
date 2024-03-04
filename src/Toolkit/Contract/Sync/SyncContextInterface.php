@@ -2,10 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
+use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
 use Salient\Sync\AbstractSyncProvider;
 use DateTimeInterface;
 
@@ -17,56 +17,56 @@ use DateTimeInterface;
 interface SyncContextInterface extends ProviderContextInterface
 {
     /**
-     * Normalise optional sync operation arguments and apply them to the context
+     * Normalise non-mandatory arguments to a sync operation and apply them to
+     * the context
      *
-     * If, after removing the operation's mandatory arguments from `$args`, the
-     * remaining values match one of the following signatures, they are mapped
-     * to a filter surfaced by {@see SyncContextInterface::getFilters()},
-     * {@see SyncContextInterface::getFilter()} and
-     * {@see SyncContextInterface::claimFilter()}:
+     * An exception is thrown if `$args` doesn't match one of the following
+     * non-mandatory argument signatures.
      *
-     * 1. One array argument (`fn(...$mandatoryArgs, array $filter)`)
+     * 1. An associative array (`fn(..., array<string,mixed> $filter)`)
      *
-     *    - Keys containing only letters, numbers, hyphens and underscores are
-     *      converted to snake_case
-     *    - Keys containing other characters, e.g. `'$orderby'`, are left as-is
-     *    - {@see SyncEntityInterface} instances are replaced with their
-     *      respective IDs
-     *    - Empty and numeric keys (e.g. `''` or `'42'` after snake_case
-     *      conversion) are invalid
+     *    - Keys are trimmed
+     *    - Keys that only contain space-, hyphen- or underscore-delimited
+     *      letters and numbers are converted to snake_case
+     *    - Empty and numeric keys are invalid
      *
-     * 2. A list of identifiers (`fn(...$mandatoryArgs, int|string ...$ids)`)
+     * 2. A list of identifiers (`fn(..., [ int ...$ids | string ...$ids ] )`)
      *
-     *    - Converted to `[ 'id' => $ids ]`
+     *    - Becomes `[ 'id' => $ids ]`
      *
-     * 3. A list of entities (`fn(...$mandatoryArgs, SyncEntityInterface
-     *    ...$entities)`)
+     * 3. A list of entities (`fn(..., SyncEntityInterface ...$entities)`)
      *
-     *    - Entities are grouped by snake_case {@see Providable::getService()}
-     *      basename and replaced with their IDs, e.g. `['faculty' => [42, 71],
-     *      'user' => [101]]`
+     *    - Grouped by {@see ServiceAwareInterface::getService() service} after
+     *      removing namespace and converting to snake_case
+     *    - Example: `[ 'faculty' => [42, 71], 'faculty_user' => [101] ]`
      *
-     * 4. No arguments (`fn(...$mandatoryArgs)`)
+     * 4. No arguments (`fn(...)`)
      *
-     *    - Converted to an empty array (`[]`)
+     *    - Becomes `[]`
      *
-     * If `$args` doesn't match any of these, a
-     * {@see SyncInvalidFilterException} is thrown.
+     * In all cases:
      *
-     * Using {@see SyncContextInterface::claimFilter()} to claim filters is
+     * - {@see SyncEntityInterface} objects are replaced with their identifiers
+     * - An exception is thrown if any {@see SyncEntityInterface} objects do not
+     *   have an identifier ({@see SyncEntityInterface::id()} returns `null`) or
+     *   do not have the same provider as the context
+     * - {@see DateTimeInterface} instances are converted to ISO-8601 strings
+     * - The result is surfaced via {@see SyncContextInterface::getFilter()},
+     *   {@see SyncContextInterface::claimFilter()} and their variants.
+     *
+     * Using {@see SyncContextInterface::claimFilter()} to "claim" filters is
      * recommended. Depending on the provider's {@see FilterPolicy}, unclaimed
      * filters may cause requests to fail.
      *
-     * When a filter is claimed, it is removed from the context.
-     * {@see SyncContextInterface::getFilters()} and
-     * {@see SyncContextInterface::getFilter()} only return unclaimed filters.
+     * When a filter is "claimed", it is removed from the context.
      *
      * @param SyncOperation::* $operation
-     * @param mixed ...$args Sync operation arguments, NOT including the
+     * @param mixed ...$args Sync operation arguments, not including the
      * {@see SyncContextInterface} argument.
      * @return static
+     * @throws SyncInvalidFilterSignatureException
      */
-    public function withArgs($operation, ...$args);
+    public function withFilter($operation, ...$args);
 
     /**
      * Use a callback to enforce the provider's unclaimed filter policy
@@ -187,31 +187,100 @@ interface SyncContextInterface extends ProviderContextInterface
     public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void;
 
     /**
-     * Get the filters passed to the context via optional sync operation
-     * arguments
-     *
-     * @see SyncContextInterface::withArgs()
-     *
-     * @return array<string,(int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null>
-     */
-    public function getFilters(): array;
-
-    /**
      * Get the value of a filter passed to the context via optional sync
      * operation arguments
      *
-     * If `$orValue` is `true` and a value for `$key` has been applied to the
-     * context via {@see ProviderContextInterface::withValue()}, it is returned
-     * if there is no matching filter.
+     * If `$key` is `null`, all filters are returned.
      *
-     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
-     * `null` if the value has been claimed via
+     * If `$orValue` is `true` and a value for `$key` has been applied via
+     * {@see ProviderContextInterface::withValue()}, it is returned if there is
+     * no matching filter.
+     *
+     * Otherwise, `null` is returned if `$key` has been claimed via
      * {@see SyncContextInterface::claimFilter()} or wasn't passed to the
      * operation.
      *
-     * @see SyncContextInterface::withArgs()
+     * @see SyncContextInterface::withFilter()
+     *
+     * @template TKey of string|null
+     *
+     * @param TKey $key
+     * @return (TKey is string ?
+     *     (int|string|float|bool|null)[]|int|string|float|bool|null :
+     *     array<string,(int|string|float|bool|null)[]|int|string|float|bool|null>
+     * )
      */
-    public function getFilter(string $key, bool $orValue = true);
+    public function getFilter(?string $key = null, bool $orValue = true);
+
+    /**
+     * Get the value of an integer passed to the context via optional sync
+     * operation arguments
+     *
+     * Same as {@see SyncContextInterface::getFilter()}, but an exception is
+     * thrown if the value is not an integer.
+     *
+     * @throws SyncInvalidFilterException
+     */
+    public function getFilterInt(string $key, bool $orValue = true): ?int;
+
+    /**
+     * Get the value of a string passed to the context via optional sync
+     * operation arguments
+     *
+     * Same as {@see SyncContextInterface::getFilter()}, but an exception is
+     * thrown if the value is not a string.
+     *
+     * @throws SyncInvalidFilterException
+     */
+    public function getFilterString(string $key, bool $orValue = true): ?string;
+
+    /**
+     * Get the value of an integer or string passed to the context via optional
+     * sync operation arguments
+     *
+     * Same as {@see SyncContextInterface::getFilter()}, but an exception is
+     * thrown if the value is not an integer or string.
+     *
+     * @return int|string|null
+     * @throws SyncInvalidFilterException
+     */
+    public function getFilterArrayKey(string $key, bool $orValue = true);
+
+    /**
+     * Get a list of integers passed to the context via optional sync operation
+     * arguments
+     *
+     * Same as {@see SyncContextInterface::getFilter()}, but an exception is
+     * thrown if the value is not a list of integers.
+     *
+     * @return int[]|null
+     * @throws SyncInvalidFilterException
+     */
+    public function getFilterIntList(string $key, bool $orValue = true): ?array;
+
+    /**
+     * Get a list of strings passed to the context via optional sync operation
+     * arguments
+     *
+     * Same as {@see SyncContextInterface::getFilter()}, but an exception is
+     * thrown if the value is not a list of strings.
+     *
+     * @return string[]|null
+     * @throws SyncInvalidFilterException
+     */
+    public function getFilterStringList(string $key, bool $orValue = true): ?array;
+
+    /**
+     * Get a list of integers and strings passed to the context via optional
+     * sync operation arguments
+     *
+     * Same as {@see SyncContextInterface::getFilter()}, but an exception is
+     * thrown if the value is not a list of integers and strings.
+     *
+     * @return (int|string)[]|null
+     * @throws SyncInvalidFilterException
+     */
+    public function getFilterArrayKeyList(string $key, bool $orValue = true): ?array;
 
     /**
      * Get the value of a filter passed to the context via optional sync
@@ -221,17 +290,89 @@ interface SyncContextInterface extends ProviderContextInterface
      * {@see SyncContextInterface::claimFilter()} modifies the object it is
      * called on instead of returning a modified instance.
      *
-     * If `$orValue` is `true` and a value for `$key` has been applied to the
-     * context via {@see ProviderContextInterface::withValue()}, it is returned
-     * if there is no matching filter.
+     * If `$orValue` is `true` and a value for `$key` has been applied via
+     * {@see ProviderContextInterface::withValue()}, it is returned if there is
+     * no matching filter.
      *
-     * @see SyncContextInterface::withArgs()
-     *
-     * @return (int|string|DateTimeInterface|float|bool|null)[]|int|string|DateTimeInterface|float|bool|null
-     * `null` if the value has already been claimed or wasn't passed to the
+     * Otherwise, `null` is returned if `$key` has been claimed via
+     * {@see SyncContextInterface::claimFilter()} or wasn't passed to the
      * operation.
+     *
+     * @see SyncContextInterface::withFilter()
+     *
+     * @return (int|string|float|bool|null)[]|int|string|float|bool|null
      */
     public function claimFilter(string $key, bool $orValue = true);
+
+    /**
+     * Get the value of an integer passed to the context via optional sync
+     * operation arguments
+     *
+     * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
+     * thrown if the value is not an integer.
+     *
+     * @throws SyncInvalidFilterException
+     */
+    public function claimFilterInt(string $key, bool $orValue = true): ?int;
+
+    /**
+     * Get the value of a string passed to the context via optional sync
+     * operation arguments
+     *
+     * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
+     * thrown if the value is not a string.
+     *
+     * @throws SyncInvalidFilterException
+     */
+    public function claimFilterString(string $key, bool $orValue = true): ?string;
+
+    /**
+     * Get the value of an integer or string passed to the context via optional
+     * sync operation arguments
+     *
+     * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
+     * thrown if the value is not an integer or string.
+     *
+     * @return int|string|null
+     * @throws SyncInvalidFilterException
+     */
+    public function claimFilterArrayKey(string $key, bool $orValue = true);
+
+    /**
+     * Get a list of integers passed to the context via optional sync operation
+     * arguments
+     *
+     * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
+     * thrown if the value is not a list of integers.
+     *
+     * @return int[]|null
+     * @throws SyncInvalidFilterException
+     */
+    public function claimFilterIntList(string $key, bool $orValue = true): ?array;
+
+    /**
+     * Get a list of strings passed to the context via optional sync operation
+     * arguments
+     *
+     * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
+     * thrown if the value is not a list of strings.
+     *
+     * @return string[]|null
+     * @throws SyncInvalidFilterException
+     */
+    public function claimFilterStringList(string $key, bool $orValue = true): ?array;
+
+    /**
+     * Get a list of integers and strings passed to the context via optional
+     * sync operation arguments
+     *
+     * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
+     * thrown if the value is not a list of integers and strings.
+     *
+     * @return (int|string)[]|null
+     * @throws SyncInvalidFilterException
+     */
+    public function claimFilterArrayKeyList(string $key, bool $orValue = true): ?array;
 
     /**
      * Get the "work offline" status applied via online(), offline() or

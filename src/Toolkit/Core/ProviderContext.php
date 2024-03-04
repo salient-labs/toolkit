@@ -39,7 +39,7 @@ class ProviderContext implements ProviderContextInterface
     protected array $Stack = [];
 
     /**
-     * @var array<string,mixed>
+     * @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null>
      */
     protected array $Values = [];
 
