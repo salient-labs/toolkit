@@ -31,11 +31,6 @@ parameters:
 			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:trim\\(\\) expects iterable\\<\\(int\\|string\\), bool\\|float\\|int\\|string\\|Stringable\\|null\\>, array given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
-
-		-
 			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
@@ -1101,51 +1096,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Reflect.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Str\\:\\:eolFromNative\\(\\) should return T of string\\|null but returns string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Str\\:\\:eolToNative\\(\\) should return T of string\\|null but returns string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Parameter \\#1 \\$key of function array_key_exists expects int\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Parameter \\#1 \\$separator of function explode expects non\\-empty\\-string, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function substr expects string, mixed given\\.$#"
-			count: 2
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function trim expects string, mixed given\\.$#"
-			count: 2
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Parameter \\#2 \\$subject of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:match\\(\\) expects string, int\\|string given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
-			message: "#^Parameter \\#2 \\$subject of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:match\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Str.php
-
-		-
 			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
 			count: 1
 			path: src/Toolkit/Curler/Curler.php
@@ -1532,11 +1482,6 @@ parameters:
 
 		-
 			message: "#^Method Salient\\\\PhpDoc\\\\PhpDoc\\:\\:getLine\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/PhpDoc/PhpDoc.php
-
-		-
-			message: "#^Method Salient\\\\PhpDoc\\\\PhpDoc\\:\\:getTagDescription\\(\\) should return string\\|null but returns mixed\\.$#"
 			count: 1
 			path: src/Toolkit/PhpDoc/PhpDoc.php
 
