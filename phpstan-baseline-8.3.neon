@@ -2171,12 +2171,12 @@ parameters:
 			path: tests/unit/Toolkit/Cli/CliOptionBuilderTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Container\\\\A\\:\\:container\\(\\) should return T of Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\.$#"
+			message: "#^Method Salient\\\\Tests\\\\Container\\\\A\\:\\:getContainer\\(\\) should return T of Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Container/ContainerTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Container\\\\C\\:\\:container\\(\\) should return T of Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\.$#"
+			message: "#^Method Salient\\\\Tests\\\\Container\\\\C\\:\\:getContainer\\(\\) should return T of Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Container/ContainerTest.php
 

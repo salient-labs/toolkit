@@ -17,7 +17,7 @@ class BeforeGlobalContainerSetEvent extends ContainerEvent implements BeforeGlob
         $this->Container = $container;
     }
 
-    public function container(): ?ContainerInterface
+    public function getContainer(): ?ContainerInterface
     {
         return $this->Container;
     }

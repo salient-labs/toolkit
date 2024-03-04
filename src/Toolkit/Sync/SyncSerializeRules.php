@@ -250,7 +250,7 @@ final class SyncSerializeRules implements
     /**
      * @inheritDoc
      */
-    public function app(): ContainerInterface
+    public function getApp(): ContainerInterface
     {
         return $this->App;
     }
@@ -258,7 +258,7 @@ final class SyncSerializeRules implements
     /**
      * @inheritDoc
      */
-    public function container(): ContainerInterface
+    public function getContainer(): ContainerInterface
     {
         return $this->App;
     }

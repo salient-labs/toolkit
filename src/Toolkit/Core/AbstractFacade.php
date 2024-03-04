@@ -176,7 +176,7 @@ abstract class AbstractFacade implements FacadeInterface
 
             $listenerId = $dispatcher->listen(
                 static function (BeforeGlobalContainerSetEventInterface $event): void {
-                    if ($container = $event->container()) {
+                    if ($container = $event->getContainer()) {
                         App::swap($container);
                     }
                 }
@@ -188,7 +188,7 @@ abstract class AbstractFacade implements FacadeInterface
 
             $listenerId = $dispatcher->listen(
                 static function (BeforeGlobalContainerSetEventInterface $event) use ($serviceName, $instance): void {
-                    if ($container = $event->container()) {
+                    if ($container = $event->getContainer()) {
                         $container->instanceIf($serviceName, $instance);
                     }
                 }

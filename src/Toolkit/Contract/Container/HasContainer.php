@@ -12,12 +12,12 @@ interface HasContainer
      *
      * @return T
      */
-    public function app(): ContainerInterface;
+    public function getApp(): ContainerInterface;
 
     /**
      * Get the object's service container
      *
      * @return T
      */
-    public function container(): ContainerInterface;
+    public function getContainer(): ContainerInterface;
 }

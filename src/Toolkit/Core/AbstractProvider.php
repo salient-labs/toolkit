@@ -61,7 +61,7 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @inheritDoc
      */
-    final public function app(): ContainerInterface
+    final public function getApp(): ContainerInterface
     {
         return $this->App;
     }
@@ -69,7 +69,7 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @inheritDoc
      */
-    final public function container(): ContainerInterface
+    final public function getContainer(): ContainerInterface
     {
         return $this->App;
     }

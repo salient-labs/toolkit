@@ -270,7 +270,7 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @inheritDoc
      */
-    final public function app(): CliApplicationInterface
+    final public function getApp(): CliApplicationInterface
     {
         return $this->App;
     }
@@ -278,7 +278,7 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @inheritDoc
      */
-    final public function container(): CliApplicationInterface
+    final public function getContainer(): CliApplicationInterface
     {
         return $this->App;
     }

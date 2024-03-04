@@ -142,8 +142,8 @@ trait ProvidableTrait
     ) {
         /** @var ContainerInterface */
         $container = $context
-            ? $context->container()
-            : $provider->container();
+            ? $context->getContainer()
+            : $provider->getContainer();
         $container = $container->inContextOf(get_class($provider));
 
         $context = $context
@@ -194,8 +194,8 @@ trait ProvidableTrait
     ): Generator {
         /** @var ContainerInterface */
         $container = $context
-            ? $context->container()
-            : $provider->container();
+            ? $context->getContainer()
+            : $provider->getContainer();
         $container = $container->inContextOf(get_class($provider));
 
         /** @var ProviderContextInterface */

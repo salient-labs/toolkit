@@ -12,5 +12,5 @@ interface BeforeGlobalContainerSetEventInterface
     /**
      * Get the container that will be set, or null if it will be unset
      */
-    public function container(): ?ContainerInterface;
+    public function getContainer(): ?ContainerInterface;
 }

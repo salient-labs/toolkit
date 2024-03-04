@@ -313,7 +313,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     {
         return $this->_toArray(static::getSerializeRules(
             $this->Provider
-                ? $this->Provider->container()
+                ? $this->Provider->getContainer()
                 : null
         ));
     }
@@ -448,7 +448,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         if ($node instanceof AbstractSyncEntity) {
             if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
-                $node = $node->toLink($rules->container(), LinkType::INTERNAL);
+                $node = $node->toLink($rules->getContainer(), LinkType::INTERNAL);
                 return;
             }
 
@@ -456,7 +456,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                 // Prevent infinite recursion by replacing each sync entity
                 // descended from itself with a link
                 if ($parents[spl_object_id($node)] ?? false) {
-                    $node = $node->toLink($rules->container(), LinkType::DEFAULT);
+                    $node = $node->toLink($rules->getContainer(), LinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
 
                     return;
@@ -645,8 +645,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         ?ProviderContextInterface $context = null
     ) {
         $container = $context
-            ? $context->container()
-            : $provider->container();
+            ? $context->getContainer()
+            : $provider->getContainer();
         $container = $container->inContextOf(get_class($provider));
 
         $context = $context
@@ -692,7 +692,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         if ($providerOrContext instanceof SyncProviderInterface) {
             $provider = $providerOrContext;
-            $context = $provider->container();
+            $context = $provider->getContainer();
         } else {
             $context = $providerOrContext;
             $provider = $context->getProvider();
@@ -783,8 +783,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         ?ProviderContextInterface $context
     ): Generator {
         $container = $context
-            ? $context->container()
-            : $provider->container();
+            ? $context->getContainer()
+            : $provider->getContainer();
         $container = $container->inContextOf(get_class($provider));
 
         $context = $context
