@@ -145,8 +145,8 @@ final class ContainerTest extends TestCase
 
         $this->assertSame($ts1, $o1->TestService);
         $this->assertSame($o1->TestService, $o2->TestService);
-        $this->assertSame($container, $o1->container());
-        $this->assertSame($container2, $o2->container());
+        $this->assertSame($container, $o1->getContainer());
+        $this->assertSame($container2, $o2->getContainer());
         $this->assertSame(A::class, $o1->getService());
         $this->assertSame(A::class, $o2->getService());
 
@@ -492,12 +492,12 @@ trait TestTrait
         return $this->Service ?? static::class;
     }
 
-    public function app(): ContainerInterface
+    public function getApp(): ContainerInterface
     {
-        return $this->container();
+        return $this->getContainer();
     }
 
-    public function container(): ContainerInterface
+    public function getContainer(): ContainerInterface
     {
         return $this->Container ??= new Container();
     }

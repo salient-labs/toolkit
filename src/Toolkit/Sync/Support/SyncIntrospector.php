@@ -252,7 +252,7 @@ final class SyncIntrospector extends Introspector
                 return $closure(
                     $array,
                     $service,
-                    $context->container(),
+                    $context->getContainer(),
                     $provider,
                     $context,
                     $provider->dateFormatter(),

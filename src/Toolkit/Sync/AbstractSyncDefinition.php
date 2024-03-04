@@ -460,6 +460,9 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
             $pipeline = $pipeline->throughKeyMap($this->KeyMap, $this->KeyMapFlags);
         }
 
+        /** @var SyncContextInterface|null */
+        $ctx = null;
+
         return $pipeline
             ->then(
                 function (array $data, PipelineInterface $pipeline, $arg) use (&$ctx, &$closure) {
@@ -473,9 +476,9 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
                             $this->Conformity,
                             [ListConformity::PARTIAL, ListConformity::COMPLETE]
                         )
-                            ? SyncIntrospector::getService($ctx->container(), $this->Entity)
+                            ? SyncIntrospector::getService($ctx->getContainer(), $this->Entity)
                                 ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
-                            : SyncIntrospector::getService($ctx->container(), $this->Entity)
+                            : SyncIntrospector::getService($ctx->getContainer(), $this->Entity)
                                 ->getCreateSyncEntityFromClosure();
                     }
                     /** @var TEntity */

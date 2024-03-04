@@ -250,7 +250,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     {
         if ($context instanceof SyncContextInterface) {
             $context->maybeThrowRecursionException();
-            $container = $context->container();
+            $container = $context->getContainer();
         } else {
             /** @var ContainerInterface */
             $container = $context ?? $this->App;
