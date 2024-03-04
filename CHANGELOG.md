@@ -12,6 +12,52 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.5] - 2024-03-04
+
+### Added
+
+- Add `SyncContextInterface::getFilterInt()`
+- Add `SyncContextInterface::getFilterString()`
+- Add `SyncContextInterface::getFilterArrayKey()`
+- Add `SyncContextInterface::getFilterIntList()`
+- Add `SyncContextInterface::getFilterStringList()`
+- Add `SyncContextInterface::getFilterArrayKeyList()`
+- Add `SyncContextInterface::claimFilterInt()`
+- Add `SyncContextInterface::claimFilterString()`
+- Add `SyncContextInterface::claimFilterArrayKey()`
+- Add `SyncContextInterface::claimFilterIntList()`
+- Add `SyncContextInterface::claimFilterStringList()`
+- Add `SyncContextInterface::claimFilterArrayKeyList()`
+
+### Changed
+
+- Rename `SyncContextInterface` method `withArgs()` to `withFilter()` and:
+  - Always `trim()` keys
+  - Convert space-delimited alphanumeric keys to snake_case, not just hyphen- and underscore-delimited keys
+  - Don't convert keys to snake_case if non-alphanumeric characters appear at the beginning or end of the key
+  - Convert `DateTimeInterface` values to `string`
+- Make `SyncContextInterface::getFilter()` parameter `$key` nullable and return all filters when `null`
+- Make `<key>` and `<key>_id` interchangeable in `SyncContext` filters with `array-key` values
+- Adopt same types for `ProviderContextInterface` values as for `SyncContextInterface` filters
+- Rename `SyncInvalidFilterException` to `SyncInvalidFilterSignatureException` before adding `SyncInvalidFilterException` for more general filter-related exceptions
+- Extend `HasContainer` from `SyncSerializeRulesInterface` so detached entities can resolve the possibly non-global `SyncStore` with which they are registered
+- In `SyncSerializeRules`, implement `HasContainer` and remove unused `Readable` implementation
+- Add template and conditional return type to `Arr::wrap()`
+- Simplify `Arr::toIndex()`
+- Remove `class-string[]` from `ServiceAwareInterface::getService()` return type, reverting to `class-string` only
+- Update "generate builder" command to ignore `ContainerInterface` parameters
+- Rename `app()` and `container()` to `getApp()` and `getContainer()`
+
+### Removed
+
+- Remove redundant `SyncContextInterface::getFilters()` method
+- Remove sync entity methods `setEntityTypeId()` and `getEntityTypeId()` to decouple entities from the global `SyncStore`
+
+### Fixed
+
+- Fix `Introspector` issue where constructor arguments are not matched correctly after service parameters where `null` is passed to the container
+- Fix `Introspector` issue where `null` may be passed to non-nullable constructor parameters that are passed by reference
+
 ## [v0.99.4] - 2024-03-01
 
 ### Added
@@ -2027,6 +2073,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.5]: https://github.com/salient-labs/toolkit/compare/v0.99.4...v0.99.5
 [v0.99.4]: https://github.com/salient-labs/toolkit/compare/v0.99.3...v0.99.4
 [v0.99.3]: https://github.com/salient-labs/toolkit/compare/v0.99.2...v0.99.3
 [v0.99.2]: https://github.com/salient-labs/toolkit/compare/v0.99.1...v0.99.2
