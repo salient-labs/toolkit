@@ -9,6 +9,7 @@ use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
+use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
@@ -105,5 +106,16 @@ final class HttpSyncDefinitionBuilder extends AbstractBuilder
     public function pipelineToBackend(?PipelineInterface $value)
     {
         return $this->withValueB(__FUNCTION__, $value);
+    }
+
+    /**
+     * @template T of SyncEntityInterface
+     *
+     * @param Closure(SyncDefinitionInterface<T,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<T>|T) $override
+     * @return Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
+     */
+    public function bindOverride(Closure $override): Closure
+    {
+        return $this->go()->bindOverride($override);
     }
 }

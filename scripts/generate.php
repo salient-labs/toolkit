@@ -81,8 +81,8 @@ $builders = [
     CliOption::class => [CliOptionBuilder::class, '--forward=load', '--api'],
     Curler::class => [CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
     CurlerPage::class => CurlerPageBuilder::class,
-    DbSyncDefinition::class => DbSyncDefinitionBuilder::class,
-    HttpSyncDefinition::class => HttpSyncDefinitionBuilder::class,
+    // DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--forward=bindOverride'],
+    // HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--forward=bindOverride'],
     SyncError::class => SyncErrorBuilder::class,
     SyncSerializeRules::class => SyncSerializeRulesBuilder::class,
 ];
