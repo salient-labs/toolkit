@@ -300,15 +300,14 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     }
 
     /**
-     * @template T0 of TEntity
-     * @template T1 of TProvider
+     * @template T of SyncEntityInterface
      *
-     * @param Closure(SyncDefinitionInterface<T0,T1>, OP::*, SyncContextInterface, mixed...): (iterable<T0>|T0) $override
-     * @return Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
+     * @param Closure(SyncDefinitionInterface<T,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<T>|T) $override
+     * @return Closure(static, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
      */
-    final public function bindOverride(Closure $override): Closure
+    public function bindOverride(Closure $override): Closure
     {
-        /** @var Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity) */
+        /** @var Closure(static, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity) $override */
         return $override;
     }
 
