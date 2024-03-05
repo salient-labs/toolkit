@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.7] - 2024-03-05
+
+### Fixed
+
+- Fix `AbstractSyncDefinition::bindOverride()` issues reported by downstream PHPStan
+
 ## [v0.99.6] - 2024-03-05
 
 ### Added
@@ -2092,6 +2098,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.7]: https://github.com/salient-labs/toolkit/compare/v0.99.6...v0.99.7
 [v0.99.6]: https://github.com/salient-labs/toolkit/compare/v0.99.5...v0.99.6
 [v0.99.5]: https://github.com/salient-labs/toolkit/compare/v0.99.4...v0.99.5
 [v0.99.4]: https://github.com/salient-labs/toolkit/compare/v0.99.3...v0.99.4
