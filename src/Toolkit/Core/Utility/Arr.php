@@ -676,6 +676,23 @@ final class Arr extends AbstractUtility
     }
 
     /**
+     * Make an array of strings and Stringables snake_case
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|Stringable|null
+     *
+     * @param iterable<TKey,TValue> $array
+     * @return array<TKey,string>
+     */
+    public static function snakeCase(iterable $array): array
+    {
+        foreach ($array as $key => $value) {
+            $snakeCase[$key] = Str::toSnakeCase((string) $value);
+        }
+        return $snakeCase ?? [];
+    }
+
+    /**
      * Cast non-scalar values in an array to strings
      *
      * Objects that implement {@see Stringable} are cast to a string. `null`

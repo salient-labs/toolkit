@@ -163,6 +163,7 @@ final class Str extends AbstractUtility
      */
     public static function eolToNative(?string $string): ?string
     {
+        // @phpstan-ignore-next-line
         return $string === null
             ? null
             : (\PHP_EOL === "\n"
@@ -180,6 +181,7 @@ final class Str extends AbstractUtility
      */
     public static function eolFromNative(?string $string): ?string
     {
+        // @phpstan-ignore-next-line
         return $string === null
             ? null
             : (\PHP_EOL === "\n"
@@ -408,16 +410,14 @@ final class Str extends AbstractUtility
      * Split a string by a string, remove whitespace from the beginning and end
      * of each substring, remove empty strings
      *
+     * @param non-empty-string $separator
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
-     * @return string[]
+     * @return list<string>
      */
     public static function splitAndTrim(string $separator, string $string, ?string $characters = null): array
     {
-        return array_values(Arr::trim(
-            explode($separator, $string),
-            $characters
-        ));
+        return Arr::trim(explode($separator, $string), $characters);
     }
 
     /**
@@ -425,16 +425,17 @@ final class Str extends AbstractUtility
      * brackets, remove whitespace from the beginning and end of each substring,
      * remove empty strings
      *
+     * @param non-empty-string $separator
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
-     * @return string[]
+     * @return list<string>
      */
     public static function splitAndTrimOutsideBrackets(string $separator, string $string, ?string $characters = null): array
     {
-        return array_values(Arr::trim(
+        return Arr::trim(
             self::splitOutsideBrackets($separator, $string),
             $characters
-        ));
+        );
     }
 
     /**

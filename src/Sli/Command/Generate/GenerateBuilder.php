@@ -311,7 +311,7 @@ EOF)
                     );
                     if (count($templates) === 1) {
                         $declareTemplates[$name] = $templates;
-                        $this->ToDeclare[$name] = $this->ToDeclare[$name] ?? $_property;
+                        $this->ToDeclare[$name] ??= $_property;
                     }
                 } else {
                     $type = $_property->hasType()

@@ -174,8 +174,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     }
 
     /**
-     * Override to specify prefixes to remove when normalising field/property
-     * names
+     * Override to specify prefixes to remove when normalising property names
      *
      * Entity names are removed by default, e.g. for an
      * {@see AbstractSyncEntity} subclass called `User`, "User" is removed to
@@ -194,7 +193,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             $prefixes[] = Get::basename($current->getName());
             $current = $current->getParentClass();
         }
-        return $prefixes ?? [];
+
+        return self::expandPrefixes($prefixes ?? []);
     }
 
     // --
@@ -258,52 +258,42 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * `$greedy` is `true` (the default) and the property name doesn't match one
      * of the provided `$hints`, prefixes are removed before it is returned.
      *
-     * If a prefix returned by {@see AbstractSyncEntity::getRemovablePrefixes()}
-     * contains multiple words (e.g. "admin_user_group"), additional prefixes to
-     * remove are derived by shifting each word off the beginning of the prefix
-     * (e.g. "user_group" and "group").
+     * {@see AbstractSyncEntity::getRemovablePrefixes()} should use
+     * {@see AbstractSyncEntity::normalisePrefixes()} or
+     * {@see AbstractSyncEntity::expandPrefixes()} to normalise prefixes.
      */
     final public static function getNormaliser(): Closure
     {
         // If there aren't any prefixes to remove, return a closure that
         // converts everything to snake_case
-        if (!($prefixes = static::getRemovablePrefixes())) {
-            return
-                static function (string $name): string {
-                    return self::$NormalisedPropertyMap[static::class][$name]
-                        ?? (self::$NormalisedPropertyMap[static::class][$name] =
-                            Str::toSnakeCase($name));
-                };
+        $prefixes = static::getRemovablePrefixes();
+        if (!$prefixes) {
+            return static function (string $name): string {
+                return self::$NormalisedPropertyMap[static::class][$name]
+                    ??= Str::toSnakeCase($name);
+            };
         }
 
-        // ['admin_user_group'] -> ['admin_user_group', 'user_group', 'group']
-        foreach ($prefixes as $prefix) {
-            $prefix = Str::toSnakeCase($prefix);
-            $expanded[$prefix] = true;
-            $prefix = explode('_', $prefix);
-            while (array_shift($prefix)) {
-                $expanded[implode('_', $prefix)] = true;
-            }
-        }
-        $prefixes = array_keys($expanded);
         $regex = implode('|', $prefixes);
         $regex = count($prefixes) > 1 ? "(?:$regex)" : $regex;
         $regex = "/^{$regex}_/";
 
-        return
-            static function (string $name, bool $greedy = true, string ...$hints) use ($regex): string {
-                if ($greedy && !$hints) {
-                    return self::$NormalisedPropertyMap[static::class][$name]
-                        ?? (self::$NormalisedPropertyMap[static::class][$name] =
-                            Pcre::replace($regex, '', Str::toSnakeCase($name)));
-                }
-                $_name = Str::toSnakeCase($name);
-                if (!$greedy || in_array($_name, $hints)) {
-                    return $_name;
-                }
+        return static function (
+            string $name,
+            bool $greedy = true,
+            string ...$hints
+        ) use ($regex): string {
+            if ($greedy && !$hints) {
+                return self::$NormalisedPropertyMap[static::class][$name]
+                    ??= Pcre::replace($regex, '', Str::toSnakeCase($name));
+            }
+            $_name = Str::toSnakeCase($name);
+            if (!$greedy || in_array($_name, $hints)) {
+                return $_name;
+            }
 
-                return Pcre::replace($regex, '', $_name);
-            };
+            return Pcre::replace($regex, '', $_name);
+        };
     }
 
     /**
@@ -386,6 +376,51 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     final public function state(): int
     {
         return $this->State;
+    }
+
+    /**
+     * Convert prefixes to snake_case for removal from property names
+     *
+     * e.g. `['AdminUserGroup']` becomes `['admin_user_group']`.
+     *
+     * @param string[] $prefixes
+     * @return string[]
+     */
+    final protected static function normalisePrefixes(array $prefixes): array
+    {
+        if (!$prefixes) {
+            return [];
+        }
+
+        return Arr::snakeCase($prefixes);
+    }
+
+    /**
+     * Convert prefixes to snake_case and expand them for removal from property
+     * names
+     *
+     * e.g. `['AdminUserGroup']` becomes `['admin_user_group', 'user_group',
+     * 'group']`.
+     *
+     * @param string[] $prefixes
+     * @return string[]
+     */
+    final protected static function expandPrefixes(array $prefixes): array
+    {
+        if (!$prefixes) {
+            return [];
+        }
+
+        foreach ($prefixes as $prefix) {
+            $prefix = Str::toSnakeCase($prefix);
+            $expanded[$prefix] = true;
+            $prefix = explode('_', $prefix);
+            while (array_shift($prefix)) {
+                $expanded[implode('_', $prefix)] = true;
+            }
+        }
+
+        return array_keys($expanded);
     }
 
     /**

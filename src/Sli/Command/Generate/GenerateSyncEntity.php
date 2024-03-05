@@ -15,13 +15,16 @@ use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\DateFormatter;
+use Salient\Core\DateParser;
+use Salient\Core\DotNetDateParser;
 use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\AbstractSyncEntity;
 use Salient\Sync\HttpSyncProvider;
 use Closure;
-use DateTimeImmutable;
+use DateTimeInterface;
 
 /**
  * Generates sync entities
@@ -50,6 +53,11 @@ class GenerateSyncEntity extends GenerateCommand
     private ?string $ParentProperty = null;
 
     private ?string $ChildrenProperty = null;
+
+    /**
+     * @var string[]
+     */
+    private array $RemovablePrefixes = [];
 
     private ?string $ReferenceEntityFile = null;
 
@@ -132,6 +140,13 @@ Add a one-to-many "children" relationship to the entity
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->ChildrenProperty),
+            CliOption::build()
+                ->long('trim')
+                ->valueName('prefix')
+                ->description("Specify the entity's removable prefixes")
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()
+                ->bindTo($this->RemovablePrefixes),
             CliOption::build()
                 ->long('json')
                 ->short('j')
@@ -224,13 +239,11 @@ EOF)
             $this->Uses[] = $this->getFqcnAlias(TreeableTrait::class);
         }
 
-        if ($this->Description === null) {
-            $this->Description = sprintf(
-                'Represents the state of %s %s entity in a backend',
-                Inflect::indefinite($class),
-                $class,
-            );
-        }
+        $this->Description ??= sprintf(
+            'Represents the state of %s %s entity in a backend',
+            Inflect::indefinite($class),
+            $class,
+        );
 
         $visibility = $this->MemberVisibility;
         $json = $this->ReferenceEntityFile;
@@ -292,17 +305,25 @@ EOF)
 
         $entityClass = new class extends AbstractSyncEntity {
             /**
-             * @var string
+             * @var string[]
              */
-            public static $EntityName;
+            public static array $Prefixes;
+
+            public static bool $Expand = true;
 
             protected static function getRemovablePrefixes(): ?array
             {
-                return [self::$EntityName];
+                return self::$Expand
+                    ? parent::expandPrefixes(self::$Prefixes)
+                    : self::$Prefixes;
             }
         };
 
-        $entityClass::$EntityName = $class;
+        $entityClass::$Prefixes = $this->RemovablePrefixes ?: [$class];
+        if ($this->RemovablePrefixes) {
+            $entityClass::$Expand = false;
+        }
+
         $normaliser = $entityClass::getNormaliser();
         $normaliser =
             fn(string $name): string =>
@@ -333,6 +354,15 @@ EOF)
                 'NULL' => 'mixed',
             ];
 
+            $dateFormatter = $provider
+                ? $provider->dateFormatter()
+                : new DateFormatter(
+                    DateTimeInterface::ATOM,
+                    null,
+                    new DateParser(),
+                    new DotNetDateParser(),
+                );
+
             foreach ($entity as $key => $value) {
                 if (!is_string($key) || !Pcre::match('/^[[:alpha:]]/', $key)) {
                     continue;
@@ -349,10 +379,8 @@ EOF)
                     continue;
                 }
 
-                if ($provider &&
-                        is_string($value) &&
-                        $provider->dateFormatter()->parse($value)) {
-                    $properties[$key] = $this->getFqcnAlias(DateTimeImmutable::class, 'DateTime') . '|null';
+                if (is_string($value) && $dateFormatter->parse($value)) {
+                    $properties[$key] = $this->getFqcnAlias(DateTimeInterface::class) . '|null';
                     continue;
                 }
 
@@ -500,6 +528,20 @@ EOF;
             ));
         }
 
+        if ($this->RemovablePrefixes) {
+            $blocks[] = implode(\PHP_EOL, $this->generateGetter(
+                'getRemovablePrefixes',
+                $this->code($this->RemovablePrefixes),
+                <<<EOF
+@internal
+
+@return string[]
+EOF,
+                'array',
+                self::VISIBILITY_PROTECTED,
+            ));
+        }
+
         $this->Entity = $entity;
         $this->handleOutput($this->generate($blocks));
     }
@@ -526,7 +568,7 @@ EOF;
         }
 
         $property = $normaliser($matches['property']);
-        $class = $normaliser($matches['class']);
+        $class = $matches['class'];
         $array[$property] = $class;
     }
 }

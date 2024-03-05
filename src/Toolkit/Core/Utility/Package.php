@@ -208,7 +208,7 @@ final class Package extends AbstractUtility
                 if (is_dir($path)) {
                     return $path;
                 }
-                $fallback = $fallback ?? $path;
+                $fallback ??= $path;
             }
         }
 

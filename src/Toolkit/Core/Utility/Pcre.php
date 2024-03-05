@@ -217,7 +217,7 @@ final class Pcre extends AbstractUtility
      * A wrapper for preg_split()
      *
      * @param int-mask-of<\PREG_SPLIT_NO_EMPTY|\PREG_SPLIT_DELIM_CAPTURE|\PREG_SPLIT_OFFSET_CAPTURE> $flags
-     * @return mixed[]
+     * @return string[]
      */
     public static function split(
         string $pattern,

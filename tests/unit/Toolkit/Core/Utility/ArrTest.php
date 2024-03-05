@@ -1993,6 +1993,55 @@ final class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider snakeCaseProvider
+     *
+     * @param string[] $expected
+     * @param array<int|float|string|bool|Stringable|null> $array
+     */
+    public function testSnakeCase($expected, $array): void
+    {
+        $this->assertSame($expected, Arr::snakeCase($array));
+    }
+
+    /**
+     * @return array<array{string[],array<int|float|string|bool|Stringable|null>}>
+     */
+    public static function snakeCaseProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [
+                    '0',
+                    '3_14',
+                    'null' => '',
+                    '1',
+                    'false' => '',
+                    'string' => 'hello_world',
+                    Stringable::class => 'i_m_batman',
+                ],
+                [
+                    0,
+                    3.14,
+                    'null' => null,
+                    true,
+                    'false' => false,
+                    'string' => 'Hello, world!',
+                    Stringable::class => new class implements Stringable {
+                        public function __toString(): string
+                        {
+                            return "I'm Batman.";
+                        }
+                    },
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider whereNotEmptyProvider
      *
      * @template TKey of array-key
