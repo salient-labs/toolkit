@@ -212,12 +212,12 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * @var array<OP::*,Closure>
      */
-    private $Closures = [];
+    private array $Closures = [];
 
     /**
-     * @var static|null
+     * @var static
      */
-    private $WithoutOverrides;
+    private self $WithoutOverrides;
 
     /**
      * @param class-string<TEntity> $entity
@@ -296,13 +296,20 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     public function __clone()
     {
         $this->Closures = [];
-        $this->WithoutOverrides = null;
+        unset($this->WithoutOverrides);
     }
 
     /**
-     * @template T of SyncEntityInterface
+     * Bind a sync operation closure to the definition
      *
-     * @param Closure(SyncDefinitionInterface<T,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<T>|T) $override
+     * Apply this method to a closure if necessary to satisfy static analysis
+     * tools that it's a valid override for an operation on entities serviced
+     * via the definition.
+     *
+     * @template T0 of SyncEntityInterface
+     * @template T1 of SyncDefinitionInterface
+     *
+     * @param Closure(T1, OP::*, SyncContextInterface, mixed...): (iterable<T0>|T0) $override
      * @return Closure(static, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
      */
     public function bindOverride(Closure $override): Closure
@@ -401,24 +408,27 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      */
     final public function getFallbackClosure($operation): ?Closure
     {
-        $clone = $this->WithoutOverrides;
-        if (!$clone) {
+        if (!isset($this->WithoutOverrides)) {
             $clone = clone $this;
             $clone->Overrides = [];
             $this->WithoutOverrides = $clone;
         }
 
-        return $clone->getSyncOperationClosure($operation);
+        return $this->WithoutOverrides->getSyncOperationClosure($operation);
     }
 
     /**
      * Specify whether to perform READ operations by iterating over entities
      * returned by READ_LIST
      *
-     * @return $this
+     * @return static
      */
     final public function withReadFromReadList(bool $readFromReadList = true)
     {
+        if ($this->ReadFromReadList === $readFromReadList) {
+            return $this;
+        }
+
         $clone = clone $this;
         $clone->ReadFromReadList = $readFromReadList;
 

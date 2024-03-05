@@ -9,7 +9,6 @@ use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
-use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
@@ -38,6 +37,7 @@ use Closure;
  * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Passed to the array mapper if `$keyMap` is provided
  * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromReadList})
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ * @method Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity) bindOverride(Closure(HttpSyncDefinition, OP::*, SyncContextInterface, mixed...): (iterable<SyncEntityInterface>|SyncEntityInterface) $override) Bind a sync operation closure to the definition (see {@see HttpSyncDefinition::bindOverride()})
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of HttpSyncProvider
@@ -54,6 +54,16 @@ final class HttpSyncDefinitionBuilder extends AbstractBuilder
     protected static function getService(): string
     {
         return HttpSyncDefinition::class;
+    }
+
+    /**
+     * @internal
+     */
+    protected static function getTerminators(): array
+    {
+        return [
+            'bindOverride',
+        ];
     }
 
     /**
@@ -106,16 +116,5 @@ final class HttpSyncDefinitionBuilder extends AbstractBuilder
     public function pipelineToBackend(?PipelineInterface $value)
     {
         return $this->withValueB(__FUNCTION__, $value);
-    }
-
-    /**
-     * @template T of SyncEntityInterface
-     *
-     * @param Closure(SyncDefinitionInterface<T,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<T>|T) $override
-     * @return Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
-     */
-    public function bindOverride(Closure $override): Closure
-    {
-        return $this->go()->bindOverride($override);
     }
 }
