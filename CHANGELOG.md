@@ -12,6 +12,25 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.6] - 2024-03-05
+
+### Added
+
+- Add `Arr::snakeCase()`
+- Add `bindOverride()` to sync definition classes
+
+### Changed
+
+- In `AbstractSyncEntity`, do not expand removable prefixes returned by inheritors
+- In "generate sync entity" command:
+  - Add `--trim` option
+  - Always try to detect dates and times in reference entities
+
+### Fixed
+
+- Fix "generate sync entity" issue where relationship class is incorrectly normalised
+- Fix `Pcre::split()` return type
+
 ## [v0.99.5] - 2024-03-04
 
 ### Added
@@ -2073,6 +2092,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.6]: https://github.com/salient-labs/toolkit/compare/v0.99.5...v0.99.6
 [v0.99.5]: https://github.com/salient-labs/toolkit/compare/v0.99.4...v0.99.5
 [v0.99.4]: https://github.com/salient-labs/toolkit/compare/v0.99.3...v0.99.4
 [v0.99.3]: https://github.com/salient-labs/toolkit/compare/v0.99.2...v0.99.3
