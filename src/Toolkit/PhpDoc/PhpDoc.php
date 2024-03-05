@@ -9,6 +9,7 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use LogicException;
 
 /**
  * Parses PSR-5 PHPDocs
@@ -150,6 +151,7 @@ final class PhpDoc implements Readable
                 )
             )
         );
+
         $this->NextLine = reset($this->Lines);
 
         $tagRegex = Pcre::delimit('^' . Regex::PHPDOC_TAG, '/');
@@ -262,7 +264,7 @@ final class PhpDoc implements Readable
                 case 'template-covariant':
                     $covariant = true;
                 case 'template':
-                    $covariant = $covariant ?? false;
+                    $covariant ??= false;
                     $token = strtok($text, " \t");
                     $name = rtrim($token);
                     $metaCount++;
@@ -364,20 +366,6 @@ final class PhpDoc implements Readable
     }
 
     /**
-     * Shift the next line off the beginning of $this->Lines and return it after
-     * assigning its successor to $this->NextLine
-     *
-     * @phpstan-impure
-     */
-    private function getLine(): string
-    {
-        $line = array_shift($this->Lines);
-        $this->NextLine = reset($this->Lines);
-
-        return $line;
-    }
-
-    /**
      * Collect and implode $this->NextLine and subsequent lines until, but not
      * including, the next line that matches $pattern
      *
@@ -403,10 +391,13 @@ final class PhpDoc implements Readable
             $lines[] = $line = $this->getLine();
 
             if (!$unwrap) {
-                if ((!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence)) ||
-                        ($inFence && $line == ($fence[0] ?? null))) {
+                if (
+                    (!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence)) ||
+                    ($inFence && $line === ($fence[0] ?? null))
+                ) {
                     $inFence = !$inFence;
                 }
+
                 if ($inFence) {
                     continue;
                 }
@@ -415,9 +406,11 @@ final class PhpDoc implements Readable
             if (!$this->Lines) {
                 break;
             }
+
             if (!Pcre::match($pattern, $this->NextLine)) {
                 continue;
             }
+
             if ($discard) {
                 do {
                     $this->getLine();
@@ -433,9 +426,29 @@ final class PhpDoc implements Readable
         return implode($unwrap ? ' ' : "\n", $lines);
     }
 
+    /**
+     * Shift the next line off the beginning of $this->Lines, assign its
+     * successor to $this->NextLine, and return it
+     *
+     * @phpstan-impure
+     */
+    private function getLine(): string
+    {
+        if (!$this->Lines) {
+            throw new LogicException('No more lines');
+        }
+
+        $line = array_shift($this->Lines);
+        $this->NextLine = reset($this->Lines);
+
+        return $line;
+    }
+
     public function unwrap(?string $value): ?string
     {
-        return $value === null ? null : str_replace("\n", ' ', $value);
+        return $value === null
+            ? null
+            : Pcre::replace('/\s++/', ' ', $value);
     }
 
     /**
@@ -554,7 +567,7 @@ final class PhpDoc implements Readable
             $phpDoc = new self(
                 $docBlock,
                 $classDocBlocks[$key] ?? null,
-                $class ?: $fallbackClass,
+                $class ?? $fallbackClass,
                 $member,
                 $legacyNullable
             );
@@ -566,10 +579,10 @@ final class PhpDoc implements Readable
                 continue;
             }
 
-            if (isset($parser)) {
+            $parser ??= $phpDoc;
+
+            if ($phpDoc !== $parser) {
                 $parser->mergeInherited($phpDoc);
-            } else {
-                $parser = $phpDoc;
             }
         }
 

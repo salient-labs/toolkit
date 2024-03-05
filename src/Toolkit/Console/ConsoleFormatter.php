@@ -525,7 +525,7 @@ final class ConsoleFormatter
         if (is_array($wrapToWidth)) {
             for ($i = 0; $i < 2; $i++) {
                 if ($wrapToWidth[$i] <= 0) {
-                    $width = $width ?? ($this->WidthCallback)();
+                    $width ??= ($this->WidthCallback)();
                     if ($width === null) {
                         $wrapToWidth = null;
                         break;

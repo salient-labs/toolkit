@@ -1481,11 +1481,6 @@ parameters:
 			path: src/Toolkit/PhpDoc/PhpDoc.php
 
 		-
-			message: "#^Method Salient\\\\PhpDoc\\\\PhpDoc\\:\\:getLine\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/PhpDoc/PhpDoc.php
-
-		-
 			message: "#^Parameter \\#1 \\$callback of function array_map expects \\(callable\\(array\\<string\\>\\|true\\)\\: mixed\\)\\|null, Closure\\(array\\)\\: \\(array\\|true\\) given\\.$#"
 			count: 1
 			path: src/Toolkit/PhpDoc/PhpDoc.php

@@ -116,7 +116,7 @@ final class SendHttpRequest extends Command
         $data = ($this->HttpDataFile ?? null) === null
             ? null
             : $this->getJson($this->HttpDataFile, $dataUri, false);
-        $this->Paginate = $this->Paginate ?? false;
+        $this->Paginate ??= false;
 
         $curler = $provider->getCurler($this->HttpEndpoint);
 
