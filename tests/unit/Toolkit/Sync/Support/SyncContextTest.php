@@ -311,6 +311,12 @@ final class SyncContextTest extends SyncTestCase
                 'getFilterIntList',
                 'getFilterStringList',
             ],
+            'list of int (key not set)' => [
+                null,
+                [],
+                'id',
+                'getFilterIntList',
+            ],
             'list of int + scalar input' => [
                 [42],
                 [['user_id' => 42]],
@@ -386,11 +392,7 @@ final class SyncContextTest extends SyncTestCase
         if ($method !== null) {
             $this->assertSame($expected, $context->$method($key));
             if ($checkClaim) {
-                $this->assertSame(
-                    substr($method, -4) === 'List'
-                        ? []
-                        : null, $context->$method($key)
-                );
+                $this->assertNull($context->$method($key));
             }
         }
 
@@ -473,6 +475,12 @@ final class SyncContextTest extends SyncTestCase
                 'id',
                 'claimFilterIntList',
                 'claimFilterStringList',
+            ],
+            'list of int (key not set)' => [
+                null,
+                [],
+                'id',
+                'claimFilterIntList',
             ],
             'list of int + scalar input' => [
                 [42],
