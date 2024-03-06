@@ -563,6 +563,8 @@ final class Reflect extends AbstractUtility
     /**
      * Check if a method's declaration appears between the first and last line
      * of a class/trait/interface
+     *
+     * @param ReflectionClass<object> $class
      */
     public static function isMethodInClass(
         ReflectionMethod $method,
@@ -573,11 +575,15 @@ final class Reflect extends AbstractUtility
             return false;
         }
 
-        return Test::isBetween(
+        [$line, $start, $end] = [
             $method->getStartLine(),
             $class->getStartLine(),
             $class->getEndLine(),
-        );
+        ];
+
+        return
+            ($line && $start && $end) &&
+            Test::isBetween($line, $start, $end);
     }
 
     /**

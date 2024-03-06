@@ -154,7 +154,7 @@ abstract class PhpTokenTestCase extends TestCase
      *
      * @param bool[]|class-string<Throwable> $expected
      * @param array<PhpToken|\PhpToken> $input
-     * @param int|string|array<int|string> $kind
+     * @param int|string|false|array<int|string|false> $kind
      */
     public function testIs($expected, array $input, $kind): void
     {
@@ -163,6 +163,7 @@ abstract class PhpTokenTestCase extends TestCase
         }
 
         foreach ($input as $token) {
+            // @phpstan-ignore-next-line
             $actual[] = $token->is($kind);
         }
         $actualCode = Get::code($actual ?? []);
@@ -175,7 +176,7 @@ abstract class PhpTokenTestCase extends TestCase
     }
 
     /**
-     * @return array<array{bool[]|class-string<Throwable>,array<PhpToken|\PhpToken>,int|string|array<int|string>}>
+     * @return array<array{bool[]|class-string<Throwable>,array<PhpToken|\PhpToken>,int|string|false|array<int|string|false>}>
      */
     public static function isProvider(): array
     {

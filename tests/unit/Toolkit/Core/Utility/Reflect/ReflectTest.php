@@ -195,8 +195,9 @@ final class ReflectTest extends TestCase
     /**
      * @dataProvider getAllMethodDocCommentsProvider
      *
-     * @param array<string,string> $expected
-     * @param array<string,string>|null $expectedClassDocComments
+     * @param ReflectionClass<object>|null $fromClass
+     * @param array<string,string|null> $expected
+     * @param array<string,string|null>|null $expectedClassDocComments
      */
     public function testGetAllMethodDocComments(
         ReflectionMethod $method,
@@ -216,7 +217,7 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @return array<string,array{ReflectionMethod,ReflectionClass|null,array<string,string>,3?:array<string,string>}>
+     * @return array<string,array{ReflectionMethod,ReflectionClass<object>|null,array<string,string|null>,3?:array<string,string|null>}>
      */
     public static function getAllMethodDocCommentsProvider(): array
     {

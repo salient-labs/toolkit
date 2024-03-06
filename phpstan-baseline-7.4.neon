@@ -2506,11 +2506,6 @@ parameters:
 			path: tests/unit/Toolkit/PhpDoc/PhpDocTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Polyfill\\\\PhpTokenTestCase\\:\\:isProvider\\(\\) should return array\\<array\\{array\\<bool\\>\\|class\\-string\\<Throwable\\>, array\\<Salient\\\\Polyfill\\\\PhpToken\\>, array\\<int\\|string\\>\\|int\\|string\\}\\> but returns array\\{array\\{array\\{false, true, false, true, false, true, false, true, \\.\\.\\.\\}, array\\<Salient\\\\Polyfill\\\\PhpToken\\>, array\\{385, 380, 381, 382, '\\$a'\\}\\}, array\\{array\\{false, false, false, false, false, false, false, false, \\.\\.\\.\\}, array\\<Salient\\\\Polyfill\\\\PhpToken\\>, 344\\}, array\\{array\\{false, false, false, false, false, false, false, false, \\.\\.\\.\\}, array\\<Salient\\\\Polyfill\\\\PhpToken\\>, '\\$a'\\}, array\\{'TypeError', array\\<Salient\\\\Polyfill\\\\PhpToken\\>, false\\}, array\\{'TypeError', array\\<Salient\\\\Polyfill\\\\PhpToken\\>, array\\{382, '\\$a', false\\}\\}, array\\{'TypeError', array\\{Salient\\\\Polyfill\\\\PhpToken, Salient\\\\Polyfill\\\\PhpToken\\}, array\\{false, 382, '\\$a'\\}\\}, array\\{array\\{true, true\\}, array\\{Salient\\\\Polyfill\\\\PhpToken, Salient\\\\Polyfill\\\\PhpToken\\}, array\\{382, '\\$a', false\\}\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Polyfill/PhpTokenTestCase.php
-
-		-
 			message: "#^Cannot access an offset on array\\<Salient\\\\Sync\\\\Support\\\\DeferredEntity\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\Post\\>\\|Salient\\\\Tests\\\\Sync\\\\Entity\\\\Post\\>\\|Salient\\\\Sync\\\\Support\\\\DeferredRelationship\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\Post\\>\\|null\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Sync/Concept/SyncEntityTest.php
