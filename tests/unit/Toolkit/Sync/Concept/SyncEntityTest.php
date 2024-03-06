@@ -2,30 +2,25 @@
 
 namespace Salient\Tests\Sync\Concept;
 
-use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
-use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\Sync\SyncTestCase;
 
 final class SyncEntityTest extends SyncTestCase
 {
     public function testDefaultProvider(): void
     {
-        $postProvider = Post::defaultProvider($this->App);
-        $postEntityProvider = $postProvider->with(Post::class);
-        $userEntityProvider = User::withDefaultProvider($this->App);
+        $this->assertSame($this->Provider, Post::defaultProvider($this->App));
+    }
 
-        $provider = $this->App->get(JsonPlaceholderApi::class);
-
-        $this->assertSame($provider, $postProvider);
-        $this->assertSame($provider, $postEntityProvider->getProvider());
-        $this->assertSame($provider, $userEntityProvider->getProvider());
-        $this->assertInstanceOf(SyncEntityProviderInterface::class, $postEntityProvider);
-        $this->assertInstanceOf(SyncEntityProviderInterface::class, $userEntityProvider);
+    public function testWithDefaultProvider(): void
+    {
+        $entityProvider = User::withDefaultProvider($this->App);
+        $this->assertSame(User::class, $entityProvider->entity());
+        $this->assertSame($this->Provider, $entityProvider->getProvider());
     }
 
     /**

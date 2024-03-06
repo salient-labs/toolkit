@@ -2,38 +2,52 @@
 
 namespace Salient\Tests\Sync\Support;
 
+use Salient\Tests\Sync\CustomEntity\Task as CustomTask;
+use Salient\Tests\Sync\CustomEntity\Unserviced as CustomUnserviced;
+use Salient\Tests\Sync\Entity\Provider\TaskProvider;
+use Salient\Tests\Sync\Entity\Provider\UnimplementedProvider;
 use Salient\Tests\Sync\Entity\Post;
+use Salient\Tests\Sync\Entity\Task;
+use Salient\Tests\Sync\Entity\Unimplemented;
 use Salient\Tests\Sync\Entity\User;
-use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
+use Salient\Tests\Sync\Provider\MockProvider;
 use Salient\Tests\Sync\SyncTestCase;
+use LogicException;
 
 final class SyncEntityProviderTest extends SyncTestCase
 {
-    public function testGetListA(): void
+    public function testGetList(): void
     {
-        $postEntityProvider = Post::withDefaultProvider($this->App)
-            ->doNotResolve()
-            ->doNotHydrate();
-        $posts = $postEntityProvider->getListA();
+        $posts =
+            $this
+                ->Provider
+                ->with(Post::class)
+                ->doNotResolve()
+                ->doNotHydrate()
+                ->getListA();
 
-        $userEntityProvider = User::withDefaultProvider($this->App)
-            ->doNotResolve()
-            ->doNotHydrate();
+        $userProvider =
+            $this
+                ->Provider
+                ->with(User::class)
+                ->doNotResolve()
+                ->doNotHydrate();
+
         // Load every user entity so deferred users are resolved
         // immediately
-        $userEntityProvider->getListA();
+        $userProvider->getListA();
 
-        $provider = $postEntityProvider->getProvider();
-        if ($provider instanceof JsonPlaceholderApi) {
-            $before = $provider->HttpRequestCount;
-        }
+        $this->assertSameHttpEndpointRequests($requests = [
+            '/posts' => 1,
+            '/users' => 1,
+        ]);
 
         $flattened = [];
         foreach ($posts as $post) {
             if ($post->Id % 9) {
                 continue;
             }
-            $user = $userEntityProvider->get($post->User->Id);
+            $user = $userProvider->get($post->User->Id);
             $flattened[] = [
                 'id' => $post->Id,
                 'title' => $post->Title,
@@ -43,18 +57,7 @@ final class SyncEntityProviderTest extends SyncTestCase
             ];
         }
 
-        if ($provider instanceof JsonPlaceholderApi) {
-            $this->assertSame(
-                $before,
-                $provider->HttpRequestCount,
-                'JsonPlaceholderApi::$HttpRequestCount',
-            );
-            $this->assertCount(
-                2,
-                $provider->HttpRequestCount,
-                'JsonPlaceholderApi::$HttpRequestCount',
-            );
-        }
+        $this->assertSameHttpEndpointRequests($requests);
 
         $this->assertSame([
             [
@@ -135,5 +138,52 @@ final class SyncEntityProviderTest extends SyncTestCase
                 'userEmail' => 'Rey.Padberg@karina.biz',
             ],
         ], $flattened);
+    }
+
+    public function testWithUnservicedEntity(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(sprintf(
+            '%s does not have a provider interface (tried: %s, %s)',
+            CustomUnserviced::class,
+            'Salient\Tests\Sync\CustomEntity\Provider\UnservicedProvider',
+            'Salient\Tests\Sync\Entity\Provider\UnservicedProvider',
+        ));
+        $this->Provider->with(CustomUnserviced::class);
+    }
+
+    public function testWithUnimplementedEntity(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(sprintf(
+            '%s does not implement %s',
+            get_class($this->Provider),
+            UnimplementedProvider::class,
+        ));
+        $this->Provider->with(Unimplemented::class);
+    }
+
+    public function testWithUnboundEntity(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(sprintf(
+            '%s cannot be serviced by provider interface %s unless it is bound to the container as %s',
+            CustomTask::class,
+            TaskProvider::class,
+            Task::class,
+        ));
+        $this->Provider->with(CustomTask::class);
+    }
+
+    public function testWithInvalidContext(): void
+    {
+        $context = $this->App->get(MockProvider::class)->getContext();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(sprintf(
+            '%s has different provider (MockProvider, expected %s)',
+            get_class($context),
+            $this->Provider->name(),
+        ));
+        $this->Provider->with(User::class, $context);
     }
 }

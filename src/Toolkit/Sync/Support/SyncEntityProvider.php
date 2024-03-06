@@ -16,6 +16,7 @@ use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
+use Salient\Sync\AbstractSyncEntity;
 use Salient\Sync\SyncStore;
 use Generator;
 use LogicException;
@@ -76,13 +77,11 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
-     * @param SyncDefinitionInterface<TEntity,TProvider> $definition
      */
     public function __construct(
         ContainerInterface $container,
         string $entity,
         SyncProviderInterface $provider,
-        SyncDefinitionInterface $definition,
         ?SyncContextInterface $context = null
     ) {
         if (!is_a($entity, SyncEntityInterface::class, true)) {
@@ -93,14 +92,62 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
             ));
         }
 
-        $entityProvider = SyncIntrospector::entityToProvider($entity);
-        if (!($provider instanceof $entityProvider)) {
-            throw new LogicException(get_class($provider) . ' does not implement ' . $entityProvider);
+        if ($context && $context->getProvider() !== $provider) {
+            throw new LogicException(sprintf(
+                '%s has different provider (%s, expected %s)',
+                get_class($context),
+                $context->getProvider()->name(),
+                $provider->name(),
+            ));
         }
 
+        $_entity = $entity;
+        $checked = [];
+        do {
+            $entityProvider = SyncIntrospector::entityToProvider($entity, $container);
+            if (interface_exists($entityProvider)) {
+                break;
+            }
+            $checked[] = $entityProvider;
+            $entityProvider = null;
+            $entity = get_parent_class($entity);
+            if ($entity === false ||
+                    $entity === AbstractSyncEntity::class ||
+                    !is_a($entity, SyncEntityInterface::class, true)) {
+                break;
+            }
+        } while (true);
+
+        if ($entityProvider === null) {
+            throw new LogicException(sprintf(
+                '%s does not have a provider interface (tried: %s)',
+                $_entity,
+                implode(', ', $checked),
+            ));
+        }
+
+        if (!is_a($provider, $entityProvider)) {
+            throw new LogicException(sprintf(
+                '%s does not implement %s',
+                get_class($provider),
+                $entityProvider
+            ));
+        }
+
+        /** @var class-string $entity */
+        if ($entity !== $_entity && $container->getName($entity) !== $_entity) {
+            throw new LogicException(sprintf(
+                '%s cannot be serviced by provider interface %s unless it is bound to the container as %s',
+                $_entity,
+                $entityProvider,
+                $entity,
+            ));
+        }
+
+        /** @var class-string<TEntity> $entity */
         $this->Entity = $entity;
         $this->Provider = $provider;
-        $this->Definition = $definition;
+        $this->Definition = $provider->getDefinition($entity);
         $this->Context = $context ?? $provider->getContext($container);
         $this->Store = $provider->store();
     }

@@ -47,6 +47,7 @@
 /tests/fixtures/Toolkit/Sync/Entity/Provider/PhotoProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Provider/PostProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Provider/TaskProvider.php linguist-generated
+/tests/fixtures/Toolkit/Sync/Entity/Provider/UnimplementedProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Provider/UserProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Task.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/User.php linguist-generated

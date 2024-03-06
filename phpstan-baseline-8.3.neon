@@ -1886,11 +1886,6 @@ parameters:
 			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
 
 		-
-			message: "#^Property Salient\\\\Tests\\\\Sync\\\\Provider\\\\JsonPlaceholderApi\\:\\:\\$HttpRequestCount \\(array\\<string, int\\>\\) does not accept array\\<int\\|string, int\\>\\.$#"
-			count: 2
-			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
-
-		-
 			message: "#^Method Salient\\\\Tests\\\\Sync\\\\SyncClassResolver\\:\\:entityToProvider\\(\\) should return class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\> but returns string\\.$#"
 			count: 1
 			path: tests/fixtures/Toolkit/Sync/SyncClassResolver.php

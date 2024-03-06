@@ -14,18 +14,27 @@ abstract class SyncTestCase extends TestCase
     protected JsonPlaceholderApi $Provider;
 
     /**
-     * @param array<string,int> $expected
+     * Assert that the provider has made the given HTTP requests
+     *
+     * @param array<string,int> $expected An array that maps endpoints to
+     * request counts.
      */
-    protected function assertHttpRequestCounts(array $expected): void
+    public function assertSameHttpEndpointRequests(array $expected): void
     {
-        $provider = $this->App->get(JsonPlaceholderApi::class);
-        $baseUrl = $provider->getBaseUrl();
+        $baseUrl = $this->Provider->getBaseUrl();
         foreach ($expected as $endpoint => $count) {
             $endpoints[$baseUrl . $endpoint] = $count;
         }
-        $this->assertSame($endpoints ?? [], $provider->HttpRequestCount);
+
+        $this->assertEqualsCanonicalizing(
+            $endpoints ?? [],
+            $this->Provider->HttpRequests
+        );
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function setUp(): void
     {
         $this->App = (new Container())
@@ -44,6 +53,9 @@ abstract class SyncTestCase extends TestCase
         $this->Provider = $this->App->get(JsonPlaceholderApi::class);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function tearDown(): void
     {
         $this
