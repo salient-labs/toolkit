@@ -12,6 +12,25 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.10] - 2024-03-06
+
+### Changed
+
+- In `SyncEntityProvider`, if an entity has no provider interface, check for a parent that:
+
+  - implements `SyncEntityInterface`
+  - resolves to the entity, indicating it has been bound to a "base" entity in the service container
+  - has a provider interface
+
+  This allows downstream code to use `$provider->with(MyCustomEntity::class)` instead of `$provider->with(BaseEntity::class)` when `MyCustomEntity` extends `BaseEntity`
+
+- Add explicit `@return` types to methods with native return type `self` to work around bugs in static analysis tools
+- Detect associative arrays in "generate sync entity" command
+
+### Fixed
+
+- Fix regression where `AbstractSyncDefinition::getFallbackClosure()` always throws an exception
+
 ## [v0.99.9] - 2024-03-06
 
 ### Added
@@ -2121,6 +2140,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.10]: https://github.com/salient-labs/toolkit/compare/v0.99.9...v0.99.10
 [v0.99.9]: https://github.com/salient-labs/toolkit/compare/v0.99.8...v0.99.9
 [v0.99.8]: https://github.com/salient-labs/toolkit/compare/v0.99.7...v0.99.8
 [v0.99.7]: https://github.com/salient-labs/toolkit/compare/v0.99.6...v0.99.7
