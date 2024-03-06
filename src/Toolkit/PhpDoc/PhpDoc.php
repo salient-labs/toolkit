@@ -30,6 +30,16 @@ final class PhpDoc implements Readable
 {
     use ReadsProtectedProperties;
 
+    private const STANDARD_TAGS = [
+        'param',
+        'readonly',
+        'return',
+        'throws',
+        'var',
+        'template',
+        'internal',
+    ];
+
     /**
      * The summary
      *
@@ -465,15 +475,13 @@ final class PhpDoc implements Readable
                 return true;
             }
         }
-        if (array_diff_key($this->TagsByName, array_flip([
-            'param',
-            'readonly',
-            'return',
-            'throws',
-            'var',
-            'template',
-            'internal',
-        ]))) {
+
+        if (array_filter(
+            array_diff_key($this->TagsByName, array_flip(self::STANDARD_TAGS)),
+            fn(string $key): bool =>
+                !Pcre::match('/^(phpstan|psalm)-/', $key),
+            \ARRAY_FILTER_USE_KEY
+        )) {
             return true;
         }
 

@@ -75,6 +75,7 @@ final class PhpDocTest extends TestCase
 
         $phpDoc = PhpDoc::fromDocBlocks($docBlocks);
 
+        $this->assertNotNull($phpDoc);
         $this->assertSame('Summary from ClassB', $phpDoc->Summary);
         $this->assertSame(<<<'EOF'
             Description from ClassA

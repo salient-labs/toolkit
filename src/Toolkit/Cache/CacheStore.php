@@ -6,6 +6,8 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractStore;
 use DateTimeInterface;
 use LogicException;
+use SQLite3Result;
+use SQLite3Stmt;
 
 /**
  * A SQLite-backed key-value store
@@ -96,6 +98,7 @@ final class CacheStore extends AbstractStore
               item_value IS NOT excluded.item_value
               OR expires_at IS NOT excluded.expires_at;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->bindValue(':item_value', serialize($value), \SQLITE3_BLOB);
@@ -127,11 +130,14 @@ final class CacheStore extends AbstractStore
               _cache_item $where
             SQL;
         $db = $this->db();
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
+        /** @var SQLite3Result */
         $result = $stmt->execute();
+        /** @var non-empty-array<int,int> */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
@@ -161,10 +167,12 @@ final class CacheStore extends AbstractStore
               _cache_item $where
             SQL;
         $db = $this->db();
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
+        /** @var SQLite3Result */
         $result = $stmt->execute();
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
@@ -193,7 +201,7 @@ final class CacheStore extends AbstractStore
             return null;
         }
         $item = $store->get($key, $maxAge);
-        if (!is_a($item, $class)) {
+        if (!is_object($item) || !is_a($item, $class)) {
             return null;
         }
         return $item;
@@ -275,6 +283,7 @@ final class CacheStore extends AbstractStore
             WHERE
               item_key = :item_key;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->execute();
@@ -313,6 +322,7 @@ final class CacheStore extends AbstractStore
               expires_at <= DATETIME(:now, 'unixepoch');
             SQL;
         $db = $this->db();
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':now', $this->now(), \SQLITE3_INTEGER);
         $stmt->execute();
@@ -370,11 +380,14 @@ final class CacheStore extends AbstractStore
               _cache_item $where
             SQL;
         $db = $this->db();
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
+        /** @var SQLite3Result */
         $result = $stmt->execute();
+        /** @var non-empty-array<int,int> */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
@@ -404,10 +417,12 @@ final class CacheStore extends AbstractStore
               _cache_item $where
             SQL;
         $db = $this->db();
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
+        /** @var SQLite3Result */
         $result = $stmt->execute();
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
             $keys[] = $row[0];

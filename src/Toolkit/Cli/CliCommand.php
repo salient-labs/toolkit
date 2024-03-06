@@ -1292,6 +1292,7 @@ abstract class CliCommand implements CliCommandInterface
      */
     private function addOption($option): void
     {
+        $option = CliOption::resolve($option);
         try {
             $option = $option->load();
         } catch (CliUnknownValueException $ex) {

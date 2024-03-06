@@ -301,6 +301,7 @@ EOF)
                     ?? null;
 
                 if ($_type !== null) {
+                    /** @var PhpDoc $phpDoc */
                     $templates = [];
                     $type = $this->getPhpDocTypeAlias(
                         $tag,
@@ -402,6 +403,7 @@ EOF)
             $tag = $_phpDoc->Params[$_name] ?? null;
             $fromPhpDoc = false;
             if (($_type = $tag->Type ?? null) !== null) {
+                /** @var PhpDoc $_phpDoc */
                 $templates = [];
                 $type = $this->getPhpDocTypeAlias(
                     $tag,
@@ -585,6 +587,7 @@ EOF)
 
                 $_type = $phpDoc->Return->Type ?? null;
                 if ($_type !== null) {
+                    /** @var PhpDoc $phpDoc */
                     $templates = [];
                     $type = $this->getPhpDocTypeAlias(
                         $phpDoc->Return,
@@ -636,14 +639,17 @@ EOF)
                     /** @todo: check for templates here? */
                     $tag = $phpDoc->Params[$_param->getName()] ?? null;
                     // Override the declared type if defined in the PHPDoc
-                    $_type = ($tag->Type ?? null) !== null
-                        ? $this->getPhpDocTypeAlias(
+                    if (($tag->Type ?? null) !== null) {
+                        /** @var PhpDoc $phpDoc */
+                        $_type = $this->getPhpDocTypeAlias(
                             $tag,
                             $phpDoc->Templates,
                             $propertyNamespace,
                             $propertyFile
-                        )
-                        : null;
+                        );
+                    } else {
+                        $_type = null;
+                    }
                     $params[] =
                         $declare
                             ? Reflect::getParameterPhpDoc(

@@ -29,6 +29,8 @@ use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncErrorCollection;
 use LogicException;
 use ReflectionClass;
+use SQLite3Result;
+use SQLite3Stmt;
 
 /**
  * Tracks the state of entities synced to and from third-party backends in a
@@ -314,6 +316,7 @@ final class SyncStore extends AbstractStore
               run_uuid = :run_uuid;
             SQL;
 
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':exit_status', $exitStatus, \SQLITE3_INTEGER);
         $stmt->bindValue(':run_uuid', $this->RunUuid, \SQLITE3_BLOB);
@@ -324,6 +327,19 @@ final class SyncStore extends AbstractStore
         $stmt->close();
 
         return $this->closeDb();
+    }
+
+    /**
+     * Check if a run has started
+     *
+     * @phpstan-assert-if-true !null $this->RunId
+     * @phpstan-assert-if-true !null $this->RunUuid
+     * @phpstan-assert-if-true !null $this->NamespacesByPrefix
+     * @phpstan-assert-if-true !null $this->NamespaceUrisByPrefix
+     */
+    public function hasRunId(): bool
+    {
+        return $this->RunId !== null;
     }
 
     /**
@@ -364,7 +380,7 @@ final class SyncStore extends AbstractStore
     public function provider(SyncProviderInterface $provider)
     {
         // Don't start a run just to register a provider
-        if ($this->RunId === null) {
+        if (!$this->hasRunId()) {
             $this->DeferredProviders[] = $provider;
             return $this;
         }
@@ -390,6 +406,7 @@ final class SyncStore extends AbstractStore
             SET
               last_seen = CURRENT_TIMESTAMP;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':provider_hash', $hash, \SQLITE3_BLOB);
         $stmt->bindValue(':provider_class', $class, \SQLITE3_TEXT);
@@ -404,9 +421,12 @@ final class SyncStore extends AbstractStore
             WHERE
               provider_hash = :provider_hash;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':provider_hash', $hash, \SQLITE3_BLOB);
+        /** @var SQLite3Result */
         $result = $stmt->execute();
+        /** @var array{int}|false */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
@@ -428,7 +448,7 @@ final class SyncStore extends AbstractStore
      */
     public function getProviderId(SyncProviderInterface $provider): int
     {
-        if ($this->RunId === null) {
+        if (!$this->hasRunId()) {
             $this->check();
         }
 
@@ -449,7 +469,7 @@ final class SyncStore extends AbstractStore
     public function getProvider(string $hash): ?SyncProviderInterface
     {
         // Don't start a run just to get a provider
-        if ($this->RunId === null) {
+        if (!$this->hasRunId()) {
             foreach ($this->DeferredProviders as $provider) {
                 if ($this->getProviderHash($provider) === $hash) {
                     return $provider;
@@ -489,7 +509,7 @@ final class SyncStore extends AbstractStore
     public function entityType(string $entity)
     {
         // Don't start a run just to register an entity type
-        if ($this->RunId === null) {
+        if (!$this->hasRunId()) {
             $this->DeferredEntityTypes[] = $entity;
             return $this;
         }
@@ -527,6 +547,7 @@ final class SyncStore extends AbstractStore
             SET
               last_seen = CURRENT_TIMESTAMP;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
         $stmt->execute();
@@ -540,9 +561,12 @@ final class SyncStore extends AbstractStore
             WHERE
               entity_type_class = :entity_type_class;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
+        /** @var SQLite3Result */
         $result = $stmt->execute();
+        /** @var array{int}|false */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
@@ -583,7 +607,7 @@ final class SyncStore extends AbstractStore
     ) {
         $prefix = Str::lower($prefix);
         if (isset($this->RegisteredNamespaces[$prefix]) ||
-            ($this->RunId === null &&
+            (!$this->hasRunId() &&
                 isset($this->DeferredNamespaces[$prefix]))) {
             throw new LogicException(sprintf(
                 'Prefix already registered: %s',
@@ -606,7 +630,7 @@ final class SyncStore extends AbstractStore
         }
 
         // Don't start a run just to register a namespace
-        if ($this->RunId === null) {
+        if (!$this->hasRunId()) {
             $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $resolver];
             return $this;
         }
@@ -628,6 +652,7 @@ final class SyncStore extends AbstractStore
               php_namespace = excluded.php_namespace,
               last_seen = CURRENT_TIMESTAMP;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':entity_namespace_prefix', $prefix, \SQLITE3_TEXT);
         $stmt->bindValue(':base_uri', $uri, \SQLITE3_TEXT);
@@ -721,7 +746,7 @@ final class SyncStore extends AbstractStore
         $lower = Str::lower($class);
 
         // Don't start a run just to resolve a class to a namespace
-        if ($this->RunId === null) {
+        if (!$this->hasRunId()) {
             foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_resolver]) {
                 $_namespace = Str::lower($_namespace);
                 if (strpos($lower, $_namespace) === 0) {
@@ -828,6 +853,7 @@ final class SyncStore extends AbstractStore
         DeferredEntity $deferred
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
+        /** @var TEntity|null */
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
         if ($entity) {
             $deferred->replace($entity);
@@ -1030,6 +1056,7 @@ final class SyncStore extends AbstractStore
                     $entities = $_entities;
                 }
 
+                /** @var array<int|string,non-empty-array<DeferredEntity<SyncEntityInterface>>> $entities */
                 foreach ($entities as $entityId => $deferred) {
                     $deferredEntity = reset($deferred);
                     $resolved[] = $deferredEntity->resolve();
@@ -1299,6 +1326,12 @@ final class SyncStore extends AbstractStore
         return $this;
     }
 
+    /**
+     * @phpstan-assert !null $this->RunId
+     * @phpstan-assert !null $this->RunUuid
+     * @phpstan-assert !null $this->NamespacesByPrefix
+     * @phpstan-assert !null $this->NamespaceUrisByPrefix
+     */
     protected function check()
     {
         if ($this->RunId !== null) {
@@ -1319,6 +1352,7 @@ final class SyncStore extends AbstractStore
             SQL;
 
         $db = $this->db();
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':run_uuid', $uuid = Get::binaryUuid(), \SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, \SQLITE3_TEXT);
@@ -1365,11 +1399,14 @@ final class SyncStore extends AbstractStore
             ORDER BY
               LENGTH(php_namespace) DESC;
             SQL;
+        /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
+        /** @var SQLite3Result */
         $result = $stmt->execute();
         $this->NamespacesByPrefix = [];
         $this->NamespaceUrisByPrefix = [];
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
+            /** @var array{string,string,string} $row */
             $this->NamespacesByPrefix[$row[0]] = Str::lower($row[2]);
             $this->NamespaceUrisByPrefix[$row[0]] = $row[1];
         }

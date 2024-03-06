@@ -207,13 +207,13 @@ final class ReflectTest extends TestCase
     ): void {
         if ($expectedClassDocComments === null) {
             $comments = Reflect::getAllMethodDocComments($method, $fromClass);
-            $this->assertSame($expected, $comments);
+            $this->assertSame($expected, $comments, 'comments');
             return;
         }
 
         $comments = Reflect::getAllMethodDocComments($method, $fromClass, $classDocComments);
-        $this->assertSame($expected, $comments);
-        $this->assertSame($expectedClassDocComments, $classDocComments);
+        $this->assertSame($expected, $comments, 'comments');
+        $this->assertSame($expectedClassDocComments, $classDocComments, 'classDocComments');
     }
 
     /**
@@ -223,6 +223,7 @@ final class ReflectTest extends TestCase
     {
         $expected1 = [
             MySubclass::class => "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+            MyUndocumentedClass::class => "/**\n     * MyUndocumentedClass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
             MyClass::class => "/**\n     * MyClass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
             MyTrait::class => "/**\n     * MyTrait::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
             MyBaseTrait::class => "/**\n     * MyBaseTrait::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
@@ -240,6 +241,7 @@ final class ReflectTest extends TestCase
 
         $expected3 = [
             MySubclass::class => null,
+            MyUndocumentedClass::class => null,
             MyClass::class => null,
             MyTrait::class => null,
             MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
@@ -259,6 +261,7 @@ final class ReflectTest extends TestCase
                 $expected1,
                 [
                     MySubclass::class => "/**\n * MySubclass\n */",
+                    MyUndocumentedClass::class => null,
                     MyClass::class => "/**\n * MyClass\n */",
                     MyTrait::class => "/**\n * MyTrait\n */",
                     MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
@@ -294,6 +297,7 @@ final class ReflectTest extends TestCase
                 $expected3,
                 [
                     MySubclass::class => "/**\n * MySubclass\n */",
+                    MyUndocumentedClass::class => null,
                     MyClass::class => "/**\n * MyClass\n */",
                     MyTrait::class => "/**\n * MyTrait\n */",
                     MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
@@ -306,6 +310,7 @@ final class ReflectTest extends TestCase
                 new ReflectionClass(MySubclass::class),
                 [
                     MySubclass::class => null,
+                    MyUndocumentedClass::class => null,
                     MyClass::class => null,
                     MyTrait::class => "/**\n     * MyTrait::MyTraitOnlyMethod() PHPDoc\n     */",
                 ]
@@ -784,10 +789,20 @@ class MyClass extends MyBaseClass implements MyInterface
     public function MySparselyDocumentedMethod() {}
 }
 
+class MyUndocumentedClass extends MyClass
+{
+    /**
+     * MyUndocumentedClass::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MyDocumentedMethod() {}
+}
+
 /**
  * MySubclass
  */
-class MySubclass extends MyClass implements MyOtherInterface
+class MySubclass extends MyUndocumentedClass implements MyOtherInterface
 {
     /**
      * MySubclass::$MyDocumentedProperty PHPDoc

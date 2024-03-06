@@ -27,7 +27,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         } catch (Throwable $ex) {
             static::assertInstanceOf($exception, $ex, $message);
             if ($exceptionMessage !== null) {
-                static::assertStringContainsString($exceptionMessage, $ex->getMessage(), $message);
+                static::assertStringContainsString(
+                    $exceptionMessage,
+                    $ex->getMessage(),
+                    $message
+                );
             }
             return;
         }
@@ -41,10 +45,13 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * endings if necessary
      *
      * @param array<array{Level::*,string,2?:array<string,mixed>}> $expected
-     * @param mixed[] $actual
+     * @param array<array{Level::*,string,2?:array<string,mixed>}> $actual
      */
-    public static function assertSameConsoleMessages(array $expected, array $actual, string $message = ''): void
-    {
+    public static function assertSameConsoleMessages(
+        array $expected,
+        array $actual,
+        string $message = ''
+    ): void {
         foreach ($expected as $i => &$expectedMessage) {
             $expectedMessage[1] = Str::eolFromNative($expectedMessage[1]);
             if (!isset($expectedMessage[2]) && isset($actual[$i][2])) {
@@ -76,6 +83,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $expected = $split[0];
             $this->expectExceptionMessage($split[1]);
         }
+        /** @var class-string<Throwable> $expected */
         $this->expectException($expected);
     }
 
