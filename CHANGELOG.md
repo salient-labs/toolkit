@@ -12,6 +12,23 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.9] - 2024-03-06
+
+### Added
+
+- Add `Reflect::isMethodInClass()`
+- Add `Sync::hasRunId()`
+
+### Changed
+
+- `SyncContext`: return `null`, not `[]`, when a filter/value is missing
+- Add optional `$fromClass` parameter to `getAllMethodDocComments()`
+
+### Fixed
+
+- Fix issue where an unresolved `CliOptionBuilder` instance triggers an unhandled exception if it receives an invalid value from the environment
+- Fix issue where `Cache::getInstanceOf()` fails when a non-object is stored under the given key
+
 ## [v0.99.8] - 2024-03-05
 
 ### Fixed
@@ -2104,6 +2121,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.9]: https://github.com/salient-labs/toolkit/compare/v0.99.8...v0.99.9
 [v0.99.8]: https://github.com/salient-labs/toolkit/compare/v0.99.7...v0.99.8
 [v0.99.7]: https://github.com/salient-labs/toolkit/compare/v0.99.6...v0.99.7
 [v0.99.6]: https://github.com/salient-labs/toolkit/compare/v0.99.5...v0.99.6
