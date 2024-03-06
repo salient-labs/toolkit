@@ -400,6 +400,11 @@ EOF)
                     continue;
                 }
 
+                if (is_array($value) && Arr::ofString(array_keys($value))) {
+                    $properties[$key] = 'array<string,mixed>|null';
+                    continue;
+                }
+
                 $type = gettype($value);
                 $type = $typeMap[$type] ?? $type;
                 $type .= '|null';
