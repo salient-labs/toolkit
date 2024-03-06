@@ -32,7 +32,7 @@ class CheckSyncProviderHeartbeatTest extends CommandTestCase
         $provider = $app->get(JsonPlaceholderApi::class);
         $this->assertSame(
             $httpRequestCount,
-            $provider->HttpRequestCount,
+            $provider->HttpRequests,
             'JsonPlaceholderApi::$HttpRequestCount',
         );
     }

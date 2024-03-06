@@ -27,6 +27,7 @@ use Salient\Tests\Sync\Entity\Photo;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\Task;
 use Salient\Tests\Sync\Entity\User;
+use LogicException;
 
 /**
  * @method Album createAlbum(SyncContextInterface $ctx, Album $album)
@@ -71,7 +72,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     /**
      * @var array<string,int>
      */
-    public array $HttpRequestCount = [];
+    public array $HttpRequests = [];
 
     public function name(): string
     {
@@ -112,11 +113,16 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
     {
         $baseUrl = $curlerB->getB('baseUrl');
-        if (!isset($this->HttpRequestCount[$baseUrl])) {
-            $this->HttpRequestCount[$baseUrl] = 0;
+
+        if (!is_string($baseUrl)) {
+            throw new LogicException('Invalid baseUrl');
         }
 
-        $this->HttpRequestCount[$baseUrl]++;
+        if (!isset($this->HttpRequests[$baseUrl])) {
+            $this->HttpRequests[$baseUrl] = 0;
+        }
+
+        $this->HttpRequests[$baseUrl]++;
 
         return $curlerB;
     }

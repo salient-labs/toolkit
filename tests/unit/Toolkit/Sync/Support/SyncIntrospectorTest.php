@@ -3,6 +3,7 @@
 namespace Salient\Tests\Sync\Support;
 
 use Salient\Container\Container;
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncStore;
@@ -30,7 +31,7 @@ final class SyncIntrospectorTest extends TestCase
             SyncIntrospector::entityToProvider(
                 // @phpstan-ignore-next-line
                 'Component\Sync\Entity\People\Contact',
-                $this->getStore()
+                $this->getContainer()
             )
         );
     }
@@ -47,19 +48,26 @@ final class SyncIntrospectorTest extends TestCase
             SyncIntrospector::providerToEntity(
                 // @phpstan-ignore-next-line
                 'Component\Sync\Contract\People\ProvidesContact',
-                $this->getStore()
+                $this->getContainer()
             )
         );
     }
 
-    private function getStore(): SyncStore
+    private function getContainer(): ContainerInterface
     {
-        return (new SyncStore())->namespace(
-            'component',
-            'https://sync.salient-labs.github.io/component',
-            'Component\Sync',
-            SyncClassResolver::class
-        );
+        $container = (new Container())
+            ->singleton(SyncStore::class);
+
+        $container
+            ->get(SyncStore::class)
+            ->namespace(
+                'component',
+                'https://sync.salient-labs.github.io/component',
+                'Component\Sync',
+                SyncClassResolver::class
+            );
+
+        return $container;
     }
 
     public function testGetSyncOperationMethod(): void

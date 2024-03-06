@@ -55,10 +55,10 @@ final class SyncIntrospector extends Introspector
      * @param class-string<SyncEntityInterface> $entity
      * @return class-string<SyncProviderInterface>
      */
-    public static function entityToProvider(string $entity, ?SyncStore $store = null): string
+    public static function entityToProvider(string $entity, ?ContainerInterface $container = null): string
     {
-        if (($store || Sync::isLoaded()) &&
-                $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($entity)) {
+        if (($store = self::maybeGetStore($container)) &&
+                ($resolver = $store->getNamespaceResolver($entity))) {
             return $resolver::entityToProvider($entity);
         }
 
@@ -75,10 +75,10 @@ final class SyncIntrospector extends Introspector
      * @param class-string<SyncProviderInterface> $provider
      * @return array<class-string<SyncEntityInterface>>
      */
-    public static function providerToEntity(string $provider, ?SyncStore $store = null): array
+    public static function providerToEntity(string $provider, ?ContainerInterface $container = null): array
     {
-        if (($store || Sync::isLoaded()) &&
-                $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($provider)) {
+        if (($store = self::maybeGetStore($container)) &&
+                ($resolver = $store->getNamespaceResolver($provider))) {
             return $resolver::providerToEntity($provider);
         }
 
@@ -92,6 +92,17 @@ final class SyncIntrospector extends Introspector
         }
 
         return [];
+    }
+
+    private static function maybeGetStore(?ContainerInterface $container = null): ?SyncStore
+    {
+        if ($container && $container->hasInstance(SyncStore::class)) {
+            return $container->get(SyncStore::class);
+        }
+        if (Sync::isLoaded()) {
+            return Sync::getInstance();
+        }
+        return null;
     }
 
     /**

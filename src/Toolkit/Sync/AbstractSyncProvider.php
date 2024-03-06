@@ -264,7 +264,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
 
         return $container->get(
             SyncEntityProvider::class,
-            [$entity, $this, $this->getDefinition($entity), $context]
+            [$entity, $this, $context]
         );
     }
 

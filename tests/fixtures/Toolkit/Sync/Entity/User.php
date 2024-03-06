@@ -35,7 +35,7 @@ class User extends AbstractSyncEntity
     public $Email;
 
     /**
-     * @var mixed[]|null
+     * @var array<string,mixed>|null
      */
     public $Address;
 
@@ -45,7 +45,7 @@ class User extends AbstractSyncEntity
     public $Phone;
 
     /**
-     * @var mixed[]|null
+     * @var array<string,mixed>|null
      */
     public $Company;
 

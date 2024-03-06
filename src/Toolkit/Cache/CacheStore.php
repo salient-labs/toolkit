@@ -443,6 +443,7 @@ final class CacheStore extends AbstractStore
      *
      * @param int|null $now If given, items expire relative to this Unix
      * timestamp instead of the time {@see CacheStore::asOfNow()} is called.
+     * @return static
      */
     public function asOfNow(?int $now = null): self
     {
@@ -468,6 +469,9 @@ final class CacheStore extends AbstractStore
             : $this->Now;
     }
 
+    /**
+     * @return static
+     */
     private function maybeAsOfNow(): self
     {
         return $this->Now === null

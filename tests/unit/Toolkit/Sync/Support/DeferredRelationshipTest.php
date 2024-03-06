@@ -36,7 +36,7 @@ final class DeferredRelationshipTest extends SyncTestCase
         $this->assertSame($user, $user->Posts[0]->User);
         $this->assertSame('sunt aut facere repellat provident occaecati excepturi optio reprehenderit', $post->Title);
 
-        $this->assertHttpRequestCounts([
+        $this->assertSameHttpEndpointRequests([
             '/users/1' => 1,
             '/users/1/posts' => 1,
         ]);
@@ -56,7 +56,7 @@ final class DeferredRelationshipTest extends SyncTestCase
         $this->assertSame($user, $user->Posts[0]->User);
         $this->assertSame('sunt aut facere repellat provident occaecati excepturi optio reprehenderit', $user->Posts[0]->Title);
 
-        $this->assertHttpRequestCounts([
+        $this->assertSameHttpEndpointRequests([
             '/users/1' => 1,
             '/users/1/todos' => 1,
             '/users/1/posts' => 1,
@@ -106,7 +106,7 @@ final class DeferredRelationshipTest extends SyncTestCase
         $this->assertCount(20, $album->User->Tasks);
         $this->assertContainsOnlyInstancesOf(Task::class, $album->User->Tasks);
 
-        $this->assertHttpRequestCounts([
+        $this->assertSameHttpEndpointRequests([
             '/albums/1' => 1,
             '/albums/1/photos' => 1,
             '/users/1' => 1,
@@ -135,7 +135,7 @@ final class DeferredRelationshipTest extends SyncTestCase
             $this->assertSame($album->User, $task->User);
         }
 
-        $this->assertHttpRequestCounts([
+        $this->assertSameHttpEndpointRequests([
             '/albums/1' => 1,
             '/users/1' => 1,
             '/users/1/todos' => 1,

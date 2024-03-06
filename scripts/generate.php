@@ -57,6 +57,7 @@ use Salient\Tests\Sync\Entity\Comment;
 use Salient\Tests\Sync\Entity\Photo;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\Task;
+use Salient\Tests\Sync\Entity\Unimplemented;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 
@@ -103,6 +104,7 @@ $providers = [
     Post::class => [],
     Task::class => [],
     User::class => [],
+    Unimplemented::class => [],
 ];
 
 $app = new CliApplication(dirname(__DIR__));
