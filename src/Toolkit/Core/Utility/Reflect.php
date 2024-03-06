@@ -211,7 +211,7 @@ final class Reflect extends AbstractUtility
             }
         }
 
-        return array_unique($comments);
+        return $comments;
     }
 
     /**
@@ -221,49 +221,125 @@ final class Reflect extends AbstractUtility
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes, interfaces or traits.
      *
-     * @param array<class-string,string|null>|null $classDocComments If
-     * provided, `$classDocComments` is populated with one of the following for
-     * each doc comment in the return value:
-     * - the doc comment of the declaring class, or
-     * - `null` if the declaring class has no doc comment
-     * @return array<class-string,string>
+     * @template T of ReflectionClass|null
+     *
+     * @param T $fromClass If given, entries are returned for `$fromClass` and
+     * every ancestor with `$method`, including any without doc comments or
+     * where `$method` is not declared.
+     * @param array<class-string,string|null>|null $classDocComments If given,
+     * receives the doc comment of the declaring class of each entry in the
+     * return value, or `null` if the declaring class has no doc comment.
+     * @return (T is null ? array<class-string,string> : array<class-string,string|null>)
      */
     public static function getAllMethodDocComments(
         ReflectionMethod $method,
+        ?ReflectionClass $fromClass = null,
         ?array &$classDocComments = null
     ): array {
-        if (func_num_args() > 1) {
+        if (func_num_args() > 2) {
             $classDocComments = [];
         }
 
         $name = $method->getName();
-        $comments = self::doGetAllMethodDocComments($method, $name, $classDocComments);
+        $comments = self::doGetAllMethodDocComments(
+            $method,
+            $fromClass,
+            $name,
+            $classDocComments
+        );
 
-        foreach (self::getInterfaces($method->getDeclaringClass()) as $interface) {
+        foreach (self::getInterfaces($fromClass ?? $method->getDeclaringClass()) as $interface) {
             if (!$interface->hasMethod($name)) {
                 continue;
             }
-            $comment = $interface->getMethod($name)->getDocComment();
-            if ($comment === false) {
-                continue;
-            }
-            $class = $interface->getName();
-            $comments[$class] = Str::setEol($comment);
-            if ($classDocComments === null) {
-                continue;
-            }
-            $comment = $interface->getDocComment();
-            $classDocComments[$class] =
-                $comment === false
-                    ? null
-                    : Str::setEol($comment);
+            $comments = array_merge(
+                $comments,
+                self::doGetAllMethodDocComments(
+                    $interface->getMethod($name),
+                    $fromClass ? $interface : null,
+                    $name,
+                    $classDocComments
+                )
+            );
         }
 
-        $comments = array_unique($comments);
-        if ($classDocComments !== null) {
-            $classDocComments = array_intersect_key($classDocComments, $comments);
-        }
         return $comments;
+    }
+
+    /**
+     * @template T of ReflectionClass|null
+     *
+     * @param T $fromClass
+     * @param array<class-string,string|null>|null $classDocComments
+     * @return (T is null ? array<class-string,string> : array<class-string,string|null>)
+     */
+    private static function doGetAllMethodDocComments(
+        ReflectionMethod $method,
+        ?ReflectionClass $fromClass,
+        string $name,
+        ?array &$classDocComments
+    ): array {
+        $comments = [];
+        $current = $fromClass ?? $method->getDeclaringClass();
+        do {
+            // The declaring class of methods declared in traits is always the
+            // class or trait that inserted it, so use the location of the
+            // declaration's code as an additional check
+            $isDeclaring =
+                ($fromClass
+                    ? $method->getDeclaringClass()->getName() === $current->getName()
+                    : true) &&
+                self::isMethodInClass($method, $current);
+
+            $comment = $isDeclaring ? $method->getDocComment() : false;
+
+            if ($comment !== false || $fromClass) {
+                $class = $current->getName();
+                $comments[$class] = $comment === false
+                    ? null
+                    : Str::setEol($comment);
+
+                if ($classDocComments !== null) {
+                    $comment = $current->getDocComment();
+                    $classDocComments[$class] =
+                        $comment === false
+                            ? null
+                            : Str::setEol($comment);
+                }
+            }
+
+            // Interfaces don't have traits and their parents are returned by
+            // getInterfaces(), so there's nothing else to do here
+            if ($current->isInterface()) {
+                return $comments;
+            }
+
+            // getTraits() doesn't return inherited traits, so recurse into them
+            foreach ($current->getTraits() as $trait) {
+                if (!$trait->hasMethod($name)) {
+                    continue;
+                }
+                $comments = array_merge(
+                    $comments,
+                    self::doGetAllMethodDocComments(
+                        $trait->getMethod($name),
+                        $fromClass ? $trait : null,
+                        $name,
+                        $classDocComments
+                    )
+                );
+            }
+
+            $current = $current->getParentClass();
+            if (!$current || !$current->hasMethod($name)) {
+                return $comments;
+            }
+
+            $method = $current->getMethod($name);
+            if (!$fromClass) {
+                $current = $method->getDeclaringClass();
+            }
+        } while (true);
     }
 
     /**
@@ -291,10 +367,6 @@ final class Reflect extends AbstractUtility
         $name = $property->getName();
         $comments = self::doGetAllPropertyDocComments($property, $name, $classDocComments);
 
-        $comments = array_unique($comments);
-        if ($classDocComments !== null) {
-            $classDocComments = array_intersect_key($classDocComments, $comments);
-        }
         return $comments;
     }
 
@@ -489,6 +561,26 @@ final class Reflect extends AbstractUtility
     }
 
     /**
+     * Check if a method's declaration appears between the first and last line
+     * of a class/trait/interface
+     */
+    public static function isMethodInClass(
+        ReflectionMethod $method,
+        ReflectionClass $class
+    ): bool {
+        $file = $method->getFileName();
+        if ($file === false || $file !== $class->getFileName()) {
+            return false;
+        }
+
+        return Test::isBetween(
+            $method->getStartLine(),
+            $class->getStartLine(),
+            $class->getEndLine(),
+        );
+    }
+
+    /**
      * @return ReflectionNamedType[]
      */
     private static function doGetAllTypes(ReflectionType $type): array
@@ -541,56 +633,6 @@ final class Reflect extends AbstractUtility
         );
 
         return $interfaces;
-    }
-
-    /**
-     * @param array<class-string,string|null>|null $classDocComments
-     * @return array<class-string,string>
-     */
-    private static function doGetAllMethodDocComments(
-        ReflectionMethod $method,
-        string $name,
-        ?array &$classDocComments
-    ): array {
-        $comments = [];
-        do {
-            $comment = $method->getDocComment();
-            $declaring = $method->getDeclaringClass();
-            if ($comment !== false) {
-                $class = $declaring->getName();
-                $comments[$class] = Str::setEol($comment);
-                if ($classDocComments !== null) {
-                    $comment = $declaring->getDocComment();
-                    $classDocComments[$class] =
-                        $comment === false
-                            ? null
-                            : Str::setEol($comment);
-                }
-            }
-            // Interfaces don't have traits, so there's nothing else to do here
-            if ($declaring->isInterface()) {
-                return $comments;
-            }
-            // getTraits() doesn't return inherited traits, so recurse into them
-            foreach ($declaring->getTraits() as $trait) {
-                if (!$trait->hasMethod($name)) {
-                    continue;
-                }
-                $comments = array_merge(
-                    $comments,
-                    self::doGetAllMethodDocComments(
-                        $trait->getMethod($name),
-                        $name,
-                        $classDocComments
-                    )
-                );
-            }
-            $parent = $declaring->getParentClass();
-            if (!$parent || !$parent->hasMethod($name)) {
-                return $comments;
-            }
-            $method = $parent->getMethod($name);
-        } while (true);
     }
 
     /**

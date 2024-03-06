@@ -200,26 +200,27 @@ final class ReflectTest extends TestCase
      */
     public function testGetAllMethodDocComments(
         ReflectionMethod $method,
+        ?ReflectionClass $fromClass,
         array $expected,
         ?array $expectedClassDocComments = null
     ): void {
         if ($expectedClassDocComments === null) {
-            $comments = Reflect::getAllMethodDocComments($method);
+            $comments = Reflect::getAllMethodDocComments($method, $fromClass);
             $this->assertSame($expected, $comments);
             return;
         }
 
-        $comments = Reflect::getAllMethodDocComments($method, $classDocComments);
+        $comments = Reflect::getAllMethodDocComments($method, $fromClass, $classDocComments);
         $this->assertSame($expected, $comments);
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
 
     /**
-     * @return array<string,array{0:ReflectionMethod,1:array<string,string>,2?:array<string,string>}>
+     * @return array<string,array{ReflectionMethod,ReflectionClass|null,array<string,string>,3?:array<string,string>}>
      */
     public static function getAllMethodDocCommentsProvider(): array
     {
-        $expected = [
+        $expected1 = [
             MySubclass::class => "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
             MyClass::class => "/**\n     * MyClass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
             MyTrait::class => "/**\n     * MyTrait::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
@@ -231,14 +232,30 @@ final class ReflectTest extends TestCase
             MyOtherInterface::class => "/**\n     * MyOtherInterface::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
         ];
 
+        $expected2 = [
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+        ];
+
+        $expected3 = [
+            MySubclass::class => null,
+            MyClass::class => null,
+            MyTrait::class => null,
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+            MyInterface::class => null,
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+        ];
+
         return [
             MySubclass::class . '::MyDocumentedMethod()' => [
                 new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
-                $expected,
+                null,
+                $expected1,
             ],
             MySubclass::class . '::MyDocumentedMethod() + classDocComments' => [
                 new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
-                $expected,
+                null,
+                $expected1,
                 [
                     MySubclass::class => "/**\n * MySubclass\n */",
                     MyClass::class => "/**\n * MyClass\n */",
@@ -249,6 +266,62 @@ final class ReflectTest extends TestCase
                     MyInterface::class => "/**\n * MyInterface\n */",
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
                     MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
+                ],
+            ],
+            MySubclass::class . '::MySparselyDocumentedMethod()' => [
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                null,
+                $expected2,
+            ],
+            MySubclass::class . '::MySparselyDocumentedMethod() + classDocComments' => [
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                null,
+                $expected2,
+                [
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                ]
+            ],
+            MySubclass::class . '::MySparselyDocumentedMethod() + fromClass' => [
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                new ReflectionClass(MySubclass::class),
+                $expected3,
+            ],
+            MySubclass::class . '::MySparselyDocumentedMethod() + fromClass + classDocComments' => [
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                new ReflectionClass(MySubclass::class),
+                $expected3,
+                [
+                    MySubclass::class => "/**\n * MySubclass\n */",
+                    MyClass::class => "/**\n * MyClass\n */",
+                    MyTrait::class => "/**\n * MyTrait\n */",
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyInterface::class => "/**\n * MyInterface\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                ],
+            ],
+            MySubclass::class . '::MyTraitOnlyMethod()' => [
+                new ReflectionMethod(MySubclass::class, 'MyTraitOnlyMethod'),
+                new ReflectionClass(MySubclass::class),
+                [
+                    MySubclass::class => null,
+                    MyClass::class => null,
+                    MyTrait::class => "/**\n     * MyTrait::MyTraitOnlyMethod() PHPDoc\n     */",
+                ]
+            ],
+            MyInterface::class . '::MySparselyDocumentedMethod()' => [
+                new ReflectionMethod(MyInterface::class, 'MySparselyDocumentedMethod'),
+                null,
+                [
+                    MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+                ],
+            ],
+            MyInterface::class . '::MySparselyDocumentedMethod() + fromClass' => [
+                new ReflectionMethod(MyInterface::class, 'MySparselyDocumentedMethod'),
+                new ReflectionClass(MyInterface::class),
+                [
+                    MyInterface::class => null,
+                    MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
                 ],
             ],
         ];
@@ -498,6 +571,13 @@ interface MyBaseInterface
      * @return mixed
      */
     public function MyDocumentedMethod();
+
+    /**
+     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MySparselyDocumentedMethod();
 }
 
 /**
@@ -566,6 +646,13 @@ trait MyBaseTrait
      * @return mixed
      */
     public function MyDocumentedMethod() {}
+
+    /**
+     * MyBaseTrait::MySparselyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
+     */
+    public function MySparselyDocumentedMethod() {}
 }
 
 /**
@@ -588,6 +675,11 @@ trait MyTrait
      * @return mixed
      */
     public function MyDocumentedMethod() {}
+
+    /**
+     * MyTrait::MyTraitOnlyMethod() PHPDoc
+     */
+    public function MyTraitOnlyMethod(): void {}
 }
 
 /**
@@ -687,6 +779,8 @@ class MyClass extends MyBaseClass implements MyInterface
      * @return mixed
      */
     public function MyDocumentedMethod() {}
+
+    public function MySparselyDocumentedMethod() {}
 }
 
 /**

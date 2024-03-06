@@ -266,7 +266,7 @@ EOF)
             $_properties[$name] = $_allProperties[$name];
         }
 
-        $_docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);
+        $_docBlocks = Reflect::getAllMethodDocComments($_constructor, null, $classDocBlocks);
 
         /**
          * Constructor PHPDoc
@@ -549,7 +549,7 @@ EOF)
 
             foreach ($_methods as $_method) {
                 $name = $_method->getName();
-                $_docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
+                $_docBlocks = Reflect::getAllMethodDocComments($_method, null, $classDocBlocks);
                 $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $name . '()');
 
                 if ($_method->isConstructor() ||

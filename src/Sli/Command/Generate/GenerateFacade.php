@@ -156,7 +156,7 @@ final class GenerateFacade extends GenerateCommand
             $methodName = $_method->getName();
             $getMethodFqsen = fn() => $this->getTypeAlias($declaring) . "::{$methodName}()";
             $_params = $_method->getParameters();
-            $docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
+            $docBlocks = Reflect::getAllMethodDocComments($_method, null, $classDocBlocks);
             $phpDoc = PhpDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
             $methodFilename = $_method->getFileName() ?: null;
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
