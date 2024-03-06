@@ -215,9 +215,9 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     private array $Closures = [];
 
     /**
-     * @var static
+     * @var static|null
      */
-    private self $WithoutOverrides;
+    private $WithoutOverrides;
 
     /**
      * @param class-string<TEntity> $entity
@@ -296,7 +296,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     public function __clone()
     {
         $this->Closures = [];
-        unset($this->WithoutOverrides);
+        $this->WithoutOverrides = null;
     }
 
     /**
@@ -408,7 +408,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      */
     final public function getFallbackClosure($operation): ?Closure
     {
-        if (!isset($this->WithoutOverrides)) {
+        if ($this->WithoutOverrides === null) {
             $clone = clone $this;
             $clone->Overrides = [];
             $this->WithoutOverrides = $clone;
