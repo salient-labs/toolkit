@@ -263,7 +263,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return static
      */
     final public function inContextOf(string $id): self
     {
@@ -358,7 +358,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function bind(
         string $id,
@@ -369,7 +369,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function bindIf(
         string $id,
@@ -384,7 +384,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function singleton(
         string $id,
@@ -395,7 +395,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function singletonIf(
         string $id,
@@ -418,7 +418,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function provider(
         string $id,
@@ -520,7 +520,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function addContextualBinding($context, string $dependency, $value): self
     {
@@ -563,7 +563,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function instance(string $id, $instance): self
     {
@@ -573,7 +573,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function instanceIf(string $id, $instance): self
     {
@@ -585,7 +585,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function providers(
         array $serviceMap,
@@ -630,7 +630,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function unbind(string $id): self
     {
@@ -640,7 +640,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @inheritDoc
+     * @return $this
      */
     final public function unbindInstance(string $id): self
     {
