@@ -156,7 +156,7 @@ final class GenerateFacade extends GenerateCommand
             $methodName = $_method->getName();
             $getMethodFqsen = fn() => $this->getTypeAlias($declaring) . "::{$methodName}()";
             $_params = $_method->getParameters();
-            $docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
+            $docBlocks = Reflect::getAllMethodDocComments($_method, null, $classDocBlocks);
             $phpDoc = PhpDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
             $methodFilename = $_method->getFileName() ?: null;
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
@@ -186,7 +186,8 @@ final class GenerateFacade extends GenerateCommand
                 }
 
                 $_type = $phpDoc->Return->Type ?? null;
-                if ($_type) {
+                if ($_type !== null) {
+                    /** @var PhpDoc $phpDoc */
                     $type = $this->getPhpDocTypeAlias(
                         $phpDoc->Return,
                         $phpDoc->Templates,
@@ -241,14 +242,17 @@ final class GenerateFacade extends GenerateCommand
             foreach ($_params as $_param) {
                 $tag = $phpDoc->Params[$_param->getName()] ?? null;
                 // Override the declared type if defined in the PHPDoc
-                $_type = ($tag->Type ?? null)
-                    ? $this->getPhpDocTypeAlias(
+                if (($tag->Type ?? null) !== null) {
+                    /** @var PhpDoc $phpDoc */
+                    $_type = $this->getPhpDocTypeAlias(
                         $tag,
                         $phpDoc->Templates,
                         $methodNamespace,
                         $methodFilename
-                    )
-                    : null;
+                    );
+                } else {
+                    $_type = null;
+                }
                 $params[] =
                     $declare
                         ? Reflect::getParameterPhpDoc(

@@ -578,7 +578,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      * @param (int|null)&TType $type
      * @return (
      *     TValue is null
-     *     ? (TType is 8|9|10|11 ? array{} : null)
+     *     ? null
      *     : (TType is null
      *         ? TValue
      *         : (TType is 1
@@ -608,11 +608,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     private function checkFilterValue($value, $type, string $scope = 'filter')
     {
-        if ($value === null) {
-            return $type & self::LIST ? [] : null;
-        }
-
-        if ($type === null) {
+        if ($value === null || $type === null) {
             return $value;
         }
 

@@ -12,6 +12,7 @@ use Salient\Core\Utility\Get;
 use Salient\Core\DateFormatter;
 use Salient\Tests\Core\Utility\Get\ClassWithCloneMethod;
 use Salient\Tests\Core\Utility\Get\ClassWithRefs;
+use Salient\Tests\Core\Utility\Get\ClassWithValue;
 use Salient\Tests\Core\Utility\Get\SingletonWithContainer;
 use Salient\Tests\Core\Utility\Get\UncloneableClass;
 use Salient\Tests\TestCase;
@@ -701,9 +702,9 @@ final class GetTest extends TestCase
         $this->assertNotSame($a, $b);
 
         $a->bind();
-        $a->apply(1, 'a', [1.0], $A = $this->getObject('A'));
+        $a->apply(1, 'a', [1.0], $A = new ClassWithValue('A'));
         $b->bind();
-        $b->apply(2, 'b', [2.0], $B = $this->getObject('B'));
+        $b->apply(2, 'b', [2.0], $B = new ClassWithValue('B'));
 
         // $a was copied before binding, so $b should have different values
         $this->assertCopyHas($a, 1, 'a', [1.0], $A, true, true);
@@ -723,7 +724,7 @@ final class GetTest extends TestCase
         $this->assertSame($c->Qux, $c->QuxByVal);
 
         $c->bind();
-        $c->apply(3, 'c', [3.0], $C = $this->getObject('C'));
+        $c->apply(3, 'c', [3.0], $C = new ClassWithValue('C'));
 
         // The above should hold true after binding, i.e. $b's bound properties
         // should be the same as $c's, but other properties should be unchanged
@@ -733,7 +734,7 @@ final class GetTest extends TestCase
 
         $d = Get::copy($c);
         $d->bind();
-        $d->apply(4, 'd', [4.0], $D = $this->getObject('D'));
+        $d->apply(4, 'd', [4.0], $D = new ClassWithValue('D'));
 
         // $c was copied with ASSIGN_PROPERTIES_BY_REFERENCE, so bound
         // properties should be properly isolated
@@ -745,7 +746,7 @@ final class GetTest extends TestCase
         $this->assertEquals($e, $f);
         $this->assertNotSame($e, $f);
 
-        $g = $this->getObject(\STDOUT);
+        $g = new ClassWithValue(\STDOUT);
         $this->assertSame(\STDOUT, Get::copy($g)->Value);
     }
 
@@ -797,7 +798,7 @@ final class GetTest extends TestCase
 
     public function testCopyWithSkip(): void
     {
-        $object = $this->getObject(__METHOD__);
+        $object = new ClassWithValue(__METHOD__);
         $property = 'Object';
         $a = new stdClass();
         $a->$property = $object;
@@ -832,26 +833,5 @@ final class GetTest extends TestCase
         if ($byVal && $byRef && func_num_args() >= 7) {
             $this->assertCopyHas($copy, $foo, $bar, $baz, $qux);
         }
-    }
-
-    /**
-     * @param mixed $value
-     */
-    private function getObject($value): object
-    {
-        return new class($value) {
-            /**
-             * @var mixed
-             */
-            public $Value;
-
-            /**
-             * @param mixed $value
-             */
-            public function __construct($value)
-            {
-                $this->Value = $value;
-            }
-        };
     }
 }

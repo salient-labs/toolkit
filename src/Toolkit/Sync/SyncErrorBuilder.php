@@ -13,7 +13,7 @@ use Salient\Core\AbstractBuilder;
  *
  * @method $this errorType(SyncErrorType::* $value) Set SyncError::$ErrorType
  * @method $this message(string $value) An sprintf() format string that explains the error (see {@see SyncError::$Message})
- * @method $this values(mixed[] $value) Values passed to sprintf() with the message format string (see {@see SyncError::$Values})
+ * @method $this values(array<array-key,mixed[]|object|int|float|string|bool|null> $value) Values passed to sprintf() with the message format string (see {@see SyncError::$Values})
  * @method $this level(Level::* $value) Set SyncError::$Level
  * @method $this entity(?SyncEntityInterface $value) The entity associated with the error
  * @method $this entityName(?string $value) The display name of the entity associated with the error (see {@see SyncError::$EntityName})
