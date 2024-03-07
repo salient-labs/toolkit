@@ -30,7 +30,7 @@ class HttpFactory implements
      */
     public function createRequest(string $method, $uri): RequestInterface
     {
-        return new HttpRequest($uri, $method);
+        return new HttpRequest($method, $uri);
     }
 
     /**

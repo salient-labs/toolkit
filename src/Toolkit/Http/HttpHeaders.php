@@ -316,7 +316,7 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
     ) {
         return $this->set(
             $headerName,
-            sprintf('%s %s', $token->getType(), $token->getToken())
+            sprintf('%s %s', $token->getTokenType(), $token->getToken())
         );
     }
 

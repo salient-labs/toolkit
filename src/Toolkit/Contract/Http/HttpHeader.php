@@ -12,16 +12,10 @@ use Salient\Core\AbstractDictionary;
 final class HttpHeader extends AbstractDictionary
 {
     public const ACCEPT = 'Accept';
-
     public const AUTHORIZATION = 'Authorization';
-
     public const CONTENT_TYPE = 'Content-Type';
-
     public const HOST = 'Host';
-
     public const PREFER = 'Prefer';
-
     public const PROXY_AUTHORIZATION = 'Proxy-Authorization';
-
     public const USER_AGENT = 'User-Agent';
 }

@@ -17,6 +17,6 @@ class RequestTest extends RequestIntegrationTest
 
     public function createSubject()
     {
-        return new HttpRequest('/');
+        return new HttpRequest('GET', '/');
     }
 }
