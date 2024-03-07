@@ -57,7 +57,9 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
+     * @template T of TValue|TKey|array<TKey,TValue>
+     *
+     * @param callable(T, T|null $nextValue, T|null $prevValue): mixed $callback
      * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return $this
      */
@@ -74,12 +76,15 @@ trait ReadableCollectionTrait
                     ? [$nextKey => $nextValue]
                     : $nextValue);
             if ($i++) {
+                /** @var T $item */
+                /** @var T $next */
                 $callback($item, $next, $prev);
                 $prev = $item;
             }
             $item = $next;
         }
         if ($i) {
+            /** @var T $item */
             $callback($item, null, $prev);
         }
 
@@ -87,7 +92,9 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
+     * @template T of TValue|TKey|array<TKey,TValue>
+     *
+     * @param callable(T, T|null $nextValue, T|null $prevValue): bool $callback
      * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return TValue|null
      */
@@ -105,6 +112,8 @@ trait ReadableCollectionTrait
                     ? [$nextKey => $nextValue]
                     : $nextValue);
             if ($i++) {
+                /** @var T $item */
+                /** @var T $next */
                 if ($callback($item, $next, $prev)) {
                     return $value;
                 }
@@ -113,6 +122,7 @@ trait ReadableCollectionTrait
             $item = $next;
             $value = $nextValue;
         }
+        /** @var T $item */
         if ($i && $callback($item, null, $prev)) {
             return $value;
         }
