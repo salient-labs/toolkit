@@ -16,10 +16,14 @@ use Traversable;
 /**
  * Implements CollectionInterface getters
  *
+ * @see CollectionInterface
+ *
+ * @api
+ *
  * @template TKey of array-key
  * @template TValue
  *
- * @see CollectionInterface
+ * @phpstan-require-implements CollectionInterface
  */
 trait ReadableCollectionTrait
 {
@@ -42,6 +46,14 @@ trait ReadableCollectionTrait
     public static function empty()
     {
         return new static();
+    }
+
+    /**
+     * @return static
+     */
+    public function copy()
+    {
+        return clone $this;
     }
 
     /**
@@ -117,8 +129,8 @@ trait ReadableCollectionTrait
             return in_array($value, $this->Items, true);
         }
 
-        foreach ($this->Items as $_item) {
-            if (!$this->compareItems($value, $_item)) {
+        foreach ($this->Items as $item) {
+            if (!$this->compareItems($value, $item)) {
                 return true;
             }
         }
@@ -139,8 +151,8 @@ trait ReadableCollectionTrait
                 : $key;
         }
 
-        foreach ($this->Items as $key => $_item) {
-            if (!$this->compareItems($value, $_item)) {
+        foreach ($this->Items as $key => $item) {
+            if (!$this->compareItems($value, $item)) {
                 return $key;
             }
         }
@@ -154,9 +166,9 @@ trait ReadableCollectionTrait
      */
     public function get($value)
     {
-        foreach ($this->Items as $_item) {
-            if (!$this->compareItems($value, $_item)) {
-                return $_item;
+        foreach ($this->Items as $item) {
+            if (!$this->compareItems($value, $item)) {
+                return $item;
             }
         }
         return null;
@@ -192,9 +204,8 @@ trait ReadableCollectionTrait
         $array = $this->Items;
         foreach ($array as &$value) {
             if ($value instanceof JsonSerializable) {
-                continue;
-            }
-            if ($value instanceof Jsonable) {
+                $value = $value->jsonSerialize();
+            } elseif ($value instanceof Jsonable) {
                 $value = Json::parseObjectAsArray($value->toJson());
             } elseif ($value instanceof Arrayable) {
                 $value = $value->toArray();
@@ -301,6 +312,7 @@ trait ReadableCollectionTrait
         if ($items instanceof static) {
             return $items->Items;
         }
+
         if ($items instanceof self) {
             $items = $items->Items;
         } elseif ($items instanceof Arrayable) {
@@ -308,6 +320,7 @@ trait ReadableCollectionTrait
         } elseif (!is_array($items)) {
             $items = iterator_to_array($items);
         }
+
         return $this->filterItems($items);
     }
 

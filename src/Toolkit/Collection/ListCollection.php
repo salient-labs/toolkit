@@ -7,6 +7,8 @@ use Salient\Contract\Collection\ListInterface;
 /**
  * An array-like list of items
  *
+ * @api
+ *
  * @template TValue
  *
  * @implements ListInterface<TValue>

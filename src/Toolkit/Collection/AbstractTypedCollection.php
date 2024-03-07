@@ -7,6 +7,8 @@ use Salient\Contract\Collection\CollectionInterface;
 /**
  * Base class for collections of items of a given type
  *
+ * @api
+ *
  * @template TKey of array-key
  * @template TValue
  *
@@ -16,14 +18,4 @@ abstract class AbstractTypedCollection implements CollectionInterface
 {
     /** @use CollectionTrait<TKey,TValue> */
     use CollectionTrait;
-
-    /**
-     * Clone the collection
-     *
-     * @return static
-     */
-    public function clone()
-    {
-        return clone $this;
-    }
 }

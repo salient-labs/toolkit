@@ -8,13 +8,18 @@ use Salient\Contract\Core\Arrayable;
 /**
  * Implements CollectionInterface
  *
- * Unless otherwise noted, {@see CollectionTrait} methods operate on one instance of
- * the class. Immutable classes should use {@see TImmutableCollection} instead.
+ * Unless otherwise noted, {@see CollectionTrait} methods operate on one
+ * instance of the class. Immutable collections should use
+ * {@see ImmutableCollectionTrait} instead.
+ *
+ * @see CollectionInterface
+ *
+ * @api
  *
  * @template TKey of array-key
  * @template TValue
  *
- * @see CollectionInterface
+ * @phpstan-require-implements CollectionInterface
  */
 trait CollectionTrait
 {
@@ -207,6 +212,7 @@ trait CollectionTrait
         if (!$_items) {
             return $this;
         }
+        // array_merge() can't be used here because it renumbers numeric keys
         $items = $this->Items;
         foreach ($_items as $key => $_item) {
             if (is_int($key)) {

@@ -5,17 +5,21 @@ namespace Salient\Collection;
 use Salient\Contract\Collection\ListInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Get;
+use Salient\Core\Exception\InvalidArgumentTypeException;
 
 /**
  * Implements ListInterface
  *
- * Unless otherwise noted, {@see TList} methods operate on one instance of the
- * class. Immutable classes should use {@see TImmutableList} instead.
+ * Unless otherwise noted, {@see ListTrait} methods operate on one instance of
+ * the class. Immutable lists should use {@see ImmutableListTrait} instead.
+ *
+ * @see ListInterface
+ *
+ * @api
  *
  * @template TValue
  *
- * @see ListInterface
+ * @phpstan-require-implements ListInterface
  */
 trait ListTrait
 {
@@ -109,7 +113,7 @@ trait ListTrait
             $this->Items[] = $value;
             return;
         }
-        $this->checkKey($offset, '$offset');
+        $this->checkKey($offset, 'offset');
         $this->Items[$offset] = $value;
     }
 
@@ -157,15 +161,12 @@ trait ListTrait
      * @throws InvalidArgumentException if `$key` is not an integer, or does not
      * resolve to an existing item and is not the next numeric key in the list.
      */
-    private function checkKey($key, string $argument = '$key'): void
+    private function checkKey($key, string $argument = 'key'): void
     {
         if (!is_int($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'Argument #1 (%s) must be of type int, %s given',
-                $argument,
-                Get::type($key),
-            ));
+            throw new InvalidArgumentTypeException(1, $argument, 'int', $key);
         }
+
         if (
             !array_key_exists($key, $this->Items) &&
             $key !== count($this->Items)

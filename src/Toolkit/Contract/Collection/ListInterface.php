@@ -2,17 +2,16 @@
 
 namespace Salient\Contract\Collection;
 
-use Salient\Contract\Core\Arrayable;
-
 /**
  * An array-like list of items
+ *
+ * @api
  *
  * @template TValue
  *
  * @extends CollectionInterface<int,TValue>
- * @extends Arrayable<int,TValue>
  */
-interface ListInterface extends CollectionInterface, Arrayable
+interface ListInterface extends CollectionInterface
 {
     /**
      * Add an item
