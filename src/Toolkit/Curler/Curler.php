@@ -1260,9 +1260,11 @@ final class Curler implements Readable, Writable, Buildable
         }
 
         if ($this->responseContentTypeIs(MimeType::JSON)) {
-            $response = $this->ObjectAsArray
-                ? Json::parseObjectAsArray($this->ResponseBody)
-                : Json::parse($this->ResponseBody);
+            $response = $this->ResponseBody === ''
+                ? null
+                : ($this->ObjectAsArray
+                    ? Json::parseObjectAsArray($this->ResponseBody)
+                    : Json::parse($this->ResponseBody));
 
             if (isset($pager)) {
                 $response = $pager->getPage($response, $this)->entities();
@@ -1303,9 +1305,11 @@ final class Curler implements Readable, Writable, Buildable
             $this->execute(false);
 
             if ($this->responseContentTypeIs(MimeType::JSON)) {
-                $response = $this->ObjectAsArray
-                    ? Json::parseObjectAsArray($this->ResponseBody)
-                    : Json::parse($this->ResponseBody);
+                $response = $this->ResponseBody === ''
+                    ? null
+                    : ($this->ObjectAsArray
+                        ? Json::parseObjectAsArray($this->ResponseBody)
+                        : Json::parse($this->ResponseBody));
             } else {
                 throw new CurlerUnexpectedResponseException('Unable to deserialize response', $this);
             }
