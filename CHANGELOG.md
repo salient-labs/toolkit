@@ -12,6 +12,18 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.11] - 2024-03-08
+
+### Changed
+
+- Rename `AbstractTypedCollection::clone()` to `copy()` and include it in `CollectionInterface`
+- Rename `AccessTokenInterface::getType()` to `getTokenType()`
+- Reverse order of first two parameters in `HttpRequest::__construct()` for consistency with PSR-17 `RequestFactoryInterface::createRequest()`
+
+### Fixed
+
+- Fix `Curler` issue where empty responses are incorrectly parsed as JSON
+
 ## [v0.99.10] - 2024-03-06
 
 ### Changed
@@ -2140,6 +2152,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.11]: https://github.com/salient-labs/toolkit/compare/v0.99.10...v0.99.11
 [v0.99.10]: https://github.com/salient-labs/toolkit/compare/v0.99.9...v0.99.10
 [v0.99.9]: https://github.com/salient-labs/toolkit/compare/v0.99.8...v0.99.9
 [v0.99.8]: https://github.com/salient-labs/toolkit/compare/v0.99.7...v0.99.8
