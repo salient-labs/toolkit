@@ -8,13 +8,18 @@ use Salient\Contract\Core\Arrayable;
 /**
  * Implements CollectionInterface
  *
- * Unless otherwise noted, {@see CollectionTrait} methods operate on one instance of
- * the class. Immutable classes should use {@see TImmutableCollection} instead.
+ * Unless otherwise noted, {@see CollectionTrait} methods operate on one
+ * instance of the class. Immutable collections should use
+ * {@see ImmutableCollectionTrait} instead.
+ *
+ * @see CollectionInterface
+ *
+ * @api
  *
  * @template TKey of array-key
  * @template TValue
  *
- * @see CollectionInterface
+ * @phpstan-require-implements CollectionInterface
  */
 trait CollectionTrait
 {
@@ -83,7 +88,9 @@ trait CollectionTrait
     }
 
     /**
-     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
+     * @template T of TValue|TKey|array<TKey,TValue>
+     *
+     * @param callable(T, T|null $nextValue, T|null $prevValue): bool $callback
      * @param CollectionInterface::CALLBACK_USE_* $mode
      * @return static A copy of the collection with items that satisfy `$callback`.
      */
@@ -103,7 +110,11 @@ trait CollectionTrait
                     ? [$nextKey => $nextValue]
                     : $nextValue);
             if ($i++) {
+                /** @var T $item */
+                /** @var T $next */
                 if ($callback($item, $next, $prev)) {
+                    /** @var TKey $key */
+                    /** @var TValue $value */
                     $items[$key] = $value;
                 }
                 $prev = $item;
@@ -112,7 +123,10 @@ trait CollectionTrait
             $key = $nextKey;
             $value = $nextValue;
         }
+        /** @var T $item */
         if ($i && $callback($item, null, $prev)) {
+            /** @var TKey $key */
+            /** @var TValue $value */
             $items[$key] = $value;
         }
 
@@ -207,6 +221,7 @@ trait CollectionTrait
         if (!$_items) {
             return $this;
         }
+        // array_merge() can't be used here because it renumbers numeric keys
         $items = $this->Items;
         foreach ($_items as $key => $_item) {
             if (is_int($key)) {

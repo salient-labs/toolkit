@@ -7,13 +7,17 @@ use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 
 /**
- * Implements ListInterface for immutable classes
+ * Implements ListInterface for immutable lists
  *
- * Mutable classes should use {@see TList} instead.
+ * Mutable lists should use {@see ListTrait} instead.
+ *
+ * @see ListInterface
+ *
+ * @api
  *
  * @template TValue
  *
- * @see ListInterface
+ * @phpstan-require-implements ListInterface
  */
 trait ImmutableListTrait
 {

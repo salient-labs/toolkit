@@ -3,18 +3,18 @@
 namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
-use Salient\Contract\Core\Arrayable;
 
 /**
  * An array-like collection of items
+ *
+ * @api
  *
  * @template TKey of array-key
  * @template TValue
  *
  * @implements CollectionInterface<TKey,TValue>
- * @implements Arrayable<TKey,TValue>
  */
-final class Collection implements CollectionInterface, Arrayable
+final class Collection implements CollectionInterface
 {
     /** @use CollectionTrait<TKey,TValue> */
     use CollectionTrait;

@@ -85,7 +85,7 @@ final class AccessToken implements AccessTokenInterface, Immutable, Readable
     /**
      * @inheritDoc
      */
-    public function getType(): string
+    public function getTokenType(): string
     {
         return $this->Type;
     }

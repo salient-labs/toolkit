@@ -12,7 +12,7 @@ use Salient\Core\AbstractDictionary;
 final class HttpHeaderGroup extends AbstractDictionary
 {
     /**
-     * @var array<HttpHeader::*>
+     * @var list<HttpHeader::*>
      */
     public const SENSITIVE = [
         HttpHeader::AUTHORIZATION,

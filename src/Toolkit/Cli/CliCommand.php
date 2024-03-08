@@ -1088,10 +1088,12 @@ abstract class CliCommand implements CliCommandInterface
                     $argValues[$key] = array_merge((array) $argValues[$key], Arr::wrap($value));
                 }
             };
+
         $merged = [];
         $positional = [];
+        $totalArgs = count($args);
 
-        for ($i = 0; $i < count($args); $i++) {
+        for ($i = 0; $i < $totalArgs; $i++) {
             $arg = $args[$i];
             $short = false;
             $saved = false;
@@ -1154,17 +1156,17 @@ abstract class CliCommand implements CliCommandInterface
                     $this->optionError(sprintf(
                         '%s requires a value%s',
                         $option->DisplayName,
-                        $option->formatAllowedValues()
+                        $option->formatAllowedValues(),
                     ));
                     $i--;
                 }
             }
 
             if ($option->MultipleAllowed && !$option->IsFlag) {
-                // Interpret the first use of "--opt=" as "clear default or
-                // previous values" without changing the meaning of "--opt ''"
+                // Interpret "--opt=" as "clear default or previous values" and
+                // "--opt ''" as "apply empty string"
                 if ($option->ValueRequired && $value === '') {
-                    if ($args[$i] === '' || ($merged[$key] ?? null) === []) {
+                    if ($args[$i] === '') {
                         $value = [''];
                     } else {
                         $merged[$key] = [];
@@ -1179,7 +1181,7 @@ abstract class CliCommand implements CliCommandInterface
 
             if (array_key_exists($key, $merged) &&
                     !($option->IsFlag && !$option->MultipleAllowed)) {
-                $merged[$key] = array_merge((array) $merged[$key], Arr::wrap($value));
+                $merged[$key] = array_merge((array) $merged[$key], (array) $value);
             } else {
                 $merged[$key] = $value;
             }
@@ -1188,12 +1190,13 @@ abstract class CliCommand implements CliCommandInterface
 
         // Splice $positional into $args to ensure $nextArgumentIndex is correct
         if ($positional) {
-            $i -= count($positional);
-            array_splice($args, $i, count($positional), $positional);
+            $positionalArgs = count($positional);
+            $i -= $positionalArgs;
+            array_splice($args, $i, $positionalArgs, $positional);
         }
         $pending = count($this->PositionalOptions);
         foreach ($this->PositionalOptions as $option) {
-            if (!($i < count($args))) {
+            if ($i >= $totalArgs) {
                 break;
             }
             $pending--;
@@ -1209,10 +1212,10 @@ abstract class CliCommand implements CliCommandInterface
             }
             // Only one positional option can accept multiple values, so collect
             // arguments until all that remains is one per pending option
-            while (count($args) - $i - $pending > 0) {
+            while ($totalArgs - $i - $pending > 0) {
                 $saved = false;
                 $arg = $args[$i++];
-                $merged[$key][] = $arg;
+                $merged[$key] = array_merge((array) ($merged[$key] ?? null), [$arg]);
                 $saveArgValue($key, $arg);
             }
         }

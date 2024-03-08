@@ -12,6 +12,8 @@ use JsonSerializable;
 /**
  * An array-like collection of items
  *
+ * @api
+ *
  * @template TKey of array-key
  * @template TValue
  *
@@ -47,6 +49,13 @@ interface CollectionInterface extends ArrayAccess, Arrayable, Countable, Iterato
      * @return static
      */
     public static function empty();
+
+    /**
+     * Get a copy of the collection
+     *
+     * @return static
+     */
+    public function copy();
 
     /**
      * Add or replace an item with a given key

@@ -29,8 +29,8 @@ class HttpRequest extends HttpMessage implements RequestInterface
      * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
      */
     public function __construct(
+        string $method,
         $uri,
-        string $method = HttpRequestMethod::GET,
         ?string $requestTarget = null,
         $body = null,
         $headers = null,

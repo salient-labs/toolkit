@@ -211,11 +211,6 @@ parameters:
 			path: src/Toolkit/Cli/CliCommand.php
 
 		-
-			message: "#^Cannot access an offset on array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
 			message: "#^Method Salient\\\\Cli\\\\CliCommand\\:\\:getHelp\\(\\) should return array\\<string, string\\> but returns array\\<string, string\\|null\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Cli/CliCommand.php
@@ -296,216 +291,6 @@ parameters:
 			path: src/Toolkit/Cli/CliOption.php
 
 		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/AbstractTypedCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/AbstractTypedCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$items of method Salient\\\\Collection\\\\AbstractTypedCollection\\<TKey of \\(int\\|string\\),TValue\\>\\:\\:maybeReplaceItems\\(\\) expects array\\<TKey of \\(int\\|string\\), TValue\\>, array\\<int\\|string, TValue\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/AbstractTypedCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/AbstractTypedCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/AbstractTypedCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/AbstractTypedCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/AbstractTypedCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/AbstractTypedList.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/AbstractTypedList.php
-
-		-
-			message: "#^Parameter \\#1 \\$items of method Salient\\\\Collection\\\\AbstractTypedList\\<TValue\\>\\:\\:maybeReplaceItems\\(\\) expects array\\<TValue\\>, array\\<int\\|string, TValue\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/AbstractTypedList.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/AbstractTypedList.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/AbstractTypedList.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/AbstractTypedList.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/AbstractTypedList.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/Collection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/Collection.php
-
-		-
-			message: "#^Parameter \\#1 \\$items of method Salient\\\\Collection\\\\Collection\\<TKey of \\(int\\|string\\),TValue\\>\\:\\:maybeReplaceItems\\(\\) expects array\\<TKey of \\(int\\|string\\), TValue\\>, array\\<int\\|string, TValue\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/Collection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/Collection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/Collection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/Collection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/Collection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/ImmutableCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ImmutableCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$items of method Salient\\\\Collection\\\\ImmutableCollection\\<TKey of \\(int\\|string\\),TValue\\>\\:\\:maybeReplaceItems\\(\\) expects array\\<TKey of \\(int\\|string\\), TValue\\>, array\\<int\\|string, TValue\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/ImmutableCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ImmutableCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/ImmutableCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/ImmutableCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(TKey, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TKey, TValue\\>, array\\<TKey, TValue\\>\\|null, array\\<TKey, TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TKey of \\(int\\|string\\), TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ImmutableCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/ImmutableListCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ImmutableListCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$items of method Salient\\\\Collection\\\\ImmutableListCollection\\<TValue\\>\\:\\:maybeReplaceItems\\(\\) expects array\\<TValue\\>, array\\<int\\|string, TValue\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/ImmutableListCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ImmutableListCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/ImmutableListCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/ImmutableListCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ImmutableListCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/ListCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ListCollection.php
-
-		-
-			message: "#^Parameter \\#1 \\$items of method Salient\\\\Collection\\\\ListCollection\\<TValue\\>\\:\\:maybeReplaceItems\\(\\) expects array\\<TValue\\>, array\\<int\\|string, TValue\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/ListCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ListCollection.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Collection/ListCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: bool\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: bool\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 4
-			path: src/Toolkit/Collection/ListCollection.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(TValue, TValue\\|null, TValue\\|null\\)\\: mixed\\)\\|\\(callable\\(int\\|string, int\\|string\\|null, int\\|string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<TValue\\>, array\\<TValue\\>\\|null, array\\<TValue\\>\\|null\\)\\: mixed\\) expects TValue\\|null, array\\<TValue\\>\\|int\\|string\\|TValue\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Collection/ListCollection.php
-
-		-
 			message: "#^Parameter \\#2 \\$openTag of class Salient\\\\Console\\\\Support\\\\ConsoleTagAttributes constructor expects string, array\\<int, int\\|string\\>\\|string given\\.$#"
 			count: 1
 			path: src/Toolkit/Console/ConsoleFormatter.php
@@ -551,32 +336,7 @@ parameters:
 			path: src/Toolkit/Console/Target/StreamTarget.php
 
 		-
-			message: "#^Argument of an invalid type array\\<string, int\\>\\|int supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Application.php
-
-		-
-			message: "#^Argument of an invalid type array\\|int supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Application.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of function array_slice expects array, array\\<string, int\\>\\|int given\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Application.php
-
-		-
 			message: "#^Parameter \\#1 \\$array of function uasort expects TArray of array\\<string, int\\>, array\\<string, int\\>\\|int given\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Application.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<string, int\\>\\|int given\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Application.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\|int given\\.$#"
 			count: 1
 			path: src/Toolkit/Container/Application.php
 
@@ -766,7 +526,7 @@ parameters:
 			path: src/Toolkit/Core/Pipeline.php
 
 		-
-			message: "#^Parameter \\#1 \\$in of method Salient\\\\Core\\\\ArrayMapper\\:\\:map\\(\\) expects array, TInput given\\.$#"
+			message: "#^Parameter \\#1 \\$in of method Salient\\\\Core\\\\ArrayMapper\\:\\:map\\(\\) expects array, TInput\\|TOutput given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Pipeline.php
 
@@ -1171,17 +931,7 @@ parameters:
 			path: src/Toolkit/Http/HttpHeaders.php
 
 		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<string\\>, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, string\\|null, string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<string\\>, array\\<array\\<string\\>\\|string\\>\\|string\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: mixed\\)\\|\\(callable\\(string, string\\|null, string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: mixed\\) expects array\\<string\\>, array\\<array\\<string\\>\\|string\\>\\|string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<array\\<string\\>\\|string\\>\\|string, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
 			count: 2
 			path: src/Toolkit/Http/HttpHeaders.php
 
@@ -1196,17 +946,7 @@ parameters:
 			path: src/Toolkit/Http/HttpHeaders.php
 
 		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<string\\>\\|null, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, string\\|null, string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<string\\>\\|null, array\\<array\\<string\\>\\|string\\>\\|string given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: mixed\\)\\|\\(callable\\(string, string\\|null, string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: mixed\\) expects array\\<string\\>\\|null, array\\<array\\<string\\>\\|string\\>\\|string given\\.$#"
+			message: "#^Parameter \\#2 \\$nextValue\\|nextKey\\|nextItem of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<array\\<string\\>\\|string\\>\\|int\\|string\\|null, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Http/HttpHeaders.php
 
@@ -1216,17 +956,7 @@ parameters:
 			path: src/Toolkit/Http/HttpHeaders.php
 
 		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<string\\>\\|null, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, string\\|null, string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<string\\>\\|null, array\\<array\\<string\\>\\|string\\>\\|string\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: mixed\\)\\|\\(callable\\(string, string\\|null, string\\|null\\)\\: mixed\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: mixed\\) expects array\\<string\\>\\|null, array\\<array\\<string\\>\\|string\\>\\|string\\|null given\\.$#"
+			message: "#^Parameter \\#3 \\$prevValue\\|prevKey\\|prevItem of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<array\\<string\\>\\|string\\>\\|int\\|string\\|null, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
 			count: 2
 			path: src/Toolkit/Http/HttpHeaders.php
 
@@ -1386,12 +1116,7 @@ parameters:
 			path: src/Toolkit/PhpDoc/PhpDocTag.php
 
 		-
-			message: "#^Else branch is unreachable because ternary operator condition is always true\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncDefinition.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\AbstractSyncDefinition\\:\\:getSyncOperationClosure\\(\\) should return \\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, int\\|string\\|null, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, TEntity, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, iterable\\<TEntity\\>, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|null but returns Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\AbstractSyncDefinition\\:\\:getSyncOperationClosure\\(\\) should return \\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, int\\|string\\|null, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, TEntity, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, iterable\\<TEntity\\>, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|null but returns Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\.$#"
 			count: 2
 			path: src/Toolkit/Sync/AbstractSyncDefinition.php
 
@@ -1667,11 +1392,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable \\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, int\\|string\\|null, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, TEntity, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, iterable\\<TEntity\\>, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\) expects int\\|string\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
 

@@ -8,6 +8,8 @@ use Salient\Contract\Core\Immutable;
 /**
  * An immutable array-like list of items
  *
+ * @api
+ *
  * @template TValue
  *
  * @implements ListInterface<TValue>

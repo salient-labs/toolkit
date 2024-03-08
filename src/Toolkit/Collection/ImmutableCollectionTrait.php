@@ -7,14 +7,18 @@ use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 
 /**
- * Implements CollectionInterface for immutable classes
+ * Implements CollectionInterface for immutable collections
  *
- * Mutable classes should use {@see CollectionTrait} instead.
+ * Mutable collections should use {@see CollectionTrait} instead.
+ *
+ * @see CollectionInterface
+ *
+ * @api
  *
  * @template TKey of array-key
  * @template TValue
  *
- * @see CollectionInterface
+ * @phpstan-require-implements CollectionInterface
  */
 trait ImmutableCollectionTrait
 {

@@ -2,15 +2,18 @@
 
 namespace Salient\Contract\Http;
 
+/**
+ * @api
+ */
 interface AccessTokenInterface
 {
     /**
-     * Get the object's token string
+     * Get the access token
      */
     public function getToken(): string;
 
     /**
-     * Get the token's type, e.g. "Bearer"
+     * Get the access token's type, e.g. "Bearer"
      */
-    public function getType(): string;
+    public function getTokenType(): string;
 }

@@ -19,7 +19,7 @@ final class HttpRequestTest extends TestCase
     /**
      * @dataProvider preserveHostProvider
      */
-    public function testPreserveHost(
+    public function testHostIsPreserved(
         string $expected,
         ?string $requestHostHeader,
         ?string $requestHostComponent,
@@ -36,8 +36,8 @@ final class HttpRequestTest extends TestCase
         }
 
         $r = new HttpRequest(
-            $uri ?? '',
             'GET',
+            $uri ?? '',
             null,
             null,
             $headers ?? null,
@@ -69,50 +69,50 @@ final class HttpRequestTest extends TestCase
 
     public function testConstruct(): void
     {
-        $r = new HttpRequest('/');
+        $r = new HttpRequest('GET', '/');
         $this->assertSame('/', (string) $r->getUri());
         $this->assertInstanceOf(StreamInterface::class, $r->getBody());
         $this->assertSame('', (string) $r->getBody());
 
         $uri = new Uri('/');
-        $r = new HttpRequest($uri);
+        $r = new HttpRequest('GET', $uri);
         $this->assertSame($uri, $r->getUri());
 
-        $r = new HttpRequest('/', 'GET', null, 'baz');
+        $r = new HttpRequest('GET', '/', null, 'baz');
         $this->assertInstanceOf(StreamInterface::class, $r->getBody());
         $this->assertSame('baz', (string) $r->getBody());
 
-        $r = new HttpRequest('/', 'GET', null, '0');
+        $r = new HttpRequest('GET', '/', null, '0');
         $this->assertInstanceOf(StreamInterface::class, $r->getBody());
         $this->assertSame('0', (string) $r->getBody());
 
-        $r = new HttpRequest('');
+        $r = new HttpRequest('GET', '');
         $this->assertSame('/', $r->getRequestTarget());
 
-        $r = new HttpRequest('*');
+        $r = new HttpRequest('GET', '*');
         $this->assertSame('*', $r->getRequestTarget());
 
-        $r = new HttpRequest(new Uri('http://foo.com/bar baz/', false));
+        $r = new HttpRequest('GET', new Uri('http://foo.com/bar baz/', false));
         $this->assertSame('/bar%20baz/', $r->getRequestTarget());
 
-        $r = new HttpRequest('http://foo.com/baz?bar=bam');
+        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam');
         $this->assertSame('/baz?bar=bam', $r->getRequestTarget());
 
-        $r = new HttpRequest('http://foo.com/baz?bar=bam#qux');
+        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam#qux');
         $this->assertSame('/baz?bar=bam', $r->getRequestTarget());
 
-        $r = new HttpRequest('http://foo.com/baz?0');
+        $r = new HttpRequest('GET', 'http://foo.com/baz?0');
         $this->assertSame('/baz?0', $r->getRequestTarget());
 
         $h = ['User-Agent' => self::USER_AGENT];
-        $r = new HttpRequest('https://example.com/', 'GET', null, null, $h);
+        $r = new HttpRequest('GET', 'https://example.com/', null, null, $h);
         $this->assertSame([
             'Host' => ['example.com'],
             'User-Agent' => [self::USER_AGENT],
         ], $r->getHeaders());
 
         $h = ['Foo' => ['a', 'b', 'c']];
-        $r = new HttpRequest('http://foo.com/baz?bar=bam', 'GET', null, null, $h);
+        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
         $this->assertSame('a,b,c', $r->getHeaderLine('Foo'));
         $this->assertSame('', $r->getHeaderLine('Bar'));
 
@@ -120,14 +120,14 @@ final class HttpRequestTest extends TestCase
             'ZOO' => 'zoobar',
             'zoo' => ['foobar', 'zoobar'],
         ];
-        $r = new HttpRequest('', 'GET', null, null, $h);
+        $r = new HttpRequest('GET', '', null, null, $h);
         $this->assertSame(['ZOO' => ['zoobar', 'foobar', 'zoobar']], $r->getHeaders());
         $this->assertSame('zoobar,foobar,zoobar', $r->getHeaderLine('zoo'));
 
-        $r = new HttpRequest('http://foo.com:8124/bar');
+        $r = new HttpRequest('GET', 'http://foo.com:8124/bar');
         $this->assertSame('foo.com:8124', $r->getHeaderLine('host'));
 
-        $r = new HttpRequest('http://foo.com:8124/bar');
+        $r = new HttpRequest('GET', 'http://foo.com:8124/bar');
         $r = $r->withUri(new Uri('http://foo.com:8125/bar'));
         $this->assertSame('foo.com:8125', $r->getHeaderLine('host'));
     }
@@ -135,12 +135,12 @@ final class HttpRequestTest extends TestCase
     public function testConstructWithInvalidUri(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new HttpRequest('//example.com:-1');
+        new HttpRequest('GET', '//example.com:-1');
     }
 
     public function testWithMethod(): void
     {
-        $r1 = new HttpRequest('/');
+        $r1 = new HttpRequest('GET', '/');
         $r2 = $r1->withMethod('GET');
         $r3 = $r2->withMethod('POST');
         $this->assertSame($r1, $r2);
@@ -151,16 +151,16 @@ final class HttpRequestTest extends TestCase
 
     public function testMethodCaseSensitivity(): void
     {
-        $r = new HttpRequest('/', 'post');
+        $r = new HttpRequest('post', '/');
         $this->assertSame('post', $r->getMethod());
 
-        $r = new HttpRequest('/');
+        $r = new HttpRequest('GET', '/');
         $this->assertSame('put', $r->withMethod('put')->getMethod());
     }
 
     public function testWithUri(): void
     {
-        $r1 = new HttpRequest('/');
+        $r1 = new HttpRequest('GET', '/');
         $u1 = $r1->getUri();
         $u2 = new Uri('http://example.com');
         $r2 = $r1->withUri($u2);
@@ -176,7 +176,7 @@ final class HttpRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid HTTP method: ' . $method);
-        new HttpRequest('/', $method);
+        new HttpRequest($method, '/');
     }
 
     /**
@@ -186,7 +186,7 @@ final class HttpRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid HTTP method: ' . $method);
-        (new HttpRequest('/'))->withMethod($method);
+        (new HttpRequest('GET', '/'))->withMethod($method);
     }
 
     /**
@@ -202,7 +202,7 @@ final class HttpRequestTest extends TestCase
 
     public function testWithRequestTarget(): void
     {
-        $r1 = new HttpRequest('/');
+        $r1 = new HttpRequest('GET', '/');
         $r2 = $r1->withRequestTarget('*');
         $this->assertSame('/', $r1->getRequestTarget());
         $this->assertSame('*', $r2->getRequestTarget());
@@ -210,14 +210,14 @@ final class HttpRequestTest extends TestCase
 
     public function testWithInvalidRequestTarget(): void
     {
-        $r = new HttpRequest('/');
+        $r = new HttpRequest('GET', '/');
         $this->expectException(InvalidArgumentException::class);
         $r->withRequestTarget('/foo bar');
     }
 
     public function testImmutability(): void
     {
-        $r1 = new HttpRequest('http://example.com');
+        $r1 = new HttpRequest('GET', 'http://example.com');
         $r2 = $r1->withUri($r1->getUri());
         $r3 = $r2->withUri(new Uri('http://example.com'));
         $r4 = $r3->withUri(new Uri('https://example.com'));
@@ -242,7 +242,7 @@ final class HttpRequestTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf('Invalid header name: %s', $header));
         $h = [$header => 'value'];
-        new HttpRequest('http://foo.com/baz?bar=bam', 'GET', null, null, $h);
+        new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
     }
 
     /**
@@ -267,7 +267,7 @@ final class HttpRequestTest extends TestCase
     public function testValidHeaderNames(string $header): void
     {
         $h = [$header => 'value'];
-        $r = new HttpRequest('http://foo.com/baz?bar=bam', 'GET', null, null, $h);
+        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
         $this->assertArrayHasKey($header, $r->getHeaders());
     }
 
@@ -298,7 +298,7 @@ final class HttpRequestTest extends TestCase
 
     public function testWithUriUpdatesHost(): void
     {
-        $r1 = new HttpRequest('http://foo.com/baz?bar=bam');
+        $r1 = new HttpRequest('GET', 'http://foo.com/baz?bar=bam');
         $this->assertSame(['Host' => ['foo.com']], $r1->getHeaders());
         $r2 = $r1->withUri(new Uri('http://baz.com/bar'));
         $this->assertSame('baz.com', $r2->getHeaderLine('Host'));
@@ -312,7 +312,7 @@ final class HttpRequestTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf('Invalid header value: %s', $value));
         $h = ['foo' => $value];
-        new HttpRequest('http://foo.com/baz?bar=bam', 'GET', null, null, $h);
+        new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
     }
 
     /**
