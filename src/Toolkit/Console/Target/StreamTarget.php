@@ -175,8 +175,8 @@ final class StreamTarget extends ConsoleStreamTarget
      * Creates a new StreamTarget object backed by an open PHP stream
      *
      * @param resource $stream
-     * @param bool $closeable If `true`, call {@see fclose()} to close `$stream`
-     * when the target is closed.
+     * @param bool $closeable If `true`, call {@see File::close()} to close
+     * `$stream` when the target is closed.
      * @param bool|null $addTimestamp If `null`, add timestamps if `$stream` is
      * not `STDOUT` or `STDERR`.
      * @param DateTimeZone|string|null $timezone If `null`, the timezone

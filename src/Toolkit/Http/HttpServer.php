@@ -217,7 +217,7 @@ final class HttpServer implements Readable, Immutable
             $headers = new HttpHeaders();
             $body = null;
             do {
-                if (($line = fgets($socket)) === false) {
+                if (($line = @fgets($socket)) === false) {
                     throw new HttpServerException("Error reading request from $peer");
                 }
 
@@ -244,7 +244,7 @@ final class HttpServer implements Readable, Immutable
 
             /** @todo Add support for Transfer-Encoding */
             if ($length = $headers->getHeaderLine('Content-Length', true)) {
-                if (($body = fread($socket, (int) $length)) === false) {
+                if (($body = @fread($socket, (int) $length)) === false) {
                     throw new HttpServerException("Error reading request body from $peer");
                 }
             }
@@ -262,13 +262,13 @@ final class HttpServer implements Readable, Immutable
                 /** @var HttpResponse */
                 $response = $callback($request, $continue, $return);
             } finally {
-                fwrite(
+                @fwrite(
                     $socket,
                     (string) ($response ?? new HttpResponse(
                         'Internal server error', 500, 'Internal Server Error'
                     ))
                 );
-                fclose($socket);
+                @fclose($socket);
             }
         } while ($continue);
 

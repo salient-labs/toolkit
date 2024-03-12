@@ -25,7 +25,7 @@ final class File extends AbstractUtility
      *
      * @throws FilesystemErrorException on failure.
      */
-    public static function cwd(): string
+    public static function getCwd(): string
     {
         $pipe = self::openPipe(Sys::isWindows() ? 'cd' : 'pwd', 'rb');
         $dir = self::getContents($pipe);
@@ -38,11 +38,8 @@ final class File extends AbstractUtility
             return $dir;
         }
 
-        $dir = getcwd();
-        if ($dir === false) {
-            throw new FilesystemErrorException('Unable to get current working directory');
-        }
-        return $dir;
+        $dir = @getcwd();
+        return self::throwOnFalse($dir, 'Error getting current working directory');
     }
 
     /**
@@ -101,6 +98,34 @@ final class File extends AbstractUtility
     {
         $result = @fread($stream, $length);
         return self::throwOnFalse($result, 'Error reading from stream: %s', $uri, $stream);
+    }
+
+    /**
+     * Read a line from an open stream
+     *
+     * @see fgets()
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function readLine($stream, $uri = null): string
+    {
+        $result = @fgets($stream);
+        if ($result !== false) {
+            return $result;
+        }
+        $error = error_get_last();
+        if (@feof($stream)) {
+            return '';
+        }
+        if ($error) {
+            throw new FilesystemErrorException($error['message']);
+        }
+        throw new FilesystemErrorException(sprintf(
+            'Error reading from stream: %s',
+            self::getFriendlyStreamUri($uri, $stream),
+        ));
     }
 
     /**
@@ -167,14 +192,46 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Copy a file
+     * Copy a file or stream
      *
      * @see copy()
+     * @see stream_copy_to_stream()
      *
+     * @param Stringable|string|resource $from
+     * @param Stringable|string|resource $to
+     * @param Stringable|string|null $fromUri
+     * @param Stringable|string|null $toUri
      * @throws FilesystemErrorException on failure.
      */
-    public static function copy(string $from, string $to): void
+    public static function copy($from, $to, $fromUri = null, $toUri = null): void
     {
+        $fromIsResource = is_resource($from);
+        $toIsResource = is_resource($to);
+        if (
+            ($fromIsResource xor $toIsResource) ||
+            (Test::isStringable($from) xor Test::isStringable($to))
+        ) {
+            throw new InvalidArgumentException(
+                'Argument #1 ($from) and argument #2 ($to) must both be Stringable|string or resource'
+            );
+        }
+
+        if ($fromIsResource && $toIsResource) {
+            self::assertResourceIsStream($from);
+            self::assertResourceIsStream($to);
+            $result = @stream_copy_to_stream($from, $to);
+            self::throwOnFalse(
+                $result,
+                'Error copying stream %s to %s',
+                $fromUri,
+                $from,
+                self::getFriendlyStreamUri($toUri, $to),
+            );
+            return;
+        }
+
+        $from = (string) $from;
+        $to = (string) $to;
         $result = @copy($from, $to);
         self::throwOnFalse($result, 'Error copying %s to %s', $from, null, $to);
     }
@@ -208,17 +265,44 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Get the type of a file
+     *
+     * @see filetype()
+     *
+     * @return ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown")
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function type(string $filename): string
+    {
+        $type = @filetype($filename);
+        /** @var ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown") */
+        return self::throwOnFalse($type, 'Error getting file type: %s', $filename);
+    }
+
+    /**
+     * Get the size of a file
+     *
+     * @see filesize()
+     *
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function size(string $filename): int
+    {
+        $size = @filesize($filename);
+        return self::throwOnFalse($size, 'Error getting file size: %s', $filename);
+    }
+
+    /**
      * True if a stream is seekable
      *
      * @param resource $stream
      */
     public static function isSeekable($stream): bool
     {
-        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
-            return false;
-        }
-        // @phpstan-ignore-next-line
-        return stream_get_meta_data($stream)['seekable'] ?? false;
+        return is_resource($stream) &&
+            get_resource_type($stream) === 'stream' &&
+            // @phpstan-ignore-next-line
+            (stream_get_meta_data($stream)['seekable'] ?? false);
     }
 
     /**
@@ -283,6 +367,7 @@ final class File extends AbstractUtility
      *
      * @param resource|array<int|float|string|bool|Stringable|null>|string $data
      * @param int-mask-of<\FILE_USE_INCLUDE_PATH|\FILE_APPEND|\LOCK_EX> $flags
+     * @throws FilesystemErrorException on failure.
      */
     public static function putContents(string $filename, $data, int $flags = 0): int
     {
@@ -307,25 +392,23 @@ final class File extends AbstractUtility
      *
      * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
      *
+     * @see Get::eol()
+     * @see Str::setEol()
+     *
      * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
      * @return string|null `null` if there are no recognised line breaks in the
      * file.
-     *
-     * @see Get::eol()
-     * @see Str::setEol()
      */
     public static function getEol($resource, $uri = null): ?string
     {
         $handle = self::getStream($resource, 'r', $close, $uri);
-
-        $line = fgets($handle);
-
+        $line = self::readLine($handle);
         if ($close) {
             self::close($handle, $uri);
         }
 
-        if ($line === false) {
+        if ($line === '') {
             return null;
         }
 
@@ -527,17 +610,9 @@ final class File extends AbstractUtility
      */
     public static function creatable(string $path): bool
     {
-        $pathIsParent = false;
-        while (!file_exists($path)) {
-            $parent = dirname($path);
-            if ($parent === $path) {
-                break;
-            }
-            $path = $parent;
-            $pathIsParent = true;
-        }
+        $path = self::existing($path);
 
-        return (!$pathIsParent || is_dir($path)) && is_writable($path);
+        return $path !== null && is_writable($path);
     }
 
     /**
@@ -549,13 +624,13 @@ final class File extends AbstractUtility
     public static function isPhp(string $filename): bool
     {
         $handle = self::open($filename, 'r');
-        $line = fgets($handle);
-        if ($line !== false && substr($line, 0, 2) === '#!') {
-            $line = fgets($handle);
+        $line = self::readLine($handle);
+        if ($line !== '' && substr($line, 0, 2) === '#!') {
+            $line = self::readLine($handle);
         }
         self::close($handle, $filename);
 
-        if ($line === false) {
+        if ($line === '') {
             return false;
         }
 
@@ -588,6 +663,7 @@ final class File extends AbstractUtility
      * exist.
      * @param int $dirPermissions Used if one or more directories above
      * `$filename` don't exist.
+     * @throws FilesystemErrorException on failure.
      */
     public static function create(
         string $filename,
@@ -599,19 +675,17 @@ final class File extends AbstractUtility
         }
 
         self::createDir(dirname($filename), $dirPermissions);
-
-        $result = touch($filename) && chmod($filename, $permissions);
-        if (!$result) {
-            throw new FilesystemErrorException(
-                sprintf('Error creating file: %s', $filename),
-            );
-        }
+        $result = @touch($filename) && @chmod($filename, $permissions);
+        self::throwOnFalse($result, 'Error creating file: %s', $filename);
     }
 
     /**
      * Create a directory if it doesn't exist
      *
+     * @see mkdir()
+     *
      * @param int $permissions Used if `$directory` doesn't exist.
+     * @throws FilesystemErrorException on failure.
      */
     public static function createDir(
         string $directory,
@@ -621,16 +695,29 @@ final class File extends AbstractUtility
             return;
         }
 
-        $result = mkdir($directory, $permissions, true);
-        if (!$result) {
-            throw new FilesystemErrorException(
-                sprintf('Error creating directory: %s', $directory),
-            );
-        }
+        $result = @mkdir($directory, $permissions, true);
+        self::throwOnFalse($result, 'Error creating directory: %s', $directory);
+    }
+
+    /**
+     * Change file permissions
+     *
+     * @see chmod()
+     *
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function chmod(string $filename, int $permissions): void
+    {
+        $result = @chmod($filename, $permissions);
+        self::throwOnFalse($result, 'Error changing permissions: %s', $filename);
     }
 
     /**
      * Delete a file if it exists
+     *
+     * @see unlink()
+     *
+     * @throws FilesystemErrorException on failure.
      */
     public static function delete(string $filename): void
     {
@@ -644,20 +731,24 @@ final class File extends AbstractUtility
             );
         }
 
-        $result = unlink($filename);
-        if (!$result) {
-            throw new FilesystemErrorException(
-                sprintf('Error deleting file: %s', $filename),
-            );
-        }
+        $result = @unlink($filename);
+        self::throwOnFalse($result, 'Error deleting file: %s', $filename);
     }
 
     /**
      * Delete a directory if it exists
+     *
+     * If `$recursive` is `true`, `$directory` and `$dirPermissions` are passed
+     * to {@see File::pruneDir()} before the directory is deleted.
+     *
+     * @see rmdir()
+     *
+     * @throws FilesystemErrorException on failure.
      */
     public static function deleteDir(
         string $directory,
-        bool $recursive = false
+        bool $recursive = false,
+        int $dirPermissions = 0
     ): void {
         if (!file_exists($directory)) {
             return;
@@ -670,39 +761,57 @@ final class File extends AbstractUtility
         }
 
         if ($recursive) {
-            self::pruneDir($directory);
+            self::pruneDir($directory, $dirPermissions);
         }
 
-        $result = rmdir($directory);
-        if (!$result) {
-            throw new FilesystemErrorException(
-                sprintf('Error deleting directory: %s', $directory),
-            );
-        }
+        $result = @rmdir($directory);
+        self::throwOnFalse($result, 'Error deleting directory: %s', $directory);
     }
 
     /**
      * Recursively delete the contents of a directory without deleting the
      * directory itself
+     *
+     * Before anything is deleted, file mode bits are applied from
+     * `$dirPermissions` to any directories in `$directory` that are not
+     * readable, writable and (on platforms other than Windows) executable.
+     *
+     * @throws FilesystemErrorException on failure.
      */
-    public static function pruneDir(string $directory): void
+    public static function pruneDir(string $directory, int $dirPermissions = 0): void
     {
         $files = (new RecursiveFilesystemIterator())
             ->in($directory)
-            ->dirs()
-            ->dirsLast();
+            ->dirs();
 
-        foreach ($files as $file) {
-            $result =
-                $file->isDir()
-                    ? rmdir((string) $file)
-                    : unlink((string) $file);
-
-            if (!$result) {
-                throw new FilesystemErrorException(
-                    sprintf('Error pruning directory: %s', $directory),
-                );
+        $dirPermissions &= 07777;
+        if ($dirPermissions) {
+            $windows = Sys::isWindows();
+            clearstatcache();
+            foreach ($files->noFiles() as $dir) {
+                if (
+                    $dir->isReadable() &&
+                    $dir->isWritable() &&
+                    ($windows || $dir->isExecutable())
+                ) {
+                    continue;
+                }
+                $perms = @$dir->getPerms();
+                if (
+                    $perms === false ||
+                    ($perms & $dirPermissions) === $dirPermissions
+                ) {
+                    continue;
+                }
+                File::chmod((string) $dir, $perms | $dirPermissions);
             }
+        }
+
+        foreach ($files->dirsLast() as $file) {
+            $result = $file->isDir()
+                ? @rmdir((string) $file)
+                : @unlink((string) $file);
+            self::throwOnFalse($result, 'Error pruning directory: %s', $directory);
         }
     }
 
@@ -716,7 +825,12 @@ final class File extends AbstractUtility
         $directory ??= self::getTempDir();
         $prefix ??= Sys::getProgramBasename();
         do {
-            $dir = sprintf('%s/%s%s.tmp', $directory, $prefix, Get::randomText(8));
+            $dir = sprintf(
+                '%s/%s%s.tmp',
+                Str::coalesce($directory, '.'),
+                $prefix,
+                Get::randomText(8),
+            );
         } while (!@mkdir($dir, 0700));
 
         return $dir;
@@ -725,7 +839,9 @@ final class File extends AbstractUtility
     /**
      * Resolve symbolic links and relative references in a path or Phar URI
      *
-     * @throws FilesystemErrorException if `$path` does not exist.
+     * @see realpath()
+     *
+     * @throws FilesystemErrorException on failure or if `$path` does not exist.
      */
     public static function realpath(string $path): string
     {
@@ -733,12 +849,11 @@ final class File extends AbstractUtility
             return self::resolve($path, true);
         }
 
+        error_clear_last();
+
         $_path = $path;
-        $path = realpath($path);
-        if ($path === false) {
-            throw new FilesystemErrorException(sprintf('File not found: %s', $_path));
-        }
-        return $path;
+        $path = @realpath($path);
+        return self::throwOnFalse($path, 'Error resolving path: %s', $_path);
     }
 
     /**
@@ -780,6 +895,33 @@ final class File extends AbstractUtility
         do {
             $path = Pcre::replace($regex, '', $path, -1, $count);
         } while ($count);
+
+        return $path;
+    }
+
+    /**
+     * Get a path or its closest parent that exists
+     *
+     * Returns `null` if the leftmost segment of `$path` doesn't exist, or if
+     * the closest parent that exists is not a directory.
+     */
+    public static function existing(string $path): ?string
+    {
+        $pathIsParent = false;
+        while (!file_exists($path)) {
+            $parent = dirname($path);
+            if ($parent === $path) {
+                // @codeCoverageIgnoreStart
+                return null;
+                // @codeCoverageIgnoreEnd
+            }
+            $path = $parent;
+            $pathIsParent = true;
+        }
+
+        if ($pathIsParent && !is_dir($path)) {
+            return null;
+        }
 
         return $path;
     }
@@ -831,7 +973,7 @@ final class File extends AbstractUtility
      * @phpstan-param T|false $result
      * @phpstan-return ($result is false ? never : T)
      */
-    private static function throwOnFalse($result, string $message, $uri, $stream = null, ...$args)
+    private static function throwOnFalse($result, string $message, $uri = null, $stream = null, ...$args)
     {
         if ($result === false) {
             self::doThrowOnFailure($message, $uri, $stream, ...$args);
@@ -851,7 +993,7 @@ final class File extends AbstractUtility
      * @phpstan-param T|-1 $result
      * @phpstan-return ($result is -1 ? never : T)
      */
-    private static function throwOnFailure($result, string $message, $uri, $stream = null, ...$args)
+    private static function throwOnFailure($result, string $message, $uri = null, $stream = null, ...$args)
     {
         if ($result === -1) {
             self::doThrowOnFailure($message, $uri, $stream, ...$args);
@@ -915,6 +1057,7 @@ final class File extends AbstractUtility
      * @param bool $bom If `true` (the default), add a BOM (byte order mark) to
      * the output.
      * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
      */
     public static function writeCsv(
         $resource,
@@ -1009,8 +1152,11 @@ final class File extends AbstractUtility
      *
      * @todo Implement file encoding detection
      *
+     * @see fgetcsv()
+     *
      * @param Stringable|string|resource $resource
      * @return array<mixed[]>
+     * @throws FilesystemErrorException on failure.
      */
     public static function readCsv($resource): array
     {
@@ -1020,7 +1166,17 @@ final class File extends AbstractUtility
             $data[] = $row;
         }
 
-        self::throwOnFalse(feof($handle), 'Error reading from stream: %s', $uri, $handle);
+        $error = error_get_last();
+
+        if (!@feof($handle)) {
+            if ($error) {
+                throw new FilesystemErrorException($error['message']);
+            }
+            throw new FilesystemErrorException(sprintf(
+                'Error reading from stream: %s',
+                self::getFriendlyStreamUri($uri, $handle),
+            ));
+        }
 
         if ($close) {
             self::close($handle, $uri);

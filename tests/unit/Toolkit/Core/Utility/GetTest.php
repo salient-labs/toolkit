@@ -8,6 +8,7 @@ use Salient\Contract\Core\CopyFlag;
 use Salient\Contract\Core\QueryFlag;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\UncloneableObjectException;
+use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Core\DateFormatter;
 use Salient\Tests\Core\Utility\Get\ClassWithCloneMethod;
@@ -515,8 +516,8 @@ final class GetTest extends TestCase
      */
     public static function typeProvider(): array
     {
-        $f = fopen(__FILE__, 'r');
-        fclose($f);
+        $f = File::open(__FILE__, 'r');
+        File::close($f);
 
         return [
             ['null', null],
@@ -539,9 +540,9 @@ final class GetTest extends TestCase
 
     public function testTypeWithResource(): void
     {
-        $f = fopen(__FILE__, 'r');
+        $f = File::open(__FILE__, 'r');
         $this->assertSame('resource (stream)', Get::type($f));
-        fclose($f);
+        File::close($f);
     }
 
     /**

@@ -321,7 +321,7 @@ class Application extends Container implements ApplicationInterface
 
         $this->BasePath = $basePath;
 
-        $this->WorkingDirectory = File::cwd();
+        $this->WorkingDirectory = File::getCwd();
 
         $this->RunningFromSource =
             !extension_loaded('Phar') ||
@@ -393,7 +393,7 @@ class Application extends Container implements ApplicationInterface
      */
     final public function restoreWorkingDirectory()
     {
-        if (File::cwd() !== $this->WorkingDirectory) {
+        if (File::getCwd() !== $this->WorkingDirectory) {
             File::chdir($this->WorkingDirectory);
         }
 
@@ -405,7 +405,7 @@ class Application extends Container implements ApplicationInterface
      */
     final public function setWorkingDirectory(?string $directory = null)
     {
-        $this->WorkingDirectory = $directory ?? File::cwd();
+        $this->WorkingDirectory = $directory ?? File::getCwd();
 
         return $this;
     }

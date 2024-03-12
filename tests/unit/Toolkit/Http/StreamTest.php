@@ -110,8 +110,8 @@ final class StreamTest extends TestCase
 
     public function testGetSize(): void
     {
-        $size = filesize(__FILE__);
-        $handle = fopen(__FILE__, 'r');
+        $size = File::size(__FILE__);
+        $handle = File::open(__FILE__, 'r');
         $stream = new Stream($handle);
         $this->assertSame($size, $stream->getSize());
         $this->assertSame($size, $stream->getSize());
@@ -133,6 +133,7 @@ final class StreamTest extends TestCase
         $this->assertSame(3, $stream->tell());
         $stream->seek(1);
         $this->assertSame(1, $stream->tell());
+        $this->assertNotNull($this->LastHandle);
         $this->assertSame(ftell($this->LastHandle), $stream->tell());
         $stream->close();
     }
@@ -145,7 +146,8 @@ final class StreamTest extends TestCase
         $this->assertNull($stream->detach());
         $this->assertDetached($stream);
         $stream->close();
-        fclose($this->LastHandle);
+        $this->assertNotNull($this->LastHandle);
+        File::close($this->LastHandle);
     }
 
     public function testClose(): void
@@ -224,6 +226,7 @@ final class StreamTest extends TestCase
 
         try {
             $stream = $this->getStream($mode, null, $file);
+            /** @var string */
             $actualMode = $stream->getMetadata('mode');
             $this->assertSame(
                 $readable,
@@ -294,6 +297,7 @@ final class StreamTest extends TestCase
     public function testGzipStreamMode(string $mode, bool $readable, bool $writable): void
     {
         $handle = gzopen('php://temp', $mode);
+        $this->assertIsResource($handle);
         $stream = new Stream($handle);
         $this->assertSame($readable, $stream->isReadable());
         $this->assertSame($writable, $stream->isWritable());
@@ -364,7 +368,7 @@ final class StreamTest extends TestCase
     {
         $handle = File::open($filename, $mode);
         if ($data !== null) {
-            fwrite($handle, 'data');
+            File::write($handle, 'data');
         }
         $this->LastHandle = $handle;
         return new Stream($handle);
@@ -372,7 +376,7 @@ final class StreamTest extends TestCase
 
     private function getForwardOnlyStream(): Stream
     {
-        $handle = popen('echo data', 'r');
+        $handle = File::openPipe('echo data', 'r');
         $this->LastHandle = $handle;
         return new Stream($handle);
     }
