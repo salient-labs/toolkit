@@ -695,7 +695,7 @@ final class File extends AbstractUtility
             return;
         }
 
-        $result = @mkdir($directory, $permissions, true);
+        $result = @mkdir($directory, 0777, true) && @chmod($directory, $permissions);
         self::throwOnFalse($result, 'Error creating directory: %s', $directory);
     }
 
