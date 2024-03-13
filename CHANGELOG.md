@@ -12,6 +12,33 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.12] - 2024-03-13
+
+### Added
+
+- Add `File::chmod()`
+- Add `File::existing()`
+- Add `File::readLine()`
+- Add `File::rewind()`
+- Add `File::size()`
+- Add `File::type()`
+- Add stream-to-stream support to `File::copy()`
+- Add `Process::withShellCommand()`
+
+### Changed
+
+- Rename `File::cwd()` to `File::getCwd()`
+- Optionally change file modes if necessary for deletion to succeed in `File::deleteDir()` and `File::pruneDir()`
+- Improve error reporting in `File`
+
+### Fixed
+
+- Fix issue where `File::createTempDir()` tries to create a temporary directory in `/` if `$directory` is an empty string
+
+### Security
+
+- Fix `File::createDir()` issue where permissions are not applied on Windows and may be affected by process umask on other platforms
+
 ## [v0.99.11] - 2024-03-08
 
 ### Changed
@@ -2152,6 +2179,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.12]: https://github.com/salient-labs/toolkit/compare/v0.99.11...v0.99.12
 [v0.99.11]: https://github.com/salient-labs/toolkit/compare/v0.99.10...v0.99.11
 [v0.99.10]: https://github.com/salient-labs/toolkit/compare/v0.99.9...v0.99.10
 [v0.99.9]: https://github.com/salient-labs/toolkit/compare/v0.99.8...v0.99.9
