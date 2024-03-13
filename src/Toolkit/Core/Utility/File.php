@@ -38,8 +38,10 @@ final class File extends AbstractUtility
             return $dir;
         }
 
+        // @codeCoverageIgnoreStart
         $dir = @getcwd();
         return self::throwOnFalse($dir, 'Error getting current working directory');
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -119,6 +121,7 @@ final class File extends AbstractUtility
         if (@feof($stream)) {
             return '';
         }
+        // @codeCoverageIgnoreStart
         if ($error) {
             throw new FilesystemErrorException($error['message']);
         }
@@ -126,6 +129,7 @@ final class File extends AbstractUtility
             'Error reading from stream: %s',
             self::getFriendlyStreamUri($uri, $stream),
         ));
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -589,7 +593,9 @@ final class File extends AbstractUtility
         }
 
         if ($filename1 === $filename2) {
+            // @codeCoverageIgnoreStart
             return true;
+            // @codeCoverageIgnoreEnd
         }
 
         if (!file_exists($filename2)) {
@@ -738,7 +744,7 @@ final class File extends AbstractUtility
     /**
      * Delete a directory if it exists
      *
-     * If `$recursive` is `true`, `$directory` and `$dirPermissions` are passed
+     * If `$recursive` is `true`, `$directory` and `$setPermissions` are passed
      * to {@see File::pruneDir()} before the directory is deleted.
      *
      * @see rmdir()
@@ -748,7 +754,7 @@ final class File extends AbstractUtility
     public static function deleteDir(
         string $directory,
         bool $recursive = false,
-        int $dirPermissions = 0
+        bool $setPermissions = false
     ): void {
         if (!file_exists($directory)) {
             return;
@@ -761,7 +767,7 @@ final class File extends AbstractUtility
         }
 
         if ($recursive) {
-            self::pruneDir($directory, $dirPermissions);
+            self::pruneDir($directory, $setPermissions);
         }
 
         $result = @rmdir($directory);
@@ -772,42 +778,50 @@ final class File extends AbstractUtility
      * Recursively delete the contents of a directory without deleting the
      * directory itself
      *
-     * Before anything is deleted, file mode bits are applied from
-     * `$dirPermissions` to any directories in `$directory` that are not
-     * readable, writable and (on platforms other than Windows) executable.
+     * If `$setPermissions` is `true`, file modes in `$directory` are changed if
+     * necessary for deletion to succeed.
      *
      * @throws FilesystemErrorException on failure.
      */
-    public static function pruneDir(string $directory, int $dirPermissions = 0): void
+    public static function pruneDir(string $directory, bool $setPermissions = false): void
     {
         $files = (new RecursiveFilesystemIterator())
             ->in($directory)
             ->dirs();
 
-        $dirPermissions &= 07777;
-        if ($dirPermissions) {
+        $windows = false;
+        if ($setPermissions) {
             $windows = Sys::isWindows();
             clearstatcache();
-            foreach ($files->noFiles() as $dir) {
-                if (
-                    $dir->isReadable() &&
-                    $dir->isWritable() &&
-                    ($windows || $dir->isExecutable())
-                ) {
-                    continue;
+            // With exceptions `chmod()` can't address:
+            // - On *nix, filesystem entries can be deleted if their parent
+            //   directory is writable
+            // - On Windows, they can be deleted if they are writable, whether
+            //   their parent directory is writable or not
+            if (!$windows) {
+                foreach ($files->noFiles() as $dir) {
+                    if (
+                        $dir->isReadable() &&
+                        $dir->isWritable() &&
+                        $dir->isExecutable()
+                    ) {
+                        continue;
+                    }
+                    $perms = @$dir->getPerms();
+                    if ($perms === false) {
+                        // @codeCoverageIgnoreStart
+                        $perms = 0;
+                        // @codeCoverageIgnoreEnd
+                    }
+                    self::chmod((string) $dir, $perms | 0700);
                 }
-                $perms = @$dir->getPerms();
-                if (
-                    $perms === false ||
-                    ($perms & $dirPermissions) === $dirPermissions
-                ) {
-                    continue;
-                }
-                File::chmod((string) $dir, $perms | $dirPermissions);
             }
         }
 
         foreach ($files->dirsLast() as $file) {
+            if ($windows && !$file->isWritable()) {
+                self::chmod((string) $file, $file->isDir() ? 0700 : 0600);
+            }
             $result = $file->isDir()
                 ? @rmdir((string) $file)
                 : @unlink((string) $file);
@@ -849,9 +863,8 @@ final class File extends AbstractUtility
             return self::resolve($path, true);
         }
 
-        error_clear_last();
-
         $_path = $path;
+        error_clear_last();
         $path = @realpath($path);
         return self::throwOnFalse($path, 'Error resolving path: %s', $_path);
     }

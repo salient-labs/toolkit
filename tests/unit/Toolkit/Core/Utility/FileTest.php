@@ -764,7 +764,7 @@ final class FileTest extends TestCase
             $this->assertFalse(File::creatable("$dir/writable/no_permissions"));
             $this->assertFalse(File::creatable("$dir/writable/does_not_exist"));
         } finally {
-            File::deleteDir($dir, true, 0700);
+            File::deleteDir($dir, true, true);
         }
     }
 
