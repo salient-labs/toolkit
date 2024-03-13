@@ -116,19 +116,8 @@ final class File extends AbstractUtility
         if ($result !== false) {
             return $result;
         }
-        $error = error_get_last();
-        if (@feof($stream)) {
-            return '';
-        }
-        // @codeCoverageIgnoreStart
-        if ($error) {
-            throw new FilesystemErrorException($error['message']);
-        }
-        throw new FilesystemErrorException(sprintf(
-            'Error reading from stream: %s',
-            self::getFriendlyStreamUri($uri, $stream),
-        ));
-        // @codeCoverageIgnoreEnd
+        self::checkEof($stream, $uri);
+        return '';
     }
 
     /**
@@ -1197,28 +1186,33 @@ final class File extends AbstractUtility
     public static function readCsv($resource): array
     {
         $handle = self::getStream($resource, 'rb', $close, $uri);
-
         while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
             $data[] = $row;
         }
-
-        $error = error_get_last();
-
-        if (!@feof($handle)) {
-            if ($error) {
-                throw new FilesystemErrorException($error['message']);
-            }
-            throw new FilesystemErrorException(sprintf(
-                'Error reading from stream: %s',
-                self::getFriendlyStreamUri($uri, $handle),
-            ));
-        }
-
+        self::checkEof($handle, $uri);
         if ($close) {
             self::close($handle, $uri);
         }
-
         return $data ?? [];
+    }
+
+    /**
+     * @param resource $resource
+     * @param Stringable|string|null $uri
+     */
+    private static function checkEof($resource, $uri = null): void
+    {
+        $error = error_get_last();
+        if (@feof($resource)) {
+            return;
+        }
+        if ($error) {
+            throw new FilesystemErrorException($error['message']);
+        }
+        throw new FilesystemErrorException(sprintf(
+            'Error reading from %s',
+            self::getFriendlyStreamUri($uri, $resource),
+        ));
     }
 
     /**
