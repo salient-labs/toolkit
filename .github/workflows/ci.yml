@@ -112,9 +112,8 @@ jobs:
           - macos-latest
         php-version:
           - "8.3"
+          - "8.2"
         include:
-          - os: ubuntu-latest
-            php-version: "8.2"
           - os: ubuntu-latest
             php-version: "8.1"
           - os: ubuntu-latest
@@ -123,6 +122,13 @@ jobs:
             php-version: "7.4"
           - os: windows-latest
             php-version: "7.4"
+        exclude:
+          # As of 2024-03-13, macos-latest + 8.3 is slooooow (5+ seconds per
+          # process spawned?), but macos-latest + 8.2 runs normally
+          - os: macos-latest
+            php-version: "8.3"
+          - os: windows-latest
+            php-version: "8.2"
 
     runs-on: ${{ matrix.os }}
 
@@ -167,19 +173,27 @@ jobs:
           done
 
       - name: Start Mockoon CLI
+        id: start-mockoon
         shell: bash
         run: scripts/start-mockoon.sh
 
       - name: Run PHPUnit tests and generate code coverage report
-        run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
+        id: run-phpunit-tests
+        shell: bash
+        run: |
+          vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml && status=0 || status=$?
+          printf 'coverage_report_generated=%d\n' "$([[ -s coverage.xml ]] && echo 1 || echo 0)" >>"$GITHUB_OUTPUT"
+          (exit $status)
+
+      - name: Upload code coverage report to Codecov
+        if: ${{ !cancelled() && steps.run-phpunit-tests.outputs.coverage_report_generated == 1 }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload Mockoon CLI log files artifact
+        if: ${{ !cancelled() && steps.start-mockoon.conclusion == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: mockoon-cli-logs-${{ matrix.os }}-${{ matrix.php-version }}
           path: ~/.mockoon-cli/logs/*.log
-
-      - name: Upload code coverage report to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
