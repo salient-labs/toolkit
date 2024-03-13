@@ -164,6 +164,20 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Rewind to the beginning of a stream
+     *
+     * Equivalent to `File::seek($stream, 0, \SEEK_SET, $uri)`.
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function rewind($stream, $uri = null): void
+    {
+        self::seek($stream, 0, \SEEK_SET, $uri);
+    }
+
+    /**
      * Set the file position indicator for a stream
      *
      * @see fseek()
@@ -433,6 +447,8 @@ final class File extends AbstractUtility
      *
      * Derived from VS Code's `indentationGuesser`.
      *
+     * Returns `$default` if `$resource` appears to use the default indentation.
+     *
      * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
      *
@@ -577,6 +593,14 @@ final class File extends AbstractUtility
 
         if ($close) {
             self::close($handle, $uri);
+        }
+
+        if (
+            $default &&
+            $default->InsertSpaces === $insertSpaces &&
+            $default->TabSize === $tabSize
+        ) {
+            return $default;
         }
 
         return new Indentation($insertSpaces, $tabSize);
