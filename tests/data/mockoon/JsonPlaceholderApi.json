@@ -1,6 +1,6 @@
 {
   "uuid": "1d48bf88-344f-462e-8f39-eeb44f619168",
-  "lastMigration": 28,
+  "lastMigration": 29,
   "name": "JsonPlaceholderApi",
   "endpointPrefix": "",
   "latency": 0,
