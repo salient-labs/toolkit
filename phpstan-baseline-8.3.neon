@@ -1756,11 +1756,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/Utility/EnvTest.php
 
 		-
-			message: "#^Parameter \\#2 \\$filename2 of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:same\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/FileTest.php
-
-		-
 			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\GetTest\\:\\:booleanProvider\\(\\) should return array\\<string, array\\{bool\\|null, mixed\\}\\> but returns array\\{null\\: array\\{null, null\\}, false\\: array\\{false, false\\}, true\\: array\\{true, true\\}, 0\\: array\\{false, 0\\}, 1\\: array\\{true, 1\\}, \"''\"\\: array\\{false, ''\\}, \"'0'\"\\: array\\{false, '0'\\}, \"'1'\"\\: array\\{true, '1'\\}, \\.\\.\\.\\}\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/GetTest.php
@@ -1768,11 +1763,6 @@ parameters:
 		-
 			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\GetTest\\:\\:integerProvider\\(\\) should return array\\<string, array\\{int\\|null, mixed\\}\\> but returns array\\{null\\: array\\{null, null\\}, false\\: array\\{0, false\\}, true\\: array\\{1, true\\}, 5\\: array\\{5, 5\\}, 5\\.5\\: array\\{5, 5\\.5\\}, \"'5'\"\\: array\\{5, '5'\\}, \"'5\\.5'\"\\: array\\{5, '5\\.5'\\}, \"'foo'\"\\: array\\{0, 'foo'\\}\\}\\.$#"
 			count: 1
-			path: tests/unit/Toolkit/Core/Utility/GetTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
-			count: 2
 			path: tests/unit/Toolkit/Core/Utility/GetTest.php
 
 		-
@@ -1814,41 +1804,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$text of static method Salient\\\\Core\\\\Utility\\\\Str\\:\\:mergeLists\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function pclose expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/SysTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function stream_get_contents expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/SysTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of class Salient\\\\Http\\\\Stream constructor expects resource, resource\\|false given\\.$#"
-			count: 3
-			path: tests/unit/Toolkit/Http/StreamTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|null given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Http/StreamTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function ftell expects resource, resource\\|null given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Http/StreamTest.php
-
-		-
-			message: "#^Parameter \\#4 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Http/StreamTest.php
-
-		-
-			message: "#^Property Salient\\\\Tests\\\\Http\\\\StreamTest\\:\\:\\$LastHandle \\(resource\\|null\\) does not accept resource\\|false\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Http/StreamTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$parts of static method Salient\\\\Http\\\\Uri\\:\\:unparse\\(\\) expects array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}, array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false given\\.$#"

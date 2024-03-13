@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Core\Utility;
 
+use Salient\Core\Utility\File;
 use Salient\Core\Utility\Sys;
 use Salient\Tests\TestCase;
 
@@ -26,9 +27,9 @@ final class SysTest extends TestCase
             $arg,
         ];
         $command = Sys::escapeCommand($command);
-        $handle = popen($command, 'rb');
-        $output = stream_get_contents($handle);
-        $status = pclose($handle);
+        $handle = File::openPipe($command, 'rb');
+        $output = File::getContents($handle);
+        $status = File::closePipe($handle);
         $this->assertSame(0, $status);
         $this->assertSame($arg . \PHP_EOL, $output);
     }

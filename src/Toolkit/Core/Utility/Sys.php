@@ -159,21 +159,13 @@ final class Sys extends AbstractUtility
      */
     public static function escapeCommand(array $args): string
     {
-        $command = '';
+        $windows = self::isWindows();
 
-        if (!self::isWindows()) {
-            foreach ($args as $arg) {
-                $command .= ($command ? ' ' : '') . self::escapeShellArg($arg);
-            }
-
-            return $command;
+        foreach ($args as &$arg) {
+            $arg = $windows ? self::escapeCmdArg($arg) : self::escapeShellArg($arg);
         }
 
-        foreach ($args as $arg) {
-            $command .= ($command ? ' ' : '') . self::escapeCmdArg($arg);
-        }
-
-        return $command;
+        return implode(' ', $args);
     }
 
     /**

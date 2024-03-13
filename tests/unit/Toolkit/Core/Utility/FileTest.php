@@ -6,6 +6,7 @@ use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Sys;
 use Salient\Core\Indentation;
 use Salient\Tests\TestCase;
 use Stringable;
@@ -15,9 +16,44 @@ use Stringable;
  */
 final class FileTest extends TestCase
 {
-    public function testCwd(): void
+    public function testGetCwd(): void
     {
-        $this->assertTrue(File::same(File::cwd(), getcwd()));
+        $path = File::realpath($this->getFixturesPath(__CLASS__));
+        $command = sprintf(
+            '%s && %s',
+            Sys::escapeCommand([
+                'cd',
+                "$path/dir_symlink",
+            ]),
+            Sys::escapeCommand([
+                \PHP_BINARY,
+                '-ddisplay_startup_errors=0',
+                "$path/pwd.php",
+            ]),
+        );
+        $handle = File::openPipe($command, 'rb');
+        $output = File::getContents($handle);
+        $status = File::closePipe($handle);
+        $this->assertSame(0, $status);
+        $this->assertSame($path . \DIRECTORY_SEPARATOR . 'dir_symlink' . \PHP_EOL, $output);
+    }
+
+    /**
+     * @requires OSFAMILY Darwin
+     */
+    public function testGetCwdOnDarwin(): void
+    {
+        $dir = File::createTempDir();
+        try {
+            File::createDir("$dir/not_searchable/dir");
+            File::chdir("$dir/not_searchable/dir");
+            File::chmod("$dir/not_searchable", 0600);
+            $this->expectException(FilesystemErrorException::class);
+            $this->expectExceptionMessage('Error getting current working directory');
+            File::getCwd();
+        } finally {
+            File::deleteDir($dir, true, true);
+        }
     }
 
     /**
@@ -723,6 +759,33 @@ final class FileTest extends TestCase
         ];
     }
 
+    public function testCreatable(): void
+    {
+        $path = $this->getFixturesPath(__CLASS__);
+        $this->assertTrue(File::creatable("$path/exists"));
+        $this->assertTrue(File::creatable("$path/dir/does_not_exist"));
+        $this->assertFalse(File::creatable("$path/dir/file/does_not_exist"));
+        $this->assertTrue(File::creatable("$path/not_a_dir/does_not_exist"));
+
+        $dir = File::createTempDir();
+        try {
+            File::createDir("$dir/unwritable", 0500);
+            $this->assertFalse(File::creatable("$dir/unwritable"));
+            $this->assertFalse(File::creatable("$dir/unwritable/does_not_exist"));
+            File::create("$dir/writable/file");
+            File::create("$dir/writable/read_only", 0400);
+            File::create("$dir/writable/no_permissions", 0);
+            File::chmod("$dir/writable", 0500);
+            $this->assertFalse(File::creatable("$dir/writable"));
+            $this->assertTrue(File::creatable("$dir/writable/file"));
+            $this->assertFalse(File::creatable("$dir/writable/read_only"));
+            $this->assertFalse(File::creatable("$dir/writable/no_permissions"));
+            $this->assertFalse(File::creatable("$dir/writable/does_not_exist"));
+        } finally {
+            File::deleteDir($dir, true, true);
+        }
+    }
+
     /**
      * @dataProvider isAbsoluteProvider
      */
@@ -778,7 +841,7 @@ final class FileTest extends TestCase
         $path = $this->getFixturesPath(__CLASS__);
         $this->assertSame(realpath("$path/exists"), File::realpath("$path/exists"));
         $this->expectException(FilesystemErrorException::class);
-        $this->expectExceptionMessage("File not found: $path/does_not_exist");
+        $this->expectExceptionMessage("Error resolving path: $path/does_not_exist");
         File::realpath("$path/does_not_exist");
     }
 
@@ -932,6 +995,15 @@ final class FileTest extends TestCase
                 true,
             ],
         ];
+    }
+
+    public function testExisting(): void
+    {
+        $path = $this->getFixturesPath(__CLASS__);
+        $this->assertSame("$path/exists", File::existing("$path/exists"));
+        $this->assertSame("$path/dir", File::existing("$path/dir/does_not_exist"));
+        $this->assertNull(File::existing("$path/dir/file/does_not_exist"));
+        $this->assertSame("$path", File::existing("$path/not_a_dir/does_not_exist"));
     }
 
     /**
