@@ -3,6 +3,7 @@
 namespace Salient\Tests\Core;
 
 use Salient\Contract\Core\FileDescriptor;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;
 use Salient\Core\Facade\Profile;
@@ -47,7 +48,7 @@ final class ProcessTest extends TestCase
         $this->maybeExpectException($exitStatus);
 
         $args = ['-ddisplay_startup_errors=0', ...$args];
-        $process = new Process(\PHP_BINARY, $args, $input, $cwd, $env, $timeout, $useOutputFiles);
+        $process = new Process([\PHP_BINARY, ...$args], $input, $cwd, $env, $timeout, $useOutputFiles);
         $this->assertFalse($process->isTerminated());
         $this->assertSame([\PHP_BINARY, ...$args], $process->getCommand());
         $result = $process->run();
@@ -214,7 +215,7 @@ final class ProcessTest extends TestCase
         if (\PHP_VERSION_ID >= 80300 || Sys::isWindows()) {
             $this->expectException(ProcessException::class);
         }
-        $process = new Process($command);
+        $process = new Process([$command]);
         $result = $process->run();
         $this->assertNotSame(0, $exitStatus = $process->getExitStatus());
         $this->assertSame($exitStatus, $result);
@@ -235,9 +236,16 @@ final class ProcessTest extends TestCase
         ];
     }
 
+    public function testInvalidTimeout(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid timeout: -1');
+        new Process([], '', null, null, -1);
+    }
+
     public function testRunTwice(): void
     {
-        $process = new Process(\PHP_BINARY, [self::getFixturesPath(__CLASS__) . '/cat.php']);
+        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php']);
         $process->run();
         $this->expectException(ProcessException::class);
         $this->expectExceptionMessage('Process has already run');
@@ -248,7 +256,7 @@ final class ProcessTest extends TestCase
     {
         $this->expectException(ProcessException::class);
         $this->expectExceptionMessage('Process is not terminated');
-        $process = new Process(\PHP_BINARY);
+        $process = new Process([\PHP_BINARY]);
         $process->getExitStatus();
     }
 
@@ -256,7 +264,7 @@ final class ProcessTest extends TestCase
     {
         $this->expectException(ProcessException::class);
         $this->expectExceptionMessage('Process has not run');
-        $process = new Process(\PHP_BINARY);
+        $process = new Process([\PHP_BINARY]);
         $process->getPid();
     }
 

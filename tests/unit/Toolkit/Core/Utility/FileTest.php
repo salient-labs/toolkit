@@ -39,6 +39,24 @@ final class FileTest extends TestCase
     }
 
     /**
+     * @requires OSFAMILY Darwin
+     */
+    public function testGetCwdOnDarwin(): void
+    {
+        $dir = File::createTempDir();
+        try {
+            File::createDir("$dir/not_searchable/dir");
+            File::chdir("$dir/not_searchable/dir");
+            File::chmod("$dir/not_searchable", 0600);
+            $this->expectException(FilesystemErrorException::class);
+            $this->expectExceptionMessage('Error getting current working directory');
+            File::getCwd();
+        } finally {
+            File::deleteDir($dir, true, true);
+        }
+    }
+
+    /**
      * @dataProvider getEolProvider
      */
     public function testGetEol(?string $expected, string $content): void

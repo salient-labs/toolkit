@@ -8,6 +8,7 @@ use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\AbstractUtility;
 use Salient\Core\Indentation;
+use Salient\Core\Process;
 use Salient\Iterator\RecursiveFilesystemIterator;
 use Stringable;
 
@@ -27,21 +28,19 @@ final class File extends AbstractUtility
      */
     public static function getCwd(): string
     {
-        $pipe = self::openPipe(Sys::isWindows() ? 'cd' : 'pwd', 'rb');
-        $dir = self::getContents($pipe);
-        $status = self::closePipe($pipe);
+        $process = Process::withShellCommand(Sys::isWindows() ? 'cd' : 'pwd');
 
-        if (!$status) {
+        if ($process->run() === 0) {
+            $dir = $process->getOutput();
             if (substr($dir, -strlen(\PHP_EOL)) === \PHP_EOL) {
                 $dir = substr($dir, 0, -strlen(\PHP_EOL));
             }
             return $dir;
         }
 
-        // @codeCoverageIgnoreStart
+        error_clear_last();
         $dir = @getcwd();
         return self::throwOnFalse($dir, 'Error getting current working directory');
-        // @codeCoverageIgnoreEnd
     }
 
     /**

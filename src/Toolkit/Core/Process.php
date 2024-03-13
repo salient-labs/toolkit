@@ -33,15 +33,15 @@ final class Process
      */
     private const TIMEOUT_PRECISION = 200000;
 
-    private const OPTIONS = [
+    private const DEFAULT_OPTIONS = [
         'suppress_errors' => true,
         'bypass_shell' => true,
     ];
 
     /**
-     * @var string[]
+     * @var string[]|string
      */
-    private array $Command;
+    private $Command;
 
     /**
      * @var resource|string|null
@@ -58,6 +58,11 @@ final class Process
     private int $Timeout;
 
     private bool $UseOutputFiles;
+
+    /**
+     * @var array<string,bool>|null
+     */
+    private ?array $Options = null;
 
     private ?int $Sec = null;
 
@@ -105,15 +110,14 @@ final class Process
     ];
 
     /**
-     * Creates a new ProcessWrapper object
+     * Creates a new Process object
      *
-     * @param string[] $args
+     * @param string[] $command
      * @param resource|string|null $input
      * @param array<string,string>|null $env
      */
     public function __construct(
-        string $command,
-        array $args = [],
+        array $command,
         $input = '',
         ?string $cwd = null,
         ?array $env = null,
@@ -130,7 +134,7 @@ final class Process
             // @codeCoverageIgnoreEnd
         }
 
-        $this->Command = [$command, ...$args];
+        $this->Command = $command;
         $this->Input = $input;
         $this->Cwd = $cwd;
         $this->Env = $env;
@@ -141,6 +145,26 @@ final class Process
             $this->Sec = 0;
             $this->Usec = self::TIMEOUT_PRECISION;
         }
+    }
+
+    /**
+     * Creates a new Process object for a shell command
+     *
+     * @param resource|string|null $input
+     * @param array<string,string>|null $env
+     */
+    public static function withShellCommand(
+        string $command,
+        $input = '',
+        ?string $cwd = null,
+        ?array $env = null,
+        ?int $timeout = null,
+        bool $useOutputFiles = false
+    ): self {
+        $process = new self([], $input, $cwd, $env, $timeout, $useOutputFiles);
+        $process->Command = $command;
+        $process->Options = array_diff_key(self::DEFAULT_OPTIONS, ['bypass_shell' => null]);
+        return $process;
     }
 
     public function __destruct()
@@ -204,7 +228,7 @@ final class Process
                 $pipes,
                 $this->Cwd,
                 $this->Env,
-                self::OPTIONS,
+                $this->Options ?? self::DEFAULT_OPTIONS,
             ),
             'Error running process: %s',
         );
@@ -266,11 +290,11 @@ final class Process
     }
 
     /**
-     * Get the command parameters passed to proc_open() to spawn the process
+     * Get the command passed to proc_open() to spawn the process
      *
-     * @return string[]
+     * @return string[]|string
      */
-    public function getCommand(): array
+    public function getCommand()
     {
         return $this->Command;
     }
