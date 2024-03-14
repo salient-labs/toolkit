@@ -153,6 +153,23 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Truncate and rewind to the beginning of a stream
+     *
+     * @see ftruncate()
+     *
+     * @param resource $stream
+     * @param int<0,max> $size
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function truncate($stream, int $size = 0, $uri = null): void
+    {
+        $result = @ftruncate($stream, $size);
+        self::throwOnFalse($result, 'Error truncating stream: %s', $uri, $stream);
+        self::seek($stream, 0, \SEEK_SET, $uri);
+    }
+
+    /**
      * Rewind to the beginning of a stream
      *
      * Equivalent to `File::seek($stream, 0, \SEEK_SET, $uri)`.
