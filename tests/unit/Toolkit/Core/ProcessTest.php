@@ -10,6 +10,7 @@ use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Sys;
 use Salient\Core\Process;
 use Salient\Tests\TestCase;
+use Closure;
 
 /**
  * @covers \Salient\Core\Process
@@ -31,6 +32,7 @@ final class ProcessTest extends TestCase
      * @param array<array{string,string,string,...}> $counters
      * @param string[] $args
      * @param resource|string|null $input
+     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null $callback
      * @param array<string,string>|null $env
      */
     public function testRun(
@@ -40,6 +42,7 @@ final class ProcessTest extends TestCase
         array $counters,
         array $args = [],
         $input = '',
+        ?Closure $callback = null,
         ?string $cwd = null,
         ?array $env = null,
         ?int $timeout = null,
@@ -48,15 +51,15 @@ final class ProcessTest extends TestCase
         $this->maybeExpectException($exitStatus);
 
         $args = ['-ddisplay_startup_errors=0', ...$args];
-        $process = new Process([\PHP_BINARY, ...$args], $input, $cwd, $env, $timeout, $useOutputFiles);
+        $process = new Process([\PHP_BINARY, ...$args], $input, $callback, $cwd, $env, $timeout, $useOutputFiles);
         $this->assertFalse($process->isTerminated());
         $this->assertSame([\PHP_BINARY, ...$args], $process->getCommand());
         $result = $process->run();
 
         $this->assertSame($exitStatus, $result);
         $this->assertSame($exitStatus, $process->getExitStatus());
-        $this->assertSame($stdout, $process->getOutput());
-        $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR));
+        $this->assertSame($stdout, $process->getOutput(FileDescriptor::OUT, false));
+        $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR, false));
         $this->assertTrue($process->isTerminated());
         $this->assertIsInt($pid = $process->getPid());
         $this->assertGreaterThan(0, $pid);
@@ -76,7 +79,7 @@ final class ProcessTest extends TestCase
     }
 
     /**
-     * @return array<string,array{int|string,string,string,array<array{string,string,string,...}>,4?:string[],5?:resource|string|null,6?:string|null,7?:array<string,string>|null,8?:int|null}>
+     * @return array<string,array{int|string,string,string,array<array{string,string,string,...}>,4?:string[],5?:resource|string|null,6?:(Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null,7?:string|null,8?:array<string,string>|null,9?:int|null}>
      */
     public static function runProvider(): array
     {
@@ -177,6 +180,7 @@ final class ProcessTest extends TestCase
                 [$cat, 'print-env'],
                 '',
                 null,
+                null,
                 ['TEST' => __CLASS__],
             ],
             'delay after EOF' => [
@@ -199,6 +203,7 @@ final class ProcessTest extends TestCase
                 $counters,
                 [$cat, 'timeout'],
                 '',
+                null,
                 null,
                 null,
                 1,
@@ -240,16 +245,16 @@ final class ProcessTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid timeout: -1');
-        new Process([], '', null, null, -1);
+        new Process([], '', null, null, null, -1);
     }
 
     public function testRunTwice(): void
     {
-        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php']);
-        $process->run();
-        $this->expectException(ProcessException::class);
-        $this->expectExceptionMessage('Process has already run');
-        $process->run();
+        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo');
+        $this->assertSame(0, $process->run());
+        $this->assertSame('foo', $process->getOutput());
+        $this->assertSame(0, $process->setInput('bar')->run());
+        $this->assertSame('bar', $process->getOutput());
     }
 
     public function testGetExitStatusBeforeRun(): void

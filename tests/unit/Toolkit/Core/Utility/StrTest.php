@@ -106,6 +106,47 @@ final class StrTest extends TestCase
     }
 
     /**
+     * @dataProvider trimNativeEolProvider
+     */
+    public function testTrimNativeEol(?string $expected, ?string $value): void
+    {
+        $this->assertSame($expected, Str::trimNativeEol($value));
+    }
+
+    /**
+     * @return array<string,array{string|null,string|null}>
+     */
+    public static function trimNativeEolProvider(): array
+    {
+        $eol2 = \PHP_EOL === "\n"
+            ? "\r\n"
+            : "\n";
+
+        return [
+            'null' => [null, null],
+            'empty' => ['', ''],
+            'no EOL' => ['foo', 'foo'],
+            'native EOL' => ['foo', 'foo' . \PHP_EOL],
+            'native EOL x2' => ['foo', 'foo' . \PHP_EOL . \PHP_EOL],
+            'native EOL x3' => ['foo', 'foo' . \PHP_EOL . \PHP_EOL . \PHP_EOL],
+            'leading native EOL' => [\PHP_EOL . 'foo', \PHP_EOL . 'foo'],
+            'inner native EOL' => ['foo' . \PHP_EOL . 'bar', 'foo' . \PHP_EOL . 'bar'],
+            'mixed native EOL' => [\PHP_EOL . 'foo' . \PHP_EOL . 'bar', \PHP_EOL . 'foo' . \PHP_EOL . 'bar' . \PHP_EOL . \PHP_EOL],
+            'non-native EOL' => ['foo' . $eol2, 'foo' . $eol2],
+            'non-native EOL x2' => ['foo' . $eol2 . $eol2, 'foo' . $eol2 . $eol2],
+            'non-native EOL x3' => ['foo' . $eol2 . $eol2 . $eol2, 'foo' . $eol2 . $eol2 . $eol2],
+            'non-native EOL + native EOL' => ['foo' . $eol2, 'foo' . $eol2 . \PHP_EOL],
+            'non-native EOL x2 + native EOL x2' => ['foo' . $eol2 . $eol2, 'foo' . $eol2 . $eol2 . \PHP_EOL . \PHP_EOL],
+            'non-native EOL x3 + native EOL x3' => ['foo' . $eol2 . $eol2 . $eol2, 'foo' . $eol2 . $eol2 . $eol2 . \PHP_EOL . \PHP_EOL . \PHP_EOL],
+            '(non-native EOL + native EOL) x3' => ['foo' . $eol2 . \PHP_EOL . $eol2 . \PHP_EOL . $eol2, 'foo' . $eol2 . \PHP_EOL . $eol2 . \PHP_EOL . $eol2 . \PHP_EOL],
+            'native EOL + non-native EOL' => ['foo' . \PHP_EOL . $eol2, 'foo' . \PHP_EOL . $eol2],
+            'native EOL x2 + non-native EOL x2' => ['foo' . \PHP_EOL . \PHP_EOL . $eol2 . $eol2, 'foo' . \PHP_EOL . \PHP_EOL . $eol2 . $eol2],
+            'native EOL x3 + non-native EOL x3' => ['foo' . \PHP_EOL . \PHP_EOL . \PHP_EOL . $eol2 . $eol2 . $eol2, 'foo' . \PHP_EOL . \PHP_EOL . \PHP_EOL . $eol2 . $eol2 . $eol2],
+            '(native EOL + non-native EOL) x3' => ['foo' . \PHP_EOL . $eol2 . \PHP_EOL . $eol2 . \PHP_EOL . $eol2, 'foo' . \PHP_EOL . $eol2 . \PHP_EOL . $eol2 . \PHP_EOL . $eol2],
+        ];
+    }
+
+    /**
      * @dataProvider eolToNativeProvider
      */
     public function testEolToNative(?string $expected, ?string $string): void
