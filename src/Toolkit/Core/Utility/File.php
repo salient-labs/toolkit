@@ -153,6 +153,24 @@ final class File extends AbstractUtility
     }
 
     /**
+     * If a stream is not seekable, copy it to a temporary stream that is
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @return resource
+     */
+    public static function getSeekable($stream, $uri = null)
+    {
+        if (self::isSeekable($stream)) {
+            return $stream;
+        }
+
+        $seekable = File::open('php://temp', 'r+');
+        File::copy($stream, $seekable, $uri);
+        return $seekable;
+    }
+
+    /**
      * Truncate and rewind to the beginning of a stream
      *
      * @see ftruncate()
@@ -730,7 +748,11 @@ final class File extends AbstractUtility
             return;
         }
 
-        $result = @mkdir($directory, 0777, true) && @chmod($directory, $permissions);
+        $parent = dirname($directory);
+        $result =
+            (is_dir($parent) || @mkdir($parent, 0777, true)) &&
+            @mkdir($directory, $permissions) &&
+            (!Sys::isWindows() || @chmod($directory, $permissions));
         self::throwOnFalse($result, 'Error creating directory: %s', $directory);
     }
 
@@ -875,6 +897,9 @@ final class File extends AbstractUtility
                 Get::randomText(8),
             );
         } while (!@mkdir($dir, 0700));
+        if (Sys::isWindows()) {
+            self::chmod($dir, 0700);
+        }
 
         return $dir;
     }
