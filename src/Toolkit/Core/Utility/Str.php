@@ -154,6 +154,36 @@ final class Str extends AbstractUtility
     }
 
     /**
+     * Remove native end-of-line sequences from the end of a string
+     *
+     * @template T of string|null
+     *
+     * @param T $string
+     * @return T
+     */
+    public static function trimNativeEol(?string $string): ?string
+    {
+        if ($string === null || $string === '') {
+            return $string;
+        }
+
+        if (\PHP_EOL === "\n") {
+            $s = rtrim($string, "\n");
+            if ($s === $string || $s === '' || $s[-1] !== "\r") {
+                return $s;
+            }
+            return "$s\n";
+        }
+
+        $length = strlen(\PHP_EOL);
+        while (substr($string, -$length) === \PHP_EOL) {
+            $string = substr($string, 0, -$length);
+        }
+
+        return $string;
+    }
+
+    /**
      * Replace newlines in a string with native end-of-line sequences
      *
      * @template T of string|null

@@ -31,11 +31,7 @@ final class File extends AbstractUtility
         $process = Process::withShellCommand(Sys::isWindows() ? 'cd' : 'pwd');
 
         if ($process->run() === 0) {
-            $dir = $process->getOutput();
-            if (substr($dir, -strlen(\PHP_EOL)) === \PHP_EOL) {
-                $dir = substr($dir, 0, -strlen(\PHP_EOL));
-            }
-            return $dir;
+            return $process->getOutput();
         }
 
         error_clear_last();
@@ -116,19 +112,8 @@ final class File extends AbstractUtility
         if ($result !== false) {
             return $result;
         }
-        $error = error_get_last();
-        if (@feof($stream)) {
-            return '';
-        }
-        // @codeCoverageIgnoreStart
-        if ($error) {
-            throw new FilesystemErrorException($error['message']);
-        }
-        throw new FilesystemErrorException(sprintf(
-            'Error reading from stream: %s',
-            self::getFriendlyStreamUri($uri, $stream),
-        ));
-        // @codeCoverageIgnoreEnd
+        self::checkEof($stream, $uri);
+        return '';
     }
 
     /**
@@ -164,6 +149,55 @@ final class File extends AbstractUtility
     }
 
     /**
+     * If a stream is not seekable, copy it to a temporary stream that is
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @return resource
+     */
+    public static function getSeekable($stream, $uri = null)
+    {
+        if (self::isSeekable($stream)) {
+            return $stream;
+        }
+
+        $seekable = self::open('php://temp', 'r+');
+        self::copy($stream, $seekable, false, $uri);
+        return $seekable;
+    }
+
+    /**
+     * Truncate and rewind to the beginning of a stream
+     *
+     * @see ftruncate()
+     *
+     * @param resource $stream
+     * @param int<0,max> $size
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function truncate($stream, int $size = 0, $uri = null): void
+    {
+        $result = @ftruncate($stream, $size);
+        self::throwOnFalse($result, 'Error truncating stream: %s', $uri, $stream);
+        self::seek($stream, 0, \SEEK_SET, $uri);
+    }
+
+    /**
+     * Rewind to the beginning of a stream if it is seekable
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function maybeRewind($stream, $uri = null): void
+    {
+        if (self::isSeekable($stream)) {
+            self::seek($stream, 0, \SEEK_SET, $uri);
+        }
+    }
+
+    /**
      * Rewind to the beginning of a stream
      *
      * Equivalent to `File::seek($stream, 0, \SEEK_SET, $uri)`.
@@ -175,6 +209,21 @@ final class File extends AbstractUtility
     public static function rewind($stream, $uri = null): void
     {
         self::seek($stream, 0, \SEEK_SET, $uri);
+    }
+
+    /**
+     * Set the file position indicator for a stream if it is seekable
+     *
+     * @param resource $stream
+     * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function maybeSeek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
+    {
+        if (self::isSeekable($stream)) {
+            self::seek($stream, $offset, $whence, $uri);
+        }
     }
 
     /**
@@ -209,18 +258,20 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Copy a file or stream
+     * Copy a file or stream to another file or stream
      *
      * @see copy()
      * @see stream_copy_to_stream()
      *
-     * @param Stringable|string|resource $from
-     * @param Stringable|string|resource $to
+     * @param Stringable|string|resource $from If `$from` is a seekable stream,
+     * it is rewound before copying.
+     * @param Stringable|string|resource $to If `$to` is a seekable stream, it
+     * is rewound after copying.
      * @param Stringable|string|null $fromUri
      * @param Stringable|string|null $toUri
      * @throws FilesystemErrorException on failure.
      */
-    public static function copy($from, $to, $fromUri = null, $toUri = null): void
+    public static function copy($from, $to, bool $truncateTo = false, $fromUri = null, $toUri = null): void
     {
         $fromIsResource = is_resource($from);
         $toIsResource = is_resource($to);
@@ -236,6 +287,10 @@ final class File extends AbstractUtility
         if ($fromIsResource && $toIsResource) {
             self::assertResourceIsStream($from);
             self::assertResourceIsStream($to);
+            self::maybeRewind($from, $fromUri);
+            if ($truncateTo) {
+                self::truncate($to, 0, $toUri);
+            }
             $result = @stream_copy_to_stream($from, $to);
             self::throwOnFalse(
                 $result,
@@ -244,6 +299,7 @@ final class File extends AbstractUtility
                 $from,
                 self::getFriendlyStreamUri($toUri, $to),
             );
+            self::maybeRewind($to, $toUri);
             return;
         }
 
@@ -360,11 +416,11 @@ final class File extends AbstractUtility
      * @param Stringable|string|null $uri
      * @throws FilesystemErrorException on failure.
      */
-    public static function getContents($resource, $uri = null): string
+    public static function getContents($resource, ?int $offset = null, $uri = null): string
     {
         if (is_resource($resource)) {
             self::assertResourceIsStream($resource);
-            $result = @stream_get_contents($resource);
+            $result = @stream_get_contents($resource, -1, $offset ?? -1);
             return self::throwOnFalse($result, 'Error reading stream: %s', $uri, $resource);
         }
 
@@ -373,7 +429,7 @@ final class File extends AbstractUtility
         }
 
         $resource = (string) $resource;
-        $result = @file_get_contents($resource);
+        $result = @file_get_contents($resource, false, null, $offset ?? 0);
         return self::throwOnFalse($result, 'Error reading file: %s', $resource);
     }
 
@@ -724,7 +780,11 @@ final class File extends AbstractUtility
             return;
         }
 
-        $result = @mkdir($directory, 0777, true) && @chmod($directory, $permissions);
+        $parent = dirname($directory);
+        $result =
+            (is_dir($parent) || @mkdir($parent, 0777, true)) &&
+            @mkdir($directory, $permissions) &&
+            (!Sys::isWindows() || @chmod($directory, $permissions));
         self::throwOnFalse($result, 'Error creating directory: %s', $directory);
     }
 
@@ -869,6 +929,9 @@ final class File extends AbstractUtility
                 Get::randomText(8),
             );
         } while (!@mkdir($dir, 0700));
+        if (Sys::isWindows()) {
+            self::chmod($dir, 0700);
+        }
 
         return $dir;
     }
@@ -1197,28 +1260,33 @@ final class File extends AbstractUtility
     public static function readCsv($resource): array
     {
         $handle = self::getStream($resource, 'rb', $close, $uri);
-
         while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
             $data[] = $row;
         }
-
-        $error = error_get_last();
-
-        if (!@feof($handle)) {
-            if ($error) {
-                throw new FilesystemErrorException($error['message']);
-            }
-            throw new FilesystemErrorException(sprintf(
-                'Error reading from stream: %s',
-                self::getFriendlyStreamUri($uri, $handle),
-            ));
-        }
-
+        self::checkEof($handle, $uri);
         if ($close) {
             self::close($handle, $uri);
         }
-
         return $data ?? [];
+    }
+
+    /**
+     * @param resource $resource
+     * @param Stringable|string|null $uri
+     */
+    private static function checkEof($resource, $uri = null): void
+    {
+        $error = error_get_last();
+        if (@feof($resource)) {
+            return;
+        }
+        if ($error) {
+            throw new FilesystemErrorException($error['message']);
+        }
+        throw new FilesystemErrorException(sprintf(
+            'Error reading from %s',
+            self::getFriendlyStreamUri($uri, $resource),
+        ));
     }
 
     /**

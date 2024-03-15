@@ -135,7 +135,7 @@ class Stream implements StreamInterface, Stringable
     {
         $this->assertIsReadable();
 
-        return File::getContents($this->Stream, $this->Uri);
+        return File::getContents($this->Stream, null, $this->Uri);
     }
 
     /**

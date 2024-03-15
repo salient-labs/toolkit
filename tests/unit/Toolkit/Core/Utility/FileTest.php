@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Core\Utility;
 
+use org\bovigo\vfs\vfsStream;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Package;
@@ -54,6 +55,31 @@ final class FileTest extends TestCase
         } finally {
             File::deleteDir($dir, true, true);
         }
+    }
+
+    public function testOpen(): void
+    {
+        vfsStream::setup('root');
+        $file = vfsStream::url('root/file');
+        $this->assertFileDoesNotExist($file);
+        $stream = File::open($file, 'w');
+        $this->assertIsResource($stream);
+        $this->assertFileExists($file);
+        $this->assertSame(0, File::size($file));
+    }
+
+    public function testTruncate(): void
+    {
+        vfsStream::setup('root');
+        $file = vfsStream::url('root/file');
+        $stream = File::open($file, 'w');
+        File::write($stream, str_repeat("\0", $length = 1024), null, $file);
+        $this->assertSame($length, File::size($file));
+        $this->assertSame($length, File::tell($stream, $file));
+        File::truncate($stream, 0, $file);
+        clearstatcache();
+        $this->assertSame(0, File::size($file));
+        $this->assertSame(0, File::tell($stream, $file));
     }
 
     /**
