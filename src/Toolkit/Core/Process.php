@@ -683,7 +683,9 @@ final class Process
     private function filterInput($input)
     {
         return $input === null
+            // @codeCoverageIgnoreStart
             ? null
+            // @codeCoverageIgnoreEnd
             : (is_string($input)
                 ? Str::toStream($input)
                 : File::getSeekable($input));
