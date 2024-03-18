@@ -15,9 +15,9 @@ final class StrTest extends TestCase
     /**
      * @dataProvider coalesceProvider
      */
-    public function testCoalesce(?string $expected, ?string $string, ?string ...$strings): void
+    public function testCoalesce(?string $expected, ?string ...$strings): void
     {
-        $this->assertSame($expected, Str::coalesce($string, ...$strings));
+        $this->assertSame($expected, Str::coalesce(...$strings));
     }
 
     /**
@@ -30,6 +30,12 @@ final class StrTest extends TestCase
             ['', ''],
             [null, '', null],
             ['', null, ''],
+            [null, null, '', null],
+            ['foo', '', 'foo'],
+            ['foo', 'foo', ''],
+            ['foo', null, 'foo'],
+            ['foo', 'foo', null],
+            ['foo', null, 'foo', null],
             ['a', '', null, 'a', null],
             ['0', '0', '1', null],
         ];

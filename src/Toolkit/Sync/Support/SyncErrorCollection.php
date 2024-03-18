@@ -20,35 +20,35 @@ final class SyncErrorCollection extends AbstractTypedCollection implements JsonS
     /**
      * Get a JSON:API-compatible representation of the errors
      *
-     * @return array<array{code:string,title:string,detail:string,meta:array{level:string,count:int,seen:int,values:mixed[]}}>
+     * @return array<array{code:string,title:string,detail:string,meta:array{level:string,count:int,seen:int,values:list<mixed[]|object|int|float|string|bool|null>}}>
      */
     public function toSummary(): array
     {
-        $summary = [];
         /** @var SyncError $error */
         foreach ($this as $error) {
             $code = $error->getCode();
             $message = $error->Message;
             $key = "$code.$message";
-            if (!isset($summary[$key])) {
-                $summary[$key] = [
-                    'code' => $code,
-                    'title' => ErrorType::toName($error->ErrorType),
-                    'detail' => $message,
-                    'meta' => [
-                        'level' => Level::toName($error->Level),
-                        'count' => 0,
-                        'seen' => 0,
-                    ],
-                ];
-            }
-            $summary[$key]['meta']['values'][] = Arr::unwrap($error->Values);
+
+            $summary[$key] ??= [
+                'code' => $code,
+                'title' => ErrorType::toName($error->ErrorType),
+                'detail' => $message,
+                'meta' => [
+                    'level' => Level::toName($error->Level),
+                    'count' => 0,
+                    'seen' => 0,
+                ],
+            ];
+
+            /** @var mixed[]|object|int|float|string|bool|null */
+            $values = Arr::unwrap($error->Values);
+            $summary[$key]['meta']['values'][] = $values;
             $summary[$key]['meta']['count']++;
             $summary[$key]['meta']['seen'] += $error->Count;
         }
-        ksort($summary);
 
-        return array_values($summary);
+        return array_values(Arr::sortByKey($summary ?? []));
     }
 
     /**

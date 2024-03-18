@@ -40,7 +40,7 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @return array<array{mixed,string,array<array-key,mixed>,mixed}>
+     * @return array<array{mixed,string,array<array-key,mixed>,3?:mixed}>
      */
     public static function getProvider(): array
     {
@@ -332,17 +332,17 @@ final class ArrTest extends TestCase
     /**
      * @dataProvider implodeProvider
      *
-     * @param mixed[] $array
+     * @param iterable<int|float|string|bool|Stringable|null> $array
      */
-    public function testImplode(string $expected, string $separator, array $array): void
+    public function testImplode(string $expected, string $separator, iterable $array): void
     {
         $this->assertSame($expected, Arr::implode($separator, $array));
     }
 
     /**
-     * @return array<array{string,string,mixed[]}>
+     * @return array<array{string,string,iterable<int|float|string|bool|Stringable|null>}>
      */
-    public static function implodeProvider(): array
+    public static function implodeProvider(): iterable
     {
         return [
             [
@@ -444,7 +444,7 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @return array<array{array-key,mixed,mixed[]}>
+     * @return array<array{array-key|null,mixed,mixed[]}>
      */
     public static function keyOfProvider(): array
     {
@@ -665,7 +665,10 @@ final class ArrTest extends TestCase
     /**
      * @dataProvider ofProvider
      *
+     * @template T of object
+     *
      * @param mixed $value
+     * @param class-string<T> $class
      */
     public function testOf(
         $value,
@@ -1161,7 +1164,7 @@ final class ArrTest extends TestCase
      *
      * @param mixed[] $expected
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
+     * @param (callable(TKey, TKey): int)|int-mask-of<SortFlag::*> $callbackOrFlags
      */
     public function testSortByKey(array $expected, array $array, $callbackOrFlags = \SORT_REGULAR): void
     {
@@ -1589,11 +1592,12 @@ final class ArrTest extends TestCase
      * @dataProvider toScalarsProvider
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|null
+     * @template TValue of int|float|string|bool
+     * @template TNull of TValue|null
      *
-     * @param array<TKey,TValue> $expected
-     * @param iterable<TKey,TValue|mixed[]|object> $array
-     * @param TValue|null $null
+     * @param array<TKey,TValue|TNull|string> $expected
+     * @param iterable<TKey,TValue|mixed[]|object|null> $array
+     * @param TNull $null
      */
     public function testToScalars(array $expected, iterable $array, $null = null): void
     {
@@ -1601,7 +1605,7 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @return array<array{mixed[],mixed[]}>
+     * @return array<array{mixed[],mixed[],2?:mixed}>
      */
     public static function toScalarsProvider(): array
     {
@@ -1699,7 +1703,7 @@ final class ArrTest extends TestCase
     /**
      * @dataProvider trimAndImplodeProvider
      *
-     * @param iterable<mixed> $array
+     * @param iterable<int|float|string|bool|Stringable|null> $array
      */
     public function testTrimAndImplode(string $expected, string $separator, iterable $array, ?string $characters = null, bool $removeEmpty = true): void
     {
@@ -1707,7 +1711,7 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @return array<array{string,string,mixed[],3?:string|null,4?:bool}>
+     * @return array<array{string,string,iterable<int|float|string|bool|Stringable|null>,3?:string|null,4?:bool}>
      */
     public static function trimAndImplodeProvider(): array
     {
@@ -2119,9 +2123,14 @@ final class ArrTest extends TestCase
     /**
      * @dataProvider withProvider
      *
+     * @template TKey of array-key
+     * @template TValue
+     * @template T
+     *
      * @param mixed $expected
-     * @param iterable<mixed> $array
-     * @param mixed $value
+     * @param callable(T, TValue, TKey): T $callback
+     * @param iterable<TKey,TValue> $array
+     * @param T $value
      */
     public function testWith($expected, callable $callback, iterable $array, $value): void
     {

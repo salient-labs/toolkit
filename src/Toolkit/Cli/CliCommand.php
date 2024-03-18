@@ -490,8 +490,8 @@ abstract class CliCommand implements CliCommandInterface
         $summary = $formatter->escapeTags($this->description());
         $synopsis = $this->getSynopsis($style);
 
-        $description = $this->getLongDescription();
-        if ($description !== null && $description !== '') {
+        $description = $this->getLongDescription() ?? '';
+        if ($description !== '') {
             $description = $this->prepareHelp($style, $description);
         }
 
@@ -579,7 +579,7 @@ abstract class CliCommand implements CliCommandInterface
         $synopsis = $formatter->formatTags(
             $synopsis,
             false,
-            [$width, $width - 4],
+            $width !== null ? [$width, $width - 4] : null,
             true,
         );
         $synopsis = $prefix . str_replace("\n", $newline, $synopsis);
@@ -754,10 +754,12 @@ abstract class CliCommand implements CliCommandInterface
         // Preserve essential properties in their original order
         $schema = array_merge($schema, $this->filterJsonSchema($schema));
 
-        foreach (['required', 'properties'] as $property) {
-            if ($schema[$property] === []) {
-                unset($schema[$property]);
-            }
+        if ($schema['required'] === []) {
+            unset($schema['required']);
+        }
+
+        if ($schema['properties'] === []) {
+            unset($schema['properties']);
         }
 
         return $schema;
@@ -790,7 +792,8 @@ abstract class CliCommand implements CliCommandInterface
         bool $asArguments = false,
         bool $forgetArguments = false
     ): array {
-        $this->assertHasRun()->loadOptions();
+        $this->assertHasRun();
+        $this->loadOptions();
         if ($asArguments && $forgetArguments) {
             if (!$schema) {
                 $this->ArgumentValues = [];
@@ -880,7 +883,8 @@ abstract class CliCommand implements CliCommandInterface
         bool $schema = false,
         bool $unexpand = false
     ): array {
-        $this->assertHasRun()->loadOptions();
+        $this->assertHasRun();
+        $this->loadOptions();
         $options = $schema ? $this->SchemaOptions : $this->Options;
         foreach ($options as $key => $option) {
             $given = array_key_exists($option->Key, $this->ArgumentValues);
@@ -946,7 +950,8 @@ abstract class CliCommand implements CliCommandInterface
      */
     final protected function getOptionValue(string $name)
     {
-        $this->assertHasRun()->loadOptions();
+        $this->assertHasRun();
+        $this->loadOptions();
         $option = $this->_getOption($name, false);
         return $this->OptionValues[$option->Key] ?? null;
     }
@@ -958,7 +963,8 @@ abstract class CliCommand implements CliCommandInterface
      */
     final protected function optionHasArgument(string $name): bool
     {
-        $this->assertHasRun()->loadOptions();
+        $this->assertHasRun();
+        $this->loadOptions();
         $option = $this->_getOption($name, false);
         return array_key_exists($option->Key, $this->ArgumentValues);
     }
@@ -1005,6 +1011,9 @@ abstract class CliCommand implements CliCommandInterface
         return $option;
     }
 
+    /**
+     * @phpstan-assert !null $this->NextArgumentIndex
+     */
     private function loadOptionValues(): void
     {
         $this->loadOptions();
@@ -1069,10 +1078,10 @@ abstract class CliCommand implements CliCommandInterface
      */
     private function mergeArguments(
         array $args,
-        ?array &$argValues,
+        array &$argValues,
         ?int &$nextArgumentIndex,
-        ?bool &$hasHelpArgument,
-        ?bool &$hasVersionArgument
+        bool &$hasHelpArgument,
+        bool &$hasVersionArgument
     ): array {
         $saveArgValue =
             function (string $key, $value) use (&$argValues, &$saved, &$option) {
@@ -1255,6 +1264,7 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * @return $this
+     * @phpstan-assert !null $this->Options
      */
     private function loadOptions()
     {

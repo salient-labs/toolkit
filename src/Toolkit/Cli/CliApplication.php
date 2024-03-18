@@ -230,6 +230,7 @@ class CliApplication extends Application implements CliApplicationInterface
         $progName = $this->getProgramName();
         $fullName = trim("$progName $name");
         $synopses = [];
+        /** @var array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface>|false|null $childNode */
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {
@@ -272,6 +273,7 @@ class CliApplication extends Application implements CliApplicationInterface
         $style = $style->withCollapseSynopsis();
         $fullName = trim("$progName $name");
         $synopses = [];
+        /** @var array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface>|false|null $childNode */
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {

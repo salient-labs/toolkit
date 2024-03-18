@@ -49,7 +49,7 @@ use LogicException;
  * @property-read bool $ValueOptional True if the option has an optional value
  * @property-read bool $MultipleAllowed True if the option may be given more than once
  * @property-read bool $Unique True if the same value may not be given more than once
- * @property-read string|null $Delimiter The separator between values passed to the option as a single argument
+ * @property-read non-empty-string|null $Delimiter The separator between values passed to the option as a single argument
  * @property-read string|null $Description A description of the option
  * @property-read array<string|int|bool>|null $AllowedValues The option's possible values, indexed by lowercase value if not case-sensitive
  * @property-read bool $CaseSensitive True if the option's values are case-sensitive
@@ -221,6 +221,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * The separator between values passed to the option as a single argument
      *
      * Ignored if {@see CliOption::$MultipleAllowed} is `false`.
+     *
+     * @var non-empty-string|null
      */
     protected ?string $Delimiter;
 
@@ -540,8 +542,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
             if (
                 $this->DefaultValue && (
-                    Arr::same($this->DefaultValue, $values) ||
-                    in_array('ALL', $this->DefaultValue, true)
+                    Arr::same((array) $this->DefaultValue, $values) ||
+                    in_array('ALL', (array) $this->DefaultValue, true)
                 )
             ) {
                 $this->DefaultValue = ['ALL'];
@@ -594,13 +596,15 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      */
     public function getJsonSchema(): array
     {
+        $schema = [];
+
         $summary = $this->getSummary();
         if ($summary !== null) {
             $schema['description'][] = $summary;
         }
 
         if ($this->IsOneOf) {
-            $type['enum'] = $this->normaliseForSchema(array_values($this->AllowedValues));
+            $type['enum'] = $this->normaliseForSchema(array_values((array) $this->AllowedValues));
         } else {
             $type['type'][] = $this->getJsonSchemaType();
         }
@@ -629,7 +633,9 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         }
 
         if (isset($type['type'])) {
-            $type['type'] = Arr::unwrap($type['type']);
+            if (count($type['type']) === 1) {
+                $type['type'] = $type['type'][0];
+            }
         }
 
         if ($this->MultipleAllowed && !$this->IsFlag) {
@@ -639,7 +645,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
                 $schema['uniqueItems'] = true;
             }
         } else {
-            $schema ??= [];
             $schema += $type;
         }
 
@@ -652,7 +657,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
                 : $this->normaliseForSchema($this->OriginalDefaultValue);
         }
 
-        if (isset($schema['description'])) {
+        if (array_key_exists('description', $schema)) {
             $schema['description'] = implode(' ', $schema['description']);
         }
 
@@ -749,6 +754,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             return '';
         }
 
+        /** @var non-empty-string */
         $delimiter = Str::coalesce(
             $this->MultipleAllowed ? $this->Delimiter : null,
             ','
@@ -888,7 +894,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             }
         }
 
-        if ($this->ValueCallback) {
+        if ($this->ValueCallback !== null) {
             $this->maybeCheckUnique($value);
             return ($this->ValueCallback)($value);
         }
@@ -962,6 +968,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             }
         }
 
+        /** @var T */
         return $this->MultipleAllowed ? $value : Arr::first($value);
     }
 
@@ -984,8 +991,10 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     }
 
     /**
-     * @param array<string|int|bool>|string|int|bool $value
-     * @return array<string|int|bool>|string|int|bool
+     * @template T of array<string|int|bool>|string|int|bool
+     *
+     * @param T $value
+     * @return (T is array ? array<string|int|bool> : string|int|bool)
      */
     private function normaliseForSchema($value)
     {
@@ -1024,7 +1033,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
                 return (string) $value;
 
             case CliOptionValueType::DATE:
-                return new DateTimeImmutable($value);
+                return new DateTimeImmutable((string) $value);
 
             case CliOptionValueType::PATH:
                 return $this->checkPath($value, $checkPathExists, 'path', 'file_exists');
@@ -1127,11 +1136,12 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
     /**
      * @param array<string|int|bool>|string|int|bool|null $value
+     * @return true|never
      */
-    private function maybeCheckUnique($value): void
+    private function maybeCheckUnique($value): bool
     {
         if ($value === null || $value === '' || $value === [] || !$this->Unique) {
-            return;
+            return true;
         }
 
         $value = $this->maybeSplitValue($value);
@@ -1141,5 +1151,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
                 sprintf('%s does not accept the same value multiple times', $this->DisplayName)
             );
         }
+
+        return true;
     }
 }

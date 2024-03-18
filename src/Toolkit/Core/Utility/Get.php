@@ -222,21 +222,19 @@ final class Get extends AbstractUtility
      *
      * @template T
      *
-     * @param T|null $value
      * @param T|null ...$values
      * @return T|null
      */
-    public static function coalesce($value, ...$values)
+    public static function coalesce(...$values)
     {
-        array_unshift($values, $value);
-        $last = array_pop($values);
+        $value = null;
         foreach ($values as $value) {
             if ($value === null) {
                 continue;
             }
             return $value;
         }
-        return $last;
+        return $value;
     }
 
     /**
