@@ -69,7 +69,7 @@ $facades = [
     Config::class => [ConfigurationManager::class, '--api'],
     Console::class => [ConsoleWriter::class, '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
-    Event::class => EventDispatcher::class,
+    Event::class => [EventDispatcher::class, '--api'],
     Sync::class => SyncStore::class,
     Profile::class => [MetricCollector::class, '--api'],
     // Test fixtures

@@ -196,11 +196,6 @@ parameters:
 			path: src/Sli/Support/TokenExtractor.php
 
 		-
-			message: "#^Parameter \\#1 \\$glue of function implode expects string, string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
 			message: "#^Parameter \\#2 \\$pieces of function implode expects array, array\\<int, string\\>\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Cli/CliCommand.php
@@ -243,11 +238,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$stream of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:write\\(\\) expects resource, resource\\|null given\\.$#"
 			count: 3
-			path: src/Toolkit/Console/Target/StreamTarget.php
-
-		-
-			message: "#^Property Salient\\\\Console\\\\Target\\\\StreamTarget\\:\\:\\$TimestampFormat \\(string\\) does not accept string\\|null\\.$#"
-			count: 1
 			path: src/Toolkit/Console/Target/StreamTarget.php
 
 		-
@@ -311,11 +301,6 @@ parameters:
 			path: src/Toolkit/Core/AbstractConvertibleEnumeration.php
 
 		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Contract\\\\Container\\\\BeforeGlobalContainerSetEventInterface\\)\\: void given\\.$#"
-			count: 2
-			path: src/Toolkit/Core/AbstractFacade.php
-
-		-
 			message: "#^Method Salient\\\\Core\\\\AbstractReflectiveEnumeration\\:\\:fromName\\(\\) should return TValue of \\(int\\|string\\) but returns int\\|string\\.$#"
 			count: 1
 			path: src/Toolkit/Core/AbstractReflectiveEnumeration.php
@@ -336,19 +321,9 @@ parameters:
 			path: src/Toolkit/Core/ArrayMapper.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\ConfigurationManager\\:\\:getMany\\(\\) should return array\\<string, mixed\\> but returns array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/ConfigurationManager.php
-
-		-
 			message: "#^Parameter \\#1 \\$key of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:get\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/ConfigurationManager.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Exception\\\\PcreErrorException\\:\\:getErrorNameMap\\(\\) should return array\\<int, string\\> but returns array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Exception/PcreErrorException.php
 
 		-
 			message: "#^Argument of an invalid type array\\<string, array\\<int, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Relatable\\>\\>\\>\\|false supplied for foreach, only iterables are supported\\.$#"
@@ -356,7 +331,7 @@ parameters:
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Parameter \\#1 \\$arr1 of function array_intersect expects array, array\\<mixed, mixed\\>\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$arr1 of function array_intersect expects array, array\\<mixed\\>\\|false given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
 
@@ -381,12 +356,12 @@ parameters:
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Parameter \\#2 \\$arr2 of function array_intersect expects array, array\\<mixed, mixed\\>\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$arr2 of function array_intersect expects array, array\\<mixed\\>\\|false given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$args of function array_merge expects array, array\\<mixed, mixed\\>\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\.\\.\\.\\$args of function array_merge expects array, array\\<mixed\\>\\|false given\\.$#"
 			count: 2
 			path: src/Toolkit/Core/IntrospectionClass.php
 
@@ -406,7 +381,7 @@ parameters:
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$PublicProperties \\(array\\<string, string\\>\\) does not accept array\\<mixed, mixed\\>\\|false\\.$#"
+			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$PublicProperties \\(array\\<string, string\\>\\) does not accept array\\<mixed\\>\\|false\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
 
@@ -491,11 +466,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Arr.php
 
 		-
-			message: "#^Parameter \\#1 \\$object_or_string of function is_a expects object, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Assert.php
-
-		-
 			message: "#^Method Salient\\\\Core\\\\Utility\\\\Debug\\:\\:getCaller\\(\\) should return array\\{namespace\\?\\: string, class\\?\\: string, file\\?\\: string, 0\\?\\: string, function\\?\\: string, 1\\?\\: string, line\\?\\: int\\} but returns array\\<int\\|string, int\\|string\\|null\\>\\.$#"
 			count: 2
 			path: src/Toolkit/Core/Utility/Debug.php
@@ -507,11 +477,6 @@ parameters:
 
 		-
 			message: "#^Cannot cast mixed to string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\File\\:\\:dir\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/File.php
 
@@ -599,31 +564,6 @@ parameters:
 			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Inflect.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Package\\:\\:hasDevPackages\\(\\) should return bool but returns array\\<string\\>\\|bool\\|string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Package\\:\\:name\\(\\) should return string but returns array\\<string\\>\\|bool\\|string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:realpath\\(\\) expects string, array\\<string\\>\\|bool\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Parameter \\#1 \\$ref of static method Salient\\\\Core\\\\Utility\\\\Package\\:\\:formatReference\\(\\) expects string\\|null, array\\<string\\>\\|bool\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Parameter \\#1 \\$version of static method Salient\\\\Core\\\\Utility\\\\Package\\:\\:formatVersion\\(\\) expects string, array\\<string\\>\\|bool\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
 
 		-
 			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:matchAll\\(\\) should return int but returns int\\<0, max\\>\\|null\\.$#"
@@ -1446,37 +1386,12 @@ parameters:
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getDetectRecursion\\(\\) should return bool but returns bool\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getFlags\\(\\) should return int\\<0, 1\\> but returns int\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getIncludeMeta\\(\\) should return bool but returns bool\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRecurseRules\\(\\) should return bool but returns bool\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveCanonicalId\\(\\) should return bool but returns bool\\|null\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getFlags\\(\\) should return int\\<0, 1\\> but returns int\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
 			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveFrom\\(\\) should return array\\<string, string\\> but returns array\\<string, array\\<Closure\\|string\\>\\|Closure\\|string\\|false\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getSortByKey\\(\\) should return bool but returns bool\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
@@ -1596,31 +1511,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/DotNetDateParserTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\BaseEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\MainEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\NamedEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, array\\{\\$this\\(Salient\\\\Tests\\\\Core\\\\EventDispatcherTest\\), 'listenCallback'\\} given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of static method Salient\\\\Core\\\\Facade\\\\Event\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\MainEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
 			message: "#^Cannot access offset 0 on array\\{float, int\\}\\|float\\|int\\.$#"
 			count: 8
 			path: tests/unit/Toolkit/Core/MetricCollectorTest.php
@@ -1634,11 +1524,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$iterator of function iterator_to_array expects Traversable, iterable given\\.$#"
 			count: 2
 			path: tests/unit/Toolkit/Core/PipelineTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$class of static method Salient\\\\Core\\\\Utility\\\\Assert\\:\\:instanceOf\\(\\) expects class\\-string\\<object\\>, string given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/AssertTest.php
 
 		-
 			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\DateTest\\:\\:durationProvider\\(\\) should return array\\<array\\{int, DateInterval\\|string\\}\\> but returns array\\{array\\{0, 'P0D'\\}, array\\{0, 'PT0S'\\}, array\\{777600\\|'Salient\\\\\\\\Core…', 'P1W2D'\\}, array\\{777600, 'P9D'\\}, array\\{2880, 'PT48M'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'P1WD'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'P2D1W'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'pt48m'\\}\\}\\.$#"
@@ -1669,11 +1554,6 @@ parameters:
 			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\InflectTest\\:\\:getPluralData\\(\\) should return array\\<string, array\\{float, array\\<array\\{string, string\\}\\>\\}\\> but returns array\\{legacy\\: array\\{100\\.0, array\\{array\\{'blitz', 'blitzes'\\}, array\\{'boy', 'boys'\\}, array\\{'bus', 'buses'\\}, array\\{'cat', 'cats'\\}, array\\{'city', 'cities'\\}, array\\{'halo', 'halos'\\}, array\\{'house', 'houses'\\}, array\\{'lunch', 'lunches'\\}, \\.\\.\\.\\}\\}, plural\\-01\\.csv\\: array\\{30\\.0, array\\<array\\>\\}, plural\\-02\\.csv\\: array\\{86\\.0, array\\<array\\>\\}\\}\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/InflectTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of static method Salient\\\\Core\\\\Facade\\\\Event\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Core\\\\Event\\\\PackageDataReceivedEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/PackageTest.php
 
 		-
 			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"

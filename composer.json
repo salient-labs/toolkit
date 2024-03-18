@@ -66,6 +66,8 @@
     "autoload-dev": {
         "psr-4": {
             "Salient\\Sli\\": "src/Sli/",
+            "Salient\\PHPStan\\": "src/PHPStan/",
+            "Salient\\Tests\\PHPStan\\": "tests/unit/PHPStan/",
             "Salient\\Tests\\": [
                 "tests/unit/Toolkit/",
                 "tests/fixtures/Toolkit/",
@@ -84,6 +86,13 @@
         "sort-packages": true,
         "allow-plugins": {
             "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "phpstan": {
+            "includes": [
+                "phpstan.extension.neon"
+            ]
         }
     }
 }

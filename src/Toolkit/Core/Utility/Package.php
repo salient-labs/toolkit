@@ -2,51 +2,49 @@
 
 namespace Salient\Core\Utility;
 
-use Composer\Autoload\ClassLoader;
-use Composer\InstalledVersions;
+use Composer\Autoload\ClassLoader as Loader;
+use Composer\InstalledVersions as Installed;
 use Salient\Core\Event\PackageDataReceivedEvent;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Event;
 use Salient\Core\AbstractUtility;
+use Closure;
 
 /**
  * Get information from Composer's runtime API
+ *
+ * @api
  */
 final class Package extends AbstractUtility
 {
     private const SHORT_REFERENCE_LENGTH = 8;
 
     /**
-     * True if require-dev packages are installed
-     *
-     * @api
+     * Check if require-dev packages are installed
      */
     public static function hasDevPackages(): bool
     {
+        /** @var bool */
         return self::getRootPackageValue('dev');
     }
 
     /**
      * Get the name of the root package
-     *
-     * @api
      */
     public static function name(): string
     {
+        /** @var string */
         return self::getRootPackageValue('name');
     }
 
     /**
      * Get the commit reference of the root package, if known
-     *
-     * @api
      */
     public static function reference(bool $short = true): ?string
     {
-        return self::formatReference(
-            self::getRootPackageValue('reference'),
-            $short
-        );
+        /** @var string|null */
+        $ref = self::getRootPackageValue('reference');
+        return self::formatReference($ref, $short);
     }
 
     /**
@@ -56,8 +54,6 @@ final class Package extends AbstractUtility
      * is added. Otherwise, if `$withReference` is `true` and a commit reference
      * is available, `-<reference>` is added.
      *
-     * @api
-     *
      * @param bool $pretty If `true`, return the original version number, e.g.
      * `v1.2.3` instead of `1.2.3.0`.
      */
@@ -65,8 +61,10 @@ final class Package extends AbstractUtility
         bool $pretty = true,
         bool $withReference = false
     ): string {
+        /** @var string */
+        $version = self::getRootPackageValue($pretty ? 'pretty_version' : 'version');
         return self::formatVersion(
-            self::getRootPackageValue($pretty ? 'pretty_version' : 'version'),
+            $version,
             $withReference,
             fn() => self::reference()
         );
@@ -74,93 +72,101 @@ final class Package extends AbstractUtility
 
     /**
      * Get the canonical path of the root package
-     *
-     * @api
      */
     public static function path(): string
     {
-        return File::realpath(self::getRootPackageValue('install_path'));
+        /** @var string */
+        $path = self::getRootPackageValue('install_path');
+        return File::realpath($path);
     }
 
     /**
      * Get the commit reference of an installed package, if known
-     *
-     * @api
      */
     public static function packageReference(
         string $package,
         bool $short = true
     ): ?string {
-        if (!InstalledVersions::isInstalled($package)) {
+        if (!self::isInstalled($package)) {
             return null;
         }
+
         return self::formatReference(
-            InstalledVersions::getReference($package),
-            $short
+            self::filterData(
+                Installed::getReference($package),
+                Installed::class,
+                'getReference',
+                $package,
+            ),
+            $short,
         );
     }
 
     /**
-     * Get the version of an installed package
+     * Get the version of an installed package, or null if it is not installed
      *
      * If Composer returns a version like `dev-*` or `v1.x-dev`, `@<reference>`
      * is added. Otherwise, if `$withReference` is `true` and a commit reference
      * is available, `-<reference>` is added.
      *
-     * @api
-     *
      * @param bool $pretty If `true`, return the original version number, e.g.
      * `v1.2.3` instead of `1.2.3.0`.
-     * @return string|null `null` if `$package` is not installed.
      */
     public static function packageVersion(
         string $package,
         bool $pretty = true,
         bool $withReference = false
     ): ?string {
-        if (!InstalledVersions::isInstalled($package)) {
+        if (!self::isInstalled($package)) {
             return null;
         }
-        /** @var string */
-        $version = $pretty
-            ? InstalledVersions::getPrettyVersion($package)
-            : InstalledVersions::getVersion($package);
+
         return self::formatVersion(
-            $version,
+            (string) self::getVersion($package, $pretty),
             $withReference,
             fn() => self::packageReference($package)
         );
     }
 
     /**
-     * Get the canonical path of an installed package
-     *
-     * @api
-     *
-     * @return string|null `null` if `$package` is not installed.
+     * Get the canonical path of an installed package, or null if it is not
+     * installed
      */
     public static function packagePath(string $package): ?string
     {
-        if (!InstalledVersions::isInstalled($package)) {
+        if (!self::isInstalled($package)) {
             return null;
         }
 
-        return InstalledVersions::getInstallPath($package);
+        return self::filterData(
+            Installed::getInstallPath($package),
+            Installed::class,
+            'getInstallPath',
+            $package,
+        );
     }
 
     /**
-     * Use ClassLoader to find the file where a class is defined
+     * Use ClassLoader to get the file where a class is defined, or null if it
+     * doesn't exist
      *
      * @param class-string $class
-     * @return string|null `null` if `$class` doesn't exist.
      *
      * @see Package::namespacePath()
      */
     public static function classPath(string $class): ?string
     {
         $class = ltrim($class, '\\');
-        foreach (ClassLoader::getRegisteredLoaders() as $loader) {
-            if ($file = $loader->findFile($class)) {
+        foreach (self::getRegisteredLoaders() as $loader) {
+            $file = self::filterData(
+                $loader->findFile($class),
+                Loader::class,
+                'findFile',
+                $class,
+            );
+
+            if ($file !== false) {
+                /** @var string */
                 return $file;
             }
         }
@@ -169,22 +175,27 @@ final class Package extends AbstractUtility
     }
 
     /**
-     * Use ClassLoader to resolve a namespace to a directory, which need not
-     * exist
+     * Use ClassLoader to get a directory for a namespace, or null if the
+     * namespace doesn't match a registered PSR-4 prefix
      *
-     * @return string|null `null` if `$namespace` doesn't match a PSR-4 prefix
-     * registered with Composer. Preference is given to the longest prefix where
-     * a directory for the namespace already exists. If there is no match where
-     * the namespace resolves to an existing directory, preference is given to
-     * the longest prefix.
+     * Preference is given to the longest prefix where a directory for the
+     * namespace already exists. If no such prefix exists, preference is given
+     * to the longest prefix.
      */
     public static function namespacePath(string $namespace): ?string
     {
         $namespace = trim($namespace, '\\');
 
         $prefixes = [];
-        foreach (ClassLoader::getRegisteredLoaders() as $loader) {
-            $prefixes = array_merge_recursive($loader->getPrefixesPsr4(), $prefixes);
+        foreach (self::getRegisteredLoaders() as $loader) {
+            $prefixes = array_merge_recursive(
+                self::filterData(
+                    $loader->getPrefixesPsr4(),
+                    Loader::class,
+                    'getPrefixesPsr4',
+                ),
+                $prefixes
+            );
         }
 
         // Sort prefixes from longest to shortest
@@ -198,6 +209,7 @@ final class Package extends AbstractUtility
             if (strcasecmp(substr($namespace . '\\', 0, strlen($prefix)), $prefix)) {
                 continue;
             }
+
             foreach ((array) $dirs as $dir) {
                 if (!is_dir($dir)) {
                     continue;
@@ -221,9 +233,9 @@ final class Package extends AbstractUtility
     private static function getRootPackageValue(string $key)
     {
         $values = self::filterData(
-            InstalledVersions::getRootPackage(),
+            Installed::getRootPackage(),
+            Installed::class,
             'getRootPackage',
-            InstalledVersions::class,
         );
 
         if (!array_key_exists($key, $values)) {
@@ -237,29 +249,66 @@ final class Package extends AbstractUtility
         return $values[$key];
     }
 
+    private static function isInstalled(string $package): bool
+    {
+        return self::filterData(
+            Installed::isInstalled($package),
+            Installed::class,
+            'isInstalled',
+            $package,
+        );
+    }
+
+    private static function getVersion(string $package, bool $pretty): ?string
+    {
+        return self::filterData(
+            $pretty
+                ? Installed::getPrettyVersion($package)
+                : Installed::getVersion($package),
+            Installed::class,
+            $pretty ? 'getPrettyVersion' : 'getVersion',
+            $package,
+        );
+    }
+
+    /**
+     * @return array<string,Loader>
+     */
+    private static function getRegisteredLoaders(): array
+    {
+        return self::filterData(
+            Loader::getRegisteredLoaders(),
+            Loader::class,
+            'getRegisteredLoaders',
+        );
+    }
+
     /**
      * @template TData
      *
      * @param TData $data
-     * @param class-string<InstalledVersions|ClassLoader> $class
+     * @param class-string<Installed|Loader> $class
      * @param mixed ...$args
      * @return TData
      */
     private static function filterData(
         $data,
-        string $method,
         string $class,
+        string $method,
         ...$args
     ) {
-        $event = new PackageDataReceivedEvent($data, $method, $class, ...$args);
+        $event = new PackageDataReceivedEvent($data, $class, $method, ...$args);
 
         return Event::getInstance()->dispatch($event)->getData();
     }
 
+    /**
+     * @param Closure(): ?string $refCallback
+     */
     private static function formatVersion(
         string $version,
         bool $withRef,
-        callable $refCallback
+        Closure $refCallback
     ): string {
         if (Pcre::match('/(?:^dev-|-dev$)/', $version)) {
             $ref = $refCallback();
@@ -268,6 +317,7 @@ final class Package extends AbstractUtility
             }
             return $version;
         }
+
         if ($withRef) {
             $ref = $refCallback();
             if ($ref !== null) {

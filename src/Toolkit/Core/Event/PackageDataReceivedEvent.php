@@ -36,8 +36,8 @@ final class PackageDataReceivedEvent
      */
     public function __construct(
         $data,
+        string $class,
         string $method,
-        string $class = InstalledVersions::class,
         ...$args
     ) {
         $this->Data = $data;
@@ -49,9 +49,11 @@ final class PackageDataReceivedEvent
     /**
      * True if the given Composer runtime API method was called
      *
+     * @api
+     *
      * @param class-string<InstalledVersions|ClassLoader> $class
      */
-    public function isMethod(string $method, string $class = InstalledVersions::class): bool
+    public function isMethod(string $class, string $method): bool
     {
         return strcasecmp($class, $this->Class) === 0 &&
             strcasecmp($method, $this->Method) === 0;
@@ -60,6 +62,8 @@ final class PackageDataReceivedEvent
     /**
      * Get arguments passed to the Composer runtime API when the method was
      * called
+     *
+     * @api
      *
      * @return mixed[]
      */
@@ -71,6 +75,8 @@ final class PackageDataReceivedEvent
     /**
      * Get data received from the Composer runtime API
      *
+     * @api
+     *
      * @return TData
      */
     public function getData()
@@ -80,6 +86,8 @@ final class PackageDataReceivedEvent
 
     /**
      * Replace data received from the Composer runtime API
+     *
+     * @api
      *
      * @param TData $data
      */

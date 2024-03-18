@@ -404,7 +404,7 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
             null,
             array_intersect_key(
                 $this->Index,
-                array_change_key_case($index, \CASE_LOWER)
+                array_change_key_case($index)
             )
         );
     }
@@ -426,7 +426,7 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
             null,
             array_diff_key(
                 $this->Index,
-                array_change_key_case($index, \CASE_LOWER)
+                array_change_key_case($index)
             )
         );
     }

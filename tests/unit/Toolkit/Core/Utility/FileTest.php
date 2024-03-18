@@ -5,7 +5,6 @@ namespace Salient\Tests\Core\Utility;
 use org\bovigo\vfs\vfsStream;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Sys;
 use Salient\Core\Indentation;
@@ -1137,7 +1136,7 @@ final class FileTest extends TestCase
             [
                 implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Toolkit', 'Core', 'Utility', 'File', 'dir', 'file']),
                 "$path/dir/file",
-                Package::path(),
+                self::getPackagePath(),
             ],
         ];
     }

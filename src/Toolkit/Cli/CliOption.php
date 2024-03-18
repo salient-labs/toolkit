@@ -754,7 +754,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             return '';
         }
 
-        /** @var non-empty-string */
         $delimiter = Str::coalesce(
             $this->MultipleAllowed ? $this->Delimiter : null,
             ','

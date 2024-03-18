@@ -14,26 +14,33 @@ use Salient\Tests\TestCase;
 final class PackageTest extends TestCase
 {
     private const DEV_PACKAGE = [
-        'name' => 'lkrms/util',
+        'name' => 'salient/toolkit',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'aee6e2bfc8c3c8daa5b04bc26e5b2ae9f51b036f',
+        'reference' => 'c44d26d440cec2096284e20478a5ff984b65fa54',
         'type' => 'library',
-        'install_path' => __DIR__ . '/../../../../',
+        'install_path' => __DIR__ . '/../../../../../',
         'aliases' => [],
         'dev' => true,
     ];
 
     private const PROD_PACKAGE = [
-        'name' => 'lkrms/util',
-        'pretty_version' => 'v0.21.34',
-        'version' => '0.21.34.0',
-        'reference' => 'b0a4391f5feb5cf10a3ba2b018f3110da6d915d9',
+        'name' => 'salient/toolkit',
+        'pretty_version' => 'v0.99.12',
+        'version' => '0.99.12.0',
+        'reference' => '5eb65f653bcbfbfa0485d2c4a56ae37636a6629e',
         'type' => 'library',
-        'install_path' => __DIR__ . '/../../../../',
+        'install_path' => __DIR__ . '/../../../../../',
         'aliases' => [],
         'dev' => false,
     ];
+
+    /**
+     * @var array<string,mixed>|null
+     */
+    private static ?array $RootPackage = null;
+
+    private static int $ListenerId;
 
     public function testHasDevPackages(): void
     {
@@ -56,19 +63,8 @@ final class PackageTest extends TestCase
         bool $pretty = true,
         bool $withReference = false
     ): void {
-        $listenerId = Event::listen(
-            function (PackageDataReceivedEvent $event) use ($package): void {
-                if ($event->isMethod('getRootPackage')) {
-                    $event->setData($package);
-                }
-            }
-        );
-
-        try {
-            $this->assertSame($expected, Package::version($pretty, $withReference));
-        } finally {
-            Event::removeListener($listenerId);
-        }
+        self::$RootPackage = $package;
+        $this->assertSame($expected, Package::version($pretty, $withReference));
     }
 
     /**
@@ -78,43 +74,43 @@ final class PackageTest extends TestCase
     {
         return [
             [
-                'dev-main@aee6e2bf',
+                'dev-main@c44d26d4',
                 self::DEV_PACKAGE,
             ],
             [
-                'dev-main@aee6e2bf',
-                self::DEV_PACKAGE,
-                false,
-            ],
-            [
-                'dev-main@aee6e2bf',
-                self::DEV_PACKAGE,
-                true,
-                true,
-            ],
-            [
-                'dev-main@aee6e2bf',
+                'dev-main@c44d26d4',
                 self::DEV_PACKAGE,
                 false,
+            ],
+            [
+                'dev-main@c44d26d4',
+                self::DEV_PACKAGE,
+                true,
                 true,
             ],
             [
-                'v0.21.34',
+                'dev-main@c44d26d4',
+                self::DEV_PACKAGE,
+                false,
+                true,
+            ],
+            [
+                'v0.99.12',
                 self::PROD_PACKAGE,
             ],
             [
-                '0.21.34.0',
+                '0.99.12.0',
                 self::PROD_PACKAGE,
                 false,
             ],
             [
-                'v0.21.34-b0a4391f',
+                'v0.99.12-5eb65f65',
                 self::PROD_PACKAGE,
                 true,
                 true,
             ],
             [
-                '0.21.34.0-b0a4391f',
+                '0.99.12.0-5eb65f65',
                 self::PROD_PACKAGE,
                 false,
                 true,
@@ -130,14 +126,38 @@ final class PackageTest extends TestCase
     public function testGetPackageVersion(): void
     {
         $this->assertSame(
-            InstalledVersions::getPrettyVersion('phpstan/phpstan'),
-            Package::packageVersion('phpstan/phpstan')
+            InstalledVersions::getPrettyVersion('phpunit/phpunit'),
+            Package::packageVersion('phpunit/phpunit')
         );
         $this->assertSame(
-            InstalledVersions::getPrettyVersion('phpstan/phpstan')
-                . '-' . substr((string) InstalledVersions::getReference('phpstan/phpstan'), 0, 8),
-            Package::packageVersion('phpstan/phpstan', true, true)
+            InstalledVersions::getPrettyVersion('phpunit/phpunit')
+                . '-' . substr((string) InstalledVersions::getReference('phpunit/phpunit'), 0, 8),
+            Package::packageVersion('phpunit/phpunit', true, true)
         );
         $this->assertNull(Package::packageVersion('composer/composer'));
+    }
+
+    protected function setUp(): void
+    {
+        self::$RootPackage = self::DEV_PACKAGE;
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$ListenerId = Event::getInstance()->listen(
+            static function (PackageDataReceivedEvent $event): void {
+                if (
+                    self::$RootPackage !== null &&
+                    $event->isMethod(InstalledVersions::class, 'getRootPackage')
+                ) {
+                    $event->setData(self::$RootPackage);
+                }
+            }
+        );
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        Event::removeListener(self::$ListenerId);
     }
 }

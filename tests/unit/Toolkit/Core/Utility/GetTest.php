@@ -347,6 +347,7 @@ final class GetTest extends TestCase
     public static function coalesceProvider(): array
     {
         return [
+            [null],
             [null, null],
             [0, null, 0],
             [0, 0, null],
