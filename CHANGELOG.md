@@ -12,6 +12,38 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.13] - 2024-03-19
+
+### Added
+
+- Add `File` methods:
+  - `maybeRewind()`
+  - `maybeSeek()`
+  - `truncate()`
+  - `getSeekable()`
+- Add `Str::trimNativeEol()`
+
+### Changed
+
+- Add PHPStan return type extensions for `Str::coalesce()` and `Get::coalesce()`, and allow them to be called with no arguments
+- Add optional `$offset` parameter to `File::getContents()`
+- Optionally truncate target streams in `File::copy()`
+- Move methods from `Salient\Contract` to other namespaces (coverable code does not belong in contract namespaces)
+- In `Process`:
+  - Allow a process to run more than once
+  - Allow process output to be passed to a callback as it is received
+  - Add `Process::setInput()`, `Process::setCallback()`
+  - Split `Process::run()` into `run()`, `start()` and `wait()`
+  - Trim trailing native EOL sequences by default
+
+### Removed
+
+- Remove unused `Assert` class and related classes
+
+### Security
+
+- Fix `File::createDir()` and `File::createTempDir()` issues where permissions are not applied on Windows
+
 ## [v0.99.12] - 2024-03-13
 
 ### Added
@@ -2179,6 +2211,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.13]: https://github.com/salient-labs/toolkit/compare/v0.99.12...v0.99.13
 [v0.99.12]: https://github.com/salient-labs/toolkit/compare/v0.99.11...v0.99.12
 [v0.99.11]: https://github.com/salient-labs/toolkit/compare/v0.99.10...v0.99.11
 [v0.99.10]: https://github.com/salient-labs/toolkit/compare/v0.99.9...v0.99.10
