@@ -903,6 +903,7 @@ final class ArrTest extends TestCase
      */
     public function testRename($expected, array $array, $key, $newKey): void
     {
+        $this->maybeExpectException($expected);
         $this->assertSame($expected, Arr::rename($array, $key, $newKey));
     }
 
@@ -924,6 +925,12 @@ final class ArrTest extends TestCase
                 $array,
                 'b',
                 'b',
+            ],
+            [
+                OutOfRangeException::class . ',Array key not found: foo',
+                $array,
+                'foo',
+                'bar',
             ],
             [
                 [
