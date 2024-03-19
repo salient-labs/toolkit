@@ -13,6 +13,8 @@ use LogicException;
 
 /**
  * Dispatches events to listeners
+ *
+ * @api
  */
 final class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface
 {
@@ -26,7 +28,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
     /**
      * Event => [ listener ID => listener ]
      *
-     * @var array<string,array<int,callable(object): mixed>>
+     * @var array<string,array<int,callable>>
      */
     private array $EventListeners = [];
 
@@ -54,7 +56,9 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      * Returns a listener ID that can be passed to
      * {@see EventDispatcher::removeListener()}.
      *
-     * @param callable(object): mixed $listener
+     * @template TEvent of object
+     *
+     * @param callable(TEvent): mixed $listener
      * @param string[]|string|null $event An event or array of events. If
      * `null`, the listener is registered to receive events accepted by its
      * first parameter.
@@ -82,10 +86,10 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
     /**
      * Dispatch an event to listeners registered to receive it
      *
-     * @template T of object
+     * @template TEvent of object
      *
-     * @param T $event
-     * @return T
+     * @param TEvent $event
+     * @return TEvent
      */
     public function dispatch(object $event): object
     {
@@ -104,7 +108,10 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
     }
 
     /**
-     * @return Generator<callable(object): mixed>
+     * @template TEvent of object
+     *
+     * @param TEvent $event
+     * @return Generator<callable(TEvent): mixed>
      */
     public function getListenersForEvent(object $event): Generator
     {
@@ -122,12 +129,11 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
             }
         }
 
-        $index = [];
-        foreach ($events as $event) {
-            $index[Str::lower($event)] = null;
-        }
+        $listenersByEvent = array_intersect_key(
+            $this->EventListeners,
+            array_change_key_case(array_fill_keys($events, null)),
+        );
 
-        $listenersByEvent = array_intersect_key($this->EventListeners, $index);
         $listeners = [];
         foreach ($listenersByEvent as $eventListeners) {
             $listeners += $eventListeners;
@@ -149,12 +155,14 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
         if (!array_key_exists($id, $this->Listeners)) {
             throw new LogicException('No listener with that ID');
         }
+
         foreach ($this->Listeners[$id] as $event) {
             unset($this->EventListeners[$event][$id]);
             if (!$this->EventListeners[$event]) {
                 unset($this->EventListeners[$event]);
             }
         }
+
         unset($this->Listeners[$id]);
     }
 }

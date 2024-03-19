@@ -18,7 +18,6 @@ use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Assert;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
@@ -308,16 +307,14 @@ class Application extends Container implements ApplicationInterface
             }
         }
 
-        $_basePath = $basePath;
-        try {
-            Assert::isDir($basePath);
-            $basePath = File::realpath($basePath);
-        } catch (FilesystemErrorException $ex) {
+        if (!is_dir($basePath)) {
             $exception = $explicitBasePath || $defaultBasePath
                 ? FilesystemErrorException::class
                 : InvalidEnvironmentException::class;
-            throw new $exception(sprintf('Invalid basePath: %s', $_basePath), $ex);
+            throw new $exception(sprintf('Invalid basePath: %s', $basePath));
         }
+
+        $basePath = File::realpath($basePath);
 
         $this->BasePath = $basePath;
 

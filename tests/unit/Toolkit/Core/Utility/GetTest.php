@@ -331,6 +331,45 @@ final class GetTest extends TestCase
     }
 
     /**
+     * @dataProvider coalesceProvider
+     *
+     * @param mixed $expected
+     * @param mixed ...$values
+     */
+    public function testCoalesce($expected, ...$values): void
+    {
+        $this->assertSame($expected, Get::coalesce(...$values));
+    }
+
+    /**
+     * @return array<array{mixed,...}>
+     */
+    public static function coalesceProvider(): array
+    {
+        return [
+            [null],
+            [null, null],
+            [0, null, 0],
+            [0, 0, null],
+            [0, null, 0, null],
+            [false, null, false],
+            [false, false, null],
+            [false, null, false, null],
+            ['', null, ''],
+            ['', '', null],
+            ['', null, '', null],
+            ['', '', 'foo'],
+            ['foo', 'foo', ''],
+            ['foo', null, 'foo'],
+            ['foo', 'foo', null],
+            ['foo', null, 'foo', null],
+            [[], [], null],
+            [[null], [null], null],
+            [['foo'], ['foo'], null],
+        ];
+    }
+
+    /**
      * @dataProvider countProvider
      *
      * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $value

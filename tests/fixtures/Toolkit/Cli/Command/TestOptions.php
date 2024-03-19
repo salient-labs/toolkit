@@ -183,6 +183,7 @@ class TestOptions extends CliCommand
             case self::ACTION_APPLY_VALUES:
                 /** @var string */
                 $data = $this->Data;
+                /** @var array<string,array<string|int|bool>|string|int|bool|null> */
                 $data = Json::parseObjectAsArray($data);
                 $this->applyOptionValues($data, true, true, false, true, true);
                 break;
@@ -190,6 +191,7 @@ class TestOptions extends CliCommand
             case self::ACTION_APPLY_SCHEMA_VALUES:
                 /** @var string */
                 $data = $this->Data;
+                /** @var array<string,array<string|int|bool>|string|int|bool|null> */
                 $data = Json::parseObjectAsArray($data);
                 $this->applyOptionValues($data, true, true, true, true, true);
                 break;

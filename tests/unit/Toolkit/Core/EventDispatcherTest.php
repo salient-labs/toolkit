@@ -86,7 +86,7 @@ final class EventDispatcherTest extends TestCase
     public function testFacade(): void
     {
         $received = 0;
-        Event::listen(
+        Event::getInstance()->listen(
             function (MainEvent $event) use (&$received) {
                 $received++;
             }

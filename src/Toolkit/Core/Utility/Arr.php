@@ -19,7 +19,7 @@ final class Arr extends AbstractUtility
     /**
      * Get a value from nested arrays using dot notation
      *
-     * @param array<array-key,mixed> $array
+     * @param mixed[] $array
      * @param mixed $default
      * @return mixed
      * @throws OutOfRangeException if `$key` is not found in `$array` and no
@@ -46,7 +46,7 @@ final class Arr extends AbstractUtility
     /**
      * Check if a value exists in nested arrays using dot notation
      *
-     * @param array<array-key,mixed> $array
+     * @param mixed[] $array
      */
     public static function has(string $key, array $array): bool
     {
@@ -69,7 +69,7 @@ final class Arr extends AbstractUtility
      */
     public static function first(array $array)
     {
-        if (!$array) {
+        if ($array === []) {
             return null;
         }
         return reset($array);
@@ -85,7 +85,7 @@ final class Arr extends AbstractUtility
      */
     public static function last(array $array)
     {
-        if (!$array) {
+        if ($array === []) {
             return null;
         }
         return end($array);
@@ -108,6 +108,7 @@ final class Arr extends AbstractUtility
         if ($key === false) {
             throw new OutOfRangeException('Value not found in array');
         }
+        /** @var TKey */
         return $key;
     }
 
@@ -119,6 +120,7 @@ final class Arr extends AbstractUtility
      *
      * @param array<TKey,TValue> $array
      * @param TValue|null $shifted
+     * @param-out TValue $shifted
      * @return array<TKey,TValue>
      */
     public static function shift(array $array, &$shifted = null): array
@@ -151,6 +153,7 @@ final class Arr extends AbstractUtility
      *
      * @param array<TKey,TValue> $array
      * @param TValue|null $popped
+     * @param-out TValue $popped
      * @return array<TKey,TValue>
      */
     public static function pop(array $array, &$popped = null): array
@@ -214,25 +217,21 @@ final class Arr extends AbstractUtility
         $callbackOrFlags = \SORT_REGULAR
     ): array {
         if (is_callable($callbackOrFlags)) {
-            $callback = $callbackOrFlags;
-
             if ($preserveKeys) {
-                uasort($array, $callback);
+                uasort($array, $callbackOrFlags);
                 return $array;
             }
 
-            usort($array, $callback);
+            usort($array, $callbackOrFlags);
             return $array;
         }
-
-        $flags = $callbackOrFlags;
 
         if ($preserveKeys) {
-            asort($array, $flags);
+            asort($array, $callbackOrFlags);
             return $array;
         }
 
-        sort($array, $flags);
+        sort($array, $callbackOrFlags);
         return $array;
     }
 
@@ -267,7 +266,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
+     * @param (callable(TKey, TKey): int)|int-mask-of<SortFlag::*> $callbackOrFlags
      * @return array<TKey,TValue>
      */
     public static function sortByKey(
@@ -275,15 +274,11 @@ final class Arr extends AbstractUtility
         $callbackOrFlags = \SORT_REGULAR
     ): array {
         if (is_callable($callbackOrFlags)) {
-            $callback = $callbackOrFlags;
-
-            uksort($array, $callback);
+            uksort($array, $callbackOrFlags);
             return $array;
         }
 
-        $flags = $callbackOrFlags;
-
-        ksort($array, $flags);
+        ksort($array, $callbackOrFlags);
         return $array;
     }
 
@@ -336,6 +331,7 @@ final class Arr extends AbstractUtility
      * True if a value is an array with consecutive integer keys numbered from 0
      *
      * @param mixed $value
+     * @phpstan-assert-if-true list<mixed> $value
      */
     public static function isList($value, bool $orEmpty = false): bool
     {
@@ -358,6 +354,7 @@ final class Arr extends AbstractUtility
      * True if a value is an array with integer keys
      *
      * @param mixed $value
+     * @phpstan-assert-if-true array<int,mixed> $value
      */
     public static function isIndexed($value, bool $orEmpty = false): bool
     {
@@ -474,6 +471,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
+     * @param string&callable $func
      * @param mixed $value
      * @param mixed ...$args
      */
@@ -482,7 +480,7 @@ final class Arr extends AbstractUtility
         if (!is_array($value)) {
             return false;
         }
-        if (!$value) {
+        if ($value === []) {
             return $orEmpty;
         }
         $i = 0;
@@ -700,11 +698,12 @@ final class Arr extends AbstractUtility
      * JSON-encoded.
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|null
+     * @template TValue of int|float|string|bool
+     * @template TNull of TValue|null
      *
-     * @param iterable<TKey,TValue|mixed[]|object> $array
-     * @param TValue|null $null
-     * @return array<TKey,TValue>
+     * @param iterable<TKey,TValue|mixed[]|object|null> $array
+     * @param TNull $null
+     * @return array<TKey,TValue|TNull|string>
      */
     public static function toScalars(iterable $array, $null = null): array
     {
@@ -756,10 +755,15 @@ final class Arr extends AbstractUtility
      */
     public static function rename(array $array, $key, $newKey): array
     {
-        if ($key === $newKey && isset($array[$key])) {
+        if (!isset($array[$key])) {
+            throw new OutOfRangeException(sprintf('Array key not found: %s', $key));
+        }
+
+        if ($key === $newKey) {
             return $array;
         }
-        return self::spliceByKey($array, $key, 1, [$newKey => $array[$key] ?? null]);
+
+        return self::spliceByKey($array, $key, 1, [$newKey => $array[$key]]);
     }
 
     /**
@@ -771,6 +775,7 @@ final class Arr extends AbstractUtility
      * @param array<TKey,TValue> $array
      * @param TValue[]|TValue $replacement
      * @param array<TKey,TValue>|null $replaced
+     * @param-out array<TKey,TValue> $replaced
      * @return array<TKey|int,TValue>
      */
     public static function splice(
@@ -798,6 +803,7 @@ final class Arr extends AbstractUtility
      * @param TKey $key
      * @param array<TKey,TValue> $replacement
      * @param array<TKey,TValue>|null $replaced
+     * @param-out array<TKey,TValue> $replaced
      * @return array<TKey,TValue>
      */
     public static function spliceByKey(

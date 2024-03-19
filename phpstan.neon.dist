@@ -1,4 +1,5 @@
 includes:
+	- phpstan.extension.neon
 	- tests/phpstan-conditional.php
 
 parameters:

@@ -215,7 +215,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $fromCheckpoint = $this->Store->getDeferralCheckpoint();
         $deferralPolicy = $this->Context->getDeferralPolicy();
 
-        if (!SyncOperation::isList($operation)) {
+        if (!SyncIntrospector::isListOperation($operation)) {
             $result = $this->_run($operation, ...$args);
 
             if ($deferralPolicy === DeferralPolicy::RESOLVE_LATE) {
@@ -505,7 +505,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
 
     public function runA($operation, ...$args): array
     {
-        if (!SyncOperation::isList($operation)) {
+        if (!SyncIntrospector::isListOperation($operation)) {
             throw new LogicException('Not a *_LIST operation: ' . $operation);
         }
 

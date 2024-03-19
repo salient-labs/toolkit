@@ -415,7 +415,6 @@ abstract class GenerateCommand extends Command
      */
     protected function getPhpDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
     {
-        /** @var string */
         $subject = $type instanceof PhpDocTag
             ? Str::coalesce($type->Type, '')
             : $type;

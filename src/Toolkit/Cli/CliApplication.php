@@ -13,9 +13,9 @@ use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\JsonSchemaInterface;
+use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Assert;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Package;
@@ -53,9 +53,17 @@ class CliApplication extends Application implements CliApplicationInterface
     ) {
         parent::__construct($basePath, $appName, $envFlags, $configDir);
 
-        Assert::runningOnCli();
+        if (\PHP_SAPI !== 'cli') {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Not running on CLI');
+            // @codeCoverageIgnoreEnd
+        }
 
-        Assert::argvIsDeclared();
+        if (!ini_get('register_argc_argv')) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidRuntimeConfigurationException('register_argc_argv must be enabled');
+            // @codeCoverageIgnoreEnd
+        }
 
         // Keep running, even if:
         // - the TTY disconnects
@@ -230,6 +238,7 @@ class CliApplication extends Application implements CliApplicationInterface
         $progName = $this->getProgramName();
         $fullName = trim("$progName $name");
         $synopses = [];
+        /** @var array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface>|false|null $childNode */
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {
@@ -272,6 +281,7 @@ class CliApplication extends Application implements CliApplicationInterface
         $style = $style->withCollapseSynopsis();
         $fullName = trim("$progName $name");
         $synopses = [];
+        /** @var array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface>|false|null $childNode */
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {

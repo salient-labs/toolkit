@@ -15,17 +15,16 @@ final class Str extends AbstractUtility
     /**
      * Get the first string that is not null or empty, or return the last value
      */
-    public static function coalesce(?string $string, ?string ...$strings): ?string
+    public static function coalesce(?string ...$strings): ?string
     {
-        array_unshift($strings, $string);
-        $last = array_pop($strings);
+        $string = null;
         foreach ($strings as $string) {
             if ($string === null || $string === '') {
                 continue;
             }
             return $string;
         }
-        return $last;
+        return $string;
     }
 
     /**

@@ -218,6 +218,7 @@ final class CliOptionBuilderTest extends TestCase
         ], $option->getJsonSchema());
 
         $constructor = (new ReflectionClass(CliOption::class))->getConstructor();
+        $this->assertNotNull($constructor);
 
         $option = $this->getValue();
         foreach ($constructor->getParameters() as $param) {

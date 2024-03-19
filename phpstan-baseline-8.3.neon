@@ -131,11 +131,6 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateSyncEntity.php
 
 		-
-			message: "#^Cannot access offset 0 on mixed\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
 			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Curler\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateSyncEntity.php
@@ -201,96 +196,6 @@ parameters:
 			path: src/Sli/Support/TokenExtractor.php
 
 		-
-			message: "#^Parameter \\#2 \\$node of method Salient\\\\Cli\\\\CliApplication\\:\\:getNodeCommand\\(\\) expects array\\<string, array\\|class\\-string\\<Salient\\\\Contract\\\\Cli\\\\CliCommandInterface\\>\\>\\|class\\-string\\<Salient\\\\Contract\\\\Cli\\\\CliCommandInterface\\>\\|false\\|null, array\\|class\\-string\\<Salient\\\\Contract\\\\Cli\\\\CliCommandInterface\\> given\\.$#"
-			count: 2
-			path: src/Toolkit/Cli/CliApplication.php
-
-		-
-			message: "#^Argument of an invalid type array\\<string, Salient\\\\Cli\\\\CliOption\\>\\|null supplied for foreach, only iterables are supported\\.$#"
-			count: 3
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
-			message: "#^Method Salient\\\\Cli\\\\CliCommand\\:\\:getHelp\\(\\) should return array\\<string, string\\> but returns array\\<string, string\\|null\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
-			message: "#^Offset 'properties'\\|'required' does not exist on array\\{\\$schema\\: string, type\\: string, required\\?\\: array\\<string\\>, properties\\?\\: array\\<string, mixed\\>\\}\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$separator of function implode expects array\\|string, string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of function array_key_exists expects array, array\\<string, mixed\\>\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$offset of function array_slice expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
-			message: "#^Parameter \\#3 \\$wrapToWidth of method Salient\\\\Console\\\\ConsoleFormatter\\:\\:formatTags\\(\\) expects array\\{int, int\\}\\|int\\|null, array\\{int\\|null, int\\} given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliCommand.php
-
-		-
-			message: "#^Cannot access an offset on array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\.$#"
-			count: 2
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Method Salient\\\\Cli\\\\CliOption\\:\\:filterValue\\(\\) should return T of array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\|null but returns array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Method Salient\\\\Cli\\\\CliOption\\:\\:getJsonSchema\\(\\) should return array\\{description\\?\\: string, type\\?\\: array\\<string\\>\\|string, enum\\?\\: array\\<bool\\|int\\|string\\|null\\>, items\\?\\: array\\{type\\?\\: array\\<string\\>\\|string, enum\\?\\: array\\<bool\\|int\\|string\\|null\\>\\}, uniqueItems\\?\\: bool, default\\?\\: array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\} but returns array\\{description\\: array\\{0\\: string, 1\\?\\: non\\-falsy\\-string\\}\\|non\\-falsy\\-string, type\\: 'array', items\\: array\\{enum\\?\\: array\\<bool\\|int\\|string\\|null\\>\\|bool\\|int\\|string, type\\?\\: mixed\\}&non\\-empty\\-array, uniqueItems\\?\\: true, default\\?\\: array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\}\\|array\\{enum\\?\\: array\\<bool\\|int\\|string\\|null\\>\\|bool\\|int\\|string, type\\?\\: mixed, description\\?\\: array\\{0\\: string, 1\\?\\: non\\-falsy\\-string\\}\\|non\\-falsy\\-string, default\\?\\: array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\}\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of function array_values expects array, array\\<bool\\|int\\|string\\>\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Parameter \\#1 \\$datetime of class DateTimeImmutable constructor expects string, bool\\|int\\|string given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Parameter \\#1 \\$separator of function explode expects non\\-empty\\-string, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Parameter \\#1 \\$separator of function implode expects array\\|string, string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Parameter \\#1 \\.\\.\\.\\$arrays of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:same\\(\\) expects array, array\\<bool\\|int\\|string\\>\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\|true given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Parameter \\#2 \\$haystack of function in_array expects array, array\\<bool\\|int\\|string\\>\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\|true given\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
-			message: "#^Trying to invoke \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null but it might not be a callable\\.$#"
-			count: 1
-			path: src/Toolkit/Cli/CliOption.php
-
-		-
 			message: "#^Parameter \\#2 \\$openTag of class Salient\\\\Console\\\\Support\\\\ConsoleTagAttributes constructor expects string, array\\<int, int\\|string\\>\\|string given\\.$#"
 			count: 1
 			path: src/Toolkit/Console/ConsoleFormatter.php
@@ -328,11 +233,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$stream of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:write\\(\\) expects resource, resource\\|null given\\.$#"
 			count: 3
-			path: src/Toolkit/Console/Target/StreamTarget.php
-
-		-
-			message: "#^Property Salient\\\\Console\\\\Target\\\\StreamTarget\\:\\:\\$TimestampFormat \\(string\\) does not accept string\\|null\\.$#"
-			count: 1
 			path: src/Toolkit/Console/Target/StreamTarget.php
 
 		-
@@ -396,11 +296,6 @@ parameters:
 			path: src/Toolkit/Core/AbstractConvertibleEnumeration.php
 
 		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Contract\\\\Container\\\\BeforeGlobalContainerSetEventInterface\\)\\: void given\\.$#"
-			count: 2
-			path: src/Toolkit/Core/AbstractFacade.php
-
-		-
 			message: "#^Parameter \\#1 \\$list of static method Salient\\\\Core\\\\Utility\\\\Format\\:\\:list\\(\\) expects array\\<int, mixed\\>, array\\<int\\|string, string\\> given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/AbstractMultipleErrorException.php
@@ -426,19 +321,9 @@ parameters:
 			path: src/Toolkit/Core/ArrayMapper.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\ConfigurationManager\\:\\:getMany\\(\\) should return array\\<string, mixed\\> but returns array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/ConfigurationManager.php
-
-		-
 			message: "#^Parameter \\#1 \\$key of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:get\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/ConfigurationManager.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Exception\\\\PcreErrorException\\:\\:getErrorNameMap\\(\\) should return array\\<int, string\\> but returns array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Exception/PcreErrorException.php
 
 		-
 			message: "#^Parameter \\#1 \\$callback of static method Closure\\:\\:fromCallable\\(\\) expects callable\\(\\)\\: mixed, array\\{class\\-string\\<TClass of object\\>, 'normalise'\\} given\\.$#"
@@ -546,41 +431,6 @@ parameters:
 			path: src/Toolkit/Core/SqlQuery.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:keyOf\\(\\) should return TKey of \\(int\\|string\\) but returns int\\|string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Arr.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:listWrap\\(\\) should return array but returns mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Arr.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:rename\\(\\) should return array\\<TKey of \\(int\\|string\\), TValue\\> but returns array\\<TKey of \\(int\\|string\\), TValue\\|null\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Arr.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:toScalars\\(\\) should return array\\<TKey of \\(int\\|string\\), TValue of bool\\|float\\|int\\|string\\|null\\> but returns array\\<TKey of \\(int\\|string\\), string\\|\\(TValue of bool\\|float\\|int\\|string\\|null\\)\\|null\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Arr.php
-
-		-
-			message: "#^Parameter \\#2 \\$callback of function uksort expects callable\\(TKey, TKey\\)\\: int, callable\\(TValue, TValue\\)\\: int given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Arr.php
-
-		-
-			message: "#^Trying to invoke string but it might not be a callable\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Arr.php
-
-		-
-			message: "#^Parameter \\#1 \\$object_or_class of function is_a expects object, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Assert.php
-
-		-
 			message: "#^Method Salient\\\\Core\\\\Utility\\\\Debug\\:\\:getCaller\\(\\) should return array\\{namespace\\?\\: string, class\\?\\: string, file\\?\\: string, 0\\?\\: string, function\\?\\: string, 1\\?\\: string, line\\?\\: int\\} but returns array\\<int\\|string, int\\|string\\|null\\>\\.$#"
 			count: 2
 			path: src/Toolkit/Core/Utility/Debug.php
@@ -596,12 +446,7 @@ parameters:
 			path: src/Toolkit/Core/Utility/File.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\File\\:\\:dir\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:toScalars\\(\\) expects iterable\\<\\(int\\|string\\), array\\|bool\\|float\\|int\\|object\\|string\\>, array\\|TValue given\\.$#"
+			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:toScalars\\(\\) expects iterable\\<\\(int\\|string\\), array\\|bool\\|float\\|int\\|object\\|string\\|null\\>, array\\|TValue given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/File.php
 
@@ -681,31 +526,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Inflect.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Package\\:\\:hasDevPackages\\(\\) should return bool but returns array\\<string\\>\\|bool\\|string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Package\\:\\:name\\(\\) should return string but returns array\\<string\\>\\|bool\\|string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:realpath\\(\\) expects string, array\\<string\\>\\|bool\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Parameter \\#1 \\$ref of static method Salient\\\\Core\\\\Utility\\\\Package\\:\\:formatReference\\(\\) expects string\\|null, array\\<string\\>\\|bool\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
-			message: "#^Parameter \\#1 \\$version of static method Salient\\\\Core\\\\Utility\\\\Package\\:\\:formatVersion\\(\\) expects string, array\\<string\\>\\|bool\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Package.php
-
-		-
 			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replace\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Pcre.php
@@ -744,11 +564,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$ of callable callable\\(class\\-string\\)\\: \\(string\\|null\\) expects class\\-string, string given\\.$#"
 			count: 2
 			path: src/Toolkit/Core/Utility/Reflect.php
-
-		-
-			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
 
 		-
 			message: "#^Cannot access offset 'data' on mixed\\.$#"
@@ -1401,11 +1216,6 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
 
 		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:toScalars\\(\\) expects iterable\\<\\(int\\|string\\), array\\|object\\|null\\>, array given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncErrorCollection.php
-
-		-
 			message: "#^Parameter \\#1 \\$provider of static method Salient\\\\Sync\\\\Support\\\\SyncIntrospector\\<object\\>\\:\\:providerToEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospectionClass.php
@@ -1516,37 +1326,12 @@ parameters:
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getDetectRecursion\\(\\) should return bool but returns bool\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getFlags\\(\\) should return int\\<0, 1\\> but returns int\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getIncludeMeta\\(\\) should return bool but returns bool\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRecurseRules\\(\\) should return bool but returns bool\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveCanonicalId\\(\\) should return bool but returns bool\\|null\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getFlags\\(\\) should return int\\<0, 1\\> but returns int\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
 			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveFrom\\(\\) should return array\\<string, string\\> but returns array\\<string, array\\<Closure\\|string\\>\\|Closure\\|string\\|false\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getSortByKey\\(\\) should return bool but returns bool\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
@@ -1574,11 +1359,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\|false given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Parameter \\#1 \\$values of method Salient\\\\Cli\\\\CliCommand\\:\\:applyOptionValues\\(\\) expects array\\<string, array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\|null\\>, mixed given\\.$#"
-			count: 2
-			path: tests/fixtures/Toolkit/Cli/Command/TestOptions.php
 
 		-
 			message: "#^Cannot access property \\$Facade on static\\(Salient\\\\Tests\\\\Core\\\\AbstractFacade\\\\MyHasFacadeClass\\)\\|null\\.$#"
@@ -1621,16 +1401,6 @@ parameters:
 			path: tests/unit/Toolkit/Cache/CacheStoreTest.php
 
 		-
-			message: "#^Cannot call method getNumberOfParameters\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Cli/CliOptionBuilderTest.php
-
-		-
-			message: "#^Cannot call method getParameters\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Cli/CliOptionBuilderTest.php
-
-		-
 			message: "#^Method Salient\\\\Tests\\\\Container\\\\A\\:\\:getContainer\\(\\) should return T of Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Container/ContainerTest.php
@@ -1651,7 +1421,7 @@ parameters:
 			path: tests/unit/Toolkit/Container/ContainerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$list of static method Salient\\\\Contract\\\\Core\\\\Constructible\\:\\:constructList\\(\\) expects iterable\\<\\(int\\|string\\), array\\>, array given\\.$#"
+			message: "#^Parameter \\#1 \\$list of static method Salient\\\\Contract\\\\Core\\\\Constructible\\:\\:constructList\\(\\) expects iterable\\<int, array\\>, array\\<int, mixed\\> given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
 
@@ -1671,31 +1441,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/DotNetDateParserTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\BaseEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\MainEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\NamedEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of method Salient\\\\Core\\\\EventDispatcher\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, array\\{\\$this\\(Salient\\\\Tests\\\\Core\\\\EventDispatcherTest\\), 'listenCallback'\\} given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of static method Salient\\\\Core\\\\Facade\\\\Event\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\MainEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcherTest.php
-
-		-
 			message: "#^Cannot access offset 0 on array\\{float, int\\}\\|float\\|int\\.$#"
 			count: 8
 			path: tests/unit/Toolkit/Core/MetricCollectorTest.php
@@ -1704,46 +1449,6 @@ parameters:
 			message: "#^Cannot access offset 1 on array\\{float, int\\}\\|float\\|int\\.$#"
 			count: 8
 			path: tests/unit/Toolkit/Core/MetricCollectorTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\ArrTest\\:\\:getProvider\\(\\) should return array\\<array\\{mixed, string, array, mixed\\}\\> but returns array\\{array\\{'bar', 'foo', array\\{foo\\: 'bar'\\}\\}, array\\{'qux', 'foo\\.bar', array\\{foo\\: array\\{bar\\: 'qux'\\}\\}\\}, array\\{null, 'baz', array\\{foo\\: array\\{bar\\: 'qux'\\}\\}, null\\}, array\\{null, 'foo\\.baz', array\\{foo\\: array\\{bar\\: 'qux'\\}\\}, null\\}, array\\{null, 'foo\\.bar\\.baz', array\\{foo\\: array\\{bar\\: 'qux'\\}\\}, null\\}, array\\{null, 'foo\\.bar\\.baz\\.qux', array\\{foo\\: array\\{bar\\: 'qux'\\}\\}, null\\}, array\\{'default', 'baz', array\\{foo\\: array\\{bar\\: 'qux'\\}\\}, 'default'\\}, array\\{null, 'foo\\.bar', array\\{foo\\: array\\{bar\\: null\\}\\}, 'default'\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/ArrTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\ArrTest\\:\\:keyOfProvider\\(\\) should return array\\<array\\{\\(int\\|string\\), mixed, array\\}\\> but returns array\\{array\\{'foo', null, array\\{foo\\: null, bar\\: false, qux\\: 0, 0\\: ''\\}\\}, array\\{'bar', false, array\\{foo\\: null, bar\\: false, qux\\: 0, 0\\: ''\\}\\}, array\\{'qux', 0, array\\{foo\\: null, bar\\: false, qux\\: 0, 0\\: ''\\}\\}, array\\{0, '', array\\{foo\\: null, bar\\: false, qux\\: 0, 0\\: ''\\}\\}, array\\{'foo', stdClass, array\\{foo\\: stdClass, bar\\: stdClass, qux\\: stdClass\\}\\}, array\\{'bar', stdClass, array\\{foo\\: stdClass, bar\\: stdClass, qux\\: stdClass\\}\\}, array\\{0, stdClass, array\\{stdClass\\}\\}, array\\{null, stdClass, array\\{\\}\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/ArrTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:implode\\(\\) expects iterable\\<bool\\|float\\|int\\|string\\|Stringable\\|null\\>, array given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/ArrTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:trimAndImplode\\(\\) expects iterable\\<bool\\|float\\|int\\|string\\|Stringable\\|null\\>, iterable given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/ArrTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:with\\(\\) expects iterable\\<\\(int\\|string\\), mixed\\>, iterable given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/ArrTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$class of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:isListOf\\(\\) expects class\\-string\\<object\\>, string given\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Core/Utility/ArrTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$class of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:of\\(\\) expects class\\-string\\<object\\>, string given\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Core/Utility/ArrTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$class of static method Salient\\\\Core\\\\Utility\\\\Assert\\:\\:instanceOf\\(\\) expects class\\-string\\<object\\>, string given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/AssertTest.php
 
 		-
 			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\DateTest\\:\\:durationProvider\\(\\) should return array\\<array\\{int, DateInterval\\|string\\}\\> but returns array\\{array\\{0, 'P0D'\\}, array\\{0, 'PT0S'\\}, array\\{777600\\|'Salient\\\\\\\\Core…', 'P1W2D'\\}, array\\{777600, 'P9D'\\}, array\\{2880, 'PT48M'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'P1WD'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'P2D1W'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'pt48m'\\}\\}\\.$#"
@@ -1774,11 +1479,6 @@ parameters:
 			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\InflectTest\\:\\:getPluralData\\(\\) should return array\\<string, array\\{float, array\\<array\\{string, string\\}\\>\\}\\> but returns array\\{legacy\\: array\\{100\\.0, array\\{array\\{'blitz', 'blitzes'\\}, array\\{'boy', 'boys'\\}, array\\{'bus', 'buses'\\}, array\\{'cat', 'cats'\\}, array\\{'city', 'cities'\\}, array\\{'halo', 'halos'\\}, array\\{'house', 'houses'\\}, array\\{'lunch', 'lunches'\\}, \\.\\.\\.\\}\\}, plural\\-01\\.csv\\: array\\{30\\.0, array\\<array\\>\\}, plural\\-02\\.csv\\: array\\{86\\.0, array\\<array\\>\\}\\}\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/InflectTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$listener of static method Salient\\\\Core\\\\Facade\\\\Event\\:\\:listen\\(\\) expects callable\\(object\\)\\: mixed, Closure\\(Salient\\\\Core\\\\Event\\\\PackageDataReceivedEvent\\)\\: void given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/PackageTest.php
 
 		-
 			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"

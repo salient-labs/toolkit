@@ -95,12 +95,22 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return dirname(__DIR__, 2)
             . '/fixtures/'
             . Pcre::replace([
+                '/^Salient\\\\Tests\\\\(PHPStan\\\\.+)Test$/',
                 '/^Salient\\\\(?|Tests\\\\(.+)Test$|(.+))/',
                 '/\\\\/',
             ], [
+                '$1',
                 'Toolkit/$1',
                 '/',
             ], $class);
+    }
+
+    /**
+     * Get the path to the root directory of the package
+     */
+    public static function getPackagePath(): string
+    {
+        return dirname(__DIR__, 3);
     }
 
     /**

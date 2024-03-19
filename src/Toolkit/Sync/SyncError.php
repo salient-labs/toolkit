@@ -18,7 +18,7 @@ use Salient\Core\Concern\ReadsProtectedProperties;
  *
  * @property-read SyncErrorType::* $ErrorType
  * @property-read string $Message An sprintf() format string that explains the error
- * @property-read array<array-key,mixed[]|object|int|float|string|bool|null> $Values Values passed to sprintf() with the message format string
+ * @property-read list<mixed[]|object|int|float|string|bool|null> $Values Values passed to sprintf() with the message format string
  * @property-read Level::* $Level
  * @property-read SyncEntityInterface|null $Entity The entity associated with the error
  * @property-read string|null $EntityName The display name of the entity associated with the error
@@ -102,7 +102,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
 
     /**
      * @param SyncErrorType::* $errorType
-     * @param array<array-key,mixed[]|object|int|float|string|bool|null> $values
+     * @param list<mixed[]|object|int|float|string|bool|null> $values
      * @param Level::* $level
      */
     public function __construct(

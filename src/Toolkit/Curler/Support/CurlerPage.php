@@ -3,7 +3,7 @@
 namespace Salient\Curler\Support;
 
 use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Core\Exception\AssertionFailedException;
+use Salient\Core\Exception\BadMethodCallException;
 use Salient\Curler\Contract\ICurlerPage;
 use Salient\Curler\Curler;
 
@@ -91,7 +91,7 @@ final class CurlerPage implements ICurlerPage
     private function assertHasNextPage(): void
     {
         if ($this->IsLastPage) {
-            throw new AssertionFailedException('No more pages');
+            throw new BadMethodCallException('No more pages');
         }
     }
 

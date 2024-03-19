@@ -1,0 +1,10 @@
+services:
+	-
+		class: Salient\PHPStan\Core\Utility\Str\MethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+
+	-
+		class: Salient\PHPStan\Core\Utility\Get\MethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
