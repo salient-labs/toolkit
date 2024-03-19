@@ -212,7 +212,9 @@ final class Package extends AbstractUtility
 
             foreach ((array) $dirs as $dir) {
                 if (!is_dir($dir)) {
+                    // @codeCoverageIgnoreStart
                     continue;
+                    // @codeCoverageIgnoreEnd
                 }
                 $dir = File::realpath($dir);
                 $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
