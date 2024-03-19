@@ -94,6 +94,15 @@ final class Curler implements Readable, Writable, Buildable
     use HasImmutableProperties;
 
     /**
+     * @var array<string,string>
+     *
+     * @link https://www.iana.org/assignments/media-type-structured-suffix/media-type-structured-suffix.xhtml
+     */
+    private const MIME_TYPE_SUFFIX_MAP = [
+        MimeType::JSON => 'json',
+    ];
+
+    /**
      * Resource URL (no query or fragment)
      *
      * @var string
@@ -627,7 +636,35 @@ final class Curler implements Readable, Writable, Buildable
             return !strcasecmp($mimeType, MimeType::JSON) && $this->ExpectJson;
         }
 
-        return MimeType::is($mimeType, $contentType);
+        return self::mimeTypeIs($mimeType, $contentType);
+    }
+
+    /**
+     * True if a value is equal or equivalent to a known MIME type
+     *
+     * Returns `true` if `$value` isn't recognised but `$mimeType` maps to one
+     * of its suffixes, e.g. if `$mimeType` is `application/json` and `$value`
+     * is `application/jwk-set+json`.
+     */
+    public static function mimeTypeIs(string $mimeType, string $value): bool
+    {
+        // Remove charset, boundary, etc.
+        [$value] = explode(';', $value);
+        $value = Str::lower(rtrim($value));
+
+        if ($value === $mimeType) {
+            return true;
+        }
+
+        // Bail out if there are no known suffixes for this MIME type
+        if (!($suffix = self::MIME_TYPE_SUFFIX_MAP[$mimeType] ?? null)) {
+            return false;
+        }
+
+        $suffixes = explode('+', $value);
+        array_shift($suffixes);
+
+        return in_array($suffix, $suffixes, true);
     }
 
     protected function getEffectiveUrl(): ?string

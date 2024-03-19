@@ -180,7 +180,7 @@ class GenerateSyncProvider extends GenerateCommand
         $methods = [];
         foreach ($ops as $op) {
             // CREATE and UPDATE have the same signature, so it's a good default
-            if (SyncOperation::isList($op)) {
+            if (SyncIntrospector::isListOperation($op)) {
                 $paramDoc = 'iterable<' . $service . '> $' . $camelPlural;
                 $paramCode = 'iterable $' . $camelPlural;
                 $returnDoc = 'iterable<' . $service . '>';
@@ -208,10 +208,10 @@ class GenerateSyncProvider extends GenerateCommand
 
                 $phpDoc = [];
                 if ($paramDoc !== '' &&
-                        (SyncOperation::isList($op) || $op === SyncOperation::READ)) {
+                        (SyncIntrospector::isListOperation($op) || $op === SyncOperation::READ)) {
                     $phpDoc[] = "@param $paramDoc";
                 }
-                if (SyncOperation::isList($op)) {
+                if (SyncIntrospector::isListOperation($op)) {
                     $phpDoc[] = "@return $returnDoc";
                 }
 

@@ -12,6 +12,7 @@ use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
+use Salient\Contract\Sync\SyncOperationGroup;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
@@ -48,6 +49,41 @@ final class SyncIntrospector extends Introspector
      * @var SyncIntrospectionClass<TClass>
      */
     protected $_Class;
+
+    /**
+     * Check if a sync operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
+     * DELETE_LIST
+     *
+     * @param SyncOperation::* $operation
+     * @return ($operation is SyncOperation::*_LIST ? true : false)
+     */
+    public static function isListOperation($operation): bool
+    {
+        return in_array($operation, SyncOperationGroup::ALL_LIST, true);
+    }
+
+    /**
+     * Check if a sync operation is READ or READ_LIST
+     *
+     * @param SyncOperation::* $operation
+     * @return ($operation is SyncOperation::READ* ? true : false)
+     */
+    public static function isReadOperation($operation): bool
+    {
+        return in_array($operation, SyncOperationGroup::ALL_READ, true);
+    }
+
+    /**
+     * Check if a sync operation is CREATE, UPDATE, DELETE, CREATE_LIST,
+     * UPDATE_LIST or DELETE_LIST
+     *
+     * @param SyncOperation::* $operation
+     * @return ($operation is SyncOperation::READ* ? false : true)
+     */
+    public static function isWriteOperation($operation): bool
+    {
+        return in_array($operation, SyncOperationGroup::ALL_WRITE, true);
+    }
 
     /**
      * Get the name of a sync entity's provider interface
