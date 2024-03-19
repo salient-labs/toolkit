@@ -30,13 +30,11 @@
         "adodb/adodb-php": "Required for access to databases",
         "league/oauth2-client": "Required for integration with OAuth 2.0 service providers",
         "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
-        "analog/analog": "Allows Analog handlers to be used as console message targets",
-        "clue/phar-composer": "Simplifies creation of phar archives"
+        "analog/analog": "Allows Analog handlers to be used as console message targets"
     },
     "require-dev": {
         "adodb/adodb-php": "^5",
         "analog/analog": "^1",
-        "clue/phar-composer": "^1",
         "ergebnis/phpunit-slow-test-detector": "^2",
         "firebase/php-jwt": "^6",
         "league/oauth2-client": "^2",
