@@ -131,6 +131,19 @@ class HttpRequest extends HttpMessage implements RequestInterface
         return $instance->withHeader(HttpHeader::HOST, $host);
     }
 
+    /**
+     * @inheritDoc
+     */
+    protected function getStartLine(): string
+    {
+        return sprintf(
+            '%s %s HTTP/%s',
+            Str::upper($this->Method),
+            $this->getRequestTarget(),
+            $this->ProtocolVersion,
+        );
+    }
+
     private function getHost(): string
     {
         $host = $this->Uri->getHost();
@@ -214,6 +227,6 @@ class HttpRequest extends HttpMessage implements RequestInterface
         // components, but `/path?` and `/path` are not necessarily equivalent,
         // so URIs are always converted to instances of `Salient\Http\Uri`, which
         // surfaces empty and undefined queries as `""` and `null` respectively
-        return Uri::from($uri)->normalise();
+        return Uri::from($uri);
     }
 }

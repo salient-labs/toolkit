@@ -10,11 +10,13 @@ use Salient\Contract\Http\HttpProtocolVersion;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Arr;
+use Stringable;
 
 /**
  * Base class for HTTP messages
  */
-abstract class HttpMessage implements MessageInterface, Immutable
+abstract class HttpMessage implements MessageInterface, Stringable, Immutable
 {
     use HasImmutableProperties {
         withPropertyValue as with;
@@ -25,6 +27,11 @@ abstract class HttpMessage implements MessageInterface, Immutable
     protected HttpHeadersInterface $Headers;
 
     protected StreamInterface $Body;
+
+    /**
+     * Get the start line of the message
+     */
+    abstract protected function getStartLine(): string;
 
     /**
      * @param StreamInterface|resource|string|null $body
@@ -86,6 +93,24 @@ abstract class HttpMessage implements MessageInterface, Immutable
     public function getBody(): StreamInterface
     {
         return $this->Body;
+    }
+
+    /**
+     * Convert the message to an [RFC7230]-compliant HTTP payload
+     */
+    public function getHttpPayload(bool $withoutBody = false): string
+    {
+        $message = implode("\r\n", Arr::push(
+            Arr::unshift(
+                $this->Headers->getLines(),
+                $this->getStartLine(),
+            ),
+            '',
+        ));
+
+        return $withoutBody
+            ? $message
+            : $message . $this->Body;
     }
 
     /**
@@ -179,5 +204,13 @@ abstract class HttpMessage implements MessageInterface, Immutable
                 $body
             );
         }
+    }
+
+    /**
+     * Get the message as an HTTP payload
+     */
+    public function __toString(): string
+    {
+        return $this->getHttpPayload();
     }
 }

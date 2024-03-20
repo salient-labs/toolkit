@@ -661,22 +661,7 @@ parameters:
 			path: src/Toolkit/Curler/Curler.php
 
 		-
-			message: "#^Parameter \\#1 \\$handle of function curl_getinfo expects CurlHandle, CurlHandle\\|resource given\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
 			message: "#^Parameter \\#1 \\$handle of function curl_getinfo expects CurlHandle, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_reset expects CurlHandle, CurlHandle\\|resource given\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_setopt expects CurlHandle, CurlHandle\\|resource given\\.$#"
 			count: 1
 			path: src/Toolkit/Curler/Curler.php
 

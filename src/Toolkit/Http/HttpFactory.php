@@ -40,11 +40,7 @@ class HttpFactory implements
         int $code = 200,
         string $reasonPhrase = ''
     ): ResponseInterface {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            ResponseFactoryInterface::class
-        );
+        return new HttpResponse($code, $reasonPhrase);
     }
 
     /**
@@ -108,8 +104,8 @@ class HttpFactory implements
     /**
      * @inheritDoc
      */
-    public function createUri(string $uri = ''): UriInterface
+    public function createUri(string $uri = '', bool $strict = false): UriInterface
     {
-        return (new Uri($uri, false))->normalise();
+        return new Uri($uri, $strict);
     }
 }

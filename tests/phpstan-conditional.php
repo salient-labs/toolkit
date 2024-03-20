@@ -28,6 +28,9 @@ return [
     'parameters' => [
         'ignoreErrors' => [
             [
+                'message' => '#^Parameter \#1 \$handle of function (curl_errno|curl_getinfo|curl_reset|curl_setopt) expects CurlHandle, CurlHandle\|resource given\.$#',
+            ],
+            [
                 'message' => '#^Strict comparison using \=\=\= between array and false will always evaluate to false\.$#',
                 'count' => 1,
                 'path' => '../src/Toolkit/Core/ArrayMapper.php',

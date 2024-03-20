@@ -92,7 +92,7 @@ final class HttpRequestTest extends TestCase
         $r = new HttpRequest('GET', '*');
         $this->assertSame('*', $r->getRequestTarget());
 
-        $r = new HttpRequest('GET', new Uri('http://foo.com/bar baz/', false));
+        $r = new HttpRequest('GET', new Uri('http://foo.com/bar baz/'));
         $this->assertSame('/bar%20baz/', $r->getRequestTarget());
 
         $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam');
@@ -212,7 +212,7 @@ final class HttpRequestTest extends TestCase
     {
         $r = new HttpRequest('GET', '/');
         $this->expectException(InvalidArgumentException::class);
-        $r->withRequestTarget('/foo bar');
+        $r->withRequestTarget('//example.com:-1');
     }
 
     public function testImmutability(): void
