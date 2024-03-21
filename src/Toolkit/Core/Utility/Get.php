@@ -221,7 +221,14 @@ final class Get extends AbstractUtility
                 if (!$value) {
                     continue;
                 }
-                $format = (
+                $hasArray = false;
+                foreach ($value as $v) {
+                    if (is_array($v)) {
+                        $hasArray = true;
+                        break;
+                    }
+                }
+                $format = $hasArray || (
                     Arr::isList($value)
                         ? $flags & QueryFlag::PRESERVE_LIST_KEYS
                         : (Arr::isIndexed($value)
