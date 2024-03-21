@@ -7,6 +7,9 @@ use Salient\Contract\Core\Immutable;
 use JsonSerializable;
 use Stringable;
 
+/**
+ * @api
+ */
 interface UriInterface extends
     PsrUriInterface,
     Stringable,
@@ -37,7 +40,7 @@ interface UriInterface extends
     public function toParts(): array;
 
     /**
-     * Check if the URI is not absolute
+     * Check if the URI is absolute
      */
     public function isReference(): bool;
 
@@ -63,4 +66,9 @@ interface UriInterface extends
      * @return static
      */
     public function follow($reference): UriInterface;
+
+    /**
+     * Get the string representation of the URI
+     */
+    public function jsonSerialize(): string;
 }

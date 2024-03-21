@@ -2,14 +2,14 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\UriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpRequestInterface;
+use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\UriInterface;
 
 interface CurlerInterface
 {
@@ -21,12 +21,12 @@ interface CurlerInterface
     /**
      * Get the last request sent to the endpoint
      */
-    public function getLastRequest(): ?RequestInterface;
+    public function getLastRequest(): ?HttpRequestInterface;
 
     /**
      * Get the last response received from the endpoint
      */
-    public function getLastResponse(): ?ResponseInterface;
+    public function getLastResponse(): ?HttpResponseInterface;
 
     // --
 

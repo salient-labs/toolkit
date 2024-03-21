@@ -14,6 +14,8 @@ use Stringable;
 
 /**
  * An [RFC3986]-compliant URI
+ *
+ * @api
  */
 class Uri implements UriInterface
 {

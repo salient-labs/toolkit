@@ -80,6 +80,8 @@ class HttpHeaders implements HttpHeadersInterface
     protected ?string $Carry = null;
 
     /**
+     * Creates a new HttpHeaders object
+     *
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      */
     public function __construct($items = [])
@@ -454,7 +456,13 @@ class HttpHeaders implements HttpHeadersInterface
      */
     public function jsonSerialize(): array
     {
-        return $this->Items;
+        foreach ($this->headers() as $name => $value) {
+            $headers[] = [
+                'name' => $name,
+                'value' => $value,
+            ];
+        }
+        return $headers ?? [];
     }
 
     /**

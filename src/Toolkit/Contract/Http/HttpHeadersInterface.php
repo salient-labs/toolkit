@@ -7,7 +7,7 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Immutable;
 
 /**
- * A collection of HTTP headers
+ * @api
  *
  * @extends CollectionInterface<string,string[]>
  */
@@ -127,7 +127,10 @@ interface HttpHeadersInterface extends CollectionInterface, Immutable
     public function getHeaderLine(string $name, bool $lastValueOnly = false): string;
 
     /**
-     * @return array<string,string[]>
+     * Get header names and values in their original order as a list of HTTP
+     * Archive (HAR) header objects, preserving the original case of each header
+     *
+     * @return array<array{name:string,value:string}>
      */
     public function jsonSerialize(): array;
 }

@@ -4,19 +4,18 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpProtocolVersion;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Arr;
-use Stringable;
 
 /**
  * Base class for HTTP messages
  */
-abstract class HttpMessage implements MessageInterface, Stringable, Immutable
+abstract class HttpMessage implements HttpMessageInterface
 {
     use HasImmutableProperties {
         withPropertyValue as with;
@@ -96,7 +95,7 @@ abstract class HttpMessage implements MessageInterface, Stringable, Immutable
     }
 
     /**
-     * Convert the message to an [RFC7230]-compliant HTTP payload
+     * @inheritDoc
      */
     public function getHttpPayload(bool $withoutBody = false): string
     {
@@ -212,5 +211,16 @@ abstract class HttpMessage implements MessageInterface, Stringable, Immutable
     public function __toString(): string
     {
         return $this->getHttpPayload();
+    }
+
+    /**
+     * @return array{httpVersion:string,headers:array<array{name:string,value:string}>}
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'httpVersion' => sprintf('HTTP/%s', $this->ProtocolVersion),
+            'headers' => $this->Headers->jsonSerialize(),
+        ];
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Message\RequestInterface;
+use Salient\Contract\Http\HttpRequestInterface;
 use LogicException;
 
 interface CurlerPageInterface
@@ -24,5 +24,5 @@ interface CurlerPageInterface
      *
      * @throws LogicException if there are no more pages to retrieve.
      */
-    public function getNextRequest(RequestInterface $request): RequestInterface;
+    public function getNextRequest(HttpRequestInterface $request): HttpRequestInterface;
 }

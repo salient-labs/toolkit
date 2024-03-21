@@ -6,13 +6,14 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 
 /**
  * An HTTP response
  */
-class HttpResponse extends HttpMessage implements ResponseInterface
+class HttpResponse extends HttpMessage implements HttpResponseInterface
 {
     protected const STATUS_CODE = [
         100 => 'Continue',
@@ -79,10 +80,11 @@ class HttpResponse extends HttpMessage implements ResponseInterface
     ];
 
     protected int $StatusCode;
-
     protected ?string $ReasonPhrase;
 
     /**
+     * Creates a new HttpResponse object
+     *
      * @param StreamInterface|resource|string|null $body
      * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
      */

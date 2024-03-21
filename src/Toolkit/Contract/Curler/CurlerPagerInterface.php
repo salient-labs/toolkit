@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Salient\Contract\Http\HttpRequestInterface;
+use Salient\Contract\Http\HttpResponseInterface;
 
 interface CurlerPagerInterface
 {
@@ -12,12 +12,12 @@ interface CurlerPagerInterface
      *
      * Return `$request` if no special handling is required.
      */
-    public function getFirstRequest(RequestInterface $request): RequestInterface;
+    public function getFirstRequest(HttpRequestInterface $request): HttpRequestInterface;
 
     /**
      * Convert data returned by the endpoint to a new page object
      *
      * @param mixed $data
      */
-    public function getPage($data, ResponseInterface $response, ?CurlerPageInterface $previousPage = null): CurlerPageInterface;
+    public function getPage($data, HttpResponseInterface $response, ?CurlerPageInterface $previousPage = null): CurlerPageInterface;
 }

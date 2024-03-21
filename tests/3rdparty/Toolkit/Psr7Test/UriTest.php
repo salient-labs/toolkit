@@ -3,7 +3,7 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\UriIntegrationTest;
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Uri;
@@ -26,11 +26,11 @@ class UriTest extends UriIntegrationTest
     }
 
     /**
-     * @return array<array{UriInterface,string}>
+     * @return array<array{PsrUriInterface,string}>
      */
     public function getPaths(): array
     {
-        /** @var array<array{UriInterface,string}> */
+        /** @var array<array{PsrUriInterface,string}> */
         $data = parent::getPaths();
         foreach ($data as &$args) {
             // Convert percent-encoded octets to uppercase per [RFC3986]

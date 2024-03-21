@@ -4,9 +4,10 @@ namespace Salient\Http;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Str;
@@ -15,16 +16,16 @@ use Stringable;
 /**
  * An outgoing HTTP request
  */
-class HttpRequest extends HttpMessage implements RequestInterface
+class HttpRequest extends HttpMessage implements HttpRequestInterface
 {
     protected string $Method;
-
     protected ?string $RequestTarget;
-
     protected Uri $Uri;
 
     /**
-     * @param UriInterface|Stringable|string $uri
+     * Creates a new HttpRequest object
+     *
+     * @param PsrUriInterface|Stringable|string $uri
      * @param StreamInterface|resource|string|null $body
      * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
      */
@@ -109,7 +110,7 @@ class HttpRequest extends HttpMessage implements RequestInterface
     /**
      * @inheritDoc
      */
-    public function withUri(UriInterface $uri, bool $preserveHost = false): RequestInterface
+    public function withUri(PsrUriInterface $uri, bool $preserveHost = false): RequestInterface
     {
         if ((string) $uri === (string) $this->Uri) {
             $instance = $this;
@@ -219,14 +220,15 @@ class HttpRequest extends HttpMessage implements RequestInterface
     }
 
     /**
-     * @param UriInterface|Stringable|string $uri
+     * @param PsrUriInterface|Stringable|string $uri
      */
     private function filterUri($uri): Uri
     {
-        // `UriInterface` makes no distinction between empty and undefined URI
-        // components, but `/path?` and `/path` are not necessarily equivalent,
-        // so URIs are always converted to instances of `Salient\Http\Uri`, which
-        // surfaces empty and undefined queries as `""` and `null` respectively
+        // `Psr\Http\Message\UriInterface` makes no distinction between empty
+        // and undefined URI components, but `/path?` and `/path` are not
+        // necessarily equivalent, so URIs are always converted to instances of
+        // `Salient\Http\Uri`, which surfaces empty and undefined queries as
+        // `""` and `null` respectively
         return Uri::from($uri);
     }
 }
