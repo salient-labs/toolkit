@@ -258,14 +258,102 @@ final class GetTest extends TestCase
         ];
     }
 
-    public function testFilter(): void
+    /**
+     * @dataProvider filterProvider
+     *
+     * @param array<string,mixed>|string $expected
+     * @param string[] $values
+     */
+    public function testFilter($expected, array $values, bool $discardInvalid = true): void
     {
-        $this->assertSame([
-            'key1' => 'value1',
-            'key2' => 'value2',
-            'key3' => '',
-            'key4' => '',
-        ], Get::filter(['key1=value1', 'key2=value2', 'key3=value3', 'key3=', 'key4', '=value5']));
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Get::filter($values, $discardInvalid));
+    }
+
+    /**
+     * @return array<array{array<string,mixed>|string,string[],2?:bool}>
+     */
+    public static function filterProvider(): array
+    {
+        $maxInputVars = (int) ini_get('max_input_vars');
+        /** @var string[] */
+        $maxValues = array_fill(0, $maxInputVars, 'v=');
+        /** @var string[] */
+        $tooManyValues = array_fill(0, $maxInputVars + 1, 'v=');
+
+        return [
+            [
+                [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                    'key3' => '',
+                    'key4' => '',
+                ],
+                [
+                    'key1=value1',
+                    'key2=value2',
+                    'key3=value3',
+                    'key3=',
+                    'key4',
+                    '=value5',
+                ],
+            ],
+            [
+                InvalidArgumentException::class . ",Invalid key-value pair: '=value'",
+                ['=value'],
+                false,
+            ],
+            [
+                InvalidArgumentException::class . ",Invalid key-value pairs: '=value', ''",
+                ['=value', ''],
+                false,
+            ],
+            [
+                [
+                    'key' => [
+                        0 => 'value1',
+                        1 => 'value2',
+                        3 => '',
+                        4 => '',
+                    ],
+                ],
+                [
+                    'key[0]=value1',
+                    'key[1]=value2',
+                    'key[3]=value3',
+                    'key[3]=',
+                    'key[4]',
+                ],
+            ],
+            [
+                [
+                    'where' => [
+                        '__' => 'AND',
+                        'ItemKey = "foo"',
+                        [
+                            '__' => 'OR',
+                            'Expiry IS NULL',
+                            'Expiry > "2024-03-21 16:51:35"',
+                        ],
+                    ],
+                ],
+                [
+                    'where[__]=AND',
+                    'where[0]=ItemKey = "foo"',
+                    'where[1][__]=OR',
+                    'where[1][0]=Expiry IS NULL',
+                    'where[1][1]=Expiry > "2024-03-21 16:51:35"',
+                ],
+            ],
+            [
+                ['v' => ''],
+                $maxValues,
+            ],
+            [
+                InvalidArgumentException::class . ',Key-value pairs exceed max_input_vars',
+                $tooManyValues,
+            ],
+        ];
     }
 
     /**

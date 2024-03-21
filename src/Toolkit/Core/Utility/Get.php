@@ -131,18 +131,47 @@ final class Get extends AbstractUtility
     }
 
     /**
-     * Convert "key=value" pairs to an associative array
+     * Convert "key[=value]" pairs to an associative array
      *
      * @param string[] $values
      * @return array<string,mixed>
      */
-    public static function filter(array $values): array
+    public static function filter(array $values, bool $discardInvalid = true): array
     {
+        $valid = Pcre::grep('/^[^ .=]++/', $values);
+        if (!$discardInvalid && $valid !== $values) {
+            $invalid = array_diff($values, $valid);
+            throw new InvalidArgumentException(Inflect::format(
+                $invalid,
+                "Invalid key-value {{#:pair}}: '%s'",
+                implode("', '", $invalid),
+            ));
+        }
+
+        /**
+         * @var int|null
+         */
+        static $maxInputVars;
+
+        $maxInputVars ??= (int) ini_get('max_input_vars');
+        if (count($valid) > $maxInputVars) {
+            throw new InvalidArgumentException(sprintf(
+                'Key-value pairs exceed max_input_vars (%d)',
+                $maxInputVars,
+            ));
+        }
+
         $values = Pcre::replaceCallback(
-            '/^([^=]++)=(.++)/s',
+            '/^([^=]++)(?:=(.++))?/s',
             fn(array $match) =>
-                $match[1] . '=' . rawurlencode($match[2]),
-            $values,
+                rawurlencode((string) $match[1])
+                . ($match[2] === null
+                    ? ''
+                    : '=' . rawurlencode($match[2])),
+            $valid,
+            -1,
+            $count,
+            \PREG_UNMATCHED_AS_NULL,
         );
 
         $query = [];
