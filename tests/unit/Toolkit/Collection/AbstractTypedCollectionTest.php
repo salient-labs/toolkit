@@ -8,6 +8,8 @@ use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Collection\AbstractTypedCollection
+ * @covers \Salient\Collection\CollectionTrait
+ * @covers \Salient\Collection\ReadableCollectionTrait
  */
 final class AbstractTypedCollectionTest extends TestCase
 {

@@ -9,6 +9,9 @@ use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Collection\AbstractTypedList
+ * @covers \Salient\Collection\ListTrait
+ * @covers \Salient\Collection\CollectionTrait
+ * @covers \Salient\Collection\ReadableCollectionTrait
  */
 final class AbstractTypedListTest extends TestCase
 {
