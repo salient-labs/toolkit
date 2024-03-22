@@ -8,6 +8,9 @@ use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Uri;
 
+/**
+ * @covers \Salient\Http\Uri
+ */
 class UriTest extends UriIntegrationTest
 {
     /**

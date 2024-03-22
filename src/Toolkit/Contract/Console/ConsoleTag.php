@@ -67,17 +67,22 @@ final class ConsoleTag extends AbstractEnumeration
     public const CODE_BLOCK = 6;
 
     /**
+     * A unified diff header
+     */
+    public const DIFF_HEADER = 7;
+
+    /**
+     * Line numbers in a unified diff
+     */
+    public const DIFF_RANGE = 8;
+
+    /**
      * An additional line in unified diff output
      */
-    public const DIFF_ADDITION = 7;
+    public const DIFF_ADDITION = 9;
 
     /**
      * A removed line in unified diff output
      */
-    public const DIFF_REMOVAL = 8;
-
-    /**
-     * A unified diff header
-     */
-    public const DIFF_HEADER = 9;
+    public const DIFF_REMOVAL = 10;
 }

@@ -605,13 +605,15 @@ final class ConsoleFormatter
     public function formatDiff(string $diff): string
     {
         $formats = [
+            '---' => $this->TagFormats->get(Tag::DIFF_HEADER),
+            '+++' => $this->TagFormats->get(Tag::DIFF_HEADER),
+            '@' => $this->TagFormats->get(Tag::DIFF_RANGE),
             '+' => $this->TagFormats->get(Tag::DIFF_ADDITION),
             '-' => $this->TagFormats->get(Tag::DIFF_REMOVAL),
-            '@' => $this->TagFormats->get(Tag::DIFF_HEADER),
         ];
 
         return Pcre::replaceCallback(
-            '/^([+\-@]).*/m',
+            '/^([-+]{3}|[-+@]).*/m',
             fn(array $matches) => $formats[$matches[1]]->apply($matches[0]),
             $diff,
         );

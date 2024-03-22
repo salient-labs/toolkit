@@ -23,6 +23,12 @@ use stdClass;
 
 /**
  * @backupGlobals enabled
+ *
+ * @covers \Salient\Cli\CliApplication
+ * @covers \Salient\Cli\CliCommand
+ * @covers \Salient\Cli\CliHelpStyle
+ * @covers \Salient\Cli\CliOption
+ * @covers \Salient\Cli\Exception\CliInvalidArgumentsException
  */
 final class CliApplicationTest extends TestCase
 {

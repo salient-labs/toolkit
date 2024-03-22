@@ -14,6 +14,10 @@ use Salient\Core\AbstractBuilder;
 use Salient\Tests\TestCase;
 use ReflectionClass;
 
+/**
+ * @covers \Salient\Cli\CliOption
+ * @covers \Salient\Cli\CliOptionBuilder
+ */
 final class CliOptionBuilderTest extends TestCase
 {
     public function testFlag(): void

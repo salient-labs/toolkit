@@ -7,6 +7,9 @@ use Salient\Core\DotNetDateParser;
 use Salient\Tests\TestCase;
 use DateTimeInterface;
 
+/**
+ * @covers \Salient\Core\DateFormatter
+ */
 final class DateFormatterTest extends TestCase
 {
     public function testDotNet(): void

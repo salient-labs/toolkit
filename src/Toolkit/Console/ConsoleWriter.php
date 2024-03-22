@@ -24,9 +24,11 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Debug;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
+use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Sys;
 use Throwable;
 
 /**
@@ -523,11 +525,25 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
      */
     public function summary(
         string $finishedText = 'Command finished',
-        string $successText = 'without errors'
+        string $successText = 'without errors',
+        bool $withResourceUsage = false
     ) {
+        if ($withResourceUsage) {
+            $usage = sprintf(
+                'in %.3fs (%s memory used)',
+                microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
+                Format::bytes(Sys::getPeakMemoryUsage(), 3),
+            );
+        }
+
         $msg1 = trim($finishedText);
         if ($this->State->Errors + $this->State->Warnings === 0) {
-            return $this->write(Level::INFO, "$msg1 $successText", null, MessageType::SUCCESS);
+            return $this->write(
+                Level::INFO,
+                Arr::implode(' ', [$msg1, $successText, $usage ?? null]),
+                null,
+                MessageType::SUCCESS
+            );
         }
 
         $msg2 = 'with ' . Inflect::format($this->State->Errors, '{{#}} {{#:error}}');
@@ -537,7 +553,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
 
         return $this->write(
             $this->State->Errors ? Level::ERROR : Level::WARNING,
-            "$msg1 $msg2",
+            Arr::implode(' ', [$msg1, $msg2, $usage ?? null]),
             null
         );
     }

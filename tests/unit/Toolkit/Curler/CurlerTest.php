@@ -7,6 +7,9 @@ use Salient\Curler\Exception\CurlerHttpErrorException;
 use Salient\Curler\Curler;
 use Salient\Tests\TestCase;
 
+/**
+ * @covers \Salient\Curler\Curler
+ */
 final class CurlerTest extends TestCase
 {
     public function testCurlError(): void

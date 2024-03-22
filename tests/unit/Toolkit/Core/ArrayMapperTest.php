@@ -10,6 +10,9 @@ use Salient\Tests\TestCase;
 use Throwable;
 use ValueError;
 
+/**
+ * @covers \Salient\Core\ArrayMapper
+ */
 final class ArrayMapperTest extends TestCase
 {
     /**

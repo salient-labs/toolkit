@@ -64,7 +64,7 @@ final class CliOptionBuilder extends AbstractBuilder
      * Bind the option's value to a variable
      *
      * @param mixed $variable
-     * @return $this
+     * @return static
      */
     public function bindTo(&$variable)
     {

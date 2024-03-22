@@ -1,12 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Catalog;
+namespace Salient\Tests\Contract\Core;
 
 use Salient\Contract\Core\TextComparisonAlgorithm;
 use Salient\Contract\Core\TextComparisonFlag;
 use Salient\Tests\TestCase;
 use ReflectionClass;
 
+/**
+ * @coversNothing
+ */
 final class TextComparisonFlagTest extends TestCase
 {
     public function testConstantValues(): void

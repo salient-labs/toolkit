@@ -9,6 +9,9 @@ use LogicException;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+/**
+ * @covers \Salient\Iterator\RecursiveFilesystemIterator
+ */
 final class RecursiveFilesystemIteratorTest extends TestCase
 {
     /**

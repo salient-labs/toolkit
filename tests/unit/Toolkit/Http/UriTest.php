@@ -11,6 +11,8 @@ use Generator;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
+ *
+ * @covers \Salient\Http\Uri
  */
 final class UriTest extends TestCase
 {

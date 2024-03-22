@@ -51,7 +51,7 @@ use Throwable;
  * @method static ConsoleWriter setTargetPrefix(?string $prefix, int-mask-of<TargetTypeFlag::*> $flags = 0) Set or unset the prefix applied to each line of output by targets that implement ConsoleTargetPrefixInterface
  * @method static ConsoleWriter stderr(string $msg, Level::* $level = Level::INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to STDERR, creating a target for it if necessary
  * @method static ConsoleWriter stdout(string $msg, Level::* $level = Level::INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to STDOUT, creating a target for it if necessary
- * @method static ConsoleWriter summary(string $finishedText = 'Command finished', string $successText = 'without errors') Print a "command finished" message with a summary of errors and warnings (see {@see ConsoleWriter::summary()})
+ * @method static ConsoleWriter summary(string $finishedText = 'Command finished', string $successText = 'without errors', bool $withResourceUsage = false) Print a "command finished" message with a summary of errors and warnings (see {@see ConsoleWriter::summary()})
  * @method static ConsoleWriter tty(string $msg, Level::* $level = Level::INFO, MessageType::* $type = MessageType::UNDECORATED) Print "$msg" to TTY targets
  * @method static ConsoleWriter warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING
  * @method static ConsoleWriter warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING once per run

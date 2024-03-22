@@ -1,15 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Sync\Concept;
+namespace Salient\Tests\Sync;
 
+use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
-use Salient\Tests\Sync\SyncTestCase;
 
-final class SyncEntityTest extends SyncTestCase
+/**
+ * @covers \Salient\Sync\AbstractSyncEntity
+ */
+final class AbstractSyncEntityTest extends SyncTestCase
 {
     public function testDefaultProvider(): void
     {
@@ -28,6 +31,7 @@ final class SyncEntityTest extends SyncTestCase
      *
      * @param int|string|false|null $expected
      * @param int|string|null $nameOrId
+     * @param class-string<SyncEntityInterface> $entity
      */
     public function testIdFromNameOrId(
         $expected,
@@ -95,6 +99,7 @@ final class SyncEntityTest extends SyncTestCase
     {
         $user = new User();
         $user->Id = 1;
+        $user->Posts = [];
 
         $post = new Post();
         $post->Id = 101;

@@ -179,12 +179,13 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      *
      * Return `$defB` if no sync operations are implemented for the entity.
      *
-     * @template T of SyncEntityInterface
+     * @template TEntity of SyncEntityInterface
+     * @template TProvider of HttpSyncProvider
      *
-     * @param class-string<T> $entity
-     * @param HttpSyncDefinitionBuilder<T,static> $defB A definition builder
-     * with `entity()` and `provider()` already applied.
-     * @return HttpSyncDefinitionBuilder<T,static>
+     * @param class-string<TEntity> $entity
+     * @param HttpSyncDefinitionBuilder<TEntity,TProvider> $defB A definition
+     * builder with `entity()` and `provider()` already applied.
+     * @return HttpSyncDefinitionBuilder<TEntity,TProvider>
      */
     protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
     {

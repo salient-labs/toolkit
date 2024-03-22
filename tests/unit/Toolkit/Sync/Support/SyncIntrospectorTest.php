@@ -17,6 +17,9 @@ use Salient\Tests\TestCase;
 use Closure;
 use ReflectionFunction;
 
+/**
+ * @covers \Salient\Sync\Support\SyncIntrospector
+ */
 final class SyncIntrospectorTest extends TestCase
 {
     public function testEntityToProvider(): void

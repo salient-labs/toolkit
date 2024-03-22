@@ -5,6 +5,9 @@ namespace Salient\Tests\Psr7Test;
 use Http\Psr7Test\RequestIntegrationTest;
 use Salient\Http\HttpRequest;
 
+/**
+ * @covers \Salient\Http\HttpRequest
+ */
 class RequestTest extends RequestIntegrationTest
 {
     /**

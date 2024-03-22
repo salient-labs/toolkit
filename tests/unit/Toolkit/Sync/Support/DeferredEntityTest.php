@@ -10,6 +10,9 @@ use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\Sync\SyncTestCase;
 
+/**
+ * @covers \Salient\Sync\Support\DeferredEntity
+ */
 final class DeferredEntityTest extends SyncTestCase
 {
     public function testDoNotResolve(): void

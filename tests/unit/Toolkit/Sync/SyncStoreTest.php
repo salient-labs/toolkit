@@ -1,12 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Sync\Support;
+namespace Salient\Tests\Sync;
 
 use Salient\Contract\Core\Regex;
 use Salient\Core\Utility\Pcre;
 use Salient\Tests\Sync\Entity\User;
-use Salient\Tests\Sync\SyncTestCase;
 
+/**
+ * @covers \Salient\Sync\SyncStore
+ */
 final class SyncStoreTest extends SyncTestCase
 {
     public function testRun(): void
