@@ -22,6 +22,9 @@ use Salient\Core\Utility\Get;
 use Salient\Tests\TestCase;
 use LogicException;
 
+/**
+ * @covers \Salient\Core\Concern\ConstructibleTrait
+ */
 final class ConstructibleTraitTest extends TestCase
 {
     /**

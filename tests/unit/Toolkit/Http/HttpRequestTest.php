@@ -11,6 +11,9 @@ use Salient\Tests\TestCase;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
+ *
+ * @covers \Salient\Http\HttpMessage
+ * @covers \Salient\Http\HttpRequest
  */
 final class HttpRequestTest extends TestCase
 {

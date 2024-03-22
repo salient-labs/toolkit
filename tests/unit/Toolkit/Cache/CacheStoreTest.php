@@ -8,6 +8,9 @@ use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use stdClass;
 
+/**
+ * @covers \Salient\Cache\CacheStore
+ */
 final class CacheStoreTest extends TestCase
 {
     private string $Dir;

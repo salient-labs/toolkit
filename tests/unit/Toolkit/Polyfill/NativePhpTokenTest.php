@@ -6,6 +6,8 @@ use PhpToken;
 
 /**
  * @requires PHP >= 8.0
+ *
+ * @coversNothing
  */
 final class NativePhpTokenTest extends PhpTokenTestCase
 {

@@ -43,10 +43,11 @@ final class SyncSerializeRulesBuilder extends AbstractBuilder
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $value
-     * @return $this<T>
+     * @return static<T>
      */
     public function entity(string $value)
     {
+        /** @var static<T> */
         return $this->withValueB(__FUNCTION__, $value);
     }
 
@@ -56,10 +57,11 @@ final class SyncSerializeRulesBuilder extends AbstractBuilder
      * @template T of SyncEntityInterface
      *
      * @param SyncSerializeRules<T>|null $value
-     * @return $this<T>
+     * @return static<T>
      */
     public function inherit(?SyncSerializeRules $value)
     {
+        /** @var static<T> */
         return $this->withValueB(__FUNCTION__, $value);
     }
 }

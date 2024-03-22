@@ -11,6 +11,9 @@ use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
 use Closure;
 
+/**
+ * @covers \Salient\Sync\Support\SyncContext
+ */
 final class SyncContextTest extends SyncTestCase
 {
     public function testOffline(): void

@@ -13,6 +13,9 @@ use Salient\Tests\Sync\Entity\Task;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
 
+/**
+ * @covers \Salient\Sync\Support\DeferredRelationship
+ */
 final class DeferredRelationshipTest extends SyncTestCase
 {
     public function testLazyHydration(): void

@@ -60,10 +60,11 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $value
-     * @return $this<T,TProvider>
+     * @return static<T,TProvider>
      */
     public function entity(string $value)
     {
+        /** @var static<T,TProvider> */
         return $this->withValueB(__FUNCTION__, $value);
     }
 
@@ -73,10 +74,11 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
      * @template T of DbSyncProvider
      *
      * @param T $value
-     * @return $this<TEntity,T>
+     * @return static<TEntity,T>
      */
     public function provider(DbSyncProvider $value)
     {
+        /** @var static<TEntity,T> */
         return $this->withValueB(__FUNCTION__, $value);
     }
 
@@ -86,10 +88,11 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
      * @template T of SyncEntityInterface
      *
      * @param PipelineInterface<mixed[],T,array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>|null $value
-     * @return $this<T,TProvider>
+     * @return static<T,TProvider>
      */
     public function pipelineFromBackend(?PipelineInterface $value)
     {
+        /** @var static<T,TProvider> */
         return $this->withValueB(__FUNCTION__, $value);
     }
 
@@ -99,10 +102,11 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
      * @template T of SyncEntityInterface
      *
      * @param PipelineInterface<T,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>|null $value
-     * @return $this<T,TProvider>
+     * @return static<T,TProvider>
      */
     public function pipelineToBackend(?PipelineInterface $value)
     {
+        /** @var static<T,TProvider> */
         return $this->withValueB(__FUNCTION__, $value);
     }
 }

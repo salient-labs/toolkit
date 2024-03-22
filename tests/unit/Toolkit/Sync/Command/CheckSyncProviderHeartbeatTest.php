@@ -8,7 +8,10 @@ use Salient\Sync\Command\CheckSyncProviderHeartbeat;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\CommandTestCase;
 
-class CheckSyncProviderHeartbeatTest extends CommandTestCase
+/**
+ * @covers \Salient\Sync\Command\CheckSyncProviderHeartbeat
+ */
+final class CheckSyncProviderHeartbeatTest extends CommandTestCase
 {
     protected function startApp(CliApplicationInterface $app): CliApplicationInterface
     {

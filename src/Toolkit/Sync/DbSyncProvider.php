@@ -157,12 +157,13 @@ abstract class DbSyncProvider extends AbstractSyncProvider
      *
      * Return `$defB` if no sync operations are implemented for the entity.
      *
-     * @template T of SyncEntityInterface
+     * @template TEntity of SyncEntityInterface
+     * @template TProvider of DbSyncProvider
      *
-     * @param class-string<T> $entity
-     * @param DbSyncDefinitionBuilder<T,static> $defB A definition builder
-     * with `entity()` and `provider()` already applied.
-     * @return DbSyncDefinitionBuilder<T,static>
+     * @param class-string<TEntity> $entity
+     * @param DbSyncDefinitionBuilder<TEntity,TProvider> $defB A definition
+     * builder with `entity()` and `provider()` already applied.
+     * @return DbSyncDefinitionBuilder<TEntity,TProvider>
      */
     protected function buildDbDefinition(
         string $entity,

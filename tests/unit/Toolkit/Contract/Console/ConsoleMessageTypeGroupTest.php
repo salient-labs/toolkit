@@ -1,12 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Console\Catalog;
+namespace Salient\Tests\Contract\Console;
 
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
 use Salient\Tests\TestCase;
 
-final class ConsoleMessageTypesTest extends TestCase
+/**
+ * @coversNothing
+ */
+final class ConsoleMessageTypeGroupTest extends TestCase
 {
     public function testALL(): void
     {

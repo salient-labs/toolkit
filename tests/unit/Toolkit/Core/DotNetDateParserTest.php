@@ -7,6 +7,9 @@ use Salient\Tests\TestCase;
 use DateTimeInterface;
 use DateTimeZone;
 
+/**
+ * @covers \Salient\Core\DotNetDateParser
+ */
 final class DotNetDateParserTest extends TestCase
 {
     /**

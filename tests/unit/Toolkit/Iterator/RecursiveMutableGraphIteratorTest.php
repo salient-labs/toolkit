@@ -7,6 +7,11 @@ use Salient\Tests\TestCase;
 use RecursiveIteratorIterator;
 use stdClass;
 
+/**
+ * @covers \Salient\Iterator\RecursiveMutableGraphIterator
+ * @covers \Salient\Iterator\MutableGraphIterator
+ * @covers \Salient\Iterator\GraphIterator
+ */
 final class RecursiveMutableGraphIteratorTest extends TestCase
 {
     public function testRecursion(): void

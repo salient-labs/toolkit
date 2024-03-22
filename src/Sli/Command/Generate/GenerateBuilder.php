@@ -204,6 +204,13 @@ EOF)
         $docBlocks = [];
 
         /**
+         * camelCase name => docblock inserted above return statement
+         *
+         * @var array<string,string>
+         */
+        $returnDocBlocks = [];
+
+        /**
          * forwarded method name => has return value?
          *
          * @var array<string,bool>
@@ -516,14 +523,16 @@ EOF)
                         $returnType[$template] = $T;
                         $param = Pcre::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
                     }
+                    $returnType = 'static<' . implode(',', $returnType) . '>';
                     $lines[] = '';
                     $lines[] = $param;
-                    $lines[] = '@return $this<' . implode(',', $returnType) . '>';
+                    $lines[] = "@return $returnType";
+                    $returnDocBlocks[$name] = "/** @var $returnType */";
                 } else {
                     if ($param) {
                         $lines[] = $param;
                     }
-                    $lines[] = '@return $this';
+                    $lines[] = '@return static';
                 }
                 if ($link) {
                     $lines[] = "@see $see";
@@ -840,11 +849,17 @@ EOF)
                 continue;
             }
 
+            $code = [];
+
+            if (isset($returnDocBlocks[$name])) {
+                $code[] = $returnDocBlocks[$name];
+            }
+
             if ($_param instanceof ReflectionParameter && $_param->isPassedByReference()) {
-                $code = 'return $this->withRefB(__FUNCTION__, $variable);';
+                $code[] = 'return $this->withRefB(__FUNCTION__, $variable);';
                 $param = '&$variable';
             } else {
-                $code = 'return $this->withValueB(__FUNCTION__, $value);';
+                $code[] = 'return $this->withValueB(__FUNCTION__, $value);';
                 $param = '$value';
             }
 

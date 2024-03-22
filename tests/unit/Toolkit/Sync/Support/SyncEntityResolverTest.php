@@ -12,6 +12,10 @@ use Salient\Sync\Support\SyncEntityResolver;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
 
+/**
+ * @covers \Salient\Sync\Support\SyncEntityResolver
+ * @covers \Salient\Sync\Support\SyncEntityFuzzyResolver
+ */
 final class SyncEntityResolverTest extends SyncTestCase
 {
     /**

@@ -12,6 +12,8 @@ use Salient\Tests\TestCase;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
+ *
+ * @covers \Salient\Http\Stream
  */
 final class StreamTest extends TestCase
 {

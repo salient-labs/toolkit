@@ -23,6 +23,8 @@ use stdClass;
 
 /**
  * @backupGlobals enabled
+ *
+ * @covers \Salient\Cli\CliApplication
  */
 final class CliApplicationTest extends TestCase
 {

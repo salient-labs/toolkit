@@ -22,6 +22,9 @@ use Salient\Tests\TestCase;
 use LogicException;
 use stdClass;
 
+/**
+ * @covers \Salient\Container\Container
+ */
 final class ContainerTest extends TestCase
 {
     public function testBindContainer(): void

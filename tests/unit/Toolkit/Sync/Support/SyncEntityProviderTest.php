@@ -14,6 +14,9 @@ use Salient\Tests\Sync\Provider\MockProvider;
 use Salient\Tests\Sync\SyncTestCase;
 use LogicException;
 
+/**
+ * @covers \Salient\Sync\Support\SyncEntityProvider
+ */
 final class SyncEntityProviderTest extends SyncTestCase
 {
     public function testGetList(): void

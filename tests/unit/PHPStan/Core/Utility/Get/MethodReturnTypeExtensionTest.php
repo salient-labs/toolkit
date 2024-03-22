@@ -4,4 +4,7 @@ namespace Salient\Tests\PHPStan\Core\Utility\Get;
 
 use Salient\Tests\PHPStan\MethodReturnTypeExtensionTestCase;
 
-class MethodReturnTypeExtensionTest extends MethodReturnTypeExtensionTestCase {}
+/**
+ * @covers \Salient\PHPStan\Core\Utility\Get\MethodReturnTypeExtension
+ */
+final class MethodReturnTypeExtensionTest extends MethodReturnTypeExtensionTestCase {}

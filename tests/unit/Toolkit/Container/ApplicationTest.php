@@ -13,6 +13,9 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
 use Salient\Tests\TestCase;
 
+/**
+ * @covers \Salient\Container\Application
+ */
 final class ApplicationTest extends TestCase
 {
     private const CONFIG = [

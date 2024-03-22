@@ -6,7 +6,10 @@ use Salient\Tests\Collection\TypedCollection\MyClass;
 use Salient\Tests\Collection\TypedCollection\MyCollection;
 use Salient\Tests\TestCase;
 
-final class TypedCollectionTest extends TestCase
+/**
+ * @covers \Salient\Collection\AbstractTypedCollection
+ */
+final class AbstractTypedCollectionTest extends TestCase
 {
     public function testTypedCollection(): void
     {

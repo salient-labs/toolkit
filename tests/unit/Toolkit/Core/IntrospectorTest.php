@@ -19,6 +19,9 @@ use Salient\Tests\Core\Introspector\SurnameOnlyB;
 use Salient\Tests\TestCase;
 use Generator;
 
+/**
+ * @covers \Salient\Core\Introspector
+ */
 final class IntrospectorTest extends TestCase
 {
     /**
