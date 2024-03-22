@@ -337,7 +337,7 @@ final class Process
      */
     public function wait(): int
     {
-        $this->assertIsRunning();
+        $this->assertHasRun();
 
         while ($this->Pipes) {
             Profile::count('readIterations', __CLASS__);
@@ -646,13 +646,6 @@ final class Process
         $streams = [];
 
         return $this;
-    }
-
-    private function assertIsRunning(): void
-    {
-        if ($this->State !== self::RUNNING) {
-            throw new ProcessException('Process is not running');
-        }
     }
 
     private function assertIsNotRunning(): void
