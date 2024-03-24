@@ -465,7 +465,7 @@ class Uri implements UriInterface
             return $this;
         }
 
-        return $this->withPath(File::resolve($this->Path, true));
+        return $this->withPath(File::resolvePath($this->Path, true));
     }
 
     /**

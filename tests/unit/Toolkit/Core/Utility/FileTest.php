@@ -16,13 +16,45 @@ use Stringable;
  */
 final class FileTest extends TestCase
 {
+    /**
+     * @dataProvider sanitiseDirProvider
+     */
+    public function testSanitiseDir(string $expected, string $directory): void
+    {
+        $this->assertSame($expected, File::sanitiseDir($directory));
+    }
+
+    /**
+     * @return array<array{string,string}>
+     */
+    public static function sanitiseDirProvider(): array
+    {
+        return [
+            ['.', ''],
+            ['dir', 'dir'],
+            ['dir', 'dir/'],
+            ['dir', 'dir///'],
+            ['dir/subdir', 'dir/subdir'],
+            ['dir/subdir', 'dir/subdir/'],
+            ['/dir', '/dir'],
+            ['/dir', '/dir/'],
+            ['/dir', '/dir///'],
+            ['C:', 'C:'],
+            ['C:', 'C:/'],
+            ['C:', 'C:' . \DIRECTORY_SEPARATOR],
+            [\DIRECTORY_SEPARATOR, '/'],
+            [\DIRECTORY_SEPARATOR, '/' . \DIRECTORY_SEPARATOR],
+            [\DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR . \DIRECTORY_SEPARATOR . '/'],
+        ];
+    }
+
     public function testGetCwd(): void
     {
         // chdir() resolves symbolic links, so this is all we can reliably test
         // without launching a separate process
         $dir = self::getFixturesPath(__CLASS__);
         File::chdir($dir);
-        $this->assertSame(getcwd(), File::getCwd());
+        $this->assertSame(getcwd(), File::getcwd());
     }
 
     public function testGetCwdInSymlinkedDirectory(): void
@@ -52,9 +84,9 @@ final class FileTest extends TestCase
             File::chmod("$dir/not_searchable", 0600);
             $this->expectException(FilesystemErrorException::class);
             $this->expectExceptionMessage('Error getting current working directory');
-            File::getCwd();
+            File::getcwd();
         } finally {
-            File::deleteDir($dir, true, true);
+            File::pruneDir($dir, true, true);
         }
     }
 
@@ -788,27 +820,27 @@ final class FileTest extends TestCase
     public function testCreatable(): void
     {
         $dir = self::getFixturesPath(__CLASS__);
-        $this->assertTrue(File::creatable("$dir/exists"));
-        $this->assertTrue(File::creatable("$dir/dir/does_not_exist"));
-        $this->assertFalse(File::creatable("$dir/dir/file/does_not_exist"));
-        $this->assertTrue(File::creatable("$dir/not_a_dir/does_not_exist"));
+        $this->assertTrue(File::isCreatable("$dir/exists"));
+        $this->assertTrue(File::isCreatable("$dir/dir/does_not_exist"));
+        $this->assertFalse(File::isCreatable("$dir/dir/file/does_not_exist"));
+        $this->assertTrue(File::isCreatable("$dir/not_a_dir/does_not_exist"));
 
         $dir = File::createTempDir();
         try {
             File::createDir("$dir/unwritable", 0500);
-            $this->assertFalse(File::creatable("$dir/unwritable"));
-            $this->assertFalse(File::creatable("$dir/unwritable/does_not_exist"));
+            $this->assertFalse(File::isCreatable("$dir/unwritable"));
+            $this->assertFalse(File::isCreatable("$dir/unwritable/does_not_exist"));
             File::create("$dir/writable/file");
             File::create("$dir/writable/read_only", 0400);
             File::create("$dir/writable/no_permissions", 0);
             File::chmod("$dir/writable", 0500);
-            $this->assertFalse(File::creatable("$dir/writable"));
-            $this->assertTrue(File::creatable("$dir/writable/file"));
-            $this->assertFalse(File::creatable("$dir/writable/read_only"));
-            $this->assertFalse(File::creatable("$dir/writable/no_permissions"));
-            $this->assertFalse(File::creatable("$dir/writable/does_not_exist"));
+            $this->assertFalse(File::isCreatable("$dir/writable"));
+            $this->assertTrue(File::isCreatable("$dir/writable/file"));
+            $this->assertFalse(File::isCreatable("$dir/writable/read_only"));
+            $this->assertFalse(File::isCreatable("$dir/writable/no_permissions"));
+            $this->assertFalse(File::isCreatable("$dir/writable/does_not_exist"));
         } finally {
-            File::deleteDir($dir, true, true);
+            File::pruneDir($dir, true, true);
         }
     }
 
@@ -876,7 +908,7 @@ final class FileTest extends TestCase
      */
     public function testResolve(string $expected, string $path, bool $withEmptySegments = false): void
     {
-        $this->assertSame($expected, File::resolve($path, $withEmptySegments));
+        $this->assertSame($expected, File::resolvePath($path, $withEmptySegments));
     }
 
     /**
@@ -1026,10 +1058,10 @@ final class FileTest extends TestCase
     public function testExisting(): void
     {
         $dir = self::getFixturesPath(__CLASS__);
-        $this->assertSame("$dir/exists", File::existing("$dir/exists"));
-        $this->assertSame("$dir/dir", File::existing("$dir/dir/does_not_exist"));
-        $this->assertNull(File::existing("$dir/dir/file/does_not_exist"));
-        $this->assertSame("$dir", File::existing("$dir/not_a_dir/does_not_exist"));
+        $this->assertSame("$dir/exists", File::getClosestExisting("$dir/exists"));
+        $this->assertSame("$dir/dir", File::getClosestExisting("$dir/dir/does_not_exist"));
+        $this->assertNull(File::getClosestExisting("$dir/dir/file/does_not_exist"));
+        $this->assertSame("$dir", File::getClosestExisting("$dir/not_a_dir/does_not_exist"));
     }
 
     /**
@@ -1040,7 +1072,7 @@ final class FileTest extends TestCase
      */
     public function testReadCsv($expected, $resource): void
     {
-        $this->assertSame($expected, File::readCsv($resource));
+        $this->assertSame($expected, File::getCsv($resource));
     }
 
     /**

@@ -45,10 +45,8 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Resolve "/./" and "/../" segments in a path
-     *
-     * Relative directory segments are removed without accessing the filesystem,
-     * so `$path` need not exist.
+     * Resolve "/./" and "/../" segments in a path without accessing the
+     * filesystem
      *
      * If `$withEmptySegments` is `true`, a `"/../"` segment after two or more
      * consecutive directory separators is resolved by removing one of the
@@ -59,8 +57,8 @@ final class File extends AbstractUtility
      *
      * ```php
      * <?php
-     * echo File::resolve('/dir/subdir//../') . PHP_EOL;
-     * echo File::resolve('/dir/subdir//../', true) . PHP_EOL;
+     * echo File::resolvePath('/dir/subdir//../') . PHP_EOL;
+     * echo File::resolvePath('/dir/subdir//../', true) . PHP_EOL;
      * ```
      *
      * Output:
@@ -70,7 +68,7 @@ final class File extends AbstractUtility
      * /dir/subdir/
      * ```
      */
-    public static function resolve(string $path, bool $withEmptySegments = false): string
+    public static function resolvePath(string $path, bool $withEmptySegments = false): string
     {
         $path = str_replace('\\', '/', $path);
 
@@ -88,15 +86,20 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Sanitise the name of a directory
+     * Sanitise the path to a directory
      *
      * Returns `"."` if `$directory` is an empty string, otherwise removes
-     * trailing directory separators unless `$directory` is comprised entirely
-     * of directory separators (e.g. `"/"`).
+     * trailing directory separators.
      */
-    public static function dir(string $directory): string
+    public static function sanitiseDir(string $directory): string
     {
-        return Str::coalesce(rtrim($directory, '/\\'), $directory, '.');
+        if ($directory === '') {
+            return '.';
+        }
+        return Str::coalesce(
+            rtrim($directory, \DIRECTORY_SEPARATOR === '/' ? '/' : '\/'),
+            \DIRECTORY_SEPARATOR,
+        );
     }
 
     /**
@@ -111,7 +114,7 @@ final class File extends AbstractUtility
     /**
      * Get the current working directory without resolving symbolic links
      */
-    public static function getCwd(): string
+    public static function getcwd(): string
     {
         $process = Process::withShellCommand(Sys::isWindows() ? 'cd' : 'pwd');
         if ($process->run() === 0) {
@@ -289,15 +292,9 @@ final class File extends AbstractUtility
 
     /**
      * Delete a directory if it exists
-     *
-     * If `$recursive` is `true`, `$directory` and `$setPermissions` are passed
-     * to {@see File::pruneDir()} before the directory is deleted.
      */
-    public static function deleteDir(
-        string $directory,
-        bool $recursive = false,
-        bool $setPermissions = false
-    ): void {
+    public static function deleteDir(string $directory): void
+    {
         if (!file_exists($directory)) {
             return;
         }
@@ -305,9 +302,6 @@ final class File extends AbstractUtility
             throw new FilesystemErrorException(
                 sprintf('Not a directory: %s', $directory),
             );
-        }
-        if ($recursive) {
-            self::pruneDir($directory, $setPermissions);
         }
         $result = @rmdir($directory);
         self::throwOnFailure($result, 'Error deleting directory: %s', $directory);
@@ -367,10 +361,11 @@ final class File extends AbstractUtility
      * @param Stringable|string|resource $resource
      * @return array<mixed[]>
      */
-    public static function readCsv($resource): array
+    public static function getCsv($resource): array
     {
         $handle = self::getStream($resource, 'rb', $close, $uri);
         while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
+            /** @var array<int,string|null> $row */
             $data[] = $row;
         }
         self::checkEof($handle, $uri);
@@ -406,6 +401,7 @@ final class File extends AbstractUtility
      * Read from an open stream
      *
      * @param resource $stream
+     * @param int<0,max> $length
      * @param Stringable|string|null $uri
      */
     public static function read($stream, int $length, $uri = null): string
@@ -438,7 +434,7 @@ final class File extends AbstractUtility
     public static function realpath(string $path): string
     {
         if (self::isPharUri($path) && file_exists($path)) {
-            return self::resolve($path, true);
+            return self::resolvePath($path, true);
         }
         $_path = $path;
         error_clear_last();
@@ -467,7 +463,7 @@ final class File extends AbstractUtility
      */
     public static function maybeRewind($stream, $uri = null): void
     {
-        if (self::isSeekable($stream)) {
+        if (self::isSeekableStream($stream)) {
             self::seek($stream, 0, \SEEK_SET, $uri);
         }
     }
@@ -521,7 +517,7 @@ final class File extends AbstractUtility
      */
     public static function maybeSeek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
     {
-        if (self::isSeekable($stream)) {
+        if (self::isSeekableStream($stream)) {
             self::seek($stream, $offset, $whence, $uri);
         }
     }
@@ -564,6 +560,8 @@ final class File extends AbstractUtility
      *
      * @param resource $stream
      * @param Stringable|string|null $uri
+     *
+     * @phpstan-impure
      */
     public static function tell($stream, $uri = null): int
     {
@@ -601,6 +599,7 @@ final class File extends AbstractUtility
      * Write to an open stream
      *
      * @param resource $stream
+     * @param int<0,max>|null $length
      * @param Stringable|string|null $uri
      * @throws UnwrittenDataException when fewer bytes are written than given.
      */
@@ -622,9 +621,10 @@ final class File extends AbstractUtility
      *
      * @param resource $stream
      * @param-out string $buffer
+     * @param int<0,max>|null $length
      * @param Stringable|string|null $uri
      */
-    public static function writeWithBuffer($stream, string $data, ?string &$buffer, ?int $length = null, $uri = null): int
+    public static function maybeWrite($stream, string $data, ?string &$buffer, ?int $length = null, $uri = null): int
     {
         $result = self::doWrite($stream, $data, $length, $unwritten, $uri);
         $buffer = substr($data, $result);
@@ -633,6 +633,7 @@ final class File extends AbstractUtility
 
     /**
      * @param resource $stream
+     * @param int<0,max>|null $length
      * @param Stringable|string|null $uri
      */
     private static function doWrite($stream, string $data, ?int $length, ?int &$unwritten, $uri): int
@@ -657,7 +658,7 @@ final class File extends AbstractUtility
      * @param resource|array<int|float|string|bool|Stringable|null>|string $data
      * @param int-mask-of<\FILE_USE_INCLUDE_PATH|\FILE_APPEND|\LOCK_EX> $flags
      */
-    public static function putContents(string $filename, $data, int $flags = 0): int
+    public static function writeContents(string $filename, $data, int $flags = 0): int
     {
         $result = @file_put_contents($filename, $data, $flags);
         return self::throwOnFailure($result, 'Error writing file: %s', $filename);
@@ -712,18 +713,19 @@ final class File extends AbstractUtility
         }
 
         $count = 0;
-        foreach ($data as $row) {
+        foreach ($data as $entry) {
             if ($callback) {
-                $row = $callback($row);
+                $entry = $callback($entry);
             }
 
-            $row = Arr::toScalars($row, $nullValue);
+            /** @var (int|float|string|bool|mixed[]|object|null)[] $entry */
+            $row = Arr::toScalars($entry, $nullValue);
 
             if (!$count && $headerRow) {
-                self::fputcsv($handle, array_keys($row), ',', '"', $eol, $uri);
+                self::writeCsvLine($handle, array_keys($row), ',', '"', $eol, $uri);
             }
 
-            self::fputcsv($handle, $row, ',', '"', $eol, $uri);
+            self::writeCsvLine($handle, $row, ',', '"', $eol, $uri);
             $count++;
         }
 
@@ -742,10 +744,10 @@ final class File extends AbstractUtility
      * `$escape` (which should be removed).
      *
      * @param resource $stream
-     * @param mixed[] $fields
+     * @param (int|float|string|bool|null)[] $fields
      * @param Stringable|string|null $uri
      */
-    public static function fputcsv(
+    public static function writeCsvLine(
         $stream,
         array $fields,
         string $separator = ',',
@@ -757,7 +759,7 @@ final class File extends AbstractUtility
         foreach ($fields as &$field) {
             if (strpbrk((string) $field, $special) !== false) {
                 $field = $enclosure
-                    . str_replace($enclosure, $enclosure . $enclosure, $field)
+                    . str_replace($enclosure, $enclosure . $enclosure, (string) $field)
                     . $enclosure;
             }
         }
@@ -773,9 +775,9 @@ final class File extends AbstractUtility
      * Check if a path exists and is writable, or doesn't exist but descends
      * from a writable directory
      */
-    public static function creatable(string $path): bool
+    public static function isCreatable(string $path): bool
     {
-        $path = self::existing($path);
+        $path = self::getClosestExisting($path);
         return $path !== null && is_writable($path);
     }
 
@@ -785,7 +787,7 @@ final class File extends AbstractUtility
      * @param mixed $value
      * @phpstan-assert-if-true resource $value
      */
-    public static function isSeekable($value): bool
+    public static function isSeekableStream($value): bool
     {
         return self::isStream($value) &&
             // @phpstan-ignore-next-line
@@ -821,7 +823,7 @@ final class File extends AbstractUtility
      * Returns `null` if the leftmost segment of `$path` doesn't exist, or if
      * the closest parent that exists is not a directory.
      */
-    public static function existing(string $path): ?string
+    public static function getClosestExisting(string $path): ?string
     {
         $pathIsParent = false;
         while (!file_exists($path)) {
@@ -850,9 +852,9 @@ final class File extends AbstractUtility
      * @param Stringable|string|null $uri
      * @return resource
      */
-    public static function getSeekable($stream, $uri = null)
+    public static function getSeekableStream($stream, $uri = null)
     {
-        if (self::isSeekable($stream)) {
+        if (self::isSeekableStream($stream)) {
             return $stream;
         }
         $seekable = self::open('php://temp', 'r+');
@@ -883,7 +885,7 @@ final class File extends AbstractUtility
         if ($dir === null) {
             $dir = self::getTempDir();
         } else {
-            $dir = self::dir($dir);
+            $dir = self::sanitiseDir($dir);
         }
 
         return sprintf('%s/%s-%s-%s%s', $dir, $program, $hash, $user, $suffix);
@@ -905,13 +907,13 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Recursively delete the contents of a directory without deleting the
-     * directory itself
+     * Recursively delete the contents of a directory before optionally deleting
+     * the directory itself
      *
      * If `$setPermissions` is `true`, file modes in `$directory` are changed if
      * necessary for deletion to succeed.
      */
-    public static function pruneDir(string $directory, bool $setPermissions = false): void
+    public static function pruneDir(string $directory, bool $delete = false, bool $setPermissions = false): void
     {
         $files = (new RecursiveFilesystemIterator())
             ->in($directory)
@@ -955,6 +957,10 @@ final class File extends AbstractUtility
                 : @unlink((string) $file);
             self::throwOnFailure($result, 'Error pruning directory: %s', $directory);
         }
+
+        if ($delete) {
+            self::deleteDir($directory);
+        }
     }
 
     /**
@@ -993,7 +999,7 @@ final class File extends AbstractUtility
     public static function getEol($resource, $uri = null): ?string
     {
         $handle = self::getStream($resource, 'r', $close, $uri);
-        $line = self::readLine($handle);
+        $line = self::readLine($handle, $uri);
         if ($close) {
             self::close($handle, $uri);
         }
@@ -1189,12 +1195,12 @@ final class File extends AbstractUtility
      * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
      */
-    public static function isPhp($resource, $uri = null): bool
+    public static function hasPhp($resource, $uri = null): bool
     {
         $handle = self::getStream($resource, 'r', $close, $uri);
-        $line = self::readLine($handle);
+        $line = self::readLine($handle, $uri);
         if ($line !== '' && substr($line, 0, 2) === '#!') {
-            $line = self::readLine($handle);
+            $line = self::readLine($handle, $uri);
         }
         if ($close) {
             self::close($handle, $uri);

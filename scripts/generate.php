@@ -186,7 +186,7 @@ foreach ($entities as $class => $entityArgs) {
     generated($generateEntity);
     if ($save && $generateEntity->Entity !== null) {
         File::createDir(dirname($file));
-        File::putContents($file, Json::prettyPrint($generateEntity->Entity));
+        File::writeContents($file, Json::prettyPrint($generateEntity->Entity));
         generated($file);
     }
 }
@@ -222,7 +222,7 @@ if (File::getContents($file) !== $attributes) {
         $status |= 1;
     } else {
         Console::info('Replacing', $file);
-        File::putContents($file, $attributes);
+        File::writeContents($file, $attributes);
     }
 } else {
     Console::log('Nothing to do:', $file);

@@ -136,7 +136,7 @@ class Application extends Container implements ApplicationInterface
         // it resolves to a writable directory
         if (!$this->isProduction()) {
             $path = "{$this->BasePath}/$sourceChild";
-            if (File::creatable($path)) {
+            if (File::isCreatable($path)) {
                 return $this->checkPath($path, $name, $create, $save);
             }
         }
@@ -318,7 +318,7 @@ class Application extends Container implements ApplicationInterface
 
         $this->BasePath = $basePath;
 
-        $this->WorkingDirectory = File::getCwd();
+        $this->WorkingDirectory = File::getcwd();
 
         $this->RunningFromSource =
             !extension_loaded('Phar') ||
@@ -390,7 +390,7 @@ class Application extends Container implements ApplicationInterface
      */
     final public function restoreWorkingDirectory()
     {
-        if (File::getCwd() !== $this->WorkingDirectory) {
+        if (File::getcwd() !== $this->WorkingDirectory) {
             File::chdir($this->WorkingDirectory);
         }
 
@@ -402,7 +402,7 @@ class Application extends Container implements ApplicationInterface
      */
     final public function setWorkingDirectory(?string $directory = null)
     {
-        $this->WorkingDirectory = $directory ?? File::getCwd();
+        $this->WorkingDirectory = $directory ?? File::getcwd();
 
         return $this;
     }

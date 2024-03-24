@@ -188,7 +188,7 @@ final class CacheStoreTest extends TestCase
     protected function tearDown(): void
     {
         $this->Cache->close();
-        File::deleteDir($this->Dir, true);
+        File::pruneDir($this->Dir, true);
 
         unset($this->Cache);
         unset($this->File);

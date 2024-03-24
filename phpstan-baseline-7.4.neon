@@ -476,36 +476,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Env.php
 
 		-
-			message: "#^Cannot cast mixed to string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\File\\:\\:readCsv\\(\\) should return array\\<array\\> but returns array\\<int\\<0, max\\>, array\\<int, string\\|null\\>\\|null\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:toScalars\\(\\) expects iterable\\<\\(int\\|string\\), array\\|bool\\|float\\|int\\|object\\|string\\|null\\>, array\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#2 \\$length of function fread expects int\\<0, max\\>, int given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#3 \\$length of function fwrite expects int\\<0, max\\>, int given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#3 \\$subject of function str_replace expects array\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
 			message: "#^Cannot cast mixed to int\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Get.php

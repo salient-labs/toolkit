@@ -981,7 +981,7 @@ abstract class GenerateCommand extends Command
             Console::info($verb, $file);
         }
 
-        File::putContents($file, $output);
+        File::writeContents($file, $output);
     }
 
     /**
