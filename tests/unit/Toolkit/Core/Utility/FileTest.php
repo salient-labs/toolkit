@@ -18,24 +18,26 @@ final class FileTest extends TestCase
 {
     public function testGetCwd(): void
     {
-        $path = File::realpath($this->getFixturesPath(__CLASS__));
+        // chdir() resolves symbolic links, so this is all we can reliably test
+        // without launching a separate process
+        $dir = self::getFixturesPath(__CLASS__);
+        File::chdir($dir);
+        $this->assertSame(getcwd(), File::getCwd());
+    }
+
+    public function testGetCwdInSymlinkedDirectory(): void
+    {
+        $dir = File::realpath(self::getFixturesPath(__CLASS__));
         $command = sprintf(
             '%s && %s',
-            Sys::escapeCommand([
-                'cd',
-                "$path/dir_symlink",
-            ]),
-            Sys::escapeCommand([
-                \PHP_BINARY,
-                '-ddisplay_startup_errors=0',
-                "$path/pwd.php",
-            ]),
+            Sys::escapeCommand(['cd', "$dir/dir_symlink"]),
+            Sys::escapeCommand([...self::PHP_COMMAND, "$dir/pwd.php"]),
         );
         $handle = File::openPipe($command, 'rb');
         $output = File::getContents($handle);
         $status = File::closePipe($handle);
         $this->assertSame(0, $status);
-        $this->assertSame($path . \DIRECTORY_SEPARATOR . 'dir_symlink' . \PHP_EOL, $output);
+        $this->assertSame($dir . \DIRECTORY_SEPARATOR . 'dir_symlink' . \PHP_EOL, $output);
     }
 
     /**
@@ -56,29 +58,29 @@ final class FileTest extends TestCase
         }
     }
 
-    public function testOpen(): void
+    public function testFileOperations(): void
     {
         vfsStream::setup('root');
         $file = vfsStream::url('root/file');
         $this->assertFileDoesNotExist($file);
-        $stream = File::open($file, 'w');
+        $stream = File::open($file, 'w+');
         $this->assertIsResource($stream);
         $this->assertFileExists($file);
         $this->assertSame(0, File::size($file));
-    }
-
-    public function testTruncate(): void
-    {
-        vfsStream::setup('root');
-        $file = vfsStream::url('root/file');
-        $stream = File::open($file, 'w');
-        File::write($stream, str_repeat("\0", $length = 1024), null, $file);
+        $this->assertSame(0, File::tell($stream, $file));
+        File::write($stream, $data = str_repeat("\0", $length = 1024), null, $file);
+        $this->assertSame($length, File::tell($stream, $file));
+        File::rewind($stream, $file);
+        $this->assertSame(0, File::tell($stream, $file));
+        clearstatcache();
+        $this->assertSame($data, File::read($stream, $length * 2, $file));
         $this->assertSame($length, File::size($file));
         $this->assertSame($length, File::tell($stream, $file));
         File::truncate($stream, 0, $file);
         clearstatcache();
         $this->assertSame(0, File::size($file));
         $this->assertSame(0, File::tell($stream, $file));
+        File::close($stream);
     }
 
     /**
@@ -167,7 +169,6 @@ final class FileTest extends TestCase
     {
         $stream = Str::toStream(implode("\n", $lines));
         $guess = File::guessIndentation($stream, $default);
-        File::close($stream);
         $this->assertSame($expectedTabSize, $guess->TabSize);
         $this->assertSame($expectedInsertSpaces, $guess->InsertSpaces);
     }
@@ -786,11 +787,11 @@ final class FileTest extends TestCase
 
     public function testCreatable(): void
     {
-        $path = $this->getFixturesPath(__CLASS__);
-        $this->assertTrue(File::creatable("$path/exists"));
-        $this->assertTrue(File::creatable("$path/dir/does_not_exist"));
-        $this->assertFalse(File::creatable("$path/dir/file/does_not_exist"));
-        $this->assertTrue(File::creatable("$path/not_a_dir/does_not_exist"));
+        $dir = self::getFixturesPath(__CLASS__);
+        $this->assertTrue(File::creatable("$dir/exists"));
+        $this->assertTrue(File::creatable("$dir/dir/does_not_exist"));
+        $this->assertFalse(File::creatable("$dir/dir/file/does_not_exist"));
+        $this->assertTrue(File::creatable("$dir/not_a_dir/does_not_exist"));
 
         $dir = File::createTempDir();
         try {
@@ -863,11 +864,11 @@ final class FileTest extends TestCase
 
     public function testRealpath(): void
     {
-        $path = $this->getFixturesPath(__CLASS__);
-        $this->assertSame(realpath("$path/exists"), File::realpath("$path/exists"));
+        $dir = self::getFixturesPath(__CLASS__);
+        $this->assertSame(realpath("$dir/exists"), File::realpath("$dir/exists"));
         $this->expectException(FilesystemErrorException::class);
-        $this->expectExceptionMessage("Error resolving path: $path/does_not_exist");
-        File::realpath("$path/does_not_exist");
+        $this->expectExceptionMessage("Error resolving path: $dir/does_not_exist");
+        File::realpath("$dir/does_not_exist");
     }
 
     /**
@@ -1024,11 +1025,11 @@ final class FileTest extends TestCase
 
     public function testExisting(): void
     {
-        $path = $this->getFixturesPath(__CLASS__);
-        $this->assertSame("$path/exists", File::existing("$path/exists"));
-        $this->assertSame("$path/dir", File::existing("$path/dir/does_not_exist"));
-        $this->assertNull(File::existing("$path/dir/file/does_not_exist"));
-        $this->assertSame("$path", File::existing("$path/not_a_dir/does_not_exist"));
+        $dir = self::getFixturesPath(__CLASS__);
+        $this->assertSame("$dir/exists", File::existing("$dir/exists"));
+        $this->assertSame("$dir/dir", File::existing("$dir/dir/does_not_exist"));
+        $this->assertNull(File::existing("$dir/dir/file/does_not_exist"));
+        $this->assertSame("$dir", File::existing("$dir/not_a_dir/does_not_exist"));
     }
 
     /**
@@ -1104,38 +1105,38 @@ final class FileTest extends TestCase
      */
     public static function relativeToParentProvider(): array
     {
-        $path = self::getFixturesPath(__CLASS__);
+        $dir = self::getFixturesPath(__CLASS__);
 
         return [
             [
                 implode(\DIRECTORY_SEPARATOR, ['dir', 'file']),
-                "$path/dir/file",
-                $path,
+                "$dir/dir/file",
+                $dir,
             ],
             [
                 null,
-                $path,
-                "$path/dir/file",
+                $dir,
+                "$dir/dir/file",
             ],
             [
                 'fallback',
-                $path,
-                "$path/dir/file",
+                $dir,
+                "$dir/dir/file",
                 'fallback',
             ],
             [
                 -1,
-                "$path/dir/does_not_exist",
-                $path,
+                "$dir/dir/does_not_exist",
+                $dir,
             ],
             [
                 -1,
-                "$path/dir/file",
-                "$path/does_not_exist",
+                "$dir/dir/file",
+                "$dir/does_not_exist",
             ],
             [
                 implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Toolkit', 'Core', 'Utility', 'File', 'dir', 'file']),
-                "$path/dir/file",
+                "$dir/dir/file",
                 self::getPackagePath(),
             ],
         ];
@@ -1152,10 +1153,10 @@ final class FileTest extends TestCase
 
     public function testSame(): void
     {
-        $path = $this->getFixturesPath(__CLASS__);
-        $this->assertTrue(File::same("$path/dir/file", "$path/dir/file"));
-        $this->assertTrue(File::same("$path/dir/file", "$path/file_symlink"));
-        $this->assertFalse(File::same("$path/dir/file", "$path/exists"));
-        $this->assertFalse(File::same("$path/dir/file", "$path/broken_symlink"));
+        $dir = self::getFixturesPath(__CLASS__);
+        $this->assertTrue(File::same("$dir/dir/file", "$dir/dir/file"));
+        $this->assertTrue(File::same("$dir/dir/file", "$dir/file_symlink"));
+        $this->assertFalse(File::same("$dir/dir/file", "$dir/exists"));
+        $this->assertFalse(File::same("$dir/dir/file", "$dir/broken_symlink"));
     }
 }

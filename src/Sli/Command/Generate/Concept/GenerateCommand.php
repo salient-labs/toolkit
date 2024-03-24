@@ -442,7 +442,7 @@ abstract class GenerateCommand extends Command
                 }
                 // Leave reserved words and PHPDoc types (e.g. `class-string`)
                 // alone
-                if (Test::isPhpReservedWord($t) || strpos($t, '-') !== false) {
+                if (Test::isBuiltinType($t) || strpos($t, '-') !== false) {
                     return $t;
                 }
                 // Leave `min` and `max` (lowercase) alone if they appear
@@ -455,7 +455,7 @@ abstract class GenerateCommand extends Command
                     $before = Arr::trim($before);
                     while ($before) {
                         $last = array_pop($before);
-                        if ($last === 'min' || $last === 'max' || Test::isIntValue($last)) {
+                        if ($last === 'min' || $last === 'max' || Test::isInteger($last)) {
                             continue;
                         }
                         if ($last === '<' && $before && Str::lower(array_pop($before)) === 'int') {
@@ -502,7 +502,7 @@ abstract class GenerateCommand extends Command
                 ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null)) {
             return $this->getFqcnAlias($type, $alias, $returnFqcn);
         }
-        if (Test::isPhpReservedWord($type)) {
+        if (Test::isBuiltinType($type)) {
             return $returnFqcn ? $lower : null;
         }
         return $this->getFqcnAlias($type, null, $returnFqcn);

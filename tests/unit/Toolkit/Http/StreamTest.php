@@ -224,7 +224,7 @@ final class StreamTest extends TestCase
     {
         $file = $temp
             ? File::createTempDir() . '/does_not_exist'
-            : $this->getFixturesPath(__CLASS__) . '/file';
+            : self::getFixturesPath(__CLASS__) . '/file';
 
         try {
             $stream = $this->getStream($mode, null, $file);

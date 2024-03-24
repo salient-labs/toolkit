@@ -755,7 +755,7 @@ EOF)
                 $tag = clone $tag;
                 if (
                     $tag->Type !== null &&
-                    !Test::isPhpReservedWord($tag->Type) &&
+                    !Test::isBuiltinType($tag->Type) &&
                     !array_key_exists($tag->Type, $this->InputClassTemplates)
                 ) {
                     $tag->Type = $this->getPhpDocTypeAlias(

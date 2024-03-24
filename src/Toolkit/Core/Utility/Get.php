@@ -52,7 +52,7 @@ final class Get extends AbstractUtility
     /**
      * Cast a value to boolean, converting boolean strings and preserving null
      *
-     * @see Test::isBoolValue()
+     * @see Test::isBoolean()
      *
      * @param mixed $value
      * @return ($value is null ? null : bool)

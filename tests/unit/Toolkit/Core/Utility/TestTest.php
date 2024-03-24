@@ -4,6 +4,8 @@ namespace Salient\Tests\Core\Utility;
 
 use Salient\Core\Utility\Test;
 use Salient\Tests\TestCase;
+use stdClass;
+use Stringable;
 
 /**
  * @covers \Salient\Core\Utility\Test
@@ -11,25 +13,27 @@ use Salient\Tests\TestCase;
 final class TestTest extends TestCase
 {
     /**
-     * @dataProvider isBoolValueProvider
+     * @dataProvider isBooleanProvider
      *
      * @param mixed $value
      */
-    public function testIsBoolValue(bool $expected, $value): void
+    public function testIsBoolean(bool $expected, $value): void
     {
-        $this->assertSame($expected, Test::isBoolValue($value));
+        $this->assertSame($expected, Test::isBoolean($value));
     }
 
     /**
      * @return array<array{bool,mixed}>
      */
-    public static function isBoolValueProvider(): array
+    public static function isBooleanProvider(): array
     {
         return [
             [false, -1],
             [false, ''],
+            [false, 'f'],
             [false, 'nah'],
             [false, 'ok'],
+            [false, 't'],
             [false, 'truth'],
             [false, 'ye'],
             [false, 'yeah'],
@@ -42,7 +46,6 @@ final class TestTest extends TestCase
             [true, 'disabled'],
             [true, 'enable'],
             [true, 'enabled'],
-            [false, 'f'],
             [true, 'false'],
             [true, 'n'],
             [true, 'N'],
@@ -51,7 +54,6 @@ final class TestTest extends TestCase
             [true, 'OFF'],
             [true, 'on'],
             [true, 'ON'],
-            [false, 't'],
             [true, 'true'],
             [true, 'y'],
             [true, 'Y'],
@@ -62,19 +64,19 @@ final class TestTest extends TestCase
     }
 
     /**
-     * @dataProvider isIntValueProvider
+     * @dataProvider isIntegerProvider
      *
      * @param mixed $value
      */
-    public function testIsIntValue(bool $expected, $value): void
+    public function testIsInteger(bool $expected, $value): void
     {
-        $this->assertSame($expected, Test::isIntValue($value));
+        $this->assertSame($expected, Test::isInteger($value));
     }
 
     /**
      * @return array<array{bool,mixed}>
      */
-    public static function isIntValueProvider(): array
+    public static function isIntegerProvider(): array
     {
         return [
             [false, -0.1],
@@ -104,6 +106,55 @@ final class TestTest extends TestCase
             [true, 0],
             [true, 1],
             [true, 71],
+        ];
+    }
+
+    /**
+     * @dataProvider isFloatProvider
+     *
+     * @param mixed $value
+     */
+    public function testIsFloat(bool $expected, $value): void
+    {
+        $this->assertSame($expected, Test::isFloat($value));
+    }
+
+    /**
+     * @return array<array{bool,mixed}>
+     */
+    public static function isFloatProvider(): array
+    {
+        return [
+            [false, -1],
+            [false, '-0.1a'],
+            [false, '-0'],
+            [false, '-0a'],
+            [false, '-1'],
+            [false, '-a'],
+            [false, '+0.1a'],
+            [false, '+0'],
+            [false, '+0a'],
+            [false, '+1'],
+            [false, '+a'],
+            [false, '0.1a'],
+            [false, '0'],
+            [false, '0a'],
+            [false, '1'],
+            [false, 'a'],
+            [false, 0],
+            [false, 1],
+            [true, -1.23],
+            [true, '-0.0'],
+            [true, '-1.2e3'],
+            [true, '-1.23'],
+            [true, '+0.0'],
+            [true, '+1.2e3'],
+            [true, '+1.23'],
+            [true, '0.0'],
+            [true, '1.2e3'],
+            [true, '1.23'],
+            [true, 0.0],
+            [true, 1.23],
         ];
     }
 
@@ -147,6 +198,119 @@ final class TestTest extends TestCase
             [true, 12.34],
             [true, true],
             [true, false],
+        ];
+    }
+
+    /**
+     * @dataProvider isDateStringProvider
+     *
+     * @param mixed $value
+     */
+    public function testIsDateString(bool $expected, $value): void
+    {
+        $this->assertSame($expected, Test::isDateString($value));
+    }
+
+    /**
+     * @return array<array{bool,mixed}>
+     */
+    public static function isDateStringProvider(): array
+    {
+        return [
+            [false, '0'],
+            [false, '1'],
+            [false, 'not a date'],
+            [false, 0],
+            [false, 1],
+            [true, '@1711152000'],
+            [true, '+1 hour'],
+            [true, '2022-01-01 00:00:00 UTC'],
+            [true, '2022-01-01 11:00:00'],
+            [true, '2022-01-01'],
+            [true, '2022-01-01T00:00:00Z'],
+            [true, '2022-01-01T11:00:00+11:00'],
+            [true, 'now'],
+            [true, 'yesterday'],
+        ];
+    }
+
+    /**
+     * @dataProvider isStringableProvider
+     *
+     * @param mixed $value
+     */
+    public function testIsStringable(bool $expected, $value): void
+    {
+        $this->assertSame($expected, Test::isStringable($value));
+    }
+
+    /**
+     * @return array<array{bool,mixed}>
+     */
+    public static function isStringableProvider(): array
+    {
+        return [
+            [false, 123],
+            [false, new stdClass()],
+            [true, 'string'],
+            [true, new class { public function __toString() { return 'string'; } }],
+            [true, new class implements Stringable { public function __toString() { return 'string'; } }],
+        ];
+    }
+
+    /**
+     * @dataProvider isBetweenProvider
+     *
+     * @template T of int|float
+     *
+     * @param T $value
+     * @param T $min
+     * @param T $max
+     */
+    public function testIsBetween(bool $expected, $value, $min, $max): void
+    {
+        $this->assertSame($expected, Test::isBetween($value, $min, $max));
+    }
+
+    /**
+     * @return array<array{bool,int,int,int}|array{bool,float,float,float}>
+     */
+    public static function isBetweenProvider(): array
+    {
+        return [
+            [false, 0, 1, 10],
+            [false, 11, 1, 10],
+            [false, 5.0e-3, 1.0e3, 1.0e6],
+            [true, 0, 0, 0],
+            [true, 1, 1, 1],
+            [true, 1, 1, 10],
+            [true, 5, 1, 10],
+            [true, 10, 1, 10],
+            [true, 0.0, 0.0, 0.0],
+            [true, 0.1, 0.1, 0.1],
+            [true, 1.0e3, 1.0e3, 1.0e6],
+            [true, 1.0e6, 1.0e3, 1.0e6],
+            [true, 5.0e5, 1.0e3, 1.0e6],
+        ];
+    }
+
+    /**
+     * @dataProvider isBuiltinTypeProvider
+     */
+    public function testIsBuiltinType(bool $expected, string $value): void
+    {
+        $this->assertSame($expected, Test::isBuiltinType($value));
+    }
+
+    /**
+     * @return array<array{bool,string}>
+     */
+    public static function isBuiltinTypeProvider(): array
+    {
+        return [
+            [false, ''],
+            [false, 'not a type'],
+            [true, 'array'],
         ];
     }
 }
