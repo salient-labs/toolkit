@@ -62,7 +62,7 @@ foreach ($files as $file) {
     }
 
     Console::info('Replacing', $relative);
-    File::putContents($file, $output);
+    File::writeContents($file, $output);
 }
 
 if ($replaced) {

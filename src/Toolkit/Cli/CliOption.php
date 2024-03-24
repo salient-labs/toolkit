@@ -474,9 +474,9 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         if ($this->EnvVariable !== null && Env::has($this->EnvVariable)) {
             $value = Env::get($this->EnvVariable);
             if ($this->IsFlag) {
-                if ($this->MultipleAllowed && Test::isIntValue($value) && (int) $value >= 0) {
+                if ($this->MultipleAllowed && Test::isInteger($value) && (int) $value >= 0) {
                     $this->DefaultValue = (int) $value;
-                } elseif (Test::isBoolValue($value)) {
+                } elseif (Test::isBoolean($value)) {
                     $value = Get::boolean($value);
                     $this->DefaultValue = $this->MultipleAllowed ? (int) $value : $value;
                 } else {
@@ -887,7 +887,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             if ($this->IsFlag && $this->MultipleAllowed && !is_int($value)) {
                 if (is_array($value)) {
                     $value = count($value);
-                } elseif (Test::isBoolValue($value)) {
+                } elseif (Test::isBoolean($value)) {
                     $value = Get::boolean($value) ? 1 : 0;
                 }
             }
@@ -1091,10 +1091,10 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     {
         switch ($this->ValueType) {
             case CliOptionValueType::BOOLEAN:
-                return Test::isBoolValue($value);
+                return Test::isBoolean($value);
 
             case CliOptionValueType::INTEGER:
-                return Test::isIntValue($value);
+                return Test::isInteger($value);
 
             case CliOptionValueType::STRING:
                 return is_scalar($value);

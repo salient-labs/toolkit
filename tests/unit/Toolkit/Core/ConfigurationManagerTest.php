@@ -29,7 +29,7 @@ final class ConfigurationManagerTest extends TestCase
     public function testLoadDirectory(): void
     {
         $config = new ConfigurationManager();
-        $config->loadDirectory($this->getFixturesPath(__CLASS__) . '/config');
+        $config->loadDirectory(self::getFixturesPath(__CLASS__) . '/config');
         $this->assertSame(self::CONFIG, $config->all());
     }
 

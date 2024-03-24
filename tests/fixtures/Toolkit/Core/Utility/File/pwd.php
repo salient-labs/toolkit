@@ -6,4 +6,4 @@ use Salient\Core\Utility\File;
 
 require dirname(__DIR__, 6) . '/vendor/autoload.php';
 
-echo File::getCwd() . \PHP_EOL;
+echo File::getcwd() . \PHP_EOL;

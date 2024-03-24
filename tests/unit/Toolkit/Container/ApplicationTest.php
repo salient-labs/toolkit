@@ -53,7 +53,7 @@ final class ApplicationTest extends TestCase
                 '<?php return %s;' . \PHP_EOL,
                 var_export($data, true),
             );
-            File::putContents("{$configDir}/{$name}.php", $data);
+            File::writeContents("{$configDir}/{$name}.php", $data);
         }
 
         $app = new Application($basePath, null, EnvFlag::ALL, null);
@@ -65,7 +65,7 @@ final class ApplicationTest extends TestCase
         $app->unload();
         Config::unload();
 
-        File::deleteDir($basePath, true);
+        File::pruneDir($basePath, true);
     }
 
     /**
@@ -106,6 +106,6 @@ final class ApplicationTest extends TestCase
         $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getTempPath(false));
         $app->unload();
 
-        File::deleteDir($basePath, true);
+        File::pruneDir($basePath, true);
     }
 }

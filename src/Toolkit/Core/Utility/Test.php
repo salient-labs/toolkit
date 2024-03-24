@@ -8,11 +8,13 @@ use Stringable;
 
 /**
  * Perform true/false tests on values
+ *
+ * @api
  */
 final class Test extends AbstractUtility
 {
     /**
-     * True if a value is a boolean or boolean string
+     * Check if a value is a boolean or boolean string
      *
      * The following are regarded as boolean strings (case-insensitive):
      *
@@ -26,36 +28,45 @@ final class Test extends AbstractUtility
      *
      * @param mixed $value
      */
-    public static function isBoolValue($value): bool
+    public static function isBoolean($value): bool
     {
-        return is_bool($value) ||
-            (is_string($value) && Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value));
+        return is_bool($value) || (
+            is_string($value) &&
+            Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value)
+        );
     }
 
     /**
-     * True if a value is an integer or integer string
+     * Check if a value is an integer or integer string
      *
      * @param mixed $value
      */
-    public static function isIntValue($value): bool
+    public static function isInteger($value): bool
     {
-        return is_int($value) ||
-            (is_string($value) && Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value));
+        return is_int($value) || (
+            is_string($value) &&
+            Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+        );
     }
 
     /**
-     * True if a value is a float or float string
+     * Check if a value is a float or float string
+     *
+     * Returns `false` if `$value` is an integer string.
      *
      * @param mixed $value
      */
-    public static function isFloatValue($value): bool
+    public static function isFloat($value): bool
     {
-        return is_float($value) ||
-            (is_string($value) && is_numeric(trim($value)) && !self::isIntValue($value));
+        return is_float($value) || (
+            is_string($value) &&
+            is_numeric(trim($value)) &&
+            !Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+        );
     }
 
     /**
-     * True if a value is an integer or would be cast to an integer if used as
+     * Check if a value is an integer or would be cast to an integer if used as
      * an array key
      *
      * @param mixed $value
@@ -69,7 +80,7 @@ final class Test extends AbstractUtility
     }
 
     /**
-     * True if a value is a valid date string
+     * Check if a value is a valid date string
      *
      * @param mixed $value
      */
@@ -79,7 +90,7 @@ final class Test extends AbstractUtility
     }
 
     /**
-     * True if a value is a string or Stringable
+     * Check if a value is a string or Stringable
      *
      * @param mixed $value
      * @phpstan-assert-if-true Stringable|string $value
@@ -92,7 +103,7 @@ final class Test extends AbstractUtility
     }
 
     /**
-     * True if a value is a number within a range
+     * Check if a value is a number within a range
      *
      * @template T of int|float
      *
@@ -106,11 +117,11 @@ final class Test extends AbstractUtility
     }
 
     /**
-     * True if a value is a PHP reserved word
+     * Check if a value is a reserved PHP type
      *
      * @link https://www.php.net/manual/en/reserved.php
      */
-    public static function isPhpReservedWord(string $value): bool
+    public static function isBuiltinType(string $value): bool
     {
         return in_array(Str::lower($value), [
             'array',
@@ -133,6 +144,6 @@ final class Test extends AbstractUtility
             'string',
             'true',
             'void',
-        ]);
+        ], true);
     }
 }

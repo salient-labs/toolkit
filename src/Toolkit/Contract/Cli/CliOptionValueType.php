@@ -18,7 +18,7 @@ final class CliOptionValueType extends AbstractConvertibleEnumeration
     /**
      * A boolean value
      *
-     * Boolean strings recognised by {@see Test::isBoolValue()} are accepted.
+     * Boolean strings recognised by {@see Test::isBoolean()} are accepted.
      */
     public const BOOLEAN = 0;
 

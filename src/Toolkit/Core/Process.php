@@ -197,7 +197,7 @@ final class Process
         }
 
         if ($this->OutputDir !== null && is_dir($this->OutputDir)) {
-            File::deleteDir($this->OutputDir, true);
+            File::pruneDir($this->OutputDir, true);
         }
     }
 
@@ -688,7 +688,7 @@ final class Process
             // @codeCoverageIgnoreEnd
             : (is_string($input)
                 ? Str::toStream($input)
-                : File::getSeekable($input));
+                : File::getSeekableStream($input));
     }
 
     /**

@@ -317,12 +317,12 @@ final class InflectTest extends TestCase
             'plural-01.csv' => [
                 30.0,
                 // Source: https://fastapi.metacpan.org/source/DCONWAY/Lingua-EN-Inflexion-0.002008/t/noun_plural.t
-                File::readCsv($dir . '/plural-01.csv'),
+                File::getCsv($dir . '/plural-01.csv'),
             ],
             'plural-02.csv' => [
                 86.0,
                 // Source: https://raw.githubusercontent.com/piotrmurach/strings-inflection/master/spec/fixtures/nounlist
-                File::readCsv($dir . '/plural-02.csv'),
+                File::getCsv($dir . '/plural-02.csv'),
             ],
         ];
     }

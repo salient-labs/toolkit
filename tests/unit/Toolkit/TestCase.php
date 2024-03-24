@@ -10,6 +10,8 @@ use Throwable;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
+    protected const PHP_COMMAND = [\PHP_BINARY, '-ddisplay_startup_errors=0'];
+
     /**
      * Fail if a callback does not throw a given exception
      *

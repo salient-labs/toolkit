@@ -15,7 +15,6 @@ use Closure;
 
 /**
  * @covers \Salient\Core\Process
- * @covers \Salient\Core\Utility\File
  */
 final class ProcessTest extends TestCase
 {

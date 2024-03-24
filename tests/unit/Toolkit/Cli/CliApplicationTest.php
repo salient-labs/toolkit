@@ -63,7 +63,7 @@ final class CliApplicationTest extends TestCase
 
     public static function tearDownAfterClass(): void
     {
-        File::deleteDir(self::$BasePath, true);
+        File::pruneDir(self::$BasePath, true);
     }
 
     public function testGetLastCommand(): void

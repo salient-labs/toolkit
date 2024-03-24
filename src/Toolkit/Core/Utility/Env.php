@@ -246,7 +246,7 @@ final class Env extends AbstractUtility
     /**
      * Get a boolean value from the environment
      *
-     * @see Test::isBoolValue()
+     * @see Test::isBoolean()
      *
      * @template T of bool|null|-1
      *
@@ -417,7 +417,7 @@ final class Env extends AbstractUtility
     /**
      * Get a boolean value from the environment, returning null if it's empty
      *
-     * @see Test::isBoolValue()
+     * @see Test::isBoolean()
      *
      * @template T of bool|null|-1
      *
