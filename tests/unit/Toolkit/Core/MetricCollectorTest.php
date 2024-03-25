@@ -6,6 +6,9 @@ use Salient\Core\MetricCollector;
 use Salient\Tests\TestCase;
 use LogicException;
 
+/**
+ * @covers \Salient\Core\MetricCollector
+ */
 final class MetricCollectorTest extends TestCase
 {
     public function testCount(): void

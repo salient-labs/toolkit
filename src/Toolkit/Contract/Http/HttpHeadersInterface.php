@@ -4,13 +4,14 @@ namespace Salient\Contract\Http;
 
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\Immutable;
 
 /**
- * A collection of HTTP headers
+ * @api
  *
  * @extends CollectionInterface<string,string[]>
  */
-interface HttpHeadersInterface extends CollectionInterface
+interface HttpHeadersInterface extends CollectionInterface, Immutable
 {
     /**
      * Parse and apply an HTTP header field or continuation thereof
@@ -56,7 +57,7 @@ interface HttpHeadersInterface extends CollectionInterface
      *
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      */
-    public function merge($items, bool $preserveExisting = false);
+    public function merge($items, bool $addToExisting = false);
 
     /**
      * Apply an access token to the collection
@@ -126,7 +127,10 @@ interface HttpHeadersInterface extends CollectionInterface
     public function getHeaderLine(string $name, bool $lastValueOnly = false): string;
 
     /**
-     * @return array<string,string[]>
+     * Get header names and values in their original order as a list of HTTP
+     * Archive (HAR) header objects, preserving the original case of each header
+     *
+     * @return array<array{name:string,value:string}>
      */
     public function jsonSerialize(): array;
 }

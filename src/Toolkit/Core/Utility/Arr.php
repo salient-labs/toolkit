@@ -835,13 +835,19 @@ final class Arr extends AbstractUtility
      * @template TKey of array-key
      * @template TValue
      *
-     * @param array<array-key,TKey> $array
+     * @param iterable<array-key,TKey> $array
      * @param TValue $value
      * @return ($value is true ? array<TKey,true> : array<TKey,TValue>)
      */
-    public static function toIndex(array $array, $value = true): array
+    public static function toIndex(iterable $array, $value = true): array
     {
-        return array_fill_keys($array, $value);
+        if (is_array($array)) {
+            return array_fill_keys($array, $value);
+        }
+        foreach ($array as $key) {
+            $index[$key] = $value;
+        }
+        return $index ?? [];
     }
 
     /**
@@ -849,11 +855,11 @@ final class Arr extends AbstractUtility
      *
      * @template TValue of ArrayAccess|array|object
      *
-     * @param TValue[] $array
+     * @param iterable<array-key,TValue> $array
      * @param array-key $key
      * @return TValue[]
      */
-    public static function toMap(array $array, $key): array
+    public static function toMap(iterable $array, $key): array
     {
         foreach ($array as $item) {
             $map[
@@ -936,8 +942,10 @@ final class Arr extends AbstractUtility
     /**
      * If a value is not a list, wrap it in one
      *
-     * @param mixed $value
-     * @return mixed[]
+     * @template T
+     *
+     * @param T $value
+     * @return (T is null ? array{} : (T is list ? T : array{T}))
      */
     public static function listWrap($value): array
     {

@@ -5,7 +5,7 @@ namespace Salient\Contract\Http;
 use Salient\Core\AbstractDictionary;
 
 /**
- * HTTP headers
+ * @api
  *
  * @extends AbstractDictionary<string>
  */
@@ -13,6 +13,7 @@ final class HttpHeader extends AbstractDictionary
 {
     public const ACCEPT = 'Accept';
     public const AUTHORIZATION = 'Authorization';
+    public const CONTENT_LENGTH = 'Content-Length';
     public const CONTENT_TYPE = 'Content-Type';
     public const HOST = 'Host';
     public const PREFER = 'Prefer';

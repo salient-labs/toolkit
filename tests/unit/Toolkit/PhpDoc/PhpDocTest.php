@@ -9,6 +9,14 @@ use Salient\Core\Utility\Str;
 use Salient\PhpDoc\PhpDoc;
 use Salient\Tests\TestCase;
 
+/**
+ * @covers \Salient\PhpDoc\PhpDoc
+ * @covers \Salient\PhpDoc\PhpDocParamTag
+ * @covers \Salient\PhpDoc\PhpDocReturnTag
+ * @covers \Salient\PhpDoc\PhpDocTag
+ * @covers \Salient\PhpDoc\PhpDocTemplateTag
+ * @covers \Salient\PhpDoc\PhpDocVarTag
+ */
 final class PhpDocTest extends TestCase
 {
     /**

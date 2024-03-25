@@ -265,7 +265,7 @@ final class HttpServer implements Readable, Immutable
                 @fwrite(
                     $socket,
                     (string) ($response ?? new HttpResponse(
-                        'Internal server error', 500, 'Internal Server Error'
+                        500, 'Internal Server Error', 'Internal server error'
                     ))
                 );
                 @fclose($socket);

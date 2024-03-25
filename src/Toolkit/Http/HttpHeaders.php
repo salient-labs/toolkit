@@ -5,7 +5,6 @@ namespace Salient\Http;
 use Salient\Collection\ReadableCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -21,7 +20,7 @@ use LogicException;
 /**
  * A collection of [RFC7230]-compliant HTTP headers
  */
-class HttpHeaders implements HttpHeadersInterface, Immutable
+class HttpHeaders implements HttpHeadersInterface
 {
     /** @use ReadableCollectionTrait<string,string[]> */
     use ReadableCollectionTrait;
@@ -81,6 +80,8 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
     protected ?string $Carry = null;
 
     /**
+     * Creates a new HttpHeaders object
+     *
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      */
     public function __construct($items = [])
@@ -256,7 +257,7 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
     /**
      * @inheritDoc
      */
-    public function merge($items, bool $preserveExisting = false)
+    public function merge($items, bool $addToExisting = false)
     {
         if ($items instanceof self) {
             $items = $items->headers();
@@ -276,7 +277,7 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
             }
             $lower = Str::lower($key);
             if (
-                !$preserveExisting &&
+                !$addToExisting &&
                 // Checking against $this->Index instead of $index means any
                 // duplicates in $items will be preserved
                 isset($this->Index[$lower]) &&
@@ -298,7 +299,7 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
         }
 
         if (
-            ($preserveExisting && !$applied) ||
+            ($addToExisting && !$applied) ||
             $this->getIndexValues($headers, $index) === $this->getIndexValues($this->Headers, $this->Index)
         ) {
             return $this;
@@ -455,7 +456,13 @@ class HttpHeaders implements HttpHeadersInterface, Immutable
      */
     public function jsonSerialize(): array
     {
-        return $this->Items;
+        foreach ($this->headers() as $name => $value) {
+            $headers[] = [
+                'name' => $name,
+                'value' => $value,
+            ];
+        }
+        return $headers ?? [];
     }
 
     /**

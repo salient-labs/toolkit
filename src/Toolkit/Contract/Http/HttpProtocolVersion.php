@@ -5,7 +5,7 @@ namespace Salient\Contract\Http;
 use Salient\Core\AbstractEnumeration;
 
 /**
- * HTTP protocol versions
+ * @api
  *
  * @extends AbstractEnumeration<string>
  */

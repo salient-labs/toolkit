@@ -441,31 +441,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Env.php
 
 		-
-			message: "#^Cannot cast mixed to string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:toScalars\\(\\) expects iterable\\<\\(int\\|string\\), array\\|bool\\|float\\|int\\|object\\|string\\|null\\>, array\\|TValue given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#2 \\$length of function fread expects int\\<0, max\\>, int given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#3 \\$length of function fwrite expects int\\<0, max\\>\\|null, int given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#3 \\$subject of function str_replace expects array\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
 			message: "#^Cannot cast mixed to int\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Get.php
@@ -661,22 +636,7 @@ parameters:
 			path: src/Toolkit/Curler/Curler.php
 
 		-
-			message: "#^Parameter \\#1 \\$handle of function curl_getinfo expects CurlHandle, CurlHandle\\|resource given\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
 			message: "#^Parameter \\#1 \\$handle of function curl_getinfo expects CurlHandle, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_reset expects CurlHandle, CurlHandle\\|resource given\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_setopt expects CurlHandle, CurlHandle\\|resource given\\.$#"
 			count: 1
 			path: src/Toolkit/Curler/Curler.php
 
@@ -1569,31 +1529,6 @@ parameters:
 			message: "#^Cannot access property \\$Type on Salient\\\\PhpDoc\\\\PhpDocReturnTag\\|null\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/PhpDoc/PhpDocTest.php
-
-		-
-			message: "#^Cannot access an offset on array\\<Salient\\\\Sync\\\\Support\\\\DeferredEntity\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\Post\\>\\|Salient\\\\Tests\\\\Sync\\\\Entity\\\\Post\\>\\|Salient\\\\Sync\\\\Support\\\\DeferredRelationship\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\Post\\>\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Sync/Concept/SyncEntityTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$rules of method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:toArrayWith\\(\\) expects Salient\\\\Sync\\\\SyncSerializeRules\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\Post\\>, Salient\\\\Sync\\\\SyncSerializeRules\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\> given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Sync/Concept/SyncEntityTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$rules of method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:toArrayWith\\(\\) expects Salient\\\\Sync\\\\SyncSerializeRules\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\User\\>, Salient\\\\Sync\\\\SyncSerializeRules\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\> given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Sync/Concept/SyncEntityTest.php
-
-		-
-			message: "#^Trying to invoke array\\{string, 'defaultProvider'\\} but it might not be a callable\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Sync/Concept/SyncEntityTest.php
-
-		-
-			message: "#^Trying to invoke array\\{string, 'idFromNameOrId'\\} but it might not be a callable\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Sync/Concept/SyncEntityTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$data of static method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:provide\\(\\) expects array, mixed given\\.$#"

@@ -5,7 +5,7 @@ namespace Salient\Contract\Http;
 use Salient\Core\AbstractDictionary;
 
 /**
- * Groups of HTTP request methods
+ * @api
  *
  * @extends AbstractDictionary<array<HttpRequestMethod::*>>
  */

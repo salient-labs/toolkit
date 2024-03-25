@@ -13,6 +13,9 @@ use Salient\Http\HttpHeaders;
 use Salient\Tests\TestCase;
 use LogicException;
 
+/**
+ * @covers \Salient\Http\HttpHeaders
+ */
 final class HttpHeadersTest extends TestCase
 {
     /**

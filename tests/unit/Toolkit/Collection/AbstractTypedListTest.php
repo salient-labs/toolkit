@@ -7,7 +7,13 @@ use Salient\Tests\Collection\TypedList\MyClass;
 use Salient\Tests\Collection\TypedList\MyList;
 use Salient\Tests\TestCase;
 
-final class TypedListTest extends TestCase
+/**
+ * @covers \Salient\Collection\AbstractTypedList
+ * @covers \Salient\Collection\ListTrait
+ * @covers \Salient\Collection\CollectionTrait
+ * @covers \Salient\Collection\ReadableCollectionTrait
+ */
+final class AbstractTypedListTest extends TestCase
 {
     public function testTypedList(): void
     {

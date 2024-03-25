@@ -11,6 +11,8 @@ use Generator;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
+ *
+ * @covers \Salient\Http\Uri
  */
 final class UriTest extends TestCase
 {
@@ -368,8 +370,8 @@ final class UriTest extends TestCase
     public function testEncoding(
         string $expected,
         string $uri,
-        array $expectedParts = [],
-        bool $strict = true
+        array $expectedParts,
+        bool $strict = false
     ): void {
         $uri = new Uri($uri, $strict);
         $this->assertSame($expected, (string) $uri);
@@ -379,7 +381,7 @@ final class UriTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,string,2?:array<string,string|int|null>,3?:bool}>
+     * @return array<string,array{string,string,array<string,string|int|null>,3?:bool}>
      */
     public static function encodingProvider(): array
     {
@@ -402,6 +404,8 @@ final class UriTest extends TestCase
             'encoded unreserved -> decoded unreserved #1' => [
                 "/$unreserved",
                 "/$encodedUnreserved",
+                [],
+                true,
             ],
             'encoded unreserved -> decoded unreserved #2' => [
                 '/path?q=value#fragment',
@@ -411,18 +415,25 @@ final class UriTest extends TestCase
                     'query' => 'q=value',
                     'fragment' => 'fragment',
                 ],
+                true,
             ],
             'schema + host -> lowercase' => [
                 'http://example.com/Path/To/Resource',
                 'HTTP://EXAMPLE.COM/Path/To/Resource',
+                [],
+                true
             ],
             'schema + encoded host -> lowercase' => [
                 'http://example.com/Path/To/Resource',
                 'HTTP://%45%58%41%4d%50%4c%45.COM/Path/To/Resource',
+                [],
+                true,
             ],
             'encoded slash' => [
                 '/segment%2Fwith%2Fembedded/slash',
                 '/segment%2fwith%2fembedded/slash',
+                [],
+                true,
             ],
             'encoded space' => [
                 '/pa%20th?q=va%20lue#frag%20ment',
@@ -432,6 +443,7 @@ final class UriTest extends TestCase
                     'query' => 'q=va%20lue',
                     'fragment' => 'frag%20ment',
                 ],
+                true,
             ],
             'unencoded space' => [
                 '/pa%20th?q=va%20lue#frag%20ment',
@@ -441,7 +453,6 @@ final class UriTest extends TestCase
                     'query' => 'q=va%20lue',
                     'fragment' => 'frag%20ment',
                 ],
-                false,
             ],
             'unencoded multibyte' => [
                 '/%E2%82%AC?%E2%82%AC#%E2%82%AC',
@@ -451,7 +462,6 @@ final class UriTest extends TestCase
                     'query' => '%E2%82%AC',
                     'fragment' => '%E2%82%AC',
                 ],
-                false,
             ],
             'invalid encoding' => [
                 '/pa%252-th?q=va%252-lue#frag%252-ment',
@@ -461,7 +471,6 @@ final class UriTest extends TestCase
                     'query' => 'q=va%252-lue',
                     'fragment' => 'frag%252-ment',
                 ],
-                false,
             ],
             'path segments' => [
                 '/pa/th//two?q=va/lue#frag/ment',
@@ -471,6 +480,7 @@ final class UriTest extends TestCase
                     'query' => 'q=va/lue',
                     'fragment' => 'frag/ment',
                 ],
+                true,
             ],
             'unreserved + delimiters' => [
                 "/$unreservedAndDelims?$unreservedAndDelims#$unreservedAndDelims",
@@ -480,6 +490,7 @@ final class UriTest extends TestCase
                     'query' => $unreservedAndDelims,
                     'fragment' => $unreservedAndDelims,
                 ],
+                true,
             ],
         ];
     }

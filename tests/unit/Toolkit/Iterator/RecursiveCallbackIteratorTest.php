@@ -11,6 +11,9 @@ use Iterator;
 use RecursiveIteratorIterator;
 use stdClass;
 
+/**
+ * @covers \Salient\Iterator\RecursiveCallbackIterator
+ */
 final class RecursiveCallbackIteratorTest extends TestCase
 {
     public function testRecursion(): void

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Sync\Support;
+namespace Salient\Tests\Sync;
 
 use Salient\Container\Container;
 use Salient\Sync\SyncSerializeRulesBuilder;
@@ -9,6 +9,10 @@ use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\TestCase;
 
+/**
+ * @covers \Salient\Sync\SyncSerializeRules
+ * @covers \Salient\Sync\SyncSerializeRulesBuilder
+ */
 final class SyncSerializeRulesTest extends TestCase
 {
     public function testApply(): void

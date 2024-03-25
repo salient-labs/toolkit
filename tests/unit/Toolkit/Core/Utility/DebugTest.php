@@ -98,7 +98,7 @@ final class DebugTest extends TestCase
         $this->assertIsCaller($thisMethod, (getFunctionCallback())(2));
 
         $expectedPath = $this->directorySeparatorToNative(
-            $this->getFixturesPath(__CLASS__) . '/GetCallerFile2.php'
+            self::getFixturesPath(__CLASS__) . '/GetCallerFile2.php'
         );
         $expected = [
             'file' => $expectedPath,

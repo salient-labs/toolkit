@@ -12,6 +12,8 @@ use Salient\Tests\TestCase;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
+ *
+ * @covers \Salient\Http\Stream
  */
 final class StreamTest extends TestCase
 {
@@ -222,7 +224,7 @@ final class StreamTest extends TestCase
     {
         $file = $temp
             ? File::createTempDir() . '/does_not_exist'
-            : $this->getFixturesPath(__CLASS__) . '/file';
+            : self::getFixturesPath(__CLASS__) . '/file';
 
         try {
             $stream = $this->getStream($mode, null, $file);
@@ -244,7 +246,7 @@ final class StreamTest extends TestCase
             }
             if ($temp) {
                 $dir = dirname($file);
-                File::deleteDir($dir, true);
+                File::pruneDir($dir, true);
             }
         }
     }
@@ -330,7 +332,7 @@ final class StreamTest extends TestCase
             $stream->getContents();
         } finally {
             $stream->close();
-            File::deleteDir($dir, true);
+            File::pruneDir($dir, true);
         }
     }
 
@@ -347,7 +349,7 @@ final class StreamTest extends TestCase
             $stream->write('foo');
         } finally {
             $stream->close();
-            File::deleteDir($dir, true);
+            File::pruneDir($dir, true);
         }
     }
 

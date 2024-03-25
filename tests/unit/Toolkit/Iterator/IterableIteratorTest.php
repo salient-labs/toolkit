@@ -7,7 +7,10 @@ use Salient\Tests\TestCase;
 use ArrayIterator;
 use NoRewindIterator;
 
-class IterableIteratorTest extends TestCase
+/**
+ * @covers \Salient\Iterator\IterableIterator
+ */
+final class IterableIteratorTest extends TestCase
 {
     /**
      * @dataProvider nextWithValueProvider

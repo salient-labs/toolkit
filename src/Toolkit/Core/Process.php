@@ -197,7 +197,7 @@ final class Process
         }
 
         if ($this->OutputDir !== null && is_dir($this->OutputDir)) {
-            File::deleteDir($this->OutputDir, true);
+            File::pruneDir($this->OutputDir, true);
         }
     }
 
@@ -337,7 +337,7 @@ final class Process
      */
     public function wait(): int
     {
-        $this->assertIsRunning();
+        $this->assertHasRun();
 
         while ($this->Pipes) {
             Profile::count('readIterations', __CLASS__);
@@ -648,13 +648,6 @@ final class Process
         return $this;
     }
 
-    private function assertIsRunning(): void
-    {
-        if ($this->State !== self::RUNNING) {
-            throw new ProcessException('Process is not running');
-        }
-    }
-
     private function assertIsNotRunning(): void
     {
         if ($this->State === self::RUNNING) {
@@ -688,7 +681,7 @@ final class Process
             // @codeCoverageIgnoreEnd
             : (is_string($input)
                 ? Str::toStream($input)
-                : File::getSeekable($input));
+                : File::getSeekableStream($input));
     }
 
     /**

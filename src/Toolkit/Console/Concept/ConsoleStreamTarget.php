@@ -65,9 +65,10 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
             ->set(Tag::UNDERLINE, $yellowUnderline)
             ->set(Tag::LOW_PRIORITY, $dim)
             ->set(Tag::CODE_SPAN, $bold)
+            ->set(Tag::DIFF_HEADER, $bold)
+            ->set(Tag::DIFF_RANGE, $cyan)
             ->set(Tag::DIFF_ADDITION, $green)
-            ->set(Tag::DIFF_REMOVAL, $red)
-            ->set(Tag::DIFF_HEADER, $cyan);
+            ->set(Tag::DIFF_REMOVAL, $red);
     }
 
     protected function createMessageFormats(): MessageFormats

@@ -8,6 +8,9 @@ use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use stdClass;
 
+/**
+ * @covers \Salient\Cache\CacheStore
+ */
 final class CacheStoreTest extends TestCase
 {
     private string $Dir;
@@ -185,7 +188,7 @@ final class CacheStoreTest extends TestCase
     protected function tearDown(): void
     {
         $this->Cache->close();
-        File::deleteDir($this->Dir, true);
+        File::pruneDir($this->Dir, true);
 
         unset($this->Cache);
         unset($this->File);

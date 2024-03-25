@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Console;
 
+use Salient\Console\Contract\ConsoleFormatterFactory;
 use Salient\Console\Support\ConsoleLoopbackFormat;
 use Salient\Console\Support\ConsoleManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat;
@@ -9,22 +10,33 @@ use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Core\Utility\Str;
 use Salient\Tests\TestCase;
 
+/**
+ * @covers \Salient\Console\ConsoleFormatter
+ * @covers \Salient\Console\Support\ConsoleLoopbackFormat
+ * @covers \Salient\Console\Support\ConsoleManPageFormat
+ * @covers \Salient\Console\Support\ConsoleMarkdownFormat
+ */
 final class ConsoleFormatterTest extends TestCase
 {
     /**
      * @dataProvider formatProvider
      *
+     * @param class-string<ConsoleFormatterFactory>|null $factory
      * @param array{int,int}|int|null $wrapToWidth
      */
     public function testFormat(
         string $expected,
-        Formatter $formatter,
+        ?string $factory,
         string $string,
         bool $unwrap = false,
         $wrapToWidth = null,
         bool $unformat = false,
         string $break = "\n"
     ): void {
+        /** @var Formatter */
+        $formatter = $factory === null
+            ? new Formatter()
+            : $factory::getFormatter();
         $this->assertSame(
             Str::eolFromNative($expected),
             $formatter->formatTags(
@@ -38,15 +50,10 @@ final class ConsoleFormatterTest extends TestCase
     }
 
     /**
-     * @return array<array{string,Formatter,string,3?:bool,4?:array{int,int}|int|null,5?:bool,6?:string}>
+     * @return array<array{string,class-string<ConsoleFormatterFactory>|null,string,3?:bool,4?:array{int,int}|int|null,5?:bool,6?:string}>
      */
     public static function formatProvider(): array
     {
-        $default = new Formatter();
-        $loopback = ConsoleLoopbackFormat::getFormatter();
-        $markdown = ConsoleMarkdownFormat::getFormatter();
-        $manPage = ConsoleManPageFormat::getFormatter();
-
         $input1 = <<<'EOF'
             This is a `_code span_` with _inner tags_ that are ignored.
 
@@ -134,7 +141,7 @@ final class ConsoleFormatterTest extends TestCase
                 2   adjacent
                 16  tags
                 EOF,
-                $default,
+                null,
                 $input1,
             ],
             [
@@ -179,7 +186,7 @@ final class ConsoleFormatterTest extends TestCase
                 *2*   adjacent \
                 *16*  tags
                 EOF,
-                $loopback,
+                ConsoleLoopbackFormat::class,
                 $input1,
             ],
             [
@@ -224,7 +231,7 @@ final class ConsoleFormatterTest extends TestCase
                 `2`   adjacent \
                 `16`  tags
                 EOF,
-                $markdown,
+                ConsoleMarkdownFormat::class,
                 $input1,
             ],
             [
@@ -269,7 +276,7 @@ final class ConsoleFormatterTest extends TestCase
                 *2*   adjacent \
                 *16*  tags
                 EOF,
-                $manPage,
+                ConsoleManPageFormat::class,
                 $input1,
             ],
             [
@@ -278,7 +285,7 @@ final class ConsoleFormatterTest extends TestCase
 
                 ` <== an unmatched backtick
                 EOF,
-                $default,
+                null,
                 <<<'EOF'
                 ## Heading
 
@@ -291,7 +298,7 @@ final class ConsoleFormatterTest extends TestCase
 
                 ` <== an unmatched backtick
                 EOF,
-                $loopback,
+                ConsoleLoopbackFormat::class,
                 <<<'EOF'
                 ## Heading
 
@@ -304,7 +311,7 @@ final class ConsoleFormatterTest extends TestCase
 
                     ` <== an indented backtick
                 EOF,
-                $default,
+                null,
                 <<<'EOF'
                 ## Heading
 
@@ -317,7 +324,7 @@ final class ConsoleFormatterTest extends TestCase
 
                     ` <== an indented backtick
                 EOF,
-                $loopback,
+                ConsoleLoopbackFormat::class,
                 <<<'EOF'
                 ## Heading
 
@@ -331,7 +338,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxxxx xxxx xxx xx
                 xxxx xxx xxxxx xxxx
                 EOF,
-                $default,
+                null,
                 $input2,
                 true,
                 21,
@@ -344,7 +351,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxx xx xxxx xxx
                 xxxxx xxxx
                 EOF,
-                $default,
+                null,
                 $input2,
                 true,
                 [21, 17],
@@ -356,7 +363,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxx xxxxx xxxx xxx xx
                 xxxx xxx xxxxx xxxx
                 EOF,
-                $default,
+                null,
                 $input2,
                 true,
                 [18, 22],
@@ -369,7 +376,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxx xx xxxx xxx
                 xxxxx xxxx
                 EOF,
-                $default,
+                null,
                 $input2,
                 true,
                 [21, 17],
@@ -383,7 +390,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxxx xxx xx xxxx xxx xxxxx
                 xxxx
                 EOF,
-                $markdown,
+                ConsoleMarkdownFormat::class,
                 $input2,
                 true,
                 26,
@@ -397,7 +404,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxxx xxx xx xxxx xxx
                 xxxxx xxxx
                 EOF,
-                $markdown,
+                ConsoleMarkdownFormat::class,
                 $input2,
                 true,
                 25,
@@ -411,7 +418,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxxx xxx xx xxxx xxx
                 xxxxx xxxx
                 EOF,
-                $markdown,
+                ConsoleMarkdownFormat::class,
                 $input2,
                 true,
                 [26, 22],
@@ -425,7 +432,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxxx xxx xx xxxx xxx
                 xxxxx xxxx
                 EOF,
-                $markdown,
+                ConsoleMarkdownFormat::class,
                 $input2,
                 true,
                 [26, 21],
@@ -439,7 +446,7 @@ final class ConsoleFormatterTest extends TestCase
                 xxxx xxx xx xxxx xxx
                 xxxxx xxxx
                 EOF,
-                $markdown,
+                ConsoleMarkdownFormat::class,
                 $input2,
                 true,
                 [26, 22],
@@ -452,7 +459,7 @@ final class ConsoleFormatterTest extends TestCase
                 weird\0
                 characters\0
                 EOF,
-                $default,
+                null,
                 <<<EOF
                 some\0 text\0 with\0 weird\0 characters\0
                 EOF,
@@ -466,7 +473,7 @@ final class ConsoleFormatterTest extends TestCase
                   weird\0
                   characters\0
                 EOF,
-                $default,
+                null,
                 <<<EOF
                 some\0 text\0 with\0 weird\0 characters\0
                 EOF,
@@ -481,7 +488,7 @@ final class ConsoleFormatterTest extends TestCase
                   with\0 weird\0
                   characters\0
                 EOF,
-                $default,
+                null,
                 <<<EOF
                 some\0 text\0 with\0 weird\0 characters\0
                 EOF,
@@ -497,7 +504,7 @@ final class ConsoleFormatterTest extends TestCase
                   weird\x7f
                   characters\x7f
                 EOF,
-                $default,
+                null,
                 <<<EOF
                 some\x7f text\x7f with\x7f weird\x7f characters\x7f
                 EOF,
@@ -512,7 +519,7 @@ final class ConsoleFormatterTest extends TestCase
                   with\x7f weird\x7f
                   characters\x7f
                 EOF,
-                $default,
+                null,
                 <<<EOF
                 some\x7f text\x7f with\x7f weird\x7f characters\x7f
                 EOF,
@@ -527,7 +534,7 @@ final class ConsoleFormatterTest extends TestCase
 
                 text with `backticks` at the end of the line
                 EOF,
-                $loopback,
+                ConsoleLoopbackFormat::class,
                 <<<EOF
                 text without backticks
                 at the end of the line

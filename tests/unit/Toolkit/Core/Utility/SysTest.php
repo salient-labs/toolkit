@@ -23,7 +23,7 @@ final class SysTest extends TestCase
         $command = [
             \PHP_BINARY,
             '-ddisplay_startup_errors=0',
-            $this->getFixturesPath(__CLASS__) . '/unescape.php',
+            self::getFixturesPath(__CLASS__) . '/unescape.php',
             $arg,
         ];
         $command = Sys::escapeCommand($command);

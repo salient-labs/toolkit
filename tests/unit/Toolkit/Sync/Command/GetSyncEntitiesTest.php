@@ -8,7 +8,10 @@ use Salient\Sync\Command\GetSyncEntities;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\CommandTestCase;
 
-class GetSyncEntitiesTest extends CommandTestCase
+/**
+ * @covers \Salient\Sync\Command\GetSyncEntities
+ */
+final class GetSyncEntitiesTest extends CommandTestCase
 {
     protected function startApp(CliApplicationInterface $app): CliApplicationInterface
     {

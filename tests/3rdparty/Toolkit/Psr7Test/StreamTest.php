@@ -6,6 +6,9 @@ use Http\Psr7Test\StreamIntegrationTest;
 use Psr\Http\Message\StreamInterface;
 use Salient\Http\Stream;
 
+/**
+ * @covers \Salient\Http\Stream
+ */
 class StreamTest extends StreamIntegrationTest
 {
     public function createStream($data)

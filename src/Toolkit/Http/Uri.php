@@ -2,24 +2,37 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use JsonSerializable;
 use Stringable;
 
 /**
  * An [RFC3986]-compliant URI
+ *
+ * @api
  */
-class Uri implements UriInterface, Stringable, JsonSerializable
+class Uri implements UriInterface
 {
     use HasImmutableProperties {
         withPropertyValue as with;
     }
+
+    /**
+     * Replace empty HTTP and HTTPS paths with "/"
+     */
+    public const EXPAND_EMPTY_PATH = 1;
+
+    /**
+     * Collapse two or more subsequent slashes in the path (e.g. "//") to a
+     * single slash ("/")
+     */
+    public const COLLAPSE_MULTIPLE_SLASHES = 2;
 
     protected const SCHEME_PORT = [
         'http' => 80,
@@ -82,7 +95,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
      * @param bool $strict If `false`, unencoded characters are percent-encoded
      * before parsing.
      */
-    final public function __construct(string $uri = '', bool $strict = true)
+    final public function __construct(string $uri = '', bool $strict = false)
     {
         if ($uri === '') {
             return;
@@ -111,10 +124,25 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     }
 
     /**
-     * Creates a new Uri object from an array of URI components
+     * Resolve a value to a Uri object
      *
-     * Accepts arrays returned by {@see parse_url()}, {@see Uri::parse()} and
-     * {@see Uri::toParts()}.
+     * @param PsrUriInterface|Stringable|string $uri
+     * @return static
+     */
+    public static function from($uri): self
+    {
+        if ($uri instanceof static) {
+            return $uri;
+        }
+
+        return new static((string) $uri);
+    }
+
+    /**
+     * Get a new instance from an array of URI components
+     *
+     * Accepts arrays returned by {@see parse_url()},
+     * {@see UriInterface::parse()} and {@see UriInterface::toParts()}.
      *
      * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
      * @return static
@@ -125,15 +153,12 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     }
 
     /**
-     * Parse a URI into its components
-     *
-     * Replacement for {@see parse_url()}.
+     * @inheritDoc
      *
      * @param bool $strict If `false`, unencoded characters are percent-encoded
      * before parsing.
-     * @return array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}
      */
-    public static function parse(string $uri, bool $strict = true): array
+    public static function parse(string $uri, bool $strict = false): array
     {
         return (new static($uri, $strict))->toParts();
     }
@@ -141,8 +166,8 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * Convert an array of URI components to a URI
      *
-     * Accepts arrays returned by {@see parse_url()}, {@see Uri::parse()} and
-     * {@see Uri::toParts()}.
+     * Accepts arrays returned by {@see parse_url()},
+     * {@see UriInterface::parse()} and {@see UriInterface::toParts()}.
      *
      * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
      */
@@ -152,11 +177,10 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     }
 
     /**
-     * Resolve a URI reference that may be relative to a given base URI to a
-     * target URI
+     * Resolve a URI reference relative to a given base URI
      *
-     * @param UriInterface|Stringable|string $reference
-     * @param UriInterface|Stringable|string $baseUri
+     * @param PsrUriInterface|Stringable|string $reference
+     * @param PsrUriInterface|Stringable|string $baseUri
      */
     public static function resolveReference($reference, $baseUri): string
     {
@@ -164,16 +188,12 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     }
 
     /**
-     * Get the URI as an array of components
-     *
-     * Components not present in the URI are not returned.
-     *
-     * @return array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}
+     * @inheritDoc
      */
     public function toParts(): array
     {
         /** @var array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} */
-        $parts = Arr::whereNotNull([
+        return Arr::whereNotNull([
             'scheme' => $this->Scheme,
             'host' => $this->Host,
             'port' => $this->getPort(),
@@ -183,12 +203,10 @@ class Uri implements UriInterface, Stringable, JsonSerializable
             'query' => $this->Query,
             'fragment' => $this->Fragment,
         ]);
-
-        return $parts;
     }
 
     /**
-     * Check if the URI is not absolute
+     * @inheritDoc
      */
     public function isReference(): bool
     {
@@ -287,7 +305,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * @inheritDoc
      */
-    public function withScheme(string $scheme): UriInterface
+    public function withScheme(string $scheme): PsrUriInterface
     {
         return $this
             ->with('Scheme', $this->filterScheme($scheme))
@@ -297,7 +315,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * @inheritDoc
      */
-    public function withUserInfo(string $user, ?string $password = null): UriInterface
+    public function withUserInfo(string $user, ?string $password = null): PsrUriInterface
     {
         if ($user === '') {
             $user = null;
@@ -316,7 +334,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * @inheritDoc
      */
-    public function withHost(string $host): UriInterface
+    public function withHost(string $host): PsrUriInterface
     {
         return $this
             ->with('Host', $this->filterHost(Str::coalesce($host, null)))
@@ -326,7 +344,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * @inheritDoc
      */
-    public function withPort(?int $port): UriInterface
+    public function withPort(?int $port): PsrUriInterface
     {
         return $this
             ->with('Port', $this->filterPort($port))
@@ -336,7 +354,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * @inheritDoc
      */
-    public function withPath(string $path): UriInterface
+    public function withPath(string $path): PsrUriInterface
     {
         return $this
             ->with('Path', $this->filterPath($path))
@@ -346,7 +364,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * @inheritDoc
      */
-    public function withQuery(string $query): UriInterface
+    public function withQuery(string $query): PsrUriInterface
     {
         return $this
             ->with('Query', $this->filterQueryOrFragment(Str::coalesce($query, null)));
@@ -355,38 +373,40 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     /**
      * @inheritDoc
      */
-    public function withFragment(string $fragment): UriInterface
+    public function withFragment(string $fragment): PsrUriInterface
     {
         return $this
             ->with('Fragment', $this->filterQueryOrFragment(Str::coalesce($fragment, null)));
     }
 
     /**
-     * Get a normalised instance
+     * @inheritDoc
      *
-     * Removes "/./" and "/../" segments from the path. \[RFC3986]-compliant
-     * scheme- and protocol-based normalisation may also be performed.
-     *
-     * Scheme, host and percent-encoded octets in the URI are always normalised.
-     *
-     * @see Uri::removeDotSegments()
-     *
-     * @return static
+     * @param int-mask-of<Uri::EXPAND_EMPTY_PATH|Uri::COLLAPSE_MULTIPLE_SLASHES> $flags
      */
-    public function normalise(): self
+    public function normalise(int $flags = Uri::EXPAND_EMPTY_PATH): UriInterface
     {
-        return $this->removeDotSegments();
+        $uri = $this->removeDotSegments();
+
+        if (
+            ($flags & self::EXPAND_EMPTY_PATH) &&
+            $uri->Path === '' &&
+            ($uri->Scheme === 'http' || $uri->Scheme === 'https')
+        ) {
+            $uri = $uri->withPath('/');
+        }
+
+        if ($flags & self::COLLAPSE_MULTIPLE_SLASHES) {
+            $uri = $uri->withPath(Pcre::replace('/\/\/++/', '/', $uri->Path));
+        }
+
+        return $uri;
     }
 
     /**
-     * Resolve a URI reference that may be relative to the URI to a target URI
-     *
-     * Implements \[RFC3986] Section 5.2.2 ("Transform References").
-     *
-     * @param UriInterface|Stringable|string $reference
-     * @return static
+     * @inheritDoc
      */
-    public function follow($reference): self
+    public function follow($reference): UriInterface
     {
         if ($this->isReference()) {
             throw new InvalidArgumentException(
@@ -445,7 +465,7 @@ class Uri implements UriInterface, Stringable, JsonSerializable
             return $this;
         }
 
-        return $this->withPath(File::resolve($this->Path, true));
+        return $this->withPath(File::resolvePath($this->Path, true));
     }
 
     /**
@@ -487,21 +507,6 @@ class Uri implements UriInterface, Stringable, JsonSerializable
     public function jsonSerialize(): string
     {
         return $this->__toString();
-    }
-
-    /**
-     * Resolve a value to a Uri object
-     *
-     * @param UriInterface|Stringable|string $uri
-     * @return static
-     */
-    public static function from($uri): self
-    {
-        if ($uri instanceof static) {
-            return $uri;
-        }
-
-        return new static((string) $uri);
     }
 
     /**

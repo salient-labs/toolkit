@@ -258,14 +258,102 @@ final class GetTest extends TestCase
         ];
     }
 
-    public function testFilter(): void
+    /**
+     * @dataProvider filterProvider
+     *
+     * @param array<string,mixed>|string $expected
+     * @param string[] $values
+     */
+    public function testFilter($expected, array $values, bool $discardInvalid = true): void
     {
-        $this->assertSame([
-            'key1' => 'value1',
-            'key2' => 'value2',
-            'key3' => '',
-            'key4' => '',
-        ], Get::filter(['key1=value1', 'key2=value2', 'key3=value3', 'key3=', 'key4', '=value5']));
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Get::filter($values, $discardInvalid));
+    }
+
+    /**
+     * @return array<array{array<string,mixed>|string,string[],2?:bool}>
+     */
+    public static function filterProvider(): array
+    {
+        $maxInputVars = (int) ini_get('max_input_vars');
+        /** @var string[] */
+        $maxValues = array_fill(0, $maxInputVars, 'v=');
+        /** @var string[] */
+        $tooManyValues = array_fill(0, $maxInputVars + 1, 'v=');
+
+        return [
+            [
+                [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                    'key3' => '',
+                    'key4' => '',
+                ],
+                [
+                    'key1=value1',
+                    'key2=value2',
+                    'key3=value3',
+                    'key3=',
+                    'key4',
+                    '=value5',
+                ],
+            ],
+            [
+                InvalidArgumentException::class . ",Invalid key-value pair: '=value'",
+                ['=value'],
+                false,
+            ],
+            [
+                InvalidArgumentException::class . ",Invalid key-value pairs: '=value', ''",
+                ['=value', ''],
+                false,
+            ],
+            [
+                [
+                    'key' => [
+                        0 => 'value1',
+                        1 => 'value2',
+                        3 => '',
+                        4 => '',
+                    ],
+                ],
+                [
+                    'key[0]=value1',
+                    'key[1]=value2',
+                    'key[3]=value3',
+                    'key[3]=',
+                    'key[4]',
+                ],
+            ],
+            [
+                [
+                    'where' => [
+                        '__' => 'AND',
+                        'ItemKey = "foo"',
+                        [
+                            '__' => 'OR',
+                            'Expiry IS NULL',
+                            'Expiry > "2024-03-21 16:51:35"',
+                        ],
+                    ],
+                ],
+                [
+                    'where[__]=AND',
+                    'where[0]=ItemKey = "foo"',
+                    'where[1][__]=OR',
+                    'where[1][0]=Expiry IS NULL',
+                    'where[1][1]=Expiry > "2024-03-21 16:51:35"',
+                ],
+            ],
+            [
+                ['v' => ''],
+                $maxValues,
+            ],
+            [
+                InvalidArgumentException::class . ',Key-value pairs exceed max_input_vars',
+                $tooManyValues,
+            ],
+        ];
     }
 
     /**
@@ -278,13 +366,33 @@ final class GetTest extends TestCase
         string $expected,
         array $data,
         int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
-        ?DateFormatter $dateFormatter = null
+        ?DateFormatter $dateFormatter = null,
+        bool $parse = true
     ): void {
-        $this->assertSame($expected, Get::query($data, $flags, $dateFormatter));
+        $query = Get::query($data, $flags, $dateFormatter);
+        $this->assertSame($expected, $query);
+
+        if (!$parse) {
+            return;
+        }
+
+        array_walk_recursive(
+            $data,
+            function (&$value) use (&$dateFormatter): void {
+                if ($value instanceof DateTimeInterface) {
+                    $dateFormatter ??= new DateFormatter();
+                    $value = $dateFormatter->format($value);
+                } elseif (!is_string($value)) {
+                    $value = (string) $value;
+                }
+            },
+        );
+        parse_str($query, $parsed);
+        $this->assertSame($data, $parsed);
     }
 
     /**
-     * @return array<array{string,mixed[],2?:int-mask-of<QueryFlag::*>,3?:DateFormatter}>
+     * @return array<array{string,mixed[],2?:int-mask-of<QueryFlag::*>,3?:DateFormatter|null,4?:bool}>
      */
     public static function queryProvider(): array
     {
@@ -294,38 +402,74 @@ final class GetTest extends TestCase
                 'surname' => 'Williams',
                 'email' => 'JWilliams432@gmail.com',
                 'notify_by' => [
-                    'email',
-                    'sms',
+                    ['email', 'sms'],
+                    ['mobile', 'home'],
                 ],
+                'groups' => ['staff', 'editor'],
                 'created' => new DateTimeImmutable('2021-10-02T17:23:14+10:00'),
             ],
         ];
 
+        $lists = [
+            'list' => ['a', 'b', 'c'],
+            'indexed' => [5 => 'a', 9 => 'b', 2 => 'c'],
+            'associative' => ['a' => 5, 'b' => 9, 'c' => 2],
+        ];
+
         return [
             [
-                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=2021-10-02T17:23:14+10:00
-                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
                 $data,
             ],
             [
-                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0]=email&fields[notify_by][1]=sms&fields[created]=2021-10-02T17:23:14+10:00
-                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D=email&fields%5Bnotify_by%5D%5B1%5D=sms&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][0]=email&fields[notify_by][0][1]=sms&fields[notify_by][1][0]=mobile&fields[notify_by][1][1]=home&fields[groups][0]=staff&fields[groups][1]=editor&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B0%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B1%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B0%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B1%5D=home&fields%5Bgroups%5D%5B0%5D=staff&fields%5Bgroups%5D%5B1%5D=editor&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
                 $data,
                 QueryFlag::PRESERVE_ALL_KEYS,
             ],
             [
-                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=Sat, 02 Oct 2021 17:23:14 +1000
-                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021%2017%3A23%3A14%20%2B1000',
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[created]=Sat, 02 Oct 2021 17:23:14 +1000
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021%2017%3A23%3A14%20%2B1000',
                 $data,
                 QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
                 new DateFormatter(DateTimeInterface::RSS),
             ],
             [
-                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=2021-10-02T07:23:14+00:00
-                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=2021-10-02T07%3A23%3A14%2B00%3A00',
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[created]=2021-10-02T07:23:14+00:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=2021-10-02T07%3A23%3A14%2B00%3A00',
                 $data,
                 QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
                 new DateFormatter(DateTimeInterface::ATOM, 'UTC'),
+            ],
+            [
+                // list[]=a&list[]=b&list[]=c&indexed[5]=a&indexed[9]=b&indexed[2]=c&associative[a]=5&associative[b]=9&associative[c]=2
+                'list%5B%5D=a&list%5B%5D=b&list%5B%5D=c&indexed%5B5%5D=a&indexed%5B9%5D=b&indexed%5B2%5D=c&associative%5Ba%5D=5&associative%5Bb%5D=9&associative%5Bc%5D=2',
+                $lists,
+            ],
+            [
+                // list[]=a&list[]=b&list[]=c&indexed[]=a&indexed[]=b&indexed[]=c&associative[]=5&associative[]=9&associative[]=2
+                'list%5B%5D=a&list%5B%5D=b&list%5B%5D=c&indexed%5B%5D=a&indexed%5B%5D=b&indexed%5B%5D=c&associative%5B%5D=5&associative%5B%5D=9&associative%5B%5D=2',
+                $lists,
+                0,
+                null,
+                false,
+            ],
+            [
+                // list[]=a&list[]=b&list[]=c&indexed[]=a&indexed[]=b&indexed[]=c&associative[a]=5&associative[b]=9&associative[c]=2
+                'list%5B%5D=a&list%5B%5D=b&list%5B%5D=c&indexed%5B%5D=a&indexed%5B%5D=b&indexed%5B%5D=c&associative%5Ba%5D=5&associative%5Bb%5D=9&associative%5Bc%5D=2',
+                $lists,
+                QueryFlag::PRESERVE_STRING_KEYS,
+                null,
+                false,
+            ],
+            [
+                // list[0]=a&list[1]=b&list[2]=c&indexed[5]=a&indexed[9]=b&indexed[2]=c&associative[]=5&associative[]=9&associative[]=2
+                'list%5B0%5D=a&list%5B1%5D=b&list%5B2%5D=c&indexed%5B5%5D=a&indexed%5B9%5D=b&indexed%5B2%5D=c&associative%5B%5D=5&associative%5B%5D=9&associative%5B%5D=2',
+                $lists,
+                QueryFlag::PRESERVE_LIST_KEYS | QueryFlag::PRESERVE_NUMERIC_KEYS,
+                null,
+                false,
             ],
         ];
     }

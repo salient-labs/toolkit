@@ -7,6 +7,9 @@ use Salient\Tests\TestCase;
 use LogicException;
 use stdClass;
 
+/**
+ * @covers \Salient\Iterator\Graph
+ */
 final class GraphTest extends TestCase
 {
     public function testWithObject(): void

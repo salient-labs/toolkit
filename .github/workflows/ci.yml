@@ -181,6 +181,7 @@ jobs:
         id: run-phpunit-tests
         shell: bash
         run: |
+          scripts/delete-covers.php --force
           vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml && status=0 || status=$?
           printf 'coverage_report_generated=%d\n' "$([[ -s coverage.xml ]] && echo 1 || echo 0)" >>"$GITHUB_OUTPUT"
           (exit $status)

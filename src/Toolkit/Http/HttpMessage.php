@@ -4,17 +4,18 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpProtocolVersion;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Arr;
 
 /**
  * Base class for HTTP messages
  */
-abstract class HttpMessage implements MessageInterface, Immutable
+abstract class HttpMessage implements HttpMessageInterface
 {
     use HasImmutableProperties {
         withPropertyValue as with;
@@ -25,6 +26,11 @@ abstract class HttpMessage implements MessageInterface, Immutable
     protected HttpHeadersInterface $Headers;
 
     protected StreamInterface $Body;
+
+    /**
+     * Get the start line of the message
+     */
+    abstract protected function getStartLine(): string;
 
     /**
      * @param StreamInterface|resource|string|null $body
@@ -86,6 +92,24 @@ abstract class HttpMessage implements MessageInterface, Immutable
     public function getBody(): StreamInterface
     {
         return $this->Body;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHttpPayload(bool $withoutBody = false): string
+    {
+        $message = implode("\r\n", Arr::push(
+            Arr::unshift(
+                $this->Headers->getLines(),
+                $this->getStartLine(),
+            ),
+            '',
+        ));
+
+        return $withoutBody
+            ? $message
+            : $message . $this->Body;
     }
 
     /**
@@ -179,5 +203,24 @@ abstract class HttpMessage implements MessageInterface, Immutable
                 $body
             );
         }
+    }
+
+    /**
+     * Get the message as an HTTP payload
+     */
+    public function __toString(): string
+    {
+        return $this->getHttpPayload();
+    }
+
+    /**
+     * @return array{httpVersion:string,headers:array<array{name:string,value:string}>}
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'httpVersion' => sprintf('HTTP/%s', $this->ProtocolVersion),
+            'headers' => $this->Headers->jsonSerialize(),
+        ];
     }
 }
