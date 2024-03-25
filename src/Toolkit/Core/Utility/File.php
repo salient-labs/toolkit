@@ -22,6 +22,272 @@ final class File extends AbstractUtility
         REGEX;
 
     /**
+     * True if a path is absolute
+     *
+     * Returns `true` if `$path` starts with `/`, `\\`, `<letter>:\`,
+     * `<letter>:/` or a URI scheme with two or more characters.
+     */
+    public static function isAbsolute(string $path): bool
+    {
+        return (bool) Pcre::match(self::ABSOLUTE_PATH, $path);
+    }
+
+    /**
+     * True if a path is a "phar://" URI
+     */
+    public static function isPharUri(string $path): bool
+    {
+        return Str::lower(substr($path, 0, 7)) === 'phar://';
+    }
+
+    /**
+     * Resolve "/./" and "/../" segments in a path
+     *
+     * Relative directory segments are removed without accessing the filesystem,
+     * so `$path` need not exist.
+     *
+     * If `$withEmptySegments` is `true`, a `"/../"` segment after two or more
+     * consecutive directory separators is resolved by removing one of the
+     * separators. If `false` (the default), it is resolved by treating
+     * consecutive separators as one separator.
+     *
+     * Example:
+     *
+     * ```php
+     * <?php
+     * echo File::resolve('/dir/subdir//../') . PHP_EOL;
+     * echo File::resolve('/dir/subdir//../', true) . PHP_EOL;
+     * ```
+     *
+     * Output:
+     *
+     * ```
+     * /dir/
+     * /dir/subdir/
+     * ```
+     */
+    public static function resolve(string $path, bool $withEmptySegments = false): string
+    {
+        $path = str_replace('\\', '/', $path);
+
+        // Remove "/./" segments
+        $path = Pcre::replace('@(?<=/|^)\.(?:/|$)@', '', $path);
+
+        // Remove "/../" segments
+        $regex = $withEmptySegments ? '/' : '/+';
+        $regex = "@(?:^|(?<=^/)|(?<=/|^(?!/))(?!\.\.(?:/|\$))[^/]*{$regex})\.\.(?:/|\$)@";
+        do {
+            $path = Pcre::replace($regex, '', $path, -1, $count);
+        } while ($count);
+
+        return $path;
+    }
+
+    /**
+     * Sanitise the name of a directory
+     *
+     * Returns `"."` if `$directory` is an empty string, otherwise removes
+     * trailing directory separators unless `$directory` is comprised entirely
+     * of directory separators (e.g. `"/"`).
+     */
+    public static function dir(string $directory): string
+    {
+        return Str::coalesce(rtrim($directory, '/\\'), $directory, '.');
+    }
+
+    /**
+     * Change current directory
+     *
+     * @see chdir()
+     *
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function chdir(string $directory): void
+    {
+        $result = @chdir($directory);
+        self::throwOnFalse($result, 'Error changing directory to: %s', $directory);
+    }
+
+    /**
+     * Change file permissions
+     *
+     * @see chmod()
+     *
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function chmod(string $filename, int $permissions): void
+    {
+        $result = @chmod($filename, $permissions);
+        self::throwOnFalse($result, 'Error changing permissions: %s', $filename);
+    }
+
+    /**
+     * Get a path or its closest parent that exists
+     *
+     * Returns `null` if the leftmost segment of `$path` doesn't exist, or if
+     * the closest parent that exists is not a directory.
+     */
+    public static function existing(string $path): ?string
+    {
+        $pathIsParent = false;
+        while (!file_exists($path)) {
+            $parent = dirname($path);
+            if ($parent === $path) {
+                // @codeCoverageIgnoreStart
+                return null;
+                // @codeCoverageIgnoreEnd
+            }
+            $path = $parent;
+            $pathIsParent = true;
+        }
+
+        if ($pathIsParent && !is_dir($path)) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    /**
+     * Create a file if it doesn't exist
+     *
+     * @param int $permissions Used after creating `$filename` if it doesn't
+     * exist.
+     * @param int $dirPermissions Used if one or more directories above
+     * `$filename` don't exist.
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function create(
+        string $filename,
+        int $permissions = 0777,
+        int $dirPermissions = 0777
+    ): void {
+        if (is_file($filename)) {
+            return;
+        }
+
+        self::createDir(dirname($filename), $dirPermissions);
+        $result = @touch($filename) && @chmod($filename, $permissions);
+        self::throwOnFalse($result, 'Error creating file: %s', $filename);
+    }
+
+    /**
+     * Create a directory if it doesn't exist
+     *
+     * @see mkdir()
+     *
+     * @param int $permissions Used if `$directory` doesn't exist.
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function createDir(
+        string $directory,
+        int $permissions = 0777
+    ): void {
+        if (is_dir($directory)) {
+            return;
+        }
+
+        $parent = dirname($directory);
+        $result =
+            (is_dir($parent) || @mkdir($parent, 0777, true)) &&
+            @mkdir($directory, $permissions) &&
+            (!Sys::isWindows() || @chmod($directory, $permissions));
+        self::throwOnFalse($result, 'Error creating directory: %s', $directory);
+    }
+
+    /**
+     * Create a temporary directory
+     */
+    public static function createTempDir(
+        ?string $directory = null,
+        ?string $prefix = null
+    ): string {
+        $directory ??= self::getTempDir();
+        $prefix ??= Sys::getProgramBasename();
+        do {
+            $dir = sprintf(
+                '%s/%s%s.tmp',
+                Str::coalesce($directory, '.'),
+                $prefix,
+                Get::randomText(8),
+            );
+        } while (!@mkdir($dir, 0700));
+        if (Sys::isWindows()) {
+            self::chmod($dir, 0700);
+        }
+
+        return $dir;
+    }
+
+    /**
+     * Delete a file if it exists
+     *
+     * @see unlink()
+     *
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function delete(string $filename): void
+    {
+        if (!file_exists($filename)) {
+            return;
+        }
+
+        if (!is_file($filename)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a file: %s', $filename),
+            );
+        }
+
+        $result = @unlink($filename);
+        self::throwOnFalse($result, 'Error deleting file: %s', $filename);
+    }
+
+    /**
+     * Delete a directory if it exists
+     *
+     * If `$recursive` is `true`, `$directory` and `$setPermissions` are passed
+     * to {@see File::pruneDir()} before the directory is deleted.
+     *
+     * @see rmdir()
+     *
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function deleteDir(
+        string $directory,
+        bool $recursive = false,
+        bool $setPermissions = false
+    ): void {
+        if (!file_exists($directory)) {
+            return;
+        }
+
+        if (!is_dir($directory)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a directory: %s', $directory),
+            );
+        }
+
+        if ($recursive) {
+            self::pruneDir($directory, $setPermissions);
+        }
+
+        $result = @rmdir($directory);
+        self::throwOnFalse($result, 'Error deleting directory: %s', $directory);
+    }
+
+    /**
+     * Iterate over files in one or more directories
+     *
+     * Syntactic sugar for `new RecursiveFilesystemIterator()`.
+     *
+     * @see RecursiveFilesystemIterator
+     */
+    public static function find(): RecursiveFilesystemIterator
+    {
+        return new RecursiveFilesystemIterator();
+    }
+
+    /**
      * Get the current working directory without resolving symbolic links
      *
      * @throws FilesystemErrorException on failure.
@@ -40,16 +306,302 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Change current directory
+     * Generate a filename unique to the current user and the path of the
+     * running script
      *
-     * @see chdir()
+     * If `$dir` is not given, a filename in {@see sys_get_temp_dir()} is
+     * returned.
+     *
+     * No changes are made to the filesystem.
+     */
+    public static function getStablePath(
+        string $suffix = '',
+        ?string $dir = null
+    ): string {
+        $path = Sys::getProgramName();
+        $program = basename($path);
+        $path = self::realpath($path);
+        $hash = Get::hash($path);
+        $user = Sys::getUserId();
+
+        if ($dir === null) {
+            $dir = self::getTempDir();
+        } else {
+            $dir = self::dir($dir);
+        }
+
+        return sprintf('%s/%s-%s-%s%s', $dir, $program, $hash, $user, $suffix);
+    }
+
+    /**
+     * True if a path exists and is writable, or doesn't exist but descends from
+     * a writable directory
+     */
+    public static function creatable(string $path): bool
+    {
+        $path = self::existing($path);
+
+        return $path !== null && is_writable($path);
+    }
+
+    /**
+     * Recursively delete the contents of a directory without deleting the
+     * directory itself
+     *
+     * If `$setPermissions` is `true`, file modes in `$directory` are changed if
+     * necessary for deletion to succeed.
      *
      * @throws FilesystemErrorException on failure.
      */
-    public static function chdir(string $directory): void
+    public static function pruneDir(string $directory, bool $setPermissions = false): void
     {
-        $result = @chdir($directory);
-        self::throwOnFalse($result, 'Error changing directory to: %s', $directory);
+        $files = (new RecursiveFilesystemIterator())
+            ->in($directory)
+            ->dirs();
+
+        $windows = false;
+        if ($setPermissions) {
+            $windows = Sys::isWindows();
+            clearstatcache();
+            // With exceptions `chmod()` can't address:
+            // - On *nix, filesystem entries can be deleted if their parent
+            //   directory is writable
+            // - On Windows, they can be deleted if they are writable, whether
+            //   their parent directory is writable or not
+            if (!$windows) {
+                foreach ($files->noFiles() as $dir) {
+                    if (
+                        $dir->isReadable() &&
+                        $dir->isWritable() &&
+                        $dir->isExecutable()
+                    ) {
+                        continue;
+                    }
+                    $perms = @$dir->getPerms();
+                    if ($perms === false) {
+                        // @codeCoverageIgnoreStart
+                        $perms = 0;
+                        // @codeCoverageIgnoreEnd
+                    }
+                    self::chmod((string) $dir, $perms | 0700);
+                }
+            }
+        }
+
+        foreach ($files->dirsLast() as $file) {
+            if ($windows && !$file->isWritable()) {
+                self::chmod((string) $file, $file->isDir() ? 0700 : 0600);
+            }
+            $result = $file->isDir()
+                ? @rmdir((string) $file)
+                : @unlink((string) $file);
+            self::throwOnFalse($result, 'Error pruning directory: %s', $directory);
+        }
+    }
+
+    /**
+     * Resolve symbolic links and relative references in a path or Phar URI
+     *
+     * @see realpath()
+     *
+     * @throws FilesystemErrorException on failure or if `$path` does not exist.
+     */
+    public static function realpath(string $path): string
+    {
+        if (self::isPharUri($path) && file_exists($path)) {
+            return self::resolve($path, true);
+        }
+
+        $_path = $path;
+        error_clear_last();
+        $path = @realpath($path);
+        return self::throwOnFalse($path, 'Error resolving path: %s', $_path);
+    }
+
+    /**
+     * Get a path relative to a parent directory
+     *
+     * Returns `$fallback` if `$filename` does not belong to `$parentDir`.
+     *
+     * @throws FilesystemErrorException if `$filename` or `$parentDir` do not
+     * exist.
+     */
+    public static function relativeToParent(
+        string $filename,
+        string $parentDir,
+        ?string $fallback = null
+    ): ?string {
+        $path = self::realpath($filename);
+        $basePath = self::realpath($parentDir);
+        if (strpos($path, $basePath) === 0) {
+            return substr($path, strlen($basePath) + 1);
+        }
+        return $fallback;
+    }
+
+    /**
+     * True if two paths refer to the same filesystem entry
+     */
+    public static function same(string $filename1, string $filename2): bool
+    {
+        if (!file_exists($filename1)) {
+            return false;
+        }
+
+        if ($filename1 === $filename2) {
+            // @codeCoverageIgnoreStart
+            return true;
+            // @codeCoverageIgnoreEnd
+        }
+
+        if (!file_exists($filename2)) {
+            return false;
+        }
+
+        $stat1 = self::stat($filename1);
+        $stat2 = self::stat($filename2);
+
+        return
+            $stat1['dev'] === $stat2['dev'] &&
+            $stat1['ino'] === $stat2['ino'];
+    }
+
+    /**
+     * Get the size of a file
+     *
+     * @see filesize()
+     *
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function size(string $filename): int
+    {
+        $size = @filesize($filename);
+        return self::throwOnFalse($size, 'Error getting file size: %s', $filename);
+    }
+
+    /**
+     * Get the type of a file
+     *
+     * @see filetype()
+     *
+     * @return ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown")
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function type(string $filename): string
+    {
+        $type = @filetype($filename);
+        /** @var ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown") */
+        return self::throwOnFalse($type, 'Error getting file type: %s', $filename);
+    }
+
+    /**
+     * Write data to a file
+     *
+     * @see file_put_contents()
+     *
+     * @param resource|array<int|float|string|bool|Stringable|null>|string $data
+     * @param int-mask-of<\FILE_USE_INCLUDE_PATH|\FILE_APPEND|\LOCK_EX> $flags
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function putContents(string $filename, $data, int $flags = 0): int
+    {
+        $result = @file_put_contents($filename, $data, $flags);
+        return self::throwOnFalse($result, 'Error writing file: %s', $filename);
+    }
+
+    /**
+     * @param resource $resource
+     * @param Stringable|string|null $uri
+     */
+    private static function checkEof($resource, $uri = null): void
+    {
+        $error = error_get_last();
+        if (@feof($resource)) {
+            return;
+        }
+        if ($error) {
+            throw new FilesystemErrorException($error['message']);
+        }
+        throw new FilesystemErrorException(sprintf(
+            'Error reading from %s',
+            self::getFriendlyStreamUri($uri, $resource),
+        ));
+    }
+
+    /**
+     * Close an open stream
+     *
+     * @see fclose()
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function close($stream, $uri = null): void
+    {
+        $uri = self::getFriendlyStreamUri($uri, $stream);
+        $result = @fclose($stream);
+        self::throwOnFalse($result, 'Error closing stream: %s', $uri);
+    }
+
+    /**
+     * Close a pipe to a process and return its exit status
+     *
+     * @see pclose()
+     *
+     * @param resource $pipe
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function closePipe($pipe, ?string $command = null): int
+    {
+        $result = @pclose($pipe);
+        return self::throwOnFailure($result, 'Error closing pipe to process: %s', $command, null);
+    }
+
+    /**
+     * If a stream is not seekable, copy it to a temporary stream that is
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @return resource
+     */
+    public static function getSeekable($stream, $uri = null)
+    {
+        if (self::isSeekable($stream)) {
+            return $stream;
+        }
+
+        $seekable = self::open('php://temp', 'r+');
+        self::copy($stream, $seekable, false, $uri);
+        return $seekable;
+    }
+
+    /**
+     * Get the URI associated with a stream
+     *
+     * @param resource $stream
+     * @return string|null `null` if `$stream` is closed or does not have a URI.
+     */
+    public static function getStreamUri($stream): ?string
+    {
+        if (is_resource($stream) && get_resource_type($stream) === 'stream') {
+            // @phpstan-ignore-next-line
+            return stream_get_meta_data($stream)['uri'] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * True if a stream is seekable
+     *
+     * @param resource $stream
+     */
+    public static function isSeekable($stream): bool
+    {
+        return is_resource($stream) &&
+            get_resource_type($stream) === 'stream' &&
+            // @phpstan-ignore-next-line
+            (stream_get_meta_data($stream)['seekable'] ?? false);
     }
 
     /**
@@ -67,19 +619,39 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Close an open stream
-     *
-     * @see fclose()
-     *
-     * @param resource $stream
+     * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
+     * @param-out bool $close
+     * @param-out Stringable|string|null $uri
+     * @return resource
+     */
+    private static function getStream($resource, string $mode, ?bool &$close, &$uri)
+    {
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            return $resource;
+        }
+        if (Test::isStringable($resource)) {
+            $uri = (string) $resource;
+            $close = true;
+            return self::open($uri, $mode);
+        }
+        throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+    }
+
+    /**
+     * Open a pipe to a process
+     *
+     * @see popen()
+     *
+     * @return resource
      * @throws FilesystemErrorException on failure.
      */
-    public static function close($stream, $uri = null): void
+    public static function openPipe(string $command, string $mode)
     {
-        $uri = self::getFriendlyStreamUri($uri, $stream);
-        $result = @fclose($stream);
-        self::throwOnFalse($result, 'Error closing stream: %s', $uri);
+        $pipe = @popen($command, $mode);
+        return self::throwOnFalse($pipe, 'Error opening pipe to process: %s', $command);
     }
 
     /**
@@ -117,6 +689,97 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Rewind to the beginning of a stream
+     *
+     * Equivalent to `File::seek($stream, 0, \SEEK_SET, $uri)`.
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function rewind($stream, $uri = null): void
+    {
+        self::seek($stream, 0, \SEEK_SET, $uri);
+    }
+
+    /**
+     * Rewind to the beginning of a stream if it is seekable
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function maybeRewind($stream, $uri = null): void
+    {
+        if (self::isSeekable($stream)) {
+            self::seek($stream, 0, \SEEK_SET, $uri);
+        }
+    }
+
+    /**
+     * Set the file position indicator for a stream
+     *
+     * @see fseek()
+     *
+     * @param resource $stream
+     * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function seek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
+    {
+        $result = @fseek($stream, $offset, $whence);
+        self::throwOnFailure($result, 'Error setting file position indicator for stream: %s', $uri, $stream);
+    }
+
+    /**
+     * Set the file position indicator for a stream if it is seekable
+     *
+     * @param resource $stream
+     * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function maybeSeek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
+    {
+        if (self::isSeekable($stream)) {
+            self::seek($stream, $offset, $whence, $uri);
+        }
+    }
+
+    /**
+     * Get the file position indicator for a stream
+     *
+     * @see ftell()
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function tell($stream, $uri = null): int
+    {
+        $result = @ftell($stream);
+        return self::throwOnFalse($result, 'Error getting file position indicator for stream: %s', $uri, $stream);
+    }
+
+    /**
+     * Truncate and rewind to the beginning of a stream
+     *
+     * @see ftruncate()
+     *
+     * @param resource $stream
+     * @param int<0,max> $size
+     * @param Stringable|string|null $uri
+     * @throws FilesystemErrorException on failure.
+     */
+    public static function truncate($stream, int $size = 0, $uri = null): void
+    {
+        $result = @ftruncate($stream, $size);
+        self::throwOnFalse($result, 'Error truncating stream: %s', $uri, $stream);
+        self::seek($stream, 0, \SEEK_SET, $uri);
+    }
+
+    /**
      * Write to an open stream
      *
      * @see fwrite()
@@ -149,112 +812,39 @@ final class File extends AbstractUtility
     }
 
     /**
-     * If a stream is not seekable, copy it to a temporary stream that is
+     * Write a line of comma-separated values to an open stream
+     *
+     * A shim for {@see fputcsv()} with `$eol` (added in PHP 8.1) and without
+     * `$escape` (which should be removed).
      *
      * @param resource $stream
+     * @param mixed[] $fields
      * @param Stringable|string|null $uri
-     * @return resource
      */
-    public static function getSeekable($stream, $uri = null)
-    {
-        if (self::isSeekable($stream)) {
-            return $stream;
+    public static function fputcsv(
+        $stream,
+        array $fields,
+        string $separator = ',',
+        string $enclosure = '"',
+        string $eol = "\n",
+        $uri = null
+    ): int {
+        $special = $separator . $enclosure . "\n\r\t ";
+
+        foreach ($fields as &$field) {
+            if (strpbrk((string) $field, $special) !== false) {
+                $field = $enclosure
+                    . str_replace($enclosure, $enclosure . $enclosure, $field)
+                    . $enclosure;
+            }
         }
 
-        $seekable = self::open('php://temp', 'r+');
-        self::copy($stream, $seekable, false, $uri);
-        return $seekable;
-    }
-
-    /**
-     * Truncate and rewind to the beginning of a stream
-     *
-     * @see ftruncate()
-     *
-     * @param resource $stream
-     * @param int<0,max> $size
-     * @param Stringable|string|null $uri
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function truncate($stream, int $size = 0, $uri = null): void
-    {
-        $result = @ftruncate($stream, $size);
-        self::throwOnFalse($result, 'Error truncating stream: %s', $uri, $stream);
-        self::seek($stream, 0, \SEEK_SET, $uri);
-    }
-
-    /**
-     * Rewind to the beginning of a stream if it is seekable
-     *
-     * @param resource $stream
-     * @param Stringable|string|null $uri
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function maybeRewind($stream, $uri = null): void
-    {
-        if (self::isSeekable($stream)) {
-            self::seek($stream, 0, \SEEK_SET, $uri);
-        }
-    }
-
-    /**
-     * Rewind to the beginning of a stream
-     *
-     * Equivalent to `File::seek($stream, 0, \SEEK_SET, $uri)`.
-     *
-     * @param resource $stream
-     * @param Stringable|string|null $uri
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function rewind($stream, $uri = null): void
-    {
-        self::seek($stream, 0, \SEEK_SET, $uri);
-    }
-
-    /**
-     * Set the file position indicator for a stream if it is seekable
-     *
-     * @param resource $stream
-     * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
-     * @param Stringable|string|null $uri
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function maybeSeek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
-    {
-        if (self::isSeekable($stream)) {
-            self::seek($stream, $offset, $whence, $uri);
-        }
-    }
-
-    /**
-     * Set the file position indicator for a stream
-     *
-     * @see fseek()
-     *
-     * @param resource $stream
-     * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
-     * @param Stringable|string|null $uri
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function seek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
-    {
-        $result = @fseek($stream, $offset, $whence);
-        self::throwOnFailure($result, 'Error setting file position indicator for stream: %s', $uri, $stream);
-    }
-
-    /**
-     * Get the file position indicator for a stream
-     *
-     * @see ftell()
-     *
-     * @param resource $stream
-     * @param Stringable|string|null $uri
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function tell($stream, $uri = null): int
-    {
-        $result = @ftell($stream);
-        return self::throwOnFalse($result, 'Error getting file position indicator for stream: %s', $uri, $stream);
+        return self::write(
+            $stream,
+            implode($separator, $fields) . $eol,
+            null,
+            $uri,
+        );
     }
 
     /**
@@ -310,103 +900,6 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Get the status of a file or stream
-     *
-     * @see stat()
-     * @see fstat()
-     *
-     * @param Stringable|string|resource $resource
-     * @param Stringable|string|null $uri
-     * @return int[]
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function stat($resource, $uri = null): array
-    {
-        if (is_resource($resource)) {
-            self::assertResourceIsStream($resource);
-            $result = @fstat($resource);
-            return self::throwOnFalse($result, 'Error getting status of stream: %s', $uri, $resource);
-        }
-
-        if (!Test::isStringable($resource)) {
-            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-        }
-
-        $resource = (string) $resource;
-        $result = @stat($resource);
-        return self::throwOnFalse($result, 'Error getting file status: %s', $resource);
-    }
-
-    /**
-     * Get the type of a file
-     *
-     * @see filetype()
-     *
-     * @return ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown")
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function type(string $filename): string
-    {
-        $type = @filetype($filename);
-        /** @var ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown") */
-        return self::throwOnFalse($type, 'Error getting file type: %s', $filename);
-    }
-
-    /**
-     * Get the size of a file
-     *
-     * @see filesize()
-     *
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function size(string $filename): int
-    {
-        $size = @filesize($filename);
-        return self::throwOnFalse($size, 'Error getting file size: %s', $filename);
-    }
-
-    /**
-     * True if a stream is seekable
-     *
-     * @param resource $stream
-     */
-    public static function isSeekable($stream): bool
-    {
-        return is_resource($stream) &&
-            get_resource_type($stream) === 'stream' &&
-            // @phpstan-ignore-next-line
-            (stream_get_meta_data($stream)['seekable'] ?? false);
-    }
-
-    /**
-     * Open a pipe to a process
-     *
-     * @see popen()
-     *
-     * @return resource
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function openPipe(string $command, string $mode)
-    {
-        $pipe = @popen($command, $mode);
-        return self::throwOnFalse($pipe, 'Error opening pipe to process: %s', $command);
-    }
-
-    /**
-     * Close a pipe to a process and return its exit status
-     *
-     * @see pclose()
-     *
-     * @param resource $pipe
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function closePipe($pipe, ?string $command = null): int
-    {
-        $result = @pclose($pipe);
-        return self::throwOnFailure($result, 'Error closing pipe to process: %s', $command, null);
-    }
-
-    /**
      * Get the entire contents of a file or the remaining contents of a stream
      *
      * @see file_get_contents()
@@ -434,30 +927,27 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Write data to a file
+     * Read CSV-formatted data from a file or stream
      *
-     * @see file_put_contents()
+     * @todo Implement file encoding detection
      *
-     * @param resource|array<int|float|string|bool|Stringable|null>|string $data
-     * @param int-mask-of<\FILE_USE_INCLUDE_PATH|\FILE_APPEND|\LOCK_EX> $flags
+     * @see fgetcsv()
+     *
+     * @param Stringable|string|resource $resource
+     * @return array<mixed[]>
      * @throws FilesystemErrorException on failure.
      */
-    public static function putContents(string $filename, $data, int $flags = 0): int
+    public static function readCsv($resource): array
     {
-        $result = @file_put_contents($filename, $data, $flags);
-        return self::throwOnFalse($result, 'Error writing file: %s', $filename);
-    }
-
-    /**
-     * Iterate over files in one or more directories
-     *
-     * Syntactic sugar for `new RecursiveFilesystemIterator()`.
-     *
-     * @see RecursiveFilesystemIterator
-     */
-    public static function find(): RecursiveFilesystemIterator
-    {
-        return new RecursiveFilesystemIterator();
+        $handle = self::getStream($resource, 'rb', $close, $uri);
+        while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
+            $data[] = $row;
+        }
+        self::checkEof($handle, $uri);
+        if ($close) {
+            self::close($handle, $uri);
+        }
+        return $data ?? [];
     }
 
     /**
@@ -663,44 +1153,6 @@ final class File extends AbstractUtility
     }
 
     /**
-     * True if two paths refer to the same filesystem entry
-     */
-    public static function same(string $filename1, string $filename2): bool
-    {
-        if (!file_exists($filename1)) {
-            return false;
-        }
-
-        if ($filename1 === $filename2) {
-            // @codeCoverageIgnoreStart
-            return true;
-            // @codeCoverageIgnoreEnd
-        }
-
-        if (!file_exists($filename2)) {
-            return false;
-        }
-
-        $stat1 = self::stat($filename1);
-        $stat2 = self::stat($filename2);
-
-        return
-            $stat1['dev'] === $stat2['dev'] &&
-            $stat1['ino'] === $stat2['ino'];
-    }
-
-    /**
-     * True if a path exists and is writable, or doesn't exist but descends from
-     * a writable directory
-     */
-    public static function creatable(string $path): bool
-    {
-        $path = self::existing($path);
-
-        return $path !== null && is_writable($path);
-    }
-
-    /**
      * True if a file appears to contain PHP code
      *
      * Returns `true` if `$filename` has a PHP open tag (`<?php`) at the start
@@ -723,416 +1175,31 @@ final class File extends AbstractUtility
     }
 
     /**
-     * True if a path is absolute
+     * Get the status of a file or stream
      *
-     * Returns `true` if `$path` starts with `/`, `\\`, `<letter>:\`,
-     * `<letter>:/` or a URI scheme with two or more characters.
-     */
-    public static function isAbsolute(string $path): bool
-    {
-        return (bool) Pcre::match(self::ABSOLUTE_PATH, $path);
-    }
-
-    /**
-     * True if a path is a "phar://" URI
-     */
-    public static function isPharUri(string $path): bool
-    {
-        return Str::lower(substr($path, 0, 7)) === 'phar://';
-    }
-
-    /**
-     * Create a file if it doesn't exist
+     * @see stat()
+     * @see fstat()
      *
-     * @param int $permissions Used after creating `$filename` if it doesn't
-     * exist.
-     * @param int $dirPermissions Used if one or more directories above
-     * `$filename` don't exist.
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function create(
-        string $filename,
-        int $permissions = 0777,
-        int $dirPermissions = 0777
-    ): void {
-        if (is_file($filename)) {
-            return;
-        }
-
-        self::createDir(dirname($filename), $dirPermissions);
-        $result = @touch($filename) && @chmod($filename, $permissions);
-        self::throwOnFalse($result, 'Error creating file: %s', $filename);
-    }
-
-    /**
-     * Create a directory if it doesn't exist
-     *
-     * @see mkdir()
-     *
-     * @param int $permissions Used if `$directory` doesn't exist.
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function createDir(
-        string $directory,
-        int $permissions = 0777
-    ): void {
-        if (is_dir($directory)) {
-            return;
-        }
-
-        $parent = dirname($directory);
-        $result =
-            (is_dir($parent) || @mkdir($parent, 0777, true)) &&
-            @mkdir($directory, $permissions) &&
-            (!Sys::isWindows() || @chmod($directory, $permissions));
-        self::throwOnFalse($result, 'Error creating directory: %s', $directory);
-    }
-
-    /**
-     * Change file permissions
-     *
-     * @see chmod()
-     *
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function chmod(string $filename, int $permissions): void
-    {
-        $result = @chmod($filename, $permissions);
-        self::throwOnFalse($result, 'Error changing permissions: %s', $filename);
-    }
-
-    /**
-     * Delete a file if it exists
-     *
-     * @see unlink()
-     *
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function delete(string $filename): void
-    {
-        if (!file_exists($filename)) {
-            return;
-        }
-
-        if (!is_file($filename)) {
-            throw new FilesystemErrorException(
-                sprintf('Not a file: %s', $filename),
-            );
-        }
-
-        $result = @unlink($filename);
-        self::throwOnFalse($result, 'Error deleting file: %s', $filename);
-    }
-
-    /**
-     * Delete a directory if it exists
-     *
-     * If `$recursive` is `true`, `$directory` and `$setPermissions` are passed
-     * to {@see File::pruneDir()} before the directory is deleted.
-     *
-     * @see rmdir()
-     *
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function deleteDir(
-        string $directory,
-        bool $recursive = false,
-        bool $setPermissions = false
-    ): void {
-        if (!file_exists($directory)) {
-            return;
-        }
-
-        if (!is_dir($directory)) {
-            throw new FilesystemErrorException(
-                sprintf('Not a directory: %s', $directory),
-            );
-        }
-
-        if ($recursive) {
-            self::pruneDir($directory, $setPermissions);
-        }
-
-        $result = @rmdir($directory);
-        self::throwOnFalse($result, 'Error deleting directory: %s', $directory);
-    }
-
-    /**
-     * Recursively delete the contents of a directory without deleting the
-     * directory itself
-     *
-     * If `$setPermissions` is `true`, file modes in `$directory` are changed if
-     * necessary for deletion to succeed.
-     *
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function pruneDir(string $directory, bool $setPermissions = false): void
-    {
-        $files = (new RecursiveFilesystemIterator())
-            ->in($directory)
-            ->dirs();
-
-        $windows = false;
-        if ($setPermissions) {
-            $windows = Sys::isWindows();
-            clearstatcache();
-            // With exceptions `chmod()` can't address:
-            // - On *nix, filesystem entries can be deleted if their parent
-            //   directory is writable
-            // - On Windows, they can be deleted if they are writable, whether
-            //   their parent directory is writable or not
-            if (!$windows) {
-                foreach ($files->noFiles() as $dir) {
-                    if (
-                        $dir->isReadable() &&
-                        $dir->isWritable() &&
-                        $dir->isExecutable()
-                    ) {
-                        continue;
-                    }
-                    $perms = @$dir->getPerms();
-                    if ($perms === false) {
-                        // @codeCoverageIgnoreStart
-                        $perms = 0;
-                        // @codeCoverageIgnoreEnd
-                    }
-                    self::chmod((string) $dir, $perms | 0700);
-                }
-            }
-        }
-
-        foreach ($files->dirsLast() as $file) {
-            if ($windows && !$file->isWritable()) {
-                self::chmod((string) $file, $file->isDir() ? 0700 : 0600);
-            }
-            $result = $file->isDir()
-                ? @rmdir((string) $file)
-                : @unlink((string) $file);
-            self::throwOnFalse($result, 'Error pruning directory: %s', $directory);
-        }
-    }
-
-    /**
-     * Create a temporary directory
-     */
-    public static function createTempDir(
-        ?string $directory = null,
-        ?string $prefix = null
-    ): string {
-        $directory ??= self::getTempDir();
-        $prefix ??= Sys::getProgramBasename();
-        do {
-            $dir = sprintf(
-                '%s/%s%s.tmp',
-                Str::coalesce($directory, '.'),
-                $prefix,
-                Get::randomText(8),
-            );
-        } while (!@mkdir($dir, 0700));
-        if (Sys::isWindows()) {
-            self::chmod($dir, 0700);
-        }
-
-        return $dir;
-    }
-
-    /**
-     * Resolve symbolic links and relative references in a path or Phar URI
-     *
-     * @see realpath()
-     *
-     * @throws FilesystemErrorException on failure or if `$path` does not exist.
-     */
-    public static function realpath(string $path): string
-    {
-        if (self::isPharUri($path) && file_exists($path)) {
-            return self::resolve($path, true);
-        }
-
-        $_path = $path;
-        error_clear_last();
-        $path = @realpath($path);
-        return self::throwOnFalse($path, 'Error resolving path: %s', $_path);
-    }
-
-    /**
-     * Resolve "/./" and "/../" segments in a path
-     *
-     * Relative directory segments are removed without accessing the filesystem,
-     * so `$path` need not exist.
-     *
-     * If `$withEmptySegments` is `true`, a `"/../"` segment after two or more
-     * consecutive directory separators is resolved by removing one of the
-     * separators. If `false` (the default), it is resolved by treating
-     * consecutive separators as one separator.
-     *
-     * Example:
-     *
-     * ```php
-     * <?php
-     * echo File::resolve('/dir/subdir//../') . PHP_EOL;
-     * echo File::resolve('/dir/subdir//../', true) . PHP_EOL;
-     * ```
-     *
-     * Output:
-     *
-     * ```
-     * /dir/
-     * /dir/subdir/
-     * ```
-     */
-    public static function resolve(string $path, bool $withEmptySegments = false): string
-    {
-        $path = str_replace('\\', '/', $path);
-
-        // Remove "/./" segments
-        $path = Pcre::replace('@(?<=/|^)\.(?:/|$)@', '', $path);
-
-        // Remove "/../" segments
-        $regex = $withEmptySegments ? '/' : '/+';
-        $regex = "@(?:^|(?<=^/)|(?<=/|^(?!/))(?!\.\.(?:/|\$))[^/]*{$regex})\.\.(?:/|\$)@";
-        do {
-            $path = Pcre::replace($regex, '', $path, -1, $count);
-        } while ($count);
-
-        return $path;
-    }
-
-    /**
-     * Get a path or its closest parent that exists
-     *
-     * Returns `null` if the leftmost segment of `$path` doesn't exist, or if
-     * the closest parent that exists is not a directory.
-     */
-    public static function existing(string $path): ?string
-    {
-        $pathIsParent = false;
-        while (!file_exists($path)) {
-            $parent = dirname($path);
-            if ($parent === $path) {
-                // @codeCoverageIgnoreStart
-                return null;
-                // @codeCoverageIgnoreEnd
-            }
-            $path = $parent;
-            $pathIsParent = true;
-        }
-
-        if ($pathIsParent && !is_dir($path)) {
-            return null;
-        }
-
-        return $path;
-    }
-
-    /**
-     * Get a path relative to a parent directory
-     *
-     * Returns `$fallback` if `$filename` does not belong to `$parentDir`.
-     *
-     * @throws FilesystemErrorException if `$filename` or `$parentDir` do not
-     * exist.
-     */
-    public static function relativeToParent(
-        string $filename,
-        string $parentDir,
-        ?string $fallback = null
-    ): ?string {
-        $path = self::realpath($filename);
-        $basePath = self::realpath($parentDir);
-        if (strpos($path, $basePath) === 0) {
-            return substr($path, strlen($basePath) + 1);
-        }
-        return $fallback;
-    }
-
-    /**
-     * Get the URI associated with a stream
-     *
-     * @param resource $stream
-     * @return string|null `null` if `$stream` is closed or does not have a URI.
-     */
-    public static function getStreamUri($stream): ?string
-    {
-        if (is_resource($stream) && get_resource_type($stream) === 'stream') {
-            // @phpstan-ignore-next-line
-            return stream_get_meta_data($stream)['uri'] ?? null;
-        }
-        return null;
-    }
-
-    /**
-     * @template T
-     *
-     * @param T $result
+     * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
-     * @param resource|null $stream
-     * @param string|int|float ...$args
-     * @return (T is false ? never : T)
-     * @phpstan-param T|false $result
-     * @phpstan-return ($result is false ? never : T)
+     * @return int[]
+     * @throws FilesystemErrorException on failure.
      */
-    private static function throwOnFalse($result, string $message, $uri = null, $stream = null, ...$args)
+    public static function stat($resource, $uri = null): array
     {
-        if ($result === false) {
-            self::doThrowOnFailure($message, $uri, $stream, ...$args);
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            $result = @fstat($resource);
+            return self::throwOnFalse($result, 'Error getting status of stream: %s', $uri, $resource);
         }
 
-        return $result;
-    }
+        if (!Test::isStringable($resource)) {
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        }
 
-    /**
-     * @template T
-     *
-     * @param T $result
-     * @param Stringable|string|null $uri
-     * @param resource|null $stream
-     * @param string|int|float ...$args
-     * @return (T is -1 ? never : T)
-     * @phpstan-param T|-1 $result
-     * @phpstan-return ($result is -1 ? never : T)
-     */
-    private static function throwOnFailure($result, string $message, $uri = null, $stream = null, ...$args)
-    {
-        if ($result === -1) {
-            self::doThrowOnFailure($message, $uri, $stream, ...$args);
-        }
-        return $result;
-    }
-
-    /**
-     * @param Stringable|string|null $uri
-     * @param resource|null $stream
-     * @param string|int|float ...$args
-     * @return never
-     */
-    private static function doThrowOnFailure(string $message, $uri, $stream, ...$args): void
-    {
-        $error = error_get_last();
-        if ($error) {
-            throw new FilesystemErrorException($error['message']);
-        }
-        throw new FilesystemErrorException(
-            sprintf($message, self::getFriendlyStreamUri($uri, $stream), ...$args)
-        );
-    }
-
-    /**
-     * @param Stringable|string|null $uri
-     * @param resource|null $stream
-     */
-    private static function getFriendlyStreamUri($uri, $stream): string
-    {
-        if ($uri !== null) {
-            return (string) $uri;
-        }
-        if ($stream !== null) {
-            $uri = self::getStreamUri($stream);
-        }
-        if ($uri === null) {
-            return '<stream>';
-        }
-        return $uri;
+        $resource = (string) $resource;
+        $result = @stat($resource);
+        return self::throwOnFalse($result, 'Error getting file status: %s', $resource);
     }
 
     /**
@@ -1210,105 +1277,16 @@ final class File extends AbstractUtility
         }
     }
 
-    /**
-     * Write a line of comma-separated values to an open stream
-     *
-     * A shim for {@see fputcsv()} with `$eol` (added in PHP 8.1) and without
-     * `$escape` (which should be removed).
-     *
-     * @param resource $stream
-     * @param mixed[] $fields
-     * @param Stringable|string|null $uri
-     */
-    public static function fputcsv(
-        $stream,
-        array $fields,
-        string $separator = ',',
-        string $enclosure = '"',
-        string $eol = "\n",
-        $uri = null
-    ): int {
-        $special = $separator . $enclosure . "\n\r\t ";
-
-        foreach ($fields as &$field) {
-            if (strpbrk((string) $field, $special) !== false) {
-                $field = $enclosure
-                    . str_replace($enclosure, $enclosure . $enclosure, $field)
-                    . $enclosure;
-            }
-        }
-
-        return self::write(
-            $stream,
-            implode($separator, $fields) . $eol,
-            null,
-            $uri,
-        );
-    }
-
-    /**
-     * Read CSV-formatted data from a file or stream
-     *
-     * @todo Implement file encoding detection
-     *
-     * @see fgetcsv()
-     *
-     * @param Stringable|string|resource $resource
-     * @return array<mixed[]>
-     * @throws FilesystemErrorException on failure.
-     */
-    public static function readCsv($resource): array
+    private static function getTempDir(): string
     {
-        $handle = self::getStream($resource, 'rb', $close, $uri);
-        while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
-            $data[] = $row;
+        $tempDir = sys_get_temp_dir();
+        $tmp = realpath($tempDir);
+        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a writable directory: %s', $tempDir),
+            );
         }
-        self::checkEof($handle, $uri);
-        if ($close) {
-            self::close($handle, $uri);
-        }
-        return $data ?? [];
-    }
-
-    /**
-     * @param resource $resource
-     * @param Stringable|string|null $uri
-     */
-    private static function checkEof($resource, $uri = null): void
-    {
-        $error = error_get_last();
-        if (@feof($resource)) {
-            return;
-        }
-        if ($error) {
-            throw new FilesystemErrorException($error['message']);
-        }
-        throw new FilesystemErrorException(sprintf(
-            'Error reading from %s',
-            self::getFriendlyStreamUri($uri, $resource),
-        ));
-    }
-
-    /**
-     * @param Stringable|string|resource $resource
-     * @param Stringable|string|null $uri
-     * @param-out bool $close
-     * @param-out Stringable|string|null $uri
-     * @return resource
-     */
-    private static function getStream($resource, string $mode, ?bool &$close, &$uri)
-    {
-        $close = false;
-        if (is_resource($resource)) {
-            self::assertResourceIsStream($resource);
-            return $resource;
-        }
-        if (Test::isStringable($resource)) {
-            $uri = (string) $resource;
-            $close = true;
-            return self::open($uri, $mode);
-        }
-        throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        return $tmp;
     }
 
     /**
@@ -1325,54 +1303,76 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Generate a filename unique to the current user and the path of the
-     * running script
+     * @template T
      *
-     * If `$dir` is not given, a filename in {@see sys_get_temp_dir()} is
-     * returned.
-     *
-     * No changes are made to the filesystem.
+     * @param T $result
+     * @param Stringable|string|null $uri
+     * @param resource|null $stream
+     * @param string|int|float ...$args
+     * @return (T is false ? never : T)
+     * @phpstan-param T|false $result
+     * @phpstan-return ($result is false ? never : T)
      */
-    public static function getStablePath(
-        string $suffix = '',
-        ?string $dir = null
-    ): string {
-        $path = Sys::getProgramName();
-        $program = basename($path);
-        $path = self::realpath($path);
-        $hash = Get::hash($path);
-        $user = Sys::getUserId();
-
-        if ($dir === null) {
-            $dir = self::getTempDir();
-        } else {
-            $dir = self::dir($dir);
+    private static function throwOnFalse($result, string $message, $uri = null, $stream = null, ...$args)
+    {
+        if ($result === false) {
+            self::doThrowOnFailure($message, $uri, $stream, ...$args);
         }
 
-        return sprintf('%s/%s-%s-%s%s', $dir, $program, $hash, $user, $suffix);
+        return $result;
     }
 
     /**
-     * Sanitise the name of a directory
+     * @template T
      *
-     * Returns `"."` if `$directory` is an empty string, otherwise removes
-     * trailing directory separators unless `$directory` is comprised entirely
-     * of directory separators (e.g. `"/"`).
+     * @param T $result
+     * @param Stringable|string|null $uri
+     * @param resource|null $stream
+     * @param string|int|float ...$args
+     * @return (T is -1 ? never : T)
+     * @phpstan-param T|-1 $result
+     * @phpstan-return ($result is -1 ? never : T)
      */
-    public static function dir(string $directory): string
+    private static function throwOnFailure($result, string $message, $uri = null, $stream = null, ...$args)
     {
-        return Str::coalesce(rtrim($directory, '/\\'), $directory, '.');
+        if ($result === -1) {
+            self::doThrowOnFailure($message, $uri, $stream, ...$args);
+        }
+        return $result;
     }
 
-    private static function getTempDir(): string
+    /**
+     * @param Stringable|string|null $uri
+     * @param resource|null $stream
+     * @param string|int|float ...$args
+     * @return never
+     */
+    private static function doThrowOnFailure(string $message, $uri, $stream, ...$args): void
     {
-        $tempDir = sys_get_temp_dir();
-        $tmp = realpath($tempDir);
-        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-            throw new FilesystemErrorException(
-                sprintf('Not a writable directory: %s', $tempDir),
-            );
+        $error = error_get_last();
+        if ($error) {
+            throw new FilesystemErrorException($error['message']);
         }
-        return $tmp;
+        throw new FilesystemErrorException(
+            sprintf($message, self::getFriendlyStreamUri($uri, $stream), ...$args)
+        );
+    }
+
+    /**
+     * @param Stringable|string|null $uri
+     * @param resource|null $stream
+     */
+    private static function getFriendlyStreamUri($uri, $stream): string
+    {
+        if ($uri !== null) {
+            return (string) $uri;
+        }
+        if ($stream !== null) {
+            $uri = self::getStreamUri($stream);
+        }
+        if ($uri === null) {
+            return '<stream>';
+        }
+        return $uri;
     }
 }
