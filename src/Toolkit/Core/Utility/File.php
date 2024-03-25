@@ -8,7 +8,6 @@ use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Exception\UnwrittenDataException;
 use Salient\Core\AbstractUtility;
-use Salient\Core\Indentation;
 use Salient\Core\Process;
 use Salient\Iterator\RecursiveFilesystemIterator;
 use Stringable;
@@ -18,12 +17,12 @@ use Stringable;
  *
  * Methods with an optional `$uri` parameter allow the resource URI reported on
  * failure to be overridden.
+ *
+ * @api
  */
 final class File extends AbstractUtility
 {
-    private const ABSOLUTE_PATH = <<<'REGEX'
-        /^(?:\/|\\\\|[a-z]:[\/\\]|[a-z][-a-z0-9+.]+:)/i
-        REGEX;
+    // Naive path handlers (no filesystem access)
 
     /**
      * Check if a path is absolute
@@ -33,7 +32,10 @@ final class File extends AbstractUtility
      */
     public static function isAbsolute(string $path): bool
     {
-        return (bool) Pcre::match(self::ABSOLUTE_PATH, $path);
+        return (bool) Pcre::match(
+            '@^(?:/|\\\\\\\\|[a-z]:[/\\\\]|[a-z][-a-z0-9+.]+:)@i',
+            $path,
+        );
     }
 
     /**
@@ -102,13 +104,15 @@ final class File extends AbstractUtility
         );
     }
 
+    // Directory function wrappers
+
     /**
      * Change the current directory
      */
     public static function chdir(string $directory): void
     {
         $result = @chdir($directory);
-        self::throwOnFailure($result, 'Error changing directory to: %s', $directory);
+        self::maybeThrow($result, 'Error changing directory to: %s', $directory);
     }
 
     /**
@@ -122,7 +126,39 @@ final class File extends AbstractUtility
         }
         error_clear_last();
         $dir = @getcwd();
-        return self::throwOnFailure($dir, 'Error getting current working directory');
+        return self::maybeThrow($dir, 'Error getting current working directory');
+    }
+
+    // Stream and filesystem function wrappers
+
+    /**
+     * Check for errors after fgets(), fgetcsv(), etc. return false
+     *
+     * @param resource $stream
+     * @param Stringable|string|null $uri
+     */
+    public static function checkEof($stream, $uri = null): void
+    {
+        $error = error_get_last();
+        if (@feof($stream)) {
+            return;
+        }
+        if ($error) {
+            throw new FilesystemErrorException($error['message']);
+        }
+        throw new FilesystemErrorException(sprintf(
+            'Error reading from %s',
+            self::getFriendlyStreamUri($uri, $stream),
+        ));
+    }
+
+    /**
+     * Change file permissions
+     */
+    public static function chmod(string $filename, int $permissions): void
+    {
+        $result = @chmod($filename, $permissions);
+        self::maybeThrow($result, 'Error changing permissions: %s', $filename);
     }
 
     /**
@@ -135,7 +171,7 @@ final class File extends AbstractUtility
     {
         $uri = self::getFriendlyStreamUri($uri, $stream);
         $result = @fclose($stream);
-        self::throwOnFailure($result, 'Error closing stream: %s', $uri);
+        self::maybeThrow($result, 'Error closing stream: %s', $uri);
     }
 
     /**
@@ -147,31 +183,20 @@ final class File extends AbstractUtility
     {
         $result = @pclose($pipe);
         if ($result === -1) {
-            self::throwOnFailure(false, 'Error closing pipe to process: %s', $command);
+            self::maybeThrow(false, 'Error closing pipe to process: %s', $command);
         }
         return $result;
     }
 
     /**
-     * Change file permissions
-     */
-    public static function chmod(string $filename, int $permissions): void
-    {
-        $result = @chmod($filename, $permissions);
-        self::throwOnFailure($result, 'Error changing permissions: %s', $filename);
-    }
-
-    /**
      * Copy a file or stream to another file or stream
      *
-     * @param Stringable|string|resource $from If `$from` is a seekable stream,
-     * it is rewound before copying.
-     * @param Stringable|string|resource $to If `$to` is a seekable stream, it
-     * is rewound after copying.
+     * @param Stringable|string|resource $from
+     * @param Stringable|string|resource $to
      * @param Stringable|string|null $fromUri
      * @param Stringable|string|null $toUri
      */
-    public static function copy($from, $to, bool $truncateTo = false, $fromUri = null, $toUri = null): void
+    public static function copy($from, $to, $fromUri = null, $toUri = null): void
     {
         $fromIsResource = is_resource($from);
         $toIsResource = is_resource($to);
@@ -187,35 +212,28 @@ final class File extends AbstractUtility
         if ($fromIsResource && $toIsResource) {
             self::assertResourceIsStream($from);
             self::assertResourceIsStream($to);
-            self::maybeRewind($from, $fromUri);
-            if ($truncateTo) {
-                self::truncate($to, 0, $toUri);
-            }
             $result = @stream_copy_to_stream($from, $to);
-            self::throwOnFailure(
+            self::maybeThrow(
                 $result,
                 'Error copying stream %s to %s',
                 $fromUri,
                 $from,
                 self::getFriendlyStreamUri($toUri, $to),
             );
-            self::maybeRewind($to, $toUri);
             return;
         }
 
         $from = (string) $from;
         $to = (string) $to;
         $result = @copy($from, $to);
-        self::throwOnFailure($result, 'Error copying %s to %s', $from, null, $to);
+        self::maybeThrow($result, 'Error copying %s to %s', $from, null, $to);
     }
 
     /**
      * Create a file if it doesn't exist
      *
-     * @param int $permissions Used after creating `$filename` if it doesn't
-     * exist.
-     * @param int $dirPermissions Used if one or more directories above
-     * `$filename` don't exist.
+     * @param int $permissions Applied when creating `$filename`.
+     * @param int $dirPermissions Applied when creating `$filename`'s directory.
      */
     public static function create(
         string $filename,
@@ -227,7 +245,7 @@ final class File extends AbstractUtility
         }
         self::createDir(dirname($filename), $dirPermissions);
         $result = @touch($filename) && @chmod($filename, $permissions);
-        self::throwOnFailure($result, 'Error creating file: %s', $filename);
+        self::maybeThrow($result, 'Error creating file: %s', $filename);
     }
 
     /**
@@ -246,8 +264,8 @@ final class File extends AbstractUtility
         $result =
             (is_dir($parent) || @mkdir($parent, 0777, true)) &&
             @mkdir($directory, $permissions) &&
-            (!Sys::isWindows() || @chmod($directory, $permissions));
-        self::throwOnFailure($result, 'Error creating directory: %s', $directory);
+            @chmod($directory, $permissions);
+        self::maybeThrow($result, 'Error creating directory: %s', $directory);
     }
 
     /**
@@ -267,9 +285,7 @@ final class File extends AbstractUtility
                 Get::randomText(8),
             );
         } while (!@mkdir($dir, 0700));
-        if (Sys::isWindows()) {
-            self::chmod($dir, 0700);
-        }
+        self::chmod($dir, 0700);
         return $dir;
     }
 
@@ -287,7 +303,7 @@ final class File extends AbstractUtility
             );
         }
         $result = @unlink($filename);
-        self::throwOnFailure($result, 'Error deleting file: %s', $filename);
+        self::maybeThrow($result, 'Error deleting file: %s', $filename);
     }
 
     /**
@@ -304,11 +320,23 @@ final class File extends AbstractUtility
             );
         }
         $result = @rmdir($directory);
-        self::throwOnFailure($result, 'Error deleting directory: %s', $directory);
+        self::maybeThrow($result, 'Error deleting directory: %s', $directory);
     }
 
     /**
-     * Get the entire contents of a file or the remaining contents of a stream
+     * Iterate over files in one or more directories
+     *
+     * Syntactic sugar for `new RecursiveFilesystemIterator()`.
+     *
+     * @see RecursiveFilesystemIterator
+     */
+    public static function find(): RecursiveFilesystemIterator
+    {
+        return new RecursiveFilesystemIterator();
+    }
+
+    /**
+     * Get the contents of a file or stream
      *
      * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
@@ -318,14 +346,34 @@ final class File extends AbstractUtility
         if (is_resource($resource)) {
             self::assertResourceIsStream($resource);
             $result = @stream_get_contents($resource, -1, $offset ?? -1);
-            return self::throwOnFailure($result, 'Error reading stream: %s', $uri, $resource);
+            return self::maybeThrow($result, 'Error reading stream: %s', $uri, $resource);
         }
-        if (!Test::isStringable($resource)) {
-            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-        }
+        self::assertResourceIsStringable($resource);
         $resource = (string) $resource;
         $result = @file_get_contents($resource, false, null, $offset ?? 0);
-        return self::throwOnFailure($result, 'Error reading file: %s', $resource);
+        return self::maybeThrow($result, 'Error reading file: %s', $resource);
+    }
+
+    /**
+     * Get CSV-formatted data from a file or stream
+     *
+     * @todo Detect file encoding
+     *
+     * @param Stringable|string|resource $resource
+     * @return array<mixed[]>
+     */
+    public static function getCsv($resource): array
+    {
+        $handle = self::maybeOpen($resource, 'rb', $close, $uri);
+        while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
+            /** @var array<int,string|null> $row */
+            $data[] = $row;
+        }
+        self::checkEof($handle, $uri);
+        if ($close) {
+            self::close($handle, $uri);
+        }
+        return $data ?? [];
     }
 
     /**
@@ -345,34 +393,10 @@ final class File extends AbstractUtility
             self::checkEof($resource, $uri);
             return $lines ?? [];
         }
-        if (!Test::isStringable($resource)) {
-            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-        }
+        self::assertResourceIsStringable($resource);
         $resource = (string) $resource;
         $result = @file($resource);
-        return self::throwOnFailure($result, 'Error reading file: %s', $resource);
-    }
-
-    /**
-     * Read CSV-formatted data from a file or stream
-     *
-     * @todo Implement file encoding detection
-     *
-     * @param Stringable|string|resource $resource
-     * @return array<mixed[]>
-     */
-    public static function getCsv($resource): array
-    {
-        $handle = self::getStream($resource, 'rb', $close, $uri);
-        while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
-            /** @var array<int,string|null> $row */
-            $data[] = $row;
-        }
-        self::checkEof($handle, $uri);
-        if ($close) {
-            self::close($handle, $uri);
-        }
-        return $data ?? [];
+        return self::maybeThrow($result, 'Error reading file: %s', $resource);
     }
 
     /**
@@ -383,7 +407,29 @@ final class File extends AbstractUtility
     public static function open(string $filename, string $mode)
     {
         $stream = @fopen($filename, $mode);
-        return self::throwOnFailure($stream, 'Error opening stream: %s', $filename);
+        return self::maybeThrow($stream, 'Error opening stream: %s', $filename);
+    }
+
+    /**
+     * Open a resource if it is not already open
+     *
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
+     * @param-out bool $close
+     * @param-out Stringable|string|null $uri
+     * @return resource
+     */
+    public static function maybeOpen($resource, string $mode, ?bool &$close, &$uri)
+    {
+        $close = false;
+        if (is_resource($resource)) {
+            self::assertResourceIsStream($resource);
+            return $resource;
+        }
+        self::assertResourceIsStringable($resource);
+        $uri = (string) $resource;
+        $close = true;
+        return self::open($uri, $mode);
     }
 
     /**
@@ -394,7 +440,7 @@ final class File extends AbstractUtility
     public static function openPipe(string $command, string $mode)
     {
         $pipe = @popen($command, $mode);
-        return self::throwOnFailure($pipe, 'Error opening pipe to process: %s', $command);
+        return self::maybeThrow($pipe, 'Error opening pipe to process: %s', $command);
     }
 
     /**
@@ -407,7 +453,7 @@ final class File extends AbstractUtility
     public static function read($stream, int $length, $uri = null): string
     {
         $data = @fread($stream, $length);
-        return self::throwOnFailure($data, 'Error reading from stream: %s', $uri, $stream);
+        return self::maybeThrow($data, 'Error reading from stream: %s', $uri, $stream);
     }
 
     /**
@@ -439,20 +485,19 @@ final class File extends AbstractUtility
         $_path = $path;
         error_clear_last();
         $path = @realpath($path);
-        return self::throwOnFailure($path, 'Error resolving path: %s', $_path);
+        return self::maybeThrow($path, 'Error resolving path: %s', $_path);
     }
 
     /**
      * Rewind to the beginning of a stream
-     *
-     * Equivalent to `File::seek($stream, 0, \SEEK_SET, $uri)`.
      *
      * @param resource $stream
      * @param Stringable|string|null $uri
      */
     public static function rewind($stream, $uri = null): void
     {
-        self::seek($stream, 0, \SEEK_SET, $uri);
+        $result = rewind($stream);
+        self::maybeThrow($result, 'Error rewinding file position indicator for stream: %s', $uri, $stream);
     }
 
     /**
@@ -464,7 +509,7 @@ final class File extends AbstractUtility
     public static function maybeRewind($stream, $uri = null): void
     {
         if (self::isSeekableStream($stream)) {
-            self::seek($stream, 0, \SEEK_SET, $uri);
+            self::rewind($stream, $uri);
         }
     }
 
@@ -504,7 +549,7 @@ final class File extends AbstractUtility
     {
         $result = @fseek($stream, $offset, $whence);
         if ($result === -1) {
-            self::throwOnFailure(false, 'Error setting file position indicator for stream: %s', $uri, $stream);
+            self::maybeThrow(false, 'Error setting file position indicator for stream: %s', $uri, $stream);
         }
     }
 
@@ -530,7 +575,7 @@ final class File extends AbstractUtility
     public static function size(string $filename): int
     {
         $size = @filesize($filename);
-        return self::throwOnFailure($size, 'Error getting file size: %s', $filename);
+        return self::maybeThrow($size, 'Error getting file size: %s', $filename);
     }
 
     /**
@@ -545,14 +590,12 @@ final class File extends AbstractUtility
         if (is_resource($resource)) {
             self::assertResourceIsStream($resource);
             $result = @fstat($resource);
-            return self::throwOnFailure($result, 'Error getting status of stream: %s', $uri, $resource);
+            return self::maybeThrow($result, 'Error getting status of stream: %s', $uri, $resource);
         }
-        if (!Test::isStringable($resource)) {
-            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-        }
+        self::assertResourceIsStringable($resource);
         $resource = (string) $resource;
         $result = @stat($resource);
-        return self::throwOnFailure($result, 'Error getting file status: %s', $resource);
+        return self::maybeThrow($result, 'Error getting file status: %s', $resource);
     }
 
     /**
@@ -566,7 +609,7 @@ final class File extends AbstractUtility
     public static function tell($stream, $uri = null): int
     {
         $result = @ftell($stream);
-        return self::throwOnFailure($result, 'Error getting file position indicator for stream: %s', $uri, $stream);
+        return self::maybeThrow($result, 'Error getting file position indicator for stream: %s', $uri, $stream);
     }
 
     /**
@@ -580,7 +623,7 @@ final class File extends AbstractUtility
     {
         self::seek($stream, 0, \SEEK_SET, $uri);
         $result = @ftruncate($stream, $size);
-        self::throwOnFailure($result, 'Error truncating stream: %s', $uri, $stream);
+        self::maybeThrow($result, 'Error truncating stream: %s', $uri, $stream);
     }
 
     /**
@@ -592,7 +635,7 @@ final class File extends AbstractUtility
     {
         $type = @filetype($filename);
         /** @var ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown") */
-        return self::throwOnFailure($type, 'Error getting file type: %s', $filename);
+        return self::maybeThrow($type, 'Error getting file type: %s', $filename);
     }
 
     /**
@@ -646,7 +689,7 @@ final class File extends AbstractUtility
             $expected = min($length, strlen($data));
         }
         $result = @fwrite($stream, $data, $length);
-        self::throwOnFailure($result, 'Error writing to stream: %s', $uri, $stream);
+        self::maybeThrow($result, 'Error writing to stream: %s', $uri, $stream);
         assert($result <= $expected);
         $unwritten = $expected - $result;
         return $result;
@@ -661,7 +704,7 @@ final class File extends AbstractUtility
     public static function writeContents(string $filename, $data, int $flags = 0): int
     {
         $result = @file_put_contents($filename, $data, $flags);
-        return self::throwOnFailure($result, 'Error writing file: %s', $filename);
+        return self::maybeThrow($result, 'Error writing file: %s', $filename);
     }
 
     /**
@@ -696,7 +739,7 @@ final class File extends AbstractUtility
         bool $bom = true,
         $uri = null
     ): void {
-        $handle = self::getStream($resource, 'wb', $close, $uri);
+        $handle = self::maybeOpen($resource, 'wb', $close, $uri);
 
         if ($utf16le) {
             if (!extension_loaded('iconv')) {
@@ -705,7 +748,7 @@ final class File extends AbstractUtility
                 );
             }
             $filter = @stream_filter_append($handle, 'convert.iconv.UTF-8.UTF-16LE', \STREAM_FILTER_WRITE);
-            self::throwOnFailure($filter, 'Error applying UTF-16LE filter to stream: %s', $uri, $handle);
+            self::maybeThrow($filter, 'Error applying UTF-16LE filter to stream: %s', $uri, $handle);
         }
 
         if ($bom) {
@@ -733,7 +776,7 @@ final class File extends AbstractUtility
             self::close($handle, $uri);
         } elseif ($utf16le) {
             $result = @stream_filter_remove($filter);
-            self::throwOnFailure($result, 'Error removing UTF-16LE filter from stream: %s', $uri, $handle);
+            self::maybeThrow($result, 'Error removing UTF-16LE filter from stream: %s', $uri, $handle);
         }
     }
 
@@ -771,13 +814,15 @@ final class File extends AbstractUtility
         );
     }
 
+    // Tests
+
     /**
      * Check if a path exists and is writable, or doesn't exist but descends
      * from a writable directory
      */
     public static function isCreatable(string $path): bool
     {
-        $path = self::getClosestExisting($path);
+        $path = self::closestExisting($path);
         return $path !== null && is_writable($path);
     }
 
@@ -805,17 +850,7 @@ final class File extends AbstractUtility
         return is_resource($value) && get_resource_type($value) === 'stream';
     }
 
-    /**
-     * Iterate over files in one or more directories
-     *
-     * Syntactic sugar for `new RecursiveFilesystemIterator()`.
-     *
-     * @see RecursiveFilesystemIterator
-     */
-    public static function find(): RecursiveFilesystemIterator
-    {
-        return new RecursiveFilesystemIterator();
-    }
+    // Helpers
 
     /**
      * Get a path or its closest parent that exists
@@ -823,7 +858,7 @@ final class File extends AbstractUtility
      * Returns `null` if the leftmost segment of `$path` doesn't exist, or if
      * the closest parent that exists is not a directory.
      */
-    public static function getClosestExisting(string $path): ?string
+    public static function closestExisting(string $path): ?string
     {
         $pathIsParent = false;
         while (!file_exists($path)) {
@@ -845,6 +880,44 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Get the end-of-line sequence used in a file or stream
+     *
+     * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
+     *
+     * @see Get::eol()
+     * @see Str::setEol()
+     *
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
+     * @return string|null `null` if there are no recognised line breaks in the
+     * file.
+     */
+    public static function getEol($resource, $uri = null): ?string
+    {
+        $handle = self::maybeOpen($resource, 'r', $close, $uri);
+        $line = self::readLine($handle, $uri);
+        if ($close) {
+            self::close($handle, $uri);
+        }
+
+        if ($line === '') {
+            return null;
+        }
+
+        foreach (["\r\n", "\n", "\r"] as $eol) {
+            if (substr($line, -strlen($eol)) === $eol) {
+                return $eol;
+            }
+        }
+
+        if (strpos($line, "\r") !== false) {
+            return "\r";
+        }
+
+        return null;
+    }
+
+    /**
      * If a stream is not seekable, copy it to a temporary stream that is and
      * close it
      *
@@ -858,8 +931,9 @@ final class File extends AbstractUtility
             return $stream;
         }
         $seekable = self::open('php://temp', 'r+');
-        self::copy($stream, $seekable, false, $uri);
+        self::copy($stream, $seekable, $uri);
         self::close($stream, $uri);
+        self::rewind($seekable);
         return $seekable;
     }
 
@@ -904,6 +978,33 @@ final class File extends AbstractUtility
             return stream_get_meta_data($stream)['uri'] ?? null;
         }
         return null;
+    }
+
+    /**
+     * Check if a file or stream appears to contain PHP code
+     *
+     * Returns `true` if `$resource` has a PHP open tag (`<?php`) at the start
+     * of the first line that is not a shebang (`#!`).
+     *
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
+     */
+    public static function hasPhp($resource, $uri = null): bool
+    {
+        $handle = self::maybeOpen($resource, 'r', $close, $uri);
+        $line = self::readLine($handle, $uri);
+        if ($line !== '' && substr($line, 0, 2) === '#!') {
+            $line = self::readLine($handle, $uri);
+        }
+        if ($close) {
+            self::close($handle, $uri);
+        }
+
+        if ($line === '') {
+            return false;
+        }
+
+        return (bool) Pcre::match('/^<\?(php\s|(?!php|xml\s))/', $line);
     }
 
     /**
@@ -955,7 +1056,7 @@ final class File extends AbstractUtility
             $result = $file->isDir()
                 ? @rmdir((string) $file)
                 : @unlink((string) $file);
-            self::throwOnFailure($result, 'Error pruning directory: %s', $directory);
+            self::maybeThrow($result, 'Error pruning directory: %s', $directory);
         }
 
         if ($delete) {
@@ -983,281 +1084,10 @@ final class File extends AbstractUtility
         return $fallback;
     }
 
-    /**
-     * Get the end-of-line sequence used in a file or stream
-     *
-     * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
-     *
-     * @see Get::eol()
-     * @see Str::setEol()
-     *
-     * @param Stringable|string|resource $resource
-     * @param Stringable|string|null $uri
-     * @return string|null `null` if there are no recognised line breaks in the
-     * file.
-     */
-    public static function getEol($resource, $uri = null): ?string
-    {
-        $handle = self::getStream($resource, 'r', $close, $uri);
-        $line = self::readLine($handle, $uri);
-        if ($close) {
-            self::close($handle, $uri);
-        }
-
-        if ($line === '') {
-            return null;
-        }
-
-        foreach (["\r\n", "\n", "\r"] as $eol) {
-            if (substr($line, -strlen($eol)) === $eol) {
-                return $eol;
-            }
-        }
-
-        if (strpos($line, "\r") !== false) {
-            return "\r";
-        }
-
-        return null;
-    }
-
-    /**
-     * Guess the indentation used in a file or stream
-     *
-     * Derived from VS Code's `indentationGuesser`.
-     *
-     * Returns `$default` if `$resource` appears to use the default indentation.
-     *
-     * @param Stringable|string|resource $resource
-     * @param Stringable|string|null $uri
-     *
-     * @link https://github.com/microsoft/vscode/blob/860d67064a9c1ef8ce0c8de35a78bea01033f76c/src/vs/editor/common/model/indentationGuesser.ts
-     */
-    public static function guessIndentation(
-        $resource,
-        ?Indentation $default = null,
-        bool $alwaysGuessTabSize = false,
-        $uri = null
-    ): Indentation {
-        $handle = self::getStream($resource, 'r', $close, $uri);
-
-        $lines = 0;
-        $linesWithTabs = 0;
-        $linesWithSpaces = 0;
-        $diffSpacesCount = [2 => 0, 0, 0, 0, 0, 0, 0];
-
-        $prevLine = '';
-        $prevOffset = 0;
-        while ($lines < 10000) {
-            $line = @fgets($handle);
-            if ($line === false) {
-                self::checkEof($handle, $uri);
-                break;
-            }
-
-            $lines++;
-
-            $line = rtrim($line);
-            if ($line === '') {
-                continue;
-            }
-
-            $length = strlen($line);
-            $spaces = 0;
-            $tabs = 0;
-            for ($offset = 0; $offset < $length; $offset++) {
-                if ($line[$offset] === "\t") {
-                    $tabs++;
-                } elseif ($line[$offset] === ' ') {
-                    $spaces++;
-                } else {
-                    break;
-                }
-            }
-
-            if ($tabs) {
-                $linesWithTabs++;
-            } elseif ($spaces > 1) {
-                $linesWithSpaces++;
-            }
-
-            $minOffset = $prevOffset < $offset ? $prevOffset : $offset;
-            for ($i = 0; $i < $minOffset; $i++) {
-                if ($prevLine[$i] !== $line[$i]) {
-                    break;
-                }
-            }
-
-            $prevLineSpaces = 0;
-            $prevLineTabs = 0;
-            for ($j = $i; $j < $prevOffset; $j++) {
-                if ($prevLine[$j] === ' ') {
-                    $prevLineSpaces++;
-                } else {
-                    $prevLineTabs++;
-                }
-            }
-
-            $lineSpaces = 0;
-            $lineTabs = 0;
-            for ($j = $i; $j < $offset; $j++) {
-                if ($line[$j] === ' ') {
-                    $lineSpaces++;
-                } else {
-                    $lineTabs++;
-                }
-            }
-
-            $_prevLine = $prevLine;
-            $_prevOffset = $prevOffset;
-            $_line = $line;
-
-            $prevLine = $line;
-            $prevOffset = $offset;
-
-            if (
-                ($prevLineSpaces && $prevLineTabs) ||
-                ($lineSpaces && $lineTabs)
-            ) {
-                continue;
-            }
-
-            $diffSpaces = abs($prevLineSpaces - $lineSpaces);
-            $diffTabs = abs($prevLineTabs - $lineTabs);
-            if (!$diffTabs) {
-                // Skip if the difference could be alignment-related and doesn't
-                // match the file's default indentation
-                if (
-                    $diffSpaces &&
-                    $lineSpaces &&
-                    $lineSpaces - 1 < strlen($_prevLine) &&
-                    $_line[$lineSpaces] !== ' ' &&
-                    $_prevLine[$lineSpaces - 1] === ' ' &&
-                    $_prevLine[-1] === ',' && !(
-                        $default &&
-                        $default->InsertSpaces &&
-                        $default->TabSize === $diffSpaces
-                    )
-                ) {
-                    $prevLine = $_prevLine;
-                    $prevOffset = $_prevOffset;
-                    continue;
-                }
-            } elseif ($diffSpaces % $diffTabs === 0) {
-                $diffSpaces /= $diffTabs;
-            } else {
-                continue;
-            }
-
-            if ($diffSpaces > 1 && $diffSpaces <= 8) {
-                $diffSpacesCount[$diffSpaces]++;
-            }
-        }
-
-        $insertSpaces = $linesWithTabs === $linesWithSpaces
-            ? $default->InsertSpaces ?? true
-            : $linesWithTabs < $linesWithSpaces;
-
-        $tabSize = $default->TabSize ?? 4;
-
-        // Only guess tab size if inserting spaces
-        if ($insertSpaces || $alwaysGuessTabSize) {
-            $count = 0;
-            foreach ([2, 4, 6, 8, 3, 5, 7] as $diffSpaces) {
-                if ($diffSpacesCount[$diffSpaces] > $count) {
-                    $tabSize = $diffSpaces;
-                    $count = $diffSpacesCount[$diffSpaces];
-                }
-            }
-        }
-
-        if ($close) {
-            self::close($handle, $uri);
-        }
-
-        if (
-            $default &&
-            $default->InsertSpaces === $insertSpaces &&
-            $default->TabSize === $tabSize
-        ) {
-            return $default;
-        }
-
-        return new Indentation($insertSpaces, $tabSize);
-    }
-
-    /**
-     * Check if a file or stream appears to contain PHP code
-     *
-     * Returns `true` if `$resource` has a PHP open tag (`<?php`) at the start
-     * of the first line that is not a shebang (`#!`).
-     *
-     * @param Stringable|string|resource $resource
-     * @param Stringable|string|null $uri
-     */
-    public static function hasPhp($resource, $uri = null): bool
-    {
-        $handle = self::getStream($resource, 'r', $close, $uri);
-        $line = self::readLine($handle, $uri);
-        if ($line !== '' && substr($line, 0, 2) === '#!') {
-            $line = self::readLine($handle, $uri);
-        }
-        if ($close) {
-            self::close($handle, $uri);
-        }
-
-        if ($line === '') {
-            return false;
-        }
-
-        return (bool) Pcre::match('/^<\?(php\s|(?!php|xml\s))/', $line);
-    }
-
-    /**
-     * @param resource $stream
-     * @param Stringable|string|null $uri
-     */
-    private static function checkEof($stream, $uri = null): void
-    {
-        $error = error_get_last();
-        if (@feof($stream)) {
-            return;
-        }
-        if ($error) {
-            throw new FilesystemErrorException($error['message']);
-        }
-        throw new FilesystemErrorException(sprintf(
-            'Error reading from %s',
-            self::getFriendlyStreamUri($uri, $stream),
-        ));
-    }
-
-    /**
-     * @param Stringable|string|resource $resource
-     * @param Stringable|string|null $uri
-     * @param-out bool $close
-     * @param-out Stringable|string|null $uri
-     * @return resource
-     */
-    private static function getStream($resource, string $mode, ?bool &$close, &$uri)
-    {
-        $close = false;
-        if (is_resource($resource)) {
-            self::assertResourceIsStream($resource);
-            return $resource;
-        }
-        if (Test::isStringable($resource)) {
-            $uri = (string) $resource;
-            $close = true;
-            return self::open($uri, $mode);
-        }
-        throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
-    }
-
     private static function getTempDir(): string
     {
         $tempDir = sys_get_temp_dir();
-        $tmp = realpath($tempDir);
+        $tmp = @realpath($tempDir);
         if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
             throw new FilesystemErrorException(
                 sprintf('Not a writable directory: %s', $tempDir),
@@ -1280,6 +1110,17 @@ final class File extends AbstractUtility
     }
 
     /**
+     * @param mixed $resource
+     * @phpstan-assert Stringable|string $resource
+     */
+    private static function assertResourceIsStringable($resource): void
+    {
+        if (!Test::isStringable($resource)) {
+            throw new InvalidArgumentTypeException(1, 'resource', 'Stringable|string|resource', $resource);
+        }
+    }
+
+    /**
      * @template T
      *
      * @param T $result
@@ -1290,8 +1131,13 @@ final class File extends AbstractUtility
      * @phpstan-param T|false $result
      * @phpstan-return ($result is false ? never : T)
      */
-    private static function throwOnFailure($result, string $message, $uri = null, $stream = null, ...$args)
-    {
+    private static function maybeThrow(
+        $result,
+        string $message,
+        $uri = null,
+        $stream = null,
+        ...$args
+    ) {
         if ($result === false) {
             $error = error_get_last();
             if ($error) {
