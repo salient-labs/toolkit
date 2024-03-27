@@ -806,11 +806,6 @@ parameters:
 			path: src/Toolkit/Http/HttpMessage.php
 
 		-
-			message: "#^Parameter \\#2 \\$length of function fread expects int\\<0, max\\>, int\\<min, \\-1\\>\\|int\\<1, max\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpServer.php
-
-		-
 			message: "#^Cannot access offset 'alg' on mixed\\.$#"
 			count: 1
 			path: src/Toolkit/Http/OAuth2/OAuth2Client.php

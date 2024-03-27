@@ -174,6 +174,14 @@ class HttpHeaders implements HttpHeadersInterface
     /**
      * @inheritDoc
      */
+    public function hasLastLine(): bool
+    {
+        return $this->Closed;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function add($key, $value)
     {
         $values = (array) $value;

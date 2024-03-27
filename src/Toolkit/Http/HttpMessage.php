@@ -22,9 +22,7 @@ abstract class HttpMessage implements HttpMessageInterface
     }
 
     protected string $ProtocolVersion;
-
     protected HttpHeadersInterface $Headers;
-
     protected StreamInterface $Body;
 
     /**

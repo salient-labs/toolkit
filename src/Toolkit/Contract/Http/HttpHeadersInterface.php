@@ -17,18 +17,23 @@ interface HttpHeadersInterface extends CollectionInterface, Immutable
      * Parse and apply an HTTP header field or continuation thereof
      *
      * This method should be called once per HTTP header line. Each line must
-     * have a trailing CRLF. If an empty line (`"\r\n"`) is given, subsequent
+     * have a trailing CRLF. If an empty line (`"\r\n"`) is given,
+     * {@see HttpHeadersInterface::hasLastLine()} returns `true` and subsequent
      * headers applied via {@see HttpHeadersInterface::addLine()} are flagged as
-     * trailers. Aside from {@see HttpHeadersInterface::trailers()} and
-     * {@see HttpHeadersInterface::withoutTrailers()},
-     * {@see HttpHeadersInterface} methods make no distinction between trailers
-     * and other headers.
+     * trailers. Methods other than {@see HttpHeadersInterface::trailers()} and
+     * {@see HttpHeadersInterface::withoutTrailers()} make no distinction
+     * between trailers and other headers.
      *
      * @param bool $strict If `true`, throw an exception if `$line` is not
      * \[RFC7230]-compliant.
      * @return static
      */
     public function addLine(string $line, bool $strict = false);
+
+    /**
+     * Check if addLine() has received an empty line
+     */
+    public function hasLastLine(): bool;
 
     /**
      * Apply a value to a header, preserving any existing values

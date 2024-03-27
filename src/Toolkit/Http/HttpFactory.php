@@ -44,18 +44,14 @@ class HttpFactory implements
     }
 
     /**
-     * @param array<string,mixed> $serverParams
+     * @param mixed[] $serverParams
      */
     public function createServerRequest(
         string $method,
         $uri,
         array $serverParams = []
     ): ServerRequestInterface {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            ServerRequestFactoryInterface::class
-        );
+        return new HttpServerRequest($method, $uri, $serverParams);
     }
 
     /**
@@ -104,8 +100,8 @@ class HttpFactory implements
     /**
      * @inheritDoc
      */
-    public function createUri(string $uri = '', bool $strict = false): PsrUriInterface
+    public function createUri(string $uri = ''): PsrUriInterface
     {
-        return new Uri($uri, $strict);
+        return new Uri($uri);
     }
 }

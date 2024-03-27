@@ -12,9 +12,9 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Str;
 use Salient\Curler\Curler;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpServer;
@@ -158,7 +158,7 @@ abstract class OAuth2Client
     final protected function getRedirectUri(): ?string
     {
         return $this->Listener
-            ? sprintf('%s/oauth2/callback', $this->Listener->getBaseUrl())
+            ? sprintf('%s/oauth2/callback', $this->Listener->getBaseUri())
             : null;
     }
 
@@ -316,8 +316,8 @@ abstract class OAuth2Client
             'Starting HTTP server to receive authorization_code:',
             sprintf(
                 '%s:%d',
-                $this->Listener->Host,
-                $this->Listener->Port,
+                $this->Listener->getHost(),
+                $this->Listener->getPort(),
             )
         );
 
@@ -350,11 +350,9 @@ abstract class OAuth2Client
      */
     private function receiveAuthorizationCode(HttpServerRequest $request, bool &$continue, &$return): HttpResponse
     {
-        $url = parse_url($request->Target);
-        $path = $url['path'] ?? null;
         if (
-            $request->Method !== Method::GET ||
-            $path !== '/oauth2/callback'
+            Str::upper($request->getMethod()) !== Method::GET ||
+            $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
             $continue = true;
             return new HttpResponse(400, 'Bad Request', 'Invalid request.');
@@ -362,7 +360,7 @@ abstract class OAuth2Client
 
         $state = Cache::getString("{$this->TokenKey}:state");
         Cache::delete("{$this->TokenKey}:state");
-        parse_str($url['query'] ?? '', $fields);
+        parse_str($request->getUri()->getQuery(), $fields);
         $code = $fields['code'] ?? null;
 
         if (

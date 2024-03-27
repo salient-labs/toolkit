@@ -939,7 +939,9 @@ final class UriTest extends TestCase
         }
 
         foreach ($this->getUrls(true) as $url) {
-            $this->assertSame($url, Uri::unparse(Uri::parse($url)));
+            $parts = Uri::parse($url);
+            $this->assertIsArray($parts);
+            $this->assertSame($url, Uri::unparse($parts));
         }
     }
 
