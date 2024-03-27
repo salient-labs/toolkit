@@ -2,9 +2,4 @@
 
 namespace Salient\Http\Exception;
 
-use Salient\Core\AbstractException;
-
-/**
- * Thrown when an HTTP server error occurs
- */
-class HttpServerException extends AbstractException {}
+class HttpServerException extends AbstractHttpException {}

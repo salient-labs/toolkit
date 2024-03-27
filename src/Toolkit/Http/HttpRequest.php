@@ -184,29 +184,21 @@ class HttpRequest extends HttpMessage implements HttpRequestInterface
             return $requestTarget;
         }
 
-        try {
-            $parts = Uri::parse($requestTarget);
-        } catch (InvalidArgumentException $ex) {
+        // "authority-form"
+        if (Uri::isAuthorityForm($requestTarget)) {
+            return $requestTarget;
+        }
+
+        $parts = Uri::parse($requestTarget);
+        if ($parts === false) {
             throw new InvalidArgumentException(
-                sprintf('Invalid request target: %s', $requestTarget),
-                $ex
+                sprintf('Invalid request target: %s', $requestTarget)
             );
         }
 
         // "absolute-form"
         if (isset($parts['scheme'])) {
             return $requestTarget;
-        }
-
-        // "authority-form"
-        if (isset($parts['host'])) {
-            $invalid = array_diff_key($parts, array_flip(['host', 'port', 'user', 'pass']));
-            if (!$invalid) {
-                return $requestTarget;
-            }
-            throw new InvalidArgumentException(
-                sprintf('authority-form of request-target cannot have URI components other than host, port, userinfo: %s', $requestTarget)
-            );
         }
 
         // "origin-form"

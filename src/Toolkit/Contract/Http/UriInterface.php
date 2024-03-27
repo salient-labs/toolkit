@@ -19,16 +19,26 @@ interface UriInterface extends
     /**
      * Parse a URI into its components
      *
-     * Using multiple URI parsers can introduce inconsistent behaviour and
-     * security vulnerabilities, so it may be important to use this method
-     * instead of {@see parse_url()}.
+     * This method should be used instead of {@see parse_url()} in scenarios
+     * where using multiple URI parsers could introduce inconsistent behaviour
+     * or security vulnerabilities.
      *
      * @link https://claroty.com/team82/research/white-papers/exploiting-url-parsing-confusion
      * @link https://daniel.haxx.se/blog/2022/01/10/dont-mix-url-parsers/
      *
-     * @return array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}
+     * @template T of \PHP_URL_SCHEME|\PHP_URL_HOST|\PHP_URL_PORT|\PHP_URL_USER|\PHP_URL_PASS|\PHP_URL_PATH|\PHP_URL_QUERY|\PHP_URL_FRAGMENT|-1|null
+     *
+     * @param T $component
+     * @return (
+     *     T is -1|null
+     *     ? array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
+     *     : (T is \PHP_URL_PORT
+     *         ? int|null|false
+     *         : string|null|false
+     *     )
+     * )
      */
-    public static function parse(string $uri): array;
+    public static function parse(string $uri, ?int $component = null);
 
     /**
      * Get the URI as an array of components

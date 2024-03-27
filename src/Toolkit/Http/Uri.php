@@ -39,9 +39,20 @@ class Uri implements UriInterface
         'https' => 443,
     ];
 
-    private const URI_SCHEME = '/^[a-z][-a-z0-9+.]*$/i';
+    private const COMPONENT_NAME = [
+        \PHP_URL_SCHEME => 'scheme',
+        \PHP_URL_HOST => 'host',
+        \PHP_URL_PORT => 'port',
+        \PHP_URL_USER => 'user',
+        \PHP_URL_PASS => 'pass',
+        \PHP_URL_PATH => 'path',
+        \PHP_URL_QUERY => 'query',
+        \PHP_URL_FRAGMENT => 'fragment',
+    ];
 
-    private const URI_HOST = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/i';
+    private const URI_SCHEME = '/^[a-z][-a-z0-9+.]*$/iD';
+
+    private const URI_HOST = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
 
     private const URI = <<<'REGEX'
         ` ^
@@ -77,8 +88,10 @@ class Uri implements UriInterface
         (?<path> (?: (?&pchar) | / )*+ )
         (?: \? (?<query>    (?: (?&pchar) | [?/] )* ) )?+
         (?: \# (?<fragment> (?: (?&pchar) | [?/] )* ) )?+
-        $ `xi
+        $ `ixD
         REGEX;
+
+    private const AUTHORITY_FORM = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
 
     protected ?string $Scheme = null;
     protected ?string $User = null;
@@ -158,9 +171,31 @@ class Uri implements UriInterface
      * @param bool $strict If `false`, unencoded characters are percent-encoded
      * before parsing.
      */
-    public static function parse(string $uri, bool $strict = false): array
+    public static function parse(string $uri, ?int $component = null, bool $strict = false)
     {
-        return (new static($uri, $strict))->toParts();
+        $noComponent = $component === null || $component === -1;
+
+        $name = $noComponent
+            ? null
+            : self::COMPONENT_NAME[$component] ?? null;
+
+        if (!$noComponent && $name === null) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid component: %d',
+                $component,
+            ));
+        }
+
+        try {
+            $parts = (new static($uri, $strict))->toParts();
+        } catch (InvalidArgumentException $ex) {
+            @trigger_error($ex->getMessage(), \E_USER_NOTICE);
+            return false;
+        }
+
+        return $noComponent
+            ? $parts
+            : $parts[$name] ?? null;
     }
 
     /**
@@ -185,6 +220,19 @@ class Uri implements UriInterface
     public static function resolveReference($reference, $baseUri): string
     {
         return (string) static::from($baseUri)->follow(static::from($reference));
+    }
+
+    /**
+     * Check if a value is a valid authority-form request target
+     *
+     * [RFC7230], Section 5.3.3: "When making a CONNECT request to establish a
+     * tunnel through one or more proxies, a client MUST send only the target
+     * URI's authority component (excluding any userinfo and its "@" delimiter)
+     * as the request-target."
+     */
+    public static function isAuthorityForm(string $requestTarget): bool
+    {
+        return (bool) Pcre::match(self::AUTHORITY_FORM, $requestTarget);
     }
 
     /**

@@ -331,6 +331,7 @@ trait ReadableCollectionTrait
             $items = iterator_to_array($items);
         }
 
+        /** @var array<TKey,TValue> $items */
         return $this->filterItems($items);
     }
 

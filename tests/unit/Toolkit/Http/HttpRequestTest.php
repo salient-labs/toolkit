@@ -70,7 +70,7 @@ final class HttpRequestTest extends TestCase
         ];
     }
 
-    public function testConstruct(): void
+    public function testConstructor(): void
     {
         $r = new HttpRequest('GET', '/');
         $this->assertSame('/', (string) $r->getUri());
@@ -135,7 +135,7 @@ final class HttpRequestTest extends TestCase
         $this->assertSame('foo.com:8125', $r->getHeaderLine('host'));
     }
 
-    public function testConstructWithInvalidUri(): void
+    public function testConstructorWithInvalidUri(): void
     {
         $this->expectException(InvalidArgumentException::class);
         new HttpRequest('GET', '//example.com:-1');
@@ -175,7 +175,7 @@ final class HttpRequestTest extends TestCase
     /**
      * @dataProvider invalidMethodsProvider
      */
-    public function testConstructWithInvalidMethods(string $method): void
+    public function testConstructorWithInvalidMethods(string $method): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid HTTP method: ' . $method);

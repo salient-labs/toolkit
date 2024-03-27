@@ -2,67 +2,192 @@
 
 namespace Salient\Http;
 
-use Salient\Contract\Core\Readable;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Contract\Http\HttpServerRequestInterface;
+use Salient\Core\Exception\InvalidArgumentTypeException;
+use Stringable;
 
 /**
- * An HTTP request
- *
- * @property-read string $Method
- * @property-read string $Target
- * @property-read string $ProtocolVersion
- * @property-read HttpHeadersInterface $Headers
- * @property-read string|null $Body
- * @property-read string|null $Client
+ * An incoming HTTP request
  */
-final class HttpServerRequest implements Readable
+class HttpServerRequest extends HttpRequest implements HttpServerRequestInterface
 {
-    use ReadsProtectedProperties;
+    /**
+     * @var mixed[]
+     */
+    protected array $ServerParams;
 
     /**
-     * @var string
+     * @var mixed[]
      */
-    protected $Method;
+    protected array $CookieParams = [];
 
     /**
-     * @var string
+     * @var mixed[]
      */
-    protected $Target;
+    protected array $QueryParams = [];
 
     /**
-     * @var string
+     * @var mixed[]
      */
-    protected $ProtocolVersion;
+    protected array $UploadedFiles = [];
 
     /**
-     * @var HttpHeadersInterface
+     * @var mixed[]|object|null
      */
-    protected $Headers;
+    protected $ParsedBody;
 
     /**
-     * @var string|null
+     * @var array<string,mixed>
      */
-    protected $Body;
+    protected array $Attributes = [];
 
     /**
-     * @var string|null
+     * @param PsrUriInterface|Stringable|string $uri
+     * @param mixed[] $serverParams
+     * @param StreamInterface|resource|string|null $body
+     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
      */
-    protected $Client;
-
     public function __construct(
         string $method,
-        string $target,
-        string $protocolVersion,
-        HttpHeadersInterface $headers,
-        ?string $body,
-        ?string $client = null
+        $uri,
+        array $serverParams = [],
+        ?string $requestTarget = null,
+        $body = null,
+        $headers = null,
+        string $version = '1.1'
     ) {
-        $this->Method = $method;
-        $this->Target = $target;
-        $this->ProtocolVersion = $protocolVersion;
-        $this->Headers = $headers;
-        $this->Body = $body;
-        $this->Client = $client;
+        $this->ServerParams = $serverParams;
+
+        parent::__construct($method, $uri, $requestTarget, $body, $headers, $version);
+    }
+
+    /**
+     * @return mixed[]
+     */
+    public function getServerParams(): array
+    {
+        return $this->ServerParams;
+    }
+
+    /**
+     * @return mixed[]
+     */
+    public function getCookieParams(): array
+    {
+        return $this->CookieParams;
+    }
+
+    /**
+     * @return mixed[]
+     */
+    public function getQueryParams(): array
+    {
+        return $this->QueryParams;
+    }
+
+    /**
+     * @return mixed[]
+     */
+    public function getUploadedFiles(): array
+    {
+        return $this->UploadedFiles;
+    }
+
+    /**
+     * @return mixed[]|object|null
+     */
+    public function getParsedBody()
+    {
+        return $this->ParsedBody;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function getAttributes(): array
+    {
+        return $this->Attributes;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAttribute(string $name, $default = null)
+    {
+        if (!array_key_exists($name, $this->Attributes)) {
+            return $default;
+        }
+        return $this->Attributes[$name];
+    }
+
+    /**
+     * @param mixed[] $cookies
+     */
+    public function withCookieParams(array $cookies): ServerRequestInterface
+    {
+        return $this->with('CookieParams', $cookies);
+    }
+
+    /**
+     * @param mixed[] $query
+     */
+    public function withQueryParams(array $query): ServerRequestInterface
+    {
+        return $this->with('QueryParams', $query);
+    }
+
+    /**
+     * @param mixed[] $uploadedFiles
+     */
+    public function withUploadedFiles(array $uploadedFiles): ServerRequestInterface
+    {
+        return $this->with('UploadedFiles', $uploadedFiles);
+    }
+
+    /**
+     * @param mixed[]|object|null $data
+     */
+    public function withParsedBody($data): ServerRequestInterface
+    {
+        return $this->with('ParsedBody', $this->filterParsedBody($data));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withAttribute(string $name, $value): ServerRequestInterface
+    {
+        $attributes = $this->Attributes;
+        $attributes[$name] = $value;
+        return $this->with('Attributes', $attributes);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withoutAttribute(string $name): ServerRequestInterface
+    {
+        $attributes = $this->Attributes;
+        unset($attributes[$name]);
+        return $this->with('Attributes', $attributes);
+    }
+
+    /**
+     * @template T of mixed[]|object|null
+     *
+     * @param T $data
+     * @return T
+     */
+    private function filterParsedBody($data)
+    {
+        if ($data === null || is_array($data) || is_object($data)) {
+            return $data;
+        }
+        // @phpstan-ignore-next-line
+        throw new InvalidArgumentTypeException(1, '$data', 'mixed[]|object|null', $data);
     }
 }

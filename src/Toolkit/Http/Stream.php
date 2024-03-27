@@ -6,8 +6,10 @@ use Psr\Http\Message\StreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
+use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\StreamDetachedException;
+use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Stringable;
 
@@ -16,6 +18,8 @@ use Stringable;
  */
 class Stream implements StreamInterface, Stringable
 {
+    protected const CHUNK_SIZE = 8192;
+
     protected ?string $Uri;
     protected bool $IsReadable;
     protected bool $IsWritable;
@@ -54,6 +58,25 @@ class Stream implements StreamInterface, Stringable
     public static function fromString(string $content): self
     {
         return new self(Str::toStream($content));
+    }
+
+    /**
+     * Copy data from one stream to another
+     */
+    public static function copy(StreamInterface $from, StreamInterface $to): void
+    {
+        while (!$from->eof()) {
+            $in = $from->read(self::CHUNK_SIZE);
+            $written = $to->write($in);
+            $unwritten = strlen($in) - $written;
+            assert($unwritten >= 0);
+            if ($unwritten > 0) {
+                throw new StreamException(Inflect::format(
+                    $unwritten,
+                    'Error copying data to stream: {{#}} {{#:byte}} not written',
+                ));
+            }
+        }
     }
 
     /**

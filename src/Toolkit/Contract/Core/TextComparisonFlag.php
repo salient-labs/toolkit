@@ -12,7 +12,7 @@ use Salient\Core\AbstractEnumeration;
  *
  * @extends AbstractEnumeration<int>
  */
-class TextComparisonFlag extends AbstractEnumeration
+final class TextComparisonFlag extends AbstractEnumeration
 {
     /**
      * Normalise values before comparing them

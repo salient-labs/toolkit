@@ -629,7 +629,11 @@ final class Curler implements Readable, Writable, Buildable
 
     public function responseContentTypeIs(string $mimeType): bool
     {
-        $contentType = $this->ResponseHeaders->getHeaderLine(HttpHeader::CONTENT_TYPE, true);
+        if (!$this->ResponseHeaders) {
+            throw new LogicException(static::class . '::$ResponseHeaders is not set');
+        }
+
+        $contentType = $this->ResponseHeaders->getFirstHeaderLine(HttpHeader::CONTENT_TYPE);
 
         // Assume JSON if it's expected and no Content-Type is specified
         if ($contentType === '') {

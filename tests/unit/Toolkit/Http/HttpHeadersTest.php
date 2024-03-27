@@ -25,7 +25,7 @@ final class HttpHeadersTest extends TestCase
      * @param string[]|null $expectedLines
      * @param array<string,string[]|string> $items
      */
-    public function testConstruct($expected, ?array $expectedLines, array $items): void
+    public function testConstructor($expected, ?array $expectedLines, array $items): void
     {
         $this->maybeExpectException($expected);
         $headers = new HttpHeaders($items);
