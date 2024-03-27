@@ -11,9 +11,11 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Http\Exception\InvalidHeaderException;
 use Generator;
 use LogicException;
 
@@ -52,7 +54,7 @@ class HttpHeaders implements HttpHeadersInterface
     /**
      * [ [ Name => value ], ... ]
      *
-     * @var array<array<string,string>>
+     * @var array<non-empty-array<string,string>>
      */
     protected array $Headers = [];
 
@@ -89,17 +91,11 @@ class HttpHeaders implements HttpHeadersInterface
         $headers = [];
         $index = [];
         $i = -1;
-        foreach ($items as $key => $value) {
+        foreach ($this->generateItems($items) as $key => $value) {
             $values = (array) $value;
-            if (!$values) {
-                throw new InvalidArgumentException(
-                    sprintf('At least one value must be given for HTTP header: %s', $key)
-                );
-            }
             $lower = Str::lower($key);
-            $key = $this->filterName($key);
             foreach ($values as $value) {
-                $headers[++$i] = [$key => $this->filterValue($value)];
+                $headers[++$i] = [$key => $value];
                 $index[$lower][] = $i;
             }
         }
@@ -168,6 +164,7 @@ class HttpHeaders implements HttpHeadersInterface
         }
 
         /** @var string $name */
+        /** @var string $value */
         return $this->add($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
     }
 
@@ -267,22 +264,11 @@ class HttpHeaders implements HttpHeadersInterface
      */
     public function merge($items, bool $addToExisting = false)
     {
-        if ($items instanceof self) {
-            $items = $items->headers();
-        } elseif ($items instanceof Arrayable) {
-            $items = $items->toArray();
-        }
-
         $headers = $this->Headers;
         $index = $this->Index;
         $applied = false;
-        foreach ($items as $key => $value) {
+        foreach ($this->generateItems($items) as $key => $value) {
             $values = (array) $value;
-            if (!$values) {
-                throw new InvalidArgumentException(
-                    sprintf('At least one value must be given for HTTP header: %s', $key)
-                );
-            }
             $lower = Str::lower($key);
             if (
                 !$addToExisting &&
@@ -298,10 +284,9 @@ class HttpHeaders implements HttpHeadersInterface
                 // Maintain the order of $index for comparison
                 $index[$lower] = [];
             }
-            $key = $this->filterName($key);
             foreach ($values as $value) {
                 $applied = true;
-                $headers[] = [$key => $this->filterValue($value)];
+                $headers[] = [$key => $value];
                 $index[$lower][] = array_key_last($headers);
             }
         }
@@ -379,6 +364,9 @@ class HttpHeaders implements HttpHeadersInterface
                     ? [$nextLower => $nextValue]
                     : $nextValue);
             if ($count++) {
+                /** @var string[]|string|array<string,string[]> $item */
+                /** @var string[]|string|array<string,string[]> $next */
+                /** @var string[]|string|array<string,string[]>|null $prev */
                 if (!$callback($item, $next, $prev)) {
                     unset($index[$lower]);
                     $changed = true;
@@ -388,6 +376,8 @@ class HttpHeaders implements HttpHeadersInterface
             $item = $next;
             $lower = $nextLower;
         }
+        /** @var string[]|string|array<string,string[]> $item */
+        /** @var string[]|string|array<string,string[]> $prev */
         if ($count && !$callback($item, null, $prev)) {
             unset($index[$lower]);
             $changed = true;
@@ -568,14 +558,56 @@ class HttpHeaders implements HttpHeadersInterface
     /**
      * @inheritDoc
      */
-    public function getHeaderLine(string $name, bool $lastValueOnly = false): string
+    public function getHeaderLine(string $name): string
     {
+        return $this->doGetHeaderLine($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFirstHeaderLine(string $name): string
+    {
+        return $this->doGetHeaderLine($name, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastHeaderLine(string $name): string
+    {
+        return $this->doGetHeaderLine($name, false, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOneHeaderLine(string $name): string
+    {
+        return $this->doGetHeaderLine($name, false, false, true);
+    }
+
+    private function doGetHeaderLine(
+        string $name,
+        bool $first = false,
+        bool $last = false,
+        bool $one = false
+    ): string {
         $values = $this->Items[Str::lower($name)] ?? [];
         if (!$values) {
             return '';
         }
-        if ($lastValueOnly) {
+        if ($first) {
+            return reset($values);
+        }
+        if ($last) {
             return end($values);
+        }
+        if ($one && count($values) > 1) {
+            throw new InvalidHeaderException(sprintf(
+                'HTTP header appears more than once: %s',
+                $name,
+            ));
         }
         return implode(',', $values);
     }
@@ -619,7 +651,7 @@ class HttpHeaders implements HttpHeadersInterface
     }
 
     /**
-     * @param array<array<string,string>>|null $headers
+     * @param array<non-empty-array<string,string>>|null $headers
      * @param array<string,int[]> $index
      * @return static
      */
@@ -637,7 +669,7 @@ class HttpHeaders implements HttpHeadersInterface
     }
 
     /**
-     * @param array<array<string,string>>|null $headers
+     * @param array<non-empty-array<string,string>>|null $headers
      * @param array<string,int[]> $index
      * @return static
      */
@@ -677,7 +709,7 @@ class HttpHeaders implements HttpHeadersInterface
 
     /**
      * @param array<string,int[]> $index
-     * @return array<array<string,string>>
+     * @return array<non-empty-array<string,string>>
      */
     protected function getIndexHeaders(array $index): array
     {
@@ -716,6 +748,70 @@ class HttpHeaders implements HttpHeadersInterface
             }
         }
         return $_headers ?? [];
+    }
+
+    /**
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
+     * @return Generator<string,string[]|string>
+     */
+    protected function generateItems($items): Generator
+    {
+        if ($items instanceof self) {
+            yield from $items->headers();
+        } elseif ($items instanceof Arrayable) {
+            /** @var array<string,string[]|string> */
+            $items = $items->toArray();
+            yield from $this->filterItems($items);
+        } elseif (is_array($items)) {
+            yield from $this->filterItems($items);
+        } else {
+            foreach ($items as $key => $value) {
+                $values = (array) $value;
+                if (!$values) {
+                    throw new InvalidArgumentException(
+                        sprintf('At least one value must be given for HTTP header: %s', $key)
+                    );
+                }
+                $key = $this->filterName($key);
+                foreach ($values as $value) {
+                    yield $key => $this->filterValue($value);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<string,string[]|string> $items
+     * @return array<string,string[]>
+     */
+    protected function filterItems(array $items): array
+    {
+        foreach ($items as $key => $value) {
+            $values = (array) $value;
+            if (!$values) {
+                throw new InvalidArgumentException(
+                    sprintf('At least one value must be given for HTTP header: %s', $key)
+                );
+            }
+            $key = $this->filterName($key);
+            foreach ($values as $value) {
+                $filtered[$key][] = $this->filterValue($value);
+            }
+        }
+        return $filtered ?? [];
+    }
+
+    /**
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
+     * @return never
+     */
+    protected function getItems($items): array
+    {
+        throw new MethodNotImplementedException(
+            static::class,
+            __FUNCTION__,
+            ReadableCollectionTrait::class,
+        );
     }
 
     /**

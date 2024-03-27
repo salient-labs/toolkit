@@ -12,6 +12,7 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Salient\Http\Exception\HttpServerException;
 
 /**
@@ -390,19 +391,11 @@ class HttpServer implements Immutable
                 }
             } while (true);
 
-            $host = $headers->getHeader(HttpHeader::HOST);
-            if (count($host) > 1) {
-                throw new HttpServerException(sprintf(
-                    'Too many Host headers in request from %s',
-                    $peer,
-                ));
-            }
-
             // As per [RFC7230], Section 5.5 ("Effective Request URI")
             $effectiveUri = new Uri(implode('', [
                 $this->getScheme(),
                 '://',
-                $host[0] ?? $this->Host,
+                Str::coalesce($headers->getOneHeaderLine(HttpHeader::HOST), $this->Host),
                 ':',
                 (string) $this->Port,
             ]));
@@ -412,7 +405,7 @@ class HttpServer implements Immutable
 
             /** @todo Handle requests without Content-Length */
             /** @todo Add support for Transfer-Encoding */
-            $contentLength = $headers->getHeaderLine(HttpHeader::CONTENT_LENGTH, true);
+            $contentLength = $headers->getFirstHeaderLine(HttpHeader::CONTENT_LENGTH);
             if ($contentLength !== '') {
                 $length = (int) $contentLength;
                 if ($length < 0 || (string) $length !== $contentLength) {

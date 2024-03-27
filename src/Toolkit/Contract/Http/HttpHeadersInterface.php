@@ -124,12 +124,26 @@ interface HttpHeadersInterface extends CollectionInterface, Immutable
     public function getHeader(string $name): array;
 
     /**
-     * Get the value of a header as a comma-separated string
-     *
-     * @param bool $lastValueOnly If `true` and the header has multiple values,
-     * ignore all but the last value applied.
+     * Get the comma-separated values of a header
      */
-    public function getHeaderLine(string $name, bool $lastValueOnly = false): string;
+    public function getHeaderLine(string $name): string;
+
+    /**
+     * Get the value of a header's first appearance in the collection
+     */
+    public function getFirstHeaderLine(string $name): string;
+
+    /**
+     * Get the value of a header's last appearance in the collection
+     */
+    public function getLastHeaderLine(string $name): string;
+
+    /**
+     * Get the value of a header's only appearance in the collection
+     *
+     * If the header appears more than once, an exception is thrown.
+     */
+    public function getOneHeaderLine(string $name): string;
 
     /**
      * Get header names and values in their original order as a list of HTTP
