@@ -562,42 +562,26 @@ final class Arr extends AbstractUtility
 
     /**
      * Implode values that remain in an array of strings and Stringables after
-     * removing whitespace from the beginning and end of each value and
-     * optionally removing empty strings
-     *
-     * @param iterable<int|float|string|bool|Stringable|null> $array
-     * @param string|null $characters Optionally specify characters to remove
-     * instead of whitespace.
-     */
-    public static function trimAndImplode(
-        string $separator,
-        iterable $array,
-        ?string $characters = null,
-        bool $removeEmpty = true
-    ): string {
-        foreach ($array as $value) {
-            $value =
-                $characters === null
-                    ? trim((string) $value)
-                    : trim((string) $value, $characters);
-            if ($removeEmpty && $value === '') {
-                continue;
-            }
-            $trimmed[] = $value;
-        }
-        return implode($separator, $trimmed ?? []);
-    }
-
-    /**
-     * Implode values that remain in an array of strings and Stringables after
      * removing empty strings
      *
      * @param iterable<int|float|string|bool|Stringable|null> $array
+     * @param string|null $characters Specify characters to remove from the
+     * beginning and end of each value. If `null`, whitespace is trimmed. If an
+     * empty string is given, values are not trimmed.
      */
-    public static function implode(string $separator, iterable $array): string
-    {
+    public static function implode(
+        string $separator,
+        iterable $array,
+        ?string $characters = ''
+    ): string {
         foreach ($array as $value) {
             $value = (string) $value;
+            if ($characters !== '') {
+                $value =
+                    $characters === null
+                        ? trim($value)
+                        : trim($value, $characters);
+            }
             if ($value === '') {
                 continue;
             }
@@ -608,14 +592,14 @@ final class Arr extends AbstractUtility
 
     /**
      * Remove whitespace from the beginning and end of each value in an array of
-     * strings and Stringables before optionally removing empty strings
+     * strings and Stringables before removing empty strings
      *
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     * @param string|null $characters Optionally specify characters to remove
-     * instead of whitespace.
+     * @param string|null $characters Specify characters to trim instead of
+     * whitespace. If an empty string is given, values are not trimmed.
      * @return ($removeEmpty is false ? array<TKey,string> : list<string>)
      */
     public static function trim(
@@ -624,10 +608,13 @@ final class Arr extends AbstractUtility
         bool $removeEmpty = true
     ): array {
         foreach ($array as $key => $value) {
-            $value =
-                $characters === null
-                    ? trim((string) $value)
-                    : trim((string) $value, $characters);
+            $value = (string) $value;
+            if ($characters !== '') {
+                $value =
+                    $characters === null
+                        ? trim($value)
+                        : trim($value, $characters);
+            }
             if ($removeEmpty) {
                 if ($value !== '') {
                     $trimmed[] = $value;

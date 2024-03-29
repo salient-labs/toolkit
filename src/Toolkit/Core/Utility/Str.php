@@ -436,45 +436,45 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Split a string by a string, remove whitespace from the beginning and end
-     * of each substring, remove empty strings
+     * Split a string by a string and remove whitespace from the beginning and
+     * end of each substring before removing empty strings
      *
      * @param non-empty-string $separator
-     * @param string|null $characters Optionally specify characters to remove
-     * instead of whitespace.
+     * @param string|null $characters Specify characters to trim instead of
+     * whitespace. If an empty string is given, substrings are not trimmed.
      * @return list<string>
      */
-    public static function splitAndTrim(string $separator, string $string, ?string $characters = null): array
-    {
-        return Arr::trim(explode($separator, $string), $characters);
-    }
-
-    /**
-     * Split a string by a string without separating substrings enclosed by
-     * brackets, remove whitespace from the beginning and end of each substring,
-     * remove empty strings
-     *
-     * @param non-empty-string $separator
-     * @param string|null $characters Optionally specify characters to remove
-     * instead of whitespace.
-     * @return list<string>
-     */
-    public static function splitAndTrimOutsideBrackets(string $separator, string $string, ?string $characters = null): array
-    {
-        return Arr::trim(
-            self::splitOutsideBrackets($separator, $string),
-            $characters
+    public static function split(
+        string $separator,
+        string $string,
+        int $limit = \PHP_INT_MAX,
+        ?string $characters = null,
+        bool $removeEmpty = true
+    ): array {
+        $split = Arr::trim(
+            explode($separator, $string, $limit),
+            $characters,
+            $removeEmpty
         );
+        return $removeEmpty ? $split : array_values($split);
     }
 
     /**
      * Split a string by a string without separating substrings enclosed by
-     * brackets
+     * brackets and remove whitespace from the beginning and end of each
+     * substring before removing empty strings
      *
-     * @return string[]
+     * @param non-empty-string $separator
+     * @param string|null $characters Specify characters to trim instead of
+     * whitespace. If an empty string is given, substrings are not trimmed.
+     * @return list<string>
      */
-    public static function splitOutsideBrackets(string $separator, string $string): array
-    {
+    public static function splitOutsideBrackets(
+        string $separator,
+        string $string,
+        ?string $characters = null,
+        bool $removeEmpty = true
+    ): array {
         if (strlen($separator) !== 1) {
             throw new InvalidArgumentException('Separator must be a single character');
         }
@@ -503,7 +503,13 @@ final class Str extends AbstractUtility
             $matches,
         );
 
-        return $matches[0];
+        $split = Arr::trim(
+            $matches[0],
+            $characters,
+            $removeEmpty
+        );
+
+        return $removeEmpty ? $split : array_values($split);
     }
 
     /**

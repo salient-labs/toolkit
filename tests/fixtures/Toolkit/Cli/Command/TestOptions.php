@@ -66,7 +66,7 @@ class TestOptions extends CliCommand
     protected function getOptionList(): array
     {
         $required = Arr::toIndex(
-            Str::splitAndTrim(',', Env::get('required', ''))
+            Str::split(',', Env::get('required', ''))
         );
 
         return [

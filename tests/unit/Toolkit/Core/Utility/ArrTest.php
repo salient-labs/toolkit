@@ -7,6 +7,7 @@ use Salient\Contract\Core\SortFlag;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Json;
 use Salient\Tests\TestCase;
+use ArrayIterator;
 use DateTimeImmutable;
 use DateTimeInterface;
 use OutOfRangeException;
@@ -334,9 +335,9 @@ final class ArrTest extends TestCase
      *
      * @param iterable<int|float|string|bool|Stringable|null> $array
      */
-    public function testImplode(string $expected, string $separator, iterable $array): void
+    public function testImplode(string $expected, string $separator, iterable $array, ?string $characters = ''): void
     {
-        $this->assertSame($expected, Arr::implode($separator, $array));
+        $this->assertSame($expected, Arr::implode($separator, $array, $characters));
     }
 
     /**
@@ -364,6 +365,47 @@ final class ArrTest extends TestCase
                 '',
                 ' ',
                 ['', false, null],
+            ],
+            [
+                '',
+                ',',
+                [],
+                null,
+            ],
+            [
+                '',
+                ',',
+                [''],
+                null,
+            ],
+            [
+                '',
+                ',',
+                [' '],
+                null,
+            ],
+            [
+                '',
+                ',',
+                [' ', "\t"],
+                null,
+            ],
+            [
+                " ,\t",
+                ',',
+                [' ', "\t"],
+            ],
+            [
+                '0,1,1,a,b,c',
+                ',',
+                [null, 0, 1, true, false, ' ', 'a ', ' b ', ' c'],
+                null,
+            ],
+            [
+                '0,1,1, ,a,b,c',
+                ',',
+                [null, 0, 1, true, false, ' ', '/', 'a/', '/b/', '/c'],
+                '/',
             ],
         ];
     }
@@ -1489,6 +1531,7 @@ final class ArrTest extends TestCase
     public function testToIndex(array $expected, array $array, $value = true): void
     {
         $this->assertSame($expected, Arr::toIndex($array, $value));
+        $this->assertSame($expected, Arr::toIndex(new ArrayIterator($array), $value));
     }
 
     /**
@@ -1701,70 +1744,6 @@ final class ArrTest extends TestCase
             [
                 ['', '0', '1', '1', '', '', 'a' => 'a', 'b' => 'b', 'c' => 'c'],
                 [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c'],
-                null,
-                false,
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider trimAndImplodeProvider
-     *
-     * @param iterable<int|float|string|bool|Stringable|null> $array
-     */
-    public function testTrimAndImplode(string $expected, string $separator, iterable $array, ?string $characters = null, bool $removeEmpty = true): void
-    {
-        $this->assertSame($expected, Arr::trimAndImplode($separator, $array, $characters, $removeEmpty));
-    }
-
-    /**
-     * @return array<array{string,string,iterable<int|float|string|bool|Stringable|null>,3?:string|null,4?:bool}>
-     */
-    public static function trimAndImplodeProvider(): array
-    {
-        return [
-            [
-                '',
-                ',',
-                [],
-            ],
-            [
-                '',
-                ',',
-                [''],
-            ],
-            [
-                '',
-                ',',
-                [' '],
-            ],
-            [
-                '',
-                ',',
-                [' ', "\t"],
-            ],
-            [
-                ',',
-                ',',
-                [' ', "\t"],
-                null,
-                false,
-            ],
-            [
-                '0,1,1,a,b,c',
-                ',',
-                [null, 0, 1, true, false, ' ', 'a ', ' b ', ' c'],
-            ],
-            [
-                '0,1,1, ,a,b,c',
-                ',',
-                [null, 0, 1, true, false, ' ', '/', 'a/', '/b/', '/c'],
-                '/',
-            ],
-            [
-                ',0,1,1,,,a,b,c',
-                ',',
-                [null, 0, 1, true, false, ' ', 'a ', ' b ', ' c'],
                 null,
                 false,
             ],
