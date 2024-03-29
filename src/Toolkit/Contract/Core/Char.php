@@ -18,4 +18,5 @@ final class Char extends AbstractDictionary
     public const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     public const NUMERIC = '0123456789';
     public const ALPHANUMERIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    public const HEX = '0123456789abcdefABCDEF';
 }

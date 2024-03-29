@@ -71,10 +71,12 @@ class Stream implements StreamInterface, Stringable
             $unwritten = strlen($in) - $written;
             assert($unwritten >= 0);
             if ($unwritten > 0) {
+                // @codeCoverageIgnoreStart
                 throw new StreamException(Inflect::format(
                     $unwritten,
                     'Error copying data to stream: {{#}} {{#:byte}} not written',
                 ));
+                // @codeCoverageIgnoreEnd
             }
         }
     }

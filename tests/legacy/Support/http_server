@@ -9,27 +9,27 @@ use Salient\Http\HttpResponse;
 use Salient\Http\HttpServer;
 use Salient\Http\HttpServerRequest;
 
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../../../vendor/autoload.php';
 
 Err::register();
 
 $server = new HttpServer('localhost', 8306);
 $server->start();
-$baseUrl = $server->getBaseUrl();
+$baseUrl = $server->getBaseUri();
 Console::log('Listening at:', implode("\n", [$baseUrl, "$baseUrl/loop", "$baseUrl/return"]));
 $lastClient = $server->listen(
     function (HttpServerRequest $request, bool &$continue, &$return): HttpResponse {
-        Console::log($request->Method . ' request from ' . $request->Client . ':', $request->Target);
-        switch ($request->Target) {
+        Console::log($request->getMethod() . ' request from ' . $request->getServerParams()['REMOTE_ADDR'] . ':', $request->getRequestTarget());
+        switch ($request->getRequestTarget()) {
             case '/loop':
                 $continue = true;
                 break;
             case '/return':
-                $return = $request->Client;
+                $return = $request->getServerParams()['REMOTE_ADDR'];
                 break;
         }
 
-        return new HttpResponse("Called with:\n" . print_r($request, true));
+        return new HttpResponse(200, null, "Called with:\n" . print_r($request, true));
     }
 );
 $server->stop();

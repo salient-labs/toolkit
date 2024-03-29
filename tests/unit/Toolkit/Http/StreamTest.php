@@ -366,11 +366,41 @@ final class StreamTest extends TestCase
         }
     }
 
+    /**
+     * @dataProvider copyProvider
+     */
+    public function testCopy(string $data): void
+    {
+        $from = $this->getStream('r+', $data);
+        $from->rewind();
+        $to = $this->getStream('r+', null);
+        try {
+            Stream::copy($from, $to);
+            $this->assertSame($data, (string) $to);
+        } finally {
+            $from->close();
+            $to->close();
+        }
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function copyProvider(): array
+    {
+        return [
+            [''],
+            ['data'],
+            // 32 KiB
+            [str_repeat('0123456789abcdef', 2048)],
+        ];
+    }
+
     private function getStream(string $mode = 'r+', ?string $data = 'data', string $filename = 'php://temp'): Stream
     {
         $handle = File::open($filename, $mode);
         if ($data !== null) {
-            File::write($handle, 'data');
+            File::write($handle, $data);
         }
         $this->LastHandle = $handle;
         return new Stream($handle);

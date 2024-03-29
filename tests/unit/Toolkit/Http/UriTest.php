@@ -16,10 +16,21 @@ use Generator;
  */
 final class UriTest extends TestCase
 {
+    private const COMPONENT_MAP = [
+        'scheme' => \PHP_URL_SCHEME,
+        'host' => \PHP_URL_HOST,
+        'port' => \PHP_URL_PORT,
+        'user' => \PHP_URL_USER,
+        'pass' => \PHP_URL_PASS,
+        'path' => \PHP_URL_PATH,
+        'query' => \PHP_URL_QUERY,
+        'fragment' => \PHP_URL_FRAGMENT,
+    ];
+
     /**
-     * @dataProvider uriProvider
+     * @dataProvider constructorProvider
      */
-    public function testUri(
+    public function testConstructor(
         string $uri,
         string $scheme = '',
         string $authority = '',
@@ -42,12 +53,13 @@ final class UriTest extends TestCase
         $this->assertSame($query, $uri->getQuery());
         $this->assertSame($fragment, $uri->getFragment());
         $this->assertSame($expected, (string) $uri);
+        $this->assertSame(json_encode($expected), json_encode($uri));
     }
 
     /**
      * @return array<array<string|int|null>>
      */
-    public static function uriProvider(): array
+    public static function constructorProvider(): array
     {
         return [
             [
@@ -672,10 +684,25 @@ final class UriTest extends TestCase
             $path = $reference->getPath();
         } elseif ($reference->getPath() === '') {
             $path = $uri->getPath();
+        } elseif ($uri->getAuthority() !== '' && $uri->getPath() === '') {
+            $path = '/' . $reference->getPath();
         } else {
-            $path = implode('/', Arr::pop(explode('/', $uri->getPath()))) . '/' . $reference->getPath();
+            $path = Arr::implode('/', [
+                // Remove characters after the last "/" in the base URI's path,
+                // or the entire path if it doesn't have any "/" characters
+                implode('/', Arr::pop(explode('/', $uri->getPath()))),
+                $reference->getPath(),
+            ]);
         }
         $this->assertSame($this->removeDotSegments($path), $target->getPath());
+    }
+
+    /**
+     * @dataProvider followProvider
+     */
+    public function testResolveReference(string $expected, string $uri, string $reference): void
+    {
+        $this->assertSame($expected, Uri::resolveReference($reference, $uri));
     }
 
     /**
@@ -750,12 +777,15 @@ final class UriTest extends TestCase
             ['http://a/', '/.//../../'],
         ];
 
-        $baseUrl = 'http://a/b/c/d;p?q';
+        $baseUri = 'http://a/b/c/d;p?q';
 
         foreach ($references as [$expected, $reference]) {
-            yield $baseUrl . ' + ' . $reference =>
-                [$expected, $baseUrl, $reference];
+            yield $baseUri . ' + ' . $reference =>
+                [$expected, $baseUri, $reference];
         }
+
+        yield 'authority + no path' => ['http://a/b/c', 'http://a', 'b/c'];
+        yield 'path + no slashes' => ['urn:bar/baz', 'urn:foo', 'bar/baz'];
     }
 
     /**
@@ -794,101 +824,210 @@ final class UriTest extends TestCase
         return $out;
     }
 
-    /**
-     * @todo Review testParse() and testUnparse()
-     */
-    public function testParse(): void
+    public function testFollowReference(): void
     {
-        $expected = [
-            [
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Reference cannot be resolved relative to another reference');
+        (new Uri('//'))->follow(new Uri('///'));
+    }
+
+    /**
+     * @dataProvider parseProvider
+     *
+     * @param array<string,string|int>|string|int|false|null $expected
+     * @param \PHP_URL_SCHEME|\PHP_URL_HOST|\PHP_URL_PORT|\PHP_URL_USER|\PHP_URL_PASS|\PHP_URL_PATH|\PHP_URL_QUERY|\PHP_URL_FRAGMENT|-1|null $component
+     */
+    public function testParse($expected, string $uri, ?int $component = null, bool $strict = false): void
+    {
+        $this->assertSame($expected, Uri::parse($uri, $component, $strict));
+    }
+
+    /**
+     * @dataProvider unparseProvider
+     *
+     * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
+     */
+    public function testUnparse(string $expected, array $parts): void
+    {
+        $this->assertSame($expected, Uri::unparse($parts));
+    }
+
+    /**
+     * @dataProvider unparseProvider
+     */
+    public function testUnparseWithParseUrl(string $uri): void
+    {
+        $parts = parse_url($uri);
+        $this->assertIsArray($parts);
+        $this->assertSame($uri, Uri::unparse($parts));
+    }
+
+    /**
+     * @return Generator<string,array{string,array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}}>
+     */
+    public static function unparseProvider(): Generator
+    {
+        foreach (self::parseProvider() as $test => [$parts, $expected]) {
+            if (!is_array($parts)) {
+                continue;
+            }
+            yield $test => [$expected, $parts];
+        }
+    }
+
+    /**
+     * @return Generator<string,array{array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|string|int|false|null,string,2?:int|null,3?:bool}>
+     */
+    public static function parseProvider(): Generator
+    {
+        $data = [
+            'https://user:pass@host:8443/path;param/segment?query#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'user' => 'user',
                 'pass' => 'pass',
-                'path' => '/path/;params',
+                'path' => '/path;param/segment',
                 'query' => 'query',
                 'fragment' => 'fragment',
             ],
-            [
+            'https://user:@host:8443/path;param/segment?query#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'user' => 'user',
                 'pass' => '',
-                'path' => '/path/;params',
+                'path' => '/path;param/segment',
                 'query' => 'query',
                 'fragment' => 'fragment',
             ],
-            [
+            'https://:pass@host:8443/path;param/segment?query#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'user' => '',
                 'pass' => 'pass',
-                'path' => '/path/;params',
+                'path' => '/path;param/segment',
                 'query' => 'query',
                 'fragment' => 'fragment',
             ],
-            [
+            'https://:@host:8443/path;param/segment?query#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'user' => '',
                 'pass' => '',
-                'path' => '/path/;params',
+                'path' => '/path;param/segment',
                 'query' => 'query',
                 'fragment' => 'fragment',
             ],
-            [
+            'https://@host:8443/path;param/segment?query#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'user' => '',
-                'path' => '/path/;params',
+                'path' => '/path;param/segment',
                 'query' => 'query',
                 'fragment' => 'fragment',
             ],
-            [
+            'https://host:8443/path;param/segment?query#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
-                'path' => '/path/;params',
+                'path' => '/path;param/segment',
                 'query' => 'query',
                 'fragment' => 'fragment',
             ],
-            [
+            'https://user:pass@host:8443/path/segment?query#fragment' => [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => 'user',
+                'pass' => 'pass',
+                'path' => '/path/segment',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            'https://user:@host:8443/path/segment?query#fragment' => [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => 'user',
+                'pass' => '',
+                'path' => '/path/segment',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            'https://:pass@host:8443/path/segment?query#fragment' => [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => '',
+                'pass' => 'pass',
+                'path' => '/path/segment',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            'https://:@host:8443/path/segment?query#fragment' => [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => '',
+                'pass' => '',
+                'path' => '/path/segment',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            'https://@host:8443/path/segment?query#fragment' => [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'user' => '',
+                'path' => '/path/segment',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            'https://host:8443/path/segment?query#fragment' => [
+                'scheme' => 'https',
+                'host' => 'host',
+                'port' => 8443,
+                'path' => '/path/segment',
+                'query' => 'query',
+                'fragment' => 'fragment',
+            ],
+            'https://host:8443?query' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'query' => 'query',
             ],
-            [
+            'https://host?query' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'query' => 'query',
             ],
-            [
+            'https://host:8443#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'fragment' => 'fragment',
             ],
-            [
+            'https://host#fragment' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'fragment' => 'fragment',
             ],
-            [
+            'https://host:8443' => [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
             ],
-            [
+            'https://host' => [
                 'scheme' => 'https',
                 'host' => 'host',
             ],
-            [
+            // From https://en.wikipedia.org/wiki/Uniform_Resource_Identifier:
+            'https://john.doe@www.example.com:123/forum/questions/?tag=networking&order=newest#top' => [
                 'scheme' => 'https',
                 'host' => 'www.example.com',
                 'port' => 123,
@@ -897,84 +1036,177 @@ final class UriTest extends TestCase
                 'query' => 'tag=networking&order=newest',
                 'fragment' => 'top',
             ],
-            [
+            'ldap://[2001:db8::7]/c=GB?objectClass?one' => [
                 'scheme' => 'ldap',
                 'host' => '[2001:db8::7]',
                 'path' => '/c=GB',
                 'query' => 'objectClass?one',
             ],
-            [
+            'mailto:John.Doe@example.com' => [
                 'scheme' => 'mailto',
                 'path' => 'John.Doe@example.com',
             ],
-            [
+            'news:comp.infosystems.www.servers.unix' => [
                 'scheme' => 'news',
                 'path' => 'comp.infosystems.www.servers.unix',
             ],
-            [
+            'tel:+1-816-555-1212' => [
                 'scheme' => 'tel',
                 'path' => '+1-816-555-1212',
             ],
-            [
+            'telnet://192.0.2.16:80/' => [
                 'scheme' => 'telnet',
                 'host' => '192.0.2.16',
                 'port' => 80,
                 'path' => '/',
             ],
-            [
+            'urn:oasis:names:specification:docbook:dtd:xml:4.1.2' => [
                 'scheme' => 'urn',
                 'path' => 'oasis:names:specification:docbook:dtd:xml:4.1.2',
             ],
+            'foo/bar' => [
+                'path' => 'foo/bar',
+            ],
+            '//example.com:-1' => false,
         ];
 
-        foreach ($this->getUrls(true) as $i => $url) {
-            $this->assertSame($expected[$i], Uri::parse($url));
+        $first = array_key_first($data);
+        yield "$first + component -1" => [$data[$first], $first, -1];
+
+        $components = [];
+        foreach ($data as $uri => $parts) {
+            yield $uri => [$parts, $uri];
+
+            if ($parts === false) {
+                if (!isset($components['--path'])) {
+                    yield "$uri + path" => [false, $uri, \PHP_URL_PATH];
+                    $components['--path'] = true;
+                }
+                continue;
+            }
+
+            // Yield one test per expected component
+            foreach ($parts as $component => $value) {
+                if (!isset($components[$component])) {
+                    yield "$uri + $component" => [$value, $uri, self::COMPONENT_MAP[$component]];
+                    $components[$component] = true;
+                }
+            }
+
+            // And one test per missing component
+            $missing = array_diff_key(self::COMPONENT_MAP, $parts);
+            foreach ($missing as $component => $value) {
+                if (!isset($components["-$component"])) {
+                    yield "$uri + $component" => [null, $uri, $value];
+                    $components["-$component"] = true;
+                }
+            }
+        }
+
+        $warnings = 0;
+        foreach (self::COMPONENT_MAP as $component => $value) {
+            if (!isset($components[$component])) {
+                fprintf(\STDERR, "WARNING: no test with component '%s' in %s()%s", $component, __METHOD__, \PHP_EOL);
+                $warnings++;
+            }
+            if (!isset($components["-$component"])) {
+                fprintf(\STDERR, "WARNING: no test with missing component '%s' in %s()%s", $component, __METHOD__, \PHP_EOL);
+                $warnings++;
+            }
+        }
+        if ($warnings) {
+            fprintf(\STDERR, '%s', \PHP_EOL);
         }
     }
 
-    public function testUnparse(): void
+    public function testParseWithInvalidComponent(): void
     {
-        foreach ($this->getUrls() as $url) {
-            $parts = parse_url($url);
-            $this->assertIsArray($parts);
-            $this->assertSame($url, Uri::unparse($parts));
-        }
-
-        foreach ($this->getUrls(true) as $url) {
-            $parts = Uri::parse($url);
-            $this->assertIsArray($parts);
-            $this->assertSame($url, Uri::unparse($parts));
-        }
+        $component = max(self::COMPONENT_MAP) + 1;
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid component: $component");
+        // @phpstan-ignore-next-line
+        Uri::parse('//', $component);
     }
 
     /**
-     * @return string[]
+     * @dataProvider normaliseProvider
+     *
+     * @param int-mask-of<Uri::EXPAND_EMPTY_PATH|Uri::COLLAPSE_MULTIPLE_SLASHES> $flags
      */
-    private function getUrls(bool $withParams = false): array
+    public function testNormalise(string $expected, string $uri, int $flags = Uri::EXPAND_EMPTY_PATH): void
     {
-        $params = $withParams ? ';params' : '';
+        $this->assertSame($expected, (string) (new Uri($uri))->normalise($flags));
+    }
+
+    /**
+     * @return array<array{string,string,2?:int}>
+     */
+    public static function normaliseProvider(): array
+    {
+        $collapse = Uri::COLLAPSE_MULTIPLE_SLASHES;
+        $expandAndCollapse = Uri::EXPAND_EMPTY_PATH | Uri::COLLAPSE_MULTIPLE_SLASHES;
 
         return [
-            "https://user:pass@host:8443/path/$params?query#fragment",
-            "https://user:@host:8443/path/$params?query#fragment",
-            "https://:pass@host:8443/path/$params?query#fragment",
-            "https://:@host:8443/path/$params?query#fragment",
-            "https://@host:8443/path/$params?query#fragment",
-            "https://host:8443/path/$params?query#fragment",
-            'https://host:8443?query',
-            'https://host?query',
-            'https://host:8443#fragment',
-            'https://host#fragment',
-            'https://host:8443',
-            'https://host',
-            // From https://en.wikipedia.org/wiki/Uniform_Resource_Identifier:
-            'https://john.doe@www.example.com:123/forum/questions/?tag=networking&order=newest#top',
-            'ldap://[2001:db8::7]/c=GB?objectClass?one',
-            'mailto:John.Doe@example.com',
-            'news:comp.infosystems.www.servers.unix',
-            'tel:+1-816-555-1212',
-            'telnet://192.0.2.16:80/',
-            'urn:oasis:names:specification:docbook:dtd:xml:4.1.2',
+            ['urn:', 'urn:'],
+            ['http://example.com/', 'http://example.com'],
+            ['http://example.com//', 'http://example.com//'],
+            ['http://example.com', 'http://example.com', 0],
+            ['http://example.com', 'http://example.com', $collapse],
+            ['http://example.com/', 'http://example.com', $expandAndCollapse],
+            ['http://example.com/', 'http://example.com//', $collapse],
+            ['http://example.com/', 'http://example.com//', $expandAndCollapse],
+            ['http://a/b/c//?q', 'http://a/b/c/.//?q'],
+            ['http://a/b/c///?q', 'http://a/b/c/.///?q'],
+            ['http://a/b//?q', 'http://a/b/c/..//?q'],
+            ['http://a/b///?q', 'http://a/b/c/..///?q'],
+            ['http://a/b/c/?q', 'http://a/b/c/.//..?q'],
+            ['http://a/b/c/?q', 'http://a/b/c/.//../?q'],
+            ['http://a/b/c//?q', 'http://a/b/c/.//..//?q'],
+            ['http://a/b/?q', 'http://a/b/c/..//..?q'],
+            ['http://a/b/?q', 'http://a/b/c/..//../?q'],
+            ['http://a/b//?q', 'http://a/b/c/..//..//?q'],
+            ['http://a/b/?q', 'http://a/b/c/..///../..?q'],
+            ['http://a/b/?q', 'http://a/b/c/..///../../?q'],
+            ['http://a/b//?q', 'http://a/b/c/..///../..//?q'],
+            ['http://a//?q', 'http://a/.//?q'],
+            ['http://a///?q', 'http://a/.///?q'],
+            ['http://a/?q', 'http://a/.//..?q'],
+            ['http://a/?q', 'http://a/.//../?q'],
+            ['http://a/?q', 'http://a/.//../..?q'],
+            ['http://a/?q', 'http://a/.//../../?q'],
+            ['http://a/b/c/?q', 'http://a/b/c/.//?q', $expandAndCollapse],
+            ['http://a/b/c/?q', 'http://a/b/c/.///?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..//?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..///?q', $expandAndCollapse],
+            ['http://a/b/c/?q', 'http://a/b/c/.//..?q', $expandAndCollapse],
+            ['http://a/b/c/?q', 'http://a/b/c/.//../?q', $expandAndCollapse],
+            ['http://a/b/c/?q', 'http://a/b/c/.//..//?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..//..?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..//../?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..//..//?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..///../..?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..///../../?q', $expandAndCollapse],
+            ['http://a/b/?q', 'http://a/b/c/..///../..//?q', $expandAndCollapse],
+            ['http://a/?q', 'http://a/.//?q', $expandAndCollapse],
+            ['http://a/?q', 'http://a/.///?q', $expandAndCollapse],
+            ['http://a/?q', 'http://a/.//..?q', $expandAndCollapse],
+            ['http://a/?q', 'http://a/.//../?q', $expandAndCollapse],
+            ['http://a/?q', 'http://a/.//../..?q', $expandAndCollapse],
+            ['http://a/?q', 'http://a/.//../../?q', $expandAndCollapse],
+            // [RFC3986] Section 5.2.4 ("Remove Dot Segments")
+            ['urn:/a/g', 'urn:/a/b/c/./../../g'],
+            ['urn:mid/6', 'urn:mid/content=5/../6'],
         ];
+    }
+
+    public function testIsAuthorityForm(): void
+    {
+        $this->assertTrue(Uri::isAuthorityForm('example.com:80'));
+        $this->assertFalse(Uri::isAuthorityForm('example.com'));
+        $this->assertFalse(Uri::isAuthorityForm('example.com:80/path'));
+        $this->assertFalse(Uri::isAuthorityForm('example.com:80?query'));
+        $this->assertFalse(Uri::isAuthorityForm('http://example.com:80'));
+        $this->assertFalse(Uri::isAuthorityForm('http://example.com:80/path'));
+        $this->assertFalse(Uri::isAuthorityForm('http://example.com:80?query'));
     }
 }

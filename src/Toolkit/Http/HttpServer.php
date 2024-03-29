@@ -6,6 +6,8 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpProtocolVersion;
 use Salient\Contract\Http\HttpRequestMethod;
+use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\HttpServerRequestInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidArgumentException;
@@ -211,6 +213,14 @@ class HttpServer implements Immutable
     }
 
     /**
+     * Check if the server is running
+     */
+    public function isRunning(): bool
+    {
+        return $this->Server !== null;
+    }
+
+    /**
      * Start the server
      *
      * @return $this
@@ -254,21 +264,16 @@ class HttpServer implements Immutable
         return $this;
     }
 
-    public function isRunning(): bool
-    {
-        return $this->Server !== null;
-    }
-
     /**
      * Wait for a request and return a response
      *
      * @template T
      *
-     * @param callable(HttpServerRequest $request, bool &$continue, T &$return): HttpResponse $callback
-     * Receives an {@see HttpServerRequest} and returns an {@see HttpResponse}.
-     * May also set `$continue = true` to make {@see HttpServer::listen()} wait
-     * for another request, or use `$return = <value>` to pass `<value>` back to
-     * the caller.
+     * @param callable(HttpServerRequestInterface $request, bool &$continue, T &$return): HttpResponseInterface $callback
+     * Receives an {@see HttpServerRequestInterface} and returns an
+     * {@see HttpResponseInterface}. May also set `$continue = true` to make
+     * {@see HttpServer::listen()} wait for another request, or pass a value
+     * back to the caller by assigning it to `$return`.
      * @return T|null
      */
     public function listen(callable $callback, ?int $timeout = null)
@@ -288,7 +293,7 @@ class HttpServer implements Immutable
                 throw new HttpServerException('No client address');
             }
 
-            Pcre::match('/(?<addr>.*)(?::(?<port>[0-9]+))?$/D', $peer, $matches);
+            Pcre::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
 
             /** @var array{addr:string,port?:string} $matches */
             $peer = $matches['addr'];
@@ -392,15 +397,17 @@ class HttpServer implements Immutable
             } while (true);
 
             // As per [RFC7230], Section 5.5 ("Effective Request URI")
-            $effectiveUri = new Uri(implode('', [
+            $uri = implode('', [
                 $this->getScheme(),
                 '://',
-                Str::coalesce($headers->getOneHeaderLine(HttpHeader::HOST), $this->Host),
-                ':',
-                (string) $this->Port,
-            ]));
+                Str::coalesce($headers->getOneHeaderLine(HttpHeader::HOST), $this->ProxyHost ?? $this->Host),
+            ]);
+            if (!Pcre::match('/:[0-9]++$/', $uri)) {
+                $uri .= ':' . ($this->ProxyPort ?? $this->Port);
+            }
+            $uri = new Uri($uri, true);
             if ($targetUri !== null) {
-                $effectiveUri = $effectiveUri->follow($targetUri);
+                $uri = $uri->follow($targetUri);
             }
 
             /** @todo Handle requests without Content-Length */
@@ -432,7 +439,7 @@ class HttpServer implements Immutable
 
             $request = new HttpServerRequest(
                 $method,
-                $effectiveUri,
+                $uri,
                 $serverParams,
                 $target,
                 $body,
@@ -440,13 +447,13 @@ class HttpServer implements Immutable
                 $version,
             );
 
-            Console::debug(sprintf('%s %s received from %s', $method, (string) $effectiveUri, $peer));
+            Console::debug(sprintf('%s %s received from %s', $method, (string) $uri, $peer));
 
             $continue = false;
             $return = null;
 
             try {
-                /** @var HttpResponse */
+                /** @var HttpResponseInterface */
                 $response = $callback($request, $continue, $return);
             } finally {
                 File::write(

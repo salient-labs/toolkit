@@ -2,6 +2,15 @@
 
 namespace Salient\Tests\Http;
 
+use Salient\Contract\Core\FileDescriptor;
+use Salient\Contract\Core\MimeType;
+use Salient\Contract\Http\HttpHeader as Header;
+use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Contract\Http\HttpResponseInterface as ResponseInterface;
+use Salient\Contract\Http\HttpServerRequestInterface as ServerRequest;
+use Salient\Core\Utility\Str;
+use Salient\Core\Process;
+use Salient\Http\HttpResponse as Response;
 use Salient\Http\HttpServer;
 use Salient\Tests\TestCase;
 
@@ -10,6 +19,8 @@ use Salient\Tests\TestCase;
  */
 final class HttpServerTest extends TestCase
 {
+    private HttpServer $Server;
+
     public function testConstructor(): void
     {
         $server = new HttpServer('localhost', 8080, 300);
@@ -18,6 +29,9 @@ final class HttpServerTest extends TestCase
         $this->assertSame(300, $server->getTimeout());
         $this->assertFalse($server->hasProxy());
         $this->assertSame('http://localhost:8080', $server->getBaseUri());
+        $this->assertSame('http', $server->getScheme());
+        $this->assertFalse($server->isRunning());
+        $this->assertSame($server, $server->withoutProxy());
 
         $proxied = $server->withProxy('example.com', 443);
         $this->assertNotSame($server, $proxied);
@@ -30,6 +44,15 @@ final class HttpServerTest extends TestCase
         $this->assertTrue($proxied->getProxyTls());
         $this->assertSame('', $proxied->getProxyBasePath());
         $this->assertSame('https://example.com', $proxied->getBaseUri());
+        $this->assertSame('https', $proxied->getScheme());
+        $this->assertSame($proxied, $proxied->withProxy('example.com', 443));
+
+        $notProxied = $proxied->withoutProxy();
+        $this->assertNotSame($proxied, $notProxied);
+        $this->assertNotSame($server, $notProxied);
+        $this->assertFalse($notProxied->hasProxy());
+        $this->assertSame('http://localhost:8080', $notProxied->getBaseUri());
+        $this->assertSame('http', $notProxied->getScheme());
 
         $proxied = $server->withProxy('example.com', 8443, true);
         $this->assertSame(8443, $proxied->getProxyPort());
@@ -57,5 +80,84 @@ final class HttpServerTest extends TestCase
         $this->assertSame(80, $server->getPort());
         $this->assertSame(-1, $server->getTimeout());
         $this->assertSame('http://localhost', $server->getBaseUri());
+    }
+
+    public function testListen(): void
+    {
+        $server = $this->getServerWithClient($client);
+        $this->assertTrue($server->isRunning());
+
+        /** @var ServerRequest */
+        $request = $server->listen(
+            function (ServerRequest $request, bool &$continue, &$return): ResponseInterface {
+                $return = $request;
+                return new Response(
+                    200,
+                    null,
+                    'Hello, world!',
+                    [Header::CONTENT_TYPE => MimeType::TEXT],
+                );
+            },
+        );
+        $this->assertSame(0, $client->wait());
+        $this->assertInstanceOf(ServerRequest::class, $request);
+        $this->assertSame(Method::GET, $request->getMethod());
+        $this->assertSame('/', $request->getRequestTarget());
+        $this->assertSame([
+            'Host' => ['localhost:3008'],
+            'Accept' => ['*/*'],
+        ], $request->getHeaders());
+        $this->assertSame('http://localhost:3008/', (string) $request->getUri());
+        $this->assertSame('', (string) $request->getBody());
+        $this->assertSame(Str::setEol(<<<'EOF'
+            HTTP/1.1 200 OK
+            Content-Type: text/plain
+            Content-Length: 13
+
+            Hello, world!
+            EOF, "\r\n"), $client->getOutput());
+        $this->assertSame(<<<'EOF'
+            ==> Connected to localhost:3008
+            > GET / HTTP/1.1
+            > Host: localhost:3008
+            > Accept: */*
+            >
+            EOF, $client->getOutput(FileDescriptor::ERR));
+    }
+
+    private function getServerWithClient(
+        ?Process &$client,
+        string $method = Method::GET,
+        string $target = '/',
+        string $body = '',
+        string ...$headers
+    ): HttpServer {
+        $this->Server ??= new HttpServer('localhost', 3008, 30);
+        if (!$this->Server->isRunning()) {
+            $this->Server->start();
+        }
+
+        $client = (
+            new Process([
+                ...self::PHP_COMMAND,
+                self::getFixturesPath(__CLASS__) . '/client.php',
+                'localhost:3008',
+                $method,
+                $target,
+                '-1',
+                ...$headers,
+            ], $body)
+        )->start();
+
+        return $this->Server;
+    }
+
+    protected function tearDown(): void
+    {
+        if (isset($this->Server)) {
+            if ($this->Server->isRunning()) {
+                $this->Server->stop();
+            }
+        }
     }
 }

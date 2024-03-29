@@ -103,6 +103,7 @@ abstract class HttpMessage implements HttpMessageInterface
                 $this->getStartLine(),
             ),
             '',
+            '',
         ));
 
         return $withoutBody

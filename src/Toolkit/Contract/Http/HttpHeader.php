@@ -18,5 +18,6 @@ final class HttpHeader extends AbstractDictionary
     public const HOST = 'Host';
     public const PREFER = 'Prefer';
     public const PROXY_AUTHORIZATION = 'Proxy-Authorization';
+    public const TRANSFER_ENCODING = 'Transfer-Encoding';
     public const USER_AGENT = 'User-Agent';
 }
