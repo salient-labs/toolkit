@@ -617,7 +617,7 @@ final class Str extends AbstractUtility
         bool $normalise = true
     ): float {
         if ($string1 === '' && $string2 === '') {
-            return (float) 0;
+            return 0.0;
         }
 
         if ($normalise) {
@@ -645,7 +645,7 @@ final class Str extends AbstractUtility
         bool $normalise = true
     ): float {
         if ($string1 === '' && $string2 === '') {
-            return (float) 1;
+            return 1.0;
         }
 
         if ($normalise) {
@@ -707,7 +707,7 @@ final class Str extends AbstractUtility
         int $size
     ): float {
         if (strlen($string1) < $size && strlen($string2) < $size) {
-            return (float) 1;
+            return 1.0;
         }
 
         if ($normalise) {

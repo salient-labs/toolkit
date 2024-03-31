@@ -763,91 +763,159 @@ final class GetTest extends TestCase
      *
      * @param mixed $value
      * @param string[] $classes
+     * @param array<non-empty-string,string> $constants
      */
     public function testCode(
         string $expected,
         $value,
         array $classes = [],
+        array $constants = [],
         string $delimiter = ', ',
         string $arrow = ' => ',
         ?string $escapeCharacters = null,
         string $tab = '    '
     ): void {
-        $this->assertSame($expected, Get::code($value, $delimiter, $arrow, $escapeCharacters, $tab, $classes));
+        $this->assertSame($expected, Get::code($value, $delimiter, $arrow, $escapeCharacters, $tab, $classes, $constants));
+        $this->assertSame(eval("return $expected;"), $value);
     }
 
     /**
-     * @return array<string,array{string,mixed,2?:string[],3?:string,4?:string,5?:string|null,6?:string}>
+     * @return array<string,array{string,mixed,2?:string[],3?:array<non-empty-string,string>,4?:string,5?:string,6?:string|null,7?:string}>
      */
     public static function codeProvider(): array
     {
+        $eol = \PHP_EOL;
+        $esc = addcslashes(\PHP_EOL, "\n\r");
         $array = [
-            'list1' => [1, 2.0, 3.14, 6.626e-34],
-            'list2' => [1],
+            'list1' => [1],
+            'list2' => [1, 3.14, 6.626e-34],
+            'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4],
             'empty' => [],
-            'index' => [5 => 'a', 9 => 'b', 2 => 'c'],
-            "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.',
-            'bool1' => true,
-            'bool2' => false,
+            'index' => [5 => true, 2 => false],
+            'multiline' . \PHP_EOL . 'key' => 'This string has "double quotes", \'single quotes\', and commas.',
             'classes' => [static::class, Get::basename(static::class), 'gettest'],
+            'This string has line 1,' . \PHP_EOL . 'line 2, and no more lines.',
+            '\\Vendor\\Namespace\\',
+            "\xa0",
+            '👩🏼‍🚒',
         ];
         $classes = [static::class, Get::basename(static::class)];
+        $constants = [\PHP_EOL => '\PHP_EOL'];
 
         return [
             'default' => [
-                <<<'EOF'
-                ['list1' => [1, 2.0, 3.14, 6.626e-34], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.', 'bool1' => true, 'bool2' => false, 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest']]
+                <<<EOF
+                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => 'This string has "double quotes", \'single quotes\', and commas.', 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest'], "This string has line 1,{$esc}line 2, and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
                 EOF,
                 $array,
                 $classes,
             ],
             'compact' => [
-                <<<'EOF'
-                ['list1'=>[1,2.0,3.14,6.626e-34],'list2'=>[1],'empty'=>[],'index'=>[5=>'a',9=>'b',2=>'c'],"multiline\nkey"=>'This string has "double quotes", \'single quotes\', and commas.','bool1'=>true,'bool2'=>false,'classes'=>[Salient\Tests\Core\Utility\GetTest::class,GetTest::class,'gettest']]
+                <<<EOF
+                ['list1'=>[1],'list2'=>[1,3.14,6.626e-34],'list3'=>['foo'=>1,2.0,'bar'=>3,4],'empty'=>[],'index'=>[5=>true,2=>false],"multiline{$esc}key"=>'This string has "double quotes", \'single quotes\', and commas.','classes'=>[Salient\Tests\Core\Utility\GetTest::class,GetTest::class,'gettest'],"This string has line 1,{$esc}line 2, and no more lines.",'\\\\Vendor\\\\Namespace\\\\',"\\xa0",'👩🏼‍🚒']
                 EOF,
                 $array,
                 $classes,
+                [],
                 ',',
                 '=>',
             ],
             'multiline' => [
-                <<<'EOF'
+                <<<EOF
                 [
                     'list1' => [
                         1,
-                        2.0,
-                        3.14,
-                        6.626e-34,
                     ],
                     'list2' => [
                         1,
+                        3.14,
+                        6.626e-34,
+                    ],
+                    'list3' => [
+                        'foo' => 1,
+                        2.0,
+                        'bar' => 3,
+                        4,
                     ],
                     'empty' => [],
                     'index' => [
-                        5 => 'a',
-                        9 => 'b',
-                        2 => 'c',
+                        5 => true,
+                        2 => false,
                     ],
-                    "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.',
-                    'bool1' => true,
-                    'bool2' => false,
+                    'multiline{$eol}key' => 'This string has "double quotes", \'single quotes\', and commas.',
                     'classes' => [
                         Salient\Tests\Core\Utility\GetTest::class,
                         GetTest::class,
                         'gettest',
                     ],
+                    'This string has line 1,{$eol}line 2, and no more lines.',
+                    '\\\\Vendor\\\\Namespace\\\\',
+                    "\\xa0",
+                    '👩🏼‍🚒',
                 ]
                 EOF,
                 $array,
                 $classes,
+                [],
                 ',' . \PHP_EOL,
             ],
             'escaped commas' => [
-                <<<'EOF'
-                ['list1' => [1, 2.0, 3.14, 6.626e-34], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => "This string has "double quotes"\x2c 'single quotes'\x2c and commas.", 'bool1' => true, 'bool2' => false, 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest']]
+                <<<EOF
+                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c{$esc}line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
                 EOF,
                 $array,
                 $classes,
+                [],
+                ', ',
+                ' => ',
+                ',',
+            ],
+            'multiline + constants' => [
+                <<<EOF
+                [
+                    'list1' => [
+                        1,
+                    ],
+                    'list2' => [
+                        1,
+                        3.14,
+                        6.626e-34,
+                    ],
+                    'list3' => [
+                        'foo' => 1,
+                        2.0,
+                        'bar' => 3,
+                        4,
+                    ],
+                    'empty' => [],
+                    'index' => [
+                        5 => true,
+                        2 => false,
+                    ],
+                    'multiline' . \PHP_EOL . 'key' => 'This string has "double quotes", \'single quotes\', and commas.',
+                    'classes' => [
+                        Salient\Tests\Core\Utility\GetTest::class,
+                        GetTest::class,
+                        'gettest',
+                    ],
+                    'This string has line 1,' . \PHP_EOL . 'line 2, and no more lines.',
+                    '\\\\Vendor\\\\Namespace\\\\',
+                    "\\xa0",
+                    '👩🏼‍🚒',
+                ]
+                EOF,
+                $array,
+                $classes,
+                $constants,
+                ',' . \PHP_EOL,
+            ],
+            'escaped commas + constants' => [
+                <<<EOF
+                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], 'multiline' . \PHP_EOL . 'key' => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c" . \PHP_EOL . "line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+                EOF,
+                $array,
+                $classes,
+                $constants,
                 ', ',
                 ' => ',
                 ',',

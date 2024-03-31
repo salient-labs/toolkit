@@ -537,11 +537,7 @@ final class PhpDocTest extends TestCase
             ['string&int'],
             ['string & int'],
             ['(string & int)'],
-            ['(
-  string
-  &
-  int
-)'],
+            ['(' . \PHP_EOL . '  string' . \PHP_EOL . '  &' . \PHP_EOL . '  int' . \PHP_EOL . ')'],
             ['string & int & float'],
             ['string & (int | float)'],
             ['string | (int & float)'],
@@ -574,41 +570,18 @@ final class PhpDocTest extends TestCase
             ["array{'a': int}"],
             ["array{'\$ref': int}"],
             ['array{"$ref": int}'],
-            ["array{
-\t\t\t\t \ta: int
-\t\t\t\t }"],
-            ["array{
-\t\t\t\t \ta: int,
-\t\t\t\t }"],
-            ["array{
-\t\t\t\t \ta: int,
-\t\t\t\t \tb: string,
-\t\t\t\t }"],
-            ["array{
-\t\t\t\t \ta: int
-\t\t\t\t \t, b: string
-\t\t\t\t \t, c: string
-\t\t\t\t }"],
-            ["array{
-\t\t\t\t \ta: int,
-\t\t\t\t \tb: string
-\t\t\t\t }"],
+            ['array{' . \PHP_EOL . "\t\t\t\t \ta: int" . \PHP_EOL . "\t\t\t\t }"],
+            ['array{' . \PHP_EOL . "\t\t\t\t \ta: int," . \PHP_EOL . "\t\t\t\t }"],
+            ['array{' . \PHP_EOL . "\t\t\t\t \ta: int," . \PHP_EOL . "\t\t\t\t \tb: string," . \PHP_EOL . "\t\t\t\t }"],
+            ['array{' . \PHP_EOL . "\t\t\t\t \ta: int" . \PHP_EOL . "\t\t\t\t \t, b: string" . \PHP_EOL . "\t\t\t\t \t, c: string" . \PHP_EOL . "\t\t\t\t }"],
+            ['array{' . \PHP_EOL . "\t\t\t\t \ta: int," . \PHP_EOL . "\t\t\t\t \tb: string" . \PHP_EOL . "\t\t\t\t }"],
             ['array{a: int, b: int, ...}'],
             ['array{int, string, ...}'],
             ['array{...}'],
-            ["array{
-\t\t\t\t \ta: int,
-\t\t\t\t \t...
-\t\t\t\t }"],
-            ["array{
-\t\t\t\t\ta: int,
-\t\t\t\t\t...,
-\t\t\t\t}"],
+            ['array{' . \PHP_EOL . "\t\t\t\t \ta: int," . \PHP_EOL . "\t\t\t\t \t..." . \PHP_EOL . "\t\t\t\t }"],
+            ['array{' . \PHP_EOL . "\t\t\t\t\ta: int," . \PHP_EOL . "\t\t\t\t\t...," . \PHP_EOL . "\t\t\t\t}"],
             ['array{int, ..., string}', false],
-            ["list{
-\t\t\t\t \tint,
-\t\t\t\t \tstring
-\t\t\t\t }"],
+            ['list{' . \PHP_EOL . "\t\t\t\t \tint," . \PHP_EOL . "\t\t\t\t \tstring" . \PHP_EOL . "\t\t\t\t }"],
             ['callable(): Foo'],
             ['callable(): ?Foo'],
             ['callable(): Foo<Bar>'],
@@ -619,6 +592,10 @@ final class PhpDocTest extends TestCase
             ['callable(): (Foo&Bar)'],
             ['callable(): array{a: int}'],
             ['callable(A&...$a=, B&...=, C): Foo'],
+            ['callable<A>(B): C'],
+            ['callable<>(): void', false],
+            ['Closure<T of Model>(T, int): (T|false)'],
+            ['\Closure<Tx of X|Z, Ty of Y>(Tx, Ty): array{ Ty, Tx }'],
             ['(Foo\Bar<array<mixed, string>, (int | (string<foo> & bar)[])> | Lorem)'],
             ['array [ int ]'],
             ['array[ int ]'],
@@ -637,7 +614,7 @@ final class PhpDocTest extends TestCase
             ['123'],
             ['123_456'],
             ['_123'],
-            // ['123_'],
+            ['123_', false],
             ['123.2'],
             ['123_456.789_012'],
             ['+0x10_20|+8e+2 | -0b11'],
@@ -655,73 +632,31 @@ final class PhpDocTest extends TestCase
             ['DateTimeImmutable::*|DateTime::*'],
             ['ParameterTier::*|null'],
             ['list<QueueAttributeName::*>'],
-            ['array<
-  Foo
->'],
-            ['array<
-  Foo,
-  Bar
->'],
-            ['array<
-  Foo, Bar
->'],
-            ['array<
-  Foo,
-  array<
-    Bar
-  >
->'],
-            ['array<
-  Foo,
-  array<
-    Bar,
-  >
->'],
+            ['array<' . \PHP_EOL . '  Foo' . \PHP_EOL . '>'],
+            ['array<' . \PHP_EOL . '  Foo,' . \PHP_EOL . '  Bar' . \PHP_EOL . '>'],
+            ['array<' . \PHP_EOL . '  Foo, Bar' . \PHP_EOL . '>'],
+            ['array<' . \PHP_EOL . '  Foo,' . \PHP_EOL . '  array<' . \PHP_EOL . '    Bar' . \PHP_EOL . '  >' . \PHP_EOL . '>'],
+            ['array<' . \PHP_EOL . '  Foo,' . \PHP_EOL . '  array<' . \PHP_EOL . '    Bar,' . \PHP_EOL . '  >' . \PHP_EOL . '>'],
             ['array{}'],
             ['array{}|int'],
             ['int|array{}'],
-            ['callable(
-  Foo
-): void'],
-            ['callable(
-  Foo,
-  Bar
-): void'],
-            ['callable(
-  Foo, Bar
-): void'],
-            ['callable(
-  Foo,
-  callable(
-    Bar
-  ): void
-): void'],
-            ['callable(
-  Foo,
-  callable(
-    Bar,
-  ): void
-): void'],
+            ['callable(' . \PHP_EOL . '  Foo' . \PHP_EOL . '): void'],
+            ['callable(' . \PHP_EOL . '  Foo,' . \PHP_EOL . '  Bar' . \PHP_EOL . '): void'],
+            ['callable(' . \PHP_EOL . '  Foo, Bar' . \PHP_EOL . '): void'],
+            ['callable(' . \PHP_EOL . '  Foo,' . \PHP_EOL . '  callable(' . \PHP_EOL . '    Bar' . \PHP_EOL . '  ): void' . \PHP_EOL . '): void'],
+            ['callable(' . \PHP_EOL . '  Foo,' . \PHP_EOL . '  callable(' . \PHP_EOL . '    Bar,' . \PHP_EOL . '  ): void' . \PHP_EOL . '): void'],
             ['(Foo is Bar ? never : int)'],
             ['(Foo is not Bar ? never : int)'],
             ['(T is self::TYPE_STRING ? string : (T is self::TYPE_INT ? int : bool))'],
             ['(Foo is Bar|Baz ? never : int|string)'],
-            ['(
-  TRandList is array ? array<TRandKey, TRandVal> : (
-  TRandList is XIterator ? XIterator<TRandKey, TRandVal> :
-  IteratorIterator<TRandKey, TRandVal>|LimitIterator<TRandKey, TRandVal>
-))'],
+            ['(' . \PHP_EOL . '  TRandList is array ? array<TRandKey, TRandVal> : (' . \PHP_EOL . '  TRandList is XIterator ? XIterator<TRandKey, TRandVal> :' . \PHP_EOL . '  IteratorIterator<TRandKey, TRandVal>|LimitIterator<TRandKey, TRandVal>' . \PHP_EOL . '))'],
             ['($foo is Bar|Baz ? never : int|string)'],
-            ['(
-  $foo is Bar|Baz
-    ? never
-    : int|string
-)'],
+            ['(' . \PHP_EOL . '  $foo is Bar|Baz' . \PHP_EOL . '    ? never' . \PHP_EOL . '    : int|string' . \PHP_EOL . ')'],
             ['?Currency::CURRENCY_*'],
             ['(T is Foo ? true : T is Bar ? false : null)'],
-            ['(T is Foo ? T is Bar ? true : false : null)'],
+            ['(T is Foo ? T is Bar ? true : false : null)' /* , false */],
             ['($foo is Foo ? true : $foo is Bar ? false : null)'],
-            ['($foo is Foo ? $foo is Bar ? true : false : null)'],
+            ['($foo is Foo ? $foo is Bar ? true : false : null)' /* , false */],
             ['Foo<covariant Bar, Baz>'],
             ['Foo<Bar, contravariant Baz>'],
             ['Foo<covariant>', false],
@@ -736,32 +671,18 @@ final class PhpDocTest extends TestCase
             ['?object{a: int}'],
             ['object{', false],
             ['object{a => int}', false],
-            // ['object{int}', false],
-            // ['object{0: int}', false],
-            // ['object{0?: int}', false],
+            ['object{int}' /* , false */],
+            ['object{0: int}' /* , false */],
+            ['object{0?: int}' /* , false */],
             ['object{"a": int}'],
             ["object{'a': int}"],
             ["object{'\$ref': int}"],
             ['object{"$ref": int}'],
-            ["object{
-\t\t\t\t \ta: int
-\t\t\t\t }"],
-            ["object{
-\t\t\t\t \ta: int,
-\t\t\t\t }"],
-            ["object{
-\t\t\t\t \ta: int,
-\t\t\t\t \tb: string,
-\t\t\t\t }"],
-            ["object{
-\t\t\t\t \ta: int
-\t\t\t\t \t, b: string
-\t\t\t\t \t, c: string
-\t\t\t\t }"],
-            ["object{
-\t\t\t\t \ta: int,
-\t\t\t\t \tb: string
-\t\t\t\t }"],
+            ['object{' . \PHP_EOL . "\t\t\t\t \ta: int" . \PHP_EOL . "\t\t\t\t }"],
+            ['object{' . \PHP_EOL . "\t\t\t\t \ta: int," . \PHP_EOL . "\t\t\t\t }"],
+            ['object{' . \PHP_EOL . "\t\t\t\t \ta: int," . \PHP_EOL . "\t\t\t\t \tb: string," . \PHP_EOL . "\t\t\t\t }"],
+            ['object{' . \PHP_EOL . "\t\t\t\t \ta: int" . \PHP_EOL . "\t\t\t\t \t, b: string" . \PHP_EOL . "\t\t\t\t \t, c: string" . \PHP_EOL . "\t\t\t\t }"],
+            ['object{' . \PHP_EOL . "\t\t\t\t \ta: int," . \PHP_EOL . "\t\t\t\t \tb: string" . \PHP_EOL . "\t\t\t\t }"],
             ['object{foo: int}[]'],
             ['int | object{foo: int}[]'],
             ['object{}'],
@@ -795,12 +716,10 @@ final class PhpDocTest extends TestCase
             ['?Foo[]'],
             ['(?Foo)[]'],
             ['Foo | Bar | (Baz | Lorem)'],
+            ['Closure(Container):($serviceId is class-string<TService> ? TService : mixed)'],
             ['int | object{foo: int}[]'],
             ['int | object{foo: int}[]    '],
-            ["array{
-\t\t\t\ta: int,
-\t\t\t\tb: string
-\t\t\t }"],
+            ['array{' . \PHP_EOL . "\t\t\t\ta: int," . \PHP_EOL . "\t\t\t\tb: string" . \PHP_EOL . "\t\t\t }"],
             ['callable(Foo, Bar): void'],
             ['$this'],
             ['array{foo: int}'],

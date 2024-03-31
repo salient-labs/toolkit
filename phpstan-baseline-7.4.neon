@@ -1466,26 +1466,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/Utility/PcreTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\StrTest\\:\\:eolFromNativeProvider\\(\\) should return array\\<array\\{string, string\\}\\> but returns array\\{array\\{null, null\\}, array\\{'', ''\\}, array\\{\"\\\\n\", \"\\\\n\"\\}, array\\{\"line1\\\\nline2\\\\n\\\\n\", \"line1\\\\nline2\\\\n\\\\n\"\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\StrTest\\:\\:eolToNativeProvider\\(\\) should return array\\<array\\{string, string\\}\\> but returns array\\{array\\{null, null\\}, array\\{'', ''\\}, array\\{\"\\\\n\", \"\\\\n\"\\}, array\\{\"line1\\\\nline2\\\\n\\\\n\", \"line1\\\\nline2\\\\n\\\\n\"\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\StrTest\\:\\:mergeListsProvider\\(\\) should return array\\<string, array\\<string\\>\\> but returns array\\<string, array\\<int, mixed\\>\\>\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$text of static method Salient\\\\Core\\\\Utility\\\\Str\\:\\:mergeLists\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
 			message: "#^Cannot access an offset on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Iterator/GraphTest.php
