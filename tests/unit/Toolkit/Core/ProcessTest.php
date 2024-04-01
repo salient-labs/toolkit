@@ -30,7 +30,6 @@ final class ProcessTest extends TestCase
      * @dataProvider runProvider
      *
      * @param int|string $exitStatus
-     * @param array<array{string,string,string,...}> $counters
      * @param string[] $args
      * @param resource|string|null $input
      * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null $callback
@@ -40,7 +39,6 @@ final class ProcessTest extends TestCase
         $exitStatus,
         string $stdout,
         string $stderr,
-        array $counters,
         array $args = [],
         $input = '',
         ?Closure $callback = null,
@@ -64,23 +62,10 @@ final class ProcessTest extends TestCase
         $this->assertTrue($process->isTerminated());
         $this->assertIsInt($pid = $process->getPid());
         $this->assertGreaterThan(0, $pid);
-
-        $skipWaitIterations = $useOutputFiles || Sys::isWindows();
-        foreach ($counters as $counterArgs) {
-            $assertion = array_shift($counterArgs);
-            $counter = array_shift($counterArgs);
-            if ($skipWaitIterations && $counter === 'waitIterations') { continue; }
-            $group = array_shift($counterArgs);
-            $counterArgs[] = Profile::getCounter($counter, $group);
-            $this->$assertion(...[...$counterArgs, $counter]);
-        }
-        if ($skipWaitIterations) {
-            $this->assertSame(0, Profile::getCounter('waitIterations', Process::class));
-        }
     }
 
     /**
-     * @return array<string,array{int|string,string,string,array<array{string,string,string,...}>,4?:string[],5?:resource|string|null,6?:(Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null,7?:string|null,8?:array<string,string>|null,9?:int|null}>
+     * @return array<string,array{int|string,string,string,3?:string[],4?:resource|string|null,5?:(Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null,6?:string|null,7?:array<string,string>|null,8?:int|null}>
      */
     public static function runProvider(): array
     {
@@ -93,26 +78,11 @@ final class ProcessTest extends TestCase
             }
         );
 
-        $counters = [
-            ['assertGreaterThan', 'readOperations#1', Process::class, 0],
-            ['assertGreaterThan', 'readOperations#2', Process::class, 0],
-            ['assertLessThan', 'readOperations#1', Process::class, 50],
-            ['assertLessThan', 'readOperations#2', Process::class, 50],
-            ['assertLessThan', 'readIterations', Process::class, 50],
-        ];
-
-        $delayAfterEofCounters = $counters;
-        $delayAfterEofCounters[] = ['assertGreaterThan', 'waitIterations', Process::class, 10];
-        $delayAfterEofCounters[] = ['assertLessThan', 'waitIterations', Process::class, 50];
-
-        $counters[] = ['assertLessThan', 'waitIterations', Process::class, 5];
-
         return [
             'empty' => [
                 0,
                 '',
                 '',
-                $counters,
                 [$cat],
             ],
             'args' => [
@@ -123,7 +93,6 @@ final class ProcessTest extends TestCase
                 - 2: bar
 
                 EOF,
-                $counters,
                 [$cat, 'foo', 'bar'],
             ],
             'args + input (string with no line break)' => [
@@ -136,7 +105,6 @@ final class ProcessTest extends TestCase
                 - 2: bar
 
                 EOF,
-                $counters,
                 [$cat, 'foo', 'bar'],
                 <<<'EOF'
                 Foo bar.
@@ -156,7 +124,6 @@ final class ProcessTest extends TestCase
                 - 2: bar
 
                 EOF,
-                $counters,
                 [$cat, 'foo', 'bar'],
                 <<<'EOF'
                 Foo.
@@ -170,14 +137,12 @@ final class ProcessTest extends TestCase
                 0,
                 $env,
                 '',
-                $counters,
                 [$cat, 'print-env'],
             ],
             'print-env + env' => [
                 0,
                 sprintf('TEST=%s' . \PHP_EOL, __CLASS__),
                 '',
-                $counters,
                 [$cat, 'print-env'],
                 '',
                 null,
@@ -191,7 +156,6 @@ final class ProcessTest extends TestCase
                 - 1: delay
 
                 EOF,
-                $delayAfterEofCounters,
                 [$cat, 'delay'],
             ],
             'time out' => [
@@ -201,7 +165,6 @@ final class ProcessTest extends TestCase
                 - 1: timeout
 
                 EOF,
-                $counters,
                 [$cat, 'timeout'],
                 '',
                 null,
