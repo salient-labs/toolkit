@@ -591,11 +591,6 @@ parameters:
 			path: src/Toolkit/Curler/Curler.php
 
 		-
-			message: "#^Cannot call method getHeaderLine\\(\\) on Salient\\\\Contract\\\\Http\\\\HttpHeadersInterface\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
 			message: "#^Cannot call method getHeaderLines\\(\\) on Salient\\\\Contract\\\\Http\\\\HttpHeadersInterface\\|null\\.$#"
 			count: 2
 			path: src/Toolkit/Curler/Curler.php
@@ -684,66 +679,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$value of method Salient\\\\Curler\\\\Support\\\\CurlerPageBuilder\\:\\:nextUrl\\(\\) expects string\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Curler/Pager/ODataPager.php
-
-		-
-			message: "#^Argument of an invalid type iterable\\<string, array\\<string\\>\\|string\\>\\|Salient\\\\Contract\\\\Core\\\\Arrayable\\<string, array\\<string\\>\\|string\\> supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Generator expects key type string, string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Generator expects value type string, string\\|false given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Method Salient\\\\Http\\\\HttpHeaders\\:\\:doGetHeaders\\(\\) should return array\\<string, array\\<string\\>\\> but returns array\\<string, array\\<int, bool\\|string\\>\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<array\\<string\\>\\|string\\>\\|string, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#1 \\$items of method Salient\\\\Http\\\\HttpHeaders\\:\\:filterItems\\(\\) expects array\\<string, array\\<string\\>\\>, array given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Http\\\\HttpHeaders\\:\\:filterValue\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#2 \\$nextValue\\|nextKey\\|nextItem of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<array\\<string\\>\\|string\\>\\|int\\|string\\|null, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#2 \\$value of method Salient\\\\Http\\\\HttpHeaders\\:\\:add\\(\\) expects array\\<string\\>\\|string, string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#3 \\$prevValue\\|prevKey\\|prevItem of callable \\(callable\\(array\\<string\\>, array\\<string\\>\\|null, array\\<string\\>\\|null\\)\\: bool\\)\\|\\(callable\\(string, int\\|string\\|null, int\\|string\\|null\\)\\: bool\\)\\|\\(callable\\(array\\<string, array\\<string\\>\\>, array\\<string, array\\<string\\>\\>\\|null, array\\<string, array\\<string\\>\\>\\|null\\)\\: bool\\) expects array\\<array\\<string\\>\\|string\\>\\|int\\|string\\|null, array\\<int\\|string, array\\<int, bool\\|string\\>\\|bool\\|string\\|null\\>\\|string\\|null given\\.$#"
-			count: 2
-			path: src/Toolkit/Http/HttpHeaders.php
-
-		-
-			message: "#^Parameter \\#1 \\$headers of method Salient\\\\Http\\\\HttpMessage\\:\\:filterHeaders\\(\\) expects array\\<string, array\\<string\\>\\>\\|Salient\\\\Contract\\\\Http\\\\HttpHeadersInterface\\|null, array\\<string, array\\<string\\>\\|string\\>\\|Salient\\\\Contract\\\\Http\\\\HttpHeadersInterface\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpMessage.php
-
-		-
-			message: "#^Parameter \\#2 \\$length of function fread expects int\\<0, max\\>, int\\<min, \\-1\\>\\|int\\<1, max\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/HttpServer.php
 
 		-
 			message: "#^Cannot access offset 'alg' on mixed\\.$#"
@@ -1444,31 +1379,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/PcreTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\StrTest\\:\\:eolFromNativeProvider\\(\\) should return array\\<array\\{string, string\\}\\> but returns array\\{array\\{null, null\\}, array\\{'', ''\\}, array\\{\"\\\\n\", \"\\\\n\"\\}, array\\{\"line1\\\\nline2\\\\n\\\\n\", \"line1\\\\nline2\\\\n\\\\n\"\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\StrTest\\:\\:eolToNativeProvider\\(\\) should return array\\<array\\{string, string\\}\\> but returns array\\{array\\{null, null\\}, array\\{'', ''\\}, array\\{\"\\\\n\", \"\\\\n\"\\}, array\\{\"line1\\\\nline2\\\\n\\\\n\", \"line1\\\\nline2\\\\n\\\\n\"\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\StrTest\\:\\:mergeListsProvider\\(\\) should return array\\<string, array\\<string\\>\\> but returns array\\<string, array\\<int, mixed\\>\\>\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$text of static method Salient\\\\Core\\\\Utility\\\\Str\\:\\:mergeLists\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/StrTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$parts of static method Salient\\\\Http\\\\Uri\\:\\:unparse\\(\\) expects array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}, array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Http/UriTest.php
 
 		-
 			message: "#^Cannot access an offset on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"

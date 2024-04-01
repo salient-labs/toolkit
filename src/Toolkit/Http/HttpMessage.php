@@ -22,9 +22,7 @@ abstract class HttpMessage implements HttpMessageInterface
     }
 
     protected string $ProtocolVersion;
-
     protected HttpHeadersInterface $Headers;
-
     protected StreamInterface $Body;
 
     /**
@@ -105,6 +103,7 @@ abstract class HttpMessage implements HttpMessageInterface
                 $this->getStartLine(),
             ),
             '',
+            '',
         ));
 
         return $withoutBody
@@ -163,7 +162,7 @@ abstract class HttpMessage implements HttpMessageInterface
     }
 
     /**
-     * @param HttpHeadersInterface|array<string,string[]>|null $headers
+     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
      */
     private function filterHeaders($headers): HttpHeadersInterface
     {
@@ -177,7 +176,7 @@ abstract class HttpMessage implements HttpMessageInterface
         throw new InvalidArgumentTypeException(
             1,
             'headers',
-            'HttpHeadersInterface|array<string,string[]>|null',
+            'HttpHeadersInterface|array<string,string[]|string>|null',
             $headers
         );
     }

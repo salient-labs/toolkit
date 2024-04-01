@@ -26,7 +26,7 @@ class OAuth2TestClient extends OAuth2Client
                 $proxyHost,
                 $proxyPort,
                 Env::getNullableBool('app_proxy_tls', null),
-                Env::getNullable('app_proxy_base_path', null),
+                Env::get('app_proxy_base_path', ''),
             );
         }
 

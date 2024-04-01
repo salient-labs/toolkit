@@ -19,6 +19,15 @@ final class Regex extends AbstractDictionary
         REGEX;
 
     /**
+     * Characters with Unicode's "blank" or "Default_Ignorable_Code_Point"
+     * properties
+     *
+     * @link https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=[:blank=Yes:]
+     * @link https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=[:Default_Ignorable_Code_Point=Yes:]
+     */
+    public const INVISIBLE_CHAR = '[\x{00A0}\x{2000}-\x{200A}\x{202F}\x{205F}\x{3000}\x{00AD}\x{17B4}\x{17B5}\x{034F}\x{061C}\x{115F}\x{180B}-\x{180F}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{1160}\x{2060}-\x{2064}\x{2065}\x{2066}-\x{206F}\x{3164}\x{FE00}-\x{FEFF}\x{FFA0}\x{FFF0}-\x{FFF8}\x{1BCA0}-\x{1BCA3}\x{1D173}-\x{1D17A}\x{E0000}\x{E0001}\x{E01F0}-\x{E0FFF}\x{E0002}-\x{E001F}\x{E0020}-\x{E007F}\x{E0080}-\x{E00FF}\x{E0100}-\x{E01EF}]';
+
+    /**
      * A boolean string, e.g. "yes", "Y", "On", "TRUE", "enabled"
      */
     public const BOOLEAN_STRING = <<<'REGEX'
@@ -159,12 +168,15 @@ final class Regex extends AbstractDictionary
               0
             ) |
 
-            # Closure with optional parameter and return types
-            (?: callable | Closure ) \s*+ \(
-                (?&sp)*+ (?: (?-1) (?&param)
-                    (?: \s*+ , (?&sp)*+ (?-1) (?&param) )*+
-                    (?&trailing) | \.\.\. \s*+ )?
-            \)
+            # Closure with optional "<Type,...>", and optional parameter and
+            # return types
+            (?: callable | \\? Closure ) \s*+
+            (?: \s* < (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1)
+                (?: \s*+ , (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1) )*+
+                (?&trailing) > )?
+            \( (?&sp)*+ (?: (?-1) (?&param)
+                (?: \s*+ , (?&sp)*+ (?-1) (?&param) )*+
+                (?&trailing) | \.\.\. \s*+ )? \)
             (?: \s* : (?&sp)*+ (?-1) )? |
 
             # Native or PHPDoc type, possibly nullable, with optional

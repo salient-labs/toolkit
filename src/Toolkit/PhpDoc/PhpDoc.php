@@ -280,7 +280,7 @@ final class PhpDoc implements Readable
                     $metaCount++;
                     $token = strtok(" \t");
                     $type = 'mixed';
-                    if ($token === 'of') {
+                    if ($token === 'of' || $token === 'as') {
                         $metaCount++;
                         $token = strtok('');
                         if ($token !== false) {

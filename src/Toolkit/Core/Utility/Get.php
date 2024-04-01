@@ -549,6 +549,8 @@ final class Get extends AbstractUtility
      * @param mixed $value
      * @param string[] $classes Strings found in this array are output as
      * `<string>::class` instead of `'<string>'`.
+     * @param array<non-empty-string,string> $constants An array that maps
+     * strings to constant identifiers, e.g. `[\PHP_EOL => '\PHP_EOL']`.
      */
     public static function code(
         $value,
@@ -556,18 +558,52 @@ final class Get extends AbstractUtility
         string $arrow = ' => ',
         ?string $escapeCharacters = null,
         string $tab = '    ',
-        array $classes = []
+        array $classes = [],
+        array $constants = []
     ): string {
         $eol = (string) self::eol($delimiter);
         $multiline = (bool) $eol;
+        $escapeRegex = null;
+        $search = [];
+        $replace = [];
+        if ($escapeCharacters !== null && $escapeCharacters !== '') {
+            $escapeRegex = Pcre::quoteCharacterClass($escapeCharacters, '/');
+            foreach (str_split($escapeCharacters) as $character) {
+                $search[] = sprintf(
+                    '/((?<!\\\\)(?:\\\\\\\\)*)%s/',
+                    preg_quote(addcslashes($character, $character), '/'),
+                );
+                $replace[] = sprintf('$1\x%02x', ord($character));
+            }
+        }
         $classes = Arr::toIndex($classes);
+        $constRegex = [];
+        foreach (array_keys($constants) as $string) {
+            $constRegex[] = preg_quote($string, '/');
+        }
+        switch (count($constRegex)) {
+            case 0:
+                $constRegex = null;
+                break;
+            case 1:
+                $constRegex = '/' . $constRegex[0] . '/';
+                break;
+            default:
+                $constRegex = '/(?:' . implode('|', $constRegex) . ')/';
+                break;
+        }
         return self::doCode(
             $value,
             $delimiter,
             $arrow,
             $escapeCharacters,
+            $escapeRegex,
+            $search,
+            $replace,
             $tab,
             $classes,
+            $constants,
+            $constRegex,
             $multiline,
             $eol,
         );
@@ -575,15 +611,23 @@ final class Get extends AbstractUtility
 
     /**
      * @param mixed $value
+     * @param string[] $search
+     * @param string[] $replace
      * @param array<string,true> $classes
+     * @param array<non-empty-string,string> $constants
      */
     private static function doCode(
         $value,
         string $delimiter,
         string $arrow,
         ?string $escapeCharacters,
+        ?string $escapeRegex,
+        array $search,
+        array $replace,
         string $tab,
         array $classes,
+        array $constants,
+        ?string $regex,
         bool $multiline,
         string $eol,
         string $indent = ''
@@ -592,56 +636,110 @@ final class Get extends AbstractUtility
             return 'null';
         }
 
-        if ($classes && is_string($value) && ($classes[$value] ?? false)) {
-            return $value . '::class';
-        }
-
-        // Escape strings that contain vertical whitespace or characters in
-        // `$escapeCharacters`
-        if (is_string($value) && (
-            Pcre::match('/\v/', $value) || (
-                $escapeCharacters !== null &&
-                $escapeCharacters !== '' &&
-                strpbrk($value, $escapeCharacters) !== false
-            )
-        )) {
-            $escaped = addcslashes($value, "\0..\x1f\$\\" . $escapeCharacters);
-
-            // Replace characters in `$escapeCharacters` with the equivalent
-            // hexadecimal escape
-            if ($escapeCharacters !== null && $escapeCharacters !== '') {
-                $search = [];
-                $replace = [];
-                foreach (str_split($escapeCharacters) as $character) {
-                    $regex = preg_quote(addcslashes($character, $character), '/');
-                    $search[] = "/((?<!\\\\)(?:\\\\\\\\)*){$regex}/";
-                    $replace[] = sprintf('$1\x%02x', ord($character));
-                }
-                $escaped = Pcre::replace($search, $replace, $escaped);
+        if (is_string($value)) {
+            if ($classes && isset($classes[$value])) {
+                return $value . '::class';
             }
 
-            // Convert octal notation to hexadecimal (e.g. "\177" to "\x7f") and
-            // correct for differences between C and PHP escape sequences:
-            // - recognised by PHP: \0 \e \f \n \r \t \v
-            // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
-            Pcre::replaceCallback(
-                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<NUL>000(?![0-7]))|(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
-                fn(array $matches) =>
-                    $matches[1]
-                    . ($matches['NUL'] !== null
-                        ? '\0'
-                        : ($matches['octal'] !== null
-                            ? (($dec = octdec($matches['octal'])) === 27
-                                ? '\e'
-                                : sprintf('\x%02x', $dec))
-                            : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']]))),
-                $escaped,
-                -1,
-                $count,
-                \PREG_UNMATCHED_AS_NULL,
-            );
+            if ($regex !== null) {
+                $parts = [];
+                while (Pcre::match($regex, $value, $matches, \PREG_OFFSET_CAPTURE)) {
+                    if ($matches[0][1] > 0) {
+                        $parts[] = substr($value, 0, $matches[0][1]);
+                    }
+                    $parts[] = $matches[0][0];
+                    $value = substr($value, $matches[0][1] + strlen($matches[0][0]));
+                }
+                if ($parts) {
+                    if ($value !== '') {
+                        $parts[] = $value;
+                    }
+                    foreach ($parts as &$part) {
+                        $part = $constants[$part]
+                            ?? self::doCode($part, $delimiter, $arrow, $escapeCharacters, $escapeRegex, $search, $replace, $tab, $classes, [], null, $multiline, $eol, $indent);
+                    }
+                    return implode(' . ', $parts);
+                }
+            }
 
-            return '"' . $escaped . '"';
+            if ($multiline) {
+                $escape = '';
+                $match = '';
+            } else {
+                $escape = "\n\r";
+                $match = '\n\r';
+            }
+
+            // Don't escape UTF-8 leading bytes (\xc2 -> \xf4) or continuation
+            // bytes (\x80 -> \xbf)
+            if (mb_check_encoding($value, 'UTF-8')) {
+                $escape .= "\x7f\xc0\xc1\xf5..\xff";
+                $match .= '\x7f\xc0\xc1\xf5-\xff';
+                $utf8 = true;
+            } else {
+                $escape .= "\x7f..\xff";
+                $match .= '\x7f-\xff';
+                $utf8 = false;
+            }
+
+            // Escape strings that contain characters in `$escape` or
+            // `$escapeCharacters`
+            if (Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}{$escapeRegex}]/", $value)) {
+                // \0..\t\v\f\x0e..\x1f = \0..\x1f without \n and \r
+                $escaped = addcslashes(
+                    $value,
+                    "\0..\t\v\f\x0e..\x1f\"\$\\" . $escape . $escapeCharacters
+                );
+
+                // Convert blank/ignorable code points to "\u{xxxx}" unless they
+                // belong to a recognised Unicode sequence
+                if ($utf8) {
+                    $escaped = Pcre::replaceCallback(
+                        '/(?![\x00-\x7f])\X/u',
+                        fn(array $matches): string =>
+                            Pcre::match('/^' . Regex::INVISIBLE_CHAR . '$/u', $matches[0])
+                                ? sprintf('\u{%04X}', mb_ord($matches[0]))
+                                : $matches[0],
+                        $escaped,
+                    );
+                }
+
+                // Replace characters in `$escapeCharacters` with the equivalent
+                // hexadecimal escape
+                if ($search) {
+                    $escaped = Pcre::replace($search, $replace, $escaped);
+                }
+
+                // Convert octal notation to hex (e.g. "\177" to "\x7f") and
+                // correct for differences between C and PHP escape sequences:
+                // - recognised by PHP: \0 \e \f \n \r \t \v
+                // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
+                $escaped = Pcre::replaceCallback(
+                    '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<NUL>000(?![0-7]))|(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
+                    fn(array $matches): string =>
+                        $matches[1]
+                        . ($matches['NUL'] !== null
+                            ? '\0'
+                            : ($matches['octal'] !== null
+                                ? (($dec = octdec($matches['octal'])) === 27
+                                    ? '\e'
+                                    : sprintf('\x%02x', $dec))
+                                : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']]))),
+                    $escaped,
+                    -1,
+                    $count,
+                    \PREG_UNMATCHED_AS_NULL,
+                );
+
+                // Remove unnecessary backslashes
+                $escaped = Pcre::replace(
+                    '/(?<!\\\\)\\\\\\\\(?![nrtvef\\\\$"]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}|$)/',
+                    '\\',
+                    $escaped
+                );
+
+                return '"' . $escaped . '"';
+            }
         }
 
         if (!is_array($value)) {
@@ -668,13 +766,27 @@ final class Get extends AbstractUtility
         }
 
         $isList = Arr::isList($value);
+        if (!$isList) {
+            $isMixedList = false;
+            $keys = 0;
+            foreach (array_keys($value) as $key) {
+                if (!is_int($key)) {
+                    continue;
+                }
+                if ($keys++ !== $key) {
+                    $isMixedList = false;
+                    break;
+                }
+                $isMixedList = true;
+            }
+        }
         foreach ($value as $key => $value) {
-            $value = self::doCode($value, $delimiter, $arrow, $escapeCharacters, $tab, $classes, $multiline, $eol, $indent);
-            if ($isList) {
+            $value = self::doCode($value, $delimiter, $arrow, $escapeCharacters, $escapeRegex, $search, $replace, $tab, $classes, $constants, $regex, $multiline, $eol, $indent);
+            if ($isList || ($isMixedList && is_int($key))) {
                 $values[] = $value;
                 continue;
             }
-            $key = self::doCode($key, $delimiter, $arrow, $escapeCharacters, $tab, $classes, $multiline, $eol, $indent);
+            $key = self::doCode($key, $delimiter, $arrow, $escapeCharacters, $escapeRegex, $search, $replace, $tab, $classes, $constants, $regex, $multiline, $eol, $indent);
             $values[] = $key . $arrow . $value;
         }
 

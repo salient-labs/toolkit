@@ -630,12 +630,12 @@ abstract class GenerateCommand extends Command
             $blocks[] = implode($line, $this->generateImports());
         }
 
-        $phpDoc = Arr::trimAndImplode($blank, [
+        $phpDoc = Arr::implode($blank, [
             $this->Description ?? '',
             $this->PhpDoc ?? '',
             $this->ApiTag ? '@api' : '',
             '@generated',
-        ]);
+        ], null);
 
         $lines =
             $phpDoc === ''

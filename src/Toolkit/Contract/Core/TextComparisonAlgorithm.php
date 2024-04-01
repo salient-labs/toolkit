@@ -14,7 +14,7 @@ use Salient\Core\AbstractEnumeration;
  *
  * @extends AbstractEnumeration<int>
  */
-class TextComparisonAlgorithm extends AbstractEnumeration
+final class TextComparisonAlgorithm extends AbstractEnumeration
 {
     /**
      * Uncertainty is 0 if values are identical, otherwise 1

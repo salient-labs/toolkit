@@ -8,17 +8,17 @@ use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Contract\Http\HttpServerRequestInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Str;
 use Salient\Curler\Curler;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpServer;
-use Salient\Http\HttpServerRequest;
 use LogicException;
 use Throwable;
 
@@ -158,7 +158,7 @@ abstract class OAuth2Client
     final protected function getRedirectUri(): ?string
     {
         return $this->Listener
-            ? sprintf('%s/oauth2/callback', $this->Listener->getBaseUrl())
+            ? sprintf('%s/oauth2/callback', $this->Listener->getBaseUri())
             : null;
     }
 
@@ -316,8 +316,8 @@ abstract class OAuth2Client
             'Starting HTTP server to receive authorization_code:',
             sprintf(
                 '%s:%d',
-                $this->Listener->Host,
-                $this->Listener->Port,
+                $this->Listener->getHost(),
+                $this->Listener->getPort(),
             )
         );
 
@@ -327,7 +327,7 @@ abstract class OAuth2Client
             Console::log('Follow the link to authorize access:', "\n$url");
             Console::info('Waiting for authorization');
             $code = $this->Listener->listen(
-                fn(HttpServerRequest $request, bool &$continue, &$return): HttpResponse =>
+                fn(HttpServerRequestInterface $request, bool &$continue, &$return): HttpResponse =>
                     $this->receiveAuthorizationCode($request, $continue, $return)
             );
         } finally {
@@ -348,13 +348,11 @@ abstract class OAuth2Client
     /**
      * @param mixed $return
      */
-    private function receiveAuthorizationCode(HttpServerRequest $request, bool &$continue, &$return): HttpResponse
+    private function receiveAuthorizationCode(HttpServerRequestInterface $request, bool &$continue, &$return): HttpResponse
     {
-        $url = parse_url($request->Target);
-        $path = $url['path'] ?? null;
         if (
-            $request->Method !== Method::GET ||
-            $path !== '/oauth2/callback'
+            Str::upper($request->getMethod()) !== Method::GET ||
+            $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
             $continue = true;
             return new HttpResponse(400, 'Bad Request', 'Invalid request.');
@@ -362,7 +360,7 @@ abstract class OAuth2Client
 
         $state = Cache::getString("{$this->TokenKey}:state");
         Cache::delete("{$this->TokenKey}:state");
-        parse_str($url['query'] ?? '', $fields);
+        parse_str($request->getUri()->getQuery(), $fields);
         $code = $fields['code'] ?? null;
 
         if (

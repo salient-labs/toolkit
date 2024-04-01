@@ -13,8 +13,7 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Core\Exception\MethodNotImplementedException;
+use Psr\Http\Message\UriInterface;
 use Salient\Core\Utility\File;
 
 class HttpFactory implements
@@ -44,18 +43,14 @@ class HttpFactory implements
     }
 
     /**
-     * @param array<string,mixed> $serverParams
+     * @param mixed[] $serverParams
      */
     public function createServerRequest(
         string $method,
         $uri,
         array $serverParams = []
     ): ServerRequestInterface {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            ServerRequestFactoryInterface::class
-        );
+        return new HttpServerRequest($method, $uri, $serverParams);
     }
 
     /**
@@ -94,18 +89,14 @@ class HttpFactory implements
         ?string $clientFilename = null,
         ?string $clientMediaType = null
     ): UploadedFileInterface {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            UploadedFileFactoryInterface::class
-        );
+        return new UploadedFile($stream, $size, $error, $clientFilename, $clientMediaType);
     }
 
     /**
      * @inheritDoc
      */
-    public function createUri(string $uri = '', bool $strict = false): PsrUriInterface
+    public function createUri(string $uri = ''): UriInterface
     {
-        return new Uri($uri, $strict);
+        return new Uri($uri);
     }
 }

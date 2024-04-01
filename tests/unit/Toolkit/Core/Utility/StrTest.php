@@ -161,7 +161,7 @@ final class StrTest extends TestCase
     }
 
     /**
-     * @return array<array{string,string}>
+     * @return array<array{string|null,string|null}>
      */
     public static function eolToNativeProvider(): array
     {
@@ -202,7 +202,7 @@ final class StrTest extends TestCase
     }
 
     /**
-     * @return array<array{string,string}>
+     * @return array<array{string|null,string|null}>
      */
     public static function eolFromNativeProvider(): array
     {
@@ -555,6 +555,13 @@ final class StrTest extends TestCase
         ];
     }
 
+    public function testWrap(): void
+    {
+        $this->assertEquals('**test**', Str::wrap('test', '**'));
+        $this->assertEquals('[test]', Str::wrap('test', '[', ']'));
+        $this->assertEquals('!!test?', Str::wrap('test', '!!', '?'));
+    }
+
     /**
      * @dataProvider unwrapProvider
      */
@@ -764,6 +771,7 @@ final class StrTest extends TestCase
     public static function distanceProvider(): array
     {
         return [
+            [0.0, '', ''],
             [1.0, 'DELIVERY', 'milk delivery', false],
             [0.5, 'DELIVERY', 'milk deliverer'],
             [0.38461538461538464, 'DELIVERY', 'milk delivery'],
@@ -791,6 +799,7 @@ final class StrTest extends TestCase
     public static function similarityProvider(): array
     {
         return [
+            [1.0, '', ''],
             [0.0, 'DELIVERY', 'milk delivery', false],
             [0.5, 'DELIVERY', 'milk deliverer'],
             [0.6153846153846154, 'DELIVERY', 'milk delivery'],
@@ -820,6 +829,7 @@ final class StrTest extends TestCase
     public static function ngramSimilarityProvider(): array
     {
         return [
+            [1.0, '', ''],
             [0.0, 'DELIVERY', 'milk delivery', false],
             [0.46153846153846156, 'DELIVERY', 'milk deliverer'],
             [0.5833333333333334, 'DELIVERY', 'milk delivery'],
@@ -930,23 +940,30 @@ final class StrTest extends TestCase
 
     /**
      * @dataProvider mergeListsProvider
-     *
-     * @param mixed ...$args
      */
-    public function testMergeLists(string $expected, ...$args): void
-    {
-        $this->assertSame($expected, Str::eolToNative(Str::mergeLists(...$args)));
+    public function testMergeLists(
+        string $expected,
+        string $text,
+        string $separator = "\n",
+        ?string $marker = null,
+        ?string $regex = null,
+        bool $clean = false,
+        bool $loose = false
+    ): void {
+        if ($regex === null) {
+            /** @var string */
+            $regex = (
+                new ReflectionParameter([Str::class, 'mergeLists'], 'regex')
+            )->getDefaultValue();
+        }
+        $this->assertSame($expected, Str::eolToNative(Str::mergeLists($text, $separator, $marker, $regex, $clean, $loose)));
     }
 
     /**
-     * @return array<string,string[]>
+     * @return array<string,array{string,string,2?:string,3?:string|null,4?:string|null,5?:bool,6?:bool}>
      */
     public static function mergeListsProvider(): array
     {
-        $defaultRegex = (
-            new ReflectionParameter([Str::class, 'mergeLists'], 'regex')
-        )->getDefaultValue();
-
         $input1 = <<<EOF
             - Before lists
 
@@ -1047,6 +1064,24 @@ final class StrTest extends TestCase
                 EOF,
                 $input1,
             ],
+            'Default (clean)' => [
+                <<<EOF
+                Before lists
+                Without a subsequent list
+                Section:
+                - d
+                - a
+                - b
+                - c
+                Other section:
+                - <not a letter>
+                EOF,
+                $input1,
+                "\n",
+                null,
+                null,
+                true,
+            ],
             'Markdown' => [
                 <<<EOF
                 - Before lists
@@ -1105,6 +1140,25 @@ final class StrTest extends TestCase
                 "\n",
                 '📍',
             ],
+            'Default (multibyte, clean)' => [
+                <<<EOF
+                📍 Before lists
+                📍 Standalone
+                📍 Also standalone
+                📍 Section:
+                  - list item
+                  - another
+                  - and another
+                📍 Other section:
+                  - item i
+                  - item ii
+                EOF,
+                $input2,
+                "\n",
+                '📍',
+                null,
+                true,
+            ],
             'Markdown (multibyte)' => [
                 <<<EOF
                 - Before lists
@@ -1145,7 +1199,7 @@ final class StrTest extends TestCase
                 $input3,
                 "\n\n",
                 null,
-                $defaultRegex,
+                null,
                 false,
                 true,
             ],

@@ -6,7 +6,6 @@ use Salient\Contract\Core\FileDescriptor;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;
-use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
@@ -340,14 +339,12 @@ final class Process
         $this->assertHasRun();
 
         while ($this->Pipes) {
-            Profile::count('readIterations', __CLASS__);
             $this->checkTimeout();
             $this->read();
             $this->updateStatus();
         }
 
         while ($this->isRunning()) {
-            Profile::count('waitIterations', __CLASS__);
             $this->checkTimeout();
             usleep(10000);
         }
@@ -530,8 +527,6 @@ final class Process
                 File::close($pipe);
                 unset($this->Pipes[$i]);
             }
-
-            Profile::count(sprintf('readOperations#%d', $i), __CLASS__);
         }
 
         return $this;
