@@ -135,6 +135,9 @@ class HttpHeaders implements HttpHeadersInterface
             // octets prior to interpreting the field value."
             $carry = $matches['carry'];
             if ($matches['extended'] !== null) {
+                if (!$this->Headers) {
+                    throw new InvalidArgumentException(sprintf('Invalid line folding: %s', $line));
+                }
                 $extend = true;
                 $line = $this->Carry . ' ' . $matches['extended'];
             } else {
@@ -804,6 +807,8 @@ class HttpHeaders implements HttpHeadersInterface
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      * @return never
+     *
+     * @codeCoverageIgnore
      */
     protected function getItems($items): array
     {
@@ -837,7 +842,9 @@ class HttpHeaders implements HttpHeadersInterface
     private function maybeIndexTrailer()
     {
         if (!$this->Headers) {
+            // @codeCoverageIgnoreStart
             throw new LogicException('No headers applied');
+            // @codeCoverageIgnoreEnd
         }
         if (!$this->Closed) {
             return $this;

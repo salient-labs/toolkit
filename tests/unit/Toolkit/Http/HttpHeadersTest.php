@@ -2,15 +2,18 @@
 
 namespace Salient\Tests\Http;
 
+use Salient\Collection\Collection;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
+use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\HttpHeaders;
 use Salient\Tests\TestCase;
+use ArrayIterator;
 use LogicException;
 
 /**
@@ -54,13 +57,12 @@ final class HttpHeadersTest extends TestCase
                 null,
                 ['foo' => "bar\v"],
             ],
+            [
+                [],
+                [],
+                [],
+            ]
         ];
-    }
-
-    public function testEmpty(): void
-    {
-        $headers = new HttpHeaders();
-        $this->assertSame([], $headers->all());
     }
 
     /**
@@ -155,6 +157,10 @@ final class HttpHeadersTest extends TestCase
                 ['long' => ["line1  line2\t line3"]],
                 ["long: line1 \r\n", " line2\t\r\n", " line3\r\n"],
             ],
+            'invalid line folding' => [
+                [],
+                [" line2\r\n"],
+            ],
             'invalid header' => [
                 [],
                 ["nope\r\n"],
@@ -232,12 +238,143 @@ final class HttpHeadersTest extends TestCase
                 ["long: line1 \r\n", " line2\t\r\n", " line3\r\n"],
                 true,
             ],
+            '[strict] invalid line folding' => [
+                InvalidArgumentException::class . ',Invalid line folding:  line2',
+                [" line2\r\n"],
+                true,
+            ],
             '[strict] invalid header' => [
                 InvalidArgumentException::class . ',Invalid HTTP header field: nope',
                 ["nope\r\n"],
                 true,
             ],
         ];
+    }
+
+    public function testHasLastLine(): void
+    {
+        $headers = new HttpHeaders();
+        $this->assertFalse($headers->hasLastLine());
+        $headers = $headers->addLine("foo: bar\r\n");
+        $this->assertFalse($headers->hasLastLine());
+        $headers = $headers->addLine("\r\n");
+        $this->assertTrue($headers->hasLastLine());
+    }
+
+    public function testHostHeaderIsFirst(): void
+    {
+        $headers = [
+            new HttpHeaders(['Foo' => 'bar', 'Host' => 'example.com']),
+            (new HttpHeaders())->addLine("Foo: bar\r\n")->addLine("Host: example.com\r\n"),
+            (new HttpHeaders())->set('Foo', 'bar')->set('Host', 'example.com'),
+        ];
+
+        foreach ($headers as $headers) {
+            $this->assertSame(
+                ['host' => ['example.com'], 'foo' => ['bar']],
+                $headers->all(),
+            );
+            $this->assertSame(
+                ['host' => 'example.com', 'foo' => 'bar'],
+                $headers->getHeaderLines(),
+            );
+            $this->assertSame(
+                ['Foo: bar', 'Host: example.com'],
+                $headers->getLines(),
+            );
+        }
+    }
+
+    /**
+     * @dataProvider invalidHeaderProvider
+     *
+     * @param string[]|string $value
+     */
+    public function testInvalidHeaderArray(string $key, $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new HttpHeaders([$key => $value]));
+    }
+
+    /**
+     * @dataProvider invalidHeaderProvider
+     *
+     * @param string[]|string $value
+     */
+    public function testInvalidHeaderArrayable(string $key, $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new HttpHeaders(new Collection([$key => $value])));
+    }
+
+    /**
+     * @dataProvider invalidHeaderProvider
+     *
+     * @param string[]|string $value
+     */
+    public function testInvalidHeaderIterator(string $key, $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new HttpHeaders(new ArrayIterator([$key => $value])));
+    }
+
+    /**
+     * @dataProvider invalidHeaderProvider
+     *
+     * @param string[]|string $value
+     */
+    public function testAddInvalidHeader(string $key, $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new HttpHeaders())->add($key, $value);
+    }
+
+    /**
+     * @dataProvider invalidHeaderProvider
+     *
+     * @param string[]|string $value
+     */
+    public function testSetInvalidHeader(string $key, $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new HttpHeaders())->set($key, $value);
+    }
+
+    /**
+     * @return array<string,array{string,string[]|string}>
+     */
+    public static function invalidHeaderProvider(): array
+    {
+        return [
+            'no values' => ['foo', []],
+            'name + LF' => ["foo\n", 'bar'],
+            'name + CRLF' => ["foo\r\n", 'bar'],
+            'value + LF' => ['foo', "bar\n"],
+            'value + CRLF' => ['foo', "bar\r\n"],
+            'invalid name' => ['(foo)', 'bar'],
+            'invalid value' => ['foo', "\x7f"],
+        ];
+    }
+
+    public function testGetHeader(): void
+    {
+        $headers = (new HttpHeaders())
+            ->add('foo', ['qux', 'quux', 'quuux'])
+            ->add('bar', ['baz']);
+
+        $this->assertTrue($headers->hasHeader('Foo'));
+        $this->assertFalse($headers->hasHeader('Baz'));
+        $this->assertSame(['qux', 'quux', 'quuux'], $headers->getHeader('Foo'));
+        $this->assertSame([], $headers->getHeader('Baz'));
+        $this->assertSame('qux,quux,quuux', $headers->getHeaderLine('Foo'));
+        $this->assertSame('', $headers->getHeaderLine('Baz'));
+        $this->assertSame('qux', $headers->getFirstHeaderLine('Foo'));
+        $this->assertSame('quuux', $headers->getLastHeaderLine('Foo'));
+        $this->assertSame('baz', $headers->getOneHeaderLine('Bar'));
+
+        $this->expectException(InvalidHeaderException::class);
+        $this->expectExceptionMessage('HTTP header appears more than once: Foo');
+        $headers->getOneHeaderLine('Foo');
     }
 
     public function testImmutability(): void
@@ -284,6 +421,7 @@ final class HttpHeadersTest extends TestCase
             'odata.maxpagesize=100',
         ]], false);
         $j = $i->unset(HttpHeader::PREFER);
+        $k = $j->unset(HttpHeader::PREFER);
         $this->assertNotSame($b, $a);
         $this->assertNotSame($c, $b);
         $this->assertSame($d, $c);
@@ -295,6 +433,7 @@ final class HttpHeadersTest extends TestCase
         $this->assertNotSame($j, $i);
         $this->assertCount(1, $g);
         $this->assertCount(0, $j);
+        $this->assertSame($j, $k);
     }
 
     public function testEmptyValue(): void
@@ -311,19 +450,33 @@ final class HttpHeadersTest extends TestCase
         $token = new AccessToken('foo.bar.baz', 'Bearer', time() + 3600);
         $headers = (new HttpHeaders())
             ->authorize($token)
-            ->set(HttpHeader::ACCEPT, '*/*');
-        $this->assertSame([
-            'Authorization' => ['Bearer foo.bar.baz'],
-            'Accept' => ['*/*'],
-        ], $headers->getHeaders());
-        $headers = $headers
-            ->filter(
-                fn(string $key) => !($index[$key] ?? false),
+            ->set(HttpHeader::ACCEPT, '*/*')
+            ->set('foo', ['bar', 'baz']);
+        $this->assertSame(
+            ['foo' => ['bar', 'baz']],
+            $headers->filter(
+                fn(array $values) => count($values) > 1,
+            )->getHeaders()
+        );
+        $this->assertSame(
+            ['Accept' => ['*/*'], 'foo' => ['bar', 'baz']],
+            $headers->filter(
+                fn(string $key) => !isset($index[$key]),
                 CollectionInterface::CALLBACK_USE_KEY
-            );
-        $this->assertSame([
-            'Accept' => ['*/*'],
-        ], $headers->getHeaders());
+            )->getHeaders()
+        );
+        $this->assertSame(
+            ['Accept' => ['*/*']],
+            $headers->filter(
+                fn(array $map) => $map === ['accept' => ['*/*']],
+                CollectionInterface::CALLBACK_USE_BOTH
+            )->getHeaders()
+        );
+    }
+
+    public function testCompareItems(): void
+    {
+        $this->assertTrue((new HttpHeaders(['foo' => 'bar']))->has(['bar']));
     }
 
     /**
