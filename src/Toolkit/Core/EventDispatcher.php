@@ -8,11 +8,12 @@ use Psr\EventDispatcher\StoppableEventInterface;
 use Salient\Contract\Core\Nameable;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
-use Generator;
 use LogicException;
 
 /**
  * Dispatches events to listeners
+ *
+ * Implements PSR-14 (Event Dispatcher) interfaces.
  *
  * @api
  */
@@ -34,20 +35,18 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
 
     private int $NextListenerId = 0;
 
-    /**
-     * @var ListenerProviderInterface[]
-     */
-    private array $ListenerProviders = [];
+    private ListenerProviderInterface $ListenerProvider;
 
     /**
      * Creates a new EventDispatcher object
+     *
+     * If a listener provider is given, calls to methods other than
+     * {@see EventDispatcher::dispatch()} will fail with a
+     * {@see LogicException}.
      */
     public function __construct(?ListenerProviderInterface $listenerProvider = null)
     {
-        if ($listenerProvider) {
-            $this->ListenerProviders[] = $listenerProvider;
-        }
-        $this->ListenerProviders[] = $this;
+        $this->ListenerProvider = $listenerProvider ?? $this;
     }
 
     /**
@@ -65,6 +64,8 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      */
     public function listen(callable $listener, $event = null): int
     {
+        $this->assertIsListenerProvider();
+
         if ($event === null) {
             $event = Reflect::getFirstCallbackParameterClassNames($listener);
         }
@@ -93,15 +94,17 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      */
     public function dispatch(object $event): object
     {
-        foreach ($this->ListenerProviders as $provider) {
-            $listeners = $provider->getListenersForEvent($event);
-            foreach ($listeners as $listener) {
-                if ($event instanceof StoppableEventInterface &&
-                        $event->isPropagationStopped()) {
-                    return $event;
-                }
-                $listener($event);
+        $listeners = $this->ListenerProvider->getListenersForEvent($event);
+
+        foreach ($listeners as $listener) {
+            if (
+                $event instanceof StoppableEventInterface &&
+                $event->isPropagationStopped()
+            ) {
+                break;
             }
+
+            $listener($event);
         }
 
         return $event;
@@ -111,10 +114,12 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      * @template TEvent of object
      *
      * @param TEvent $event
-     * @return Generator<callable(TEvent): mixed>
+     * @return array<callable(TEvent): mixed>
      */
-    public function getListenersForEvent(object $event): Generator
+    public function getListenersForEvent(object $event): array
     {
+        $this->assertIsListenerProvider();
+
         $events = array_merge(
             [get_class($event)],
             class_parents($event),
@@ -139,9 +144,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
             $listeners += $eventListeners;
         }
 
-        foreach ($listeners as $listener) {
-            yield $listener;
-        }
+        return array_values($listeners);
     }
 
     /**
@@ -152,6 +155,8 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      */
     public function removeListener(int $id): void
     {
+        $this->assertIsListenerProvider();
+
         if (!array_key_exists($id, $this->Listeners)) {
             throw new LogicException('No listener with that ID');
         }
@@ -164,5 +169,12 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
         }
 
         unset($this->Listeners[$id]);
+    }
+
+    private function assertIsListenerProvider(): void
+    {
+        if ($this->ListenerProvider !== $this) {
+            throw new LogicException('Not a listener provider');
+        }
     }
 }

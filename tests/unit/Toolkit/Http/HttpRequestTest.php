@@ -199,7 +199,7 @@ final class HttpRequestTest extends TestCase
     {
         return [
             [''],
-            ['SEND'],
+            ['"GET"'],
         ];
     }
 

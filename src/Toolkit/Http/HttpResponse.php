@@ -4,14 +4,16 @@ namespace Salient\Http;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Str;
 
 /**
  * An HTTP response
+ *
+ * @api
  */
 class HttpResponse extends HttpMessage implements HttpResponseInterface
 {
@@ -86,7 +88,7 @@ class HttpResponse extends HttpMessage implements HttpResponseInterface
      * Creates a new HttpResponse object
      *
      * @param StreamInterface|resource|string|null $body
-     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
         int $code = 200,
@@ -120,35 +122,11 @@ class HttpResponse extends HttpMessage implements HttpResponseInterface
     /**
      * @inheritDoc
      */
-    public function getHttpPayload(bool $withoutBody = false): string
-    {
-        return $this->withContentLength()->doGetHttpPayload($withoutBody);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function withStatus(int $code, string $reasonPhrase = ''): ResponseInterface
     {
         return $this
             ->with('StatusCode', $this->filterStatusCode($code))
             ->with('ReasonPhrase', $this->filterReasonPhrase($code, $reasonPhrase));
-    }
-
-    /**
-     * Get an instance with the size of the message body applied to the content
-     * length header
-     *
-     * @return static
-     */
-    public function withContentLength(): self
-    {
-        $size = $this->Body->getSize();
-        if ($size !== null) {
-            return $this->withHeader(HttpHeader::CONTENT_LENGTH, (string) $size);
-        } else {
-            return $this->withoutHeader(HttpHeader::CONTENT_LENGTH);
-        }
     }
 
     /**
@@ -159,7 +137,7 @@ class HttpResponse extends HttpMessage implements HttpResponseInterface
         return Arr::implode(' ', [
             sprintf('HTTP/%s %d', $this->ProtocolVersion, $this->StatusCode),
             $this->ReasonPhrase,
-        ]);
+        ], null);
     }
 
     private function filterStatusCode(int $code): int
@@ -174,14 +152,8 @@ class HttpResponse extends HttpMessage implements HttpResponseInterface
 
     private function filterReasonPhrase(int $code, ?string $reasonPhrase): ?string
     {
-        if ($reasonPhrase === null || $reasonPhrase === '') {
-            return static::STATUS_CODE[$code] ?? null;
-        }
-        return $reasonPhrase;
-    }
-
-    private function doGetHttpPayload(bool $withoutBody): string
-    {
-        return parent::getHttpPayload($withoutBody);
+        return Str::coalesce($reasonPhrase, null)
+            ?? static::STATUS_CODE[$code]
+            ?? null;
     }
 }

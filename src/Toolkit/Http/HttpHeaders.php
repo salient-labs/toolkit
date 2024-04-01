@@ -21,6 +21,11 @@ use LogicException;
 
 /**
  * A collection of [RFC7230]-compliant HTTP headers
+ *
+ * Headers can be applied explicitly or by passing HTTP header fields to
+ * {@see HttpHeaders::addLine()}.
+ *
+ * @api
  */
 class HttpHeaders implements HttpHeadersInterface
 {

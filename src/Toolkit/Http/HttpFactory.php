@@ -16,6 +16,11 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 use Salient\Core\Utility\File;
 
+/**
+ * Implements PSR-17 (HTTP Factories) interfaces
+ *
+ * @api
+ */
 class HttpFactory implements
     RequestFactoryInterface,
     ResponseFactoryInterface,
@@ -58,7 +63,7 @@ class HttpFactory implements
      */
     public function createStream(string $content = ''): StreamInterface
     {
-        return Stream::fromString($content);
+        return HttpStream::fromString($content);
     }
 
     /**
@@ -68,7 +73,7 @@ class HttpFactory implements
         string $filename,
         string $mode = 'r'
     ): StreamInterface {
-        return new Stream(File::open($filename, $mode));
+        return new HttpStream(File::open($filename, $mode));
     }
 
     /**
@@ -76,7 +81,7 @@ class HttpFactory implements
      */
     public function createStreamFromResource($resource): StreamInterface
     {
-        return new Stream($resource);
+        return new HttpStream($resource);
     }
 
     /**
@@ -89,7 +94,13 @@ class HttpFactory implements
         ?string $clientFilename = null,
         ?string $clientMediaType = null
     ): UploadedFileInterface {
-        return new UploadedFile($stream, $size, $error, $clientFilename, $clientMediaType);
+        return new UploadedFile(
+            $stream,
+            $size,
+            $error,
+            $clientFilename,
+            $clientMediaType
+        );
     }
 
     /**

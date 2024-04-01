@@ -958,7 +958,7 @@ final class Curler implements Readable, Writable, Buildable
             return Json::stringify($data);
         }
 
-        $this->setContentType(MimeType::WWW_FORM);
+        $this->setContentType(MimeType::FORM_URLENCODED);
 
         return Get::query(
             $data,

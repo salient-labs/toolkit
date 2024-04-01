@@ -15,7 +15,6 @@ class RequestTest extends RequestIntegrationTest
      */
     protected $skippedTests = [
         'testGetRequestTargetInOriginFormNormalizesUriWithMultipleLeadingSlashesInPath' => 'Test is invalid',
-        'testMethodIsExtendable' => 'Invalid HTTP request types are rejected',
     ];
 
     public function createSubject()

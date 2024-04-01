@@ -10,11 +10,6 @@ use Salient\Http\HttpResponse;
  */
 class ResponseTest extends ResponseIntegrationTest
 {
-    /**
-     * @var array<string,string>
-     */
-    protected $skippedTests = [];
-
     public function createSubject()
     {
         return new HttpResponse();

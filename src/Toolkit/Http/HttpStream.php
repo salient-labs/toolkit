@@ -3,6 +3,7 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
+use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
@@ -11,12 +12,13 @@ use Salient\Core\Utility\Str;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
-use Stringable;
 
 /**
  * A PHP stream wrapper
+ *
+ * @api
  */
-class Stream implements StreamInterface, Stringable
+class HttpStream implements HttpStreamInterface
 {
     protected const CHUNK_SIZE = 8192;
 
@@ -24,7 +26,6 @@ class Stream implements StreamInterface, Stringable
     protected bool $IsReadable;
     protected bool $IsWritable;
     protected bool $IsSeekable;
-    protected ?int $Size = null;
 
     /**
      * @var resource|null
@@ -32,14 +33,14 @@ class Stream implements StreamInterface, Stringable
     protected $Stream;
 
     /**
-     * Creates a new Stream object
+     * Creates a new HttpStream object
      *
      * @param resource $stream
      */
     public function __construct($stream)
     {
-        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
-            throw new InvalidArgumentTypeException(1, 'stream', 'resource', $stream);
+        if (!File::isStream($stream)) {
+            throw new InvalidArgumentTypeException(1, 'stream', 'resource (stream)', $stream);
         }
 
         $meta = stream_get_meta_data($stream);
@@ -52,8 +53,21 @@ class Stream implements StreamInterface, Stringable
         $this->Stream = $stream;
     }
 
+    public function __destruct()
+    {
+        $this->close();
+    }
+
     /**
-     * Creates a new Stream object from a string
+     * @inheritDoc
+     */
+    public static function getMediaType(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Creates a new HttpStream object from a string
      */
     public static function fromString(string $content): self
     {
@@ -66,7 +80,7 @@ class Stream implements StreamInterface, Stringable
     public static function copy(StreamInterface $from, StreamInterface $to): void
     {
         while (!$from->eof()) {
-            $in = $from->read(self::CHUNK_SIZE);
+            $in = $from->read(static::CHUNK_SIZE);
             $written = $to->write($in);
             $unwritten = strlen($in) - $written;
             assert($unwritten >= 0);
@@ -110,21 +124,11 @@ class Stream implements StreamInterface, Stringable
      */
     public function getSize(): ?int
     {
-        if ($this->Size !== null) {
-            return $this->Size;
-        }
+        $this->assertHasStream();
 
-        if (!$this->Stream) {
-            return null;
-        }
+        clearstatcache();
 
-        if ($this->Uri !== null) {
-            clearstatcache(true, $this->Uri);
-        }
-
-        $this->Size = File::stat($this->Stream, $this->Uri)['size'] ?? null;
-
-        return $this->Size;
+        return File::stat($this->Stream, $this->Uri)['size'] ?? null;
     }
 
     /**
@@ -132,9 +136,7 @@ class Stream implements StreamInterface, Stringable
      */
     public function getMetadata(?string $key = null)
     {
-        if (!$this->Stream) {
-            return $key === null ? [] : null;
-        }
+        $this->assertHasStream();
 
         $meta = stream_get_meta_data($this->Stream);
 
@@ -180,7 +182,7 @@ class Stream implements StreamInterface, Stringable
     {
         $this->assertHasStream();
 
-        return feof($this->Stream);
+        return @feof($this->Stream);
     }
 
     /**
@@ -219,8 +221,6 @@ class Stream implements StreamInterface, Stringable
         if (!$this->IsWritable) {
             throw new StreamInvalidRequestException('Stream is not open for writing');
         }
-
-        $this->Size = null;
 
         return File::write($this->Stream, $string, null, $this->Uri);
     }
@@ -268,13 +268,12 @@ class Stream implements StreamInterface, Stringable
         $this->IsReadable = false;
         $this->IsWritable = false;
         $this->IsSeekable = false;
-        $this->Size = null;
 
         return $result;
     }
 
     /**
-     * @phpstan-assert resource $this->Stream
+     * @phpstan-assert !null $this->Stream
      * @phpstan-assert true $this->IsReadable
      */
     protected function assertIsReadable(): void
@@ -287,7 +286,7 @@ class Stream implements StreamInterface, Stringable
     }
 
     /**
-     * @phpstan-assert resource $this->Stream
+     * @phpstan-assert !null $this->Stream
      */
     protected function assertHasStream(): void
     {

@@ -15,7 +15,6 @@ class ServerRequestTest extends ServerRequestIntegrationTest
      */
     protected $skippedTests = [
         'testGetRequestTargetInOriginFormNormalizesUriWithMultipleLeadingSlashesInPath' => 'Test is invalid',
-        'testMethodIsExtendable' => 'Invalid HTTP request types are rejected',
     ];
 
     public function createSubject()

@@ -49,7 +49,9 @@
         "sebastian/diff": "^4 || ^5"
     },
     "provide": {
-        "psr/event-dispatcher-implementation": "^1"
+        "psr/event-dispatcher-implementation": "^1",
+        "psr/http-factory-implementation": "^1",
+        "psr/http-message-implementation": "^1.1 || ^2"
     },
     "autoload": {
         "psr-4": {

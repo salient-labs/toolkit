@@ -4,9 +4,12 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
+use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpProtocolVersion;
+use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
@@ -14,6 +17,8 @@ use Salient\Core\Utility\Arr;
 
 /**
  * Base class for HTTP messages
+ *
+ * @api
  */
 abstract class HttpMessage implements HttpMessageInterface
 {
@@ -32,7 +37,7 @@ abstract class HttpMessage implements HttpMessageInterface
 
     /**
      * @param StreamInterface|resource|string|null $body
-     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
         $body = null,
@@ -42,6 +47,8 @@ abstract class HttpMessage implements HttpMessageInterface
         $this->ProtocolVersion = $this->filterProtocolVersion($version);
         $this->Headers = $this->filterHeaders($headers);
         $this->Body = $this->filterBody($body);
+
+        $this->maybeSetContentType();
     }
 
     /**
@@ -97,6 +104,13 @@ abstract class HttpMessage implements HttpMessageInterface
      */
     public function getHttpPayload(bool $withoutBody = false): string
     {
+        return $this
+            ->withContentLength()
+            ->doGetHttpPayload($withoutBody);
+    }
+
+    private function doGetHttpPayload(bool $withoutBody): string
+    {
         $message = implode("\r\n", Arr::push(
             Arr::unshift(
                 $this->Headers->getLines(),
@@ -117,6 +131,22 @@ abstract class HttpMessage implements HttpMessageInterface
     public function withProtocolVersion(string $version): MessageInterface
     {
         return $this->with('ProtocolVersion', $this->filterProtocolVersion($version));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withHeaders($headers): HttpMessageInterface
+    {
+        return $this->with('Headers', $this->filterHeaders($headers));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withMergedHeaders($headers, bool $addToExisting = false): HttpMessageInterface
+    {
+        return $this->with('Headers', $this->Headers->merge($headers, $addToExisting));
     }
 
     /**
@@ -144,11 +174,25 @@ abstract class HttpMessage implements HttpMessageInterface
     }
 
     /**
+     * @param StreamInterface|resource|string|null $body
+     */
+    public function withBody($body): MessageInterface
+    {
+        return $this
+            ->with('Body', $this->filterBody($body))
+            ->maybeSetContentType();
+    }
+
+    /**
      * @inheritDoc
      */
-    public function withBody(StreamInterface $body): MessageInterface
+    public function withContentLength(): HttpMessageInterface
     {
-        return $this->with('Body', $body);
+        $size = $this->Body->getSize();
+        if ($size !== null) {
+            return $this->withHeader(HttpHeader::CONTENT_LENGTH, (string) $size);
+        }
+        return $this->withoutHeader(HttpHeader::CONTENT_LENGTH);
     }
 
     private function filterProtocolVersion(string $version): string
@@ -162,23 +206,14 @@ abstract class HttpMessage implements HttpMessageInterface
     }
 
     /**
-     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     private function filterHeaders($headers): HttpHeadersInterface
     {
         if ($headers instanceof HttpHeadersInterface) {
             return $headers;
         }
-        if (is_array($headers) || $headers === null) {
-            return new HttpHeaders($headers ?: []);
-        }
-        // @phpstan-ignore-next-line
-        throw new InvalidArgumentTypeException(
-            1,
-            'headers',
-            'HttpHeadersInterface|array<string,string[]|string>|null',
-            $headers
-        );
+        return new HttpHeaders($headers ?? []);
     }
 
     /**
@@ -190,10 +225,10 @@ abstract class HttpMessage implements HttpMessageInterface
             return $body;
         }
         if (is_string($body) || $body === null) {
-            return Stream::fromString((string) $body);
+            return HttpStream::fromString((string) $body);
         }
         try {
-            return new Stream($body);
+            return new HttpStream($body);
         } catch (InvalidArgumentException $ex) {
             throw new InvalidArgumentTypeException(
                 1,
@@ -205,7 +240,21 @@ abstract class HttpMessage implements HttpMessageInterface
     }
 
     /**
-     * Get the message as an HTTP payload
+     * @return $this
+     */
+    private function maybeSetContentType(): self
+    {
+        if ($this->Body instanceof HttpStreamInterface) {
+            $type = $this->Body->getMediaType();
+            if ($type !== null) {
+                $this->Headers = $this->Headers->set(HttpHeader::CONTENT_TYPE, $type);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function __toString(): string
     {
@@ -213,7 +262,7 @@ abstract class HttpMessage implements HttpMessageInterface
     }
 
     /**
-     * @return array{httpVersion:string,headers:array<array{name:string,value:string}>}
+     * @return array{httpVersion:string,headers:array<array{name:string,value:string}>,...}
      */
     public function jsonSerialize(): array
     {
