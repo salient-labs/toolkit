@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan;
+namespace Salient\Tests\PHPStan\Type;
 
 use PHPStan\Testing\TypeInferenceTestCase;
 use Salient\Tests\TestCase;

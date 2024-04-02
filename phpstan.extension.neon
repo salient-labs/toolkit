@@ -1,10 +1,10 @@
 services:
 	-
-		class: Salient\PHPStan\Core\Utility\Str\MethodReturnTypeExtension
+		class: Salient\PHPStan\Type\Core\GetCoalesceMethodReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Core\Utility\Get\MethodReturnTypeExtension
+		class: Salient\PHPStan\Type\Core\StrCoalesceMethodReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

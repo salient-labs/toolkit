@@ -50,7 +50,7 @@ use LogicException;
 use ReflectionClass;
 
 /**
- * Represents the state of an entity in an external system
+ * Base class for entities serviced by sync providers
  *
  * {@see AbstractSyncEntity} implements {@see Readable} and {@see Writable}, but
  * `protected` properties are not accessible by default. Override

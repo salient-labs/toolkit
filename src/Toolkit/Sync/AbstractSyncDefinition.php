@@ -27,8 +27,7 @@ use Closure;
 use LogicException;
 
 /**
- * Provides direct access to a provider's implementation of sync operations for
- * an entity
+ * Base class for sync entity operation definitions
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of SyncProviderInterface
