@@ -1690,6 +1690,13 @@ final class ArrTest extends TestCase
         ];
     }
 
+    public function testSet(): void
+    {
+        $array = ['foo' => 'bar', 'baz' => 'qux'];
+        $this->assertSame(['foo' => ['bar', 'quux'], 'baz' => 'qux'], Arr::set($array, 'foo', ['bar', 'quux']));
+        $this->assertSame(['foo' => 'bar', 'baz' => 'qux', 'bar' => 'baz'], Arr::set($array, 'bar', 'baz'));
+    }
+
     /**
      * @dataProvider trimProvider
      *
@@ -1791,6 +1798,13 @@ final class ArrTest extends TestCase
                 true,
             ],
         ];
+    }
+
+    public function testUnset(): void
+    {
+        $array = ['foo' => 'bar', 'baz' => 'qux'];
+        $this->assertSame(['foo' => 'bar'], Arr::unset($array, 'baz'));
+        $this->assertSame($array, Arr::unset($array, 'bar'));
     }
 
     /**
@@ -1975,6 +1989,55 @@ final class ArrTest extends TestCase
                         public function __toString(): string
                         {
                             return "I'm Batman.";
+                        }
+                    },
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider upperFirstProvider
+     *
+     * @param string[] $expected
+     * @param array<int|float|string|bool|Stringable|null> $array
+     */
+    public function testUpperFirst($expected, $array): void
+    {
+        $this->assertSame($expected, Arr::upperFirst($array));
+    }
+
+    /**
+     * @return array<array{string[],array<int|float|string|bool|Stringable|null>}>
+     */
+    public static function upperFirstProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [
+                    '0',
+                    '3.14',
+                    'null' => '',
+                    '1',
+                    'false' => '',
+                    'string' => 'Title',
+                    Stringable::class => 'Me tarzan.',
+                ],
+                [
+                    0,
+                    3.14,
+                    'null' => null,
+                    true,
+                    'false' => false,
+                    'string' => 'title',
+                    Stringable::class => new class implements Stringable {
+                        public function __toString(): string
+                        {
+                            return 'me tarzan.';
                         }
                     },
                 ],
