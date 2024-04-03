@@ -114,6 +114,20 @@ final class Get extends AbstractUtility
     }
 
     /**
+     * Convert a callable to a closure
+     *
+     * @return ($callable is null ? null : Closure)
+     */
+    public static function closure(?callable $callable): ?Closure
+    {
+        return $callable === null
+            ? null
+            : ($callable instanceof Closure
+                ? $callable
+                : Closure::fromCallable($callable));
+    }
+
+    /**
      * Resolve a closure to its return value
      *
      * @template T
