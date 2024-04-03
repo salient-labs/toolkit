@@ -22,6 +22,7 @@
 /src/Toolkit/Core/Facade/Event.php linguist-generated
 /src/Toolkit/Core/Facade/Profile.php linguist-generated
 /src/Toolkit/Core/Facade/Sync.php linguist-generated
+/src/Toolkit/Curler/Curler2Builder.php linguist-generated
 /src/Toolkit/Curler/CurlerBuilder.php linguist-generated
 /src/Toolkit/Curler/Support/CurlerPageBuilder.php linguist-generated
 /src/Toolkit/Sync/DbSyncDefinitionBuilder.php linguist-generated
