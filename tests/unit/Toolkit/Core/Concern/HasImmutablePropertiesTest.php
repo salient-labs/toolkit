@@ -93,4 +93,29 @@ final class HasImmutablePropertiesTest extends TestCase
 
         $this->assertEquals($A, $g);
     }
+
+    public function testWithoutProperty(): void
+    {
+        $a = new MyImmutableClass();
+        $b = $a->without('A');
+        $c = $b->without('B');
+        $d = $c->without('B');
+        $e = $d->without('TypedObj');
+        $f = $e->with('A', 1);
+        $g = $f
+            ->with('B', 2)
+            ->with('TypedObj', $obj = new stdClass());
+        $f->B = 0;
+
+        $this->assertSame($b, $a);
+        $this->assertNotSame($c, $b);
+        $this->assertSame($d, $c);
+        $this->assertSame($e, $d);
+        // @phpstan-ignore-next-line
+        $this->assertFalse(isset($e->B));
+        $this->assertSame(0, $f->B);
+        $this->assertSame($g->A, 1);
+        $this->assertSame($g->B, 2);
+        $this->assertSame($g->TypedObj, $obj);
+    }
 }
