@@ -2,7 +2,10 @@
 
 namespace Salient\Contract\Curler;
 
+use Salient\Cache\CacheStore;
 use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\QueryFlag;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
@@ -10,6 +13,8 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
+use Salient\Core\Facade\Cache;
+use Salient\Core\Utility\Get;
 
 interface CurlerInterface
 {
@@ -136,7 +141,7 @@ interface CurlerInterface
      * @param mixed[]|null $query
      * @return mixed
      */
-    public function postR(string $data, string $mimeType, ?array $query = null);
+    public function postR(string $data, string $mediaType, ?array $query = null);
 
     /**
      * Send raw data to the endpoint in a PUT request and return the body of the
@@ -145,7 +150,7 @@ interface CurlerInterface
      * @param mixed[]|null $query
      * @return mixed
      */
-    public function putR(string $data, string $mimeType, ?array $query = null);
+    public function putR(string $data, string $mediaType, ?array $query = null);
 
     /**
      * Send raw data to the endpoint in a PATCH request and return the body of
@@ -154,7 +159,7 @@ interface CurlerInterface
      * @param mixed[]|null $query
      * @return mixed
      */
-    public function patchR(string $data, string $mimeType, ?array $query = null);
+    public function patchR(string $data, string $mediaType, ?array $query = null);
 
     /**
      * Send raw data to the endpoint in a DELETE request and return the body of
@@ -163,7 +168,19 @@ interface CurlerInterface
      * @param mixed[]|null $query
      * @return mixed
      */
-    public function deleteR(string $data, string $mimeType, ?array $query = null);
+    public function deleteR(string $data, string $mediaType, ?array $query = null);
+
+    // --
+
+    /**
+     * Invalidate cached cookies
+     *
+     * Calling this method has no effect if the instance does not handle
+     * cookies.
+     *
+     * @return $this
+     */
+    public function flushCookies();
 
     // --
 
@@ -220,26 +237,29 @@ interface CurlerInterface
     public function withoutHeader(string $name);
 
     /**
+     * Check if the instance has an access token
+     */
+    public function hasAccessToken(): bool;
+
+    /**
      * Get an instance that applies an access token to request headers
      *
      * @return static
      */
     public function withAccessToken(
-        AccessTokenInterface $token,
+        ?AccessTokenInterface $token,
         string $headerName = HttpHeader::AUTHORIZATION
     );
 
     /**
-     * Get an instance that does not apply an access token to request headers
-     *
-     * @return static
+     * Check if a header is considered sensitive
      */
-    public function withoutAccessToken();
+    public function isSensitiveHeader(string $name): bool;
 
     /**
      * Get an instance that treats a header as sensitive
      *
-     * Headers in {@see HttpHeaderGroup::SENSITIVE} are treated as sensitive by
+     * Headers in {@see HttpHeaderGroup::SENSITIVE} are considered sensitive by
      * default.
      *
      * @return static
@@ -247,26 +267,311 @@ interface CurlerInterface
     public function withSensitiveHeader(string $name);
 
     /**
-     * Get an instance that does not treat a header as sensitive
+     * Get an instance that does not treat the given header as sensitive
      *
      * @return static
      */
     public function withoutSensitiveHeader(string $name);
 
     /**
-     * Get an instance with the given content type applied to request headers
-     *
-     * If `$mimeType` is `null`, `Content-Type` headers are automatically
-     * applied to requests as needed. This is the default behaviour.
-     *
-     * @return static
+     * Get the media type applied to request headers
      */
-    public function withContentType(?string $mimeType);
+    public function getMediaType(): ?string;
 
     /**
-     * Get an instance with a given pagination handler
+     * Get an instance that applies the given media type to request headers
+     *
+     * If `$type` is `null` (the default), `Content-Type` headers are
+     * automatically applied to requests as needed.
      *
      * @return static
      */
-    public function withPager(?CurlerPagerInterface $pager);
+    public function withMediaType(?string $type);
+
+    /**
+     * Get the current user agent string
+     */
+    public function getUserAgent(): string;
+
+    /**
+     * Get an instance with the given user agent string
+     *
+     * If `$userAgent` is `null`, the default user agent string is restored.
+     *
+     * @return static
+     */
+    public function withUserAgent(?string $userAgent);
+
+    /**
+     * Check if the instance explicitly accepts JSON-encoded responses and
+     * assumes responses with no content type contain JSON
+     */
+    public function expectsJson(): bool;
+
+    /**
+     * Get an instance that explicitly accepts JSON-encoded responses and
+     * assumes responses with no content type contain JSON
+     *
+     * @return static
+     */
+    public function withExpectJson(bool $expectJson = true);
+
+    /**
+     * Check if the instance uses JSON to encode POST/PUT/PATCH/DELETE data
+     */
+    public function postsJson(): bool;
+
+    /**
+     * Get an instance that uses JSON to encode POST/PUT/PATCH/DELETE data
+     *
+     * @return static
+     */
+    public function withPostJson(bool $postJson = true);
+
+    /**
+     * Get the date formatter applied to the instance
+     */
+    public function getDateFormatter(): ?DateFormatterInterface;
+
+    /**
+     * Get an instance that uses the given date formatter to format and parse
+     * the endpoint's date and time values
+     *
+     * @return static
+     */
+    public function withDateFormatter(?DateFormatterInterface $formatter);
+
+    /**
+     * Get an instance with the given Get::query() flags
+     *
+     * Query flags are used to URL-encode data for query strings and
+     * `POST`/`PUT`/`PATCH`/`DELETE` bodies.
+     *
+     * {@see QueryFlag::PRESERVE_NUMERIC_KEYS} and
+     * {@see QueryFlag::PRESERVE_STRING_KEYS} are applied by default.
+     *
+     * @see Get::query()
+     *
+     * @param int-mask-of<QueryFlag::*> $flags
+     * @return static
+     */
+    public function withQueryFlags(int $flags);
+
+    /**
+     * Get an instance with the given json_decode() flags
+     *
+     * `JSON_OBJECT_AS_ARRAY` is applied by default.
+     *
+     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY> $flags
+     * @return static
+     */
+    public function withJsonDecodeFlags(int $flags);
+
+    /**
+     * Get the endpoint's pagination handler
+     */
+    public function getPager(): ?CurlerPagerInterface;
+
+    /**
+     * Get an instance with the given pagination handler
+     *
+     * @param bool $alwaysPaginate If `true`, every response is passed to the
+     * pager.
+     * @return static
+     */
+    public function withPager(?CurlerPagerInterface $pager, bool $alwaysPaginate = false);
+
+    /**
+     * Get the endpoint's cache store
+     */
+    public function getCacheStore(): ?CacheStore;
+
+    /**
+     * Get an instance with the given cache store
+     *
+     * If no `$store` is given, cookies and responses are cached in the
+     * {@see Cache} facade's underlying {@see CacheStore} as needed.
+     *
+     * @return static
+     */
+    public function withCacheStore(?CacheStore $store = null);
+
+    /**
+     * Check if the instance handles cookies
+     */
+    public function hasCookies(): bool;
+
+    /**
+     * Get an instance that handles cookies
+     *
+     * @return static
+     */
+    public function withCookies(?string $cacheKey = null);
+
+    /**
+     * Get an instance that does not handle cookies
+     *
+     * @return static
+     */
+    public function withoutCookies();
+
+    /**
+     * Check if response caching is enabled
+     */
+    public function hasResponseCache(): bool;
+
+    /**
+     * Get an instance that caches responses to GET and HEAD requests
+     *
+     * HTTP caching headers are ignored. USE RESPONSIBLY.
+     *
+     * @return static
+     */
+    public function withResponseCache(bool $cacheResponses = true);
+
+    /**
+     * Check if POST response caching is enabled
+     */
+    public function hasPostResponseCache(): bool;
+
+    /**
+     * Get an instance that caches responses to repeatable POST requests
+     *
+     * {@see withResponseCache()} must also be called to enable caching.
+     *
+     * @return static
+     */
+    public function withPostResponseCache(bool $cachePostResponses = true);
+
+    /**
+     * Get an instance that uses a callback to generate response cache keys
+     *
+     * @param (callable(HttpRequestInterface): (string[]|string))|null $callback
+     * @return static
+     */
+    public function withCacheKeyCallback(?callable $callback);
+
+    /**
+     * Get the lifetime of cached responses, in seconds
+     *
+     * @return int<-1,max>
+     */
+    public function getCacheLifetime(): int;
+
+    /**
+     * Get an instance where cached responses expire after the given number of
+     * seconds
+     *
+     * {@see withResponseCache()} must also be called to enable caching.
+     *
+     * @param int<-1,max> $seconds
+     * - `0`: cache responses indefinitely
+     * - `-1`: disable caching until the method is called again with `$seconds`
+     *   greater than or equal to `0`
+     * @return static
+     */
+    public function withCacheLifetime(int $seconds);
+
+    /**
+     * Check if the instance replaces cached responses that haven't expired
+     */
+    public function refreshesCache(): bool;
+
+    /**
+     * Get an instance that replaces cached responses that haven't expired
+     *
+     * @return static
+     */
+    public function withRefreshCache(bool $refresh = true);
+
+    /**
+     * Get the connection timeout applied to the instance, in seconds
+     *
+     * @return int<0,max>|null
+     */
+    public function getTimeout(): ?int;
+
+    /**
+     * Get an instance with the given connection timeout
+     *
+     * @param int<0,max>|null $seconds
+     * - `0`: wait indefinitely
+     * - `null` (default): use the underlying client's default connection
+     *   timeout.
+     * @return static
+     */
+    public function withTimeout(?int $seconds);
+
+    /**
+     * Check if the instance follows "Location" headers
+     */
+    public function followsRedirects(): bool;
+
+    /**
+     * Get an instance that follows "Location" headers
+     *
+     * @return static
+     */
+    public function withFollowRedirects(bool $follow = true);
+
+    /**
+     * Get the maximum number of "Location" headers followed
+     *
+     * @return int<-1,max>|null
+     */
+    public function getMaxRedirects(): ?int;
+
+    /**
+     * Get an instance that limits the number of "Location" headers followed
+     *
+     * @param int<-1,max>|null $redirects
+     * - `-1`: allow unlimited redirects
+     * - `0`: disable redirects (same effect as `withFollowRedirects(false)`)
+     * - `null` (default): use the underlying client's default redirect limit
+     * @return static
+     */
+    public function withMaxRedirects(?int $redirects);
+
+    /**
+     * Check if the instance retries throttled requests when the endpoint
+     * returns a "Retry-After" header
+     */
+    public function getRetryAfterTooManyRequests(): bool;
+
+    /**
+     * Get the maximum delay between request attempts
+     *
+     * @return int<0,max>
+     */
+    public function getRetryAfterMaxSeconds(): int;
+
+    /**
+     * Get an instance that retries throttled requests when the endpoint returns
+     * a "Retry-After" header
+     *
+     * @return static
+     */
+    public function withRetryAfterTooManyRequests(bool $retry = true);
+
+    /**
+     * Get an instance that limits the delay between request attempts
+     *
+     * `300` is applied by default.
+     *
+     * @param int<0,max> $seconds If `0`, unlimited delays are allowed.
+     * @return static
+     */
+    public function withRetryAfterMaxSeconds(int $seconds);
+
+    /**
+     * Check if exceptions are thrown for HTTP errors
+     */
+    public function throwsHttpErrors(): bool;
+
+    /**
+     * Get an instance that throws exceptions for HTTP errors
+     *
+     * @return static
+     */
+    public function withThrowHttpErrors(bool $throw = true);
 }
