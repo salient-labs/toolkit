@@ -26,10 +26,7 @@ class HttpStream implements HttpStreamInterface
     protected bool $IsReadable;
     protected bool $IsWritable;
     protected bool $IsSeekable;
-
-    /**
-     * @var resource|null
-     */
+    /** @var resource|null */
     protected $Stream;
 
     /**

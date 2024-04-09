@@ -8,6 +8,7 @@ use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Sys;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 use Stringable;
 
 /**
@@ -518,5 +519,45 @@ final class FileTest extends TestCase
         $this->assertTrue(File::same("$dir/dir/file", "$dir/file_symlink"));
         $this->assertFalse(File::same("$dir/dir/file", "$dir/exists"));
         $this->assertFalse(File::same("$dir/dir/file", "$dir/broken_symlink"));
+    }
+
+    /**
+     * @dataProvider assertResourceIsStreamProvider
+     *
+     * @param mixed $value
+     */
+    public function testAssertResourceIsStream(?string $expected, $value, ?string $valueType = null): void
+    {
+        if ($expected === null) {
+            $this->expectException(InvalidArgumentException::class);
+            if ($valueType !== null) {
+                if (is_resource($value)) {
+                    $this->expectExceptionMessage("Invalid resource type: $valueType");
+                } else {
+                    $this->expectExceptionMessage("Argument #1 (\$resource) must be of type Stringable|string|resource, $valueType given");
+                }
+            }
+        }
+        // @phpstan-ignore-next-line
+        $this->assertSame($expected, File::getContents($value));
+    }
+
+    /**
+     * @return array<array{string|null,mixed,2?:string|null}>
+     */
+    public static function assertResourceIsStreamProvider(): array
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        $file = "$dir/dir/file";
+        $stream1 = File::open($file, 'r');
+        $stream2 = File::open($file, 'r');
+        File::close($stream2);
+
+        return [
+            [null, null, 'null'],
+            ['', $file],
+            ['', $stream1],
+            [null, $stream2, 'resource (closed)'],
+        ];
     }
 }

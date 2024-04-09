@@ -2,13 +2,16 @@
 
 namespace Salient\Iterator;
 
+use Salient\Core\Utility\Get;
+use Closure;
 use IteratorIterator;
 use ReturnTypeWillChange;
 use Traversable;
 
 /**
- * Iterates over an iterator, applying a callback to each value every time it is
- * returned
+ * Iterates over an iterator, applying a callback to values as they are returned
+ *
+ * @api
  *
  * @template TKey
  * @template TInput
@@ -19,9 +22,9 @@ use Traversable;
 class MapIterator extends IteratorIterator
 {
     /**
-     * @var callable(TInput, TKey, Traversable<TKey,TInput>): TOutput
+     * @var Closure(TInput, TKey, Traversable<TKey,TInput>): TOutput
      */
-    protected $Callback;
+    private Closure $Callback;
 
     /**
      * @param Traversable<TKey,TInput> $iterator
@@ -29,7 +32,7 @@ class MapIterator extends IteratorIterator
      */
     public function __construct(Traversable $iterator, callable $callback)
     {
-        $this->Callback = $callback;
+        $this->Callback = Get::closure($callback);
 
         parent::__construct($iterator);
     }
@@ -40,6 +43,8 @@ class MapIterator extends IteratorIterator
     #[ReturnTypeWillChange]
     public function current()
     {
-        return ($this->Callback)(parent::current(), $this->key(), $this);
+        /** @var TInput */
+        $current = parent::current();
+        return ($this->Callback)($current, $this->key(), $this);
     }
 }

@@ -2,23 +2,24 @@
 
 namespace Salient\Iterator;
 
+use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Iterator\Concern\FluentIteratorTrait;
-use Salient\Iterator\Contract\IterableIteratorInterface;
 use ArrayIterator;
 use IteratorIterator;
 use Traversable;
 
 /**
- * Iterates over an array or Traversable, providing a fluent interface to its
- * elements
+ * Iterates over an array or Traversable
+ *
+ * @api
  *
  * @template TKey of array-key
  * @template TValue
  *
  * @extends IteratorIterator<TKey,TValue,Traversable<TKey,TValue>>
- * @implements IterableIteratorInterface<TKey,TValue>
+ * @implements FluentIteratorInterface<TKey,TValue>
  */
-class IterableIterator extends IteratorIterator implements IterableIteratorInterface
+class IterableIterator extends IteratorIterator implements FluentIteratorInterface
 {
     /** @use FluentIteratorTrait<TKey,TValue> */
     use FluentIteratorTrait;
@@ -36,15 +37,18 @@ class IterableIterator extends IteratorIterator implements IterableIteratorInter
     }
 
     /**
-     * @param iterable<TKey,TValue> $iterable
-     * @return static
+     * @template T0 of array-key
+     * @template T1
+     *
+     * @param iterable<T0,T1> $iterable
+     * @return self<T0,T1>
      */
     public static function from(iterable $iterable): self
     {
-        if ($iterable instanceof static) {
+        if ($iterable instanceof self) {
             return $iterable;
         }
 
-        return new static($iterable);
+        return new self($iterable);
     }
 }

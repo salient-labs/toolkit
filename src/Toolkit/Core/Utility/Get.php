@@ -162,9 +162,7 @@ final class Get extends AbstractUtility
             ));
         }
 
-        /**
-         * @var int|null
-         */
+        /** @var int|null */
         static $maxInputVars;
 
         $maxInputVars ??= (int) ini_get('max_input_vars');

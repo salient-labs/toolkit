@@ -2,19 +2,26 @@
 
 namespace Salient\Iterator\Concern;
 
-use Salient\Iterator\RecursiveGraphIterator;
-use Salient\Iterator\RecursiveMutableGraphIterator;
+use Salient\Iterator\GraphIterator;
 
 /**
- * Implements RecursiveIterator for RecursiveGraphIterator and
- * RecursiveMutableGraphIterator
+ * Implements RecursiveIterator for GraphIterator subclasses
+ *
+ * @api
+ *
+ * @phpstan-require-extends GraphIterator
+ * @phpstan-require-implements \RecursiveIterator
  */
 trait RecursiveGraphIteratorTrait
 {
+    /**
+     * @inheritDoc
+     */
     public function hasChildren(): bool
     {
-        /** @var RecursiveGraphIterator|RecursiveMutableGraphIterator $this */
-        if (($current = $this->current()) === false) {
+        /** @var GraphIterator $this */
+        $current = $this->current();
+        if ($current === false) {
             // @codeCoverageIgnoreStart
             return false;
             // @codeCoverageIgnoreEnd
@@ -23,19 +30,23 @@ trait RecursiveGraphIteratorTrait
         return is_object($current) || is_array($current);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getChildren(): ?self
     {
-        /** @var RecursiveGraphIterator|RecursiveMutableGraphIterator $this */
-        if (($current = $this->current()) === false) {
+        /** @var GraphIterator $this */
+        $key = $this->key();
+        if ($key === null) {
             // @codeCoverageIgnoreStart
             return null;
             // @codeCoverageIgnoreEnd
         }
 
-        $key = current($this->Keys);
         if ($this->IsObject) {
             $current = &$this->Graph->{$key};
         } else {
+            // @phpstan-ignore-next-line
             $current = &$this->Graph[$key];
         }
 

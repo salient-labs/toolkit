@@ -6,7 +6,10 @@ use Salient\Iterator\Contract\MutableIterator;
 use LogicException;
 
 /**
- * Iterates over the properties or elements of a mutable object or array
+ * Iterates over the properties of an object or the elements of an array while
+ * allowing the current element to be replaced
+ *
+ * @api
  *
  * @implements MutableIterator<array-key,mixed>
  */
@@ -20,6 +23,9 @@ class MutableGraphIterator extends GraphIterator implements MutableIterator
         $this->doConstruct($graph);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function replace($value)
     {
         $key = current($this->Keys);
@@ -34,6 +40,7 @@ class MutableGraphIterator extends GraphIterator implements MutableIterator
             return $this;
         }
 
+        // @phpstan-ignore-next-line
         $this->Graph[$key] = $value;
         return $this;
     }

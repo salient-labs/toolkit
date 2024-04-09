@@ -2,7 +2,8 @@
 
 namespace Salient\Iterator;
 
-use Salient\Iterator\Contract\RecursiveCallbackIteratorInterface;
+use Salient\Core\Utility\Get;
+use Closure;
 use IteratorIterator;
 use RecursiveCallbackFilterIterator;
 use RecursiveIterator;
@@ -15,23 +16,25 @@ use RecursiveIterator;
  * used to filter the return value of {@see RecursiveIterator::hasChildren()},
  * allowing values to be treated as leaf nodes even if they have children.
  *
+ * @api
+ *
  * @template TKey
  * @template TValue
  *
  * @extends IteratorIterator<TKey,TValue,RecursiveIterator<TKey,TValue>>
- * @implements RecursiveCallbackIteratorInterface<TKey,TValue>
+ * @implements RecursiveIterator<TKey,TValue>
  */
-class RecursiveCallbackIterator extends IteratorIterator implements RecursiveCallbackIteratorInterface
+class RecursiveCallbackIterator extends IteratorIterator implements RecursiveIterator
 {
     /**
      * @var RecursiveIterator<TKey,TValue>
      */
-    protected $Iterator;
+    private RecursiveIterator $Iterator;
 
     /**
-     * @var callable(TValue, TKey, RecursiveIterator<TKey,TValue>): bool
+     * @var Closure(TValue, TKey, RecursiveIterator<TKey,TValue>): bool
      */
-    private $Callback;
+    private Closure $Callback;
 
     /**
      * @param RecursiveIterator<TKey,TValue> $iterator
@@ -40,11 +43,14 @@ class RecursiveCallbackIterator extends IteratorIterator implements RecursiveCal
     public function __construct(RecursiveIterator $iterator, callable $callback)
     {
         $this->Iterator = $iterator;
-        $this->Callback = $callback;
+        $this->Callback = Get::closure($callback);
 
         parent::__construct($iterator);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function hasChildren(): bool
     {
         if (!$this->Iterator->hasChildren()) {
@@ -59,7 +65,7 @@ class RecursiveCallbackIterator extends IteratorIterator implements RecursiveCal
     }
 
     /**
-     * @return static|null
+     * @return self<TKey,TValue>|null
      */
     public function getChildren(): ?self
     {
@@ -70,6 +76,6 @@ class RecursiveCallbackIterator extends IteratorIterator implements RecursiveCal
             // @codeCoverageIgnoreStart
             ? null
             // @codeCoverageIgnoreEnd
-            : new static($children, $this->Callback);
+            : new self($children, $this->Callback);
     }
 }

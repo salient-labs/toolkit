@@ -5,7 +5,10 @@ namespace Salient\Iterator\Contract;
 use Iterator;
 
 /**
- * Iterates over a mutable entity and allows the current element to be replaced
+ * Iterates over a mutable entity while allowing the current element to be
+ * replaced
+ *
+ * @api
  *
  * @template TKey
  * @template TValue
