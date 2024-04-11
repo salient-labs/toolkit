@@ -12,6 +12,98 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.14] - 2024-04-11
+
+### Added
+
+- Add optional `$withResourceUsage` parameter to `Console::summary()`
+- Add optional `$delete` parameter to `File::pruneDir()`
+- Add `Arr::set()`, `Arr::unset()`, `Arr::upperFirst()`
+- Add `File::getLines()`, `File::isStream()`, `File::maybeWrite()`, `File::readAll()`, `File::writeAll()`
+- Add `Get::closure()`
+- Add `HasImmutableProperties::withoutProperty()`
+- Add `Regex::INVISIBLE_CHAR`
+- Add `Test::isAsciiString()`
+- Add `HttpHeaders` methods `get{First,Last,One}HeaderLine()`, `hasLastLine()`
+- Add `HttpMessage::getHttpPayload()`, `HttpMessage::__toString()`
+- Add `Stream::copyToStream()`, `Stream::copyToString()`
+- Add `HttpMultipartStream`
+- Add `UploadedFile` (PSR-7 implementation)
+- Add `Uri::isAuthorityForm()`
+- Add `Http::getQuotedString()` and `Http::escapeQuotedString()` (new class)
+
+### Changed
+
+- Replace `HttpResponse` and `HttpServerRequest` with PSR-7 implementations
+- In `Uri`:
+  - Disable strict URI parsing by default
+  - Don't normalise URIs implicitly
+  - Optionally replace empty paths with "/" in HTTP URIs
+  - Optionally collapse multiple slashes in URIs
+  - Make `Uri::parse()` fully compatible with `parse_url()`
+- Extend `JsonSerializable` from `HttpMessageInterface` and scaffold HAR-compliant output
+- Return HAR header objects from `HttpHeadersInterface::jsonSerialize()`
+- Refactor `HttpServer` for API consistency and more robust request handling
+- Rename `Stream` to `HttpStream`
+- Don't cache stream size in `HttpStream`
+- Don't rewind or truncate streams in `File::copy()`
+- Remove optional recursion from `File::deleteDir()`
+- Rename `File::getStream()` to `File::maybeOpen()` and make public
+- Make `File::checkEof()` public
+- Move `File::guessIndentation()` to `Indentation::from()`
+- Rename `File` methods:
+  - `existing()` -> `closestExisting()`
+  - `readCsv()` -> `getCsv()`
+  - `getCwd()` -> `getcwd()`
+  - `getSeekable()` -> `getSeekableStream()`
+  - `isPhp()` -> `hasPhp()`
+  - `creatable()` -> `isCreatable()`
+  - `isSeekable()` -> `isSeekableStream()`
+  - `resolve()` -> `resolvePath()`
+  - `dir()` -> `sanitiseDir()`
+  - `putContents()` -> `writeContents()`
+  - `fputcsv()` -> `writeCsvLine()`
+- Rename `Test` methods:
+  - `isBoolValue()` -> `isBoolean()`
+  - `isIntValue()` -> `isInteger()`
+  - `isFloatValue()` -> `isFloat()`
+  - `isPhpReservedWord()` -> `isBuiltinType()`
+- In `Get::code()`:
+  - Add `$constants` parameter that maps substrings to constant identifiers
+  - Do not escape CR or LF in multiline mode
+  - Do not escape UTF-8 leading or continuation bytes
+  - Always escape control characters
+  - Escape blank/ignorable characters
+  - Remove unnecessary backslashes
+  - In arrays with string and integer keys, suppress numeric keys if they are numbered consecutively from `0`
+- Accept `iterable` in `Arr::toIndex()` and `Arr::toMap()`
+- Remove `Arr::trimAndImplode()` in favour of `Arr::implode()` with an optional `$characters` parameter
+- In `EventDispatcher`, reject calls to methods other than `dispatch()` when a listener provider is given
+- Move `Curler::mimeTypeIs()` to new `Http` utility class and rename to `mediaTypeIs()`
+- In `Http::mediaTypeIs()`, support more suffixes (e.g. `+xml`) and improve standards compliance
+- Rename `Str::splitAndTrim()` to `Str::split()`
+- Merge `Str::splitAndTrimOutsideBrackets()` into `Str::splitOutsideBrackets()`
+- Add closure template support to `Regex::PHPDOC_TYPE`
+- In `PhpDoc`, recognise `@template` syntax `as <type>` in addition to `of <type>`
+- Improve unified diff formatting
+
+### Removed
+
+- Remove `$lastValueOnly` parameter from `HttpHeaders::getHeaderLine()`
+
+### Fixed
+
+- Fix `Get::filter()` issue where keys are URL-decoded
+- Fix `Get::query()` issue where nested arrays may lose their structure
+- Fix issue where `Process::wait()` fails after process terminates
+- Fix `HttpRequest` issue where authority-form request-targets cannot be applied
+- In `HttpRequest`, accept arbitrary request methods and preserve their original case in all contexts
+- In `HttpHeaders::addLine()`, reject invalid line folding if `$strict` is `true`
+
+### Security
+
+- Always `chmod()` after `mkdir()` in case umask modifies permissions
+
 ## [v0.99.13] - 2024-03-19
 
 ### Added
@@ -2211,6 +2303,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.14]: https://github.com/salient-labs/toolkit/compare/v0.99.13...v0.99.14
 [v0.99.13]: https://github.com/salient-labs/toolkit/compare/v0.99.12...v0.99.13
 [v0.99.12]: https://github.com/salient-labs/toolkit/compare/v0.99.11...v0.99.12
 [v0.99.11]: https://github.com/salient-labs/toolkit/compare/v0.99.10...v0.99.11
