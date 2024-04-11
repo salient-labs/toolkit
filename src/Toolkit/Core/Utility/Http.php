@@ -60,4 +60,22 @@ final class Http extends AbstractUtility
         return (self::ALIAS_TYPE[$type] ?? $type) === $mimeType ||
             (self::SUFFIX_TYPE[$suffix] ?? null) === $mimeType;
     }
+
+    /**
+     * Escape and quote a string using double-quote marks as per [RFC7230]
+     * Section 3.2.6
+     */
+    public static function getQuotedString(string $string): string
+    {
+        return '"' . self::escapeQuotedString($string) . '"';
+    }
+
+    /**
+     * Escape backslashes and double-quote marks in a string as per [RFC7230]
+     * Section 3.2.6
+     */
+    public static function escapeQuotedString(string $string): string
+    {
+        return str_replace(['\\', '"'], ['\\\\', '\"'], $string);
+    }
 }

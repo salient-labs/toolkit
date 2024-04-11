@@ -7,10 +7,8 @@ use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\StreamDetachedException;
-use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 
 /**
@@ -56,14 +54,6 @@ class HttpStream implements HttpStreamInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public static function getMediaType(): ?string
-    {
-        return null;
-    }
-
-    /**
      * Creates a new HttpStream object from a string
      */
     public static function fromString(string $content): self
@@ -72,23 +62,37 @@ class HttpStream implements HttpStreamInterface
     }
 
     /**
-     * Copy data from one stream to another
+     * Copy data from a stream to a string
      */
-    public static function copy(StreamInterface $from, StreamInterface $to): void
+    public static function copyToString(StreamInterface $from): string
     {
+        $out = '';
         while (!$from->eof()) {
             $in = $from->read(static::CHUNK_SIZE);
-            $written = $to->write($in);
-            $unwritten = strlen($in) - $written;
-            assert($unwritten >= 0);
-            if ($unwritten > 0) {
-                // @codeCoverageIgnoreStart
-                throw new StreamException(Inflect::format(
-                    $unwritten,
-                    'Error copying data to stream: {{#}} {{#:byte}} not written',
-                ));
-                // @codeCoverageIgnoreEnd
+            if ($in === '') {
+                break;
             }
+            $out .= $in;
+        }
+        return $out;
+    }
+
+    /**
+     * Copy data from one stream to another
+     */
+    public static function copyToStream(StreamInterface $from, StreamInterface $to): void
+    {
+        $out = '';
+        while (!$from->eof()) {
+            $in = $from->read(static::CHUNK_SIZE);
+            if ($in === '') {
+                break;
+            }
+            $out .= $in;
+            $out = substr($out, $to->write($out));
+        }
+        while ($out !== '') {
+            $out = substr($out, $to->write($out));
         }
     }
 

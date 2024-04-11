@@ -5,15 +5,17 @@ namespace Salient\Http;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
+use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Contract\Http\HttpProtocolVersion;
-use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Http;
 
 /**
  * Base class for HTTP messages
@@ -244,11 +246,15 @@ abstract class HttpMessage implements HttpMessageInterface
      */
     private function maybeSetContentType(): self
     {
-        if ($this->Body instanceof HttpStreamInterface) {
-            $type = $this->Body->getMediaType();
-            if ($type !== null) {
-                $this->Headers = $this->Headers->set(HttpHeader::CONTENT_TYPE, $type);
-            }
+        if ($this->Body instanceof HttpMultipartStreamInterface) {
+            $this->Headers = $this->Headers->set(
+                HttpHeader::CONTENT_TYPE,
+                sprintf(
+                    '%s; boundary=%s',
+                    MimeType::FORM_MULTIPART,
+                    Http::getQuotedString($this->Body->getBoundary()),
+                ),
+            );
         }
         return $this;
     }

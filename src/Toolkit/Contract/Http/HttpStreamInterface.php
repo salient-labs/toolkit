@@ -10,11 +10,4 @@ use Stringable;
  */
 interface HttpStreamInterface extends
     StreamInterface,
-    Stringable
-{
-    /**
-     * Get the media type of the stream, or null if the stream has no implicit
-     * media type
-     */
-    public static function getMediaType(): ?string;
-}
+    Stringable {}

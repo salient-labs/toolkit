@@ -4,6 +4,7 @@ namespace Salient\Tests\Core\Utility;
 
 use org\bovigo\vfs\vfsStream;
 use Salient\Core\Exception\FilesystemErrorException;
+use Salient\Core\Exception\UnreadDataException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Sys;
@@ -519,6 +520,31 @@ final class FileTest extends TestCase
         $this->assertTrue(File::same("$dir/dir/file", "$dir/file_symlink"));
         $this->assertFalse(File::same("$dir/dir/file", "$dir/exists"));
         $this->assertFalse(File::same("$dir/dir/file", "$dir/broken_symlink"));
+    }
+
+    public function testReadAll(): void
+    {
+        // 1 MiB
+        $data = str_repeat('0123456789abcdef', 2 ** 16);
+        $stream = Str::toStream($data . str_repeat('0123456789abcdef', 2));
+        $this->assertSame('', File::readAll($stream, 0));
+        $this->assertSame($data, File::readAll($stream, 16 * 2 ** 16));
+        $this->assertSame('0123456789abcdef', File::readAll($stream, 16));
+        $this->expectException(UnreadDataException::class);
+        $this->expectExceptionMessage('Error reading from stream: expected 8 more bytes from php://temp');
+        File::readAll($stream, 24);
+    }
+
+    public function testWriteAll(): void
+    {
+        // 1 MiB
+        $data = str_repeat('0123456789abcdef', 2 ** 16);
+        $stream = File::open('php://temp', 'r+');
+        File::writeAll($stream, $data);
+        File::writeAll($stream, $data, 16);
+        File::writeAll($stream, '');
+        File::rewind($stream);
+        $this->assertSame($data . '0123456789abcdef', File::getContents($stream));
     }
 
     /**

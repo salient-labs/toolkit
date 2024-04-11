@@ -105,7 +105,7 @@ class UploadedFile implements UploadedFileInterface
             }
         } else {
             $target = new HttpStream(File::open($targetPath, 'w'));
-            HttpStream::copy($this->Stream, $target);
+            HttpStream::copyToStream($this->Stream, $target);
         }
 
         $this->IsMoved = true;

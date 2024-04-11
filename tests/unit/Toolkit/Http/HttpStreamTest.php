@@ -374,7 +374,7 @@ final class HttpStreamTest extends TestCase
         $from->rewind();
         $to = $this->getStream('r+', null);
         try {
-            HttpStream::copy($from, $to);
+            HttpStream::copyToStream($from, $to);
             $this->assertSame($data, (string) $to);
         } finally {
             $from->close();
