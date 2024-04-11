@@ -259,6 +259,7 @@ class HttpServer implements Immutable
         $this->assertIsRunning();
 
         File::close($this->Server);
+
         $this->Server = null;
 
         return $this;
@@ -314,10 +315,12 @@ class HttpServer implements Immutable
                     try {
                         File::checkEof($socket);
                     } catch (FilesystemErrorException $ex) {
+                        // @codeCoverageIgnoreStart
                         throw new HttpServerException(sprintf(
                             'Error reading request from %s',
                             $peer,
                         ), $ex);
+                        // @codeCoverageIgnoreEnd
                     }
                     throw new HttpServerException(sprintf(
                         'Incomplete request from %s',
@@ -327,10 +330,12 @@ class HttpServer implements Immutable
 
                 if ($method === null) {
                     if (substr($line, -2) !== "\r\n") {
+                        // @codeCoverageIgnoreStart
                         throw new HttpServerException(sprintf(
                             'Request line from %s does not end with CRLF',
                             $peer,
                         ));
+                        // @codeCoverageIgnoreEnd
                     }
 
                     $startLine = explode(' ', substr($line, 0, -2));
@@ -405,7 +410,15 @@ class HttpServer implements Immutable
             if (!Pcre::match('/:[0-9]++$/', $uri)) {
                 $uri .= ':' . ($this->ProxyPort ?? $this->Port);
             }
-            $uri = new Uri($uri, true);
+            try {
+                $uri = new Uri($uri, true);
+            } catch (InvalidArgumentException $ex) {
+                throw new HttpServerException(sprintf(
+                    'Invalid request URI from %s: %s',
+                    $peer,
+                    $uri,
+                ), $ex);
+            }
             if ($targetUri !== null) {
                 $uri = $uri->follow($targetUri);
             }

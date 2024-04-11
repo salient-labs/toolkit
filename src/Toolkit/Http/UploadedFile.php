@@ -8,6 +8,11 @@ use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Http\Exception\UploadedFileException;
 
+/**
+ * A file uploaded via HTTP
+ *
+ * @api
+ */
 class UploadedFile implements UploadedFileInterface
 {
     private const ERROR_MESSAGE = [
@@ -31,6 +36,8 @@ class UploadedFile implements UploadedFileInterface
     private bool $IsMoved = false;
 
     /**
+     * Creates a new UploadedFile object
+     *
      * @param StreamInterface|resource|string $resource
      */
     public function __construct(
@@ -52,7 +59,7 @@ class UploadedFile implements UploadedFileInterface
         if ($resource instanceof StreamInterface) {
             $this->Stream = $resource;
         } elseif (File::isStream($resource)) {
-            $this->Stream = new Stream($resource);
+            $this->Stream = new HttpStream($resource);
         } elseif (is_string($resource)) {
             $this->File = $resource;
         } else {
@@ -72,7 +79,7 @@ class UploadedFile implements UploadedFileInterface
     {
         $this->assertIsValid();
 
-        return $this->Stream ?? new Stream(File::open($this->File, 'r'));
+        return $this->Stream ?? new HttpStream(File::open($this->File, 'r'));
     }
 
     /**
@@ -97,8 +104,8 @@ class UploadedFile implements UploadedFileInterface
                 ));
             }
         } else {
-            $target = new Stream(File::open($targetPath, 'w'));
-            Stream::copy($this->Stream, $target);
+            $target = new HttpStream(File::open($targetPath, 'w'));
+            HttpStream::copyToStream($this->Stream, $target);
         }
 
         $this->IsMoved = true;

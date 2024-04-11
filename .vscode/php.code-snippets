@@ -5,7 +5,7 @@
 		"body": [
 			"<?php declare(strict_types=1);",
 			"",
-			"namespace ${TM_DIRECTORY/^.*\\\\/src\\\\/(Toolkit|(Sli|PHPStan))|^.*\\\\/(tests\\\\/(?:unit|fixtures|3rdparty)\\\\/(Toolkit|(Sli|PHPStan)))|\\\\/([a-zA-Z0-9]+)/${1:+Salient}${2:+\\\\}$2${4:+Salient}${3:+\\\\Tests}${5:+\\\\}$5${6:+\\\\}$6/g};",
+			"namespace ${TM_DIRECTORY/^.*\\\\/src\\\\/(Toolkit|(Sli))|^.*\\\\/(tests\\\\/(?:unit|fixtures|3rdparty)\\\\/(Toolkit|(Sli)))|\\\\/([a-zA-Z0-9]+)/${1:+Salient}${2:+\\\\}$2${4:+Salient}${3:+\\\\Tests}${5:+\\\\}$5${6:+\\\\}$6/g};",
 			"",
 			"${RELATIVE_FILEPATH/(?:.*(?:(\\\\/Contract\\\\/.*|Interface\\.php$)|(\\\\/Concern\\\\/.*|Trait\\.php$))|(^(?:.(?!\\\\/(?:Contract|Concern)\\\\/|(?:Interface|Trait)\\.php$))*$))/${1:+interface}${2:+trait}${3:+class}/} ${TM_FILENAME_BASE/[^a-zA-Z0-9]+//g} {",
 			"    $0",
@@ -17,7 +17,7 @@
 		"scope": "php",
 		"prefix": "namespace",
 		"body": [
-			"namespace ${TM_DIRECTORY/^.*\\\\/src\\\\/(Toolkit|(Sli|PHPStan))|^.*\\\\/(tests\\\\/(?:unit|fixtures|3rdparty)\\\\/(Toolkit|(Sli|PHPStan)))|\\\\/([a-zA-Z0-9]+)/${1:+Salient}${2:+\\\\}$2${4:+Salient}${3:+\\\\Tests}${5:+\\\\}$5${6:+\\\\}$6/g};"
+			"namespace ${TM_DIRECTORY/^.*\\\\/src\\\\/(Toolkit|(Sli))|^.*\\\\/(tests\\\\/(?:unit|fixtures|3rdparty)\\\\/(Toolkit|(Sli)))|\\\\/([a-zA-Z0-9]+)/${1:+Salient}${2:+\\\\}$2${4:+Salient}${3:+\\\\Tests}${5:+\\\\}$5${6:+\\\\}$6/g};"
 		]
 	}
 }

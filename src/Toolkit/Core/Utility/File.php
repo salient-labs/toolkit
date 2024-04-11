@@ -6,6 +6,7 @@ use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
+use Salient\Core\Exception\UnreadDataException;
 use Salient\Core\Exception\UnwrittenDataException;
 use Salient\Core\AbstractUtility;
 use Salient\Core\Process;
@@ -622,6 +623,48 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Read from an open stream until data of the expected length is read
+     *
+     * @param resource $stream
+     * @param int<0,max> $length
+     * @param Stringable|string|null $uri
+     * @throws UnreadDataException when fewer bytes are read than expected and
+     * the stream is at end-of-file.
+     */
+    public static function readAll($stream, int $length, $uri = null): string
+    {
+        if ($length === 0) {
+            return '';
+        }
+        $data = '';
+        $dataLength = 0;
+        do {
+            assert($length - $dataLength > 0);
+            $result = self::read($stream, $length - $dataLength, $uri);
+            if ($result === '') {
+                if (@feof($stream)) {
+                    break;
+                }
+                usleep(10000);
+                continue;
+            }
+            $data .= $result;
+            $dataLength += strlen($result);
+            if ($dataLength === $length) {
+                return $data;
+            }
+            // Minimise CPU usage, e.g. when reading from non-blocking streams
+            usleep(10000);
+        } while (true);
+
+        throw new UnreadDataException(Inflect::format(
+            $length - $dataLength,
+            'Error reading from stream: expected {{#}} more {{#:byte}} from %s',
+            self::getFriendlyStreamUri($uri, $stream),
+        ));
+    }
+
+    /**
      * Read a line from an open stream
      *
      * @param resource $stream
@@ -725,7 +768,8 @@ final class File extends AbstractUtility
      * @param resource $stream
      * @param int<0,max>|null $length
      * @param Stringable|string|null $uri
-     * @throws UnwrittenDataException when fewer bytes are written than given.
+     * @throws UnwrittenDataException when fewer bytes are written than
+     * expected.
      */
     public static function write($stream, string $data, ?int $length = null, $uri = null): int
     {
@@ -738,6 +782,34 @@ final class File extends AbstractUtility
             ));
         }
         return $result;
+    }
+
+    /**
+     * Write to an open stream until there is no unwritten data
+     *
+     * @param resource $stream
+     * @param int<0,max>|null $length
+     * @param Stringable|string|null $uri
+     */
+    public static function writeAll($stream, string $data, ?int $length = null, $uri = null): int
+    {
+        if ($length !== null) {
+            $data = substr($data, 0, $length);
+        }
+        if ($data === '') {
+            return 0;
+        }
+        $result = 0;
+        do {
+            $result += self::maybeWrite($stream, $data, $data, null, $uri);
+            if ($data === '') {
+                return $result;
+            }
+            // Minimise CPU usage, e.g. when writing to non-blocking streams
+            // @codeCoverageIgnoreStart
+            usleep(10000);
+            // @codeCoverageIgnoreEnd
+        } while (true);
     }
 
     /**

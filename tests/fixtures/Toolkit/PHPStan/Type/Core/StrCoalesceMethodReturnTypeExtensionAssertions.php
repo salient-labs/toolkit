@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Core\Utility\Str;
+namespace Salient\Tests\PHPStan\Type\Core;
 
 use Salient\Core\Utility\Str;
 

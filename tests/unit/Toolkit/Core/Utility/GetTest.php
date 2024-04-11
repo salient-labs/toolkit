@@ -19,6 +19,7 @@ use Salient\Tests\Core\Utility\Get\UncloneableClass;
 use Salient\Tests\TestCase;
 use ArrayIterator;
 use ArrayObject;
+use Closure;
 use Countable;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -171,6 +172,20 @@ final class GetTest extends TestCase
         $this->expectExceptionMessage('Argument #1 ($value) must be of type int|string|null, stdClass given');
         // @phpstan-ignore-next-line
         Get::arrayKey(new stdClass());
+    }
+
+    public function testClosure(): void
+    {
+        $this->assertNull(Get::closure(null));
+
+        $closure = fn() => null;
+        $this->assertSame($closure, Get::closure($closure));
+
+        $callable = 'strtoupper';
+        $closure = Get::closure($callable);
+        $this->assertInstanceOf(Closure::class, $closure);
+        $this->assertSame('FOO', $callable('foo'));
+        $this->assertSame('BAR', $closure('bar'));
     }
 
     /**

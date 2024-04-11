@@ -4,10 +4,12 @@ namespace Salient\Tests\Core\Utility;
 
 use org\bovigo\vfs\vfsStream;
 use Salient\Core\Exception\FilesystemErrorException;
+use Salient\Core\Exception\UnreadDataException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Sys;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 use Stringable;
 
 /**
@@ -518,5 +520,70 @@ final class FileTest extends TestCase
         $this->assertTrue(File::same("$dir/dir/file", "$dir/file_symlink"));
         $this->assertFalse(File::same("$dir/dir/file", "$dir/exists"));
         $this->assertFalse(File::same("$dir/dir/file", "$dir/broken_symlink"));
+    }
+
+    public function testReadAll(): void
+    {
+        // 1 MiB
+        $data = str_repeat('0123456789abcdef', 2 ** 16);
+        $stream = Str::toStream($data . str_repeat('0123456789abcdef', 2));
+        $this->assertSame('', File::readAll($stream, 0));
+        $this->assertSame($data, File::readAll($stream, 16 * 2 ** 16));
+        $this->assertSame('0123456789abcdef', File::readAll($stream, 16));
+        $this->expectException(UnreadDataException::class);
+        $this->expectExceptionMessage('Error reading from stream: expected 8 more bytes from php://temp');
+        File::readAll($stream, 24);
+    }
+
+    public function testWriteAll(): void
+    {
+        // 1 MiB
+        $data = str_repeat('0123456789abcdef', 2 ** 16);
+        $stream = File::open('php://temp', 'r+');
+        File::writeAll($stream, $data);
+        File::writeAll($stream, $data, 16);
+        File::writeAll($stream, '');
+        File::rewind($stream);
+        $this->assertSame($data . '0123456789abcdef', File::getContents($stream));
+    }
+
+    /**
+     * @dataProvider assertResourceIsStreamProvider
+     *
+     * @param mixed $value
+     */
+    public function testAssertResourceIsStream(?string $expected, $value, ?string $valueType = null): void
+    {
+        if ($expected === null) {
+            $this->expectException(InvalidArgumentException::class);
+            if ($valueType !== null) {
+                if (is_resource($value)) {
+                    $this->expectExceptionMessage("Invalid resource type: $valueType");
+                } else {
+                    $this->expectExceptionMessage("Argument #1 (\$resource) must be of type Stringable|string|resource, $valueType given");
+                }
+            }
+        }
+        // @phpstan-ignore-next-line
+        $this->assertSame($expected, File::getContents($value));
+    }
+
+    /**
+     * @return array<array{string|null,mixed,2?:string|null}>
+     */
+    public static function assertResourceIsStreamProvider(): array
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        $file = "$dir/dir/file";
+        $stream1 = File::open($file, 'r');
+        $stream2 = File::open($file, 'r');
+        File::close($stream2);
+
+        return [
+            [null, null, 'null'],
+            ['', $file],
+            ['', $stream1],
+            [null, $stream2, 'resource (closed)'],
+        ];
     }
 }

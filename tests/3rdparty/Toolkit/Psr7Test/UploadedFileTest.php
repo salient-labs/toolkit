@@ -3,7 +3,7 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\UploadedFileIntegrationTest;
-use Salient\Http\Stream;
+use Salient\Http\HttpStream;
 use Salient\Http\UploadedFile;
 
 /**
@@ -13,7 +13,7 @@ class UploadedFileTest extends UploadedFileIntegrationTest
 {
     public function createSubject()
     {
-        $stream = Stream::fromString('foobar');
+        $stream = HttpStream::fromString('foobar');
 
         return new UploadedFile(
             $stream,

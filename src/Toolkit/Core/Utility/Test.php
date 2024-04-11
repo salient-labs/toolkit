@@ -90,6 +90,17 @@ final class Test extends AbstractUtility
     }
 
     /**
+     * Check if a value is a string where every character has a codepoint
+     * between 0 and 127
+     *
+     * @param mixed $value
+     */
+    public static function isAsciiString($value): bool
+    {
+        return is_string($value) && !Pcre::match('/[^\x00-\x7f]/', $value);
+    }
+
+    /**
      * Check if a value is a string or Stringable
      *
      * @param mixed $value

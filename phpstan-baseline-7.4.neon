@@ -821,26 +821,6 @@ parameters:
 			path: src/Toolkit/Iterator/Graph.php
 
 		-
-			message: "#^Argument of an invalid type object supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/GraphIterator.php
-
-		-
-			message: "#^Cannot access offset int\\|string on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/GraphIterator.php
-
-		-
-			message: "#^Parameter \\#1 \\$ of callable callable\\(TInput, TKey, Traversable\\<TKey, TInput\\>\\)\\: TOutput expects TInput, TOutput given\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/MapIterator.php
-
-		-
-			message: "#^Cannot access offset int\\|string on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/MutableGraphIterator.php
-
-		-
 			message: "#^Method Salient\\\\Iterator\\\\RecursiveFilesystemIterator\\:\\:getIterator\\(\\) should return Traversable\\<string, SplFileInfo\\> but returns CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|FilesystemIterator\\|RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
@@ -849,21 +829,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$str1 of function strcasecmp expects string, int\\|string given\\.$#"
 			count: 2
 			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
-
-		-
-			message: "#^Cannot access offset int\\|string\\|false on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/RecursiveGraphIterator.php
-
-		-
-			message: "#^Argument of an invalid type object supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/RecursiveMutableGraphIterator.php
-
-		-
-			message: "#^Cannot access offset int\\|string\\|false on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/RecursiveMutableGraphIterator.php
 
 		-
 			message: "#^Cannot access an offset on array\\<string\\>\\|true\\.$#"

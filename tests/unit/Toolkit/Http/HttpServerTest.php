@@ -16,6 +16,10 @@ use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Http\HttpServer
+ * @covers \Salient\Http\HttpServerRequest
+ * @covers \Salient\Http\HttpRequest
+ * @covers \Salient\Http\HttpResponse
+ * @covers \Salient\Http\HttpMessage
  */
 final class HttpServerTest extends TestCase
 {

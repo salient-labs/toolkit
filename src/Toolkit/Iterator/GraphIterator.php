@@ -8,7 +8,9 @@ use ReturnTypeWillChange;
 use Traversable;
 
 /**
- * Iterates over the properties or elements of an object or array
+ * Iterates over the properties of an object or the elements of an array
+ *
+ * @api
  *
  * @implements Iterator<array-key,mixed>
  */
@@ -27,6 +29,8 @@ class GraphIterator implements Iterator
     protected bool $IsObject = true;
 
     /**
+     * Creates a new GraphIterator object
+     *
      * @param object|mixed[] $graph
      */
     public function __construct($graph)
@@ -47,12 +51,11 @@ class GraphIterator implements Iterator
         }
 
         if ($graph instanceof Traversable) {
-            // @codeCoverageIgnoreStart
             throw new LogicException('Traversable objects are not supported');
-            // @codeCoverageIgnoreEnd
         }
 
         $this->Graph = $graph;
+        // @phpstan-ignore-next-line
         foreach ($graph as $key => $value) {
             $this->Keys[] = $key;
         }
@@ -71,10 +74,10 @@ class GraphIterator implements Iterator
             // @codeCoverageIgnoreEnd
         }
 
-        return
-            $this->IsObject
-                ? $this->Graph->{$key}
-                : $this->Graph[$key];
+        return $this->IsObject
+            ? $this->Graph->{$key}
+            // @phpstan-ignore-next-line
+            : $this->Graph[$key];
     }
 
     /**
@@ -92,16 +95,25 @@ class GraphIterator implements Iterator
         return $key;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function next(): void
     {
         next($this->Keys);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function rewind(): void
     {
         reset($this->Keys);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function valid(): bool
     {
         return current($this->Keys) !== false;

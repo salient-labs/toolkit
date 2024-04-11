@@ -6,8 +6,11 @@ use Salient\Iterator\Concern\RecursiveGraphIteratorTrait;
 use RecursiveIterator;
 
 /**
- * Iterates over the properties and elements of mutable objects and arrays,
- * descending into them recursively
+ * Iterates over the properties of objects and the elements of arrays,
+ * descending into them recursively while allowing the current element to be
+ * replaced
+ *
+ * @api
  *
  * @implements RecursiveIterator<array-key,mixed>
  */
@@ -32,6 +35,7 @@ class RecursiveMutableGraphIterator extends MutableGraphIterator implements Recu
 
         if (is_object($current) && $this->hasChildren()) {
             $array = [];
+            // @phpstan-ignore-next-line
             foreach ($current as $key => $value) {
                 $array[$key] = $value;
             }

@@ -431,7 +431,7 @@ final class Str extends AbstractUtility
     {
         $stream = File::open('php://temp', 'r+');
         File::write($stream, $string);
-        File::seek($stream, 0);
+        File::rewind($stream);
         return $stream;
     }
 

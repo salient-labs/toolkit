@@ -202,6 +202,39 @@ final class Arr extends AbstractUtility
     }
 
     /**
+     * Assign a value to an array
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TKey $key
+     * @param TValue $value
+     * @return array<TKey,TValue>
+     */
+    public static function set(array $array, $key, $value): array
+    {
+        $array[$key] = $value;
+        return $array;
+    }
+
+    /**
+     * Remove a value from an array
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TKey $key
+     * @return array<TKey,TValue>
+     */
+    public static function unset(array $array, $key): array
+    {
+        unset($array[$key]);
+        return $array;
+    }
+
+    /**
      * Sort an array by value
      *
      * @template TKey of array-key
@@ -658,6 +691,24 @@ final class Arr extends AbstractUtility
             $upper[$key] = Str::upper((string) $value);
         }
         return $upper ?? [];
+    }
+
+    /**
+     * Make the first character of each entry in an array of strings and
+     * Stringables uppercase
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|Stringable|null
+     *
+     * @param iterable<TKey,TValue> $array
+     * @return array<TKey,string>
+     */
+    public static function upperFirst(iterable $array): array
+    {
+        foreach ($array as $key => $value) {
+            $upperFirst[$key] = Str::upperFirst((string) $value);
+        }
+        return $upperFirst ?? [];
     }
 
     /**

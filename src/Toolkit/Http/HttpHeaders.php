@@ -21,6 +21,11 @@ use LogicException;
 
 /**
  * A collection of [RFC7230]-compliant HTTP headers
+ *
+ * Headers can be applied explicitly or by passing HTTP header fields to
+ * {@see HttpHeaders::addLine()}.
+ *
+ * @api
  */
 class HttpHeaders implements HttpHeadersInterface
 {
@@ -135,6 +140,9 @@ class HttpHeaders implements HttpHeadersInterface
             // octets prior to interpreting the field value."
             $carry = $matches['carry'];
             if ($matches['extended'] !== null) {
+                if (!$this->Headers) {
+                    throw new InvalidArgumentException(sprintf('Invalid line folding: %s', $line));
+                }
                 $extend = true;
                 $line = $this->Carry . ' ' . $matches['extended'];
             } else {
@@ -804,6 +812,8 @@ class HttpHeaders implements HttpHeadersInterface
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      * @return never
+     *
+     * @codeCoverageIgnore
      */
     protected function getItems($items): array
     {
@@ -837,7 +847,9 @@ class HttpHeaders implements HttpHeadersInterface
     private function maybeIndexTrailer()
     {
         if (!$this->Headers) {
+            // @codeCoverageIgnoreStart
             throw new LogicException('No headers applied');
+            // @codeCoverageIgnoreEnd
         }
         if (!$this->Closed) {
             return $this;

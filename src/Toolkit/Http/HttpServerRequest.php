@@ -5,13 +5,15 @@ namespace Salient\Http;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpServerRequestInterface;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Stringable;
 
 /**
  * An incoming HTTP request
+ *
+ * @api
  */
 class HttpServerRequest extends HttpRequest implements HttpServerRequestInterface
 {
@@ -46,10 +48,12 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     protected array $Attributes = [];
 
     /**
+     * Creates a new HttpServerRequest object
+     *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $serverParams
      * @param StreamInterface|resource|string|null $body
-     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
         string $method,
@@ -177,7 +181,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     }
 
     /**
-     * @template T of mixed[]|object|null
+     * @template T
      *
      * @param T $data
      * @return T
@@ -187,7 +191,6 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
         if ($data === null || is_array($data) || is_object($data)) {
             return $data;
         }
-        // @phpstan-ignore-next-line
         throw new InvalidArgumentTypeException(1, '$data', 'mixed[]|object|null', $data);
     }
 }

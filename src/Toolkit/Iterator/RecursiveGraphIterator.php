@@ -6,8 +6,10 @@ use Salient\Iterator\Concern\RecursiveGraphIteratorTrait;
 use RecursiveIterator;
 
 /**
- * Iterates over the properties and elements of objects and arrays, descending
- * into them recursively
+ * Iterates over the properties of objects and the elements of arrays,
+ * descending into them recursively
+ *
+ * @api
  *
  * @implements RecursiveIterator<array-key,mixed>
  */

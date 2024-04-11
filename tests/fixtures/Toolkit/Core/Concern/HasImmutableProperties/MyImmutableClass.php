@@ -8,7 +8,10 @@ use stdClass;
 
 class MyImmutableClass
 {
-    use HasImmutableProperties;
+    use HasImmutableProperties {
+        withPropertyValue as public with;
+        withoutProperty as public without;
+    }
 
     public int $A;
 
@@ -55,18 +58,11 @@ class MyImmutableClass
      */
     public $Coll;
 
+    public stdClass $TypedObj;
+
     public function __construct()
     {
         $this->Obj = new stdClass();
         $this->Coll = new ImmutableCollection();
-    }
-
-    /**
-     * @param mixed $value
-     * @return static
-     */
-    public function with(string $property, $value)
-    {
-        return $this->withPropertyValue($property, $value);
     }
 }

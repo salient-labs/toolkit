@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPStan\Core\Utility\Str;
+namespace Salient\PHPStan\Type\Core;
 
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -13,13 +12,13 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Get;
 
-class MethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+class GetCoalesceMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
     public function getClass(): string
     {
-        return Str::class;
+        return Get::class;
     }
 
     public function isStaticMethodSupported(
@@ -41,8 +40,6 @@ class MethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtensio
             return $null;
         }
 
-        $empty = new UnionType([new ConstantStringType(''), $null]);
-
         $types = [];
         $last = null;
         foreach ($args as $arg) {
@@ -63,14 +60,14 @@ class MethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtensio
 
             foreach (Arr::wrap($type) as $type) {
                 $last = $type;
-                $isEmpty = $empty->isSuperTypeOf($type);
-                if ($isEmpty->yes()) {
+                $isNull = $null->isSuperTypeOf($type);
+                if ($isNull->yes()) {
                     continue;
                 }
-                if ($isEmpty->no()) {
+                if ($isNull->no()) {
                     break 2;
                 }
-                $types[] = TypeCombinator::remove($type, $empty);
+                $types[] = TypeCombinator::removeNull($type);
             }
         }
 

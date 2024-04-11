@@ -5,19 +5,22 @@ namespace Salient\Http;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestInterface;
-use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Pcre;
 use Stringable;
 
 /**
  * An outgoing HTTP request
+ *
+ * @api
  */
 class HttpRequest extends HttpMessage implements HttpRequestInterface
 {
+    private const TOKEN = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
+
     protected string $Method;
     protected ?string $RequestTarget;
     protected Uri $Uri;
@@ -27,7 +30,7 @@ class HttpRequest extends HttpMessage implements HttpRequestInterface
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param StreamInterface|resource|string|null $body
-     * @param HttpHeadersInterface|array<string,string[]|string>|null $headers
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
         string $method,
@@ -46,7 +49,7 @@ class HttpRequest extends HttpMessage implements HttpRequestInterface
         if ($this->Headers->getHeaderLine(HttpHeader::HOST) !== '') {
             return;
         }
-        $host = $this->getHost();
+        $host = $this->getUriHost();
         if ($host === '') {
             return;
         }
@@ -125,7 +128,7 @@ class HttpRequest extends HttpMessage implements HttpRequestInterface
             return $instance;
         }
 
-        $host = $instance->getHost();
+        $host = $instance->getUriHost();
         if ($host === '') {
             return $instance;
         }
@@ -139,13 +142,13 @@ class HttpRequest extends HttpMessage implements HttpRequestInterface
     {
         return sprintf(
             '%s %s HTTP/%s',
-            Str::upper($this->Method),
+            $this->Method,
             $this->getRequestTarget(),
             $this->ProtocolVersion,
         );
     }
 
-    private function getHost(): string
+    private function getUriHost(): string
     {
         $host = $this->Uri->getHost();
         if ($host === '') {
@@ -162,7 +165,7 @@ class HttpRequest extends HttpMessage implements HttpRequestInterface
 
     private function filterMethod(string $method): string
     {
-        if (!HttpRequestMethod::hasValue(Str::upper($method))) {
+        if (!Pcre::match(self::TOKEN, $method)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid HTTP method: %s', $method)
             );
@@ -219,8 +222,8 @@ class HttpRequest extends HttpMessage implements HttpRequestInterface
         // `Psr\Http\Message\UriInterface` makes no distinction between empty
         // and undefined URI components, but `/path?` and `/path` are not
         // necessarily equivalent, so URIs are always converted to instances of
-        // `Salient\Http\Uri`, which surfaces empty and undefined queries as
-        // `""` and `null` respectively
+        // `Salient\Http\Uri`, which surfaces empty and undefined queries via
+        // `Uri::toParts()` as `""` and `null` respectively
         return Uri::from($uri);
     }
 }

@@ -36,6 +36,26 @@ trait HasImmutableProperties
         return $clone;
     }
 
+    /**
+     * Remove a property from a clone of the object if it is currently set or
+     * initialized
+     *
+     * @return static
+     */
+    protected function withoutProperty(string $property)
+    {
+        if (
+            !isset($this->$property) &&
+            !$this->propertyIsInitialized($property)
+        ) {
+            return $this;
+        }
+
+        $clone = $this->clone();
+        unset($clone->$property);
+        return $clone;
+    }
+
     private function propertyIsInitialized(string $property): bool
     {
         if (!property_exists($this, $property)) {

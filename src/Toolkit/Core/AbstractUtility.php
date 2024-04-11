@@ -5,7 +5,7 @@ namespace Salient\Core;
 /**
  * Base class for utility classes
  *
- * @internal
+ * @api
  */
 abstract class AbstractUtility
 {

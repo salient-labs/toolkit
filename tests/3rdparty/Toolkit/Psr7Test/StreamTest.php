@@ -4,10 +4,10 @@ namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\StreamIntegrationTest;
 use Psr\Http\Message\StreamInterface;
-use Salient\Http\Stream;
+use Salient\Http\HttpStream;
 
 /**
- * @covers \Salient\Http\Stream
+ * @covers \Salient\Http\HttpStream
  */
 class StreamTest extends StreamIntegrationTest
 {
@@ -17,8 +17,8 @@ class StreamTest extends StreamIntegrationTest
             return $data;
         }
         if (is_string($data)) {
-            return Stream::fromString($data);
+            return HttpStream::fromString($data);
         }
-        return new Stream($data);
+        return new HttpStream($data);
     }
 }

@@ -5,17 +5,18 @@ namespace Salient\Tests\Http;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
+use Salient\Core\Utility\Sys;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
-use Salient\Http\Stream;
+use Salient\Http\HttpStream;
 use Salient\Tests\TestCase;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  *
- * @covers \Salient\Http\Stream
+ * @covers \Salient\Http\HttpStream
  */
-final class StreamTest extends TestCase
+final class HttpStreamTest extends TestCase
 {
     /**
      * @var resource|null
@@ -26,10 +27,10 @@ final class StreamTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Argument #1 ($stream) must be of type resource, string given'
+            'Argument #1 ($stream) must be of type resource (stream), string given'
         );
         // @phpstan-ignore-next-line
-        new Stream(__METHOD__);
+        new HttpStream(__METHOD__);
     }
 
     /**
@@ -61,7 +62,7 @@ final class StreamTest extends TestCase
 
     public function testFromString(): void
     {
-        $stream = Stream::fromString('foo');
+        $stream = HttpStream::fromString('foo');
         $this->assertSame(3, $stream->getSize());
         $this->assertSame('foo', (string) $stream);
         $stream->close();
@@ -79,14 +80,14 @@ final class StreamTest extends TestCase
     {
         $stream = $this->getForwardOnlyStream();
         $this->assertFalse($stream->isSeekable());
-        $this->assertSame('data', trim((string) $stream));
+        $this->assertSame('data', (string) $stream);
         $stream->close();
 
         $stream = $this->getForwardOnlyStream();
         $firstLetter = $stream->read(1);
         $this->assertFalse($stream->isSeekable());
         $this->assertSame('d', $firstLetter);
-        $this->assertSame('ata', trim((string) $stream));
+        $this->assertSame('ata', (string) $stream);
         $stream->close();
     }
 
@@ -114,7 +115,7 @@ final class StreamTest extends TestCase
     {
         $size = File::size(__FILE__);
         $handle = File::open(__FILE__, 'r');
-        $stream = new Stream($handle);
+        $stream = new HttpStream($handle);
         $this->assertSame($size, $stream->getSize());
         $this->assertSame($size, $stream->getSize());
         $stream->close();
@@ -161,14 +162,11 @@ final class StreamTest extends TestCase
         $this->assertDetached($stream);
     }
 
-    private function assertDetached(Stream $stream): void
+    private function assertDetached(HttpStream $stream): void
     {
         $this->assertFalse($stream->isReadable());
         $this->assertFalse($stream->isWritable());
         $this->assertFalse($stream->isSeekable());
-        $this->assertNull($stream->getSize());
-        $this->assertSame([], $stream->getMetadata());
-        $this->assertNull($stream->getMetadata('mode'));
 
         $throws = function (callable $fn): void {
             try {
@@ -183,6 +181,8 @@ final class StreamTest extends TestCase
         };
 
         foreach ([
+            'getSize' => fn() => $stream->getSize(),
+            'getMetadata' => fn() => $stream->getMetadata(),
             '__toString' => fn() => (string) $stream,
             'getContents' => fn() => $stream->getContents(),
             'tell' => fn() => $stream->tell(),
@@ -196,7 +196,7 @@ final class StreamTest extends TestCase
                 $callback,
                 StreamDetachedException::class,
                 'Stream is detached',
-                sprintf('%s::%s() should throw an exception after stream is detached', Stream::class, $method)
+                sprintf('%s::%s() should throw an exception after stream is detached', HttpStream::class, $method)
             );
         }
     }
@@ -300,7 +300,7 @@ final class StreamTest extends TestCase
     {
         $handle = gzopen('php://temp', $mode);
         $this->assertIsResource($handle);
-        $stream = new Stream($handle);
+        $stream = new HttpStream($handle);
         $this->assertSame($readable, $stream->isReadable());
         $this->assertSame($writable, $stream->isWritable());
         $stream->close();
@@ -323,7 +323,7 @@ final class StreamTest extends TestCase
         $dir = File::createTempDir();
         $file = $dir . '/file';
         $handle = File::open($file, 'w');
-        $stream = new Stream($handle);
+        $stream = new HttpStream($handle);
         $stream->write('foo');
         $stream->seek(0);
         $this->expectException(StreamInvalidRequestException::class);
@@ -342,7 +342,7 @@ final class StreamTest extends TestCase
         $file = $dir . '/file';
         touch($file);
         $handle = File::open($file, 'r');
-        $stream = new Stream($handle);
+        $stream = new HttpStream($handle);
         $this->expectException(StreamInvalidRequestException::class);
         $this->expectExceptionMessage('Stream is not open for writing');
         try {
@@ -375,7 +375,7 @@ final class StreamTest extends TestCase
         $from->rewind();
         $to = $this->getStream('r+', null);
         try {
-            Stream::copy($from, $to);
+            HttpStream::copyToStream($from, $to);
             $this->assertSame($data, (string) $to);
         } finally {
             $from->close();
@@ -396,20 +396,21 @@ final class StreamTest extends TestCase
         ];
     }
 
-    private function getStream(string $mode = 'r+', ?string $data = 'data', string $filename = 'php://temp'): Stream
+    private function getStream(string $mode = 'r+', ?string $data = 'data', string $filename = 'php://temp'): HttpStream
     {
         $handle = File::open($filename, $mode);
         if ($data !== null) {
             File::write($handle, $data);
         }
         $this->LastHandle = $handle;
-        return new Stream($handle);
+        return new HttpStream($handle);
     }
 
-    private function getForwardOnlyStream(): Stream
+    private function getForwardOnlyStream(): HttpStream
     {
-        $handle = File::openPipe('echo data', 'r');
+        $command = Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'data';"]);
+        $handle = File::openPipe($command, 'r');
         $this->LastHandle = $handle;
-        return new Stream($handle);
+        return new HttpStream($handle);
     }
 }

@@ -5,7 +5,7 @@ namespace Salient\Core;
 use ReflectionClass;
 
 /**
- * Base class for uninstantiable classes with public constants of a given type
+ * Base class for enumerations and dictionaries
  *
  * @internal
  *

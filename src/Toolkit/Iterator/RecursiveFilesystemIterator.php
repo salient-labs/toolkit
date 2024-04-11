@@ -40,20 +40,11 @@ class RecursiveFilesystemIterator implements
     private bool $DirsFirst = true;
     private bool $Recurse = true;
     private bool $MatchRelative = false;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Dirs = [];
-
-    /**
-     * @var array<string|callable(SplFileInfo, string, FilesystemIterator): bool>
-     */
+    /** @var array<string|callable(SplFileInfo, string, FilesystemIterator): bool> */
     private array $Exclude = [];
-
-    /**
-     * @var array<string|callable(SplFileInfo, string, FilesystemIterator, RecursiveIteratorIterator<RecursiveDirectoryIterator|RecursiveCallbackFilterIterator<string,SplFileInfo,RecursiveDirectoryIterator>>|null=): bool>
-     */
+    /** @var array<string|callable(SplFileInfo, string, FilesystemIterator, RecursiveIteratorIterator<RecursiveDirectoryIterator|RecursiveCallbackFilterIterator<string,SplFileInfo,RecursiveDirectoryIterator>>|null=): bool> */
     private array $Include = [];
 
     /**

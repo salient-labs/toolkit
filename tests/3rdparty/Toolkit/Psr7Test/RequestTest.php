@@ -7,6 +7,7 @@ use Salient\Http\HttpRequest;
 
 /**
  * @covers \Salient\Http\HttpRequest
+ * @covers \Salient\Http\HttpMessage
  */
 class RequestTest extends RequestIntegrationTest
 {
@@ -15,7 +16,6 @@ class RequestTest extends RequestIntegrationTest
      */
     protected $skippedTests = [
         'testGetRequestTargetInOriginFormNormalizesUriWithMultipleLeadingSlashesInPath' => 'Test is invalid',
-        'testMethodIsExtendable' => 'Invalid HTTP request types are rejected',
     ];
 
     public function createSubject()

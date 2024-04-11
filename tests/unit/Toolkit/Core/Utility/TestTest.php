@@ -235,6 +235,32 @@ final class TestTest extends TestCase
     }
 
     /**
+     * @dataProvider isAsciiStringProvider
+     *
+     * @param mixed $value
+     */
+    public function testIsAsciiString(bool $expected, $value): void
+    {
+        $this->assertSame($expected, Test::isAsciiString($value));
+    }
+
+    /**
+     * @return array<array{bool,mixed}>
+     */
+    public static function isAsciiStringProvider(): array
+    {
+        return [
+            [false, null],
+            [false, 'äëïöüÿ'],
+            [false, '👩🏼‍🚒'],
+            [false, 0],
+            [false, 1],
+            [true, ''],
+            [true, 'Hello, world!'],
+        ];
+    }
+
+    /**
      * @dataProvider isStringableProvider
      *
      * @param mixed $value
@@ -254,7 +280,7 @@ final class TestTest extends TestCase
             [false, new stdClass()],
             [true, 'string'],
             [true, new class { public function __toString() { return 'string'; } }],
-            [true, new class implements Stringable { public function __toString() { return 'string'; } }],
+            [true, new class implements Stringable { public function __toString(): string { return 'string'; } }],
         ];
     }
 

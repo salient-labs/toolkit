@@ -49,12 +49,13 @@
         "sebastian/diff": "^4 || ^5"
     },
     "provide": {
-        "psr/event-dispatcher-implementation": "^1"
+        "psr/event-dispatcher-implementation": "^1",
+        "psr/http-factory-implementation": "^1",
+        "psr/http-message-implementation": "^1.1 || ^2"
     },
     "autoload": {
         "psr-4": {
-            "Salient\\": "src/Toolkit/",
-            "Salient\\PHPStan\\": "src/PHPStan/"
+            "Salient\\": "src/Toolkit/"
         },
         "classmap": [
             "stubs/"
@@ -66,7 +67,6 @@
     "autoload-dev": {
         "psr-4": {
             "Salient\\Sli\\": "src/Sli/",
-            "Salient\\Tests\\PHPStan\\": "tests/unit/PHPStan/",
             "Salient\\Tests\\": [
                 "tests/unit/Toolkit/",
                 "tests/fixtures/Toolkit/",
