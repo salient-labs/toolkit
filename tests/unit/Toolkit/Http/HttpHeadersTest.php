@@ -444,6 +444,43 @@ final class HttpHeadersTest extends TestCase
         );
     }
 
+    public function testSort(): void
+    {
+        $lines = ($headers = $this->getHeaders())->getLines();
+        $headers = $headers->sort();
+        $this->assertSame([
+            'abc' => ['def'],
+            'foo' => ['bar', 'baz'],
+            'foo2' => ['*'],
+            'qux' => ['quux'],
+        ], $headers->all());
+        $this->assertSame($lines, $headers->getLines());
+    }
+
+    public function testReverse(): void
+    {
+        $lines = ($headers = $this->getHeaders())->getLines();
+        $headers = $headers->reverse();
+        $this->assertSame([
+            'qux' => ['quux'],
+            'abc' => ['def'],
+            'foo' => ['bar', 'baz'],
+            'foo2' => ['*'],
+        ], $headers->all());
+        $this->assertSame($lines, $headers->getLines());
+    }
+
+    private function getHeaders(): HttpHeaders
+    {
+        return new HttpHeaders([
+            'Foo2' => '*',
+            'foo' => 'bar',
+            'abc' => 'def',
+            'Foo' => 'baz',
+            'qux' => 'quux',
+        ]);
+    }
+
     public function testFilter(): void
     {
         $index = Arr::toIndex(Arr::lower(HttpHeaderGroup::SENSITIVE));

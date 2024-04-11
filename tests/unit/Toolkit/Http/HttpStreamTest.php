@@ -5,6 +5,7 @@ namespace Salient\Tests\Http;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
+use Salient\Core\Utility\Sys;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpStream;
@@ -79,14 +80,14 @@ final class HttpStreamTest extends TestCase
     {
         $stream = $this->getForwardOnlyStream();
         $this->assertFalse($stream->isSeekable());
-        $this->assertSame('data', trim((string) $stream));
+        $this->assertSame('data', (string) $stream);
         $stream->close();
 
         $stream = $this->getForwardOnlyStream();
         $firstLetter = $stream->read(1);
         $this->assertFalse($stream->isSeekable());
         $this->assertSame('d', $firstLetter);
-        $this->assertSame('ata', trim((string) $stream));
+        $this->assertSame('ata', (string) $stream);
         $stream->close();
     }
 
@@ -407,7 +408,8 @@ final class HttpStreamTest extends TestCase
 
     private function getForwardOnlyStream(): HttpStream
     {
-        $handle = File::openPipe('echo data', 'r');
+        $command = Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'data';"]);
+        $handle = File::openPipe($command, 'r');
         $this->LastHandle = $handle;
         return new HttpStream($handle);
     }

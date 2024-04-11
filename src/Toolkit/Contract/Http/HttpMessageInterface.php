@@ -3,7 +3,6 @@
 namespace Salient\Contract\Http;
 
 use Psr\Http\Message\MessageInterface;
-use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Immutable;
 use JsonSerializable;
 use Stringable;
@@ -17,22 +16,6 @@ interface HttpMessageInterface extends
     JsonSerializable,
     Immutable
 {
-    /**
-     * Get an instance with the given headers
-     *
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $headers
-     * @return static
-     */
-    public function withHeaders($headers): HttpMessageInterface;
-
-    /**
-     * Get an instance where the given headers are merged with existing headers
-     *
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $headers
-     * @return static
-     */
-    public function withMergedHeaders($headers, bool $addToExisting = false): HttpMessageInterface;
-
     /**
      * Get an instance where the size of the message body is applied to the
      * Content-Length header

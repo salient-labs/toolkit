@@ -150,7 +150,7 @@ class HttpStream implements HttpStreamInterface
     public function __toString(): string
     {
         if ($this->IsSeekable) {
-            $this->seek(0);
+            $this->rewind();
         }
 
         return $this->getContents();
@@ -191,7 +191,9 @@ class HttpStream implements HttpStreamInterface
      */
     public function rewind(): void
     {
-        $this->seek(0);
+        $this->assertIsSeekable();
+
+        File::rewind($this->Stream, $this->Uri);
     }
 
     /**
@@ -231,11 +233,7 @@ class HttpStream implements HttpStreamInterface
      */
     public function seek(int $offset, int $whence = \SEEK_SET): void
     {
-        $this->assertHasStream();
-
-        if (!$this->IsSeekable) {
-            throw new StreamInvalidRequestException('Stream is not seekable');
-        }
+        $this->assertIsSeekable();
 
         File::seek($this->Stream, $offset, $whence, $this->Uri);
     }
@@ -271,6 +269,19 @@ class HttpStream implements HttpStreamInterface
         $this->IsSeekable = false;
 
         return $result;
+    }
+
+    /**
+     * @phpstan-assert !null $this->Stream
+     * @phpstan-assert true $this->IsSeekable
+     */
+    protected function assertIsSeekable(): void
+    {
+        $this->assertHasStream();
+
+        if (!$this->IsSeekable) {
+            throw new StreamInvalidRequestException('Stream is not seekable');
+        }
     }
 
     /**

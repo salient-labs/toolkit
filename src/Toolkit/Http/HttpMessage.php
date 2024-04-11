@@ -138,22 +138,6 @@ abstract class HttpMessage implements HttpMessageInterface
     /**
      * @inheritDoc
      */
-    public function withHeaders($headers): HttpMessageInterface
-    {
-        return $this->with('Headers', $this->filterHeaders($headers));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withMergedHeaders($headers, bool $addToExisting = false): HttpMessageInterface
-    {
-        return $this->with('Headers', $this->Headers->merge($headers, $addToExisting));
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function withHeader(string $name, $value): MessageInterface
     {
         return $this->with('Headers', $this->Headers->set($name, $value));
@@ -194,7 +178,9 @@ abstract class HttpMessage implements HttpMessageInterface
         if ($size !== null) {
             return $this->withHeader(HttpHeader::CONTENT_LENGTH, (string) $size);
         }
+        // @codeCoverageIgnoreStart
         return $this->withoutHeader(HttpHeader::CONTENT_LENGTH);
+        // @codeCoverageIgnoreEnd
     }
 
     private function filterProtocolVersion(string $version): string

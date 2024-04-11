@@ -7,6 +7,7 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Contract\Http\HttpStreamPartInterface;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Pcre;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
@@ -34,7 +35,14 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
     public function __construct(array $parts = [], ?string $boundary = null)
     {
         $this->Boundary = $boundary ??= '------' . bin2hex(random_bytes(18));
+        $this->applyParts($parts);
+    }
 
+    /**
+     * @param HttpStreamPartInterface[] $parts
+     */
+    private function applyParts(array $parts): void
+    {
         foreach ($parts as $part) {
             $contentStream = $part->getContent();
 
@@ -49,15 +57,21 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
 
             $disposition = [
                 'form-data',
-                sprintf('name="%s"', $this->escape($part->getName())),
+                sprintf('name=%s', Http::getQuotedString($part->getName())),
             ];
             $fallbackFilename = $part->getFallbackFilename();
             if ($fallbackFilename !== null) {
-                $disposition[] = sprintf('filename="%s"', $this->escape($fallbackFilename));
+                $disposition[] = sprintf(
+                    'filename=%s',
+                    Http::getQuotedString($fallbackFilename),
+                );
             }
             $filename = $part->getFilename();
-            if ($filename !== null) {
-                $disposition[] = sprintf("filename*=UTF-8''%s", $this->encode($filename));
+            if ($filename !== null && $filename !== $fallbackFilename) {
+                $disposition[] = sprintf(
+                    "filename*=UTF-8''%s",
+                    $this->encode($filename),
+                );
             }
             $headers = new HttpHeaders([
                 HttpHeader::CONTENT_DISPOSITION => implode('; ', $disposition),
@@ -68,7 +82,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
             }
             $headers = sprintf(
                 "--%s\r\n%s\r\n\r\n",
-                $boundary,
+                $this->Boundary,
                 implode("\r\n", $headers->getLines()),
             );
 
@@ -77,7 +91,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
             $this->Streams[] = HttpStream::fromString("\r\n");
         }
 
-        $this->Streams[] = HttpStream::fromString(sprintf("--%s--\r\n", $boundary));
+        $this->Streams[] = HttpStream::fromString(sprintf("--%s--\r\n", $this->Boundary));
     }
 
     /**
@@ -121,7 +135,9 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
         foreach ($this->Streams as $stream) {
             $size = $stream->getSize();
             if ($size === null) {
+                // @codeCoverageIgnoreStart
                 return null;
+                // @codeCoverageIgnoreEnd
             }
             $total += $size;
         }
@@ -142,7 +158,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
     public function __toString(): string
     {
         if ($this->IsSeekable) {
-            $this->seek(0);
+            $this->rewind();
         }
         return $this->getContents();
     }
@@ -186,6 +202,14 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
      */
     public function read(int $length): string
     {
+        if ($length === 0) {
+            return '';
+        }
+
+        if ($length < 0) {
+            throw new InvalidArgumentException('Argument #1 ($length) must be greater than or equal to 0');
+        }
+
         $buffer = '';
         $remaining = $length;
         $last = count($this->Streams) - 1;
@@ -256,9 +280,11 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
                 break;
 
             default:
+                // @codeCoverageIgnoreStart
                 throw new InvalidArgumentException(
                     sprintf('Invalid whence: %d', $whence)
                 );
+                // @codeCoverageIgnoreEnd
         }
 
         if ($offsetPos < 0) {
@@ -275,15 +301,19 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
         foreach ($this->Streams as $i => $stream) {
             try {
                 $stream->rewind();
+                // @codeCoverageIgnoreStart
             } catch (Throwable $ex) {
                 throw new StreamException(sprintf('Error seeking stream %d', $i), $ex);
             }
+            // @codeCoverageIgnoreEnd
         }
 
         while ($this->Pos < $offsetPos && !$this->eof()) {
             $data = $this->read(min(static::CHUNK_SIZE, $offsetPos - $this->Pos));
             if ($data === '') {
+                // @codeCoverageIgnoreStart
                 break;
+                // @codeCoverageIgnoreEnd
             }
         }
     }
@@ -317,11 +347,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
         $this->Streams = [];
         $this->Stream = 0;
         $this->Pos = 0;
-    }
-
-    private function escape(string $string): string
-    {
-        return str_replace(['\\', '"'], ['\\\\', '\"'], $string);
+        $this->applyParts([]);
     }
 
     /**

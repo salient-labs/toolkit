@@ -7,6 +7,7 @@ use Salient\Http\HttpRequest;
 
 /**
  * @covers \Salient\Http\HttpRequest
+ * @covers \Salient\Http\HttpMessage
  */
 class RequestTest extends RequestIntegrationTest
 {

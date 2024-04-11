@@ -7,6 +7,7 @@ use Salient\Http\HttpResponse;
 
 /**
  * @covers \Salient\Http\HttpResponse
+ * @covers \Salient\Http\HttpMessage
  */
 class ResponseTest extends ResponseIntegrationTest
 {

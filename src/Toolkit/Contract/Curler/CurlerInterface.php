@@ -3,7 +3,6 @@
 namespace Salient\Contract\Curler;
 
 use Salient\Cache\CacheStore;
-use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\QueryFlag;
 use Salient\Contract\Http\AccessTokenInterface;
@@ -193,23 +192,6 @@ interface CurlerInterface
      * Get request headers that are not considered sensitive
      */
     public function getPublicHeaders(): HttpHeadersInterface;
-
-    /**
-     * Get an instance with the given request headers
-     *
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $headers
-     * @return static
-     */
-    public function withHeaders($headers);
-
-    /**
-     * Get an instance where the given headers are merged with existing request
-     * headers
-     *
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $headers
-     * @return static
-     */
-    public function withMergedHeaders($headers, bool $addToExisting = false);
 
     /**
      * Get an instance with a value applied to a request header, replacing any
