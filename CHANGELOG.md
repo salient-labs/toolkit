@@ -2,11 +2,9 @@
 
 Notable changes to this project are documented in this file.
 
-It is generated from the GitHub release notes of the project by
-[salient/changelog][].
+It is generated from the GitHub release notes of the project by [salient/changelog][].
 
-The format is based on [Keep a Changelog][], and this project adheres to
-[Semantic Versioning][].
+The format is based on [Keep a Changelog][], and this project adheres to [Semantic Versioning][].
 
 [salient/changelog]: https://github.com/salient-labs/php-changelog
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
@@ -19,14 +17,14 @@ The format is based on [Keep a Changelog][], and this project adheres to
 - Add optional `$withResourceUsage` parameter to `Console::summary()`
 - Add optional `$delete` parameter to `File::pruneDir()`
 - Add `Arr::set()`, `Arr::unset()`, `Arr::upperFirst()`
-- Add `File::getLines()`, `File::isStream()`, `File::maybeWrite()`, `File::readAll()`, `File::writeAll()`
+- Add `File::checkEof()`, `File::getLines()`, `File::isStream()`, `File::maybeOpen()`, `File::maybeWrite()`, `File::readAll()`, `File::writeAll()`
 - Add `Get::closure()`
 - Add `HasImmutableProperties::withoutProperty()`
 - Add `Regex::INVISIBLE_CHAR`
 - Add `Test::isAsciiString()`
 - Add `HttpHeaders` methods `get{First,Last,One}HeaderLine()`, `hasLastLine()`
 - Add `HttpMessage::getHttpPayload()`, `HttpMessage::__toString()`
-- Add `Stream::copyToStream()`, `Stream::copyToString()`
+- Add `HttpStream::copyToStream()`, `HttpStream::copyToString()` after renaming `Stream`
 - Add `HttpMultipartStream`
 - Add `UploadedFile` (PSR-7 implementation)
 - Add `Uri::isAuthorityForm()`
@@ -41,15 +39,12 @@ The format is based on [Keep a Changelog][], and this project adheres to
   - Optionally replace empty paths with "/" in HTTP URIs
   - Optionally collapse multiple slashes in URIs
   - Make `Uri::parse()` fully compatible with `parse_url()`
-- Extend `JsonSerializable` from `HttpMessageInterface` and scaffold HAR-compliant output
-- Return HAR header objects from `HttpHeadersInterface::jsonSerialize()`
+- In `HttpMessage` and `HttpHeaders`, implement `JsonSerializable` and scaffold HAR-compliant output from `jsonSerialize()`
 - Refactor `HttpServer` for API consistency and more robust request handling
 - Rename `Stream` to `HttpStream`
 - Don't cache stream size in `HttpStream`
 - Don't rewind or truncate streams in `File::copy()`
 - Remove optional recursion from `File::deleteDir()`
-- Rename `File::getStream()` to `File::maybeOpen()` and make public
-- Make `File::checkEof()` public
 - Move `File::guessIndentation()` to `Indentation::from()`
 - Rename `File` methods:
   - `existing()` -> `closestExisting()`
@@ -77,14 +72,13 @@ The format is based on [Keep a Changelog][], and this project adheres to
   - Remove unnecessary backslashes
   - In arrays with string and integer keys, suppress numeric keys if they are numbered consecutively from `0`
 - Accept `iterable` in `Arr::toIndex()` and `Arr::toMap()`
-- Remove `Arr::trimAndImplode()` in favour of `Arr::implode()` with an optional `$characters` parameter
+- Remove `Arr::trimAndImplode()` in favour of `Arr::implode()` with optional `$characters`
 - In `EventDispatcher`, reject calls to methods other than `dispatch()` when a listener provider is given
 - Move `Curler::mimeTypeIs()` to new `Http` utility class and rename to `mediaTypeIs()`
 - In `Http::mediaTypeIs()`, support more suffixes (e.g. `+xml`) and improve standards compliance
 - Rename `Str::splitAndTrim()` to `Str::split()`
 - Merge `Str::splitAndTrimOutsideBrackets()` into `Str::splitOutsideBrackets()`
-- Add closure template support to `Regex::PHPDOC_TYPE`
-- In `PhpDoc`, recognise `@template` syntax `as <type>` in addition to `of <type>`
+- In `PhpDoc`, add support for closure templates and recognise `@template` syntax `as <type>` in addition to `of <type>`
 - Improve unified diff formatting
 
 ### Removed
@@ -949,9 +943,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 ### Fixed
 
-- Fix issue where Cli options are still bound to their original variables /
-  properties after a command is cloned (caveat: commands must be cloned with
-  `Get::copy()`)
+- Fix issue where Cli options are still bound to their original variables / properties after a command is cloned (caveat: commands must be cloned with `Get::copy()`)
 
 ## [v0.21.22] - 2024-01-18
 
