@@ -14,6 +14,7 @@ use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
@@ -22,7 +23,6 @@ use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Sys;
-use LogicException;
 
 /**
  * A service container for CLI applications

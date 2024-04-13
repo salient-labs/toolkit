@@ -9,9 +9,9 @@ use Salient\Contract\Core\TextComparisonFlag as Flag;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Utility\Str;
 use Closure;
-use LogicException;
 
 /**
  * Resolves a name to an entity using one or more text comparison algorithms

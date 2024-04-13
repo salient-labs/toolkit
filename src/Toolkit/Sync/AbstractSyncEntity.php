@@ -27,6 +27,7 @@ use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ProvidableTrait;
 use Salient\Core\Concern\RequiresContainer;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
@@ -46,7 +47,6 @@ use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
 use DateTimeInterface;
 use Generator;
-use LogicException;
 use ReflectionClass;
 
 /**

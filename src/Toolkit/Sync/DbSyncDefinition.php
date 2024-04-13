@@ -12,8 +12,8 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Exception\LogicException;
 use Closure;
-use LogicException;
 
 /**
  * Provides direct access to a DbSyncProvider's implementation of sync

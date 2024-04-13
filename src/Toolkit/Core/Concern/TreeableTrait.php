@@ -3,8 +3,8 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Treeable;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Introspector;
-use LogicException;
 
 /**
  * Implements Treeable

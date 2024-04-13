@@ -3,7 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\Metric;
-use LogicException;
+use Salient\Core\Exception\LogicException;
 
 /**
  * Collects runtime performance metrics

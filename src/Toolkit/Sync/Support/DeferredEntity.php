@@ -6,8 +6,8 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Core\Exception\LogicException;
 use Salient\Sync\SyncStore;
-use LogicException;
 
 /**
  * The promise of a sync entity that hasn't been retrieved yet

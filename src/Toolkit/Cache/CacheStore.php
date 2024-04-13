@@ -3,9 +3,9 @@
 namespace Salient\Cache;
 
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\AbstractStore;
 use DateTimeInterface;
-use LogicException;
 use SQLite3Result;
 use SQLite3Stmt;
 

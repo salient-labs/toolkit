@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Utility\Arr;
-use LogicException;
 use ReflectionClass;
 
 /**

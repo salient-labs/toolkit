@@ -11,13 +11,13 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\InvalidHeaderException;
 use Generator;
-use LogicException;
 
 /**
  * An [RFC7230]-compliant HTTP header collection

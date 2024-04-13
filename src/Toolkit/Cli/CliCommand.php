@@ -11,12 +11,12 @@ use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Core\JsonSchemaInterface;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use LogicException;
 use Throwable;
 
 /**

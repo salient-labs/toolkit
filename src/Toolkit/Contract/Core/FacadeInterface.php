@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core;
 
-use LogicException;
+use Salient\Core\Exception\LogicException;
 
 /**
  * Provides a static interface to an underlying instance

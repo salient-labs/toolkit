@@ -14,10 +14,10 @@ use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use LogicException;
 
 /**
  * Formats messages for a console output target

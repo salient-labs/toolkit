@@ -2,8 +2,8 @@
 
 namespace Salient\Iterator;
 
+use Salient\Core\Exception\LogicException;
 use ArrayAccess;
-use LogicException;
 use ReturnTypeWillChange;
 
 /**

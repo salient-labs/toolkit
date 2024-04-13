@@ -9,10 +9,10 @@ use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Iterator\FluentIteratorInterface;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Introspector;
 use Salient\Iterator\IterableIterator;
 use Generator;
-use LogicException;
 
 /**
  * Implements Providable to represent an external entity

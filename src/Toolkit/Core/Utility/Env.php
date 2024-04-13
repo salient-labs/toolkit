@@ -6,11 +6,11 @@ use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidDotEnvSyntaxException;
 use Salient\Core\Exception\InvalidEnvironmentException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Facade\Console;
 use Salient\Core\AbstractUtility;
 use Closure;
-use LogicException;
 
 /**
  * Work with .env files and environment variables
