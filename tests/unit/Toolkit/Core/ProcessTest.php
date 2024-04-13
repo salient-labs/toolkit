@@ -3,7 +3,6 @@
 namespace Salient\Tests\Core;
 
 use Salient\Contract\Core\FileDescriptor;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTimedOutException;
 use Salient\Core\Facade\Profile;
@@ -12,6 +11,7 @@ use Salient\Core\Utility\Sys;
 use Salient\Core\Process;
 use Salient\Tests\TestCase;
 use Closure;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Core\Process

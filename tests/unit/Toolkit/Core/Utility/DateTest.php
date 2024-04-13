@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Date;
 use Salient\Tests\TestCase;
 use DateInterval;
 use DateMalformedIntervalStringException;
 use Exception;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Core\Utility\Date

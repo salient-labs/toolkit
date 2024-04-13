@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Str;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Http\HttpMultipartStreamPart

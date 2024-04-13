@@ -3,11 +3,11 @@
 namespace Salient\Tests\PhpDoc;
 
 use Salient\Contract\Core\Regex;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\PhpDoc\PhpDoc;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\PhpDoc\PhpDoc

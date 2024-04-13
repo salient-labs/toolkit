@@ -4,9 +4,9 @@ namespace Salient\Tests\Core;
 
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\ArrayMapper;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 use Throwable;
 use ValueError;
 

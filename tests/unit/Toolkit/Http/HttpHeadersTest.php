@@ -7,13 +7,13 @@ use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\HttpHeaders;
 use Salient\Tests\TestCase;
 use ArrayIterator;
+use InvalidArgumentException;
 use LogicException;
 
 /**

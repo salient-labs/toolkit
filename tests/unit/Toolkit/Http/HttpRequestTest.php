@@ -4,10 +4,10 @@ namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Http\HttpRequest;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests

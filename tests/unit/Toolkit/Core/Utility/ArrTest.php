@@ -4,13 +4,13 @@ namespace Salient\Tests\Core\Utility;
 
 use Salient\Contract\Core\Jsonable;
 use Salient\Contract\Core\SortFlag;
-use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Json;
 use Salient\Tests\TestCase;
 use ArrayIterator;
 use DateTimeImmutable;
 use DateTimeInterface;
+use OutOfRangeException;
 use stdClass;
 use Stringable;
 

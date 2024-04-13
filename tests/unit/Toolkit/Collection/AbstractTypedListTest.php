@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Collection;
 
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Tests\Collection\TypedList\MyClass;
 use Salient\Tests\Collection\TypedList\MyList;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Collection\AbstractTypedList
