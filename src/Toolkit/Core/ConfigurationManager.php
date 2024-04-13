@@ -4,11 +4,11 @@ namespace Salient\Core;
 
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidConfigurationException;
+use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
 use ArrayAccess;
-use OutOfRangeException;
 use ReturnTypeWillChange;
 
 /**

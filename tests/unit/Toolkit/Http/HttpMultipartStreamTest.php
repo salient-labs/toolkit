@@ -2,22 +2,22 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Http\HttpStreamPartInterface;
+use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Sys;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStream;
+use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpRequest;
 use Salient\Http\HttpStream;
-use Salient\Http\HttpStreamPart;
 use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Http\HttpMultipartStream
  * @covers \Salient\Http\HttpRequest
- * @covers \Salient\Http\HttpMessage
+ * @covers \Salient\Http\AbstractHttpMessage
  */
 final class HttpMultipartStreamTest extends TestCase
 {
@@ -142,7 +142,7 @@ final class HttpMultipartStreamTest extends TestCase
         $this->expectExceptionMessage('Stream must be readable');
         try {
             $this->getStream(
-                new HttpStreamPart('unreadable', new HttpStream(File::open($file, 'w'))),
+                new HttpMultipartStreamPart('unreadable', new HttpStream(File::open($file, 'w'))),
             );
         } finally {
             File::pruneDir($dir, true);
@@ -153,7 +153,7 @@ final class HttpMultipartStreamTest extends TestCase
     {
         $command = Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'data';"]);
         $stream = $this->getStream(
-            new HttpStreamPart('unseekable', new HttpStream(File::openPipe($command, 'r'))),
+            new HttpMultipartStreamPart('unseekable', new HttpStream(File::openPipe($command, 'r'))),
         );
         $this->assertFalse($stream->isSeekable());
         $this->assertSame($this->getContents(
@@ -178,15 +178,15 @@ final class HttpMultipartStreamTest extends TestCase
             . self::CONTENTS, (string) $request);
     }
 
-    private function getStream(HttpStreamPartInterface ...$streams): HttpMultipartStream
+    private function getStream(HttpMultipartStreamPartInterface ...$streams): HttpMultipartStream
     {
         $handle = Str::toStream('value1');
         $this->LastHandle = $handle;
         return new HttpMultipartStream([
-            new HttpStreamPart('field1', $handle),
-            new HttpStreamPart('field2', 'value2', 'example2.txt'),
-            new HttpStreamPart('field3', 'value3', 'example 3-ä-€.txt', 'text/plain', 'example3.txt'),
-            new HttpStreamPart('field4', 'value4', null, null, 'example4.txt'),
+            new HttpMultipartStreamPart('field1', $handle),
+            new HttpMultipartStreamPart('field2', 'value2', 'example2.txt'),
+            new HttpMultipartStreamPart('field3', 'value3', 'example 3-ä-€.txt', 'text/plain', 'example3.txt'),
+            new HttpMultipartStreamPart('field4', 'value4', null, null, 'example4.txt'),
             ...$streams,
         ], 'boundary');
     }

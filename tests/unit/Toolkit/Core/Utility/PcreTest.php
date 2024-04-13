@@ -42,7 +42,7 @@ final class PcreTest extends TestCase
     public static function grepProvider(): array
     {
         $obj = new class implements Stringable {
-            public function __toString(): string
+            public function __toString()
             {
                 return 'foobar';
             }

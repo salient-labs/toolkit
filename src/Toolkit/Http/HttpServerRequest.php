@@ -11,7 +11,7 @@ use Salient\Core\Exception\InvalidArgumentTypeException;
 use Stringable;
 
 /**
- * An incoming HTTP request
+ * A PSR-7 request (incoming, server-side)
  *
  * @api
  */

@@ -13,7 +13,7 @@ use Salient\Tests\TestCase;
  * Some tests are derived from similar guzzlehttp/psr7 tests
  *
  * @covers \Salient\Http\HttpRequest
- * @covers \Salient\Http\HttpMessage
+ * @covers \Salient\Http\AbstractHttpMessage
  */
 final class HttpRequestTest extends TestCase
 {

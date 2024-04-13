@@ -21,7 +21,13 @@ use JsonSerializable;
  * @extends Arrayable<TKey,TValue>
  * @extends IteratorAggregate<TKey,TValue>
  */
-interface CollectionInterface extends ArrayAccess, Arrayable, Countable, IteratorAggregate, JsonSerializable, Jsonable
+interface CollectionInterface extends
+    ArrayAccess,
+    Arrayable,
+    Countable,
+    IteratorAggregate,
+    JsonSerializable,
+    Jsonable
 {
     /**
      * Pass the value of each item to the callback

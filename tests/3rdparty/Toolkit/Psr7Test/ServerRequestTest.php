@@ -8,7 +8,7 @@ use Salient\Http\HttpServerRequest;
 /**
  * @covers \Salient\Http\HttpServerRequest
  * @covers \Salient\Http\HttpRequest
- * @covers \Salient\Http\HttpMessage
+ * @covers \Salient\Http\AbstractHttpMessage
  */
 class ServerRequestTest extends ServerRequestIntegrationTest
 {

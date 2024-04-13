@@ -3,17 +3,20 @@
 namespace Salient\Contract\Core;
 
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\AbstractEnumeration;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Groups of message levels
  *
  * @api
  *
- * @extends AbstractEnumeration<int[]>
+ * @extends AbstractDictionary<list<Level::*>>
  */
-final class MessageLevelGroup extends AbstractEnumeration
+final class MessageLevelGroup extends AbstractDictionary
 {
+    /**
+     * @var list<Level::*>
+     */
     public const ALL = [
         Level::EMERGENCY,
         Level::ALERT,
@@ -25,6 +28,9 @@ final class MessageLevelGroup extends AbstractEnumeration
         Level::DEBUG,
     ];
 
+    /**
+     * @var list<Level::*>
+     */
     public const ALL_EXCEPT_DEBUG = [
         Level::EMERGENCY,
         Level::ALERT,
@@ -35,6 +41,9 @@ final class MessageLevelGroup extends AbstractEnumeration
         Level::INFO,
     ];
 
+    /**
+     * @var list<Level::*>
+     */
     public const ERRORS_AND_WARNINGS = [
         Level::EMERGENCY,
         Level::ALERT,
@@ -43,6 +52,9 @@ final class MessageLevelGroup extends AbstractEnumeration
         Level::WARNING,
     ];
 
+    /**
+     * @var list<Level::*>
+     */
     public const ERRORS = [
         Level::EMERGENCY,
         Level::ALERT,
@@ -50,17 +62,26 @@ final class MessageLevelGroup extends AbstractEnumeration
         Level::ERROR,
     ];
 
+    /**
+     * @var list<Level::*>
+     */
     public const INFO = [
         Level::NOTICE,
         Level::INFO,
         Level::DEBUG,
     ];
 
+    /**
+     * @var list<Level::*>
+     */
     public const INFO_EXCEPT_DEBUG = [
         Level::NOTICE,
         Level::INFO,
     ];
 
+    /**
+     * @var list<Level::*>
+     */
     public const INFO_QUIET = [
         Level::NOTICE,
     ];

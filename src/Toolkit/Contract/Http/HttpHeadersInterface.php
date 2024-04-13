@@ -5,13 +5,17 @@ namespace Salient\Contract\Http;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Immutable;
+use Stringable;
 
 /**
  * @api
  *
  * @extends CollectionInterface<string,string[]>
  */
-interface HttpHeadersInterface extends CollectionInterface, Immutable
+interface HttpHeadersInterface extends
+    CollectionInterface,
+    Immutable,
+    Stringable
 {
     /**
      * Parse and apply an HTTP header field or continuation thereof

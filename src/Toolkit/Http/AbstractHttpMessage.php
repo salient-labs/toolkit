@@ -14,18 +14,18 @@ use Salient\Contract\Http\HttpProtocolVersion;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Http;
 
 /**
- * Base class for HTTP messages
+ * Base class for PSR-7 HTTP message classes
  *
  * @api
  */
-abstract class HttpMessage implements HttpMessageInterface
+abstract class AbstractHttpMessage implements HttpMessageInterface
 {
+    use HasHttpHeaders;
     use HasImmutableProperties {
-        withPropertyValue as with;
+        HasImmutableProperties::withPropertyValue as with;
     }
 
     protected string $ProtocolVersion;
@@ -64,38 +64,6 @@ abstract class HttpMessage implements HttpMessageInterface
     /**
      * @inheritDoc
      */
-    public function getHeaders(): array
-    {
-        return $this->Headers->getHeaders();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function hasHeader(string $name): bool
-    {
-        return $this->Headers->hasHeader($name);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHeader(string $name): array
-    {
-        return $this->Headers->getHeader($name);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHeaderLine(string $name): string
-    {
-        return $this->Headers->getHeaderLine($name);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getBody(): StreamInterface
     {
         return $this->Body;
@@ -113,14 +81,12 @@ abstract class HttpMessage implements HttpMessageInterface
 
     private function doGetHttpPayload(bool $withoutBody): string
     {
-        $message = implode("\r\n", Arr::push(
-            Arr::unshift(
-                $this->Headers->getLines(),
-                $this->getStartLine(),
-            ),
+        $message = implode("\r\n", [
+            $this->getStartLine(),
+            (string) $this->Headers,
             '',
             '',
-        ));
+        ]);
 
         return $withoutBody
             ? $message
@@ -133,30 +99,6 @@ abstract class HttpMessage implements HttpMessageInterface
     public function withProtocolVersion(string $version): MessageInterface
     {
         return $this->with('ProtocolVersion', $this->filterProtocolVersion($version));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withHeader(string $name, $value): MessageInterface
-    {
-        return $this->with('Headers', $this->Headers->set($name, $value));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withAddedHeader(string $name, $value): MessageInterface
-    {
-        return $this->with('Headers', $this->Headers->add($name, $value));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withoutHeader(string $name): MessageInterface
-    {
-        return $this->with('Headers', $this->Headers->unset($name));
     }
 
     /**

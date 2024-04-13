@@ -7,7 +7,7 @@ use Salient\Core\AbstractDictionary;
 /**
  * @api
  *
- * @extends AbstractDictionary<array<HttpHeader::*>>
+ * @extends AbstractDictionary<list<HttpHeader::*>>
  */
 final class HttpHeaderGroup extends AbstractDictionary
 {

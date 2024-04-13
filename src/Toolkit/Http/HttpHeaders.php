@@ -20,7 +20,7 @@ use Generator;
 use LogicException;
 
 /**
- * A collection of [RFC7230]-compliant HTTP headers
+ * An [RFC7230]-compliant HTTP header collection
  *
  * Headers can be applied explicitly or by passing HTTP header fields to
  * {@see HttpHeaders::addLine()}.
@@ -107,6 +107,14 @@ class HttpHeaders implements HttpHeadersInterface
         $this->Headers = $headers;
         $this->Index = $this->filterIndex($index);
         $this->Items = $this->doGetHeaders();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        return implode("\r\n", $this->getLines());
     }
 
     /**

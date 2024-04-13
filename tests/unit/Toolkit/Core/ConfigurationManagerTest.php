@@ -3,10 +3,10 @@
 namespace Salient\Tests\Core;
 
 use Salient\Core\Exception\InvalidConfigurationException;
+use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\ConfigurationManager;
 use Salient\Tests\TestCase;
 use LogicException;
-use OutOfRangeException;
 
 /**
  * @covers \Salient\Core\ConfigurationManager

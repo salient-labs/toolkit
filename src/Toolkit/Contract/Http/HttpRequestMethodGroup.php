@@ -7,12 +7,12 @@ use Salient\Core\AbstractDictionary;
 /**
  * @api
  *
- * @extends AbstractDictionary<array<HttpRequestMethod::*>>
+ * @extends AbstractDictionary<list<HttpRequestMethod::*>>
  */
 final class HttpRequestMethodGroup extends AbstractDictionary
 {
     /**
-     * @var array<HttpRequestMethod::*>
+     * @var list<HttpRequestMethod::*>
      */
     public const ALL = [
         HttpRequestMethod::GET,

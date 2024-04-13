@@ -13,11 +13,11 @@ use Salient\Core\Utility\Pcre;
 use Stringable;
 
 /**
- * An outgoing HTTP request
+ * A PSR-7 request (outgoing, client-side)
  *
  * @api
  */
-class HttpRequest extends HttpMessage implements HttpRequestInterface
+class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
 {
     private const TOKEN = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
 

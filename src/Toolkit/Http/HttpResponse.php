@@ -11,11 +11,11 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
 
 /**
- * An HTTP response
+ * A PSR-7 response
  *
  * @api
  */
-class HttpResponse extends HttpMessage implements HttpResponseInterface
+class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
 {
     protected const STATUS_CODE = [
         100 => 'Continue',

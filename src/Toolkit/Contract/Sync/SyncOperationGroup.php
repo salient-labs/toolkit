@@ -2,15 +2,18 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractEnumeration;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Groups of sync operation types
  *
- * @extends AbstractEnumeration<int[]>
+ * @extends AbstractDictionary<list<SyncOperation::*>>
  */
-final class SyncOperationGroup extends AbstractEnumeration
+final class SyncOperationGroup extends AbstractDictionary
 {
+    /**
+     * @var list<SyncOperation::*>
+     */
     public const ALL = [
         SyncOperation::CREATE,
         SyncOperation::READ,
@@ -22,6 +25,9 @@ final class SyncOperationGroup extends AbstractEnumeration
         SyncOperation::DELETE_LIST,
     ];
 
+    /**
+     * @var list<SyncOperation::*>
+     */
     public const ALL_LIST = [
         SyncOperation::CREATE_LIST,
         SyncOperation::READ_LIST,
@@ -29,11 +35,17 @@ final class SyncOperationGroup extends AbstractEnumeration
         SyncOperation::DELETE_LIST,
     ];
 
+    /**
+     * @var list<SyncOperation::*>
+     */
     public const ALL_READ = [
         SyncOperation::READ,
         SyncOperation::READ_LIST,
     ];
 
+    /**
+     * @var list<SyncOperation::*>
+     */
     public const ALL_WRITE = [
         SyncOperation::CREATE,
         SyncOperation::UPDATE,

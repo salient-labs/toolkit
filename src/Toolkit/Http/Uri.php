@@ -13,7 +13,7 @@ use Salient\Core\Utility\Str;
 use Stringable;
 
 /**
- * An [RFC3986]-compliant URI
+ * A PSR-7 URI with strict [RFC3986] compliance
  *
  * @api
  */

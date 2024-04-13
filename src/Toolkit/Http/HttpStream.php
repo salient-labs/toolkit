@@ -12,7 +12,7 @@ use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 
 /**
- * A PHP stream wrapper
+ * A PSR-7 stream wrapper
  *
  * @api
  */
