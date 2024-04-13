@@ -113,10 +113,10 @@ final class PcreTest extends TestCase
         } catch (PcreErrorException $e) {
             $this->assertStringContainsString('Call to preg_match() failed with PREG_BACKTRACK_LIMIT_ERROR', $e->getMessage());
             $this->assertSame([
-                'PcreError' => (string) \PREG_BACKTRACK_LIMIT_ERROR,
+                'PcreError' => \PREG_BACKTRACK_LIMIT_ERROR,
                 'Pattern' => '/(?:\D+|<\d+>)*[!?]/',
                 'Subject' => 'foobar foobar foobar',
-            ], $e->getDetail());
+            ], $e->getMetadata());
             $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
             $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
             $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');
@@ -151,10 +151,10 @@ final class PcreTest extends TestCase
                 $e->getMessage(),
             );
             $this->assertSame([
-                'PcreError' => (string) \PREG_BACKTRACK_LIMIT_ERROR,
+                'PcreError' => \PREG_BACKTRACK_LIMIT_ERROR,
                 'Pattern' => Json::prettyPrint($pattern),
                 'Subject' => 'foobar foobar foobar',
-            ], $e->getDetail());
+            ], $e->getMetadata());
             $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
             $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
             $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');

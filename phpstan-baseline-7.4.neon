@@ -1396,11 +1396,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/PipelineTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\DateTest\\:\\:durationProvider\\(\\) should return array\\<array\\{int, DateInterval\\|string\\}\\> but returns array\\{array\\{0, 'P0D'\\}, array\\{0, 'PT0S'\\}, array\\{777600\\|'Salient\\\\\\\\Core…', 'P1W2D'\\}, array\\{777600, 'P9D'\\}, array\\{2880, 'PT48M'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'P1WD'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'P2D1W'\\}, array\\{'DateMalformedIntervalStringException'\\|'Exception', 'pt48m'\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/DateTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$exception of method PHPUnit\\\\Framework\\\\TestCase\\:\\:expectException\\(\\) expects class\\-string\\<Throwable\\>, string given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/EnvTest.php

@@ -57,7 +57,6 @@ final class CliApplicationTest extends TestCase
     {
         $this->App->unload();
 
-        Console::deregisterTarget($this->ConsoleTarget);
         Console::unload();
     }
 

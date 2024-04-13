@@ -27,10 +27,10 @@ interface MultipleErrorExceptionInterface extends ExceptionInterface
     public function reportErrors();
 
     /**
-     * True if the exception's errors have not been reported
+     * Check if the exception has unreported errors
      *
-     * This method should return `false` if {@see reportErrors()} has been
-     * called.
+     * This method should return `false` after
+     * {@see MultipleErrorExceptionInterface::reportErrors()} is called.
      */
     public function hasUnreportedErrors(): bool;
 }

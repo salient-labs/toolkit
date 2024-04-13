@@ -23,7 +23,7 @@ abstract class CurlerException extends AbstractException
         parent::__construct($message);
     }
 
-    public function getDetail(): array
+    public function getMetadata(): array
     {
         return [
             'Response' =>

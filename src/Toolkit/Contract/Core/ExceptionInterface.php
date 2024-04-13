@@ -2,6 +2,7 @@
 
 namespace Salient\Contract\Core;
 
+use Stringable;
 use Throwable;
 
 /**
@@ -10,15 +11,23 @@ use Throwable;
 interface ExceptionInterface extends Throwable
 {
     /**
-     * Get an array that maps names to formatted content
+     * Get an instance with an exit status to return if the exception is not
+     * caught on the command line
      *
-     * @return array<string,string>
+     * @return static
      */
-    public function getDetail(): array;
+    public static function withExitStatus(?int $exitStatus): ExceptionInterface;
 
     /**
      * Get the exit status to return if the exception is not caught on the
      * command line
      */
     public function getExitStatus(): ?int;
+
+    /**
+     * Get exception metadata as an associative array
+     *
+     * @return array<string,int|float|string|bool|Stringable|null>
+     */
+    public function getMetadata(): array;
 }

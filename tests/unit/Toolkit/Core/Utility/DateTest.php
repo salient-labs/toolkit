@@ -27,7 +27,7 @@ final class DateTest extends TestCase
     }
 
     /**
-     * @return array<array{int,DateInterval|string}>
+     * @return array<array{int|string,DateInterval|string}>
      */
     public static function durationProvider(): array
     {

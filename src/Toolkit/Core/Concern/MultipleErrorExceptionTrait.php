@@ -6,23 +6,18 @@ use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MultipleErrorExceptionInterface;
 use Salient\Core\Facade\Console;
+use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Get;
 
 /**
- * Implements MultipleErrorExceptionInterface
- *
- * @see MultipleErrorExceptionInterface
+ * @phpstan-require-implements MultipleErrorExceptionInterface
  */
 trait MultipleErrorExceptionTrait
 {
-    protected ?string $MessageWithoutErrors = null;
-
-    /**
-     * @var string[]
-     */
-    protected array $Errors = [];
-
+    protected string $MessageWithoutErrors;
+    /** @var string[] */
+    protected array $Errors;
     protected bool $HasUnreportedErrors = true;
 
     public function __construct(
@@ -35,14 +30,18 @@ trait MultipleErrorExceptionTrait
 
         switch (count($errors)) {
             case 0:
+                $this->HasUnreportedErrors = false;
                 break;
 
             case 1:
-                $message .= ': ' . reset($errors);
-                break;
-
+                $separator = ': ';
+                $append = $errors[0];
+                // No break
             default:
-                $message .= ":\n" . rtrim(Format::list($errors));
+                $message = Arr::implode(
+                    $separator ?? ":\n",
+                    [$message, $append ?? rtrim(Format::list($errors))]
+                );
                 break;
         }
 
@@ -63,7 +62,7 @@ trait MultipleErrorExceptionTrait
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
     public function reportErrors()
     {
@@ -74,18 +73,21 @@ trait MultipleErrorExceptionTrait
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function hasUnreportedErrors(): bool
     {
         return $this->HasUnreportedErrors;
     }
 
     /**
-     * @return array<string,string>
+     * @inheritDoc
      */
-    public function getDetail(): array
+    public function getMetadata(): array
     {
         return [
-            'Errors' => Format::list($this->Errors),
+            'Errors' => $this->Errors ? Format::list($this->Errors) : "<none>\n",
         ];
     }
 }

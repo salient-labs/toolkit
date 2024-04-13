@@ -35,7 +35,7 @@ class SyncFilterPolicyViolationException extends AbstractSyncException
         ));
     }
 
-    public function getDetail(): array
+    public function getMetadata(): array
     {
         return [
             'Unclaimed' => Json::prettyPrint($this->Unclaimed),
