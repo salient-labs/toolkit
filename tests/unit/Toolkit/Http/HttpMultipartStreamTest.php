@@ -18,6 +18,8 @@ use InvalidArgumentException;
  * @covers \Salient\Http\HttpMultipartStream
  * @covers \Salient\Http\HttpRequest
  * @covers \Salient\Http\AbstractHttpMessage
+ * @covers \Salient\Http\HasHttpHeaders
+ * @covers \Salient\Http\HttpHeaders
  */
 final class HttpMultipartStreamTest extends TestCase
 {
@@ -171,11 +173,12 @@ final class HttpMultipartStreamTest extends TestCase
     {
         $stream = $this->getStream();
         $request = new HttpRequest('POST', 'https://example.com', null, $stream);
-        $this->assertSame("POST / HTTP/1.1\r\n"
-            . "Content-Type: multipart/form-data; boundary=\"boundary\"\r\n"
-            . "Host: example.com\r\n"
-            . 'Content-Length: ' . strlen(self::CONTENTS) . "\r\n\r\n"
+        $this->assertSame(($headers = "POST / HTTP/1.1\r\n"
+                . "Content-Type: multipart/form-data; boundary=\"boundary\"\r\n"
+                . "Host: example.com\r\n"
+                . 'Content-Length: ' . strlen(self::CONTENTS) . "\r\n\r\n")
             . self::CONTENTS, (string) $request);
+        $this->assertSame($headers, $request->getHttpPayload(true));
     }
 
     private function getStream(HttpMultipartStreamPartInterface ...$streams): HttpMultipartStream

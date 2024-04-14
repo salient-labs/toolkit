@@ -20,6 +20,8 @@ use Salient\Tests\TestCase;
  * @covers \Salient\Http\HttpRequest
  * @covers \Salient\Http\HttpResponse
  * @covers \Salient\Http\AbstractHttpMessage
+ * @covers \Salient\Http\HasHttpHeaders
+ * @covers \Salient\Http\HttpHeaders
  */
 final class HttpServerTest extends TestCase
 {
