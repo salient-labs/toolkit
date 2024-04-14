@@ -3,7 +3,7 @@
 namespace Salient\Contract\Cli;
 
 use Salient\Contract\Container\ApplicationInterface;
-use LogicException;
+use Salient\Core\Exception\LogicException;
 
 /**
  * A service container for CLI applications

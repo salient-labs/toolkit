@@ -280,7 +280,7 @@ final class TestTest extends TestCase
             [false, new stdClass()],
             [true, 'string'],
             [true, new class { public function __toString() { return 'string'; } }],
-            [true, new class implements Stringable { public function __toString(): string { return 'string'; } }],
+            [true, new class implements Stringable { public function __toString() { return 'string'; } }],
         ];
     }
 

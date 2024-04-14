@@ -5,7 +5,7 @@ namespace Salient\Http;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
-use Salient\Contract\Http\HttpStreamPartInterface;
+use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Pcre;
@@ -14,6 +14,8 @@ use Salient\Http\Exception\StreamInvalidRequestException;
 use Throwable;
 
 /**
+ * A PSR-7 multipart data stream wrapper
+ *
  * @api
  */
 class HttpMultipartStream implements HttpMultipartStreamInterface
@@ -30,7 +32,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
     /**
      * Creates a new HttpMultipartStream object
      *
-     * @param HttpStreamPartInterface[] $parts
+     * @param HttpMultipartStreamPartInterface[] $parts
      */
     public function __construct(array $parts = [], ?string $boundary = null)
     {
@@ -39,7 +41,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
     }
 
     /**
-     * @param HttpStreamPartInterface[] $parts
+     * @param HttpMultipartStreamPartInterface[] $parts
      */
     private function applyParts(array $parts): void
     {
@@ -83,7 +85,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
             $headers = sprintf(
                 "--%s\r\n%s\r\n\r\n",
                 $this->Boundary,
-                implode("\r\n", $headers->getLines()),
+                (string) $headers,
             );
 
             $this->Streams[] = HttpStream::fromString($headers);

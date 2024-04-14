@@ -1,16 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core;
+namespace Salient\Core\Exception;
 
 use Salient\Contract\Core\ExceptionInterface;
 use Salient\Core\Concern\ExceptionTrait;
 
 /**
- * Base class for runtime exceptions
- *
  * @api
  */
-abstract class AbstractException extends \RuntimeException implements ExceptionInterface
+class LogicException extends \LogicException implements ExceptionInterface
 {
     use ExceptionTrait;
 }

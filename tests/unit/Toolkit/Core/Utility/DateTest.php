@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Date;
 use Salient\Tests\TestCase;
 use DateInterval;
 use DateMalformedIntervalStringException;
 use Exception;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Core\Utility\Date
@@ -27,7 +27,7 @@ final class DateTest extends TestCase
     }
 
     /**
-     * @return array<array{int,DateInterval|string}>
+     * @return array<array{int|string,DateInterval|string}>
      */
     public static function durationProvider(): array
     {

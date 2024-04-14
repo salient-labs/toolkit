@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
 use Generator;
+use InvalidArgumentException;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests

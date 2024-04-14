@@ -3,17 +3,20 @@
 namespace Salient\Contract\Console;
 
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Core\AbstractEnumeration;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Groups of console message types
  *
  * @api
  *
- * @extends AbstractEnumeration<int[]>
+ * @extends AbstractDictionary<list<MessageType::*>>
  */
-final class ConsoleMessageTypeGroup extends AbstractEnumeration
+final class ConsoleMessageTypeGroup extends AbstractDictionary
 {
+    /**
+     * @var list<MessageType::*>
+     */
     public const ALL = [
         MessageType::STANDARD,
         MessageType::UNDECORATED,

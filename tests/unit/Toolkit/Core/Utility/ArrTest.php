@@ -694,7 +694,7 @@ final class ArrTest extends TestCase
                     'false' => false,
                     'string' => 'TITLE',
                     Stringable::class => new class implements Stringable {
-                        public function __toString(): string
+                        public function __toString()
                         {
                             return "I'm Batman.";
                         }
@@ -1986,7 +1986,7 @@ final class ArrTest extends TestCase
                     'false' => false,
                     'string' => 'title',
                     Stringable::class => new class implements Stringable {
-                        public function __toString(): string
+                        public function __toString()
                         {
                             return "I'm Batman.";
                         }
@@ -2035,7 +2035,7 @@ final class ArrTest extends TestCase
                     'false' => false,
                     'string' => 'title',
                     Stringable::class => new class implements Stringable {
-                        public function __toString(): string
+                        public function __toString()
                         {
                             return 'me tarzan.';
                         }
@@ -2084,7 +2084,7 @@ final class ArrTest extends TestCase
                     'false' => false,
                     'string' => 'Hello, world!',
                     Stringable::class => new class implements Stringable {
-                        public function __toString(): string
+                        public function __toString()
                         {
                             return "I'm Batman.";
                         }
@@ -2113,8 +2113,8 @@ final class ArrTest extends TestCase
      */
     public static function whereNotEmptyProvider(): array
     {
-        $a = new class { public function __toString(): string { return 'a'; } };
-        $b = new class { public function __toString(): string { return ''; } };
+        $a = new class { public function __toString() { return 'a'; } };
+        $b = new class { public function __toString() { return ''; } };
 
         return [
             [

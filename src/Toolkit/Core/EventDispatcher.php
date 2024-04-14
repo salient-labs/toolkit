@@ -6,9 +6,9 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
 use Salient\Contract\Core\Nameable;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
-use LogicException;
 
 /**
  * Dispatches events to listeners

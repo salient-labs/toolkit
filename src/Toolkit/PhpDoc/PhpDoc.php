@@ -6,10 +6,10 @@ use Salient\Contract\Core\Readable;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use LogicException;
 
 /**
  * Parses PSR-5 PHPDocs

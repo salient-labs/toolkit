@@ -3,11 +3,12 @@
 namespace Salient\Contract\Http;
 
 use Psr\Http\Message\StreamInterface;
+use Salient\Contract\Core\Immutable;
 
 /**
  * @api
  */
-interface HttpStreamPartInterface
+interface HttpMultipartStreamPartInterface extends Immutable
 {
     /**
      * Get the field name of the part

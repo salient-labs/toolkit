@@ -11,6 +11,7 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractProvider;
@@ -20,7 +21,6 @@ use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
-use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends

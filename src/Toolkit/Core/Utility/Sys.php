@@ -3,9 +3,9 @@
 namespace Salient\Core\Utility;
 
 use Salient\Core\Exception\InvalidEnvironmentException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\AbstractUtility;
-use LogicException;
 use SQLite3;
 
 /**

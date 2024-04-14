@@ -14,6 +14,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncOperationGroup;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
@@ -23,7 +24,6 @@ use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
 use Salient\Sync\SyncStore;
 use Closure;
-use LogicException;
 
 /**
  * Generates closures that perform sync-related operations on a class

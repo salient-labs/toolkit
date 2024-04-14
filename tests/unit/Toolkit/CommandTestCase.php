@@ -78,7 +78,6 @@ abstract class CommandTestCase extends TestCase
             $app->unload();
             File::pruneDir($basePath, true);
 
-            Console::deregisterTarget($target);
             Console::unload();
         }
     }

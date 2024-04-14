@@ -11,6 +11,7 @@ use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidEnvironmentException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
@@ -26,7 +27,6 @@ use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Sys;
 use Salient\Sync\SyncStore;
-use LogicException;
 use Phar;
 
 /**

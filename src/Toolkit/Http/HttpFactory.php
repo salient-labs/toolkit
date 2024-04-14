@@ -17,7 +17,7 @@ use Psr\Http\Message\UriInterface;
 use Salient\Core\Utility\File;
 
 /**
- * Implements PSR-17 (HTTP Factories) interfaces
+ * A PSR-17 HTTP message factory
  *
  * @api
  */
@@ -94,7 +94,7 @@ class HttpFactory implements
         ?string $clientFilename = null,
         ?string $clientMediaType = null
     ): UploadedFileInterface {
-        return new UploadedFile(
+        return new HttpServerRequestUpload(
             $stream,
             $size,
             $error,

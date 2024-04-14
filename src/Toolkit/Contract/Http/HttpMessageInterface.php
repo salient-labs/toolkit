@@ -25,14 +25,14 @@ interface HttpMessageInterface extends
     public function withContentLength(): HttpMessageInterface;
 
     /**
-     * Get the message as an HTTP payload
+     * Get the HTTP headers of the message
      */
-    public function getHttpPayload(bool $withoutBody = false): string;
+    public function getHttpHeaders(): HttpHeadersInterface;
 
     /**
      * Get the message as an HTTP payload
      */
-    public function __toString(): string;
+    public function getHttpPayload(bool $withoutBody = false): string;
 
     /**
      * Get the message as an HTTP Archive (HAR) object

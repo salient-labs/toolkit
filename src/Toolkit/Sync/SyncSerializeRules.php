@@ -11,12 +11,12 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Pcre;
 use Salient\Sync\Support\SyncIntrospector;
 use Closure;
-use LogicException;
 
 /**
  * Instructions for serializing nested sync entities

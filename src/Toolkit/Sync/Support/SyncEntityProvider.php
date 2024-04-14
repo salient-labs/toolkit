@@ -14,12 +14,12 @@ use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Core\Exception\LogicException;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\AbstractSyncEntity;
 use Salient\Sync\SyncStore;
 use Generator;
-use LogicException;
 
 /**
  * An interface to a SyncProviderInterface's implementation of sync operations

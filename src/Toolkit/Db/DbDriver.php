@@ -2,8 +2,8 @@
 
 namespace Salient\Db;
 
+use Salient\Core\Exception\LogicException;
 use Salient\Core\AbstractReflectiveEnumeration;
-use LogicException;
 
 /**
  * Database connection drivers

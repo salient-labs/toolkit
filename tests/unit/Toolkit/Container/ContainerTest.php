@@ -17,9 +17,9 @@ use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Chainable;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\App;
 use Salient\Tests\TestCase;
-use LogicException;
 use stdClass;
 
 /**

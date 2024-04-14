@@ -6,13 +6,11 @@ use Salient\Contract\Core\ExceptionInterface;
 use Throwable;
 
 /**
- * Implements ExceptionInterface
- *
- * @see ExceptionInterface
+ * @phpstan-require-implements ExceptionInterface
  */
 trait ExceptionTrait
 {
-    protected ?int $ExitStatus = null;
+    protected ?int $ExitStatus;
 
     public function __construct(
         string $message = '',
@@ -24,26 +22,14 @@ trait ExceptionTrait
     }
 
     /**
-     * Set the exit status to return if the exception is not caught on the
-     * command line
-     *
-     * @return static
+     * @param mixed ...$args
      */
-    public function withExitStatus(?int $exitStatus)
+    public static function withExitStatus(?int $exitStatus, ...$args): ExceptionInterface
     {
-        $clone = clone $this;
-        $clone->ExitStatus = $exitStatus;
-        return $clone;
-    }
-
-    /**
-     * Get an array that maps names to formatted content
-     *
-     * @return array<string,string>
-     */
-    public function getDetail(): array
-    {
-        return [];
+        // @phpstan-ignore-next-line
+        $instance = new static(...$args);
+        $instance->ExitStatus = $exitStatus;
+        return $instance;
     }
 
     /**
@@ -55,13 +41,21 @@ trait ExceptionTrait
     }
 
     /**
+     * @codeCoverageIgnore
+     */
+    public function getMetadata(): array
+    {
+        return [];
+    }
+
+    /**
      * @inheritDoc
      */
     public function __toString(): string
     {
         $detail = '';
-        foreach ($this->getDetail() as $key => $value) {
-            $detail .= sprintf("\n\n%s:\n%s", $key, $value);
+        foreach ($this->getMetadata() as $key => $value) {
+            $detail .= sprintf("\n\n%s:\n%s", $key, rtrim((string) $value, "\n"));
         }
 
         return parent::__toString() . $detail;

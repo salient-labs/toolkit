@@ -1019,12 +1019,9 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             "\n" . $exception->getTraceAsString()
         );
         if ($exception instanceof ExceptionInterface) {
-            foreach ($exception->getDetail() as $section => $text) {
-                $this->write(
-                    $stackTraceLevel,
-                    "__{$section}:__",
-                    "\n{$text}"
-                );
+            foreach ($exception->getMetadata() as $key => $value) {
+                $value = rtrim((string) $value, "\n");
+                $this->write($stackTraceLevel, "__{$key}:__", "\n{$value}");
             }
         }
 

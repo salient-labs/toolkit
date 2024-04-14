@@ -11,16 +11,16 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\InvalidHeaderException;
 use Generator;
-use LogicException;
 
 /**
- * A collection of [RFC7230]-compliant HTTP headers
+ * An [RFC7230]-compliant HTTP header collection
  *
  * Headers can be applied explicitly or by passing HTTP header fields to
  * {@see HttpHeaders::addLine()}.
@@ -107,6 +107,14 @@ class HttpHeaders implements HttpHeadersInterface
         $this->Headers = $headers;
         $this->Index = $this->filterIndex($index);
         $this->Items = $this->doGetHeaders();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        return implode("\r\n", $this->getLines());
     }
 
     /**

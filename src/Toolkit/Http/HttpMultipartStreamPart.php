@@ -3,7 +3,7 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Http\HttpStreamPartInterface;
+use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Pcre;
@@ -11,9 +11,9 @@ use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
 
 /**
- * Part of a multipart stream
+ * Part of a PSR-7 multipart data stream
  */
-class HttpStreamPart implements HttpStreamPartInterface
+class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
 {
     protected string $Name;
     protected ?string $Filename;

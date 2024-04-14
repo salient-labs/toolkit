@@ -3,7 +3,7 @@
 namespace Salient\Contract\Curler;
 
 use Salient\Contract\Http\HttpRequestInterface;
-use LogicException;
+use Salient\Core\Exception\LogicException;
 
 interface CurlerPageInterface
 {

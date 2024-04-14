@@ -3,9 +3,9 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Regex;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\AbstractUtility;
 use Closure;
-use LogicException;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionClassConstant;

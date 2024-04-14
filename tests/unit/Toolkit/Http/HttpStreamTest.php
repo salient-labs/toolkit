@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Sys;
@@ -10,6 +9,7 @@ use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpStream;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests

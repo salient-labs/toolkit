@@ -9,11 +9,11 @@ use Salient\Core\Utility\File;
 use Salient\Http\Exception\UploadedFileException;
 
 /**
- * A file uploaded via HTTP
+ * A PSR-7 uploaded file (incoming, server-side)
  *
  * @api
  */
-class UploadedFile implements UploadedFileInterface
+class HttpServerRequestUpload implements UploadedFileInterface
 {
     private const ERROR_MESSAGE = [
         \UPLOAD_ERR_OK => 'There is no error, the file uploaded with success',
@@ -36,7 +36,7 @@ class UploadedFile implements UploadedFileInterface
     private bool $IsMoved = false;
 
     /**
-     * Creates a new UploadedFile object
+     * Creates a new HttpServerRequestUpload object
      *
      * @param StreamInterface|resource|string $resource
      */

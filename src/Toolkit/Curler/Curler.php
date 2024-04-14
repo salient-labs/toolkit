@@ -17,6 +17,7 @@ use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
@@ -40,7 +41,6 @@ use Salient\Iterator\RecursiveMutableGraphIterator;
 use CurlHandle;
 use DateTimeInterface;
 use Generator;
-use LogicException;
 use RecursiveIteratorIterator;
 
 /**

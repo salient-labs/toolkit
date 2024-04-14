@@ -2,8 +2,8 @@
 
 namespace Salient\Curler;
 
+use Salient\Core\Exception\LogicException;
 use CURLFile;
-use LogicException;
 
 /**
  * File upload helper

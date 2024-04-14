@@ -21,19 +21,11 @@ class PcreErrorException extends AbstractException
     ];
 
     protected int $PcreError;
-
     protected string $PcreErrorMessage;
-
     protected string $Function;
-
-    /**
-     * @var array<string,callable(array<array-key,string|null>):string>|string[]|string
-     */
+    /** @var array<string,callable(array<array-key,string|null>):string>|string[]|string */
     protected $Pattern;
-
-    /**
-     * @var string[]|string
-     */
+    /** @var string[]|string */
     protected $Subject;
 
     /**
@@ -60,20 +52,19 @@ class PcreErrorException extends AbstractException
 
         parent::__construct(sprintf(
             'Call to %s() failed with %s (%s)',
-            $this->Function,
-            (self::$ErrorNameMap
-                ??= $this->getErrorNameMap())[$this->PcreError],
-            $this->PcreErrorMessage,
+            $function,
+            (self::$ErrorNameMap ??= $this->getErrorNameMap())[$error],
+            $message,
         ));
     }
 
     /**
      * @inheritDoc
      */
-    public function getDetail(): array
+    public function getMetadata(): array
     {
         return [
-            'PcreError' => (string) $this->PcreError,
+            'PcreError' => $this->PcreError,
             'Pattern' => is_scalar($this->Pattern)
                 ? $this->Pattern
                 : Json::prettyPrint($this->Pattern),

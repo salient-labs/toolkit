@@ -2,18 +2,14 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Contract\Core\ExceptionInterface;
-use Salient\Core\Concern\ExceptionTrait;
 use Salient\Core\Utility\Reflect;
 use ReflectionMethod;
 
 /**
  * @api
  */
-class MethodNotImplementedException extends BadMethodCallException implements ExceptionInterface
+class MethodNotImplementedException extends BadMethodCallException
 {
-    use ExceptionTrait;
-
     /**
      * @var class-string
      */

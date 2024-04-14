@@ -4,16 +4,19 @@ namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Utility\Str;
 use Salient\Http\HttpRequest;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
+use InvalidArgumentException;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  *
  * @covers \Salient\Http\HttpRequest
- * @covers \Salient\Http\HttpMessage
+ * @covers \Salient\Http\AbstractHttpMessage
+ * @covers \Salient\Http\HasHttpHeaders
+ * @covers \Salient\Http\HttpHeaders
  */
 final class HttpRequestTest extends TestCase
 {
@@ -89,6 +92,10 @@ final class HttpRequestTest extends TestCase
         $this->assertInstanceOf(StreamInterface::class, $r->getBody());
         $this->assertSame('0', (string) $r->getBody());
 
+        $r = new HttpRequest('GET', '/', null, Str::toStream('baz'));
+        $this->assertInstanceOf(StreamInterface::class, $r->getBody());
+        $this->assertSame('baz', (string) $r->getBody());
+
         $r = new HttpRequest('GET', '');
         $this->assertSame('/', $r->getRequestTarget());
 
@@ -109,10 +116,18 @@ final class HttpRequestTest extends TestCase
 
         $h = ['User-Agent' => self::USER_AGENT];
         $r = new HttpRequest('GET', 'https://example.com/', null, null, $h);
-        $this->assertSame([
+        $this->assertSame($headers = [
             'Host' => ['example.com'],
             'User-Agent' => [self::USER_AGENT],
         ], $r->getHeaders());
+        $this->assertSame($headers, $r->getHttpHeaders()->getHeaders());
+        $this->assertSame([
+            'httpVersion' => 'HTTP/1.1',
+            'headers' => [
+                ['name' => 'User-Agent', 'value' => self::USER_AGENT],
+                ['name' => 'Host', 'value' => 'example.com'],
+            ],
+        ], $r->jsonSerialize());
 
         $h = ['Foo' => ['a', 'b', 'c']];
         $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
@@ -133,6 +148,36 @@ final class HttpRequestTest extends TestCase
         $r = new HttpRequest('GET', 'http://foo.com:8124/bar');
         $r = $r->withUri(new Uri('http://foo.com:8125/bar'));
         $this->assertSame('foo.com:8125', $r->getHeaderLine('host'));
+    }
+
+    public function testConstructorWithInvalidProtocolVersion(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid HTTP protocol version: 2');
+        new HttpRequest('GET', '/', null, null, null, '2');
+    }
+
+    public function testWithInvalidProtocolVersion(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid HTTP protocol version: 2');
+        (new HttpRequest('GET', '/'))->withProtocolVersion('2');
+    }
+
+    public function testConstructorWithInvalidBody(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Argument #1 ($body) must be of type StreamInterface|resource|string|null, int given');
+        // @phpstan-ignore-next-line
+        new HttpRequest('GET', '/', null, 123);
+    }
+
+    public function testWithInvalidBody(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Argument #1 ($body) must be of type StreamInterface|resource|string|null, int given');
+        // @phpstan-ignore-next-line
+        (new HttpRequest('GET', '/'))->withBody(123);
     }
 
     public function testConstructorWithInvalidUri(): void

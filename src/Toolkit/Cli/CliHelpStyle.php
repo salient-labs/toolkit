@@ -10,9 +10,9 @@ use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Pcre;
-use LogicException;
 
 /**
  * Formatting instructions for help messages

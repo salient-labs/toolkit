@@ -16,6 +16,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Pcre;
@@ -31,7 +32,6 @@ use Salient\Sync\Exception\SyncInvalidEntitySourceException;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\Support\SyncIntrospector;
 use Closure;
-use LogicException;
 
 /**
  * Provides direct access to an HttpSyncProvider's implementation of sync
