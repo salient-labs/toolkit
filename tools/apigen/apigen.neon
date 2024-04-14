@@ -1,5 +1,6 @@
 parameters:
 	paths: [%workingDir%/src]
+	exclude: [PHPStan]
 	excludeProtected: false
 	excludePrivate: true
 	excludeTagged: [internal]
