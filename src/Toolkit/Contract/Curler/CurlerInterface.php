@@ -2,6 +2,8 @@
 
 namespace Salient\Contract\Curler;
 
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\QueryFlag;
@@ -9,11 +11,13 @@ use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
+use Closure;
 
 interface CurlerInterface
 {
@@ -31,6 +35,12 @@ interface CurlerInterface
      * Get the last response received from the endpoint
      */
     public function getLastResponse(): ?HttpResponseInterface;
+
+    /**
+     * Check if the last response received from the endpoint contains
+     * JSON-encoded data
+     */
+    public function lastResponseIsJson(): bool;
 
     // --
 
@@ -186,12 +196,36 @@ interface CurlerInterface
     /**
      * Get request headers
      */
-    public function getHeaders(): HttpHeadersInterface;
+    public function getHttpHeaders(): HttpHeadersInterface;
 
     /**
      * Get request headers that are not considered sensitive
      */
-    public function getPublicHeaders(): HttpHeadersInterface;
+    public function getPublicHttpHeaders(): HttpHeadersInterface;
+
+    /**
+     * Get an array that maps request header names to values
+     *
+     * @return array<string,string[]>
+     */
+    public function getHeaders(): array;
+
+    /**
+     * Check if a request header exists
+     */
+    public function hasHeader(string $name): bool;
+
+    /**
+     * Get the value of a request header as a list of values
+     *
+     * @return string[]
+     */
+    public function getHeader(string $name): array;
+
+    /**
+     * Get the comma-separated values of a request header
+     */
+    public function getHeaderLine(string $name): string;
 
     /**
      * Get an instance with a value applied to a request header, replacing any
@@ -350,6 +384,23 @@ interface CurlerInterface
     public function withJsonDecodeFlags(int $flags);
 
     /**
+     * Get an instance with the given middleware applied to the request handler
+     * stack
+     *
+     * @param HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next): ResponseInterface $middleware
+     * @return static
+     */
+    public function withMiddleware($middleware, ?string $name = null);
+
+    /**
+     * Get an instance where the given middleware is not applied to requests
+     *
+     * @param HttpRequestHandlerInterface|Closure|string $middleware
+     * @return static
+     */
+    public function withoutMiddleware($middleware);
+
+    /**
      * Get the endpoint's pagination handler
      */
     public function getPager(): ?CurlerPagerInterface;
@@ -443,6 +494,8 @@ interface CurlerInterface
     /**
      * Get an instance where cached responses expire after the given number of
      * seconds
+     *
+     * `3600` is applied by default.
      *
      * {@see withResponseCache()} must also be called to enable caching.
      *
