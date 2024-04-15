@@ -1,8 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Core\Utility\Get;
 
 use Salient\Container\Container;
+use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Container\HasContextualBindings;
+use Salient\Contract\Container\HasServices;
+use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\CopyFlag;
 use Salient\Contract\Core\QueryFlag;
@@ -10,11 +14,6 @@ use Salient\Core\Exception\UncloneableObjectException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Core\DateFormatter;
-use Salient\Tests\Core\Utility\Get\ClassWithCloneMethod;
-use Salient\Tests\Core\Utility\Get\ClassWithRefs;
-use Salient\Tests\Core\Utility\Get\ClassWithValue;
-use Salient\Tests\Core\Utility\Get\SingletonWithContainer;
-use Salient\Tests\Core\Utility\Get\UncloneableClass;
 use Salient\Tests\TestCase;
 use ArrayIterator;
 use ArrayObject;
@@ -83,8 +82,8 @@ final class GetTest extends TestCase
             'null' => [null, null],
             'false' => [false, false],
             'true' => [true, true],
-            '0' => [false, 0],
-            '1' => [true, 1],
+            '(int) 0' => [false, 0],
+            '(int) 1' => [true, 1],
             "''" => [false, ''],
             "'0'" => [false, '0'],
             "'1'" => [true, '1'],
@@ -104,7 +103,7 @@ final class GetTest extends TestCase
     /**
      * @dataProvider integerProvider
      *
-     * @param mixed $value
+     * @param int|float|string|bool|null $value
      */
     public function testInteger(?int $expected, $value): void
     {
@@ -112,7 +111,7 @@ final class GetTest extends TestCase
     }
 
     /**
-     * @return array<string,array{int|null,mixed}>
+     * @return array<string,array{int|null,int|float|string|bool|null}>
      */
     public static function integerProvider(): array
     {
@@ -120,8 +119,8 @@ final class GetTest extends TestCase
             'null' => [null, null],
             'false' => [0, false],
             'true' => [1, true],
-            '5' => [5, 5],
-            '5.5' => [5, 5.5],
+            '(int) 5' => [5, 5],
+            '(float) 5.5' => [5, 5.5],
             "'5'" => [5, '5'],
             "'5.5'" => [5, '5.5'],
             "'foo'" => [0, 'foo'],
@@ -276,7 +275,7 @@ final class GetTest extends TestCase
     /**
      * @dataProvider filterProvider
      *
-     * @param array<string,mixed>|string $expected
+     * @param mixed[]|string $expected
      * @param string[] $values
      */
     public function testFilter($expected, array $values, bool $discardInvalid = true): void
@@ -286,7 +285,7 @@ final class GetTest extends TestCase
     }
 
     /**
-     * @return array<array{array<string,mixed>|string,string[],2?:bool}>
+     * @return array<array{mixed[]|string,string[],2?:bool}>
      */
     public static function filterProvider(): array
     {
@@ -297,6 +296,22 @@ final class GetTest extends TestCase
         $tooManyValues = array_fill(0, $maxInputVars + 1, 'v=');
 
         return [
+            [
+                [
+                    'value1',
+                    'value2',
+                    '',
+                    '',
+                ],
+                [
+                    '0=value1',
+                    '1=value2',
+                    '2=value3',
+                    '2=',
+                    '3',
+                    '=value5',
+                ],
+            ],
             [
                 [
                     'key1' => 'value1',
@@ -382,9 +397,10 @@ final class GetTest extends TestCase
         array $data,
         int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null,
+        ?callable $callback = null,
         bool $parse = true
     ): void {
-        $query = Get::query($data, $flags, $dateFormatter);
+        $query = Get::query($data, $flags, $dateFormatter, $callback);
         $this->assertSame($expected, $query);
 
         if (!$parse) {
@@ -407,10 +423,12 @@ final class GetTest extends TestCase
     }
 
     /**
-     * @return array<array{string,mixed[],2?:int-mask-of<QueryFlag::*>,3?:DateFormatter|null,4?:bool}>
+     * @return array<array{string,mixed[],2?:int-mask-of<QueryFlag::*>,3?:DateFormatter|null,4?:callable|null,5?:bool}>
      */
     public static function queryProvider(): array
     {
+        $date = new DateTimeImmutable('2021-10-02T17:23:14+10:00');
+
         $data = [
             'user_id' => 7654,
             'fields' => [
@@ -421,7 +439,7 @@ final class GetTest extends TestCase
                     ['mobile', 'home'],
                 ],
                 'groups' => ['staff', 'editor'],
-                'created' => new DateTimeImmutable('2021-10-02T17:23:14+10:00'),
+                'created' => $date,
             ],
         ];
 
@@ -430,6 +448,12 @@ final class GetTest extends TestCase
             'indexed' => [5 => 'a', 9 => 'b', 2 => 'c'],
             'associative' => ['a' => 5, 'b' => 9, 'c' => 2],
         ];
+
+        $created = new DateTimeWrapper($date);
+        $callbackData = $data;
+        $callbackData['fields']['created'] = $created;
+        $callback1 = fn(DateTimeWrapper $value) => $value->DateTime;
+        $callback2 = fn(DateTimeWrapper $value) => $value->DateTime->format('D, d M Y');
 
         return [
             [
@@ -458,6 +482,24 @@ final class GetTest extends TestCase
                 new DateFormatter(DateTimeInterface::ATOM, 'UTC'),
             ],
             [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                $callbackData,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                null,
+                $callback1,
+                false,
+            ],
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[created]=Sat, 02 Oct 2021
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021',
+                $callbackData,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                null,
+                $callback2,
+                false,
+            ],
+            [
                 // list[]=a&list[]=b&list[]=c&indexed[5]=a&indexed[9]=b&indexed[2]=c&associative[a]=5&associative[b]=9&associative[c]=2
                 'list%5B%5D=a&list%5B%5D=b&list%5B%5D=c&indexed%5B5%5D=a&indexed%5B9%5D=b&indexed%5B2%5D=c&associative%5Ba%5D=5&associative%5Bb%5D=9&associative%5Bc%5D=2',
                 $lists,
@@ -468,6 +510,7 @@ final class GetTest extends TestCase
                 $lists,
                 0,
                 null,
+                null,
                 false,
             ],
             [
@@ -476,6 +519,7 @@ final class GetTest extends TestCase
                 $lists,
                 QueryFlag::PRESERVE_STRING_KEYS,
                 null,
+                null,
                 false,
             ],
             [
@@ -483,6 +527,7 @@ final class GetTest extends TestCase
                 'list%5B0%5D=a&list%5B1%5D=b&list%5B2%5D=c&indexed%5B5%5D=a&indexed%5B9%5D=b&indexed%5B2%5D=c&associative%5B%5D=5&associative%5B%5D=9&associative%5B%5D=2',
                 $lists,
                 QueryFlag::PRESERVE_LIST_KEYS | QueryFlag::PRESERVE_NUMERIC_KEYS,
+                null,
                 null,
                 false,
             ],
@@ -820,14 +865,14 @@ final class GetTest extends TestCase
         return [
             'default' => [
                 <<<EOF
-                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => 'This string has "double quotes", \'single quotes\', and commas.', 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest'], "This string has line 1,{$esc}line 2, and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => 'This string has "double quotes", \'single quotes\', and commas.', 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1,{$esc}line 2, and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
                 EOF,
                 $array,
                 $classes,
             ],
             'compact' => [
                 <<<EOF
-                ['list1'=>[1],'list2'=>[1,3.14,6.626e-34],'list3'=>['foo'=>1,2.0,'bar'=>3,4],'empty'=>[],'index'=>[5=>true,2=>false],"multiline{$esc}key"=>'This string has "double quotes", \'single quotes\', and commas.','classes'=>[Salient\Tests\Core\Utility\GetTest::class,GetTest::class,'gettest'],"This string has line 1,{$esc}line 2, and no more lines.",'\\\\Vendor\\\\Namespace\\\\',"\\xa0",'👩🏼‍🚒']
+                ['list1'=>[1],'list2'=>[1,3.14,6.626e-34],'list3'=>['foo'=>1,2.0,'bar'=>3,4],'empty'=>[],'index'=>[5=>true,2=>false],"multiline{$esc}key"=>'This string has "double quotes", \'single quotes\', and commas.','classes'=>[Salient\Tests\Core\Utility\Get\GetTest::class,GetTest::class,'gettest'],"This string has line 1,{$esc}line 2, and no more lines.",'\\\\Vendor\\\\Namespace\\\\',"\\xa0",'👩🏼‍🚒']
                 EOF,
                 $array,
                 $classes,
@@ -859,7 +904,7 @@ final class GetTest extends TestCase
                     ],
                     'multiline{$eol}key' => 'This string has "double quotes", \'single quotes\', and commas.',
                     'classes' => [
-                        Salient\Tests\Core\Utility\GetTest::class,
+                        Salient\Tests\Core\Utility\Get\GetTest::class,
                         GetTest::class,
                         'gettest',
                     ],
@@ -876,7 +921,7 @@ final class GetTest extends TestCase
             ],
             'escaped commas' => [
                 <<<EOF
-                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c{$esc}line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c{$esc}line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
                 EOF,
                 $array,
                 $classes,
@@ -909,7 +954,7 @@ final class GetTest extends TestCase
                     ],
                     'multiline' . \PHP_EOL . 'key' => 'This string has "double quotes", \'single quotes\', and commas.',
                     'classes' => [
-                        Salient\Tests\Core\Utility\GetTest::class,
+                        Salient\Tests\Core\Utility\Get\GetTest::class,
                         GetTest::class,
                         'gettest',
                     ],
@@ -926,7 +971,7 @@ final class GetTest extends TestCase
             ],
             'escaped commas + constants' => [
                 <<<EOF
-                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], 'multiline' . \PHP_EOL . 'key' => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c" . \PHP_EOL . "line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], 'multiline' . \PHP_EOL . 'key' => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c" . \PHP_EOL . "line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
                 EOF,
                 $array,
                 $classes,
@@ -1100,5 +1145,157 @@ final class GetTest extends TestCase
         if ($byVal && $byRef && func_num_args() >= 7) {
             $this->assertCopyHas($copy, $foo, $bar, $baz, $qux);
         }
+    }
+}
+
+class DateTimeWrapper
+{
+    public DateTimeInterface $DateTime;
+
+    public function __construct(DateTimeInterface $dateTime)
+    {
+        $this->DateTime = $dateTime;
+    }
+}
+
+class ClassWithRefs
+{
+    public int $Foo = 0;
+
+    public string $Bar = '';
+
+    /**
+     * @var mixed[]
+     */
+    public array $Baz = [];
+
+    public ?object $Qux = null;
+
+    public int $FooByVal;
+
+    public string $BarByVal;
+
+    /**
+     * @var mixed[]
+     */
+    public array $BazByVal;
+
+    public object $QuxByVal;
+
+    /**
+     * @var RefClass[]
+     */
+    public array $Refs;
+
+    public function bind(): void
+    {
+        $this->Refs = [];
+        $this->Refs[] = new RefClass($this->Foo);
+        $this->Refs[] = new RefClass($this->Bar);
+        $this->Refs[] = new RefClass($this->Baz);
+        $this->Refs[] = new RefClass($this->Qux);
+    }
+
+    public function unbind(): void
+    {
+        $this->Refs = [];
+    }
+
+    /**
+     * @param mixed[] $baz
+     */
+    public function apply(int $foo, string $bar, array $baz, object $qux): void
+    {
+        $this->Refs[0]->apply($foo);
+        $this->Refs[1]->apply($bar);
+        $this->Refs[2]->apply($baz);
+        $this->Refs[3]->apply($qux);
+        $this->FooByVal = $foo;
+        $this->BarByVal = $bar;
+        $this->BazByVal = $baz;
+        $this->QuxByVal = $qux;
+    }
+}
+
+class ClassWithValue
+{
+    /**
+     * @var mixed
+     */
+    public $Value;
+
+    /**
+     * @param mixed $value
+     */
+    public function __construct($value)
+    {
+        $this->Value = $value;
+    }
+}
+
+class SingletonWithContainer implements HasServices, HasContextualBindings, SingletonInterface
+{
+    public ContainerInterface $Container;
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->Container = $container;
+    }
+
+    public static function getServices(): array
+    {
+        return [];
+    }
+
+    public static function getContextualBindings(): array
+    {
+        return [];
+    }
+}
+
+class ClassWithCloneMethod
+{
+    public static int $Instances = 0;
+
+    public object $Foo;
+
+    public function __construct()
+    {
+        self::$Instances++;
+        $this->Foo = new stdClass();
+    }
+
+    public function __clone()
+    {
+        self::$Instances++;
+    }
+}
+
+class UncloneableClass
+{
+    private function __clone() {}
+}
+
+class RefClass
+{
+    /**
+     * @var mixed
+     */
+    public $BindTo;
+
+    /**
+     * @param mixed $bindTo
+     */
+    public function __construct(&$bindTo)
+    {
+        $this->BindTo = &$bindTo;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function apply($value): void
+    {
+        $this->BindTo = $value;
     }
 }

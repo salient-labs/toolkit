@@ -1446,6 +1446,7 @@ final class Curler implements Readable, Writable, Buildable
             }
 
             // Collect data from response and move on to next page
+            /** @var mixed[] */
             $result = Json::parseObjectAsArray($this->execute(false));
             $entities = array_merge($entities, $result);
 
@@ -1479,6 +1480,7 @@ final class Curler implements Readable, Writable, Buildable
             }
 
             // Collect data from response and move on to next page
+            /** @var mixed[] */
             $result = Json::parseObjectAsArray($this->execute(false));
             $entities = array_merge($entities, $result[$entityName]);
             $nextUrl = $result['links']['next'] ?? null;
@@ -1506,7 +1508,7 @@ final class Curler implements Readable, Writable, Buildable
             $field = array_shift($path);
 
             // Gracefully skip missing data
-            if (isset($data[$field])) {
+            if (is_array($data[$field]) && isset($data[$field])) {
                 self::collateNested($data[$field], $path, $entities);
             }
         }
