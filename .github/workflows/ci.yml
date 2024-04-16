@@ -140,7 +140,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: sqlite3
+          extensions: fileinfo, sqlite3
           coverage: pcov
 
       - name: Get Composer cache directory
@@ -182,7 +182,7 @@ jobs:
         shell: bash
         run: |
           scripts/delete-covers.php --force
-          vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml && status=0 || status=$?
+          vendor/bin/phpunit ${RUNNER_DEBUG+--debug} --no-extensions --no-coverage --coverage-clover=coverage.xml && status=0 || status=$?
           printf 'coverage_report_generated=%d\n' "$([[ -s coverage.xml ]] && echo 1 || echo 0)" >>"$GITHUB_OUTPUT"
           (exit $status)
 
