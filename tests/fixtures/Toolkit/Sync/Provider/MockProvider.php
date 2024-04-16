@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Sync\Provider;
 
-use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Core\Utility\Get;
 use Salient\Core\DateFormatter;
 use Salient\Sync\HttpSyncProvider;
@@ -32,7 +31,7 @@ class MockProvider extends HttpSyncProvider implements UserProvider
         return 'http://localhost';
     }
 
-    protected function getDateFormatter(?string $path = null): DateFormatterInterface
+    protected function getDateFormatter(?string $path = null): DateFormatter
     {
         return new DateFormatter();
     }

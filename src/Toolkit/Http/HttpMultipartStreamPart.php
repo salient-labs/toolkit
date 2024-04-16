@@ -3,30 +3,43 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
+use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
+use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Exception\InvalidRuntimeConfigurationException;
+use Salient\Core\Exception\LogicException;
+use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
 
 /**
  * Part of a PSR-7 multipart data stream
+ *
+ * @api
  */
 class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
 {
-    protected string $Name;
+    use HasImmutableProperties {
+        withPropertyValue as with;
+    }
+
+    protected ?string $Name;
     protected ?string $Filename;
     protected ?string $FallbackFilename;
     protected ?string $MediaType;
     protected StreamInterface $Content;
 
     /**
+     * Creates a new HttpMultipartStreamPart object
+     *
      * @param StreamInterface|resource|string|null $content
      */
     public function __construct(
-        string $name,
         $content,
+        ?string $name = null,
         ?string $filename = null,
         ?string $mediaType = null,
         ?string $fallbackFilename = null
@@ -42,10 +55,59 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     }
 
     /**
+     * Creates a new HttpMultipartStreamPart object backed by a local file
+     *
+     * @param string|null $uploadFilename Default: `basename($filename)`
+     * @param string|null $mediaType Default: `mime_content_type($filename)`,
+     * `application/octet-stream` on failure.
+     */
+    public static function fromFile(
+        string $filename,
+        ?string $name = null,
+        ?string $uploadFilename = null,
+        ?string $mediaType = null,
+        ?string $fallbackFilename = null
+    ): self {
+        if (!is_file($filename)) {
+            throw new InvalidArgumentException(sprintf(
+                'File not found: %s',
+                $filename,
+            ));
+        }
+
+        if ($mediaType === null) {
+            if (!extension_loaded('fileinfo')) {
+                // @codeCoverageIgnoreStart
+                throw new InvalidRuntimeConfigurationException(
+                    "'fileinfo' extension required for MIME type detection"
+                );
+                // @codeCoverageIgnoreEnd
+            }
+            $mediaType = @mime_content_type($filename);
+            if ($mediaType === false) {
+                // @codeCoverageIgnoreStart
+                $mediaType = MimeType::BINARY;
+                // @codeCoverageIgnoreEnd
+            }
+        }
+
+        return new self(
+            File::open($filename, 'r'),
+            $name,
+            $uploadFilename ?? basename($filename),
+            $mediaType,
+            $fallbackFilename,
+        );
+    }
+
+    /**
      * @inheritDoc
      */
     public function getName(): string
     {
+        if ($this->Name === null) {
+            throw new LogicException('Name is not set');
+        }
         return $this->Name;
     }
 
@@ -79,6 +141,14 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     public function getContent(): StreamInterface
     {
         return $this->Content;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withName(string $name): HttpMultipartStreamPartInterface
+    {
+        return $this->with('Name', $name);
     }
 
     /**

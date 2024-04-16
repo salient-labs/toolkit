@@ -11,6 +11,11 @@ use Salient\Contract\Core\Immutable;
 interface HttpMultipartStreamPartInterface extends Immutable
 {
     /**
+     * Get an instance with the given field name
+     */
+    public function withName(string $name): HttpMultipartStreamPartInterface;
+
+    /**
      * Get the field name of the part
      */
     public function getName(): string;

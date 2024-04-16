@@ -24,7 +24,6 @@ use JsonSerializable;
 use ReflectionClass;
 use ReflectionObject;
 use Stringable;
-use Traversable;
 use UnitEnum;
 
 /**
@@ -194,7 +193,45 @@ final class Get extends AbstractUtility
     }
 
     /**
-     * Convert nested arrays to a query string
+     * Convert nested arrays and objects to a query string
+     *
+     * @see Get::formData() for details.
+     *
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed[] $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     * @param (callable(object): (T|false))|null $callback
+     */
+    public static function query(
+        array $data,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null,
+        ?callable $callback = null
+    ): string {
+        $data = self::doFormData(
+            $data,
+            $flags,
+            $dateFormatter ?? new DateFormatter(),
+            $callback,
+        );
+
+        foreach ($data as [$key, $value]) {
+            if (!is_string($value)) {
+                throw new InvalidArgumentException(sprintf(
+                    "Invalid value at '%s': %s",
+                    $key,
+                    self::type($value),
+                ));
+            }
+            $query[] = rawurlencode($key) . '=' . rawurlencode($value);
+        }
+
+        return implode('&', $query ?? []);
+    }
+
+    /**
+     * Convert nested arrays and objects to HTML form data
      *
      * List keys are not preserved by default. Use `$flags` to modify this
      * behaviour.
@@ -203,107 +240,120 @@ final class Get extends AbstractUtility
      * convert {@see DateTimeInterface} instances to ISO-8601 strings.
      *
      * `$callback` is applied to objects other than {@see DateTimeInterface}
-     * instances found in `$data`. If it returns `null`, the value is excluded
-     * from the query string.
+     * instances found in `$data`. It may return `null` to skip the value, or
+     * `false` to process the value as if no callback had been given. If a
+     * {@see DateTimeInterface} is returned, it is converted to `string` as per
+     * the `$dateFormatter` note above.
      *
-     * Objects are resolved as follows:
+     * If no `$callback` is given, objects are resolved as follows:
      *
      * - {@see DateTimeInterface}: converted to `string` (see `$dateFormatter`
      *   note above)
      * - {@see Arrayable}: replaced with {@see Arrayable::toArray()}
-     * - {@see Jsonable}: replaced with {@see Jsonable::toJson()} and decoded
-     * - {@see Stringable}: cast to `string` unless {@see JsonSerializable} is
-     *   also implemented
-     * - Others: converted to JSON and decoded
+     * - {@see JsonSerializable}: replaced with
+     *   {@see JsonSerializable::jsonSerialize()} if it returns an `array`
+     * - {@see Jsonable}: replaced with {@see Jsonable::toJson()} after decoding
+     *   if {@see json_decode()} returns an `array`
+     * - `object` with at least one public property: replaced with an array that
+     *   maps public property names to values
+     * - {@see Stringable}: cast to `string`
      *
-     * @param mixed[] $data
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed[]|object $data
      * @param int-mask-of<QueryFlag::*> $flags
-     * @param (callable(object): (object|mixed[]|string|null))|null $callback
+     * @param (callable(object): (T|false))|null $callback
+     * @return list<array{string,string|(T&object)}>
      */
-    public static function query(
-        array $data,
+    public static function formData(
+        $data,
         int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?callable $callback = null
-    ): string {
-        return implode('&', self::doQuery(
+    ) {
+        /** @var list<array{string,string|(T&object)}> */
+        return self::doFormData(
             $data,
             $flags,
-            $dateFormatter ?: new DateFormatter(),
+            $dateFormatter ?? new DateFormatter(),
             $callback,
-        ));
+        );
     }
 
     /**
-     * @param mixed[] $data
+     * @template T of object|mixed[]|string|null
+     *
+     * @param object|mixed[]|string|null $data
      * @param int-mask-of<QueryFlag::*> $flags
-     * @param (callable(object): (object|mixed[]|string|null))|null $cb
-     * @param string[] $query
-     * @return string[]
+     * @param (callable(object): (T|false))|null $cb
+     * @param list<array{string,string|(T&object)}> $query
+     * @return list<array{string,string|(T&object)}>
      */
-    private static function doQuery(
-        array $data,
+    private static function doFormData(
+        $data,
         int $flags,
         DateFormatterInterface $df,
         ?callable $cb,
         array &$query = [],
-        string $keyPrefix = '',
-        string $keyFormat = '%s'
+        string $name = ''
     ): array {
-        foreach ($data as $key => $value) {
-            $key = $keyPrefix . sprintf($keyFormat, $key);
-
-            if ($keyPrefix === '') {
-                $value = self::getQueryValue($value, $df, $cb, $key);
-            }
-
-            /** @var mixed[]|string|null $value */
-            if ($value === null || $value === []) {
-                continue;
-            }
-
-            if (is_array($value)) {
-                $preserveKeys =
-                    Arr::isList($value)
-                        ? $flags & QueryFlag::PRESERVE_LIST_KEYS
-                        : (Arr::isIndexed($value)
-                            ? $flags & QueryFlag::PRESERVE_NUMERIC_KEYS
-                            : $flags & QueryFlag::PRESERVE_STRING_KEYS);
-                $format = $preserveKeys ? '[%s]' : '[]';
-
-                $hasArray = false;
-                foreach ($value as $k => &$v) {
-                    $k = $key . sprintf($format, $k);
-                    $v = self::getQueryValue($v, $df, $cb, $k);
-                    if (!$preserveKeys && !$hasArray && is_array($v)) {
-                        $hasArray = true;
-                    }
-                }
-
-                if ($hasArray) {
-                    $format = '[%s]';
-                }
-
-                self::doQuery($value, $flags, $df, $cb, $query, $key, $format);
-                continue;
-            }
-
-            $query[] = rawurlencode($key) . '=' . rawurlencode($value);
+        if ($name === '') {
+            $data = self::getFormDataValue($data, $df, $cb);
         }
+
+        /** @var (T&object)|mixed[]|string|null $data */
+        if ($data === null || $data === []) {
+            return $query;
+        }
+
+        if (is_array($data)) {
+            $preserveKeys = $name === '' || (
+                Arr::isList($data)
+                    ? $flags & QueryFlag::PRESERVE_LIST_KEYS
+                    : (Arr::isIndexed($data)
+                        ? $flags & QueryFlag::PRESERVE_NUMERIC_KEYS
+                        : $flags & QueryFlag::PRESERVE_STRING_KEYS)
+            );
+            $format = $preserveKeys ? ($name === '' ? '%s' : '[%s]') : '[]';
+
+            $hasArray = false;
+            foreach ($data as &$value) {
+                $value = self::getFormDataValue($value, $df, $cb);
+                if (!$preserveKeys && !$hasArray && is_array($value)) {
+                    $hasArray = true;
+                }
+            }
+            unset($value);
+
+            if ($hasArray) {
+                $format = '[%s]';
+            }
+
+            /** @var object|mixed[]|string|null $value */
+            foreach ($data as $key => $value) {
+                $key = sprintf($format, $key);
+                self::doFormData($value, $flags, $df, $cb, $query, $name . $key);
+            }
+
+            return $query;
+        }
+
+        $query[] = [$name, $data];
 
         return $query;
     }
 
     /**
+     * @template T of object|mixed[]|string|null
+     *
      * @param mixed $value
-     * @param (callable(object): (object|mixed[]|string|null))|null $cb
-     * @return mixed[]|string|null
+     * @param (callable(object): (T|false))|null $cb
+     * @return mixed[]|string|T
      */
-    private static function getQueryValue(
+    private static function getFormDataValue(
         $value,
         DateFormatterInterface $df,
-        ?callable $cb,
-        string $key
+        ?callable $cb
     ) {
         if (is_bool($value)) {
             return (string) (int) $value;
@@ -317,41 +367,54 @@ final class Get extends AbstractUtility
             return $value;
         }
 
+        if ($value instanceof DateTimeInterface) {
+            return $df->format($value);
+        }
+
         if (is_object($value)) {
-            if ($value instanceof DateTimeInterface) {
-                return $df->format($value);
-            }
             if ($cb !== null) {
-                $value = $cb($value);
-                if (!is_object($value)) {
-                    return $value;
+                $result = $cb($value);
+                if ($result instanceof DateTimeInterface) {
+                    return $df->format($result);
                 }
-                if ($value instanceof DateTimeInterface) {
-                    return $df->format($value);
+                if ($result !== false) {
+                    return $result;
                 }
             }
+
             if ($value instanceof Arrayable) {
                 return $value->toArray();
             }
-            if ($value instanceof Jsonable) {
-                return self::getQueryValue(
-                    Json::parseObjectAsArray($value->toJson()), $df, $cb, $key
-                );
+
+            if ((
+                $value instanceof JsonSerializable &&
+                is_array($result = $value->jsonSerialize())
+            ) || (
+                $value instanceof Jsonable &&
+                is_array($result = Json::parseObjectAsArray($value->toJson()))
+            )) {
+                return $result;
             }
-            if (
-                ($value instanceof Stringable || method_exists($value, '__toString')) &&
-                !($value instanceof JsonSerializable)
-            ) {
+
+            // Get public property values
+            $result = [];
+            // @phpstan-ignore-next-line
+            foreach ($value as $key => $val) {
+                $result[$key] = $val;
+            }
+            if ($result !== []) {
+                return $result;
+            }
+
+            if (Test::isStringable($value)) {
                 return (string) $value;
             }
-            return self::getQueryValue(
-                Json::parseObjectAsArray(Json::stringify($value)), $df, $cb, $key
-            );
+
+            return [];
         }
 
         throw new InvalidArgumentException(sprintf(
-            'Invalid value at %s: %s',
-            $key,
+            'Invalid value: %s',
             self::type($value),
         ));
     }
@@ -385,7 +448,7 @@ final class Get extends AbstractUtility
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $value
      * @return array<TKey,TValue>
      */
-    public static function array($value, bool $preserveKeys = false): array
+    public static function array($value): array
     {
         if (is_array($value)) {
             return $value;
@@ -393,13 +456,13 @@ final class Get extends AbstractUtility
         if ($value instanceof Arrayable) {
             return $value->toArray();
         }
-        return iterator_to_array($value, $preserveKeys);
+        return iterator_to_array($value);
     }
 
     /**
      * Resolve a value to an item count
      *
-     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $value
+     * @param Arrayable<array-key,mixed>|iterable<array-key,mixed>|Countable|int $value
      */
     public static function count($value): int
     {

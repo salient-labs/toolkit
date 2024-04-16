@@ -305,7 +305,9 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
             return $this;
         }
 
+        // @codeCoverageIgnoreStart
         throw new InvalidRuntimeConfigurationException('SQLite 3.24 or above required');
+        // @codeCoverageIgnoreEnd
     }
 
     /**

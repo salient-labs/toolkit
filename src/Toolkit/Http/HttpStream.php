@@ -3,10 +3,14 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
+use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\QueryFlag;
+use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
+use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
@@ -62,6 +66,52 @@ class HttpStream implements HttpStreamInterface
     }
 
     /**
+     * Encapsulate arbitrarily nested data in a new HttpStream or
+     * HttpMultipartStream object
+     *
+     * @param mixed[]|object $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     */
+    public static function fromData(
+        $data,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null,
+        ?string $boundary = null
+    ): HttpStreamInterface {
+        $multipart = false;
+        $data = Get::formData(
+            $data,
+            $flags,
+            $dateFormatter,
+            static function (object $value) use (&$multipart) {
+                if ($value instanceof HttpMultipartStreamPartInterface) {
+                    $multipart = true;
+                    return $value;
+                }
+                return false;
+            }
+        );
+
+        if (!$multipart) {
+            /** @var string $content */
+            foreach ($data as [$name, $content]) {
+                $query[] = rawurlencode($name) . '=' . rawurlencode($content);
+            }
+            return self::fromString(implode('&', $query ?? []));
+        }
+
+        /** @var string|HttpMultipartStreamPartInterface $content */
+        foreach ($data as [$name, $content]) {
+            if ($content instanceof HttpMultipartStreamPartInterface) {
+                $parts[] = $content->withName($name);
+            } else {
+                $parts[] = new HttpMultipartStreamPart($content, $name);
+            }
+        }
+        return new HttpMultipartStream($parts ?? [], $boundary);
+    }
+
+    /**
      * Copy data from a stream to a string
      */
     public static function copyToString(StreamInterface $from): string
@@ -70,7 +120,9 @@ class HttpStream implements HttpStreamInterface
         while (!$from->eof()) {
             $in = $from->read(static::CHUNK_SIZE);
             if ($in === '') {
+                // @codeCoverageIgnoreStart
                 break;
+                // @codeCoverageIgnoreEnd
             }
             $out .= $in;
         }
@@ -92,7 +144,9 @@ class HttpStream implements HttpStreamInterface
             $out = substr($out, $to->write($out));
         }
         while ($out !== '') {
+            // @codeCoverageIgnoreStart
             $out = substr($out, $to->write($out));
+            // @codeCoverageIgnoreEnd
         }
     }
 
