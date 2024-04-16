@@ -366,32 +366,32 @@ parameters:
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#2 \\$ of closure expects TProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface, Salient\\\\Contract\\\\Core\\\\ProviderInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Introspector.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of closure expects class\\-string\\|null, string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Introspector.php
-
-		-
 			message: "#^Parameter \\#2 \\$action of method Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:propertyActionIsAllowed\\(\\) expects 'get'\\|'isset'\\|'set'\\|'unset', string given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#3 \\$ of closure expects TContext of Salient\\\\Contract\\\\Core\\\\ProviderContextInterface, Salient\\\\Contract\\\\Core\\\\ProviderContextInterface given\\.$#"
+			message: "#^Parameter \\#2 of closure expects TProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface, Salient\\\\Contract\\\\Core\\\\ProviderInterface given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#4 \\$ of closure expects \\(TProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\ProviderInterface\\|null given\\.$#"
+			message: "#^Parameter \\#2 of closure expects class\\-string\\|null, string\\|null given\\.$#"
+			count: 1
+			path: src/Toolkit/Core/Introspector.php
+
+		-
+			message: "#^Parameter \\#3 of closure expects TContext of Salient\\\\Contract\\\\Core\\\\ProviderContextInterface, Salient\\\\Contract\\\\Core\\\\ProviderContextInterface given\\.$#"
+			count: 1
+			path: src/Toolkit/Core/Introspector.php
+
+		-
+			message: "#^Parameter \\#4 of closure expects \\(TProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\ProviderInterface\\|null given\\.$#"
 			count: 3
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#5 \\$ of closure expects \\(TContext of Salient\\\\Contract\\\\Core\\\\ProviderContextInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\ProviderContextInterface\\|null given\\.$#"
+			message: "#^Parameter \\#5 of closure expects \\(TContext of Salient\\\\Contract\\\\Core\\\\ProviderContextInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\ProviderContextInterface\\|null given\\.$#"
 			count: 3
 			path: src/Toolkit/Core/Introspector.php
 
@@ -486,7 +486,7 @@ parameters:
 			path: src/Toolkit/Core/Utility/Reflect.php
 
 		-
-			message: "#^Parameter \\#1 \\$ of callable callable\\(class\\-string\\)\\: \\(string\\|null\\) expects class\\-string, string given\\.$#"
+			message: "#^Parameter \\#1 of callable callable\\(class\\-string\\)\\: \\(string\\|null\\) expects class\\-string, string given\\.$#"
 			count: 2
 			path: src/Toolkit/Core/Utility/Reflect.php
 
@@ -956,7 +956,7 @@ parameters:
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
 		-
-			message: "#^Parameter \\#4 \\$ of method Closure\\:\\:call\\(\\) expects array\\|null, mixed given\\.$#"
+			message: "#^Parameter \\#4 of method Closure\\:\\:call\\(\\) expects array\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
@@ -1081,16 +1081,6 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Parameter \\#2 \\$ of closure expects TClass of object, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of closure expects class\\-string\\|null, string\\|null given\\.$#"
-			count: 3
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
 			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Sync\\\\SyncStore\\:\\:entity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
@@ -1098,6 +1088,16 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
 			count: 1
+			path: src/Toolkit/Sync/Support/SyncIntrospector.php
+
+		-
+			message: "#^Parameter \\#2 of closure expects TClass of object, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Support/SyncIntrospector.php
+
+		-
+			message: "#^Parameter \\#2 of closure expects class\\-string\\|null, string\\|null given\\.$#"
+			count: 3
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
