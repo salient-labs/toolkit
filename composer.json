@@ -19,6 +19,7 @@
         "lkrms/dice": "^4.1.9",
         "psr/container": "^2",
         "psr/event-dispatcher": "^1",
+        "psr/http-client": "^1",
         "psr/http-factory": "^1",
         "psr/http-message": "^1.1 || ^2",
         "psr/log": "^1"
