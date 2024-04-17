@@ -26,6 +26,7 @@ trait HasBuilder
      */
     protected static function getBuilder(): string
     {
+        /** @var class-string<TBuilder> */
         return static::class . 'Builder';
     }
 
@@ -42,6 +43,7 @@ trait HasBuilder
      */
     final public static function resolve($object)
     {
+        /** @var static */
         return static::getBuilder()::resolve($object);
     }
 }
