@@ -366,14 +366,14 @@ final class HttpHeadersTest extends TestCase
         $this->assertFalse($headers->hasHeader('Baz'));
         $this->assertSame(['qux', 'quux', 'quuux'], $headers->getHeader('Foo'));
         $this->assertSame([], $headers->getHeader('Baz'));
-        $this->assertSame('qux,quux,quuux', $headers->getHeaderLine('Foo'));
+        $this->assertSame('qux, quux, quuux', $headers->getHeaderLine('Foo'));
         $this->assertSame('', $headers->getHeaderLine('Baz'));
         $this->assertSame('qux', $headers->getFirstHeaderLine('Foo'));
         $this->assertSame('quuux', $headers->getLastHeaderLine('Foo'));
         $this->assertSame('baz', $headers->getOneHeaderLine('Bar'));
 
         $this->expectException(InvalidHeaderException::class);
-        $this->expectExceptionMessage('HTTP header appears more than once: Foo');
+        $this->expectExceptionMessage('HTTP header given more than once: Foo');
         $headers->getOneHeaderLine('Foo');
     }
 
@@ -438,10 +438,10 @@ final class HttpHeadersTest extends TestCase
 
     public function testEmptyValue(): void
     {
-        $this->assertSame(
-            ['A' => ['']],
-            (new HttpHeaders())->set('A', '')->getHeaders()
-        );
+        $headers = (new HttpHeaders(['foo' => 'bar', 'baz' => '']))->add('foo', '')->set('qux', '');
+        $this->assertSame(['foo' => ['bar', ''], 'baz' => [''], 'qux' => ['']], $headers->getHeaders());
+        $this->assertSame(['foo: bar', 'baz: ', 'foo: ', 'qux: '], $headers->getLines());
+        $this->assertSame(['foo:bar', 'baz;', 'foo;', 'qux;'], $headers->getLines('%s:%s', '%s;'));
     }
 
     public function testSort(): void

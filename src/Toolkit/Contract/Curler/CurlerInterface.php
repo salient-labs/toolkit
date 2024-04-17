@@ -2,6 +2,7 @@
 
 namespace Salient\Contract\Curler;
 
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Salient\Cache\CacheStore;
@@ -12,14 +13,13 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
-use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
 use Closure;
 
-interface CurlerInterface
+interface CurlerInterface extends ClientInterface
 {
     /**
      * Get the URI of the endpoint
@@ -29,7 +29,7 @@ interface CurlerInterface
     /**
      * Get the last request sent to the endpoint
      */
-    public function getLastRequest(): ?HttpRequestInterface;
+    public function getLastRequest(): ?RequestInterface;
 
     /**
      * Get the last response received from the endpoint
@@ -479,7 +479,7 @@ interface CurlerInterface
     /**
      * Get an instance that uses a callback to generate response cache keys
      *
-     * @param (callable(HttpRequestInterface): (string[]|string))|null $callback
+     * @param (callable(RequestInterface): (string[]|string))|null $callback
      * @return static
      */
     public function withCacheKeyCallback(?callable $callback);

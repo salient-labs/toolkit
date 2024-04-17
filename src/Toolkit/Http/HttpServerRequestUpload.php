@@ -15,7 +15,7 @@ use Salient\Http\Exception\UploadedFileException;
  */
 class HttpServerRequestUpload implements UploadedFileInterface
 {
-    private const ERROR_MESSAGE = [
+    protected const ERROR_MESSAGE = [
         \UPLOAD_ERR_OK => 'There is no error, the file uploaded with success',
         \UPLOAD_ERR_INI_SIZE => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
         \UPLOAD_ERR_FORM_SIZE => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
@@ -149,7 +149,7 @@ class HttpServerRequestUpload implements UploadedFileInterface
             throw new UploadedFileException(sprintf(
                 'Upload failed (%d: %s)',
                 $this->Error,
-                self::ERROR_MESSAGE[$this->Error] ?? '',
+                static::ERROR_MESSAGE[$this->Error] ?? '',
             ));
         }
 

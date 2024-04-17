@@ -105,7 +105,13 @@ class PhpDocTag
             return $replace([$type])[0];
         }
 
-        $types = Str::splitOutsideBrackets('|', $type);
+        $types = Str::splitDelimited(
+            '|',
+            $type,
+            null,
+            true,
+            Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED
+        );
 
         // Move `null` to the end of union types
         $notNull = array_filter(

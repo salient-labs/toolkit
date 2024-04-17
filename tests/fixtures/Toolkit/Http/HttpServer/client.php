@@ -8,7 +8,6 @@ use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Test;
 use Salient\Http\HttpHeaders;
 
 require dirname(__DIR__, 5) . '/vendor/autoload.php';
@@ -156,12 +155,8 @@ while (!@feof($client)) {
             $chunked = $encoding === 'chunked';
             continue;
         }
-        if ($headers->hasHeader(HttpHeader::CONTENT_LENGTH)) {
-            $length = $headers->getOneHeaderLine(HttpHeader::CONTENT_LENGTH);
-            if (!Test::isInteger($length) || (int) $length < 0) {
-                throw new RuntimeException(sprintf('Invalid value in Content-Length header: %s', $contentLength));
-            }
-            $contentLength = (int) $length;
+        $contentLength = $headers->getContentLength();
+        if ($contentLength !== null) {
             continue;
         }
         break;

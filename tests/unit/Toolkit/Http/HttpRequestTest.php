@@ -131,7 +131,7 @@ final class HttpRequestTest extends TestCase
 
         $h = ['Foo' => ['a', 'b', 'c']];
         $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
-        $this->assertSame('a,b,c', $r->getHeaderLine('Foo'));
+        $this->assertSame('a, b, c', $r->getHeaderLine('Foo'));
         $this->assertSame('', $r->getHeaderLine('Bar'));
 
         $h = [
@@ -140,7 +140,7 @@ final class HttpRequestTest extends TestCase
         ];
         $r = new HttpRequest('GET', '', null, null, $h);
         $this->assertSame(['ZOO' => ['zoobar', 'foobar', 'zoobar']], $r->getHeaders());
-        $this->assertSame('zoobar,foobar,zoobar', $r->getHeaderLine('zoo'));
+        $this->assertSame('zoobar, foobar, zoobar', $r->getHeaderLine('zoo'));
 
         $r = new HttpRequest('GET', 'http://foo.com:8124/bar');
         $this->assertSame('foo.com:8124', $r->getHeaderLine('host'));

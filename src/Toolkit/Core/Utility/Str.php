@@ -12,6 +12,9 @@ use Salient\Core\AbstractUtility;
  */
 final class Str extends AbstractUtility
 {
+    public const PRESERVE_DOUBLE_QUOTED = 1;
+    public const PRESERVE_SINGLE_QUOTED = 2;
+
     /**
      * Get the first string that is not null or empty, or return the last value
      */
@@ -440,6 +443,8 @@ final class Str extends AbstractUtility
      * end of each substring before removing empty strings
      *
      * @param non-empty-string $separator
+     * @param int|null $limit Limit the number of substrings returned. Implies
+     * `$removeEmpty = false`.
      * @param string|null $characters Specify characters to trim instead of
      * whitespace. If an empty string is given, substrings are not trimmed.
      * @return list<string>
@@ -447,12 +452,15 @@ final class Str extends AbstractUtility
     public static function split(
         string $separator,
         string $string,
-        int $limit = \PHP_INT_MAX,
+        ?int $limit = null,
         ?string $characters = null,
         bool $removeEmpty = true
     ): array {
+        if ($limit !== null) {
+            $removeEmpty = false;
+        }
         $split = Arr::trim(
-            explode($separator, $string, $limit),
+            explode($separator, $string, $limit ?? \PHP_INT_MAX),
             $characters,
             $removeEmpty
         );
@@ -460,27 +468,40 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Split a string by a string without separating substrings enclosed by
-     * brackets and remove whitespace from the beginning and end of each
-     * substring before removing empty strings
+     * Without splitting bracket-delimited or double-quoted substrings, split a
+     * string by a string and remove whitespace from the beginning and end of
+     * each substring before removing empty strings
      *
      * @param non-empty-string $separator
      * @param string|null $characters Specify characters to trim instead of
      * whitespace. If an empty string is given, substrings are not trimmed.
+     * @param int-mask-of<Str::PRESERVE_*> $flags
      * @return list<string>
      */
-    public static function splitOutsideBrackets(
+    public static function splitDelimited(
         string $separator,
         string $string,
         ?string $characters = null,
-        bool $removeEmpty = true
+        bool $removeEmpty = true,
+        int $flags = Str::PRESERVE_DOUBLE_QUOTED
     ): array {
         if (strlen($separator) !== 1) {
             throw new InvalidArgumentException('Separator must be a single character');
         }
 
-        if (strpos('()<>[]{}', $separator) !== false) {
-            throw new InvalidArgumentException('Separator cannot be a bracket character');
+        $quotes = '';
+        $regex = '';
+        if ($flags & self::PRESERVE_DOUBLE_QUOTED) {
+            $quotes .= '"';
+            $regex .= "|\n" . '    " (?: [^"\\\\] | \\\\ . )*+ " ';
+        }
+        if ($flags & self::PRESERVE_SINGLE_QUOTED) {
+            $quotes .= "'";
+            $regex .= "|\n" . "    ' (?: [^'\\\\] | \\\\ . )*+ ' ";
+        }
+
+        if (strpos('()<>[]{}' . $quotes, $separator) !== false) {
+            throw new InvalidArgumentException('Separator cannot be a delimiter');
         }
 
         $quoted = preg_quote($separator, '/');
@@ -488,13 +509,13 @@ final class Str extends AbstractUtility
 
         $regex = <<<REGEX
             (?x)
-            (?: [^()<>[\]{}{$escaped}]++ |
-              ( \( (?: [^()<>[\]{}]*+ (?-1)? )*+ \) |
-                <  (?: [^()<>[\]{}]*+ (?-1)? )*+ >  |
-                \[ (?: [^()<>[\]{}]*+ (?-1)? )*+ \] |
-                \{ (?: [^()<>[\]{}]*+ (?-1)? )*+ \} ) |
+            (?: [^{$quotes}()<>[\]{}{$escaped}]++ |
+              ( \( (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \) |
+                <  (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ >  |
+                \[ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \] |
+                \{ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \} {$regex}) |
               # Match empty substrings
-              (?<= $quoted ) (?= $quoted ) )+
+              (?<= $quoted | ^ ) (?= $quoted | \$ ) )+
             REGEX;
 
         Pcre::matchAll(

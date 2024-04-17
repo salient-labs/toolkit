@@ -16,6 +16,7 @@ use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\HttpServerException;
+use Salient\Http\Exception\InvalidHeaderException;
 
 /**
  * A simple HTTP server
@@ -425,16 +426,16 @@ class HttpServer implements Immutable
 
             /** @todo Handle requests without Content-Length */
             /** @todo Add support for Transfer-Encoding */
-            $contentLength = $headers->getFirstHeaderLine(HttpHeader::CONTENT_LENGTH);
-            if ($contentLength !== '') {
-                $length = (int) $contentLength;
-                if ($length < 0 || (string) $length !== $contentLength) {
-                    throw new HttpServerException(sprintf(
-                        'Invalid Content-Length in request from %s: %s',
-                        $peer,
-                        $contentLength,
-                    ));
-                }
+            try {
+                $length = $headers->getContentLength();
+            } catch (InvalidHeaderException $ex) {
+                throw new HttpServerException(sprintf(
+                    'Invalid %s in request from %s',
+                    HttpHeader::CONTENT_LENGTH,
+                    $peer,
+                ), $ex);
+            }
+            if ($length !== null) {
                 $body = @fread($socket, $length);
                 if ($body === false) {
                     throw new HttpServerException(sprintf(

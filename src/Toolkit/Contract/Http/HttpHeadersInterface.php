@@ -18,6 +18,11 @@ interface HttpHeadersInterface extends
     Stringable
 {
     /**
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
+     */
+    public function __construct($items = []);
+
+    /**
      * Parse and apply an HTTP header field or continuation thereof
      *
      * This method should be called once per HTTP header line. Each line must
@@ -96,9 +101,14 @@ interface HttpHeadersInterface extends
      * Get header names and values in their original order as a list of HTTP
      * header fields, preserving the original case of each header
      *
+     * If `$emptyFormat` is given, it is used for headers with an empty value.
+     *
      * @return string[]
      */
-    public function getLines(string $format = '%s: %s'): array;
+    public function getLines(
+        string $format = '%s: %s',
+        ?string $emptyFormat = null
+    ): array;
 
     /**
      * Get an array that maps header names to values, preserving the original
