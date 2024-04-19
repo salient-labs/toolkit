@@ -76,8 +76,7 @@
             ]
         },
         "files": [
-            "tests/fixtures/Toolkit/Core/Utility/Debug/GetCallerFile1.php",
-            "tests/fixtures/Toolkit/Core/Utility/Debug/GetCallerFile2.php"
+            "tests/bootstrap.php"
         ]
     },
     "bin": [

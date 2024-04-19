@@ -4,6 +4,9 @@ namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\MimeType;
 use Salient\Core\AbstractUtility;
+use Salient\Core\DateFormatter;
+use DateTimeImmutable;
+use DateTimeInterface;
 
 /**
  * Work with HTTP messages
@@ -59,6 +62,29 @@ final class Http extends AbstractUtility
 
         return (self::ALIAS_TYPE[$type] ?? $type) === $mimeType ||
             (self::SUFFIX_TYPE[$suffix] ?? null) === $mimeType;
+    }
+
+    /**
+     * Get an HTTP date value as per [RFC7231] Section 7.1.1.1
+     */
+    public static function getDate(?DateTimeInterface $date = null): string
+    {
+        return (new DateFormatter(DateTimeInterface::RFC7231, 'UTC'))
+            ->format($date ?? new DateTimeImmutable());
+    }
+
+    /**
+     * Get a product identifier suitable for User-Agent and Server headers as
+     * per [RFC7231] Section 5.5.3
+     */
+    public static function getProduct(): string
+    {
+        return sprintf(
+            '%s/%s php/%s',
+            str_replace('/', '~', Package::name()),
+            Package::version(true, true),
+            \PHP_VERSION,
+        );
     }
 
     /**

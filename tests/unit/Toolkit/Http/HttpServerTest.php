@@ -118,7 +118,6 @@ final class HttpServerTest extends TestCase
         $this->assertSame(Str::setEol(<<<'EOF'
             HTTP/1.1 200 OK
             Content-Type: text/plain
-            Content-Length: 13
 
             Hello, world!
             EOF, "\r\n"), $client->getOutput());
@@ -146,7 +145,7 @@ final class HttpServerTest extends TestCase
         $client = (
             new Process([
                 ...self::PHP_COMMAND,
-                self::getFixturesPath(__CLASS__) . '/client.php',
+                self::getPackagePath() . '/tests/unit/Toolkit/http-client.php',
                 'localhost:3008',
                 $method,
                 $target,

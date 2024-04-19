@@ -17,14 +17,6 @@ interface HttpMessageInterface extends
     Immutable
 {
     /**
-     * Get an instance where the size of the message body is applied to the
-     * Content-Length header
-     *
-     * @return static
-     */
-    public function withContentLength(): HttpMessageInterface;
-
-    /**
      * Get the HTTP headers of the message
      */
     public function getHttpHeaders(): HttpHeadersInterface;
