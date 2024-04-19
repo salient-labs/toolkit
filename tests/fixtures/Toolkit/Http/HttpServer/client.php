@@ -20,25 +20,6 @@ $target = $_SERVER['argv'][3] ?? '/';
 $timeout = (int) ($_SERVER['argv'][4] ?? -1);
 $headers = array_slice($_SERVER['argv'], 5);
 
-/**
- * @param resource $client
- */
-function readBody($client, int $length): void
-{
-    $i = 0;
-    while ($length > 0 && !@feof($client)) {
-        if ($i++) {
-            usleep(10000);
-        }
-        $body = File::read($client, $length);
-        echo $body;
-        $length -= strlen($body);
-    }
-    if ($length > 0) {
-        throw new RuntimeException('Incomplete body');
-    }
-}
-
 $body = $method === 'GET' || $method === 'HEAD'
     ? ''
     : File::getContents(\STDIN);
@@ -55,7 +36,10 @@ array_unshift(
     'Accept: */*',
 );
 
-if ($body !== '') {
+if (
+    $body !== '' ||
+    (['POST' => true, 'PUT' => true, 'PATCH' => true][$method] ?? false)
+) {
     $headers[] = 'Content-Length: ' . strlen($body);
 }
 
@@ -92,14 +76,7 @@ fprintf(
     str_replace(\PHP_EOL, \PHP_EOL . '> ', $headers),
 );
 
-$request = Str::setEol($request, "\r\n");
-$i = 0;
-do {
-    if ($i++) {
-        usleep(10000);
-    }
-    File::maybeWrite($client, $request, $request);
-} while ($request !== '');
+File::writeAll($client, Str::setEol($request, "\r\n"));
 
 $headers = new HttpHeaders();
 $contentLength = null;
@@ -107,13 +84,12 @@ $chunked = null;
 $bodyReceived = false;
 while (!@feof($client)) {
     if ($contentLength !== null) {
-        readBody($client, $contentLength);
+        echo File::readAll($client, $contentLength);
         break;
     }
 
     if ($chunked === true) {
-        $line = File::readLine($client);
-        echo $line;
+        echo $line = File::readLine($client);
         if ($bodyReceived) {
             if (rtrim($line, "\r\n") === '') {
                 break;
@@ -125,14 +101,14 @@ while (!@feof($client)) {
         if ($line === '' || strspn($line, Char::HEX) !== strlen($line)) {
             throw new RuntimeException('Invalid chunk size');
         }
+        /** @var int<0,max> */
         $chunkSize = (int) hexdec($line);
         if ($chunkSize === 0) {
             $bodyReceived = true;
             continue;
         }
-        readBody($client, $chunkSize);
-        $line = File::readLine($client);
-        echo $line;
+        echo File::readAll($client, $chunkSize);
+        echo $line = File::readLine($client);
         $line = rtrim($line, "\r\n");
         if ($line !== '') {
             throw new RuntimeException('Invalid chunk');
@@ -141,13 +117,11 @@ while (!@feof($client)) {
     }
 
     if ($chunked === false) {
-        $body = File::getContents($client);
-        echo $body;
+        echo File::getContents($client);
         continue;
     }
 
-    $line = File::readLine($client);
-    echo $line;
+    echo $line = File::readLine($client);
     $headers = $headers->addLine($line);
     if ($headers->hasLastLine()) {
         if ($headers->hasHeader(HttpHeader::TRANSFER_ENCODING)) {
