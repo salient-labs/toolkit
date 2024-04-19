@@ -4,7 +4,6 @@ namespace Salient\Tests;
 
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Closure;
 use Throwable;
 
@@ -55,7 +54,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         string $message = ''
     ): void {
         foreach ($expected as $i => &$expectedMessage) {
-            $expectedMessage[1] = Str::eolFromNative($expectedMessage[1]);
+            $expectedMessage[1] = static::normaliseConsoleOutput($expectedMessage[1]);
             if (!isset($expectedMessage[2]) && isset($actual[$i][2])) {
                 unset($actual[$i][2]);
             }
@@ -115,11 +114,37 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Replace directory separators in a string with DIRECTORY_SEPARATOR
+     *
+     * @template T of string|null
+     *
+     * @param T $string
+     * @return T
      */
     public static function directorySeparatorToNative(?string $string): ?string
     {
+        /** @var T */
         return $string === null
             ? null
             : str_replace('/', \DIRECTORY_SEPARATOR, $string);
+    }
+
+    /**
+     * Normalise line endings in console output
+     *
+     * @template T of string|null
+     *
+     * @param T $output
+     * @return T
+     */
+    public static function normaliseConsoleOutput(?string $output): ?string
+    {
+        /** @var T */
+        return $output === null
+            ? null
+            : str_replace(
+                ["\r" . \PHP_EOL, \PHP_EOL],
+                ["\r", "\n"],
+                $output,
+            );
     }
 }

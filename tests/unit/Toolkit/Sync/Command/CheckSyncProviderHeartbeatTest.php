@@ -2,44 +2,14 @@
 
 namespace Salient\Tests\Sync\Command;
 
-use Salient\Contract\Cli\CliApplicationInterface;
-use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Sync\Command\CheckSyncProviderHeartbeat;
-use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
-use Salient\Tests\CommandTestCase;
 
 /**
  * @covers \Salient\Sync\Command\CheckSyncProviderHeartbeat
+ * @covers \Salient\Sync\Command\AbstractSyncCommand
  */
-final class CheckSyncProviderHeartbeatTest extends CommandTestCase
+final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
 {
-    protected function startApp(CliApplicationInterface $app): CliApplicationInterface
-    {
-        return $app
-            ->startCache()
-            ->startSync(__METHOD__, [])
-            ->provider(JsonPlaceholderApi::class);
-    }
-
-    protected function makeCommandAssertions(
-        CliApplicationInterface $app,
-        CliCommandInterface $command,
-        ...$args
-    ): void {
-        $httpRequestCount = $args[8] ?? null;
-
-        if ($httpRequestCount === null) {
-            return;
-        }
-
-        $provider = $app->get(JsonPlaceholderApi::class);
-        $this->assertSame(
-            $httpRequestCount,
-            $provider->HttpRequests,
-            'JsonPlaceholderApi::$HttpRequestCount',
-        );
-    }
-
     /**
      * @dataProvider runProvider
      *
@@ -53,21 +23,21 @@ final class CheckSyncProviderHeartbeatTest extends CommandTestCase
         ?array $httpRequestCount = null,
         int $runs = 1
     ): void {
-        $output = str_replace(
-            ["\r" . \PHP_EOL, \PHP_EOL],
-            ["\r", "\n"],
-            $output
-        );
         $this->assertCommandProduces(
-            $output,
+            static::normaliseConsoleOutput($output),
             $exitStatus,
             CheckSyncProviderHeartbeat::class,
             $args,
             [],
             true,
+            false,
             null,
             $runs,
-            $httpRequestCount,
+            $httpRequestCount === null
+                ? null
+                : static function ($app) use ($httpRequestCount): void {
+                    static::assertSameHttpRequests($httpRequestCount, $app);
+                },
         );
     }
 
