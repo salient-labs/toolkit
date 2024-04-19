@@ -397,6 +397,24 @@ final class GetTest extends TestCase
         Get::query(['field1' => new stdClass()], 0, null, fn($value) => $value);
     }
 
+    public function testData(): void
+    {
+        $this->assertSame([
+            'Arrayable' => ['foo', 'bar', 'baz'],
+            'JsonSerializable' => [
+                'FOO',
+                ['foo', 'bar', 'baz'],
+            ],
+            'Jsonable' => [
+                'FOO',
+                ['foo', 'bar', 'baz'],
+            ],
+            'Stringable' => ['foo', 'bar'],
+            'Generic' => ['Foo' => 'bar'],
+            'Iterator' => ['foo' => 'bar', 'baz' => 1],
+        ], Get::data(self::getDataObjects()));
+    }
+
     /**
      * @dataProvider formDataProvider
      *
@@ -674,9 +692,11 @@ final class GetTest extends TestCase
                     ['Arrayable[]', 'foo'],
                     ['Arrayable[]', 'bar'],
                     ['Arrayable[]', 'baz'],
+                    ['JsonSerializable[0]', 'FOO'],
                     ['JsonSerializable[1][]', 'foo'],
                     ['JsonSerializable[1][]', 'bar'],
                     ['JsonSerializable[1][]', 'baz'],
+                    ['Jsonable[0]', 'FOO'],
                     ['Jsonable[1][]', 'foo'],
                     ['Jsonable[1][]', 'bar'],
                     ['Jsonable[1][]', 'baz'],
@@ -686,71 +706,79 @@ final class GetTest extends TestCase
                     ['Iterator[foo]', 'bar'],
                     ['Iterator[baz]', '1'],
                 ],
-                // Arrayable[]=foo&Arrayable[]=bar&Arrayable[]=baz&JsonSerializable[1][]=foo&JsonSerializable[1][]=bar&JsonSerializable[1][]=baz&Jsonable[1][]=foo&Jsonable[1][]=bar&Jsonable[1][]=baz&Stringable[]=foo&Stringable[]=bar&Generic[Foo]=bar&Iterator[foo]=bar&Iterator[baz]=1
-                'Arrayable%5B%5D=foo&Arrayable%5B%5D=bar&Arrayable%5B%5D=baz&JsonSerializable%5B1%5D%5B%5D=foo&JsonSerializable%5B1%5D%5B%5D=bar&JsonSerializable%5B1%5D%5B%5D=baz&Jsonable%5B1%5D%5B%5D=foo&Jsonable%5B1%5D%5B%5D=bar&Jsonable%5B1%5D%5B%5D=baz&Stringable%5B%5D=foo&Stringable%5B%5D=bar&Generic%5BFoo%5D=bar&Iterator%5Bfoo%5D=bar&Iterator%5Bbaz%5D=1',
-                [
-                    'Arrayable' => new class implements Arrayable {
-                        public function toArray(): array
-                        {
-                            return ['foo', 'bar', 'baz'];
-                        }
-                    },
-                    'JsonSerializable' => [
-                        new class implements JsonSerializable {
-                            public function jsonSerialize(): string
-                            {
-                                return 'foo';
-                            }
-                        },
-                        new class implements JsonSerializable {
-                            /**
-                             * @return string[]
-                             */
-                            public function jsonSerialize(): array
-                            {
-                                return ['foo', 'bar', 'baz'];
-                            }
-                        },
-                    ],
-                    'Jsonable' => [
-                        new class implements Jsonable {
-                            public function toJson(int $flags = 0): string
-                            {
-                                return Json::stringify('foo', $flags);
-                            }
-                        },
-                        new class implements Jsonable {
-                            public function toJson(int $flags = 0): string
-                            {
-                                return Json::stringify(['foo', 'bar', 'baz'], $flags);
-                            }
-                        },
-                    ],
-                    'Stringable' => [
-                        new class implements Stringable {
-                            public function __toString()
-                            {
-                                return 'foo';
-                            }
-                        },
-                        new class {
-                            public function __toString()
-                            {
-                                return 'bar';
-                            }
-                        },
-                    ],
-                    'Generic' => new class {
-                        public string $Foo = 'bar';
-                        protected int $Baz = 1;
-                    },
-                    'Iterator' => new ArrayIterator(['foo' => 'bar', 'baz' => 1]),
-                ],
+                // Arrayable[]=foo&Arrayable[]=bar&Arrayable[]=baz&JsonSerializable[0]=FOO&JsonSerializable[1][]=foo&JsonSerializable[1][]=bar&JsonSerializable[1][]=baz&Jsonable[0]=FOO&Jsonable[1][]=foo&Jsonable[1][]=bar&Jsonable[1][]=baz&Stringable[]=foo&Stringable[]=bar&Generic[Foo]=bar&Iterator[foo]=bar&Iterator[baz]=1
+                'Arrayable%5B%5D=foo&Arrayable%5B%5D=bar&Arrayable%5B%5D=baz&JsonSerializable%5B0%5D=FOO&JsonSerializable%5B1%5D%5B%5D=foo&JsonSerializable%5B1%5D%5B%5D=bar&JsonSerializable%5B1%5D%5B%5D=baz&Jsonable%5B0%5D=FOO&Jsonable%5B1%5D%5B%5D=foo&Jsonable%5B1%5D%5B%5D=bar&Jsonable%5B1%5D%5B%5D=baz&Stringable%5B%5D=foo&Stringable%5B%5D=bar&Generic%5BFoo%5D=bar&Iterator%5Bfoo%5D=bar&Iterator%5Bbaz%5D=1',
+                self::getDataObjects(),
                 QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
                 null,
                 null,
                 false,
             ],
+        ];
+    }
+
+    /**
+     * @return mixed[]
+     */
+    private static function getDataObjects(): array
+    {
+        return [
+            'Arrayable' => new class implements Arrayable {
+                public function toArray(): array
+                {
+                    return ['foo', 'bar', 'baz'];
+                }
+            },
+            'JsonSerializable' => [
+                new class implements JsonSerializable {
+                    public function jsonSerialize(): string
+                    {
+                        return 'FOO';
+                    }
+                },
+                new class implements JsonSerializable {
+                    /**
+                     * @return string[]
+                     */
+                    public function jsonSerialize(): array
+                    {
+                        return ['foo', 'bar', 'baz'];
+                    }
+                },
+            ],
+            'Jsonable' => [
+                new class implements Jsonable {
+                    public function toJson(int $flags = 0): string
+                    {
+                        return Json::stringify('FOO', $flags);
+                    }
+                },
+                new class implements Jsonable {
+                    public function toJson(int $flags = 0): string
+                    {
+                        return Json::stringify(['foo', 'bar', 'baz'], $flags);
+                    }
+                },
+            ],
+            'Stringable' => [
+                new class implements Stringable {
+                    public function __toString()
+                    {
+                        return 'foo';
+                    }
+                },
+                new class {
+                    public function __toString()
+                    {
+                        return 'bar';
+                    }
+                },
+            ],
+            'Generic' => new class {
+                public string $Foo = 'bar';
+                protected int $Baz = 1;
+            },
+            'Iterator' => new ArrayIterator(['foo' => 'bar', 'baz' => 1]),
         ];
     }
 
