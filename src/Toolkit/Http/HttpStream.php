@@ -11,8 +11,10 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\StreamDetachedException;
+use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 
 /**
@@ -76,21 +78,29 @@ class HttpStream implements HttpStreamInterface
         $data,
         int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
+        bool $asJson = false,
         ?string $boundary = null
     ): HttpStreamInterface {
-        $multipart = false;
-        $data = Get::formData(
-            $data,
-            $flags,
-            $dateFormatter,
-            static function (object $value) use (&$multipart) {
+        if ($asJson) {
+            $callback = static function (object $value) {
                 if ($value instanceof HttpMultipartStreamPartInterface) {
-                    $multipart = true;
-                    return $value;
+                    throw new StreamEncapsulationException('Multipart data streams cannot be JSON-encoded');
                 }
                 return false;
+            };
+            $data = Get::data($data, $flags, $dateFormatter, $callback);
+            return self::fromString(Json::stringify($data));
+        }
+
+        $multipart = false;
+        $callback = static function (object $value) use (&$multipart) {
+            if ($value instanceof HttpMultipartStreamPartInterface) {
+                $multipart = true;
+                return $value;
             }
-        );
+            return false;
+        };
+        $data = Get::formData($data, $flags, $dateFormatter, $callback);
 
         if (!$multipart) {
             /** @var string $content */

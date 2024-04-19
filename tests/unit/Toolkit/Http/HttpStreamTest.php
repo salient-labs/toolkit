@@ -8,6 +8,7 @@ use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Sys;
 use Salient\Core\DateFormatter;
 use Salient\Http\Exception\StreamDetachedException;
+use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;
@@ -80,18 +81,22 @@ final class HttpStreamTest extends TestCase
      * @param int-mask-of<QueryFlag::*> $flags
      */
     public function testFromData(
-        string $expected,
+        ?string $expected,
         $data,
         int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
-        ?DateFormatter $dateFormatter = null
+        ?DateFormatter $dateFormatter = null,
+        bool $asJson = false
     ): void {
-        $stream = HttpStream::fromData($data, $flags, $dateFormatter, 'boundary');
+        if ($expected === null) {
+            $this->expectException(StreamEncapsulationException::class);
+        }
+        $stream = HttpStream::fromData($data, $flags, $dateFormatter, $asJson, 'boundary');
         $this->assertSame($expected, (string) $stream);
         $stream->close();
     }
 
     /**
-     * @return array<array{string,mixed[]|object,2?:int-mask-of<QueryFlag::*>,3?:DateFormatter|null}>
+     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<QueryFlag::*>,3?:DateFormatter|null,4?:bool}>
      */
     public static function fromDataProvider(): array
     {
@@ -150,6 +155,20 @@ final class HttpStreamTest extends TestCase
                 // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[groups][]=staff&fields[groups][]=editor&fields[created]=2021-10-02T17:23:14+10:00&attributes[BillingId]=123
                 'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00&attributes%5BBillingId%5D=123',
                 $objectData,
+            ],
+            [
+                '{"user_id":7654,"fields":{"email":"JWilliams432@gmail.com","groups":["staff","editor"],"created":"2021-10-02T17:23:14+10:00"}}',
+                $data,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                null,
+                true,
+            ],
+            [
+                null,
+                $multipartData,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                null,
+                true,
             ],
         ];
     }
