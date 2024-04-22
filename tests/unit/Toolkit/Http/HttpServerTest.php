@@ -120,14 +120,14 @@ final class HttpServerTest extends TestCase
             Content-Type: text/plain
 
             Hello, world!
-            EOF, "\r\n"), $client->getOutput());
+            EOF, "\r\n"), $client->getText());
         $this->assertSame(<<<'EOF'
             ==> Connected to localhost:3008
             > GET / HTTP/1.1
             > Host: localhost:3008
             > Accept: */*
             >
-            EOF, $client->getOutput(FileDescriptor::ERR));
+            EOF, $client->getText(FileDescriptor::ERR));
     }
 
     private function getServerWithClient(

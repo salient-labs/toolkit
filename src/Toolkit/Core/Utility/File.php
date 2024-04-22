@@ -260,7 +260,7 @@ final class File extends AbstractUtility
     {
         $process = Process::withShellCommand(Sys::isWindows() ? 'cd' : 'pwd');
         if ($process->run() === 0) {
-            return $process->getOutput();
+            return $process->getText();
         }
         error_clear_last();
         $dir = @getcwd();
