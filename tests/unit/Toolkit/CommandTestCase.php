@@ -13,11 +13,6 @@ use Salient\Core\Utility\File;
 
 abstract class CommandTestCase extends TestCase
 {
-    protected function setUpApp(CliApplicationInterface $app): CliApplicationInterface
-    {
-        return $app;
-    }
-
     /**
      * @param class-string<CliCommandInterface> $command
      * @param string[] $args
@@ -77,5 +72,10 @@ abstract class CommandTestCase extends TestCase
             File::pruneDir($basePath, true);
             Console::unload();
         }
+    }
+
+    protected function setUpApp(CliApplicationInterface $app): CliApplicationInterface
+    {
+        return $app;
     }
 }

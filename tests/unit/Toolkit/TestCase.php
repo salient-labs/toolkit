@@ -17,7 +17,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param Closure(): mixed $callback
      * @param class-string<Throwable> $exception
      */
-    public static function assertThrows(
+    public static function assertCallbackThrowsException(
         Closure $callback,
         string $exception,
         ?string $exceptionMessage = null,
@@ -72,7 +72,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * If `$expected` is not a string, no action is taken.
      *
-     * @param class-string<Throwable>|string|mixed $expected
+     * @param string|mixed $expected
      */
     public function maybeExpectException($expected): void
     {

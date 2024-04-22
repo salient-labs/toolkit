@@ -297,7 +297,7 @@ final class HttpStreamTest extends TestCase
             'write' => fn() => $stream->write('foo'),
             'seek' => fn() => $stream->seek(0),
         ] as $method => $callback) {
-            $this->assertThrows(
+            $this->assertCallbackThrowsException(
                 $callback,
                 StreamDetachedException::class,
                 'Stream is detached',

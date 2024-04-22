@@ -20,9 +20,10 @@ final class TestUtility extends AbstractUtility
      */
     public static function dumpHttpMessage(
         $stream,
-        ?string $startLine = null,
-        ?HttpHeaders $headers = null,
-        ?string $body = null
+        bool $isRequest = false,
+        ?string &$startLine = null,
+        ?HttpHeaders &$headers = null,
+        ?string &$body = null
     ): void {
         $startLine = null;
         $headers = new HttpHeaders();
@@ -87,6 +88,9 @@ final class TestUtility extends AbstractUtility
                 $contentLength = $headers->getContentLength();
                 if ($contentLength !== null) {
                     continue;
+                }
+                if ($isRequest) {
+                    return;
                 }
                 $chunked = false;
             }

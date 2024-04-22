@@ -3,6 +3,7 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Http\HttpHeader;
+use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Http;
@@ -81,12 +82,21 @@ do {
         $remotePort
     );
 
-    TestUtility::dumpHttpMessage($stream);
+    TestUtility::dumpHttpMessage($stream, true, $startLine);
 
     $response = $responses[$i]
         ?? (string) (new HttpResponse())
             ->withHeader(HttpHeader::DATE, Http::getDate())
             ->withHeader(HttpHeader::SERVER, Http::getProduct());
+
+    [$method] = explode(' ', $startLine, 2);
+    if ($method === Method::HEAD) {
+        $response = explode("\r\n\r\n", $response, 2);
+        if (isset($response[1])) {
+            $response[1] = '';
+        }
+        $response = implode("\r\n\r\n", $response);
+    }
 
     fprintf(\STDERR, Inflect::format(
         strlen($response),
