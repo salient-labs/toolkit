@@ -476,7 +476,7 @@ final class Str extends AbstractUtility
      * @param string|null $characters Specify characters to trim instead of
      * whitespace. If an empty string is given, substrings are not trimmed.
      * @param int-mask-of<Str::PRESERVE_*> $flags
-     * @return list<string>
+     * @return ($removeEmpty is true ? list<string> : non-empty-list<string>)
      */
     public static function splitDelimited(
         string $separator,

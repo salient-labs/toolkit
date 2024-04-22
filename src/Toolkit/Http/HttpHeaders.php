@@ -688,19 +688,21 @@ class HttpHeaders implements HttpHeadersInterface
         if (!$values) {
             return '';
         }
-        if ($first) {
-            return reset($values);
+        $line = implode(', ', $values);
+        if (!($first | $last | $one)) {
+            return $line;
+        }
+        $values = Str::splitDelimited(',', $line, null, false);
+        if ($one && count($values) > 1) {
+            throw new InvalidHeaderException(sprintf(
+                'HTTP header has more than one value: %s',
+                $name,
+            ));
         }
         if ($last) {
             return end($values);
         }
-        if ($one && count($values) > 1) {
-            throw new InvalidHeaderException(sprintf(
-                'HTTP header given more than once: %s',
-                $name,
-            ));
-        }
-        return implode(', ', $values);
+        return reset($values);
     }
 
     /**

@@ -360,21 +360,29 @@ final class HttpHeadersTest extends TestCase
     {
         $headers = (new HttpHeaders())
             ->add('foo', ['qux', 'quux', 'quuux'])
-            ->add('bar', ['baz']);
+            ->add('bar', ['baz'])
+            ->add('qux', ['quux="comma,separated,value", quuux'])
+            ->add('items', ['item1, item2', 'item3, item4,item5', 'item6,item7']);
 
         $this->assertTrue($headers->hasHeader('Foo'));
         $this->assertFalse($headers->hasHeader('Baz'));
         $this->assertSame(['qux', 'quux', 'quuux'], $headers->getHeader('Foo'));
         $this->assertSame([], $headers->getHeader('Baz'));
+        $this->assertSame(['item1, item2', 'item3, item4,item5', 'item6,item7'], $headers->getHeader('Items'));
         $this->assertSame('qux, quux, quuux', $headers->getHeaderLine('Foo'));
         $this->assertSame('', $headers->getHeaderLine('Baz'));
+        $this->assertSame('item1, item2, item3, item4,item5, item6,item7', $headers->getHeaderLine('Items'));
         $this->assertSame('qux', $headers->getFirstHeaderLine('Foo'));
         $this->assertSame('quuux', $headers->getLastHeaderLine('Foo'));
         $this->assertSame('baz', $headers->getOneHeaderLine('Bar'));
+        $this->assertSame('quux="comma,separated,value"', $headers->getFirstHeaderLine('Qux'));
+        $this->assertSame('quuux', $headers->getLastHeaderLine('Qux'));
+        $this->assertSame('item1', $headers->getFirstHeaderLine('Items'));
+        $this->assertSame('item7', $headers->getLastHeaderLine('Items'));
 
         $this->expectException(InvalidHeaderException::class);
-        $this->expectExceptionMessage('HTTP header given more than once: Foo');
-        $headers->getOneHeaderLine('Foo');
+        $this->expectExceptionMessage('HTTP header has more than one value: Qux');
+        $headers->getOneHeaderLine('Qux');
     }
 
     public function testImmutability(): void
