@@ -566,15 +566,15 @@ final class StrTest extends TestCase
         array $expected,
         string $separator,
         string $string,
+        bool $removeEmpty = false,
         ?string $characters = null,
-        bool $removeEmpty = true,
         int $flags = Str::PRESERVE_DOUBLE_QUOTED
     ): void {
-        $this->assertSame($expected, Str::splitDelimited($separator, $string, $characters, $removeEmpty, $flags));
+        $this->assertSame($expected, Str::splitDelimited($separator, $string, $removeEmpty, $characters, $flags));
     }
 
     /**
-     * @return array<array{list<string>,string,string,3?:string|null,4?:bool,5?:int-mask-of<Str::PRESERVE_*>}>
+     * @return array<array{list<string>,non-empty-string,string,3?:bool,4?:string|null,5?:int-mask-of<Str::PRESERVE_*>}>
      */
     public function splitDelimitedProvider(): array
     {
@@ -583,13 +583,12 @@ final class StrTest extends TestCase
                 [],
                 ',',
                 '',
+                true,
             ],
             [
                 [''],
                 ',',
                 '',
-                null,
-                false,
             ],
             [
                 ['apple', 'banana', 'cherry'],
@@ -605,13 +604,12 @@ final class StrTest extends TestCase
                 ['apple', 'banana', 'cherry'],
                 ',',
                 ',,,apple,banana,,cherry,',
+                true,
             ],
             [
                 ['', '', '', 'apple', 'banana', '', 'cherry', ''],
                 ',',
                 ',,,apple,banana,,cherry,',
-                null,
-                false,
             ],
             [
                 ['"apple, banana"', 'cherry'],
@@ -627,32 +625,32 @@ final class StrTest extends TestCase
                 ["'apple, banana'", 'cherry'],
                 ',',
                 "'apple, banana', cherry",
+                false,
                 null,
-                true,
                 Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED,
             ],
             [
                 ["'apple, banana'", '"cherry, strawberry"'],
                 ',',
                 ' ,, \'apple, banana\' , , "cherry, strawberry" , ',
-                null,
                 true,
+                null,
                 Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED,
             ],
             [
                 [' ', " 'apple, banana' ", ' ', ' "cherry, strawberry" ', ' '],
                 ',',
                 ' ,, \'apple, banana\' , , "cherry, strawberry" , ',
-                '',
                 true,
+                '',
                 Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED,
             ],
             [
                 [' ', '', " 'apple", " banana' ", ' ', ' "cherry', ' strawberry" ', ' '],
                 ',',
                 ' ,, \'apple, banana\' , , "cherry, strawberry" , ',
-                '',
                 false,
+                '',
                 0,
             ],
             [

@@ -5,6 +5,8 @@ namespace Salient\Tests\Core\Utility;
 use Salient\Contract\Core\MimeType;
 use Salient\Core\Utility\Http;
 use Salient\Tests\TestCase;
+use DateTimeImmutable;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Core\Utility\Http
@@ -35,5 +37,113 @@ final class HttpTest extends TestCase
             [true, 'Text/HTML;Charset="utf-8"', MimeType::HTML],
             [false, 'Text/HTML;Charset="utf-8"', MimeType::TEXT],
         ];
+    }
+
+    public function testGetDate(): void
+    {
+        $date = new DateTimeImmutable('2021-10-02T17:23:14+10:00');
+        $this->assertSame('Sat, 02 Oct 2021 07:23:14 GMT', Http::getDate($date));
+    }
+
+    /**
+     * @dataProvider getParametersProvider
+     *
+     * @param string[]|string $expected
+     */
+    public function testGetParameters(
+        $expected,
+        string $value,
+        bool $firstIsParameter = false,
+        bool $strict = false
+    ): void {
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Http::getParameters($value, $firstIsParameter, true, $strict));
+    }
+
+    /**
+     * @return array<array{string[]|string,string,2?:bool,3?:bool}>
+     */
+    public static function getParametersProvider(): array
+    {
+        return [
+            [
+                [''],
+                '',
+            ],
+            [
+                [],
+                '',
+                true,
+            ],
+            [
+                InvalidArgumentException::class . ',Invalid parameter: ',
+                '',
+                true,
+                true,
+            ],
+            [
+                ['foo=bar', 'baz' => ''],
+                'foo=bar;baz',
+            ],
+            [
+                ['foo' => 'bar', 'baz' => ''],
+                'foo=bar;baz',
+                true,
+            ],
+            [
+                ['foo' => 'bar', 'baz' => ''],
+                'foo = bar; baz;',
+                true,
+            ],
+            [
+                ['foo' => 'bar', 'baz' => ''],
+                'Foo=bar;;Baz',
+                true,
+            ],
+            [
+                ['Not a token', 'foo' => 'bar', 'baz' => ''],
+                '"Not a token";Foo=bar;Baz=',
+                false,
+                true,
+            ],
+            [
+                InvalidArgumentException::class . ',Invalid parameter: "Not a token"',
+                '"Not a token";Foo=bar;Baz=',
+                true,
+                true,
+            ],
+            [
+                ['foo' => 'bar', 'baz' => '', 'qux' => 'Double "Quotes"'],
+                'Foo=bar;Baz;QUX="Double \"Quotes\""',
+                true,
+            ],
+        ];
+    }
+
+    public function testGetProduct(): void
+    {
+        $this->assertStringEndsWith(
+            sprintf(' php/%s', \PHP_VERSION),
+            Http::getProduct(),
+        );
+    }
+
+    public function testMaybeQuoteString(): void
+    {
+        $this->assertSame('token', Http::maybeQuoteString('token'));
+        $this->assertSame('another-token!', Http::maybeQuoteString('another-token!'));
+        $this->assertSame('"not a token"', Http::maybeQuoteString('not a token'));
+        $this->assertSame('"colon:delimited"', Http::maybeQuoteString('colon:delimited'));
+        $this->assertSame('"escap\\\\ed"', Http::maybeQuoteString('escap\ed'));
+        $this->assertSame('"double \"quotes\""', Http::maybeQuoteString('double "quotes"'));
+    }
+
+    public function testUnquoteString(): void
+    {
+        $this->assertSame('token', Http::unquoteString('token'));
+        $this->assertSame('not a token', Http::unquoteString('"not a token"'));
+        $this->assertSame('colon:delimited', Http::unquoteString('"colon:delimited"'));
+        $this->assertSame('escap\ed', Http::unquoteString('"escap\\\\ed"'));
+        $this->assertSame('double "quotes"', Http::unquoteString('"double \"quotes\""'));
     }
 }

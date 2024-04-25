@@ -108,8 +108,8 @@ class PhpDocTag
         $types = Str::splitDelimited(
             '|',
             $type,
-            null,
             true,
+            null,
             Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED
         );
 

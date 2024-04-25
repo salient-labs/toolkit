@@ -75,6 +75,20 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
             ));
         }
 
+        return new self(
+            File::open($filename, 'r'),
+            $name,
+            $uploadFilename ?? basename($filename),
+            self::getFileMediaType($filename, $mediaType),
+            $fallbackFilename,
+        );
+    }
+
+    /**
+     * Get $filename's MIME type if $mediaType is null, $mediaType otherwise
+     */
+    protected static function getFileMediaType(string $filename, ?string $mediaType = null): string
+    {
         if ($mediaType === null) {
             if (!extension_loaded('fileinfo')) {
                 // @codeCoverageIgnoreStart
@@ -91,13 +105,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
             }
         }
 
-        return new self(
-            File::open($filename, 'r'),
-            $name,
-            $uploadFilename ?? basename($filename),
-            $mediaType,
-            $fallbackFilename,
-        );
+        return $mediaType;
     }
 
     /**
@@ -158,7 +166,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
      * @throws InvalidArgumentException if `$fallbackFilename` is not a valid
      * ASCII string.
      */
-    private function filterFallbackFilename(?string $fallbackFilename, ?string $filename): ?string
+    protected function filterFallbackFilename(?string $fallbackFilename, ?string $filename): ?string
     {
         $filename = $fallbackFilename ?? $filename;
         if ($filename === null) {
@@ -181,7 +189,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     /**
      * @param StreamInterface|resource|string|null $content
      */
-    private function filterContent($content): StreamInterface
+    protected function filterContent($content): StreamInterface
     {
         if ($content instanceof StreamInterface) {
             return $content;

@@ -453,8 +453,8 @@ final class Str extends AbstractUtility
         string $separator,
         string $string,
         ?int $limit = null,
-        ?string $characters = null,
-        bool $removeEmpty = true
+        bool $removeEmpty = true,
+        ?string $characters = null
     ): array {
         if ($limit !== null) {
             $removeEmpty = false;
@@ -470,7 +470,7 @@ final class Str extends AbstractUtility
     /**
      * Without splitting bracket-delimited or double-quoted substrings, split a
      * string by a string and remove whitespace from the beginning and end of
-     * each substring before removing empty strings
+     * each substring before optionally removing empty strings
      *
      * @param non-empty-string $separator
      * @param string|null $characters Specify characters to trim instead of
@@ -481,8 +481,8 @@ final class Str extends AbstractUtility
     public static function splitDelimited(
         string $separator,
         string $string,
+        bool $removeEmpty = false,
         ?string $characters = null,
-        bool $removeEmpty = true,
         int $flags = Str::PRESERVE_DOUBLE_QUOTED
     ): array {
         if (strlen($separator) !== 1) {

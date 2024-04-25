@@ -44,7 +44,7 @@ class HttpFactory implements
         int $code = 200,
         string $reasonPhrase = ''
     ): ResponseInterface {
-        return new HttpResponse($code, $reasonPhrase);
+        return new HttpResponse($code, null, null, $reasonPhrase);
     }
 
     /**

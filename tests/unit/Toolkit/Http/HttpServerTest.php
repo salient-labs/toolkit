@@ -99,7 +99,6 @@ final class HttpServerTest extends TestCase
                 $return = $request;
                 return new Response(
                     200,
-                    null,
                     'Hello, world!',
                     [Header::CONTENT_TYPE => MimeType::TEXT],
                 );

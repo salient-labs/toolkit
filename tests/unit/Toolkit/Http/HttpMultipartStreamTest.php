@@ -172,9 +172,9 @@ final class HttpMultipartStreamTest extends TestCase
     public function testWithRequest(): void
     {
         $stream = $this->getStream();
-        $request = new HttpRequest('POST', 'https://example.com', null, $stream);
+        $request = new HttpRequest('POST', 'https://example.com', $stream);
         $this->assertSame(($headers = "POST / HTTP/1.1\r\n"
-                . "Content-Type: multipart/form-data; boundary=\"boundary\"\r\n"
+                . "Content-Type: multipart/form-data; boundary=boundary\r\n"
                 . "Host: example.com\r\n\r\n")
             . self::CONTENTS, (string) $request);
         $this->assertSame($headers, $request->getHttpPayload(true));

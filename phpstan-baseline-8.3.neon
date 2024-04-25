@@ -566,28 +566,8 @@ parameters:
 			path: src/Toolkit/Curler/Curler.php
 
 		-
-			message: "#^Parameter \\#1 \\$handle of function curl_errno expects CurlHandle, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_exec expects CurlHandle, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_getinfo expects CurlHandle, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
 			message: "#^Parameter \\#1 \\$handle of function curl_setopt expects CurlHandle, CurlHandle\\|resource\\|false given\\.$#"
 			count: 13
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_setopt expects CurlHandle, CurlHandle\\|resource\\|null given\\.$#"
-			count: 6
 			path: src/Toolkit/Curler/Curler.php
 
 		-
