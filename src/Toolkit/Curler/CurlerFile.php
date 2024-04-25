@@ -11,6 +11,8 @@ use Salient\Http\HttpStream;
 use CURLFile;
 
 /**
+ * A file to upload to an HTTP endpoint
+ *
  * @api
  */
 final class CurlerFile extends HttpMultipartStreamPart
