@@ -16,6 +16,7 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
@@ -115,7 +116,9 @@ class HttpHeaders implements HttpHeadersInterface
     /**
      * Resolve a value to an HttpHeaders object
      *
-     * @param MessageInterface|Arrayable<string,string[]|string>|iterable<string,string[]|string> $value
+     * If `$value` is a string, it is parsed as an HTTP message.
+     *
+     * @param MessageInterface|Arrayable<string,string[]|string>|iterable<string,string[]|string>|string $value
      * @return static
      */
     public static function from($value): self
@@ -128,6 +131,23 @@ class HttpHeaders implements HttpHeadersInterface
         }
         if ($value instanceof MessageInterface) {
             return new static($value->getHeaders());
+        }
+        if (is_string($value)) {
+            $lines =
+                // Remove start line
+                Arr::shift(
+                    // Split on CRLF
+                    explode(
+                        "\r\n",
+                        // Remove body if present
+                        explode("\r\n\r\n", Str::setEol($value, "\r\n"), 2)[0] . "\r\n"
+                    )
+                );
+            $instance = new static();
+            foreach ($lines as $line) {
+                $instance = $instance->addLine("$line\r\n");
+            }
+            return $instance;
         }
         return new static($value);
     }
@@ -155,6 +175,30 @@ class HttpHeaders implements HttpHeadersInterface
         }
 
         return (int) $length;
+    }
+
+    /**
+     * Get the value of the Content-Type header's boundary parameter, or null if
+     * it is not set
+     *
+     * @throws InvalidHeaderException if `Content-Type` is given multiple times
+     * or has an invalid value.
+     */
+    public function getMultipartBoundary(): ?string
+    {
+        if (!$this->hasHeader(HttpHeader::CONTENT_TYPE)) {
+            return null;
+        }
+
+        try {
+            return Http::getParameters(
+                $this->getOneHeaderLine(HttpHeader::CONTENT_TYPE),
+                false,
+                false,
+            )['boundary'] ?? null;
+        } catch (InvalidArgumentException $ex) {
+            throw new InvalidHeaderException($ex->getMessage());
+        }
     }
 
     /**
@@ -692,7 +736,7 @@ class HttpHeaders implements HttpHeadersInterface
         if (!($first | $last | $one)) {
             return $line;
         }
-        $values = Str::splitDelimited(',', $line, null, false);
+        $values = Str::splitDelimited(',', $line);
         if ($one && count($values) > 1) {
             throw new InvalidHeaderException(sprintf(
                 'HTTP header has more than one value: %s',

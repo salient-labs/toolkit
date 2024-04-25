@@ -2,11 +2,13 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
 
@@ -92,15 +94,37 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
      */
     public function __construct(
         int $code = 200,
-        ?string $reasonPhrase = null,
         $body = null,
         $headers = null,
+        ?string $reasonPhrase = null,
         string $version = '1.1'
     ) {
         $this->StatusCode = $this->filterStatusCode($code);
         $this->ReasonPhrase = $this->filterReasonPhrase($code, $reasonPhrase);
 
         parent::__construct($body, $headers, $version);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function fromPsr7(MessageInterface $message): HttpResponse
+    {
+        if ($message instanceof HttpResponse) {
+            return $message;
+        }
+
+        if (!($message instanceof ResponseInterface)) {
+            throw new InvalidArgumentTypeException(1, 'message', ResponseInterface::class, $message);
+        }
+
+        return new self(
+            $message->getStatusCode(),
+            $message->getBody(),
+            $message->getHeaders(),
+            $message->getReasonPhrase(),
+            $message->getProtocolVersion(),
+        );
     }
 
     /**

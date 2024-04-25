@@ -18,7 +18,11 @@ if (\PHP_VERSION_ID < 80000) {
                     'tests/fixtures/Toolkit/Core/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
                 ],
             ],
-            'ignoreErrors' => [],
+            'ignoreErrors' => [
+                [
+                    'message' => '#^Parameter \#1 \$ch of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects resource, CurlHandle\|resource(\|null)? given\.$#',
+                ],
+            ],
         ] + $parameters,
     ];
 }
@@ -28,7 +32,7 @@ return [
     'parameters' => [
         'ignoreErrors' => [
             [
-                'message' => '#^Parameter \#1 \$handle of function (curl_errno|curl_getinfo|curl_reset|curl_setopt) expects CurlHandle, CurlHandle\|resource given\.$#',
+                'message' => '#^Parameter \#1 \$handle of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects CurlHandle, CurlHandle\|resource(\|null)? given\.$#',
             ],
             [
                 'message' => '#^Strict comparison using \=\=\= between array and false will always evaluate to false\.$#',

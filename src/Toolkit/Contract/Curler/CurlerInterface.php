@@ -27,6 +27,13 @@ interface CurlerInterface extends ClientInterface
     public function getUri(): UriInterface;
 
     /**
+     * Apply the given query string to a copy of the endpoint's URI
+     *
+     * @param mixed[]|string|null $query
+     */
+    public function getUriWithQuery($query): UriInterface;
+
+    /**
      * Get the last request sent to the endpoint
      */
     public function getLastRequest(): ?RequestInterface;
@@ -387,7 +394,7 @@ interface CurlerInterface extends ClientInterface
      * Get an instance with the given middleware applied to the request handler
      * stack
      *
-     * @param HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next): ResponseInterface $middleware
+     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface $middleware
      * @return static
      */
     public function withMiddleware($middleware, ?string $name = null);
@@ -395,7 +402,7 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance where the given middleware is not applied to requests
      *
-     * @param HttpRequestHandlerInterface|Closure|string $middleware
+     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure|string $middleware
      * @return static
      */
     public function withoutMiddleware($middleware);

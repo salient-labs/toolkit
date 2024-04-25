@@ -1235,11 +1235,17 @@ final class Curler implements Readable, Writable, Buildable
 
     /**
      * @param mixed[]|null $query
-     * @param string|mixed[]|object|null $data
+     * @param string|mixed[]|object|false|null $data
      * @return mixed
      */
-    private function process(string $method, ?array $query, $data = null, ?string $mimeType = null)
+    private function process(string $method, ?array $query, $data = false, ?string $mimeType = null)
     {
+        $noData = false;
+        if ($data === false) {
+            $data = null;
+            $noData = true;
+        }
+
         $isRaw = $mimeType !== null;
         if ($this->Pager && $this->AlwaysPaginate && !$isRaw) {
             $pager = $this->Pager;
@@ -1253,9 +1259,11 @@ final class Curler implements Readable, Writable, Buildable
         $this->Data = $data;
         if (is_array($data) || is_object($data)) {
             $this->applyData($data);
-        } elseif (is_string($data) && $mimeType) {
-            curl_setopt($this->Handle, \CURLOPT_POSTFIELDS, $data);
-            $this->setContentType($mimeType);
+        } elseif (is_string($data) || ($data === null && !$noData)) {
+            curl_setopt($this->Handle, \CURLOPT_POSTFIELDS, (string) $data);
+            if ($mimeType) {
+                $this->setContentType($mimeType);
+            }
         }
 
         $this->execute();

@@ -159,7 +159,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
                 sprintf(
                     '%s; boundary=%s',
                     MimeType::FORM_MULTIPART,
-                    Http::getQuotedString($this->Body->getBoundary()),
+                    Http::maybeQuoteString($this->Body->getBoundary()),
                 ),
             );
         }

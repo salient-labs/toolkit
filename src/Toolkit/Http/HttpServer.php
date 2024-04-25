@@ -2,6 +2,7 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpProtocolVersion;
@@ -271,9 +272,9 @@ class HttpServer implements Immutable
      *
      * @template T
      *
-     * @param callable(HttpServerRequestInterface $request, bool &$continue, T &$return): HttpResponseInterface $callback
-     * Receives an {@see HttpServerRequestInterface} and returns an
-     * {@see HttpResponseInterface}. May also set `$continue = true` to make
+     * @param callable(HttpServerRequestInterface $request, bool &$continue, T &$return): ResponseInterface $callback
+     * Receives an {@see HttpServerRequestInterface} and returns a
+     * {@see ResponseInterface}. May also set `$continue = true` to make
      * {@see HttpServer::listen()} wait for another request, or pass a value
      * back to the caller by assigning it to `$return`.
      * @return T|null
@@ -455,9 +456,9 @@ class HttpServer implements Immutable
                 $method,
                 $uri,
                 $serverParams,
-                $target,
                 $body,
                 $headers,
+                $target,
                 $version,
             );
 
@@ -465,17 +466,17 @@ class HttpServer implements Immutable
 
             $continue = false;
             $return = null;
+            $response = null;
 
             try {
-                /** @var HttpResponseInterface */
                 $response = $callback($request, $continue, $return);
             } finally {
-                File::write(
-                    $socket,
-                    (string) ($response ?? new HttpResponse(
-                        500, 'Internal Server Error', 'Internal server error'
-                    ))
-                );
+                $response = $response instanceof ResponseInterface
+                    ? ($response instanceof HttpResponseInterface
+                        ? $response
+                        : HttpResponse::fromPsr7($response))
+                    : new HttpResponse(500, 'Internal server error');
+                File::write($socket, (string) $response);
                 File::close($socket);
             }
         } while ($continue);

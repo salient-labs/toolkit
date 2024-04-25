@@ -50,7 +50,7 @@ interface UriInterface extends
     public function toParts(): array;
 
     /**
-     * Check if the URI is absolute
+     * Check if the URI is a relative reference
      */
     public function isReference(): bool;
 

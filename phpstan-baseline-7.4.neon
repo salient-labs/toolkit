@@ -606,43 +606,8 @@ parameters:
 			path: src/Toolkit/Curler/Curler.php
 
 		-
-			message: "#^Parameter \\#1 \\$ch of function curl_errno expects resource, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$ch of function curl_exec expects resource, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$ch of function curl_getinfo expects resource, CurlHandle\\|resource given\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$ch of function curl_getinfo expects resource, CurlHandle\\|resource\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$ch of function curl_reset expects resource, CurlHandle\\|resource given\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$ch of function curl_setopt expects resource, CurlHandle\\|resource given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
 			message: "#^Parameter \\#1 \\$ch of function curl_setopt expects resource, CurlHandle\\|resource\\|false given\\.$#"
 			count: 13
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$ch of function curl_setopt expects resource, CurlHandle\\|resource\\|null given\\.$#"
-			count: 6
 			path: src/Toolkit/Curler/Curler.php
 
 		-
@@ -664,11 +629,6 @@ parameters:
 			message: "#^Property Salient\\\\Curler\\\\Curler\\:\\:\\$Handle \\(CurlHandle\\|resource\\|null\\) does not accept resource\\|false\\.$#"
 			count: 1
 			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#2 \\$mime_type of class CURLFile constructor expects string, string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/CurlerFile.php
 
 		-
 			message: "#^Cannot access offset 'value' on mixed\\.$#"

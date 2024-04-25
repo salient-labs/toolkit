@@ -3,6 +3,8 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Core\Regex;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 use Salient\Core\DateFormatter;
 use DateTimeImmutable;
@@ -74,6 +76,38 @@ final class Http extends AbstractUtility
     }
 
     /**
+     * Get semicolon-delimited parameters from the value of an HTTP header
+     *
+     * @return string[]
+     */
+    public static function getParameters(
+        string $value,
+        bool $firstIsParameter = false,
+        bool $unquote = true,
+        bool $strict = false
+    ): array {
+        foreach (Str::splitDelimited(';', $value) as $i => $param) {
+            if ($i === 0 && !$firstIsParameter) {
+                $params[] = $unquote
+                    ? self::unquoteString($param)
+                    : $param;
+                continue;
+            }
+            if (Pcre::match('/^(' . Regex::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D', $param, $matches)) {
+                $param = $matches[2] ?? '';
+                $params[Str::lower($matches[1])] = $unquote
+                    ? self::unquoteString($param)
+                    : $param;
+                continue;
+            }
+            if ($strict) {
+                throw new InvalidArgumentException(sprintf('Invalid parameter: %s', $param));
+            }
+        }
+        return $params ?? [];
+    }
+
+    /**
      * Get a product identifier suitable for User-Agent and Server headers as
      * per [RFC7231] Section 5.5.3
      */
@@ -88,12 +122,14 @@ final class Http extends AbstractUtility
     }
 
     /**
-     * Escape and quote a string using double-quote marks as per [RFC7230]
-     * Section 3.2.6
+     * Escape and quote a string unless it is a valid HTTP token, as per
+     * [RFC7230] Section 3.2.6
      */
-    public static function getQuotedString(string $string): string
+    public static function maybeQuoteString(string $string): string
     {
-        return '"' . self::escapeQuotedString($string) . '"';
+        return Pcre::match('/^' . Regex::HTTP_TOKEN . '$/D', $string)
+            ? $string
+            : '"' . self::escapeQuotedString($string) . '"';
     }
 
     /**
@@ -103,5 +139,16 @@ final class Http extends AbstractUtility
     public static function escapeQuotedString(string $string): string
     {
         return str_replace(['\\', '"'], ['\\\\', '\"'], $string);
+    }
+
+    /**
+     * Unescape and remove quotes from a string as per [RFC7230] Section 3.2.6
+     */
+    public static function unquoteString(string $string): string
+    {
+        $string = Pcre::replace('/^"(.*)"$/D', '$1', $string, -1, $count);
+        return $count
+            ? Pcre::replace('/\\\\(.)/', '$1', $string)
+            : $string;
     }
 }

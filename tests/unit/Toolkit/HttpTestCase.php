@@ -7,9 +7,9 @@ use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Process;
+use Salient\Http\HttpHeaders;
 
 abstract class HttpTestCase extends TestCase
 {
@@ -31,7 +31,7 @@ abstract class HttpTestCase extends TestCase
 
     /**
      * Assert that the given HTTP messages are the same after normalising line
-     * endings and removing ignored headers
+     * endings, removing ignored headers and sorting the remaining headers
      *
      * @param string[] $ignore
      */
@@ -48,11 +48,11 @@ abstract class HttpTestCase extends TestCase
         );
 
         $actual = explode("\r\n\r\n", $actual, 2);
-        $actual[0] = Pcre::replace(
-            sprintf('/\r\n(?:%s)\h*:.*(?=\r\n|\z)/i', implode('|', $ignore)),
-            '',
-            $actual[0],
-        );
+        $headers[] = explode("\r\n", $actual[0], 2)[0];
+        foreach (HttpHeaders::from($actual[0])->except($ignore)->sort()->getHeaders() as $name => $values) {
+            $headers[] = sprintf('%s: %s', $name, implode(', ', $values));
+        }
+        $actual[0] = implode("\r\n", $headers);
         $actual = implode("\r\n\r\n", $actual);
         static::assertEquals($expected, $actual, $message);
     }
