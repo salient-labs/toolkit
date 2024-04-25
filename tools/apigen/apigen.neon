@@ -1,6 +1,6 @@
 parameters:
 	paths: [%workingDir%/src]
-	exclude: [PHPStan]
+	exclude: [Sli, PHPStan]
 	excludeProtected: false
 	excludePrivate: true
 	excludeTagged: [internal]
