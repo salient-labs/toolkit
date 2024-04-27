@@ -202,6 +202,32 @@ class HttpHeaders implements HttpHeadersInterface
     }
 
     /**
+     * Get preferences applied to the Prefer header as per [RFC7240]
+     *
+     * @return array<string,array{value:string,parameters:array<string,string>}>
+     */
+    public function getPreferences(): array
+    {
+        if (!$this->hasHeader(HttpHeader::PREFER)) {
+            return [];
+        }
+
+        foreach ($this->getHeaderValues(HttpHeader::PREFER) as $pref) {
+            /** @var array<string,string> */
+            $params = Http::getParameters($pref, true);
+            if (!$params) {
+                continue;
+            }
+            $value = reset($params);
+            $name = key($params);
+            unset($params[$name]);
+            $prefs[$name] ??= ['value' => $value, 'parameters' => $params];
+        }
+
+        return $prefs ?? [];
+    }
+
+    /**
      * Get the value of the Retry-After header in seconds, or null if it has an
      * invalid value or is not set
      *
@@ -688,6 +714,18 @@ class HttpHeaders implements HttpHeadersInterface
     public function getHeader(string $name): array
     {
         return $this->Items[Str::lower($name)] ?? [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeaderValues(string $name): array
+    {
+        $values = $this->Items[Str::lower($name)] ?? [];
+        if (!$values) {
+            return [];
+        }
+        return Str::splitDelimited(',', implode(',', $values));
     }
 
     /**

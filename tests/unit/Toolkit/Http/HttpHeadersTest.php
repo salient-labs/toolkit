@@ -385,6 +385,25 @@ final class HttpHeadersTest extends TestCase
         $headers->getOneHeaderLine('Qux');
     }
 
+    public function testGetPreferences(): void
+    {
+        $this->assertSame([], (new HttpHeaders())->getPreferences());
+
+        $headers = (new HttpHeaders())
+            ->add(HttpHeader::PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
+            ->add(HttpHeader::PREFER, 'wait=10; baz=qux')
+            ->add(HttpHeader::PREFER, 'task_priority=2; baz="foo bar"')
+            ->add(HttpHeader::PREFER, 'odata.maxpagesize=100');
+
+        $this->assertSame([
+            'respond-async' => ['value' => '', 'parameters' => []],
+            'wait' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
+            'handling' => ['value' => 'lenient', 'parameters' => []],
+            'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
+            'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
+        ], $headers->getPreferences());
+    }
+
     public function testImmutability(): void
     {
         $a = new HttpHeaders();
