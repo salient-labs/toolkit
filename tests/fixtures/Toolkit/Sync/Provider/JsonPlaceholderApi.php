@@ -111,17 +111,17 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
 
     protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
     {
-        $baseUrl = $curlerB->getB('baseUrl');
+        $uri = $curlerB->getB('uri');
 
-        if (!is_string($baseUrl)) {
-            throw new LogicException('Invalid baseUrl');
+        if (!is_string($uri)) {
+            throw new LogicException('Invalid uri');
         }
 
-        if (!isset($this->HttpRequests[$baseUrl])) {
-            $this->HttpRequests[$baseUrl] = 0;
+        if (!isset($this->HttpRequests[$uri])) {
+            $this->HttpRequests[$uri] = 0;
         }
 
-        $this->HttpRequests[$baseUrl]++;
+        $this->HttpRequests[$uri]++;
 
         return $curlerB;
     }

@@ -4,15 +4,15 @@ namespace Salient\Sync;
 
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Curler\CurlerInterface;
+use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
-use Salient\Curler\Contract\ICurlerPager;
-use Salient\Curler\Exception\CurlerCurlErrorException;
-use Salient\Curler\Curler;
+use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\CurlerBuilder;
 use Salient\Http\HttpHeaders;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
@@ -37,21 +37,21 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
         string $path,
         ?int $expiry = -1,
         ?HttpHeadersInterface $headers = null,
-        ?ICurlerPager $pager = null,
+        ?CurlerPagerInterface $pager = null,
         ?DateFormatterInterface $dateFormatter = null
-    ): Curler {
+    ): CurlerInterface {
         $curlerB = $this->buildCurler(
             CurlerBuilder::build()
-                ->baseUrl($this->getEndpointUrl($path))
+                ->uri($this->getEndpointUrl($path))
         );
 
         if ($expiry !== null && $expiry < 0) {
             $expiry = $this->getExpiry($path);
         }
         if ($expiry !== null) {
-            $curlerB = $curlerB->cacheResponse()->expiry($expiry);
+            $curlerB = $curlerB->cacheResponses()->cacheLifetime($expiry);
         } else {
-            $curlerB = $curlerB->cacheResponse(false);
+            $curlerB = $curlerB->cacheResponses(false);
         }
 
         if ($headers) {
@@ -118,7 +118,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
         if (Cache::get($key, $ttl) === null) {
             try {
                 $resource = $this->getHeartbeat();
-            } catch (CurlerCurlErrorException $ex) {
+            } catch (CurlErrorException $ex) {
                 throw new SyncProviderBackendUnreachableException(
                     $ex->getMessage(),
                     $this,
@@ -156,8 +156,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     /**
      * Configure an unresolved Curler instance for upstream requests
      *
-     * `baseUrl()` has already been applied to {@see CurlerBuilder} instances
-     * passed to this method.
+     * `uri()` has already been applied to {@see CurlerBuilder} instances passed
+     * to this method.
      *
      * Called once per {@see HttpSyncProvider::getCurler()} call.
      *
@@ -211,7 +211,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     /**
      * Get a handler for paginated data from the upstream API
      */
-    protected function getPager(?string $path): ?ICurlerPager
+    protected function getPager(?string $path): ?CurlerPagerInterface
     {
         return null;
     }
@@ -226,6 +226,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      * negative `$expiry`.
      *
      * @see CacheStore::set() for more information about `$expiry` values
+     *
+     * @return int<0,max>|null
      */
     protected function getExpiry(?string $path): ?int
     {

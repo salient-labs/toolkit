@@ -2,79 +2,81 @@
 
 namespace Salient\Curler\Pager;
 
+use Psr\Http\Message\RequestInterface;
+use Salient\Contract\Curler\CurlerInterface;
+use Salient\Contract\Curler\CurlerPageInterface;
+use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Core\Utility\Pcre;
-use Salient\Curler\Contract\ICurlerPage;
-use Salient\Curler\Contract\ICurlerPager;
-use Salient\Curler\Support\CurlerPageBuilder;
-use Salient\Curler\Curler;
+use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Curler\CurlerPage;
+use Salient\Http\HttpHeaders;
+use Salient\Http\Uri;
 
-final class ODataPager implements ICurlerPager
+final class ODataPager implements CurlerPagerInterface
 {
-    /**
-     * @var string|null
-     */
-    private $Prefix;
+    private ?int $MaxPageSize;
 
     /**
-     * @var int|null
+     * Creates a new ODataPager object
      */
-    private $MaxPageSize;
-
-    /**
-     * @param string|null $prefix The OData property prefix, e.g. `"@odata."`.
-     * Extrapolated from the `OData-Version` HTTP header if `null`.
-     */
-    public function __construct(?int $maxPageSize = null, ?string $prefix = null)
+    public function __construct(?int $maxPageSize = null)
     {
-        $this->Prefix = $prefix;
         $this->MaxPageSize = $maxPageSize;
     }
 
-    public function prepareQuery(?array $query): ?array
-    {
-        return $query;
-    }
-
-    public function prepareData($data)
-    {
-        return $data;
-    }
-
-    public function prepareCurler(Curler $curler): Curler
-    {
+    /**
+     * @inheritDoc
+     */
+    public function getFirstRequest(
+        RequestInterface $request,
+        CurlerInterface $curler,
+        ?array $query = null
+    ): RequestInterface {
         if ($this->MaxPageSize === null) {
-            return $curler;
+            return $request;
         }
-        /** @todo wrangle `Prefer` headers in `HttpHeadersInterface`? */
-        $preference = sprintf('odata.maxpagesize=%d', $this->MaxPageSize);
-        $value = $curler->Headers->getHeader(HttpHeader::PREFER);
-        $pattern = '/^odata\.maxpagesize\h*=/i';
-        $replace = Pcre::grep($pattern, $value);
-        if (count($replace) === 1) {
-            reset($replace);
-            $value[key($replace)] = $preference;
-        } else {
-            // [RFC7240], Section 2: "If any preference is specified more
-            // than once, only the first instance is to be considered."
-            $value = Pcre::grep($pattern, $value, \PREG_GREP_INVERT);
-            array_unshift($value, $preference);
+
+        $prefs = HttpHeaders::from($request)->getPreferences();
+        if (
+            isset($prefs['odata.maxpagesize']) &&
+            $prefs['odata.maxpagesize']['value'] === (string) $this->MaxPageSize
+        ) {
+            return $request;
         }
-        return $curler->setHeader(HttpHeader::PREFER, $value);
+
+        $prefs['odata.maxpagesize']['value'] = (string) $this->MaxPageSize;
+
+        return $request->withHeader(
+            HttpHeader::PREFER,
+            HttpHeaders::mergePreferences($prefs),
+        );
     }
 
-    public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage
-    {
-        $prefix = $this->Prefix
-            ?: (($curler->ResponseHeadersByName['odata-version'] ?? null) == '4.0'
-                ? '@odata.'
-                : '@');
+    /**
+     * @inheritDoc
+     */
+    public function getPage(
+        $data,
+        RequestInterface $request,
+        CurlerInterface $curler,
+        ?CurlerPageInterface $previousPage = null
+    ): CurlerPageInterface {
+        if (!is_array($data)) {
+            throw new InvalidArgumentTypeException(1, 'data', 'mixed[]', $data);
+        }
+        /** @var array{'@odata.nextLink'?:string,'@nextLink'?:string,value:list<mixed>,...} $data */
+        $response = $curler->getLastResponse();
+        if ($response && $response->getHeaderLine(HttpHeader::ODATA_VERSION) === '4.0') {
+            $nextLink = $data['@odata.nextLink'] ?? null;
+        } else {
+            $nextLink = $data['@nextLink'] ?? $data['@odata.nextLink'] ?? null;
+        }
 
-        return CurlerPageBuilder::build()
-            ->entities($data['value'])
-            ->curler($curler)
-            ->previous($previous)
-            ->nextUrl($data[$prefix . 'nextLink'] ?? null)
-            ->go();
+        return new CurlerPage(
+            $data['value'],
+            $nextLink === null
+                ? null
+                : $request->withUri(new Uri($nextLink))
+        );
     }
 }
