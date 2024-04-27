@@ -30,6 +30,28 @@ abstract class HttpTestCase extends TestCase
     private Process $HttpServer;
 
     /**
+     * Assert that the given HTTP message lists are the same after normalising
+     * line endings, removing ignored headers and sorting the remaining headers
+     *
+     * @param string[] $expected
+     * @param string[] $actual
+     * @param string[] $ignore
+     */
+    public static function assertSameHttpMessages(
+        array $expected,
+        array $actual,
+        array $ignore = self::HTTP_HEADER_IGNORE_LIST,
+        string $message = ''
+    ): void {
+        static::assertSameSize($expected, $actual, $message);
+        foreach ($expected as $expectedMessage) {
+            /** @var string */
+            $actualMessage = array_shift($actual);
+            static::assertSameHttpMessage($expectedMessage, $actualMessage, $ignore, $message);
+        }
+    }
+
+    /**
      * Assert that the given HTTP messages are the same after normalising line
      * endings, removing ignored headers and sorting the remaining headers
      *
