@@ -5,7 +5,6 @@ namespace Salient\Http;
 use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpProtocolVersion;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\HttpServerRequestInterface;
@@ -345,8 +344,7 @@ class HttpServer implements Immutable
                     if (
                         count($startLine) !== 3 ||
                         !HttpRequestMethod::hasValue($startLine[0]) ||
-                        !Pcre::match('/^HTTP\/([0-9]\.[0-9])$/D', $startLine[2], $matches) ||
-                        !HttpProtocolVersion::hasValue($matches[1])
+                        !Pcre::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
                     ) {
                         throw new HttpServerException(sprintf(
                             'Invalid request line from %s: %s',

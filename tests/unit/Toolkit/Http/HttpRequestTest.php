@@ -152,15 +152,15 @@ final class HttpRequestTest extends TestCase
     public function testConstructorWithInvalidProtocolVersion(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid HTTP protocol version: 2');
-        new HttpRequest('GET', '/', null, null, null, '2');
+        $this->expectExceptionMessage('Invalid HTTP protocol version: 2.');
+        new HttpRequest('GET', '/', null, null, null, '2.');
     }
 
     public function testWithInvalidProtocolVersion(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid HTTP protocol version: 2');
-        (new HttpRequest('GET', '/'))->withProtocolVersion('2');
+        $this->expectExceptionMessage('Invalid HTTP protocol version: 2.');
+        (new HttpRequest('GET', '/'))->withProtocolVersion('2.');
     }
 
     public function testConstructorWithInvalidBody(): void
