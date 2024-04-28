@@ -57,10 +57,10 @@ use Stringable;
 /**
  * An HTTP client optimised for RESTful APIs
  *
- * @implements Buildable<Curler2Builder>
- * @use HasBuilder<Curler2Builder>
+ * @implements Buildable<CurlerBuilder>
+ * @use HasBuilder<CurlerBuilder>
  */
-class Curler2 implements CurlerInterface, Buildable
+class Curler implements CurlerInterface, Buildable
 {
     /**
      * Limit input strings to 2MiB
@@ -69,7 +69,7 @@ class Curler2 implements CurlerInterface, Buildable
      */
     protected const MAX_INPUT_LENGTH = 2 * 1024 ** 2;
 
-    /** @phpstan-use HasBuilder<Curler2Builder> */
+    /** @phpstan-use HasBuilder<CurlerBuilder> */
     use HasBuilder;
     use HasHttpHeaders;
     use HasImmutableProperties {

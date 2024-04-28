@@ -30,8 +30,6 @@ use Salient\Core\MetricCollector;
 use Salient\Curler\Support\CurlerPage;
 use Salient\Curler\Support\CurlerPageBuilder;
 use Salient\Curler\Curler;
-use Salient\Curler\Curler2;
-use Salient\Curler\Curler2Builder;
 use Salient\Curler\CurlerBuilder;
 use Salient\Sli\Catalog\EnvVar;
 use Salient\Sli\Command\Generate\Concept\GenerateCommand;
@@ -82,8 +80,7 @@ $facades = [
 
 $builders = [
     CliOption::class => [CliOptionBuilder::class, '--forward=load', '--api'],
-    Curler::class => [CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
-    Curler2::class => [Curler2Builder::class, '--forward=head,get,post,put,patch,delete,getP,postP,putP,patchP,deleteP,postR,putR,patchR,deleteR'],
+    Curler::class => [CurlerBuilder::class, '--forward=head,get,post,put,patch,delete,getP,postP,putP,patchP,deleteP,postR,putR,patchR,deleteR'],
     CurlerPage::class => CurlerPageBuilder::class,
     DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--forward=bindOverride'],
     HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--forward=bindOverride'],

@@ -18,7 +18,7 @@ use Salient\Core\Utility\Str;
 use Salient\Core\Process;
 use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\Exception\HttpErrorException;
-use Salient\Curler\Curler2;
+use Salient\Curler\Curler;
 use Salient\Curler\CurlerFile;
 use Salient\Curler\CurlerPage;
 use Salient\Http\HttpHeaders;
@@ -27,11 +27,11 @@ use Salient\Http\HttpStream;
 use Salient\Tests\HttpTestCase;
 
 /**
- * @covers \Salient\Curler\Curler2
+ * @covers \Salient\Curler\Curler
  * @covers \Salient\Curler\CurlerFile
  * @covers \Salient\Curler\CurlerPage
  */
-final class Curler2Test extends HttpTestCase
+final class CurlerTest extends HttpTestCase
 {
     private const QUERY = ['quux' => 1];
     private const IN = ['baz' => 'qux'];
@@ -369,9 +369,9 @@ final class Curler2Test extends HttpTestCase
             $server->getNewOutput(),
         );
         $this->assertSame([
-            Curler2::class . ':response:GET:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:e3b031126bf034cbe4d43a69e4cdba43',
-            Curler2::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:24019ed5d14784ec817eec6ed1ec38f1',
-            Curler2::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:97d09f76c4d19c288d5c81c866058962',
+            Curler::class . ':response:GET:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:e3b031126bf034cbe4d43a69e4cdba43',
+            Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:24019ed5d14784ec817eec6ed1ec38f1',
+            Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:97d09f76c4d19c288d5c81c866058962',
         ], $cache->getAllKeys());
         $this->assertCount(0, $cache->asOfNow(time() + 3601)->getAllKeys());
     }
@@ -379,7 +379,7 @@ final class Curler2Test extends HttpTestCase
     public function testCurlError(): void
     {
         $this->expectException(CurlErrorException::class);
-        (new Curler2('//localhost'))->get();
+        (new Curler('//localhost'))->get();
     }
 
     public function testHttpError(): void
@@ -405,8 +405,8 @@ final class Curler2Test extends HttpTestCase
         return $this->startHttpServer(...($responses ?? []));
     }
 
-    private static function getCurler(string $endpoint = ''): Curler2
+    private static function getCurler(string $endpoint = ''): Curler
     {
-        return (new Curler2(self::HTTP_SERVER_URI . $endpoint));
+        return (new Curler(self::HTTP_SERVER_URI . $endpoint));
     }
 }
