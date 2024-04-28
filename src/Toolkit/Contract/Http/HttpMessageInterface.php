@@ -3,7 +3,10 @@
 namespace Salient\Contract\Http;
 
 use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
+use Salient\Core\Exception\InvalidArgumentException;
 use JsonSerializable;
 use Stringable;
 
@@ -17,12 +20,17 @@ interface HttpMessageInterface extends
     Immutable
 {
     /**
-     * Get an instance where the size of the message body is applied to the
-     * Content-Length header
+     * Get an instance of the class from a compatible PSR-7 message
      *
-     * @return static
+     * @template T of MessageInterface
+     *
+     * @param T $message
+     * @return T&HttpMessageInterface
+     * @throws InvalidArgumentException if the class cannot be instantiated from
+     * `$message`, e.g. if the class implements {@see RequestInterface} and
+     * `$message` is a {@see ResponseInterface}.
      */
-    public function withContentLength(): HttpMessageInterface;
+    public static function fromPsr7(MessageInterface $message): HttpMessageInterface;
 
     /**
      * Get the HTTP headers of the message

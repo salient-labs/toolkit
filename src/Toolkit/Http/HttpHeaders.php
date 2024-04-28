@@ -2,20 +2,24 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\MessageInterface;
 use Salient\Collection\ReadableCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Test;
 use Salient\Http\Exception\InvalidHeaderException;
 use Generator;
 
@@ -107,6 +111,115 @@ class HttpHeaders implements HttpHeadersInterface
         $this->Headers = $headers;
         $this->Index = $this->filterIndex($index);
         $this->Items = $this->doGetHeaders();
+    }
+
+    /**
+     * Resolve a value to an HttpHeaders object
+     *
+     * If `$value` is a string, it is parsed as an HTTP message.
+     *
+     * @param MessageInterface|Arrayable<string,string[]|string>|iterable<string,string[]|string>|string $value
+     * @return static
+     */
+    public static function from($value): self
+    {
+        if ($value instanceof static) {
+            return $value;
+        }
+        if ($value instanceof HttpMessageInterface) {
+            return self::from($value->getHttpHeaders());
+        }
+        if ($value instanceof MessageInterface) {
+            return new static($value->getHeaders());
+        }
+        if (is_string($value)) {
+            $lines =
+                // Remove start line
+                Arr::shift(
+                    // Split on CRLF
+                    explode(
+                        "\r\n",
+                        // Remove body if present
+                        explode("\r\n\r\n", Str::setEol($value, "\r\n"), 2)[0] . "\r\n"
+                    )
+                );
+            $instance = new static();
+            foreach ($lines as $line) {
+                $instance = $instance->addLine("$line\r\n");
+            }
+            return $instance;
+        }
+        return new static($value);
+    }
+
+    /**
+     * Get the value of the Content-Length header, or null if it is not set
+     *
+     * @return int<0,max>|null
+     * @throws InvalidHeaderException if `Content-Length` is given multiple
+     * times or has an invalid value.
+     */
+    public function getContentLength(): ?int
+    {
+        if (!$this->hasHeader(HttpHeader::CONTENT_LENGTH)) {
+            return null;
+        }
+
+        $length = $this->getOneHeaderLine(HttpHeader::CONTENT_LENGTH);
+        if (!Test::isInteger($length) || (int) $length < 0) {
+            throw new InvalidHeaderException(sprintf(
+                'Invalid value for HTTP header %s: %s',
+                HttpHeader::CONTENT_LENGTH,
+                $length,
+            ));
+        }
+
+        return (int) $length;
+    }
+
+    /**
+     * Get the value of the Content-Type header's boundary parameter, or null if
+     * it is not set
+     *
+     * @throws InvalidHeaderException if `Content-Type` is given multiple times
+     * or has an invalid value.
+     */
+    public function getMultipartBoundary(): ?string
+    {
+        if (!$this->hasHeader(HttpHeader::CONTENT_TYPE)) {
+            return null;
+        }
+
+        try {
+            return Http::getParameters(
+                $this->getOneHeaderLine(HttpHeader::CONTENT_TYPE),
+                false,
+                false,
+            )['boundary'] ?? null;
+        } catch (InvalidArgumentException $ex) {
+            throw new InvalidHeaderException($ex->getMessage());
+        }
+    }
+
+    /**
+     * Get the value of the Retry-After header in seconds, or null if it has an
+     * invalid value or is not set
+     *
+     * @return int<0,max>|null
+     */
+    public function getRetryAfter(): ?int
+    {
+        $after = $this->getHeaderLine(HttpHeader::RETRY_AFTER);
+        if (Test::isInteger($after) && (int) $after >= 0) {
+            return (int) $after;
+        }
+
+        $after = strtotime($after);
+        if ($after === false) {
+            return null;
+        }
+
+        return max(0, $after - time());
     }
 
     /**
@@ -528,9 +641,15 @@ class HttpHeaders implements HttpHeadersInterface
     /**
      * @inheritDoc
      */
-    public function getLines(string $format = '%s: %s'): array
-    {
+    public function getLines(
+        string $format = '%s: %s',
+        ?string $emptyFormat = null
+    ): array {
         foreach ($this->headers() as $key => $value) {
+            if ($emptyFormat !== null && trim($value) === '') {
+                $lines[] = sprintf($emptyFormat, $key, '');
+                continue;
+            }
             $lines[] = sprintf($format, $key, $value);
         }
         return $lines ?? [];
@@ -613,19 +732,21 @@ class HttpHeaders implements HttpHeadersInterface
         if (!$values) {
             return '';
         }
-        if ($first) {
-            return reset($values);
+        $line = implode(', ', $values);
+        if (!($first | $last | $one)) {
+            return $line;
+        }
+        $values = Str::splitDelimited(',', $line);
+        if ($one && count($values) > 1) {
+            throw new InvalidHeaderException(sprintf(
+                'HTTP header has more than one value: %s',
+                $name,
+            ));
         }
         if ($last) {
             return end($values);
         }
-        if ($one && count($values) > 1) {
-            throw new InvalidHeaderException(sprintf(
-                'HTTP header appears more than once: %s',
-                $name,
-            ));
-        }
-        return implode(',', $values);
+        return reset($values);
     }
 
     /**

@@ -13,33 +13,12 @@ use Salient\Core\Utility\File;
 
 abstract class CommandTestCase extends TestCase
 {
-    protected function startApp(CliApplicationInterface $app): CliApplicationInterface
-    {
-        return $app;
-    }
-
-    /**
-     * @return array<class-string,class-string>
-     */
-    protected function getServices(): array
-    {
-        return [];
-    }
-
-    /**
-     * @param mixed ...$args
-     */
-    protected function makeCommandAssertions(
-        CliApplicationInterface $app,
-        CliCommandInterface $command,
-        ...$args
-    ): void {}
-
     /**
      * @param class-string<CliCommandInterface> $command
      * @param string[] $args
      * @param string[] $name
      * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $consoleMessages
+     * @param (callable(CliApplicationInterface, CliCommandInterface): mixed)|null $callback
      */
     public function assertCommandProduces(
         string $output,
@@ -48,37 +27,55 @@ abstract class CommandTestCase extends TestCase
         array $args,
         array $name = [],
         bool $outputIncludesConsoleMessages = true,
+        bool $debugMessagesAreIncluded = false,
         ?array $consoleMessages = null,
-        int $runs = 1
+        int $runs = 1,
+        ?callable $callback = null
     ): void {
-        $target = $outputIncludesConsoleMessages
-            ? new MockTarget(File::open('php://output', ''))
-            : new MockTarget();
-        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
-
-        $this->expectOutputString($output);
+        Console::registerTarget(
+            $target = $outputIncludesConsoleMessages
+                ? new MockTarget(File::open('php://output', ''))
+                : new MockTarget(),
+            $debugMessagesAreIncluded
+                ? LevelGroup::ALL
+                : LevelGroup::ALL_EXCEPT_DEBUG,
+        );
 
         $basePath = File::createTempDir();
         $app = new CliApplication($basePath);
 
+        $this->expectOutputString($output);
+
         try {
-            $app = $this->startApp($app);
-            $app = $app->providers($this->getServices());
+            $app = $this->setUpApp($app);
+
             $command = $app->get($command);
             $command->setName($name);
+
             for ($i = 0; $i < $runs; $i++) {
                 $status = $command(...$args);
                 $this->assertSame($exitStatus, $status, 'exit status');
             }
+
             if ($consoleMessages !== null) {
-                $this->assertSame($consoleMessages, $target->getMessages());
+                $this->assertSameConsoleMessages(
+                    $consoleMessages,
+                    $target->getMessages()
+                );
             }
-            $this->makeCommandAssertions($app, $command, ...func_get_args());
+
+            if ($callback !== null) {
+                $callback($app, $command);
+            }
         } finally {
             $app->unload();
             File::pruneDir($basePath, true);
-
             Console::unload();
         }
+    }
+
+    protected function setUpApp(CliApplicationInterface $app): CliApplicationInterface
+    {
+        return $app;
     }
 }

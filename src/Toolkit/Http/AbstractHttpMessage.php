@@ -74,13 +74,6 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
      */
     public function getHttpPayload(bool $withoutBody = false): string
     {
-        return $this
-            ->withContentLength()
-            ->doGetHttpPayload($withoutBody);
-    }
-
-    private function doGetHttpPayload(bool $withoutBody): string
-    {
         $message = implode("\r\n", [
             $this->getStartLine(),
             (string) $this->Headers,
@@ -109,20 +102,6 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
         return $this
             ->with('Body', $this->filterBody($body))
             ->maybeSetContentType();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withContentLength(): HttpMessageInterface
-    {
-        $size = $this->Body->getSize();
-        if ($size !== null) {
-            return $this->withHeader(HttpHeader::CONTENT_LENGTH, (string) $size);
-        }
-        // @codeCoverageIgnoreStart
-        return $this->withoutHeader(HttpHeader::CONTENT_LENGTH);
-        // @codeCoverageIgnoreEnd
     }
 
     private function filterProtocolVersion(string $version): string
@@ -180,7 +159,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
                 sprintf(
                     '%s; boundary=%s',
                     MimeType::FORM_MULTIPART,
-                    Http::getQuotedString($this->Body->getBoundary()),
+                    Http::maybeQuoteString($this->Body->getBoundary()),
                 ),
             );
         }

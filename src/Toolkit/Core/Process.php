@@ -26,12 +26,18 @@ final class Process
     private const TERMINATED = 2;
 
     /**
+     * Microseconds to wait between process status checks
+     */
+    private const POLL_INTERVAL = 10000;
+
+    /**
      * Microseconds to wait for stream activity
      *
-     * This is an upper limit; {@see stream_select()} returns as soon as a
-     * status change is detected.
+     * When {@see Process::$UseOutputFiles} is `false` (the default on platforms
+     * other than Windows), this is an upper limit because
+     * {@see stream_select()} returns as soon as a status change is detected.
      */
-    private const TIMEOUT_PRECISION = 200000;
+    private const READ_INTERVAL = 200000;
 
     private const DEFAULT_OPTIONS = [
         'suppress_errors' => true,
@@ -60,9 +66,11 @@ final class Process
      */
     private ?array $Env;
 
-    private int $Timeout;
+    private ?float $Timeout;
 
     private bool $UseOutputFiles;
+
+    private bool $CollectOutput;
 
     /**
      * @var array<string,bool>|null
@@ -85,7 +93,12 @@ final class Process
     /**
      * @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource>
      */
-    private array $OutputFileStreams;
+    private array $OutputFiles;
+
+    /**
+     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>>
+     */
+    private array $OutputFilePos;
 
     /**
      * @var int|float|null
@@ -114,12 +127,27 @@ final class Process
     /**
      * @var int|float|null
      */
+    private $LastPollTime = null;
+
+    /**
+     * @var int|float|null
+     */
     private $LastReadTime = null;
 
     /**
      * @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource>
      */
-    private $Output = [];
+    private array $Output = [];
+
+    /**
+     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>>
+     */
+    private array $OutputPos = [];
+
+    /**
+     * @var array<string,mixed>
+     */
+    private array $Stats = [];
 
     /**
      * Creates a new Process object
@@ -135,13 +163,13 @@ final class Process
         ?Closure $callback = null,
         ?string $cwd = null,
         ?array $env = null,
-        ?int $timeout = null,
-        bool $useOutputFiles = false
+        ?float $timeout = null,
+        bool $useOutputFiles = false,
+        bool $collectOutput = true
     ) {
-        $timeout = (int) $timeout;
-        if ($timeout < 0) {
+        if ($timeout !== null && $timeout <= 0) {
             throw new InvalidArgumentException(
-                sprintf('Invalid timeout: %d', $timeout)
+                sprintf('Invalid timeout: %.3fs', $timeout)
             );
         }
 
@@ -152,10 +180,11 @@ final class Process
         $this->Env = $env;
         $this->Timeout = $timeout;
         $this->UseOutputFiles = $useOutputFiles || Sys::isWindows();
+        $this->CollectOutput = $collectOutput;
 
-        if ($this->Timeout) {
+        if ($this->Timeout !== null) {
             $this->Sec = 0;
-            $this->Usec = self::TIMEOUT_PRECISION;
+            $this->Usec = self::READ_INTERVAL;
         }
     }
 
@@ -172,10 +201,11 @@ final class Process
         ?Closure $callback = null,
         ?string $cwd = null,
         ?array $env = null,
-        ?int $timeout = null,
-        bool $useOutputFiles = false
+        ?float $timeout = null,
+        bool $useOutputFiles = false,
+        bool $collectOutput = true
     ): self {
-        $process = new self([], $input, $callback, $cwd, $env, $timeout, $useOutputFiles);
+        $process = new self([], $input, $callback, $cwd, $env, $timeout, $useOutputFiles, $collectOutput);
         $process->Command = $command;
         $process->Options = array_diff_key(self::DEFAULT_OPTIONS, ['bypass_shell' => null]);
         return $process;
@@ -183,7 +213,7 @@ final class Process
 
     public function __destruct()
     {
-        if ($this->isRunning()) {
+        if ($this->updateStatus()->isRunning()) {
             $this->stop()->assertHasTerminated();
         }
 
@@ -191,8 +221,8 @@ final class Process
             return;
         }
 
-        if ($this->OutputFileStreams ?? null) {
-            $this->closeStreams($this->OutputFileStreams);
+        if ($this->OutputFiles ?? null) {
+            $this->closeStreams($this->OutputFiles);
         }
 
         if ($this->OutputDir !== null && is_dir($this->OutputDir)) {
@@ -264,28 +294,30 @@ final class Process
         if ($this->UseOutputFiles) {
             // Use files in a temporary directory to collect output. This is
             // necessary on Windows, where proc_open() blocks until the process
-            // exits if standard output pipes are used. Polling for output by
-            // calling $this->isRunning() or $this->getOutput() is optional, so
-            // it is also suitable for processes where output monitoring is not
-            // required.
+            // exits if standard output pipes are used, but is also useful in
+            // scenarios where polling for output would be inefficient.
             $this->OutputDir ??= File::createTempDir();
             foreach ([FileDescriptor::OUT, FileDescriptor::ERR] as $fd) {
                 $file = $this->OutputDir . '/' . $fd;
                 $descriptors[$fd] = ['file', $file, 'w'];
 
-                // Use streams in $this->OutputFileStreams to:
+                // Use streams in $this->OutputFiles to:
                 //
                 // - create output files before the first run
                 // - truncate output files before subsequent runs
-                // - service $this->getOutput() during and after each run
+                // - service $this->getOutput() etc. during and after each run
                 //   (instead of writing the same output to php://temp streams)
-                if ($stream = $this->OutputFileStreams[$fd] ?? null) {
+                if ($stream = $this->OutputFiles[$fd] ?? null) {
                     File::truncate($stream, 0, $file);
                 } else {
                     $stream = File::open($file, 'w+');
-                    $this->OutputFileStreams[$fd] = $stream;
+                    $this->OutputFiles[$fd] = $stream;
                 }
-                $this->Output[$fd] = $stream;
+                if ($this->CollectOutput) {
+                    $this->Output[$fd] = $stream;
+                    $this->OutputPos[$fd] = 0;
+                    $this->OutputFilePos[$fd] = 0;
+                }
 
                 // Create additional streams to tail output files for this run
                 $handles[$fd] = File::open($file, 'r');
@@ -295,10 +327,16 @@ final class Process
                 FileDescriptor::OUT => ['pipe', 'w'],
                 FileDescriptor::ERR => ['pipe', 'w'],
             ];
-            $this->Output = [
-                FileDescriptor::OUT => File::open('php://temp', 'a+'),
-                FileDescriptor::ERR => File::open('php://temp', 'a+'),
-            ];
+            if ($this->CollectOutput) {
+                $this->Output = [
+                    FileDescriptor::OUT => File::open('php://temp', 'a+'),
+                    FileDescriptor::ERR => File::open('php://temp', 'a+'),
+                ];
+                $this->OutputPos = [
+                    FileDescriptor::OUT => 0,
+                    FileDescriptor::ERR => 0,
+                ];
+            }
         }
 
         $this->StartTime = hrtime(true);
@@ -314,6 +352,9 @@ final class Process
             ),
             'Error running process: %s',
         );
+
+        $now = hrtime(true);
+        $this->Stats['spawn_us'] = ($now - $this->StartTime) / 1000;
 
         $pipes += $handles;
 
@@ -332,6 +373,28 @@ final class Process
     }
 
     /**
+     * Check the process for output and update its status
+     *
+     * If fewer than {@see Process::POLL_INTERVAL} microseconds have passed
+     * since the process was last polled, a delay is inserted to minimise CPU
+     * usage.
+     *
+     * @return $this
+     */
+    public function poll(bool $now = false)
+    {
+        $this->assertHasRun();
+
+        $this->checkTimeout();
+        if (!$now) {
+            $this->awaitInterval($this->LastPollTime, self::POLL_INTERVAL);
+        }
+        $this->updateStatus();
+
+        return $this;
+    }
+
+    /**
      * Wait for the process to exit and return its exit status
      */
     public function wait(): int
@@ -341,12 +404,12 @@ final class Process
         while ($this->Pipes) {
             $this->checkTimeout();
             $this->read();
-            $this->updateStatus();
+            $this->updateStatus(false);
         }
 
         while ($this->isRunning()) {
             $this->checkTimeout();
-            usleep(10000);
+            usleep(self::POLL_INTERVAL);
         }
 
         return $this->ExitStatus;
@@ -361,7 +424,7 @@ final class Process
     {
         return
             $this->State === self::RUNNING &&
-            $this->updateStatus()->State === self::RUNNING;
+            $this->maybeUpdateStatus()->State === self::RUNNING;
     }
 
     /**
@@ -371,7 +434,7 @@ final class Process
     {
         return
             $this->State === self::TERMINATED ||
-            $this->updateStatus()->State === self::TERMINATED;
+            $this->maybeUpdateStatus()->State === self::TERMINATED;
     }
 
     /**
@@ -397,20 +460,105 @@ final class Process
     }
 
     /**
-     * Get output written to STDOUT or STDERR by the process
+     * Get output written to STDOUT or STDERR by the process since it started
      *
      * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
-     * @throws ProcessException if the process has not run.
+     * @throws ProcessException if the process has not run or if output
+     * collection is disabled.
      */
-    public function getOutput(int $fd = FileDescriptor::OUT, bool $trimNativeEol = true): string
+    public function getOutput(int $fd = FileDescriptor::OUT): string
+    {
+        return $this->doGetOutput($fd, false, false);
+    }
+
+    /**
+     * Get output written to STDOUT or STDERR by the process since it was last
+     * read
+     *
+     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @throws ProcessException if the process has not run or if output
+     * collection is disabled.
+     */
+    public function getNewOutput(int $fd = FileDescriptor::OUT): string
+    {
+        return $this->doGetOutput($fd, false, true);
+    }
+
+    /**
+     * Get text written to STDOUT or STDERR by the process since it started
+     *
+     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @throws ProcessException if the process has not run or if output
+     * collection is disabled.
+     */
+    public function getText(int $fd = FileDescriptor::OUT): string
+    {
+        return $this->doGetOutput($fd, true, false);
+    }
+
+    /**
+     * Get text written to STDOUT or STDERR by the process since it was last
+     * read
+     *
+     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @throws ProcessException if the process has not run or if output
+     * collection is disabled.
+     */
+    public function getNewText(int $fd = FileDescriptor::OUT): string
+    {
+        return $this->doGetOutput($fd, true, true);
+    }
+
+    /**
+     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     */
+    private function doGetOutput(int $fd, bool $text, bool $new): string
     {
         $this->assertHasRun();
 
+        if (!$this->CollectOutput) {
+            throw new ProcessException('Output collection is disabled');
+        }
+
         $stream = $this->updateStatus()->Output[$fd];
-        $output = File::getContents($stream, 0);
-        return $trimNativeEol
+        $offset = $new
+            ? $this->OutputPos[$fd]
+            : ($this->UseOutputFiles
+                ? $this->OutputFilePos[$fd]
+                : 0);
+        $output = File::getContents($stream, $offset);
+        /** @var int<0,max> */
+        $pos = File::tell($stream);
+        $this->OutputPos[$fd] = $pos;
+        return $text
             ? Str::trimNativeEol($output)
             : $output;
+    }
+
+    /**
+     * Forget output written by the process
+     *
+     * @return $this
+     */
+    public function clearOutput()
+    {
+        if (!$this->CollectOutput || $this->State === self::READY) {
+            return $this;
+        }
+
+        foreach ([FileDescriptor::OUT, FileDescriptor::ERR] as $fd) {
+            $stream = $this->Output[$fd];
+            if ($this->UseOutputFiles) {
+                /** @var int<0,max> */
+                $pos = File::tell($stream);
+                $this->OutputFilePos[$fd] = $pos;
+            } else {
+                File::truncate($stream);
+            }
+            $this->OutputPos[$fd] = 0;
+        }
+
+        return $this;
     }
 
     /**
@@ -425,37 +573,70 @@ final class Process
         return $this->ExitStatus;
     }
 
+    /**
+     * Get process statistics
+     *
+     * @return array<string,mixed>
+     */
+    public function getStats(): array
+    {
+        $this->assertHasRun();
+
+        return $this->Stats;
+    }
+
     private function reset(): void
     {
         $this->OutputCallback = null;
+        unset($this->OutputFilePos);
         $this->StartTime = null;
         $this->Process = null;
         unset($this->Pipes);
         unset($this->ProcessStatus);
         unset($this->Pid);
         unset($this->ExitStatus);
+        $this->LastPollTime = null;
         $this->LastReadTime = null;
         $this->Output = [];
+        $this->OutputPos = [];
+        $this->Stats = [];
     }
 
     /**
      * @return $this
      */
-    private function updateStatus(bool $wait = false)
+    private function maybeUpdateStatus()
+    {
+        if (!$this->checkInterval($this->LastPollTime, self::POLL_INTERVAL)) {
+            return $this;
+        }
+        return $this->updateStatus();
+    }
+
+    /**
+     * @return $this
+     */
+    private function updateStatus(bool $read = true, bool $wait = false)
     {
         if ($this->State !== self::RUNNING) {
             return $this;
         }
 
-        /** @var resource */
-        $process = $this->Process;
+        $now = hrtime(true);
+
+        assert($this->Process !== null);
         $this->ProcessStatus = $this->throwOnFailure(
-            @proc_get_status($process),
+            @proc_get_status($this->Process),
             'Error getting process status: %s',
         );
 
+        $this->LastPollTime = $now;
+
         $running = $this->ProcessStatus['running'];
-        $this->read($running && $wait, !$running);
+
+        if ($read || !$running) {
+            $this->read($running && $wait, !$running);
+        }
 
         if (!$running) {
             $this->close();
@@ -473,18 +654,12 @@ final class Process
             return $this;
         }
 
+        $now = hrtime(true);
         $read = $this->Pipes;
 
         if ($this->UseOutputFiles) {
-            if ($this->LastReadTime === null || !$wait) {
-                $this->LastReadTime = hrtime(true);
-            } else {
-                $now = hrtime(true);
-                $usec = (int) (self::TIMEOUT_PRECISION - ($now - $this->LastReadTime) / 1000);
-                $this->LastReadTime = $now;
-                if ($usec > 0) {
-                    usleep($usec);
-                }
+            if ($wait) {
+                $this->awaitInterval($this->LastReadTime, self::READ_INTERVAL);
             }
         } else {
             $write = null;
@@ -529,6 +704,8 @@ final class Process
             }
         }
 
+        $this->LastReadTime = $now;
+
         return $this;
     }
 
@@ -540,7 +717,7 @@ final class Process
     {
         if (
             $this->State !== self::RUNNING ||
-            !$this->Timeout ||
+            $this->Timeout === null ||
             $this->Timeout > (hrtime(true) - $this->StartTime) / 1000000000
         ) {
             return $this;
@@ -551,7 +728,7 @@ final class Process
             // @codeCoverageIgnoreStart
         } catch (Throwable $ex) {
             throw new ProcessException(sprintf(
-                'Error terminating process that timed out after %ds: %s',
+                'Error terminating process that timed out after %.3fs: %s',
                 $this->Timeout,
                 Get::code($this->Command),
             ), $ex);
@@ -559,20 +736,58 @@ final class Process
         }
 
         throw new ProcessTimedOutException(sprintf(
-            'Process timed out after %ds: %s',
+            'Process timed out after %.3fs: %s',
             $this->Timeout,
             Get::code($this->Command),
         ));
     }
 
     /**
+     * Wait until at least $interval microseconds have passed since the given
+     * time
+     *
+     * @param int|float|null $time
+     * @return $this
+     */
+    private function awaitInterval($time, int $interval)
+    {
+        if ($time === null) {
+            return $this;
+        }
+        $now = hrtime(true);
+        $usec = (int) ($interval - ($now - $time) / 1000);
+        if ($usec > 0) {
+            usleep($usec);
+        }
+        return $this;
+    }
+
+    /**
+     * Check if at least $interval microseconds have passed since the given time
+     *
+     * @param int|float|null $time
+     */
+    private function checkInterval($time, int $interval): bool
+    {
+        if ($time === null) {
+            return true;
+        }
+        $now = hrtime(true);
+        return (int) ($interval - ($now - $time) / 1000) <= 0;
+    }
+
+    /**
+     * Terminate the process if it is still running
+     *
      * @todo Implement timeout, use signals
      *
      * @return $this
      */
-    private function stop()
+    public function stop()
     {
-        if (!$this->isRunning()) {
+        $this->assertHasRun();
+
+        if (!$this->updateStatus()->isRunning()) {
             // @codeCoverageIgnoreStart
             return $this;
             // @codeCoverageIgnoreEnd
@@ -585,9 +800,9 @@ final class Process
             'Error terminating process: %s',
         );
 
-        usleep(10000);
+        usleep(self::POLL_INTERVAL);
 
-        return $this;
+        return $this->updateStatus();
     }
 
     /**
@@ -692,7 +907,6 @@ final class Process
         if ($result === false) {
             $this->throw($message);
         }
-
         return $result;
     }
 

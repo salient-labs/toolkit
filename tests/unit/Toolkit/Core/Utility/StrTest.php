@@ -555,6 +555,112 @@ final class StrTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider splitDelimitedProvider
+     *
+     * @param list<string> $expected
+     * @param non-empty-string $separator
+     * @param int-mask-of<Str::PRESERVE_*> $flags
+     */
+    public function testSplitDelimited(
+        array $expected,
+        string $separator,
+        string $string,
+        bool $removeEmpty = false,
+        ?string $characters = null,
+        int $flags = Str::PRESERVE_DOUBLE_QUOTED
+    ): void {
+        $this->assertSame($expected, Str::splitDelimited($separator, $string, $removeEmpty, $characters, $flags));
+    }
+
+    /**
+     * @return array<array{list<string>,non-empty-string,string,3?:bool,4?:string|null,5?:int-mask-of<Str::PRESERVE_*>}>
+     */
+    public function splitDelimitedProvider(): array
+    {
+        return [
+            [
+                [],
+                ',',
+                '',
+                true,
+            ],
+            [
+                [''],
+                ',',
+                '',
+            ],
+            [
+                ['apple', 'banana', 'cherry'],
+                ',',
+                'apple,banana,cherry',
+            ],
+            [
+                ['apple', 'banana', 'cherry'],
+                ',',
+                'apple, banana, cherry',
+            ],
+            [
+                ['apple', 'banana', 'cherry'],
+                ',',
+                ',,,apple,banana,,cherry,',
+                true,
+            ],
+            [
+                ['', '', '', 'apple', 'banana', '', 'cherry', ''],
+                ',',
+                ',,,apple,banana,,cherry,',
+            ],
+            [
+                ['"apple, banana"', 'cherry'],
+                ',',
+                '"apple, banana", cherry',
+            ],
+            [
+                ["'apple", "banana'", 'cherry'],
+                ',',
+                "'apple, banana', cherry",
+            ],
+            [
+                ["'apple, banana'", 'cherry'],
+                ',',
+                "'apple, banana', cherry",
+                false,
+                null,
+                Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED,
+            ],
+            [
+                ["'apple, banana'", '"cherry, strawberry"'],
+                ',',
+                ' ,, \'apple, banana\' , , "cherry, strawberry" , ',
+                true,
+                null,
+                Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED,
+            ],
+            [
+                [' ', " 'apple, banana' ", ' ', ' "cherry, strawberry" ', ' '],
+                ',',
+                ' ,, \'apple, banana\' , , "cherry, strawberry" , ',
+                true,
+                '',
+                Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED,
+            ],
+            [
+                [' ', '', " 'apple", " banana' ", ' ', ' "cherry', ' strawberry" ', ' '],
+                ',',
+                ' ,, \'apple, banana\' , , "cherry, strawberry" , ',
+                false,
+                '',
+                0,
+            ],
+            [
+                ['{apple, (banana, ["mango, pear"])}', 'cherry'],
+                ',',
+                '{apple, (banana, ["mango, pear"])}, cherry',
+            ],
+        ];
+    }
+
     public function testWrap(): void
     {
         $this->assertEquals('**test**', Str::wrap('test', '**'));

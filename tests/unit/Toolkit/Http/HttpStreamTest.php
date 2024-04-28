@@ -2,14 +2,20 @@
 
 namespace Salient\Tests\Http;
 
+use Salient\Contract\Core\QueryFlag;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Sys;
+use Salient\Core\DateFormatter;
 use Salient\Http\Exception\StreamDetachedException;
+use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
+use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;
 use Salient\Tests\TestCase;
+use DateTimeImmutable;
 use InvalidArgumentException;
+use stdClass;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
@@ -66,6 +72,105 @@ final class HttpStreamTest extends TestCase
         $this->assertSame(3, $stream->getSize());
         $this->assertSame('foo', (string) $stream);
         $stream->close();
+    }
+
+    /**
+     * @dataProvider fromDataProvider
+     *
+     * @param mixed[]|object $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     */
+    public function testFromData(
+        ?string $expected,
+        $data,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatter $dateFormatter = null,
+        bool $asJson = false
+    ): void {
+        if ($expected === null) {
+            $this->expectException(StreamEncapsulationException::class);
+        }
+        $stream = HttpStream::fromData($data, $flags, $dateFormatter, $asJson, 'boundary');
+        $this->assertSame($expected, (string) $stream);
+        $stream->close();
+    }
+
+    /**
+     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<QueryFlag::*>,3?:DateFormatter|null,4?:bool}>
+     */
+    public static function fromDataProvider(): array
+    {
+        $date = new DateTimeImmutable('2021-10-02T17:23:14+10:00');
+        $data = [
+            'user_id' => 7654,
+            'fields' => [
+                'email' => 'JWilliams432@gmail.com',
+                'groups' => ['staff', 'editor'],
+                'created' => $date,
+            ],
+        ];
+
+        $file = self::getFixturesPath(__CLASS__) . '/profile.gif';
+        $multipartData = $data;
+        $multipartData['fields']['profile_image'] = HttpMultipartStreamPart::fromFile($file);
+        $content = File::getContents($file);
+        $multipartBody =
+            "--boundary\r\n"
+            . "Content-Disposition: form-data; name=\"user_id\"\r\n\r\n"
+            . "7654\r\n"
+            . "--boundary\r\n"
+            . "Content-Disposition: form-data; name=\"fields[email]\"\r\n\r\n"
+            . "JWilliams432@gmail.com\r\n"
+            . "--boundary\r\n"
+            . "Content-Disposition: form-data; name=\"fields[groups][]\"\r\n\r\n"
+            . "staff\r\n"
+            . "--boundary\r\n"
+            . "Content-Disposition: form-data; name=\"fields[groups][]\"\r\n\r\n"
+            . "editor\r\n"
+            . "--boundary\r\n"
+            . "Content-Disposition: form-data; name=\"fields[created]\"\r\n\r\n"
+            . "2021-10-02T17:23:14+10:00\r\n"
+            . "--boundary\r\n"
+            . "Content-Disposition: form-data; name=\"fields[profile_image]\"; filename=\"profile.gif\"\r\n"
+            . "Content-Type: image/gif\r\n\r\n"
+            . $content . "\r\n"
+            . "--boundary--\r\n";
+
+        $object = new stdClass();
+        $object->BillingId = 123;
+        $objectData = $data;
+        $objectData['attributes'] = $object;
+
+        return [
+            [
+                // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[groups][]=staff&fields[groups][]=editor&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                $data,
+            ],
+            [
+                $multipartBody,
+                $multipartData,
+            ],
+            [
+                // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[groups][]=staff&fields[groups][]=editor&fields[created]=2021-10-02T17:23:14+10:00&attributes[BillingId]=123
+                'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00&attributes%5BBillingId%5D=123',
+                $objectData,
+            ],
+            [
+                '{"user_id":7654,"fields":{"email":"JWilliams432@gmail.com","groups":["staff","editor"],"created":"2021-10-02T17:23:14+10:00"}}',
+                $data,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                null,
+                true,
+            ],
+            [
+                null,
+                $multipartData,
+                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                null,
+                true,
+            ],
+        ];
     }
 
     public function testToString(): void
@@ -192,7 +297,7 @@ final class HttpStreamTest extends TestCase
             'write' => fn() => $stream->write('foo'),
             'seek' => fn() => $stream->seek(0),
         ] as $method => $callback) {
-            $this->assertThrows(
+            $this->assertCallbackThrowsException(
                 $callback,
                 StreamDetachedException::class,
                 'Stream is detached',

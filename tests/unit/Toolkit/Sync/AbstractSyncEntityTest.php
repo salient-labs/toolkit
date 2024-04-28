@@ -11,6 +11,8 @@ use Salient\Tests\Sync\Entity\User;
 
 /**
  * @covers \Salient\Sync\AbstractSyncEntity
+ * @covers \Salient\Sync\SyncSerializeRules
+ * @covers \Salient\Sync\SyncSerializeRulesBuilder
  */
 final class AbstractSyncEntityTest extends SyncTestCase
 {

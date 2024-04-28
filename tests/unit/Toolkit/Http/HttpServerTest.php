@@ -99,7 +99,6 @@ final class HttpServerTest extends TestCase
                 $return = $request;
                 return new Response(
                     200,
-                    null,
                     'Hello, world!',
                     [Header::CONTENT_TYPE => MimeType::TEXT],
                 );
@@ -118,17 +117,16 @@ final class HttpServerTest extends TestCase
         $this->assertSame(Str::setEol(<<<'EOF'
             HTTP/1.1 200 OK
             Content-Type: text/plain
-            Content-Length: 13
 
             Hello, world!
-            EOF, "\r\n"), $client->getOutput());
+            EOF, "\r\n"), $client->getText());
         $this->assertSame(<<<'EOF'
             ==> Connected to localhost:3008
             > GET / HTTP/1.1
             > Host: localhost:3008
             > Accept: */*
             >
-            EOF, $client->getOutput(FileDescriptor::ERR));
+            EOF, $client->getText(FileDescriptor::ERR));
     }
 
     private function getServerWithClient(
@@ -146,7 +144,7 @@ final class HttpServerTest extends TestCase
         $client = (
             new Process([
                 ...self::PHP_COMMAND,
-                self::getFixturesPath(__CLASS__) . '/client.php',
+                self::getPackagePath() . '/tests/unit/Toolkit/http-client.php',
                 'localhost:3008',
                 $method,
                 $target,

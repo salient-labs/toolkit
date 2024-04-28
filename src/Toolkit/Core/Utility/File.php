@@ -260,7 +260,7 @@ final class File extends AbstractUtility
     {
         $process = Process::withShellCommand(Sys::isWindows() ? 'cd' : 'pwd');
         if ($process->run() === 0) {
-            return $process->getOutput();
+            return $process->getText();
         }
         error_clear_last();
         $dir = @getcwd();
@@ -1108,9 +1108,11 @@ final class File extends AbstractUtility
 
         if ($utf16le) {
             if (!extension_loaded('iconv')) {
+                // @codeCoverageIgnoreStart
                 throw new InvalidRuntimeConfigurationException(
                     "'iconv' extension required for UTF-16LE encoding"
                 );
+                // @codeCoverageIgnoreEnd
             }
             $filter = @stream_filter_append($handle, 'convert.iconv.UTF-8.UTF-16LE', \STREAM_FILTER_WRITE);
             self::maybeThrow($filter, 'Error applying UTF-16LE filter to stream: %s', $uri, $handle);

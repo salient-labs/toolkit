@@ -360,21 +360,29 @@ final class HttpHeadersTest extends TestCase
     {
         $headers = (new HttpHeaders())
             ->add('foo', ['qux', 'quux', 'quuux'])
-            ->add('bar', ['baz']);
+            ->add('bar', ['baz'])
+            ->add('qux', ['quux="comma,separated,value", quuux'])
+            ->add('items', ['item1, item2', 'item3, item4,item5', 'item6,item7']);
 
         $this->assertTrue($headers->hasHeader('Foo'));
         $this->assertFalse($headers->hasHeader('Baz'));
         $this->assertSame(['qux', 'quux', 'quuux'], $headers->getHeader('Foo'));
         $this->assertSame([], $headers->getHeader('Baz'));
-        $this->assertSame('qux,quux,quuux', $headers->getHeaderLine('Foo'));
+        $this->assertSame(['item1, item2', 'item3, item4,item5', 'item6,item7'], $headers->getHeader('Items'));
+        $this->assertSame('qux, quux, quuux', $headers->getHeaderLine('Foo'));
         $this->assertSame('', $headers->getHeaderLine('Baz'));
+        $this->assertSame('item1, item2, item3, item4,item5, item6,item7', $headers->getHeaderLine('Items'));
         $this->assertSame('qux', $headers->getFirstHeaderLine('Foo'));
         $this->assertSame('quuux', $headers->getLastHeaderLine('Foo'));
         $this->assertSame('baz', $headers->getOneHeaderLine('Bar'));
+        $this->assertSame('quux="comma,separated,value"', $headers->getFirstHeaderLine('Qux'));
+        $this->assertSame('quuux', $headers->getLastHeaderLine('Qux'));
+        $this->assertSame('item1', $headers->getFirstHeaderLine('Items'));
+        $this->assertSame('item7', $headers->getLastHeaderLine('Items'));
 
         $this->expectException(InvalidHeaderException::class);
-        $this->expectExceptionMessage('HTTP header appears more than once: Foo');
-        $headers->getOneHeaderLine('Foo');
+        $this->expectExceptionMessage('HTTP header has more than one value: Qux');
+        $headers->getOneHeaderLine('Qux');
     }
 
     public function testImmutability(): void
@@ -438,35 +446,53 @@ final class HttpHeadersTest extends TestCase
 
     public function testEmptyValue(): void
     {
-        $this->assertSame(
-            ['A' => ['']],
-            (new HttpHeaders())->set('A', '')->getHeaders()
-        );
+        $headers = (new HttpHeaders(['foo' => 'bar', 'baz' => '']))->add('foo', '')->set('qux', '');
+        $this->assertSame(['foo' => ['bar', ''], 'baz' => [''], 'qux' => ['']], $headers->getHeaders());
+        $this->assertSame(['foo: bar', 'baz: ', 'foo: ', 'qux: '], $headers->getLines());
+        $this->assertSame(['foo:bar', 'baz;', 'foo;', 'qux;'], $headers->getLines('%s:%s', '%s;'));
     }
 
     public function testSort(): void
     {
-        $lines = ($headers = $this->getHeaders())->getLines();
+        $headers = $this->getHeaders()->set('Host', 'example.com');
+        $lines = $headers->getLines();
         $headers = $headers->sort();
         $this->assertSame([
+            'host' => ['example.com'],
             'abc' => ['def'],
             'foo' => ['bar', 'baz'],
             'foo2' => ['*'],
             'qux' => ['quux'],
         ], $headers->all());
+        $this->assertSame([
+            'Host' => ['example.com'],
+            'abc' => ['def'],
+            'foo' => ['bar', 'baz'],
+            'Foo2' => ['*'],
+            'qux' => ['quux'],
+        ], $headers->getHeaders());
         $this->assertSame($lines, $headers->getLines());
     }
 
     public function testReverse(): void
     {
-        $lines = ($headers = $this->getHeaders())->getLines();
+        $headers = $this->getHeaders()->set('Host', 'example.com');
+        $lines = $headers->getLines();
         $headers = $headers->reverse();
         $this->assertSame([
+            'host' => ['example.com'],
             'qux' => ['quux'],
             'abc' => ['def'],
             'foo' => ['bar', 'baz'],
             'foo2' => ['*'],
         ], $headers->all());
+        $this->assertSame([
+            'Host' => ['example.com'],
+            'qux' => ['quux'],
+            'abc' => ['def'],
+            'foo' => ['bar', 'baz'],
+            'Foo2' => ['*'],
+        ], $headers->getHeaders());
         $this->assertSame($lines, $headers->getLines());
     }
 

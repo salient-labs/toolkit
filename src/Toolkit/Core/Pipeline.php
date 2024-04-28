@@ -12,7 +12,6 @@ use Salient\Contract\Pipeline\StreamPipelineInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\App;
-use Salient\Core\Utility\Get;
 use Closure;
 use Generator;
 
@@ -473,26 +472,22 @@ final class Pipeline implements
             : fn($result) => $result;
 
         foreach (array_reverse($this->Pipes) as $pipe) {
-            if ($pipe instanceof Closure) {
-                $closure = fn($payload) => $pipe($payload, $closure, $this, $this->Arg);
-                continue;
-            }
-
             if (is_string($pipe)) {
                 $pipe = $this->Container
                     ? $this->Container->get($pipe)
                     : App::get($pipe);
+
+                if (!($pipe instanceof PipeInterface)) {
+                    throw new LogicException(sprintf(
+                        '%s does not implement %s',
+                        get_class($pipe),
+                        PipeInterface::class,
+                    ));
+                }
             }
 
-            if (!($pipe instanceof PipeInterface)) {
-                throw new LogicException(sprintf(
-                    '%s does not implement %s',
-                    Get::type($pipe),
-                    PipeInterface::class,
-                ));
-            }
-
-            $closure = fn($payload) => $pipe->handle($payload, $closure, $this, $this->Arg);
+            $closure = fn($payload) =>
+                $pipe($payload, $closure, $this, $this->Arg);
         }
 
         return $closure;

@@ -26,46 +26,85 @@ final class ProcessTest extends TestCase
         'XPC_SERVICE_NAME' => true,
     ];
 
+    public function testStart(): void
+    {
+        foreach (self::runProvider() as $key => $run) {
+            [$exitStatus, $stdout, $stderr] = $run;
+            $command = [...self::PHP_COMMAND, ...$run[3]];
+            $input = $run[4] ?? '';
+            $cwd = $run[5] ?? null;
+            $env = $run[6] ?? null;
+            $timeout = $run[7] ?? null;
+            $runs[$key] = [$exitStatus, $stdout, $stderr];
+
+            $process = new Process($command, $input, null, $cwd, $env, $timeout);
+            $process->start();
+            $processes[$key] = $process;
+        }
+
+        $pending = $processes;
+        do {
+            foreach ($pending as $key => $process) {
+                try {
+                    $process->poll();
+                } catch (ProcessException $ex) {
+                    $this->assertSame($runs[$key][0], get_class($ex), $key);
+                    unset($pending[$key]);
+                    unset($processes[$key]);
+                    continue;
+                }
+                if ($process->isRunning()) {
+                    continue;
+                }
+                unset($pending[$key]);
+            }
+        } while ($pending);
+
+        foreach ($processes as $key => $process) {
+            [$exitStatus, $stdout, $stderr] = $runs[$key];
+            $this->assertSame($exitStatus, $process->getExitStatus(), $key);
+            $this->assertSame($stdout, $process->getOutput(FileDescriptor::OUT), $key);
+            $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR), $key);
+        }
+    }
+
     /**
      * @dataProvider runProvider
      *
      * @param int|string $exitStatus
-     * @param string[] $args
+     * @param string[] $command
      * @param resource|string|null $input
-     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null $callback
      * @param array<string,string>|null $env
      */
     public function testRun(
         $exitStatus,
         string $stdout,
         string $stderr,
-        array $args = [],
+        array $command,
         $input = '',
-        ?Closure $callback = null,
         ?string $cwd = null,
         ?array $env = null,
-        ?int $timeout = null,
-        bool $useOutputFiles = false
+        ?float $timeout = null
     ): void {
         $this->maybeExpectException($exitStatus);
 
-        $args = ['-ddisplay_startup_errors=0', ...$args];
-        $process = new Process([\PHP_BINARY, ...$args], $input, $callback, $cwd, $env, $timeout, $useOutputFiles);
+        $command = [...self::PHP_COMMAND, ...$command];
+        $process = new Process($command, $input, null, $cwd, $env, $timeout);
         $this->assertFalse($process->isTerminated());
-        $this->assertSame([\PHP_BINARY, ...$args], $process->getCommand());
+        $this->assertSame($command, $process->getCommand());
         $result = $process->run();
 
         $this->assertSame($exitStatus, $result);
         $this->assertSame($exitStatus, $process->getExitStatus());
-        $this->assertSame($stdout, $process->getOutput(FileDescriptor::OUT, false));
-        $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR, false));
+        $this->assertSame($stdout, $process->getOutput(FileDescriptor::OUT));
+        $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR));
         $this->assertTrue($process->isTerminated());
         $this->assertIsInt($pid = $process->getPid());
         $this->assertGreaterThan(0, $pid);
     }
 
     /**
-     * @return array<string,array{int|string,string,string,3?:string[],4?:resource|string|null,5?:(Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null,6?:string|null,7?:array<string,string>|null,8?:int|null}>
+     * @return non-empty-array<string,array{int|string,string,string,string[],4?:resource|string|null,5?:string|null,6?:array<string,string>|null,7?:int|null}>
      */
     public static function runProvider(): array
     {
@@ -146,11 +185,10 @@ final class ProcessTest extends TestCase
                 [$cat, 'print-env'],
                 '',
                 null,
-                null,
                 ['TEST' => __CLASS__],
             ],
             'delay after EOF' => [
-                0,
+                2,
                 '',
                 <<<'EOF'
                 - 1: delay
@@ -167,7 +205,6 @@ final class ProcessTest extends TestCase
                 EOF,
                 [$cat, 'timeout'],
                 '',
-                null,
                 null,
                 null,
                 1,
@@ -205,11 +242,22 @@ final class ProcessTest extends TestCase
         ];
     }
 
-    public function testInvalidTimeout(): void
+    /**
+     * @dataProvider invalidTimeoutProvider
+     */
+    public function testInvalidTimeout(?float $timeout): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid timeout: -1');
-        new Process([], '', null, null, null, -1);
+        $this->expectExceptionMessage('Invalid timeout: ');
+        new Process([], '', null, null, null, $timeout);
+    }
+
+    /**
+     * @return array<array{float|null}>
+     */
+    public static function invalidTimeoutProvider(): array
+    {
+        return [[-1], [0], [0.0]];
     }
 
     public function testRunTwice(): void

@@ -2,44 +2,14 @@
 
 namespace Salient\Tests\Sync\Command;
 
-use Salient\Contract\Cli\CliApplicationInterface;
-use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Sync\Command\GetSyncEntities;
-use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
-use Salient\Tests\CommandTestCase;
 
 /**
  * @covers \Salient\Sync\Command\GetSyncEntities
+ * @covers \Salient\Sync\Command\AbstractSyncCommand
  */
-final class GetSyncEntitiesTest extends CommandTestCase
+final class GetSyncEntitiesTest extends SyncCommandTestCase
 {
-    protected function startApp(CliApplicationInterface $app): CliApplicationInterface
-    {
-        return $app
-            ->startCache()
-            ->startSync(__METHOD__, [])
-            ->provider(JsonPlaceholderApi::class);
-    }
-
-    protected function makeCommandAssertions(
-        CliApplicationInterface $app,
-        CliCommandInterface $command,
-        ...$args
-    ): void {
-        $httpRequestCount = $args[8] ?? null;
-
-        if ($httpRequestCount === null) {
-            return;
-        }
-
-        $provider = $app->get(JsonPlaceholderApi::class);
-        $this->assertSame(
-            $httpRequestCount,
-            $provider->HttpRequests,
-            'JsonPlaceholderApi::$HttpRequestCount',
-        );
-    }
-
     /**
      * @dataProvider runProvider
      *
@@ -60,9 +30,14 @@ final class GetSyncEntitiesTest extends CommandTestCase
             $args,
             [],
             false,
+            false,
             null,
             $runs,
-            $httpRequestCount,
+            $httpRequestCount === null
+                ? null
+                : static function ($app) use ($httpRequestCount): void {
+                    static::assertSameHttpRequests($httpRequestCount, $app);
+                },
         );
     }
 

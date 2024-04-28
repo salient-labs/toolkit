@@ -2,60 +2,58 @@
 
 namespace Salient\Curler;
 
-use Salient\Core\Exception\LogicException;
+use Psr\Http\Message\StreamInterface;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Str;
+use Salient\Http\HttpMultipartStreamPart;
+use Salient\Http\HttpStream;
 use CURLFile;
 
 /**
- * File upload helper
+ * @api
  */
-final class CurlerFile
+final class CurlerFile extends HttpMultipartStreamPart
 {
-    /**
-     * @var string
-     */
-    private $Filename;
-
-    /**
-     * @var string
-     */
-    private $PostFilename;
-
-    /**
-     * @var string|null
-     */
-    private $MimeType;
+    private string $Path;
 
     /**
      * Creates a new CurlerFile object
      *
-     * @param string $postFilename Filename used in upload data. If `null`, the
-     * basename of `$filename` is used.
-     * @param string $mimeType If `null`, {@see mime_content_type()} is used to
-     * detect the MIME type of `$filename`.
+     * @param string|null $uploadFilename Default: `basename($filename)`
+     * @param string|null $mediaType Default: `mime_content_type($filename)`,
+     * `application/octet-stream` on failure.
      */
     public function __construct(
         string $filename,
-        string $postFilename = null,
-        string $mimeType = null
+        ?string $uploadFilename = null,
+        ?string $mediaType = null,
+        ?string $fallbackFilename = null,
+        ?string $name = null
     ) {
         if (!is_file($filename)) {
-            throw new LogicException(sprintf('File not found: %s', $filename));
+            throw new InvalidArgumentException(sprintf(
+                'File not found: %s',
+                $filename,
+            ));
         }
 
-        if ($postFilename === null) {
-            $postFilename = basename($filename);
-        }
+        $this->Path = $filename;
+        $this->Name = $name;
+        $this->Filename = $uploadFilename ?? basename($filename);
+        $this->FallbackFilename = $this->filterFallbackFilename(
+            Str::coalesce($fallbackFilename, null),
+            $this->Filename
+        );
+        $this->MediaType = self::getFileMediaType($filename, $mediaType);
+    }
 
-        if ($mimeType === null) {
-            $mimeType = mime_content_type($filename);
-            if ($mimeType === false) {
-                $mimeType = null;
-            }
-        }
-
-        $this->Filename = $filename;
-        $this->PostFilename = $postFilename;
-        $this->MimeType = $mimeType;
+    /**
+     * @inheritDoc
+     */
+    public function getContent(): StreamInterface
+    {
+        return $this->Content ??= new HttpStream(File::open($this->Path, 'r'));
     }
 
     /**
@@ -63,6 +61,8 @@ final class CurlerFile
      */
     public function getCurlFile(): CURLFile
     {
-        return new CURLFile($this->Filename, $this->MimeType, $this->PostFilename);
+        assert($this->Filename !== null);
+        assert($this->MediaType !== null);
+        return new CURLFile($this->Path, $this->MediaType, $this->Filename);
     }
 }

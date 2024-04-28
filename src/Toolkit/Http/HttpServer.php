@@ -2,6 +2,7 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpProtocolVersion;
@@ -16,6 +17,7 @@ use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\HttpServerException;
+use Salient\Http\Exception\InvalidHeaderException;
 
 /**
  * A simple HTTP server
@@ -270,9 +272,9 @@ class HttpServer implements Immutable
      *
      * @template T
      *
-     * @param callable(HttpServerRequestInterface $request, bool &$continue, T &$return): HttpResponseInterface $callback
-     * Receives an {@see HttpServerRequestInterface} and returns an
-     * {@see HttpResponseInterface}. May also set `$continue = true` to make
+     * @param callable(HttpServerRequestInterface $request, bool &$continue, T &$return): ResponseInterface $callback
+     * Receives an {@see HttpServerRequestInterface} and returns a
+     * {@see ResponseInterface}. May also set `$continue = true` to make
      * {@see HttpServer::listen()} wait for another request, or pass a value
      * back to the caller by assigning it to `$return`.
      * @return T|null
@@ -425,16 +427,16 @@ class HttpServer implements Immutable
 
             /** @todo Handle requests without Content-Length */
             /** @todo Add support for Transfer-Encoding */
-            $contentLength = $headers->getFirstHeaderLine(HttpHeader::CONTENT_LENGTH);
-            if ($contentLength !== '') {
-                $length = (int) $contentLength;
-                if ($length < 0 || (string) $length !== $contentLength) {
-                    throw new HttpServerException(sprintf(
-                        'Invalid Content-Length in request from %s: %s',
-                        $peer,
-                        $contentLength,
-                    ));
-                }
+            try {
+                $length = $headers->getContentLength();
+            } catch (InvalidHeaderException $ex) {
+                throw new HttpServerException(sprintf(
+                    'Invalid %s in request from %s',
+                    HttpHeader::CONTENT_LENGTH,
+                    $peer,
+                ), $ex);
+            }
+            if ($length !== null) {
                 $body = @fread($socket, $length);
                 if ($body === false) {
                     throw new HttpServerException(sprintf(
@@ -454,9 +456,9 @@ class HttpServer implements Immutable
                 $method,
                 $uri,
                 $serverParams,
-                $target,
                 $body,
                 $headers,
+                $target,
                 $version,
             );
 
@@ -464,17 +466,17 @@ class HttpServer implements Immutable
 
             $continue = false;
             $return = null;
+            $response = null;
 
             try {
-                /** @var HttpResponseInterface */
                 $response = $callback($request, $continue, $return);
             } finally {
-                File::write(
-                    $socket,
-                    (string) ($response ?? new HttpResponse(
-                        500, 'Internal Server Error', 'Internal server error'
-                    ))
-                );
+                $response = $response instanceof ResponseInterface
+                    ? ($response instanceof HttpResponseInterface
+                        ? $response
+                        : HttpResponse::fromPsr7($response))
+                    : new HttpResponse(500, 'Internal server error');
+                File::write($socket, (string) $response);
                 File::close($socket);
             }
         } while ($continue);

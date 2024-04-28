@@ -5,13 +5,9 @@ namespace Salient\Contract\Pipeline;
 use Closure;
 
 /**
- * Forms part of a pipeline
- *
  * @template TInput
  * @template TOutput
  * @template TArgument
- *
- * @see PipelineInterface
  */
 interface PipeInterface
 {
@@ -19,7 +15,7 @@ interface PipeInterface
      * @param TInput|TOutput $payload
      * @param PipelineInterface<TInput,TOutput,TArgument> $pipeline
      * @param TArgument $arg
-     * @return TInput|TOutput
+     * @return ($payload is TInput ? TInput|TOutput : TOutput)
      */
-    public function handle($payload, Closure $next, PipelineInterface $pipeline, $arg);
+    public function __invoke($payload, Closure $next, PipelineInterface $pipeline, $arg);
 }

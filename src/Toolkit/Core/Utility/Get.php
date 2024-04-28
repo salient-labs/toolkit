@@ -8,6 +8,7 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Char;
 use Salient\Contract\Core\CopyFlag;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\Jsonable;
 use Salient\Contract\Core\QueryFlag;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
@@ -19,6 +20,7 @@ use Closure;
 use Countable;
 use DateTimeInterface;
 use DateTimeZone;
+use JsonSerializable;
 use ReflectionClass;
 use ReflectionObject;
 use Stringable;
@@ -78,7 +80,7 @@ final class Get extends AbstractUtility
     /**
      * Cast a value to integer, preserving null
      *
-     * @param mixed $value
+     * @param int|float|string|bool|null $value
      * @return ($value is null ? null : int)
      */
     public static function integer($value): ?int
@@ -148,7 +150,7 @@ final class Get extends AbstractUtility
      * Convert "key[=value]" pairs to an associative array
      *
      * @param string[] $values
-     * @return array<string,mixed>
+     * @return mixed[]
      */
     public static function filter(array $values, bool $discardInvalid = true): array
     {
@@ -192,77 +194,334 @@ final class Get extends AbstractUtility
     }
 
     /**
-     * Convert nested arrays to a query string
+     * Convert nested arrays and objects to a URL-encoded query string
      *
-     * List keys are not preserved by default. Use `$flag` to modify this
-     * behaviour.
+     * @see Get::formData() for details.
      *
-     * @param mixed[] $data
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed[]|object $data
      * @param int-mask-of<QueryFlag::*> $flags
+     * @param (callable(object): (T|false))|null $callback
      */
     public static function query(
-        array $data,
+        $data,
         int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
-        ?DateFormatterInterface $dateFormatter = null
+        ?DateFormatterInterface $dateFormatter = null,
+        ?callable $callback = null
     ): string {
-        return implode('&', self::doQuery(
-            $data,
-            $flags,
-            $dateFormatter ?: new DateFormatter()
+        $dateFormatter ??= new DateFormatter();
+        $data = self::doData($data, $flags, $dateFormatter, $callback);
+        foreach ($data as [$key, $value]) {
+            if (!is_string($value)) {
+                throw new InvalidArgumentException(sprintf(
+                    "Invalid value at '%s': %s",
+                    $key,
+                    self::type($value),
+                ));
+            }
+            $query[] = rawurlencode($key) . '=' . rawurlencode($value);
+        }
+        return implode('&', $query ?? []);
+    }
+
+    /**
+     * Convert nested arrays and objects to HTML form data
+     *
+     * List keys are not preserved by default. Use `$flags` to modify this
+     * behaviour.
+     *
+     * If no `$dateFormatter` is given, a {@see DateFormatter} is created to
+     * convert {@see DateTimeInterface} instances to ISO-8601 strings.
+     *
+     * `$callback` is applied to objects other than {@see DateTimeInterface}
+     * instances found in `$data`. It may return `null` to skip the value, or
+     * `false` to process the value as if no callback had been given. If a
+     * {@see DateTimeInterface} is returned, it is converted to `string` as per
+     * the `$dateFormatter` note above.
+     *
+     * If no `$callback` is given, objects are resolved as follows:
+     *
+     * - {@see DateTimeInterface}: converted to `string` (see `$dateFormatter`
+     *   note above)
+     * - {@see Arrayable}: replaced with {@see Arrayable::toArray()}
+     * - {@see JsonSerializable}: replaced with
+     *   {@see JsonSerializable::jsonSerialize()} if it returns an `array`
+     * - {@see Jsonable}: replaced with {@see Jsonable::toJson()} after decoding
+     *   if {@see json_decode()} returns an `array`
+     * - `object` with at least one public property: replaced with an array that
+     *   maps public property names to values
+     * - {@see Stringable}: cast to `string`
+     *
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed[]|object $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     * @param (callable(object): (T|false))|null $callback
+     * @return list<array{string,(T&object)|string}>
+     */
+    public static function formData(
+        $data,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null,
+        ?callable $callback = null
+    ): array {
+        $dateFormatter ??= new DateFormatter();
+        /** @var list<array{string,(T&object)|string}> */
+        return self::doData($data, $flags, $dateFormatter, $callback);
+    }
+
+    /**
+     * Recursively convert nested arrays and objects to arrays of scalar values
+     *
+     * Similar to {@see Get::formData()}, but scalar types are preserved and
+     * data structures are not flattened.
+     *
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed[]|object $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     * @param (callable(object): (T|false))|null $callback
+     * @return mixed[]
+     */
+    public static function data(
+        $data,
+        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null,
+        ?callable $callback = null
+    ): array {
+        $dateFormatter ??= new DateFormatter();
+        return self::doData($data, $flags, $dateFormatter, $callback, false);
+    }
+
+    /**
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed[]|object|int|float|string|bool|null $data
+     * @param int-mask-of<QueryFlag::*> $flags
+     * @param (callable(object): (T|false))|null $cb
+     * @param mixed[]|null $query
+     * @phpstan-param ($flatten is true ? list<array{string,(T&object)|string}> : ($name is null ? mixed[] : mixed[]|null)) $query
+     * @param-out ($flatten is true ? list<array{string,(T&object)|string}> : ($name is null ? mixed[] : mixed[]|(T&object)|int|float|string|bool|null)) $query
+     * @return ($flatten is true ? list<array{string,(T&object)|string}> : ($name is null ? mixed[] : mixed[]|(T&object)|int|float|string|bool|null))
+     */
+    private static function doData(
+        $data,
+        int $flags,
+        DateFormatterInterface $df,
+        ?callable $cb,
+        bool $flatten = true,
+        bool $fromCallback = false,
+        &$query = [],
+        ?string $name = null
+    ) {
+        if ($name === null) {
+            $data = $flatten
+                ? self::flattenDataValue($data, $df, $cb)
+                : self::resolveDataValue($data, $df, $cb, $fromCallback);
+        }
+
+        /** @var mixed[]|(T&object)|int|float|string|bool|null $data */
+        if (
+            ($flatten && ($data === null || $data === [])) ||
+            ($fromCallback && $data === null)
+        ) {
+            return $query;
+        }
+
+        if (is_array($data)) {
+            $hasArray = false;
+            if ($flatten) {
+                foreach ($data as $key => &$value) {
+                    $value = self::flattenDataValue($value, $df, $cb);
+                    if (!$hasArray) {
+                        $hasArray = is_array($value);
+                    }
+                }
+            } else {
+                /** @var array<array-key,bool> */
+                $fromCallback = [];
+                foreach ($data as $key => &$value) {
+                    $value = self::resolveDataValue($value, $df, $cb, $fromCallback[$key]);
+                }
+            }
+            unset($value);
+
+            $preserveKeys = $name === null || $hasArray || (
+                Arr::isList($data)
+                    ? $flags & QueryFlag::PRESERVE_LIST_KEYS
+                    : (Arr::isIndexed($data)
+                        ? $flags & QueryFlag::PRESERVE_NUMERIC_KEYS
+                        : $flags & QueryFlag::PRESERVE_STRING_KEYS)
+            );
+
+            $format = $preserveKeys
+                ? ($flatten && $name !== null ? '[%s]' : '%s')
+                : ($flatten ? '[]' : '');
+
+            if ($flatten) {
+                /** @var object|mixed[]|string|null $value */
+                foreach ($data as $key => $value) {
+                    $_key = sprintf($format, $key);
+                    self::doData($value, $flags, $df, $cb, true, false, $query, $name . $_key);
+                }
+            } else {
+                /** @var object|mixed[]|string|null $value */
+                foreach ($data as $key => $value) {
+                    $_key = sprintf($format, $key);
+                    /** @var mixed[] $query */
+                    if ($_key === '') {
+                        $query[] = null;
+                        $_key = array_key_last($query);
+                    }
+                    self::doData($value, $flags, $df, $cb, false, $fromCallback[$key], $query[$_key], '');
+                }
+            }
+
+            return $query;
+        }
+
+        if ($flatten) {
+            $query[] = [$name, $data];
+            return $query;
+        }
+
+        if ($name === null) {
+            throw new InvalidArgumentException('Argument #1 ($data) must resolve to an array');
+        }
+
+        $query = $data;
+        return $query;
+    }
+
+    /**
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed $value
+     * @param (callable(object): (T|false))|null $cb
+     * @return mixed[]|(T&object)|string|null
+     */
+    private static function flattenDataValue(
+        $value,
+        DateFormatterInterface $df,
+        ?callable $cb
+    ) {
+        if (is_bool($value)) {
+            return (string) (int) $value;
+        }
+
+        if ($value === null || is_scalar($value)) {
+            return (string) $value;
+        }
+
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_object($value)) {
+            $value = self::getObjectData($value, $df, $cb, $fromCallback);
+            if (!$fromCallback && ($value === null || is_scalar($value))) {
+                return (string) $value;
+            }
+            /** @var mixed[]|(T&object)|string|null */
+            return $value;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Invalid value: %s',
+            self::type($value),
         ));
     }
 
     /**
-     * @param mixed[] $data
-     * @param int-mask-of<QueryFlag::*> $flags
-     * @param string[] $query
-     * @return string[]
+     * @template T of object|mixed[]|string|null
+     *
+     * @param mixed $value
+     * @param (callable(object): (T|false))|null $cb
+     * @return T|mixed[]|int|float|string|bool|null
      */
-    private static function doQuery(
-        array $data,
-        int $flags,
+    private static function resolveDataValue(
+        $value,
         DateFormatterInterface $df,
-        array &$query = [],
-        string $keyPrefix = '',
-        string $keyFormat = '%s'
-    ): array {
-        foreach ($data as $key => $value) {
-            $key = $keyPrefix . sprintf($keyFormat, $key);
+        ?callable $cb,
+        ?bool &$fromCallback
+    ) {
+        $fromCallback = false;
 
-            if (is_array($value)) {
-                if (!$value) {
-                    continue;
-                }
-                $hasArray = false;
-                foreach ($value as $v) {
-                    if (is_array($v)) {
-                        $hasArray = true;
-                        break;
-                    }
-                }
-                $format = $hasArray || (
-                    Arr::isList($value)
-                        ? $flags & QueryFlag::PRESERVE_LIST_KEYS
-                        : (Arr::isIndexed($value)
-                            ? $flags & QueryFlag::PRESERVE_NUMERIC_KEYS
-                            : $flags & QueryFlag::PRESERVE_STRING_KEYS)
-                ) ? '[%s]' : '[]';
-                self::doQuery($value, $flags, $df, $query, $key, $format);
-                continue;
-            }
-
-            if (is_bool($value)) {
-                $value = (string) (int) $value;
-            } elseif ($value instanceof DateTimeInterface) {
-                $value = $df->format($value);
-            } else {
-                $value = (string) $value;
-            }
-
-            $query[] = rawurlencode($key) . '=' . rawurlencode($value);
+        if ($value === null || is_scalar($value) || is_array($value)) {
+            return $value;
         }
 
-        return $query;
+        if (is_object($value)) {
+            return self::getObjectData($value, $df, $cb, $fromCallback);
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Invalid value: %s',
+            self::type($value),
+        ));
+    }
+
+    /**
+     * @template T of object|mixed[]|string|null
+     *
+     * @param (callable(object): (T|false))|null $cb
+     * @return T|mixed[]|int|float|string|bool|null
+     */
+    private static function getObjectData(
+        object $value,
+        DateFormatterInterface $df,
+        ?callable $cb,
+        ?bool &$fromCallback
+    ) {
+        $fromCallback = false;
+
+        if ($value instanceof DateTimeInterface) {
+            return $df->format($value);
+        }
+
+        if ($cb !== null) {
+            $result = $cb($value);
+            if ($result instanceof DateTimeInterface) {
+                return $df->format($result);
+            }
+            if ($result !== false) {
+                $fromCallback = true;
+                return $result;
+            }
+        }
+
+        if ($value instanceof Arrayable) {
+            return $value->toArray();
+        }
+
+        if ($value instanceof JsonSerializable) {
+            return Json::parseObjectAsArray(Json::stringify($value));
+        }
+
+        if ($value instanceof Jsonable) {
+            return Json::parseObjectAsArray($value->toJson());
+        }
+
+        if ($value instanceof Traversable) {
+            return iterator_to_array($value);
+        }
+
+        // Get public property values
+        $result = [];
+        // @phpstan-ignore-next-line
+        foreach ($value as $key => $val) {
+            $result[$key] = $val;
+        }
+        if ($result !== []) {
+            return $result;
+        }
+
+        if (Test::isStringable($value)) {
+            return (string) $value;
+        }
+
+        return [];
     }
 
     /**
@@ -294,7 +553,7 @@ final class Get extends AbstractUtility
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $value
      * @return array<TKey,TValue>
      */
-    public static function array($value, bool $preserveKeys = false): array
+    public static function array($value): array
     {
         if (is_array($value)) {
             return $value;
@@ -302,13 +561,13 @@ final class Get extends AbstractUtility
         if ($value instanceof Arrayable) {
             return $value->toArray();
         }
-        return iterator_to_array($value, $preserveKeys);
+        return iterator_to_array($value);
     }
 
     /**
      * Resolve a value to an item count
      *
-     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $value
+     * @param Arrayable<array-key,mixed>|iterable<array-key,mixed>|Countable|int $value
      */
     public static function count($value): int
     {
@@ -332,7 +591,9 @@ final class Get extends AbstractUtility
      */
     public static function basename(string $class, string ...$suffix): string
     {
-        $class = substr(strrchr('\\' . $class, '\\'), 1);
+        /** @var string */
+        $class = strrchr('\\' . $class, '\\');
+        $class = substr($class, 1);
 
         if (!$suffix) {
             return $class;
@@ -373,6 +634,7 @@ final class Get extends AbstractUtility
      */
     public static function fqcn(string $class): string
     {
+        /** @var class-string<T> */
         return Str::lower(ltrim($class, '\\'));
     }
 
@@ -442,6 +704,7 @@ final class Get extends AbstractUtility
             }
 
             if ($binary) {
+                /** @var string */
                 return hex2bin($uuid);
             }
 
@@ -480,6 +743,9 @@ final class Get extends AbstractUtility
      */
     public static function randomText(int $length, string $chars = Char::ALPHANUMERIC): string
     {
+        if ($chars === '') {
+            throw new InvalidArgumentException('Argument #1 ($chars) must be a non-empty string');
+        }
         $max = strlen($chars) - 1;
         $text = '';
         for ($i = 0; $i < $length; $i++) {
@@ -496,7 +762,7 @@ final class Get extends AbstractUtility
     public static function binaryHash($value): string
     {
         // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
-        return hash('md5', $value, true);
+        return hash('md5', (string) $value, true);
     }
 
     /**
@@ -506,7 +772,7 @@ final class Get extends AbstractUtility
      */
     public static function hash($value): string
     {
-        return hash('md5', $value);
+        return hash('md5', (string) $value);
     }
 
     /**
@@ -852,7 +1118,7 @@ final class Get extends AbstractUtility
     }
 
     /**
-     * @template T of resource|mixed[]|object|int|float|string|bool|null
+     * @template T
      *
      * @param T $var
      * @param class-string[] $skip
@@ -871,10 +1137,10 @@ final class Get extends AbstractUtility
         }
 
         if (is_array($var)) {
-            /** @var array<resource|mixed[]|object|int|float|string|bool|null> $var */
             foreach ($var as $key => $value) {
                 $array[$key] = self::doCopy($value, $skip, $flags, $map);
             }
+            /** @var T */
             return $array ?? [];
         }
 
@@ -884,6 +1150,7 @@ final class Get extends AbstractUtility
 
         $id = spl_object_id($var);
         if (isset($map[$id])) {
+            /** @var T */
             return $map[$id];
         }
 
@@ -951,7 +1218,6 @@ final class Get extends AbstractUtility
             }
 
             $name = $property->getName();
-            /** @var resource|mixed[]|object|int|float|string|bool|null */
             $value = $property->getValue($clone);
             $value = self::doCopy($value, $skip, $flags, $map);
 

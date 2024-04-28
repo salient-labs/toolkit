@@ -144,7 +144,7 @@ final class HttpMultipartStreamTest extends TestCase
         $this->expectExceptionMessage('Stream must be readable');
         try {
             $this->getStream(
-                new HttpMultipartStreamPart('unreadable', new HttpStream(File::open($file, 'w'))),
+                new HttpMultipartStreamPart(new HttpStream(File::open($file, 'w')), 'unreadable'),
             );
         } finally {
             File::pruneDir($dir, true);
@@ -155,7 +155,7 @@ final class HttpMultipartStreamTest extends TestCase
     {
         $command = Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'data';"]);
         $stream = $this->getStream(
-            new HttpMultipartStreamPart('unseekable', new HttpStream(File::openPipe($command, 'r'))),
+            new HttpMultipartStreamPart(new HttpStream(File::openPipe($command, 'r')), 'unseekable'),
         );
         $this->assertFalse($stream->isSeekable());
         $this->assertSame($this->getContents(
@@ -172,11 +172,10 @@ final class HttpMultipartStreamTest extends TestCase
     public function testWithRequest(): void
     {
         $stream = $this->getStream();
-        $request = new HttpRequest('POST', 'https://example.com', null, $stream);
+        $request = new HttpRequest('POST', 'https://example.com', $stream);
         $this->assertSame(($headers = "POST / HTTP/1.1\r\n"
-                . "Content-Type: multipart/form-data; boundary=\"boundary\"\r\n"
-                . "Host: example.com\r\n"
-                . 'Content-Length: ' . strlen(self::CONTENTS) . "\r\n\r\n")
+                . "Content-Type: multipart/form-data; boundary=boundary\r\n"
+                . "Host: example.com\r\n\r\n")
             . self::CONTENTS, (string) $request);
         $this->assertSame($headers, $request->getHttpPayload(true));
     }
@@ -186,10 +185,10 @@ final class HttpMultipartStreamTest extends TestCase
         $handle = Str::toStream('value1');
         $this->LastHandle = $handle;
         return new HttpMultipartStream([
-            new HttpMultipartStreamPart('field1', $handle),
-            new HttpMultipartStreamPart('field2', 'value2', 'example2.txt'),
-            new HttpMultipartStreamPart('field3', 'value3', 'example 3-ä-€.txt', 'text/plain', 'example3.txt'),
-            new HttpMultipartStreamPart('field4', 'value4', null, null, 'example4.txt'),
+            new HttpMultipartStreamPart($handle, 'field1'),
+            new HttpMultipartStreamPart('value2', 'field2', 'example2.txt'),
+            new HttpMultipartStreamPart('value3', 'field3', 'example 3-ä-€.txt', 'text/plain', 'example3.txt'),
+            new HttpMultipartStreamPart('value4', 'field4', null, null, 'example4.txt'),
             ...$streams,
         ], 'boundary');
     }

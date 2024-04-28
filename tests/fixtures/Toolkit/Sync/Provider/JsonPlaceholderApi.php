@@ -3,7 +3,6 @@
 namespace Salient\Tests\Sync\Provider;
 
 use Salient\Contract\Container\SingletonInterface;
-use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
@@ -105,7 +104,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return $user;
     }
 
-    protected function getDateFormatter(?string $path = null): DateFormatterInterface
+    protected function getDateFormatter(?string $path = null): DateFormatter
     {
         return new DateFormatter();
     }

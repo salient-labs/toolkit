@@ -45,7 +45,6 @@ final class HttpRequestTest extends TestCase
             'GET',
             $uri ?? '',
             null,
-            null,
             $headers ?? null,
         );
 
@@ -84,15 +83,15 @@ final class HttpRequestTest extends TestCase
         $r = new HttpRequest('GET', $uri);
         $this->assertSame($uri, $r->getUri());
 
-        $r = new HttpRequest('GET', '/', null, 'baz');
+        $r = new HttpRequest('GET', '/', 'baz');
         $this->assertInstanceOf(StreamInterface::class, $r->getBody());
         $this->assertSame('baz', (string) $r->getBody());
 
-        $r = new HttpRequest('GET', '/', null, '0');
+        $r = new HttpRequest('GET', '/', '0');
         $this->assertInstanceOf(StreamInterface::class, $r->getBody());
         $this->assertSame('0', (string) $r->getBody());
 
-        $r = new HttpRequest('GET', '/', null, Str::toStream('baz'));
+        $r = new HttpRequest('GET', '/', Str::toStream('baz'));
         $this->assertInstanceOf(StreamInterface::class, $r->getBody());
         $this->assertSame('baz', (string) $r->getBody());
 
@@ -115,7 +114,7 @@ final class HttpRequestTest extends TestCase
         $this->assertSame('/baz?0', $r->getRequestTarget());
 
         $h = ['User-Agent' => self::USER_AGENT];
-        $r = new HttpRequest('GET', 'https://example.com/', null, null, $h);
+        $r = new HttpRequest('GET', 'https://example.com/', null, $h);
         $this->assertSame($headers = [
             'Host' => ['example.com'],
             'User-Agent' => [self::USER_AGENT],
@@ -130,17 +129,17 @@ final class HttpRequestTest extends TestCase
         ], $r->jsonSerialize());
 
         $h = ['Foo' => ['a', 'b', 'c']];
-        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
-        $this->assertSame('a,b,c', $r->getHeaderLine('Foo'));
+        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, $h);
+        $this->assertSame('a, b, c', $r->getHeaderLine('Foo'));
         $this->assertSame('', $r->getHeaderLine('Bar'));
 
         $h = [
             'ZOO' => 'zoobar',
             'zoo' => ['foobar', 'zoobar'],
         ];
-        $r = new HttpRequest('GET', '', null, null, $h);
+        $r = new HttpRequest('GET', '', null, $h);
         $this->assertSame(['ZOO' => ['zoobar', 'foobar', 'zoobar']], $r->getHeaders());
-        $this->assertSame('zoobar,foobar,zoobar', $r->getHeaderLine('zoo'));
+        $this->assertSame('zoobar, foobar, zoobar', $r->getHeaderLine('zoo'));
 
         $r = new HttpRequest('GET', 'http://foo.com:8124/bar');
         $this->assertSame('foo.com:8124', $r->getHeaderLine('host'));
@@ -169,7 +168,7 @@ final class HttpRequestTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($body) must be of type StreamInterface|resource|string|null, int given');
         // @phpstan-ignore-next-line
-        new HttpRequest('GET', '/', null, 123);
+        new HttpRequest('GET', '/', 123);
     }
 
     public function testWithInvalidBody(): void
@@ -290,7 +289,7 @@ final class HttpRequestTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf('Invalid header name: %s', $header));
         $h = [$header => 'value'];
-        new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
+        new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, $h);
     }
 
     /**
@@ -315,7 +314,7 @@ final class HttpRequestTest extends TestCase
     public function testValidHeaderNames(string $header): void
     {
         $h = [$header => 'value'];
-        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
+        $r = new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, $h);
         $this->assertArrayHasKey($header, $r->getHeaders());
     }
 
@@ -360,7 +359,7 @@ final class HttpRequestTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf('Invalid header value: %s', $value));
         $h = ['foo' => $value];
-        new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, null, $h);
+        new HttpRequest('GET', 'http://foo.com/baz?bar=bam', null, $h);
     }
 
     /**

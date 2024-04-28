@@ -61,10 +61,11 @@ final class Json extends AbstractUtility
      * associative arrays
      *
      * @param int-mask-of<JsonDecodeFlag::*> $flags
-     * @return mixed
+     * @return mixed[]|int|float|string|bool|null
      */
     public static function parseObjectAsArray(string $json, int $flags = 0)
     {
+        /** @var mixed[]|int|float|string|bool|null */
         return json_decode($json, true, 512, self::DECODE_FLAGS | $flags);
     }
 }

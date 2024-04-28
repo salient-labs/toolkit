@@ -355,7 +355,7 @@ abstract class OAuth2Client
             $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
             $continue = true;
-            return new HttpResponse(400, 'Bad Request', 'Invalid request.');
+            return new HttpResponse(400, 'Invalid request.');
         }
 
         $state = Cache::getString("{$this->TokenKey}:state");
@@ -370,11 +370,11 @@ abstract class OAuth2Client
         ) {
             Console::debug('Authorization code received and verified');
             $return = $code;
-            return new HttpResponse(200, null, 'Authorization received. You may now close this window.');
+            return new HttpResponse(200, 'Authorization received. You may now close this window.');
         }
 
         Console::debug('Request did not provide a valid authorization code');
-        return new HttpResponse(400, 'Bad Request', 'Invalid request. Please try again.');
+        return new HttpResponse(400, 'Invalid request. Please try again.');
     }
 
     /**

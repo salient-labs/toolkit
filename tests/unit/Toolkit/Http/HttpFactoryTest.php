@@ -53,7 +53,7 @@ final class HttpFactoryTest extends TestCase
     {
         $stream = $this->Factory->createStreamFromFile(__FILE__);
         $this->assertInstanceOf(StreamInterface::class, $stream);
-        $this->assertSame(file_get_contents(__FILE__), (string) $stream);
+        $this->assertSame(File::getContents(__FILE__), (string) $stream);
     }
 
     public function testCreateStreamFromResource(): void

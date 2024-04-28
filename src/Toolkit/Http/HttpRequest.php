@@ -2,6 +2,7 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
@@ -9,6 +10,7 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Pcre;
 use Stringable;
 
@@ -35,9 +37,9 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
     public function __construct(
         string $method,
         $uri,
-        ?string $requestTarget = null,
         $body = null,
         $headers = null,
+        ?string $requestTarget = null,
         string $version = '1.1'
     ) {
         $this->Method = $this->filterMethod($method);
@@ -54,6 +56,29 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
             return;
         }
         $this->Headers = $this->Headers->set(HttpHeader::HOST, $host);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function fromPsr7(MessageInterface $message): HttpRequest
+    {
+        if ($message instanceof HttpRequest) {
+            return $message;
+        }
+
+        if (!($message instanceof RequestInterface)) {
+            throw new InvalidArgumentTypeException(1, 'message', RequestInterface::class, $message);
+        }
+
+        return new self(
+            $message->getMethod(),
+            $message->getUri(),
+            $message->getBody(),
+            $message->getHeaders(),
+            $message->getRequestTarget(),
+            $message->getProtocolVersion(),
+        );
     }
 
     /**
