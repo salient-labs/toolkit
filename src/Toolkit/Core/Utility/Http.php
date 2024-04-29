@@ -108,6 +108,30 @@ final class Http extends AbstractUtility
     }
 
     /**
+     * Merge parameters into a semicolon-delimited HTTP header value
+     *
+     * @param string[] $parameters
+     */
+    public static function mergeParameters(array $parameters): string
+    {
+        if (!$parameters) {
+            return '';
+        }
+
+        foreach ($parameters as $key => $param) {
+            $value = is_int($key) ? [] : [$key];
+            if ($param !== '') {
+                $value[] = self::maybeQuoteString($param);
+            }
+            $merged[] = $last = implode('=', $value);
+        }
+        $merged = implode('; ', $merged);
+        return $last === '' && $merged !== ''
+            ? substr($merged, 0, -1)
+            : $merged;
+    }
+
+    /**
      * Get a product identifier suitable for User-Agent and Server headers as
      * per [RFC7231] Section 5.5.3
      */

@@ -228,6 +228,28 @@ class HttpHeaders implements HttpHeadersInterface
     }
 
     /**
+     * Merge preferences into a Prefer header value as per [RFC7240]
+     *
+     * @param array<string,array{value:string,parameters?:array<string,string>}|string> $preferences
+     */
+    public static function mergePreferences(array $preferences): string
+    {
+        foreach ($preferences as $name => $pref) {
+            $lower = Str::lower($name);
+            if (isset($prefs[$lower])) {
+                continue;
+            }
+            $prefs[$lower] = Http::mergeParameters(
+                is_string($pref)
+                    ? [$name => $pref]
+                    : [$name => $pref['value']] + ($pref['parameters'] ?? [])
+            );
+        }
+
+        return implode(', ', $prefs ?? []);
+    }
+
+    /**
      * Get the value of the Retry-After header in seconds, or null if it has an
      * invalid value or is not set
      *

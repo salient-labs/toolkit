@@ -404,6 +404,23 @@ final class HttpHeadersTest extends TestCase
         ], $headers->getPreferences());
     }
 
+    public function testMergePreferences(): void
+    {
+        $this->assertSame('', HttpHeaders::mergePreferences([]));
+
+        $this->assertSame(
+            'respond-async, WAIT=5; foo=bar, handling=lenient, task_priority=2; baz="foo bar", odata.maxpagesize=100',
+            HttpHeaders::mergePreferences([
+                'respond-async' => '',
+                'WAIT' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
+                'wait' => '10',
+                'handling' => ['value' => 'lenient'],
+                'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
+                'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
+            ]),
+        );
+    }
+
     public function testImmutability(): void
     {
         $a = new HttpHeaders();
