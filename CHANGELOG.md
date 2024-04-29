@@ -10,6 +10,123 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.15] - 2024-04-29
+
+This release includes a backward-incompatible rewrite of `Curler`, the toolkit's HTTP client, with PSR-7 and PSR-18 support, stackable middleware and many other improvements.
+
+`Curler`-specific changes include:
+
+- Implement `CurlerInterface` and remove magic properties
+- Update `CurlerBuilder` methods
+  - **`baseUrl()` -> `uri()`**
+    - _now accepts `UriInterface|Stringable|string`_
+  - **`cacheResponse()` -> `cacheResponses()`**
+  - **`cachePostResponse()` -> `cachePostResponses()`**
+  - **`expiry()` -> `cacheLifetime()`**
+    - _not nullable_
+    - _`-1` now means "suppress response caching"_
+    - _`cacheResponses()` must also be called_
+  - **`flush()` -> `refreshCache()`**
+  - **`responseCacheKeyCallback()` -> `cacheKeyCallback()`**
+    - _callback now receives `HttpRequestInterface` and returns `string[]|string`_
+  - **~~`responseCallback()`~~**
+    - _use `middleware()` instead_
+  - **`connectTimeout()` -> `timeout()`**
+  - **~~`timeout()`~~**
+  - **`cookieCacheKey()` -> `cookiesCacheKey()`**
+  - **`preserveKeys()` -> `queryFlags()`**
+    - _now accepts bitmask of `QueryFlag::*`_
+  - **`objectAsArray()` -> `jsonDecodeFlags()`**
+    - _now accepts bitmask of `JsonDecodeFlag::*`_
+- Refactor pagination-related interfaces and classes:
+  - `ICurlerPager` -> `CurlerPagerInterface`
+  - `ICurlerPage` -> `CurlerPageInterface`
+  - `CurlerPage`
+  - `ODataPager`
+  - `QueryPager`
+- Refactor exceptions:
+  - `CurlerException` -> `AbstractCurlerException`
+  - `CurlerCurlErrorException` -> `CurlErrorException`
+  - `CurlerHttpErrorException` -> `HttpErrorException`
+- Remove:
+  - `CurlerProperty` (obsolete)
+  - `CurlerPageBuilder` (unnecessary)
+  - `CurlerInvalidResponseException` (obsolete)
+  - `CurlerUnexpectedResponseException` (obsolete)
+
+---
+
+### Added
+
+- Add and implement `HttpHeadersInterface::getHeaderValues()`
+- Add `HttpHeaders` methods:
+  - `from()` (static, accepts `MessageInterface|Arrayable|iterable|string`)
+  - `getContentLength()`
+  - `getMultipartBoundary()`
+  - `getPreferences()`
+  - `getRetryAfter()`
+  - `mergePreferences()`
+- Add and implement `HttpMessageInterface::fromPsr7()`
+- Add and implement `HttpMultipartStreamPartInterface::withName()`
+- Add `HttpMultipartStreamPart::fromFile()`
+- Add `HttpStream::fromData()`
+- Add `StreamEncapsulationException` and throw it when multipart data cannot be JSON-encoded
+- Add `HttpRequestHandlerInterface` (client-side equivalent of PSR-15 `MiddlewareInterface`)
+- Add `CurlerMiddlewareInterface`
+- Add `HasHttpHeaders` trait
+- Add `Get::data()` and `Get::formData()`
+- Add `Http` methods:
+  - `getDate()`
+  - `getParameters()`
+  - `mergeParameters()`
+  - `getProduct()`
+  - `unquoteString()`
+- Add `Process` methods needed for unit testing
+  - Allow processes to be monitored via `poll()` and stopped via `stop()`
+  - Allow `Process` output to be read incrementally via `getNewOutput()` and discarded via `clearOutput()`
+  - Only remove trailing newlines from `Process` output retrieved via `getText()` and `getNewText()`
+  - Return `Process` statistics via `getStats()` (only `spawn_us` initially)
+- Add and adopt `LogicException` and `OutOfRangeException`
+
+### Changed
+
+- Extend `HttpMultipartStreamPart` from `CurlerFile` and refactor
+- Extend `Stringable` from `HttpHeadersInterface`
+- In `HttpHeadersInterface::getLines()`, add support for non-standard empty header syntax (e.g. libcurl's) via optional `$emptyFormat` parameter
+- In `HttpHeaders` methods `getFirstHeaderLine()`, `getLastHeaderLine()` and `getOneHeaderLine()`, return the requested value after combining header values and splitting the result
+- Rename `Http` classes and interfaces for consistency
+- Review HTTP message constructor signatures
+- Accept HTTP protocol versions other than `1.0` and `1.1`, including single-digit variants
+- Don't set `Content-Length` when creating HTTP message payloads
+- Allow `HttpServer` callback to return `ResponseInterface` instead of `HttpResponseInterface`
+- Rename `Http::getQuotedString()` to `Http::maybeQuoteString()` and suppress quoting if the string is a valid HTTP token
+- Improve nested object handling in `Get::query()`
+  - Apply an optional callback to objects other than `DateTimeInterface` instances
+  - Skip values for which the callback returns `null`
+  - Resolve `Arrayable` and `Traversable` objects to lists
+  - Convert `JsonSerializable` and `Jsonable` objects to JSON and decode
+  - Convert other objects to arrays that map public property names to values
+  - Cast `Stringable` objects with no public properties to `string`
+- Allow `Process` output collection to be disabled
+- Allow `Process` timeout to be given as a `float`
+- Rename `Str::splitOutsideBrackets()` to `Str::splitDelimited()` and add optional support for preservation of double- and single-quoted substrings (for robust HTTP header value splitting)
+- Review `Str::split*()` default values and signatures to better reflect prevailing usage
+- Make `PipeInterface` invokable for consistency with `HttpRequestHandlerInterface`
+- In `ExceptionInterface`, rename `getDetail()` to `getMetadata()` and relax return type
+
+### Removed
+
+- Remove unnecessary `HttpProtocolVersion` enumeration
+- Remove problematic `HttpMessageInterface::withContentLength()`
+- Remove inconsistently applied `$preserveKeys` parameter from `Get::array()`
+
+### Fixed
+
+- Remove return type from `__toString()` in the `Stringable` polyfill for better compatibility with the native class, which doesn't require an explicit return type because `__toString()` gets one internally
+- Fix issue where `ExceptionTrait::withExitStatus()` is unusable because exceptions cannot be cloned
+- Fix issue where `MultipleErrorExceptionTrait` doesn't handle empty messages correctly
+- Annotate `HasBuilder` to satisfy static analysis in non-final classes
+
 ## [v0.99.14] - 2024-04-11
 
 ### Added
@@ -2295,6 +2412,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.15]: https://github.com/salient-labs/toolkit/compare/v0.99.14...v0.99.15
 [v0.99.14]: https://github.com/salient-labs/toolkit/compare/v0.99.13...v0.99.14
 [v0.99.13]: https://github.com/salient-labs/toolkit/compare/v0.99.12...v0.99.13
 [v0.99.12]: https://github.com/salient-labs/toolkit/compare/v0.99.11...v0.99.12
