@@ -48,9 +48,41 @@ trait HasHttpHeaders
     /**
      * @inheritDoc
      */
+    public function getHeaderValues(string $name): array
+    {
+        return $this->Headers->getHeaderValues($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getHeaderLine(string $name): string
     {
         return $this->Headers->getHeaderLine($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFirstHeaderLine(string $name): string
+    {
+        return $this->Headers->getFirstHeaderLine($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastHeaderLine(string $name): string
+    {
+        return $this->Headers->getLastHeaderLine($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOneHeaderLine(string $name): string
+    {
+        return $this->Headers->getOneHeaderLine($name);
     }
 
     /**

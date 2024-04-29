@@ -151,19 +151,20 @@ interface HttpHeadersInterface extends
     public function getHeaderLine(string $name): string;
 
     /**
-     * Get the value of a header's first appearance in the collection
+     * Get the first value of a header after splitting any comma-separated
+     * values
      */
     public function getFirstHeaderLine(string $name): string;
 
     /**
-     * Get the value of a header's last appearance in the collection
+     * Get the last value of a header after splitting any comma-separated values
      */
     public function getLastHeaderLine(string $name): string;
 
     /**
-     * Get the value of a header's only appearance in the collection
+     * Get the only value of a header after splitting any comma-separated values
      *
-     * If the header appears more than once, an exception is thrown.
+     * An exception is thrown if the header has more than one value.
      */
     public function getOneHeaderLine(string $name): string;
 

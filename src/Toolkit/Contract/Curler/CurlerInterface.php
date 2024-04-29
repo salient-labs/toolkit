@@ -230,9 +230,37 @@ interface CurlerInterface extends ClientInterface
     public function getHeader(string $name): array;
 
     /**
+     * Get the value of a request header as a list of values, splitting any
+     * comma-separated values
+     *
+     * @return string[]
+     */
+    public function getHeaderValues(string $name): array;
+
+    /**
      * Get the comma-separated values of a request header
      */
     public function getHeaderLine(string $name): string;
+
+    /**
+     * Get the first value of a request header after splitting any
+     * comma-separated values
+     */
+    public function getFirstHeaderLine(string $name): string;
+
+    /**
+     * Get the last value of a request header after splitting any
+     * comma-separated values
+     */
+    public function getLastHeaderLine(string $name): string;
+
+    /**
+     * Get the only value of a request header after splitting any
+     * comma-separated values
+     *
+     * An exception is thrown if the request header has more than one value.
+     */
+    public function getOneHeaderLine(string $name): string;
 
     /**
      * Get an instance with a value applied to a request header, replacing any
