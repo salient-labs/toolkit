@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Curler;
 
-use Salient\Contract\Http\HttpRequestInterface;
-use Salient\Core\Exception\LogicException;
+use Psr\Http\Message\RequestInterface;
+use Salient\Core\Exception\OutOfRangeException;
 
 interface CurlerPageInterface
 {
@@ -22,7 +22,7 @@ interface CurlerPageInterface
     /**
      * Get a request to retrieve the next page of data from the endpoint
      *
-     * @throws LogicException if there are no more pages to retrieve.
+     * @throws OutOfRangeException if there are no more pages to retrieve.
      */
-    public function getNextRequest(HttpRequestInterface $request): HttpRequestInterface;
+    public function getNextRequest(): RequestInterface;
 }

@@ -138,6 +138,14 @@ interface HttpHeadersInterface extends
     public function getHeader(string $name): array;
 
     /**
+     * Get the value of a header as a list of values, splitting any
+     * comma-separated values
+     *
+     * @return string[]
+     */
+    public function getHeaderValues(string $name): array;
+
+    /**
      * Get the comma-separated values of a header
      */
     public function getHeaderLine(string $name): string;

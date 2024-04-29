@@ -120,6 +120,59 @@ final class HttpTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider mergeParametersProvider
+     *
+     * @param string[] $value
+     */
+    public function testMergeParameters(
+        string $expected,
+        array $value
+    ): void {
+        $this->assertSame($expected, Http::mergeParameters($value));
+    }
+
+    /**
+     * @return array<array{string,string[]}>
+     */
+    public static function mergeParametersProvider(): array
+    {
+        return [
+            [
+                '',
+                [],
+            ],
+            [
+                '',
+                [''],
+            ],
+            [
+                ';',
+                ['', ''],
+            ],
+            [
+                '; ;',
+                ['', '', ''],
+            ],
+            [
+                '"foo=bar"; baz',
+                ['foo=bar', 'baz' => ''],
+            ],
+            [
+                'foo=bar; baz',
+                ['foo' => 'bar', 'baz' => ''],
+            ],
+            [
+                '"Not a token"; Foo=bar; Baz',
+                ['Not a token', 'Foo' => 'bar', 'Baz' => ''],
+            ],
+            [
+                'Foo=bar; Baz; QUX="Double \"Quotes\""',
+                ['Foo' => 'bar', 'Baz' => '', 'QUX' => 'Double "Quotes"'],
+            ],
+        ];
+    }
+
     public function testGetProduct(): void
     {
         $this->assertStringEndsWith(

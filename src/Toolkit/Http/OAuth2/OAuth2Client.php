@@ -17,7 +17,7 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
-use Salient\Curler\Curler;
+use Salient\Curler\CurlerBuilder;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpServer;
 use Throwable;
@@ -381,7 +381,7 @@ abstract class OAuth2Client
      * Request an access token from the OAuth 2.0 provider, then validate, cache
      * and return it
      *
-     * @param OAuth2GrantType::* $grantType
+     * @param string&OAuth2GrantType::* $grantType
      * @param array<string,mixed> $options
      * @param string[]|string|null $scope
      */
@@ -564,10 +564,12 @@ abstract class OAuth2Client
             return null;
         }
 
-        return Curler::build()
-            ->baseUrl($url)
-            ->expiry(0)
-            ->flush($refresh)
+        /** @var array{keys:array<array<string,string[]|string>>} */
+        return CurlerBuilder::build()
+            ->uri($url)
+            ->cacheResponses()
+            ->cacheLifetime(0)
+            ->refreshCache($refresh)
             ->get();
     }
 
