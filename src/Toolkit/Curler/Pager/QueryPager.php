@@ -2,123 +2,113 @@
 
 namespace Salient\Curler\Pager;
 
+use Psr\Http\Message\RequestInterface;
+use Salient\Contract\Curler\CurlerInterface;
+use Salient\Contract\Curler\CurlerPageInterface;
+use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Core\Utility\Arr;
-use Salient\Curler\Contract\ICurlerPage;
-use Salient\Curler\Contract\ICurlerPager;
-use Salient\Curler\Support\CurlerPageBuilder;
-use Salient\Curler\Curler;
+use Salient\Curler\CurlerPage;
 use Closure;
 
 /**
- * Increments a value in the query string and repeats the request until no
- * results are returned
+ * Increments a value in the query string of each request until no results are
+ * returned
  */
-final class QueryPager implements ICurlerPager
+final class QueryPager implements CurlerPagerInterface
 {
-    private ?string $PageKey;
-
-    private Closure $Selector;
-
+    /** @var array-key|null */
+    private $PageKey;
+    /** @var Closure(mixed): list<mixed> */
+    private Closure $EntitySelector;
     private ?int $PageSize;
+    /** @var mixed[] */
+    private array $CurrentQuery;
+    /** @var array-key|null */
+    private $CurrentPageKey;
 
     /**
-     * @var mixed[]
-     */
-    private array $Query;
-
-    private ?string $QueryPageKey;
-
-    /**
-     * @var true|null
-     */
-    private $QueryPageKeyChecked;
-
-    /**
-     * @param string|null $pageKey The value to increment with each request, or
-     * `null` to use the first value in the query. Added to the query string of
+     * Creates a new QueryPager object
+     *
+     * @param array-key|null $pageKey The value to increment in the query string
+     * of each request, or `null` to use the first value in the query. Added to
      * the second and subsequent requests if missing from the first.
-     * @param Closure|string|null $selector Entities are collected from:
-     * - `<Selector>($response)` if `$selector` is a closure,
-     * - `$response[<Selector>]` if `$selector` is a string, or
-     * - The response itself
+     * @param (Closure(mixed): list<mixed>)|array-key|null $entitySelector Entities
+     * are returned from:
+     * - `$entitySelector($data)` if `$entitySelector` is a closure
+     * - `Arr::get($entitySelector, $data)` if `$entitySelector` is a string or
+     *   integer, or
+     * - `$data` if `$entitySelector` is `null`
      * @param int|null $pageSize Another page is requested if:
      * - `$pageSize` is `null` and at least one result is returned, or
-     * - `$pageSize` is `>0` and exactly `$pageSize` results are returned
+     * - `$pageSize` is greater than `0` and exactly `$pageSize` results are
+     *   returned
      */
-    public function __construct(?string $pageKey = null, $selector = null, ?int $pageSize = null)
-    {
+    public function __construct(
+        $pageKey = null,
+        $entitySelector = null,
+        ?int $pageSize = null
+    ) {
         $this->PageKey = $pageKey;
-        $this->Selector =
-            $selector instanceof Closure
-                ? $selector
-                : (is_string($selector)
-                    ? fn($response) => $response[$selector]
-                    : fn($response) => Arr::listWrap($response));
+        $this->EntitySelector = $entitySelector instanceof Closure
+            ? $entitySelector
+            : ($entitySelector === null
+                ? fn($data) => Arr::listWrap($data)
+                : fn($data) => Arr::listWrap(Arr::get((string) $entitySelector, $data)));
         $this->PageSize = $pageSize;
     }
 
-    public function prepareQuery(?array $query): ?array
-    {
-        // Save the query for subsequent requests
-        $this->Query = $query ?: [];
+    /**
+     * @inheritDoc
+     */
+    public function getFirstRequest(
+        RequestInterface $request,
+        CurlerInterface $curler,
+        ?array $query = null
+    ): RequestInterface {
+        $this->CurrentQuery = $query ?? [];
+        unset($this->CurrentPageKey);
 
-        // Clear the last detected page key to ensure `getPage()` starts over
-        if ($this->PageKey === null) {
-            $this->QueryPageKey = null;
-            $this->QueryPageKeyChecked = null;
-
-            return $query;
+        // If `$this->PageKey` does not appear in the query, add it to
+        // `$this->CurrentQuery` without changing the first request
+        if (
+            $this->PageKey !== null &&
+            !array_key_exists($this->PageKey, $this->CurrentQuery)
+        ) {
+            $this->CurrentQuery[$this->PageKey] = 1;
         }
 
-        // Or, if a page key has been set but doesn't appear in the query, add
-        // an initial value to `$this->Query` without changing the first request
-        if (!array_key_exists($this->PageKey, $this->Query)) {
-            $this->Query[$this->PageKey] = 1;
-        }
-
-        return $query;
+        return $request;
     }
 
-    public function prepareData($data)
-    {
-        return $data;
-    }
+    /**
+     * @inheritDoc
+     */
+    public function getPage(
+        $data,
+        RequestInterface $request,
+        CurlerInterface $curler,
+        ?CurlerPageInterface $previousPage = null
+    ): CurlerPageInterface {
+        $data = ($this->EntitySelector)($data);
 
-    public function prepareCurler(Curler $curler): Curler
-    {
-        return $curler;
-    }
-
-    public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage
-    {
-        $data = ($this->Selector)($data);
-
-        if ($data &&
-            (!$this->PageSize ||
-                $this->PageSize < 1 ||
-                count($data) === $this->PageSize)) {
-            $key = $this->PageKey;
-            if ($key === null) {
-                if ($this->QueryPageKeyChecked) {
-                    $key = $this->QueryPageKey;
-                } else {
-                    if ($this->Query && is_int(reset($this->Query))) {
-                        $key = $this->QueryPageKey = key($this->Query);
-                    }
-                    $this->QueryPageKeyChecked = true;
-                }
+        if ($data && (
+            $this->PageSize === null ||
+            $this->PageSize < 1 ||
+            count($data) === $this->PageSize
+        )) {
+            if ($this->PageKey === null && !$previousPage) {
+                $this->CurrentPageKey =
+                    $this->CurrentQuery && is_int(reset($this->CurrentQuery))
+                        ? key($this->CurrentQuery)
+                        : null;
             }
+            $key = $this->PageKey ?? $this->CurrentPageKey;
             if ($key !== null) {
-                $this->Query[$key]++;
-                $nextUrl = $curler->getQueryUrl($this->Query);
+                $this->CurrentQuery[$key]++;
+                $nextRequest = $request->withUri($curler->getUriWithQuery($this->CurrentQuery));
             }
         }
 
-        return CurlerPageBuilder::build()
-            ->entities($data)
-            ->curler($curler)
-            ->previous($previous)
-            ->nextUrl($nextUrl ?? null)
-            ->go();
+        return new CurlerPage($data, $nextRequest ?? null);
     }
 }

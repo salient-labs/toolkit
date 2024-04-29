@@ -19,6 +19,7 @@ final class HttpHeader extends AbstractDictionary
     public const CONTENT_TYPE = 'Content-Type';
     public const DATE = 'Date';
     public const HOST = 'Host';
+    public const ODATA_VERSION = 'OData-Version';
     public const PREFER = 'Prefer';
     public const PROXY_AUTHORIZATION = 'Proxy-Authorization';
     public const RETRY_AFTER = 'Retry-After';

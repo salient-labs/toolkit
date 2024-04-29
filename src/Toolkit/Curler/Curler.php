@@ -1159,7 +1159,7 @@ class Curler implements CurlerInterface, Buildable
         do {
             $result = curl_exec(self::$Handle);
             if ($result === false) {
-                throw new CurlErrorException(curl_errno(self::$Handle), $request);
+                throw new CurlErrorException(curl_errno(self::$Handle), $request, $this->getCurlInfo());
             }
 
             if (
@@ -1206,7 +1206,7 @@ class Curler implements CurlerInterface, Buildable
         $this->LastResponse = $response;
 
         if ($this->ThrowHttpErrors && $code >= 400) {
-            throw new HttpErrorException($request, $response);
+            throw new HttpErrorException($request, $response, $this->getCurlInfo());
         }
 
         if ($cacheKey !== null && $this->CacheLifetime >= 0) {
@@ -1343,5 +1343,26 @@ class Curler implements CurlerInterface, Buildable
     private function getDefaultUserAgent(): string
     {
         return self::$DefaultUserAgent ??= Http::getProduct();
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function getCurlInfo(): array
+    {
+        if (
+            self::$Handle === null ||
+            ($info = curl_getinfo(self::$Handle)) === false
+        ) {
+            return [];
+        }
+
+        foreach ($info as &$value) {
+            if (is_string($value)) {
+                $value = trim($value);
+            }
+        }
+
+        return $info;
     }
 }

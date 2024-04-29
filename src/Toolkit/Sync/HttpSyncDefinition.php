@@ -6,6 +6,8 @@ use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Curler\CurlerInterface;
+use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Pipeline\PipelineInterface;
@@ -22,10 +24,7 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Pipeline;
-use Salient\Curler\Catalog\CurlerProperty;
-use Salient\Curler\Contract\ICurlerPager;
-use Salient\Curler\Exception\CurlerHttpErrorException;
-use Salient\Curler\Curler;
+use Salient\Curler\Exception\HttpErrorException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;
@@ -63,12 +62,12 @@ use Closure;
  * @property-read string[]|string|null $Path The path to the provider endpoint servicing the entity, e.g. "/v1/user"
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
  * @property-read HttpHeadersInterface|null $Headers HTTP headers applied to the sync operation request
- * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
+ * @property-read CurlerPagerInterface|null $Pager The pagination handler for the endpoint servicing the entity
  * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
  * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap An array that maps sync operations to HTTP request methods
- * @property-read array<CurlerProperty::*,mixed> $CurlerProperties An array that maps Curler property names to values
+ * @property-read (callable(CurlerInterface): CurlerInterface)|null $CurlerCallback A callback applied to the Curler instance created to perform each sync operation
  * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
- * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
+ * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before each sync operation
  *
  * @extends AbstractSyncDefinition<TEntity,TProvider>
  * @implements Buildable<HttpSyncDefinitionBuilder<TEntity,TProvider>>
@@ -154,7 +153,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * {@see HttpSyncDefinition::withPager()} or
      * {@see HttpSyncDefinition::$Callback}.
      *
-     * @var ICurlerPager|null
+     * @var CurlerPagerInterface|null
      */
     protected $Pager;
 
@@ -202,17 +201,16 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     protected $MethodMap;
 
     /**
-     * An array that maps Curler property names to values
+     * A callback applied to the Curler instance created to perform each sync
+     * operation
      *
-     * May be set via {@see HttpSyncDefinition::__construct()} or extended via
-     * {@see HttpSyncDefinition::withCurlerProperties()} or
+     * May be set via {@see HttpSyncDefinition::__construct()},
+     * {@see HttpSyncDefinition::withCurlerCallback()} or
      * {@see HttpSyncDefinition::$Callback}.
      *
-     * @see Curler
-     *
-     * @var array<CurlerProperty::*,mixed>
+     * @var (callable(CurlerInterface): CurlerInterface)|null
      */
-    protected $CurlerProperties;
+    protected $CurlerCallback;
 
     /**
      * If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on
@@ -223,7 +221,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     protected $SyncOneEntityPerRequest;
 
     /**
-     * A callback applied to the definition before every sync operation
+     * A callback applied to the definition before each sync operation
      *
      * The callback must return the {@see HttpSyncDefinition} it receives even
      * if no request- or context-specific changes are needed.
@@ -247,7 +245,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
-     * @param array<CurlerProperty::*,mixed> $curlerProperties
+     * @param (callable(CurlerInterface): CurlerInterface)|null $curlerCallback
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
@@ -262,13 +260,13 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         $path = null,
         ?array $query = null,
         ?HttpHeadersInterface $headers = null,
-        ?ICurlerPager $pager = null,
+        ?CurlerPagerInterface $pager = null,
         ?callable $callback = null,
         $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
-        array $curlerProperties = [],
+        ?callable $curlerCallback = null,
         bool $syncOneEntityPerRequest = false,
         array $overrides = [],
         ?array $keyMap = null,
@@ -300,7 +298,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         $this->Callback = $callback;
         $this->Expiry = $expiry;
         $this->MethodMap = $methodMap;
-        $this->CurlerProperties = $curlerProperties;
+        $this->CurlerCallback = $curlerCallback;
         $this->SyncOneEntityPerRequest = $syncOneEntityPerRequest;
     }
 
@@ -370,7 +368,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *
      * @see HttpSyncDefinition::$Pager
      */
-    public function withPager(?ICurlerPager $pager)
+    public function withPager(?CurlerPagerInterface $pager)
     {
         $clone = clone $this;
         $clone->Pager = $pager;
@@ -408,17 +406,16 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     }
 
     /**
-     * Extend the array that maps Curler property names to values
+     * Set the callback applied to the Curler instance created to perform each
+     * sync operation
      *
-     * @param array<CurlerProperty::*,mixed> $properties
+     * @param (callable(CurlerInterface): CurlerInterface)|null $callback
      * @return $this
      */
-    public function withCurlerProperties(array $properties)
+    public function withCurlerCallback(?callable $callback)
     {
         $clone = clone $this;
-        $clone->CurlerProperties = array_merge(
-            $clone->CurlerProperties, $properties
-        );
+        $clone->CurlerCallback = $callback;
 
         return $clone;
     }
@@ -447,11 +444,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
 
         $httpClosure =
             SyncIntrospector::isWriteOperation($operation) && Env::dryRun()
-                ? fn(Curler $curler, ?array $query, $payload = null) =>
-                    is_array($payload)
-                        ? $payload
-                        : []
-                : fn(Curler $curler, ?array $query, $payload = null) =>
+                ? fn(CurlerInterface $curler, ?array $query, $payload = null) =>
+                    is_array($payload) ? $payload : []
+                : fn(CurlerInterface $curler, ?array $query, $payload = null) =>
                     $this->getHttpOperationClosure($operation)($curler, $query, $payload);
         $httpRunner =
             fn(SyncContextInterface $ctx, ...$args) =>
@@ -530,7 +525,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * Get a closure to perform a sync operation via HTTP
      *
      * @param OP::* $operation
-     * @return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
+     * @return Closure(CurlerInterface, mixed[]|null, mixed[]|null=): mixed[]
      */
     private function getHttpOperationClosure($operation): Closure
     {
@@ -539,25 +534,25 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         // for pagination with other operations and/or HTTP methods
         switch ([$operation, $this->MethodMap[$operation] ?? null]) {
             case [OP::READ_LIST, HttpRequestMethod::GET]:
-                return fn(Curler $curler, ?array $query) => $curler->Pager ? $curler->getP($query) : $curler->get($query);
+                return fn(CurlerInterface $curler, ?array $query) => $curler->getPager() ? $curler->getP($query) : $curler->get($query);
 
             case [OP::READ_LIST, HttpRequestMethod::POST]:
-                return fn(Curler $curler, ?array $query, ?array $payload = null) => $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->getPager() ? $curler->postP($payload, $query) : $curler->post($payload, $query);
 
             case [$operation, HttpRequestMethod::GET]:
-                return fn(Curler $curler, ?array $query) => $curler->get($query);
+                return fn(CurlerInterface $curler, ?array $query) => $curler->get($query);
 
             case [$operation, HttpRequestMethod::POST]:
-                return fn(Curler $curler, ?array $query, ?array $payload = null) => $curler->post($payload, $query);
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->post($payload, $query);
 
             case [$operation, HttpRequestMethod::PUT]:
-                return fn(Curler $curler, ?array $query, ?array $payload = null) => $curler->put($payload, $query);
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->put($payload, $query);
 
             case [$operation, HttpRequestMethod::PATCH]:
-                return fn(Curler $curler, ?array $query, ?array $payload = null) => $curler->patch($payload, $query);
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->patch($payload, $query);
 
             case [$operation, HttpRequestMethod::DELETE]:
-                return fn(Curler $curler, ?array $query, ?array $payload = null) => $curler->delete($payload, $query);
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->delete($payload, $query);
         }
 
         throw new LogicException("Invalid SyncOperation or method map: $operation");
@@ -566,7 +561,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     /**
      * Run a sync operation closure prepared earlier
      *
-     * @param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
+     * @param (Closure(CurlerInterface, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
      * @param OP::* $operation
      * @param mixed ...$args
      * @return mixed[]
@@ -664,8 +659,8 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
 
         $curler = $this->Provider->getCurler($path, $def->Expiry, $def->Headers, $def->Pager);
 
-        foreach ($def->CurlerProperties as $property => $value) {
-            $curler = $curler->with($property, $value);
+        if ($def->CurlerCallback) {
+            $curler = ($def->CurlerCallback)($curler);
         }
 
         $def->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
@@ -675,10 +670,10 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
 
         try {
             return $httpClosure->call($def, $curler, $def->Query, $args[0] ?? null);
-        } catch (CurlerHttpErrorException $ex) {
+        } catch (HttpErrorException $ex) {
             if ($operation === OP::READ &&
                     $id !== null &&
-                    $ex->isNotFound(true)) {
+                    $ex->isNotFound()) {
                 throw new SyncEntityNotFoundException(
                     $this->Provider,
                     $this->Entity,
@@ -784,7 +779,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             'Pager',
             'Expiry',
             'MethodMap',
-            'CurlerProperties',
+            'CurlerCallback',
             'SyncOneEntityPerRequest',
             'Callback',
         ];

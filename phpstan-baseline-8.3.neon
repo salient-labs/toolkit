@@ -131,7 +131,7 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateSyncEntity.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Curler\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateSyncEntity.php
 
@@ -156,27 +156,27 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateTests.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Curler\\:\\:delete\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:delete\\(\\) expects array\\|object\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Sli/Command/Http/SendHttpRequest.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Curler\\:\\:patch\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:patch\\(\\) expects array\\|object\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Sli/Command/Http/SendHttpRequest.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Curler\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Sli/Command/Http/SendHttpRequest.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Curler\\:\\:postP\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:postP\\(\\) expects array\\|object\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Sli/Command/Http/SendHttpRequest.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Curler\\:\\:put\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:put\\(\\) expects array\\|object\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Sli/Command/Http/SendHttpRequest.php
 
@@ -491,121 +491,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Reflect.php
 
 		-
-			message: "#^Cannot access offset 'data' on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset 'next' on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset 'nodes' on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset 0 on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset 1 on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset 2 on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset 3 on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset string on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot call method addLine\\(\\) on Salient\\\\Contract\\\\Http\\\\HttpHeadersInterface\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot call method getHeaderLines\\(\\) on Salient\\\\Contract\\\\Http\\\\HttpHeadersInterface\\|null\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot call method getPage\\(\\) on Salient\\\\Curler\\\\Contract\\\\ICurlerPager\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Method Salient\\\\Curler\\\\Curler\\:\\:execute\\(\\) should return string but returns string\\|null\\.$#"
-			count: 2
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Method Salient\\\\Curler\\\\Curler\\:\\:head\\(\\) should return Salient\\\\Contract\\\\Http\\\\HttpHeadersInterface but returns mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Offset 'http_code' does not exist on array\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Curler\\\\Contract\\\\ICurlerPager\\:\\:prepareData\\(\\) expects array\\|object\\|null, array\\|object\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#1 \\$handle of function curl_setopt expects CurlHandle, CurlHandle\\|resource\\|false given\\.$#"
-			count: 13
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#2 \\$path of static method Salient\\\\Curler\\\\Curler\\:\\:collateNested\\(\\) expects array\\<string\\>, array\\<int, string\\>\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$arrays of function array_merge expects array, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Property Salient\\\\Curler\\\\Curler\\:\\:\\$Handle \\(CurlHandle\\|resource\\|null\\) does not accept CurlHandle\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Curler.php
-
-		-
-			message: "#^Cannot access offset 'value' on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Pager/ODataPager.php
-
-		-
-			message: "#^Cannot access offset non\\-falsy\\-string on mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Pager/ODataPager.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Curler\\\\Support\\\\CurlerPageBuilder\\:\\:entities\\(\\) expects array, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Pager/ODataPager.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Curler\\\\Support\\\\CurlerPageBuilder\\:\\:nextUrl\\(\\) expects string\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Curler/Pager/ODataPager.php
-
-		-
 			message: "#^Cannot access property \\$Scopes on Salient\\\\Http\\\\OAuth2\\\\AccessToken\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
@@ -617,11 +502,6 @@ parameters:
 
 		-
 			message: "#^Method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:getIdToken\\(\\) should return array\\<string, mixed\\>\\|null but returns mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:getJsonWebKeySet\\(\\) should return array\\{keys\\: array\\<array\\<string, array\\<string\\>\\|string\\>\\>\\}\\|null but returns mixed\\.$#"
 			count: 1
 			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
 
@@ -861,12 +741,12 @@ parameters:
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\HttpSyncDefinition\\:\\:getHttpOperationClosure\\(\\) should return Closure\\(Salient\\\\Curler\\\\Curler, array\\|null, array\\|null\\=\\)\\: array but returns Closure\\(Salient\\\\Curler\\\\Curler, array\\|null\\)\\: mixed\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\HttpSyncDefinition\\:\\:getHttpOperationClosure\\(\\) should return Closure\\(Salient\\\\Contract\\\\Curler\\\\CurlerInterface, array\\|null, array\\|null\\=\\)\\: array but returns Closure\\(Salient\\\\Contract\\\\Curler\\\\CurlerInterface, array\\|null\\)\\: mixed\\.$#"
 			count: 2
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\HttpSyncDefinition\\:\\:getHttpOperationClosure\\(\\) should return Closure\\(Salient\\\\Curler\\\\Curler, array\\|null, array\\|null\\=\\)\\: array but returns Closure\\(Salient\\\\Curler\\\\Curler, array\\|null, array\\|null\\=\\)\\: mixed\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\HttpSyncDefinition\\:\\:getHttpOperationClosure\\(\\) should return Closure\\(Salient\\\\Contract\\\\Curler\\\\CurlerInterface, array\\|null, array\\|null\\=\\)\\: array but returns Closure\\(Salient\\\\Contract\\\\Curler\\\\CurlerInterface, array\\|null, array\\|null\\=\\)\\: mixed\\.$#"
 			count: 5
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
