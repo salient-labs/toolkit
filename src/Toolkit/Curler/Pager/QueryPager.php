@@ -16,10 +16,10 @@ use Closure;
  */
 final class QueryPager implements CurlerPagerInterface
 {
+    use HasEntitySelector;
+
     /** @var array-key|null */
     private $PageKey;
-    /** @var Closure(mixed): list<mixed> */
-    private Closure $EntitySelector;
     private ?int $PageSize;
     /** @var mixed[] */
     private array $CurrentQuery;
@@ -49,12 +49,8 @@ final class QueryPager implements CurlerPagerInterface
         ?int $pageSize = null
     ) {
         $this->PageKey = $pageKey;
-        $this->EntitySelector = $entitySelector instanceof Closure
-            ? $entitySelector
-            : ($entitySelector === null
-                ? fn($data) => Arr::listWrap($data)
-                : fn($data) => Arr::listWrap(Arr::get((string) $entitySelector, $data)));
         $this->PageSize = $pageSize;
+        $this->applyEntitySelector($entitySelector);
     }
 
     /**
