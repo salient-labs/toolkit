@@ -6,6 +6,7 @@
 /.php-cs-fixer.* export-ignore
 /.prettyphp export-ignore
 /.vscode export-ignore
+/composer.lock export-ignore
 /docs export-ignore
 /phpstan* export-ignore
 /phpstan-baseline-7.4.neon linguist-generated

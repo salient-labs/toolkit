@@ -5,6 +5,7 @@ $includes = [
 ];
 
 $parameters = [
+    'phpVersion' => \PHP_VERSION_ID,
     'tmpDir' => sprintf('build/cache/phpstan/%d.%d', \PHP_MAJOR_VERSION, \PHP_MINOR_VERSION),
 ];
 
