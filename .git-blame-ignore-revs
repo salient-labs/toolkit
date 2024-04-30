@@ -1,29 +1,16 @@
 # .git-blame-ignore-revs
-# Update formatting
 c81cea1c82fb2b4c049939d0b4344ebbc29387f1
-# Update formatting (add `.prettyphp.dist`, reinstate heredoc indentation)
 34c5a7370e6e34bdbbfe7ac8efea832be3d723b2
-# Update formatting
 9dacde70ddb437225c09231eda61e895f51000d8
-# Update formatting
 2c5640274a5e1f161dbe504c7d26989251400d26
-# Update formatting
 66d9a27e1c57650dc0166e42611b648c8af5e09d
-# Adopt depth-first sort order for imports
 331128cdc554df67264373f63c04611c563e53be
-# Update formatting
 4f46da1b16823b11c1dfeaeb8e434f1169777075
-# Update formatting
 fce872ecb25b202192c47f2888f63bc67022d214
-# Update formatting
 78fa7d39618b7a885e6ecd557fc39559b91d1417
-# Update formatting
 f4a62e11068984999612806ec5525dca15d65d08
-# Add initial PHP CS Fixer config, add namespace prefixes to constants
 55ada029c6a7610323284ff3a46332ffee74d2ea
-# Update pretty-php and formatting
 969868ed14bebc451decf297c3adb8d75c9ecb9f
-# Update formatting
 23156859e88c8153b0b5f2ef6d5c57edd028e240
-# Update formatting
 448e4fb5a9db70358b573cfab15d2db3fc5961be
+358ef0878303383e256f0621f2c517db601995b6
