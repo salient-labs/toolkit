@@ -23,35 +23,35 @@ use Stringable;
 /**
  * A fluent Curler factory
  *
- * @method $this uri(PsrUriInterface|Stringable|string $value) Set Curler::$Uri
- * @method $this headers(Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $value) Set Curler::$Headers
- * @method $this accessToken(?AccessTokenInterface $value) Set Curler::$AccessToken
- * @method $this accessTokenHeaderName(string $value) Set Curler::$AccessTokenHeaderName
- * @method $this sensitiveHeaders(string[] $value) Set Curler::$SensitiveHeaders
- * @method $this mediaType(?string $value) Set Curler::$MediaType
- * @method $this userAgent(?string $value) Set Curler::$UserAgent
- * @method $this expectJson(bool $value = true) Set Curler::$ExpectJson (default: true)
- * @method $this postJson(bool $value = true) Set Curler::$PostJson (default: true)
- * @method $this dateFormatter(?DateFormatterInterface $value) Set Curler::$DateFormatter
- * @method $this queryFlags(int-mask-of<QueryFlag::*> $value) Set Curler::$QueryFlags
- * @method $this jsonDecodeFlags(int-mask-of<JsonDecodeFlag::*> $value) Set Curler::$JsonDecodeFlags
- * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Apply middleware with an optional name to the request handler stack
- * @method $this pager(?CurlerPagerInterface $value) Set Curler::$Pager
- * @method $this alwaysPaginate(bool $value = true) Set Curler::$AlwaysPaginate (default: false)
- * @method $this cacheStore(?CacheStore $value) Set Curler::$CacheStore
- * @method $this handleCookies(bool $value = true) Pass $value to `$handleCookies` in Curler::__construct() (default: false)
- * @method $this cookiesCacheKey(?string $value) Set Curler::$CookiesCacheKey
- * @method $this cacheResponses(bool $value = true) Set Curler::$CacheResponses (default: false)
- * @method $this cachePostResponses(bool $value = true) Set Curler::$CachePostResponses (default: false)
- * @method $this cacheKeyCallback((callable(RequestInterface): (string[]|string))|null $value) Pass $value to `$cacheKeyCallback` in Curler::__construct()
- * @method $this cacheLifetime(int<-1,max> $value) Seconds before cached responses expire when caching is enabled (0 = cache indefinitely, -1 = do not cache)
- * @method $this refreshCache(bool $value = true) Set Curler::$RefreshCache (default: false)
- * @method $this timeout(int<0,max>|null $value) Set Curler::$Timeout
- * @method $this followRedirects(bool $value = true) Set Curler::$FollowRedirects (default: false)
- * @method $this maxRedirects(int<-1,max>|null $value) Set Curler::$MaxRedirects
- * @method $this retryAfterTooManyRequests(bool $value = true) Set Curler::$RetryAfterTooManyRequests (default: false)
- * @method $this retryAfterMaxSeconds(int<0,max> $value) Set Curler::$RetryAfterMaxSeconds
- * @method $this throwHttpErrors(bool $value = true) Set Curler::$ThrowHttpErrors (default: true)
+ * @method $this uri(PsrUriInterface|Stringable|string|null $value) Endpoint URI (cannot have query or fragment components)
+ * @method $this headers(Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $value) Request headers
+ * @method $this accessToken(AccessTokenInterface|null $value) Access token applied to request headers
+ * @method $this accessTokenHeaderName(string $value) Name of access token header (default: `"Authorization"`)
+ * @method $this sensitiveHeaders(string[] $value) Headers treated as sensitive (default: {@see HttpHeaderGroup::SENSITIVE})
+ * @method $this mediaType(string|null $value) Media type applied to request headers
+ * @method $this userAgent(string|null $value) User agent applied to request headers
+ * @method $this expectJson(bool $value = true) Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON (default: true)
+ * @method $this postJson(bool $value = true) Use JSON to encode POST/PUT/PATCH/DELETE data (default: true)
+ * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to format and parse the endpoint's date and time values
+ * @method $this queryFlags(int-mask-of<QueryFlag::*> $value) Flags used to encode data for query strings and `POST`/`PUT`/`PATCH`/`DELETE` bodies (default: {@see QueryFlag::PRESERVE_NUMERIC_KEYS} `|` {@see QueryFlag::PRESERVE_STRING_KEYS})
+ * @method $this jsonDecodeFlags(int-mask-of<JsonDecodeFlag::*> $value) Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
+ * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
+ * @method $this pager(CurlerPagerInterface|null $value) Pagination handler
+ * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
+ * @method $this cacheStore(CacheStore|null $value) Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+ * @method $this handleCookies(bool $value = true) Enable cookie handling (default: false)
+ * @method $this cookiesCacheKey(string|null $value) Key to cache cookies under (cookie handling is implicitly enabled if given)
+ * @method $this cacheResponses(bool $value = true) Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY) (default: false)
+ * @method $this cachePostResponses(bool $value = true) Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled) (default: false)
+ * @method $this cacheKeyCallback((callable(RequestInterface): (string[]|string))|null $value) Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
+ * @method $this cacheLifetime(int<-1,max> $value) Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
+ * @method $this refreshCache(bool $value = true) Replace cached responses even if they haven't expired (default: false)
+ * @method $this timeout(int<0,max>|null $value) Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
+ * @method $this followRedirects(bool $value = true) Follow "Location" headers (default: false)
+ * @method $this maxRedirects(int<-1,max>|null $value) Limit the number of "Location" headers followed (`-1` = unlimited; `0` = do not follow redirects; `null` = use underlying default of `20`; default: `null`)
+ * @method $this retryAfterTooManyRequests(bool $value = true) Retry throttled requests when the endpoint returns a "Retry-After" header (default: false)
+ * @method $this retryAfterMaxSeconds(int<0,max> $value) Limit the delay between request attempts (`0` = unlimited; default: `300`)
+ * @method $this throwHttpErrors(bool $value = true) Throw exceptions for HTTP errors (default: true)
  * @method HttpHeadersInterface head(mixed[]|null $query = null) Send a HEAD request to the endpoint
  * @method mixed get(mixed[]|null $query = null) Send a GET request to the endpoint and return the body of the response
  * @method mixed post(mixed[]|object|null $data = null, mixed[]|null $query = null) Send a POST request to the endpoint and return the body of the response

@@ -5,6 +5,7 @@ namespace Salient\Contract\Curler;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\QueryFlag;
@@ -18,6 +19,7 @@ use Salient\Contract\Http\UriInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
 use Closure;
+use Stringable;
 
 interface CurlerInterface extends ClientInterface
 {
@@ -32,6 +34,16 @@ interface CurlerInterface extends ClientInterface
      * @param mixed[]|string|null $query
      */
     public function getUriWithQuery($query): UriInterface;
+
+    /**
+     * Get an instance with the given endpoint URI
+     *
+     * An exception is thrown if the endpoint URI has a query or fragment.
+     *
+     * @param PsrUriInterface|Stringable|string|null $uri
+     * @return static
+     */
+    public function withUri($uri);
 
     /**
      * Get the last request sent to the endpoint
@@ -230,9 +242,37 @@ interface CurlerInterface extends ClientInterface
     public function getHeader(string $name): array;
 
     /**
+     * Get the value of a request header as a list of values, splitting any
+     * comma-separated values
+     *
+     * @return string[]
+     */
+    public function getHeaderValues(string $name): array;
+
+    /**
      * Get the comma-separated values of a request header
      */
     public function getHeaderLine(string $name): string;
+
+    /**
+     * Get the first value of a request header after splitting any
+     * comma-separated values
+     */
+    public function getFirstHeaderLine(string $name): string;
+
+    /**
+     * Get the last value of a request header after splitting any
+     * comma-separated values
+     */
+    public function getLastHeaderLine(string $name): string;
+
+    /**
+     * Get the only value of a request header after splitting any
+     * comma-separated values
+     *
+     * An exception is thrown if the request header has more than one value.
+     */
+    public function getOneHeaderLine(string $name): string;
 
     /**
      * Get an instance with a value applied to a request header, replacing any
@@ -367,7 +407,7 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance with the given Get::query() flags
      *
-     * Query flags are used to URL-encode data for query strings and
+     * Query flags are used to encode data for query strings and
      * `POST`/`PUT`/`PATCH`/`DELETE` bodies.
      *
      * {@see QueryFlag::PRESERVE_NUMERIC_KEYS} and
@@ -415,8 +455,8 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance with the given pagination handler
      *
-     * @param bool $alwaysPaginate If `true`, every response is passed to the
-     * pager.
+     * @param bool $alwaysPaginate If `true`, the pager is used to process
+     * requests even if no pagination is required.
      * @return static
      */
     public function withPager(?CurlerPagerInterface $pager, bool $alwaysPaginate = false);
@@ -430,7 +470,7 @@ interface CurlerInterface extends ClientInterface
      * Get an instance with the given cache store
      *
      * If no `$store` is given, cookies and responses are cached in the
-     * {@see Cache} facade's underlying {@see CacheStore} as needed.
+     * {@see Cache} facade's underlying store as needed.
      *
      * @return static
      */
@@ -486,6 +526,9 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance that uses a callback to generate response cache keys
      *
+     * The callback's return value is hashed and combined with request method
+     * and URI to create a response cache key.
+     *
      * @param (callable(RequestInterface): (string[]|string))|null $callback
      * @return static
      */
@@ -506,8 +549,7 @@ interface CurlerInterface extends ClientInterface
      *
      * {@see withResponseCache()} must also be called to enable caching.
      *
-     * @param int<-1,max> $seconds
-     * - `0`: cache responses indefinitely
+     * @param int<-1,max> $seconds - `0`: cache responses indefinitely
      * - `-1`: disable caching until the method is called again with `$seconds`
      *   greater than or equal to `0`
      * @return static
@@ -515,12 +557,14 @@ interface CurlerInterface extends ClientInterface
     public function withCacheLifetime(int $seconds);
 
     /**
-     * Check if the instance replaces cached responses that haven't expired
+     * Check if the instance replaces cached responses even if they haven't
+     * expired
      */
     public function refreshesCache(): bool;
 
     /**
-     * Get an instance that replaces cached responses that haven't expired
+     * Get an instance that replaces cached responses even if they haven't
+     * expired
      *
      * @return static
      */
@@ -536,8 +580,7 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance with the given connection timeout
      *
-     * @param int<0,max>|null $seconds
-     * - `0`: wait indefinitely
+     * @param int<0,max>|null $seconds - `0`: wait indefinitely
      * - `null` (default): use the underlying client's default connection
      *   timeout.
      * @return static
@@ -566,8 +609,7 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance that limits the number of "Location" headers followed
      *
-     * @param int<-1,max>|null $redirects
-     * - `-1`: allow unlimited redirects
+     * @param int<-1,max>|null $redirects - `-1`: allow unlimited redirects
      * - `0`: disable redirects (same effect as `withFollowRedirects(false)`)
      * - `null` (default): use the underlying client's default redirect limit
      * @return static

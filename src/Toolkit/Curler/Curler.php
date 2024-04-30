@@ -125,20 +125,38 @@ class Curler implements CurlerInterface, Buildable
     /**
      * Creates a new Curler object
      *
-     * @param PsrUriInterface|Stringable|string $uri
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
-     * @param string[] $sensitiveHeaders
-     * @param int-mask-of<QueryFlag::*> $queryFlags
-     * @param int-mask-of<JsonDecodeFlag::*> $jsonDecodeFlags
-     * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Apply middleware with an optional name to the request handler stack
-     * @param (callable(RequestInterface): (string[]|string))|null $cacheKeyCallback
-     * @param int<-1,max> $cacheLifetime Seconds before cached responses expire when caching is enabled (0 = cache indefinitely, -1 = do not cache)
-     * @param int<0,max>|null $timeout
-     * @param int<-1,max>|null $maxRedirects
-     * @param int<0,max> $retryAfterMaxSeconds
+     * @param PsrUriInterface|Stringable|string|null $uri Endpoint URI (cannot have query or fragment components)
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers Request headers
+     * @param AccessTokenInterface|null $accessToken Access token applied to request headers
+     * @param string $accessTokenHeaderName Name of access token header (default: `"Authorization"`)
+     * @param string[] $sensitiveHeaders Headers treated as sensitive (default: {@see HttpHeaderGroup::SENSITIVE})
+     * @param string|null $mediaType Media type applied to request headers
+     * @param string|null $userAgent User agent applied to request headers
+     * @param bool $expectJson Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON
+     * @param bool $postJson Use JSON to encode POST/PUT/PATCH/DELETE data
+     * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
+     * @param int-mask-of<QueryFlag::*> $queryFlags Flags used to encode data for query strings and `POST`/`PUT`/`PATCH`/`DELETE` bodies (default: {@see QueryFlag::PRESERVE_NUMERIC_KEYS} `|` {@see QueryFlag::PRESERVE_STRING_KEYS})
+     * @param int-mask-of<JsonDecodeFlag::*> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
+     * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
+     * @param CurlerPagerInterface|null $pager Pagination handler
+     * @param bool $alwaysPaginate Use the pager to process requests even if no pagination is required
+     * @param CacheStore|null $cacheStore Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+     * @param bool $handleCookies Enable cookie handling
+     * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
+     * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
+     * @param bool $cachePostResponses Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled)
+     * @param (callable(RequestInterface): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
+     * @param int<-1,max> $cacheLifetime Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
+     * @param bool $refreshCache Replace cached responses even if they haven't expired
+     * @param int<0,max>|null $timeout Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
+     * @param bool $followRedirects Follow "Location" headers
+     * @param int<-1,max>|null $maxRedirects Limit the number of "Location" headers followed (`-1` = unlimited; `0` = do not follow redirects; `null` = use underlying default of `20`; default: `null`)
+     * @param bool $retryAfterTooManyRequests Retry throttled requests when the endpoint returns a "Retry-After" header
+     * @param int<0,max> $retryAfterMaxSeconds Limit the delay between request attempts (`0` = unlimited; default: `300`)
+     * @param bool $throwHttpErrors Throw exceptions for HTTP errors
      */
     public function __construct(
-        $uri,
+        $uri = null,
         $headers = null,
         ?AccessTokenInterface $accessToken = null,
         string $accessTokenHeaderName = HttpHeader::AUTHORIZATION,
@@ -686,6 +704,16 @@ class Curler implements CurlerInterface, Buildable
     }
 
     // --
+
+    /**
+     * @inheritDoc
+     */
+    public function withUri($uri)
+    {
+        return (string) $uri === (string) $this->Uri
+            ? $this
+            : $this->with('Uri', $this->filterUri($uri));
+    }
 
     /**
      * @inheritDoc
@@ -1303,16 +1331,19 @@ class Curler implements CurlerInterface, Buildable
     }
 
     /**
-     * @param PsrUriInterface|Stringable|string $uri
+     * @param PsrUriInterface|Stringable|string|null $uri
      */
     private function filterUri($uri): Uri
     {
+        if ($uri === null) {
+            return new Uri();
+        }
         $uri = Uri::from($uri);
         $invalid = array_intersect(['query', 'fragment'], array_keys($uri->toParts()));
         if ($invalid) {
             throw new InvalidArgumentException(Inflect::format(
                 $invalid,
-                'URI cannot have %s {{component}}',
+                'URI cannot have %s {{#:component}}',
                 implode(' or ', $invalid),
             ));
         }

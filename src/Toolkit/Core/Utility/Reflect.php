@@ -373,9 +373,9 @@ final class Reflect extends AbstractUtility
     /**
      * Convert a ReflectionType to a PHP type declaration
      *
-     * @param (callable(class-string): (string|null))|null $typeNameCallback
-     * Applied to qualified class names if given. Must return `null` or an
-     * unqualified alias.
+     * @param (callable(class-string): (string|null))|null $typeNameCallback Applied
+     * to qualified class names if given. Must return `null` or an unqualified
+     * alias.
      */
     public static function getTypeDeclaration(
         ?ReflectionType $type,
@@ -432,9 +432,9 @@ final class Reflect extends AbstractUtility
     /**
      * Convert a ReflectionParameter to a PHP parameter declaration
      *
-     * @param (callable(class-string): (string|null))|null $typeNameCallback
-     * Applied to qualified class names if given. Must return `null` or an
-     * unqualified alias.
+     * @param (callable(class-string): (string|null))|null $typeNameCallback Applied
+     * to qualified class names if given. Must return `null` or an unqualified
+     * alias.
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead. Do not use when generating code unless `$type` is
      * from a trusted source.
@@ -507,9 +507,9 @@ final class Reflect extends AbstractUtility
      * - `$documentation` is empty or `null`, and
      * - there is no difference between PHPDoc and native data types
      *
-     * @param (callable(class-string): (string|null))|null $typeNameCallback
-     * Applied to qualified class names if given. Must return `null` or an
-     * unqualified alias.
+     * @param (callable(class-string): (string|null))|null $typeNameCallback Applied
+     * to qualified class names if given. Must return `null` or an unqualified
+     * alias.
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead.
      */
