@@ -49,8 +49,8 @@ final class ConsoleMarkdownFormat implements
         }
 
         if (($tag === '_' || $tag === '*') && (
-            !($attributes instanceof TagAttributes) ||
-            !$attributes->HasChildren
+            !($attributes instanceof TagAttributes)
+            || !$attributes->HasChildren
         )) {
             return '`' . Formatter::unescapeTags($text) . '`';
         }

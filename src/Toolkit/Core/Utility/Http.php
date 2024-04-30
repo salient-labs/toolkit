@@ -62,8 +62,8 @@ final class Http extends AbstractUtility
         $suffix = substr($type, $pos + 1);
         $type = substr($type, 0, $pos);
 
-        return (self::ALIAS_TYPE[$type] ?? $type) === $mimeType ||
-            (self::SUFFIX_TYPE[$suffix] ?? null) === $mimeType;
+        return (self::ALIAS_TYPE[$type] ?? $type) === $mimeType
+            || (self::SUFFIX_TYPE[$suffix] ?? null) === $mimeType;
     }
 
     /**

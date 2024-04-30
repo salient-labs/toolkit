@@ -20,12 +20,12 @@ final class AbstractExceptionTest extends TestCase
         $this->assertSame(8, $exception->getExitStatus());
         $this->assertStringEndsWith(Str::eolFromNative(<<<'EOF'
 
-            foo:
-            bar
+foo:
+bar
 
-            baz:
-            1
-            EOF), (string) $exception);
+baz:
+1
+EOF), (string) $exception);
 
         $exception2 = MyAbstractException::withExitStatus(4, 'Bar', $exception);
         $this->assertSame(4, $exception2->getExitStatus());

@@ -243,9 +243,9 @@ final class Sys extends AbstractUtility
         $handler =
             function (int $signal): void {
                 Console::debug(sprintf('Received signal %d', $signal));
-                if ($signal === \SIGINT &&
-                        function_exists('posix_getpgid') &&
-                        ($pgid = posix_getpgid(posix_getpid())) !== false) {
+                if ($signal === \SIGINT
+                        && function_exists('posix_getpgid')
+                        && ($pgid = posix_getpgid(posix_getpid())) !== false) {
                     // Stop handling SIGINT before propagating it
                     pcntl_signal(\SIGINT, \SIG_DFL);
                     register_shutdown_function(

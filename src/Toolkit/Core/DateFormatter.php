@@ -42,8 +42,8 @@ final class DateFormatter implements DateFormatterInterface
     public function format(DateTimeInterface $date): string
     {
         if (
-            $this->Timezone &&
-            $this->Timezone->getName() !== $date->getTimezone()->getName()
+            $this->Timezone
+            && $this->Timezone->getName() !== $date->getTimezone()->getName()
         ) {
             $date = Date::immutable($date)->setTimezone($this->Timezone);
         }

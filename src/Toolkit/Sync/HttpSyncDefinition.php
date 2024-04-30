@@ -437,8 +437,8 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     protected function getClosure($operation): ?Closure
     {
         // Return null if no endpoint path has been provided
-        if ($this->Callback === null &&
-                ($this->Path === null || $this->Path === [])) {
+        if ($this->Callback === null
+                && ($this->Path === null || $this->Path === [])) {
             return null;
         }
 
@@ -600,8 +600,8 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                         $path
                     ): string {
                         $name = $match['name'];
-                        if ($id !== null &&
-                                Str::toSnakeCase($name) === 'id') {
+                        if ($id !== null
+                                && Str::toSnakeCase($name) === 'id') {
                             $idApplied = true;
                             return $this->checkParameterValue(
                                 (string) $id, $name, $path
@@ -648,10 +648,10 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         // If an operation is being performed on a sync entity with a known ID
         // that hasn't been applied to the path, and no callback has been
         // provided, add the conventional '/:id' to the endpoint
-        if ($id !== null &&
-                !$idApplied &&
-                $this->Callback === null &&
-                strpos($path, '?') === false) {
+        if ($id !== null
+                && !$idApplied
+                && $this->Callback === null
+                && strpos($path, '?') === false) {
             $path .= '/' . $this->checkParameterValue(
                 (string) $id, 'id', "$path/:id"
             );
@@ -671,9 +671,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         try {
             return $httpClosure->call($def, $curler, $def->Query, $args[0] ?? null);
         } catch (HttpErrorException $ex) {
-            if ($operation === OP::READ &&
-                    $id !== null &&
-                    $ex->isNotFound()) {
+            if ($operation === OP::READ
+                    && $id !== null
+                    && $ex->isNotFound()) {
                 throw new SyncEntityNotFoundException(
                     $this->Provider,
                     $this->Entity,

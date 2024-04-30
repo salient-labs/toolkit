@@ -128,49 +128,49 @@ final class ProcessTest extends TestCase
                 0,
                 '',
                 <<<'EOF'
-                - 1: foo
-                - 2: bar
+- 1: foo
+- 2: bar
 
-                EOF,
+EOF,
                 [$cat, 'foo', 'bar'],
             ],
             'args + input (string with no line break)' => [
                 0,
                 <<<'EOF'
-                Foo bar.
-                EOF,
+Foo bar.
+EOF,
                 <<<'EOF'
-                - 1: foo
-                - 2: bar
+- 1: foo
+- 2: bar
 
-                EOF,
+EOF,
                 [$cat, 'foo', 'bar'],
                 <<<'EOF'
-                Foo bar.
-                EOF,
+Foo bar.
+EOF,
             ],
             'args + input (multi-line string)' => [
                 0,
                 <<<'EOF'
-                Foo.
-                Bar.
-                Qux.
+Foo.
+Bar.
+Qux.
 
 
-                EOF,
+EOF,
                 <<<'EOF'
-                - 1: foo
-                - 2: bar
+- 1: foo
+- 2: bar
 
-                EOF,
+EOF,
                 [$cat, 'foo', 'bar'],
                 <<<'EOF'
-                Foo.
-                Bar.
-                Qux.
+Foo.
+Bar.
+Qux.
 
 
-                EOF,
+EOF,
             ],
             'print-env' => [
                 0,
@@ -191,18 +191,18 @@ final class ProcessTest extends TestCase
                 2,
                 '',
                 <<<'EOF'
-                - 1: delay
+- 1: delay
 
-                EOF,
+EOF,
                 [$cat, 'delay'],
             ],
             'time out' => [
                 ProcessTimedOutException::class,
                 '',
                 <<<'EOF'
-                - 1: timeout
+- 1: timeout
 
-                EOF,
+EOF,
                 [$cat, 'timeout'],
                 '',
                 null,
@@ -299,10 +299,10 @@ final class ProcessTest extends TestCase
         $this->assertSame($input, $stdout);
         $this->assertSame(
             <<<'EOF'
-            - 1: foo
-            - 2: bar
+- 1: foo
+- 2: bar
 
-            EOF,
+EOF,
             $stderr,
         );
         $this->assertSame([1 => 1, 2 => 1], $writes);

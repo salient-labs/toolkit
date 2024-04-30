@@ -280,15 +280,15 @@ class RecursiveFilesystemIterator implements
                             }
                             continue;
                         }
-                        if (Pcre::match($exclude, $path) ||
-                            ($this->MatchRelative &&
-                                Pcre::match($exclude, "/{$path}"))) {
+                        if (Pcre::match($exclude, $path)
+                            || ($this->MatchRelative
+                                && Pcre::match($exclude, "/{$path}"))) {
                             return true;
                         }
-                        if ($file->isDir() &&
-                            (Pcre::match($exclude, "{$path}/") ||
-                                ($this->MatchRelative &&
-                                    Pcre::match($exclude, "/{$path}/")))) {
+                        if ($file->isDir()
+                            && (Pcre::match($exclude, "{$path}/")
+                                || ($this->MatchRelative
+                                    && Pcre::match($exclude, "/{$path}/")))) {
                             return true;
                         }
                     }
@@ -314,15 +314,15 @@ class RecursiveFilesystemIterator implements
                             }
                             continue;
                         }
-                        if (Pcre::match($include, $path) ||
-                            ($this->MatchRelative &&
-                                Pcre::match($include, "/{$path}"))) {
+                        if (Pcre::match($include, $path)
+                            || ($this->MatchRelative
+                                && Pcre::match($include, "/{$path}"))) {
                             return true;
                         }
-                        if ($file->isDir() &&
-                            (Pcre::match($include, "$path/") ||
-                                ($this->MatchRelative &&
-                                    Pcre::match($include, "/{$path}/")))) {
+                        if ($file->isDir()
+                            && (Pcre::match($include, "$path/")
+                                || ($this->MatchRelative
+                                    && Pcre::match($include, "/{$path}/")))) {
                             return true;
                         }
                     }
@@ -343,8 +343,8 @@ class RecursiveFilesystemIterator implements
                     $iterator = new CallbackFilterIterator(
                         $iterator,
                         fn(SplFileInfo $file, string $path, FilesystemIterator $iterator): bool =>
-                            (!$excludeFilter || !$excludeFilter($file, $path, $iterator)) &&
-                            (!$includeFilter || $includeFilter($file, $path, $iterator))
+                            (!$excludeFilter || !$excludeFilter($file, $path, $iterator))
+                            && (!$includeFilter || $includeFilter($file, $path, $iterator))
                     );
                 }
 
@@ -452,9 +452,9 @@ class RecursiveFilesystemIterator implements
         }
 
         if (
-            $method === null ||
-            !strcasecmp($method, 'getFileInfo') ||
-            !strcasecmp($method, 'getPathInfo')
+            $method === null
+            || !strcasecmp($method, 'getFileInfo')
+            || !strcasecmp($method, 'getPathInfo')
         ) {
             throw new LogicException(sprintf('Invalid key: %s', $key));
         }

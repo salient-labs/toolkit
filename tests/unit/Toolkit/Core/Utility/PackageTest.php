@@ -301,10 +301,10 @@ final class PackageTest extends TestCase
         self::$ListenerId = Event::getInstance()->listen(
             static function (PackageDataReceivedEvent $event): void {
                 if (
-                    self::$RootPackage !== null &&
-                    $event->isMethod(InstalledVersions::class, 'getRootPackage') &&
+                    self::$RootPackage !== null
+                    && $event->isMethod(InstalledVersions::class, 'getRootPackage')
                     // For code coverage only
-                    $event->getArguments() === []
+                    && $event->getArguments() === []
                 ) {
                     $event->setData(self::$RootPackage);
                 }

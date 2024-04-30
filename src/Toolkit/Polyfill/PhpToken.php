@@ -122,10 +122,10 @@ class PhpToken implements Stringable
     public function isIgnorable(): bool
     {
         // Replicates test in tokenizer.c
-        return $this->id === \T_WHITESPACE ||
-            $this->id === \T_COMMENT ||
-            $this->id === \T_DOC_COMMENT ||
-            $this->id === \T_OPEN_TAG;
+        return $this->id === \T_WHITESPACE
+            || $this->id === \T_COMMENT
+            || $this->id === \T_DOC_COMMENT
+            || $this->id === \T_OPEN_TAG;
     }
 
     /**

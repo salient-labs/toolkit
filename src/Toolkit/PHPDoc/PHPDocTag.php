@@ -135,8 +135,8 @@ class PHPDocTag
                 $type = substr($type, 1, -1);
             }
             $type = implode('&', $_types = array_unique($replace(explode('&', $type))));
-            if ($brackets && (count($_types) > 1 ||
-                    !Pcre::match($phpTypeRegex, $type))) {
+            if ($brackets && (count($_types) > 1
+                    || !Pcre::match($phpTypeRegex, $type))) {
                 $type = "($type)";
             }
         }

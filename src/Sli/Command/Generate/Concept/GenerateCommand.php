@@ -389,9 +389,9 @@ abstract class GenerateCommand extends Command
         while ($tag = $templates[$type] ?? null) {
             $template = $tag;
             // Don't resolve templates that will appear in the output
-            if ($tag->Class === $this->InputClassName &&
-                    $tag->Member === null &&
-                    ($_template = $this->InputClassTemplates[$type] ?? null)) {
+            if ($tag->Class === $this->InputClassName
+                    && $tag->Member === null
+                    && ($_template = $this->InputClassTemplates[$type] ?? null)) {
                 $inputClassTemplates[$type] = $_template;
                 return $type;
             }
@@ -498,8 +498,8 @@ abstract class GenerateCommand extends Command
     {
         $type = ltrim($type, '\\');
         $lower = Str::lower($type);
-        if ($filename !== null &&
-                ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null)) {
+        if ($filename !== null
+                && ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null)) {
             return $this->getFqcnAlias($type, $alias, $returnFqcn);
         }
         if (Test::isBuiltinType($type)) {
@@ -556,8 +556,8 @@ abstract class GenerateCommand extends Command
         // Don't allow a conflict with the name of the generated class or an
         // existing alias
         if (
-            !strcasecmp($alias, $this->OutputClass) ||
-            isset($this->AliasMap[$_alias])
+            !strcasecmp($alias, $this->OutputClass)
+            || isset($this->AliasMap[$_alias])
         ) {
             $this->FqcnMap[$_fqcn] ??= $this->getClassPrefix() . $fqcn;
 
@@ -1037,8 +1037,8 @@ abstract class GenerateCommand extends Command
      */
     private function generatePHPDocBlock($phpDoc): array
     {
-        if ($phpDoc === [] ||
-                (is_string($phpDoc) && trim($phpDoc) === '')) {
+        if ($phpDoc === []
+                || (is_string($phpDoc) && trim($phpDoc) === '')) {
             return [];
         }
 

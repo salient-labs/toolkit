@@ -253,12 +253,12 @@ final class Inflect extends AbstractUtility
         // "vowel-sound" consonant followed by another consonant, and which are
         // not likely to be real words
         $abbrevAn = <<<'REGEX'
-            / \A (?!
-              FJO | [HLMNS]Y. | RY[EO] | SQU |
-              ( F[LR]? | [HL] | MN? | N | RH? | S[CHKLMNPTVW]? | X(YL)? ) [AEIOU]
-            )
-            [FHLMNRSX][A-Z] /xms
-            REGEX;
+/ \A (?!
+  FJO | [HLMNS]Y. | RY[EO] | SQU |
+  ( F[LR]? | [HL] | MN? | N | RH? | S[CHKLMNPTVW]? | X(YL)? ) [AEIOU]
+)
+[FHLMNRSX][A-Z] /xms
+REGEX;
 
         // English words beginning with "Y" and followed by a consonant
         $initialYAn = '/\A y (?: b[lor] | cl[ea] | fere | gg | p[ios] | rou | tt)/xi';

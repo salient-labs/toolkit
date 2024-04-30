@@ -423,8 +423,8 @@ final class Process
     public function isRunning(): bool
     {
         return
-            $this->State === self::RUNNING &&
-            $this->maybeUpdateStatus()->State === self::RUNNING;
+            $this->State === self::RUNNING
+            && $this->maybeUpdateStatus()->State === self::RUNNING;
     }
 
     /**
@@ -433,8 +433,8 @@ final class Process
     public function isTerminated(): bool
     {
         return
-            $this->State === self::TERMINATED ||
-            $this->maybeUpdateStatus()->State === self::TERMINATED;
+            $this->State === self::TERMINATED
+            || $this->maybeUpdateStatus()->State === self::TERMINATED;
     }
 
     /**
@@ -716,9 +716,9 @@ final class Process
     private function checkTimeout()
     {
         if (
-            $this->State !== self::RUNNING ||
-            $this->Timeout === null ||
-            $this->Timeout > (hrtime(true) - $this->StartTime) / 1000000000
+            $this->State !== self::RUNNING
+            || $this->Timeout === null
+            || $this->Timeout > (hrtime(true) - $this->StartTime) / 1000000000
         ) {
             return $this;
         }

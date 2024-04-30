@@ -25,8 +25,8 @@ trait HasImmutableProperties
     protected function withPropertyValue(string $property, $value)
     {
         if ((
-            isset($this->$property) ||
-            ($value === null && $this->propertyIsInitialized($property))
+            isset($this->$property)
+            || ($value === null && $this->propertyIsInitialized($property))
         ) && $value === $this->$property) {
             return $this;
         }
@@ -45,8 +45,8 @@ trait HasImmutableProperties
     protected function withoutProperty(string $property)
     {
         if (
-            !isset($this->$property) &&
-            !$this->propertyIsInitialized($property)
+            !isset($this->$property)
+            && !$this->propertyIsInitialized($property)
         ) {
             return $this;
         }

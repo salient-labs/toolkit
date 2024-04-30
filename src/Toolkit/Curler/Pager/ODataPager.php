@@ -38,8 +38,8 @@ final class ODataPager implements CurlerPagerInterface
 
         $prefs = HttpHeaders::from($request)->getPreferences();
         if (
-            isset($prefs['odata.maxpagesize']) &&
-            $prefs['odata.maxpagesize']['value'] === (string) $this->MaxPageSize
+            isset($prefs['odata.maxpagesize'])
+            && $prefs['odata.maxpagesize']['value'] === (string) $this->MaxPageSize
         ) {
             return $request;
         }

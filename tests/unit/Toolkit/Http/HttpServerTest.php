@@ -115,18 +115,18 @@ final class HttpServerTest extends TestCase
         $this->assertSame('http://localhost:3008/', (string) $request->getUri());
         $this->assertSame('', (string) $request->getBody());
         $this->assertSame(Str::setEol(<<<'EOF'
-            HTTP/1.1 200 OK
-            Content-Type: text/plain
+HTTP/1.1 200 OK
+Content-Type: text/plain
 
-            Hello, world!
-            EOF, "\r\n"), $client->getText());
+Hello, world!
+EOF, "\r\n"), $client->getText());
         $this->assertSame(<<<'EOF'
-            ==> Connected to localhost:3008
-            > GET / HTTP/1.1
-            > Host: localhost:3008
-            > Accept: */*
-            >
-            EOF, $client->getText(FileDescriptor::ERR));
+==> Connected to localhost:3008
+> GET / HTTP/1.1
+> Host: localhost:3008
+> Accept: */*
+>
+EOF, $client->getText(FileDescriptor::ERR));
     }
 
     private function getServerWithClient(

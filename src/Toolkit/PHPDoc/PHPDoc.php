@@ -327,8 +327,8 @@ final class PHPDoc implements Readable
                 if (!$this->Summary) {
                     $this->Summary = $var->Description;
                 } elseif ($this->Summary !== $var->Description) {
-                    $this->Description .=
-                        ($this->Description ? "\n\n" : '')
+                    $this->Description
+                        .= ($this->Description ? "\n\n" : '')
                         . $var->Description;
                 }
                 $var->Description = null;
@@ -402,8 +402,8 @@ final class PHPDoc implements Readable
 
             if (!$unwrap) {
                 if (
-                    (!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence)) ||
-                    ($inFence && $line === ($fence[0] ?? null))
+                    (!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence))
+                    || ($inFence && $line === ($fence[0] ?? null))
                 ) {
                     $inFence = !$inFence;
                 }
@@ -580,10 +580,10 @@ final class PHPDoc implements Readable
                 $legacyNullable
             );
 
-            if ($phpDoc->Summary === null &&
-                $phpDoc->Description === null &&
-                (!$phpDoc->Tags ||
-                    array_keys($phpDoc->TagsByName) === ['inheritDoc'])) {
+            if ($phpDoc->Summary === null
+                && $phpDoc->Description === null
+                && (!$phpDoc->Tags
+                    || array_keys($phpDoc->TagsByName) === ['inheritDoc'])) {
                 continue;
             }
 

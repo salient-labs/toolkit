@@ -55,8 +55,8 @@ final class PackageDataReceivedEvent
      */
     public function isMethod(string $class, string $method): bool
     {
-        return strcasecmp($class, $this->Class) === 0 &&
-            strcasecmp($method, $this->Method) === 0;
+        return strcasecmp($class, $this->Class) === 0
+            && strcasecmp($method, $this->Method) === 0;
     }
 
     /**

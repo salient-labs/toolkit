@@ -90,9 +90,9 @@ trait TreeableTrait
         $_parent = self::$ParentProperties[static::class];
         $_children = self::$ChildrenProperties[static::class];
 
-        if ($parent === $this->{$_parent} &&
-            ($parent === null ||
-                in_array($this, $parent->{$_children} ?: [], true))) {
+        if ($parent === $this->{$_parent}
+            && ($parent === null
+                || in_array($this, $parent->{$_children} ?: [], true))) {
             return $this;
         }
 

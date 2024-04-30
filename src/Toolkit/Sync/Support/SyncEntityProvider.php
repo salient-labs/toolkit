@@ -111,9 +111,9 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
             $checked[] = $entityProvider;
             $entityProvider = null;
             $entity = get_parent_class($entity);
-            if ($entity === false ||
-                    $entity === AbstractSyncEntity::class ||
-                    !is_a($entity, SyncEntityInterface::class, true)) {
+            if ($entity === false
+                    || $entity === AbstractSyncEntity::class
+                    || !is_a($entity, SyncEntityInterface::class, true)) {
                 break;
             }
         } while (true);
@@ -642,10 +642,10 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         ?string $weightProperty = null,
         bool $requireOneMatch = false
     ): SyncEntityResolverInterface {
-        if ($nameProperty !== null &&
-                $algorithm === TextComparisonAlgorithm::SAME &&
-                $weightProperty === null &&
-                !$requireOneMatch) {
+        if ($nameProperty !== null
+                && $algorithm === TextComparisonAlgorithm::SAME
+                && $weightProperty === null
+                && !$requireOneMatch) {
             return new SyncEntityResolver($this, $nameProperty);
         }
         return new SyncEntityFuzzyResolver(

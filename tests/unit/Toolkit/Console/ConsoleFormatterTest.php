@@ -55,289 +55,289 @@ final class ConsoleFormatterTest extends TestCase
     public static function formatProvider(): array
     {
         $input1 = <<<'EOF'
-            This is a `_code span_` with _inner tags_ that are ignored.
+This is a `_code span_` with _inner tags_ that are ignored.
 
-            ## HEADING 1
+## HEADING 1
 
-            **Bold**, *italic* and <underline>.
+**Bold**, *italic* and <underline>.
 
-            ## HEADING 2 ##
+## HEADING 2 ##
 
-            ~~**Low-priority information** with <embedded tags.>~~
+~~**Low-priority information** with <embedded tags.>~~
 
-            ```php
-            <?php
-            /**Preformatted code block**/
-            $a = b($c);
-            ```
+```php
+<?php
+/**Preformatted code block**/
+$a = b($c);
+```
 
-            ___HEADING 3___
+___HEADING 3___
 
-                Indented paragraph.
+    Indented paragraph.
 
-                `Indented _code span_`
+    `Indented _code span_`
 
-                ```php
-                <?php
-                /**Indented code block**/
-                $a = b($c);
-                ```
+    ```php
+    <?php
+    /**Indented code block**/
+    $a = b($c);
+    ```
 
-            __Bold__, _italic_ and <underline>.
+__Bold__, _italic_ and <underline>.
 
-            \<This> is \`some escaped` \__text__. \
-            It continues on a \*second* line.
+\<This> is \`some escaped` \__text__. \
+It continues on a \*second* line.
 
-            **_Nested \<tags>_ with <\*nested escapes*>.**
+**_Nested \<tags>_ with <\*nested escapes*>.**
 
-            *0*   escapes \
-            *1*   with \
-            *2*   adjacent \
-            *16*  tags
-            EOF;
+*0*   escapes \
+*1*   with \
+*2*   adjacent \
+*16*  tags
+EOF;
 
         $input2 = <<<'EOF'
-            xxx xx _<xxxx>_ xxx xxxxx xxxx xxx xx
-            xxxx xxx ~~__xxxxx__~~ xxxx xxx xx
-            xxxx xxx xxxxx xxxx
-            EOF;
+xxx xx _<xxxx>_ xxx xxxxx xxxx xxx xx
+xxxx xxx ~~__xxxxx__~~ xxxx xxx xx
+xxxx xxx xxxxx xxxx
+EOF;
 
         return [
             [
                 <<<'EOF'
-                This is a _code span_ with inner tags that are ignored.
+This is a _code span_ with inner tags that are ignored.
 
-                HEADING 1
+HEADING 1
 
-                Bold, italic and underline.
+Bold, italic and underline.
 
-                HEADING 2
+HEADING 2
 
-                Low-priority information with embedded tags.
+Low-priority information with embedded tags.
 
-                    <?php
-                    /**Preformatted code block**/
-                    $a = b($c);
+    <?php
+    /**Preformatted code block**/
+    $a = b($c);
 
-                HEADING 3
+HEADING 3
 
-                    Indented paragraph.
+    Indented paragraph.
 
-                    Indented _code span_
+    Indented _code span_
 
-                        <?php
-                        /**Indented code block**/
-                        $a = b($c);
+        <?php
+        /**Indented code block**/
+        $a = b($c);
 
-                Bold, italic and underline.
+Bold, italic and underline.
 
-                <This> is `some escaped` __text__.
-                It continues on a *second* line.
+<This> is `some escaped` __text__.
+It continues on a *second* line.
 
-                Nested <tags> with *nested escapes*.
+Nested <tags> with *nested escapes*.
 
-                0   escapes
-                1   with
-                2   adjacent
-                16  tags
-                EOF,
+0   escapes
+1   with
+2   adjacent
+16  tags
+EOF,
                 null,
                 $input1,
             ],
             [
                 <<<'EOF'
-                This is a `_code span_` with _inner tags_ that are ignored.
+This is a `_code span_` with _inner tags_ that are ignored.
 
-                ## HEADING 1 ##
+## HEADING 1 ##
 
-                **Bold**, *italic* and <underline>.
+**Bold**, *italic* and <underline>.
 
-                ## HEADING 2 ##
+## HEADING 2 ##
 
-                ~~**Low-priority information** with <embedded tags.>~~
+~~**Low-priority information** with <embedded tags.>~~
 
-                ```php
-                <?php
-                /**Preformatted code block**/
-                $a = b($c);
-                ```
+```php
+<?php
+/**Preformatted code block**/
+$a = b($c);
+```
 
-                ___HEADING 3___
+___HEADING 3___
 
-                    Indented paragraph.
+    Indented paragraph.
 
-                    `Indented _code span_`
+    `Indented _code span_`
 
-                    ```php
-                    <?php
-                    /**Indented code block**/
-                    $a = b($c);
-                    ```
+    ```php
+    <?php
+    /**Indented code block**/
+    $a = b($c);
+    ```
 
-                __Bold__, _italic_ and <underline>.
+__Bold__, _italic_ and <underline>.
 
-                \<This> is \`some escaped` \__text__. \
-                It continues on a \*second* line.
+\<This> is \`some escaped` \__text__. \
+It continues on a \*second* line.
 
-                **_Nested \<tags>_ with <\*nested escapes*>.**
+**_Nested \<tags>_ with <\*nested escapes*>.**
 
-                *0*   escapes \
-                *1*   with \
-                *2*   adjacent \
-                *16*  tags
-                EOF,
+*0*   escapes \
+*1*   with \
+*2*   adjacent \
+*16*  tags
+EOF,
                 ConsoleLoopbackFormat::class,
                 $input1,
             ],
             [
                 <<<'EOF'
-                This is a **`_code span_`** with `inner tags` that are ignored.
+This is a **`_code span_`** with `inner tags` that are ignored.
 
-                ## HEADING 1
+## HEADING 1
 
-                **Bold**, `italic` and *<u>underline</u>*.
+**Bold**, `italic` and *<u>underline</u>*.
 
-                ## HEADING 2
+## HEADING 2
 
-                <small>**Low-priority information** with *<u>embedded tags.</u>*</small>
+<small>**Low-priority information** with *<u>embedded tags.</u>*</small>
 
-                ```php
-                <?php
-                /**Preformatted code block**/
-                $a = b($c);
-                ```
+```php
+<?php
+/**Preformatted code block**/
+$a = b($c);
+```
 
-                ***HEADING 3***
+***HEADING 3***
 
-                    Indented paragraph.
+    Indented paragraph.
 
-                    **`Indented _code span_`**
+    **`Indented _code span_`**
 
-                    ```php
-                    <?php
-                    /**Indented code block**/
-                    $a = b($c);
-                    ```
+    ```php
+    <?php
+    /**Indented code block**/
+    $a = b($c);
+    ```
 
-                **Bold**, `italic` and *<u>underline</u>*.
+**Bold**, `italic` and *<u>underline</u>*.
 
-                \<This> is \`some escaped` \__text__. \
-                It continues on a \*second* line.
+\<This> is \`some escaped` \__text__. \
+It continues on a \*second* line.
 
-                **`Nested <tags>` with *<u>\*nested escapes*</u>*.**
+**`Nested <tags>` with *<u>\*nested escapes*</u>*.**
 
-                `0`   escapes \
-                `1`   with \
-                `2`   adjacent \
-                `16`  tags
-                EOF,
+`0`   escapes \
+`1`   with \
+`2`   adjacent \
+`16`  tags
+EOF,
                 ConsoleMarkdownFormat::class,
                 $input1,
             ],
             [
                 <<<'EOF'
-                This is a **`_code span_`** with inner tags that are ignored.
+This is a **`_code span_`** with inner tags that are ignored.
 
-                # HEADING 1
+# HEADING 1
 
-                **Bold**, *italic* and *underline*.
+**Bold**, *italic* and *underline*.
 
-                # HEADING 2
+# HEADING 2
 
-                **Low-priority information** with *embedded tags.*
+**Low-priority information** with *embedded tags.*
 
-                ```php
-                <?php
-                /**Preformatted code block**/
-                $a = b($c);
-                ```
+```php
+<?php
+/**Preformatted code block**/
+$a = b($c);
+```
 
-                ***HEADING 3***
+***HEADING 3***
 
-                    Indented paragraph.
+    Indented paragraph.
 
-                    **`Indented _code span_`**
+    **`Indented _code span_`**
 
-                    ```php
-                    <?php
-                    /**Indented code block**/
-                    $a = b($c);
-                    ```
+    ```php
+    <?php
+    /**Indented code block**/
+    $a = b($c);
+    ```
 
-                **Bold**, italic and *underline*.
+**Bold**, italic and *underline*.
 
-                \<This> is \`some escaped` \__text__. \
-                It continues on a \*second* line.
+\<This> is \`some escaped` \__text__. \
+It continues on a \*second* line.
 
-                **Nested \<tags> with *\*nested escapes**.**
+**Nested \<tags> with *\*nested escapes**.**
 
-                *0*   escapes \
-                *1*   with \
-                *2*   adjacent \
-                *16*  tags
-                EOF,
+*0*   escapes \
+*1*   with \
+*2*   adjacent \
+*16*  tags
+EOF,
                 ConsoleManPageFormat::class,
                 $input1,
             ],
             [
                 <<<'EOF'
-                Heading
+Heading
 
-                ` <== an unmatched backtick
-                EOF,
+` <== an unmatched backtick
+EOF,
                 null,
                 <<<'EOF'
-                ## Heading
+## Heading
 
-                ` <== an unmatched backtick
-                EOF,
+` <== an unmatched backtick
+EOF,
             ],
             [
                 <<<'EOF'
-                ## Heading ##
+## Heading ##
 
-                ` <== an unmatched backtick
-                EOF,
+` <== an unmatched backtick
+EOF,
                 ConsoleLoopbackFormat::class,
                 <<<'EOF'
-                ## Heading
+## Heading
 
-                ` <== an unmatched backtick
-                EOF,
+` <== an unmatched backtick
+EOF,
             ],
             [
                 <<<'EOF'
-                Heading
+Heading
 
-                    ` <== an indented backtick
-                EOF,
+    ` <== an indented backtick
+EOF,
                 null,
                 <<<'EOF'
-                ## Heading
+## Heading
 
-                    ` <== an indented backtick
-                EOF,
+    ` <== an indented backtick
+EOF,
             ],
             [
                 <<<'EOF'
-                ## Heading ##
+## Heading ##
 
-                    ` <== an indented backtick
-                EOF,
+    ` <== an indented backtick
+EOF,
                 ConsoleLoopbackFormat::class,
                 <<<'EOF'
-                ## Heading
+## Heading
 
-                    ` <== an indented backtick
-                EOF,
+    ` <== an indented backtick
+EOF,
             ],
             [
                 <<<'EOF'
-                xxx xx xxxx xxx xxxxx
-                xxxx xxx xx xxxx xxx
-                xxxxx xxxx xxx xx
-                xxxx xxx xxxxx xxxx
-                EOF,
+xxx xx xxxx xxx xxxxx
+xxxx xxx xx xxxx xxx
+xxxxx xxxx xxx xx
+xxxx xxx xxxxx xxxx
+EOF,
                 null,
                 $input2,
                 true,
@@ -345,12 +345,12 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx xxxx xxx xxxxx
-                xxxx xxx xx xxxx
-                xxx xxxxx xxxx
-                xxx xx xxxx xxx
-                xxxxx xxxx
-                EOF,
+xxx xx xxxx xxx xxxxx
+xxxx xxx xx xxxx
+xxx xxxxx xxxx
+xxx xx xxxx xxx
+xxxxx xxxx
+EOF,
                 null,
                 $input2,
                 true,
@@ -358,11 +358,11 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx xxxx xxx
-                xxxxx xxxx xxx xx xxxx
-                xxx xxxxx xxxx xxx xx
-                xxxx xxx xxxxx xxxx
-                EOF,
+xxx xx xxxx xxx
+xxxxx xxxx xxx xx xxxx
+xxx xxxxx xxxx xxx xx
+xxxx xxx xxxxx xxxx
+EOF,
                 null,
                 $input2,
                 true,
@@ -370,12 +370,12 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx _<xxxx>_ xxx xxxxx
-                xxxx xxx xx xxxx
-                xxx ~~__xxxxx__~~ xxxx
-                xxx xx xxxx xxx
-                xxxxx xxxx
-                EOF,
+xxx xx _<xxxx>_ xxx xxxxx
+xxxx xxx xx xxxx
+xxx ~~__xxxxx__~~ xxxx
+xxx xx xxxx xxx
+xxxxx xxxx
+EOF,
                 null,
                 $input2,
                 true,
@@ -384,12 +384,12 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx **<u>xxxx</u>** xxx
-                xxxxx xxxx xxx xx xxxx xxx
-                <small>**xxxxx**</small>
-                xxxx xxx xx xxxx xxx xxxxx
-                xxxx
-                EOF,
+xxx xx **<u>xxxx</u>** xxx
+xxxxx xxxx xxx xx xxxx xxx
+<small>**xxxxx**</small>
+xxxx xxx xx xxxx xxx xxxxx
+xxxx
+EOF,
                 ConsoleMarkdownFormat::class,
                 $input2,
                 true,
@@ -397,13 +397,13 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx **<u>xxxx</u>**
-                xxx xxxxx xxxx xxx xx
-                xxxx xxx
-                <small>**xxxxx**</small>
-                xxxx xxx xx xxxx xxx
-                xxxxx xxxx
-                EOF,
+xxx xx **<u>xxxx</u>**
+xxx xxxxx xxxx xxx xx
+xxxx xxx
+<small>**xxxxx**</small>
+xxxx xxx xx xxxx xxx
+xxxxx xxxx
+EOF,
                 ConsoleMarkdownFormat::class,
                 $input2,
                 true,
@@ -411,13 +411,13 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx **<u>xxxx</u>** xxx
-                xxxxx xxxx xxx xx xxxx
-                xxx
-                <small>**xxxxx**</small>
-                xxxx xxx xx xxxx xxx
-                xxxxx xxxx
-                EOF,
+xxx xx **<u>xxxx</u>** xxx
+xxxxx xxxx xxx xx xxxx
+xxx
+<small>**xxxxx**</small>
+xxxx xxx xx xxxx xxx
+xxxxx xxxx
+EOF,
                 ConsoleMarkdownFormat::class,
                 $input2,
                 true,
@@ -425,13 +425,13 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx **<u>xxxx</u>** xxx
-                xxxxx xxxx xxx xx
-                xxxx xxx
-                <small>**xxxxx**</small>
-                xxxx xxx xx xxxx xxx
-                xxxxx xxxx
-                EOF,
+xxx xx **<u>xxxx</u>** xxx
+xxxxx xxxx xxx xx
+xxxx xxx
+<small>**xxxxx**</small>
+xxxx xxx xx xxxx xxx
+xxxxx xxxx
+EOF,
                 ConsoleMarkdownFormat::class,
                 $input2,
                 true,
@@ -439,13 +439,13 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<'EOF'
-                xxx xx _<xxxx>_ xxx
-                xxxxx xxxx xxx xx xxxx
-                xxx
-                ~~__xxxxx__~~
-                xxxx xxx xx xxxx xxx
-                xxxxx xxxx
-                EOF,
+xxx xx _<xxxx>_ xxx
+xxxxx xxxx xxx xx xxxx
+xxx
+~~__xxxxx__~~
+xxxx xxx xx xxxx xxx
+xxxxx xxxx
+EOF,
                 ConsoleMarkdownFormat::class,
                 $input2,
                 true,
@@ -454,29 +454,29 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<EOF
-                some\0 text\0
-                with\0
-                weird\0
-                characters\0
-                EOF,
+some\0 text\0
+with\0
+weird\0
+characters\0
+EOF,
                 null,
                 <<<EOF
-                some\0 text\0 with\0 weird\0 characters\0
-                EOF,
+some\0 text\0 with\0 weird\0 characters\0
+EOF,
                 false,
                 11,
             ],
             [
                 <<<EOF
-                some\0 text\0
-                  with\0
-                  weird\0
-                  characters\0
-                EOF,
+some\0 text\0
+  with\0
+  weird\0
+  characters\0
+EOF,
                 null,
                 <<<EOF
-                some\0 text\0 with\0 weird\0 characters\0
-                EOF,
+some\0 text\0 with\0 weird\0 characters\0
+EOF,
                 false,
                 11,
                 false,
@@ -484,14 +484,14 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<EOF
-                some\0 text\0
-                  with\0 weird\0
-                  characters\0
-                EOF,
+some\0 text\0
+  with\0 weird\0
+  characters\0
+EOF,
                 null,
                 <<<EOF
-                some\0 text\0 with\0 weird\0 characters\0
-                EOF,
+some\0 text\0 with\0 weird\0 characters\0
+EOF,
                 false,
                 12,
                 false,
@@ -499,15 +499,15 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<EOF
-                some\x7f text\x7f
-                  with\x7f
-                  weird\x7f
-                  characters\x7f
-                EOF,
+some\x7f text\x7f
+  with\x7f
+  weird\x7f
+  characters\x7f
+EOF,
                 null,
                 <<<EOF
-                some\x7f text\x7f with\x7f weird\x7f characters\x7f
-                EOF,
+some\x7f text\x7f with\x7f weird\x7f characters\x7f
+EOF,
                 false,
                 11,
                 false,
@@ -515,14 +515,14 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<EOF
-                some\x7f text\x7f
-                  with\x7f weird\x7f
-                  characters\x7f
-                EOF,
+some\x7f text\x7f
+  with\x7f weird\x7f
+  characters\x7f
+EOF,
                 null,
                 <<<EOF
-                some\x7f text\x7f with\x7f weird\x7f characters\x7f
-                EOF,
+some\x7f text\x7f with\x7f weird\x7f characters\x7f
+EOF,
                 false,
                 12,
                 false,
@@ -530,18 +530,18 @@ final class ConsoleFormatterTest extends TestCase
             ],
             [
                 <<<EOF
-                text without backticks at the end of the line
+text without backticks at the end of the line
 
-                text with `backticks` at the end of the line
-                EOF,
+text with `backticks` at the end of the line
+EOF,
                 ConsoleLoopbackFormat::class,
                 <<<EOF
-                text without backticks
-                at the end of the line
+text without backticks
+at the end of the line
 
-                text with `backticks`
-                at the end of the line
-                EOF,
+text with `backticks`
+at the end of the line
+EOF,
                 true,
             ],
         ];

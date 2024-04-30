@@ -30,8 +30,8 @@ abstract class AbstractEnumeration extends AbstractCatalog implements Enumeratio
     public static function hasValue($value): bool
     {
         if (
-            (is_int($value) || is_string($value)) &&
-            isset(self::constantNames()[$value])
+            (is_int($value) || is_string($value))
+            && isset(self::constantNames()[$value])
         ) {
             return true;
         }

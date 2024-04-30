@@ -186,9 +186,9 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
      */
     public function eof(): bool
     {
-        return !$this->Streams ||
-            ($this->Stream >= count($this->Streams) - 1 &&
-                $this->Streams[$this->Stream]->eof());
+        return !$this->Streams
+            || ($this->Stream >= count($this->Streams) - 1
+                && $this->Streams[$this->Stream]->eof());
     }
 
     /**

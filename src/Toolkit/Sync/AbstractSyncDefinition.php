@@ -357,9 +357,9 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
                     );
         }
 
-        if ($operation === OP::READ &&
-                $this->ReadFromReadList &&
-                ($closure = $this->getSyncOperationClosure(OP::READ_LIST))) {
+        if ($operation === OP::READ
+                && $this->ReadFromReadList
+                && ($closure = $this->getSyncOperationClosure(OP::READ_LIST))) {
             return $this->Closures[$operation] =
                 function (SyncContextInterface $ctx, $id, ...$args) use ($closure) {
                     $entity = $this
@@ -522,8 +522,8 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     {
         $returnEmpty = false;
 
-        if ($this->FilterPolicy === FilterPolicy::IGNORE ||
-                !($filter = $ctx->getFilter())) {
+        if ($this->FilterPolicy === FilterPolicy::IGNORE
+                || !($filter = $ctx->getFilter())) {
             return;
         }
 

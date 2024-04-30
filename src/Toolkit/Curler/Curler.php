@@ -1106,9 +1106,9 @@ class Curler implements CurlerInterface, Buildable
 
         $cacheKey = null;
         if (
-            $this->CacheResponses &&
-            ($size === 0 || is_string($body)) &&
-            ([Method::GET => true, Method::HEAD => true, Method::POST => $this->CachePostResponses][$method] ?? false)
+            $this->CacheResponses
+            && ($size === 0 || is_string($body))
+            && ([Method::GET => true, Method::HEAD => true, Method::POST => $this->CachePostResponses][$method] ?? false)
         ) {
             $cacheKey = $this->CacheKeyClosure
                 ? (array) ($this->CacheKeyClosure)($request)
@@ -1127,8 +1127,8 @@ class Curler implements CurlerInterface, Buildable
             ]);
 
             if (
-                !$this->RefreshCache &&
-                ($last = $this->getCache()->getArray($cacheKey)) !== null
+                !$this->RefreshCache
+                && ($last = $this->getCache()->getArray($cacheKey)) !== null
             ) {
                 /** @var array{code:int,body:string,headers:HttpHeadersInterface,reason:string|null,version:string}|array{int,string,HttpHeadersInterface,string} $last */
                 return $this->LastResponse = new HttpResponse(
@@ -1191,9 +1191,9 @@ class Curler implements CurlerInterface, Buildable
             }
 
             if (
-                $statusLine === null ||
-                count($split = explode(' ', $statusLine, 3)) < 2 ||
-                ($version = explode('/', $split[0])[1] ?? null) === null
+                $statusLine === null
+                || count($split = explode(' ', $statusLine, 3)) < 2
+                || ($version = explode('/', $split[0])[1] ?? null) === null
             ) {
                 // @codeCoverageIgnoreStart
                 throw new InvalidHeaderException(sprintf(
@@ -1208,11 +1208,11 @@ class Curler implements CurlerInterface, Buildable
             $reason = $split[2] ?? null;
 
             if (
-                !$this->RetryAfterTooManyRequests ||
-                $attempts ||
-                $code !== 429 ||
-                ($after = $headers->getRetryAfter()) === null ||
-                ($this->RetryAfterMaxSeconds !== 0 && $after > $this->RetryAfterMaxSeconds)
+                !$this->RetryAfterTooManyRequests
+                || $attempts
+                || $code !== 429
+                || ($after = $headers->getRetryAfter()) === null
+                || ($this->RetryAfterMaxSeconds !== 0 && $after > $this->RetryAfterMaxSeconds)
             ) {
                 break;
             }
@@ -1382,8 +1382,8 @@ class Curler implements CurlerInterface, Buildable
     private function getCurlInfo(): array
     {
         if (
-            self::$Handle === null ||
-            ($info = curl_getinfo(self::$Handle)) === false
+            self::$Handle === null
+            || ($info = curl_getinfo(self::$Handle)) === false
         ) {
             return [];
         }

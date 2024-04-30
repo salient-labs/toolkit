@@ -180,8 +180,8 @@ final class GenerateFacade extends GenerateCommand
                     continue;
                 }
                 $method = $methodName;
-                if (strpos($method, '__') === 0 ||
-                        in_array($method, $this->SkipMethods)) {
+                if (strpos($method, '__') === 0
+                        || in_array($method, $this->SkipMethods)) {
                     continue;
                 }
 
@@ -275,8 +275,8 @@ final class GenerateFacade extends GenerateCommand
 
             if ($declare) {
                 $params = array_filter($params);
-                $return = ($type && (!$_method->hasReturnType() ||
-                        Reflect::getTypeDeclaration(
+                $return = ($type && (!$_method->hasReturnType()
+                        || Reflect::getTypeDeclaration(
                             $_method->getReturnType(),
                             $classPrefix,
                             fn(string $type): ?string =>

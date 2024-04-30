@@ -67,8 +67,8 @@ final class QueryPager implements CurlerPagerInterface
         // If `$this->PageKey` does not appear in the query, add it to
         // `$this->CurrentQuery` without changing the first request
         if (
-            $this->PageKey !== null &&
-            !array_key_exists($this->PageKey, $this->CurrentQuery)
+            $this->PageKey !== null
+            && !array_key_exists($this->PageKey, $this->CurrentQuery)
         ) {
             $this->CurrentQuery[$this->PageKey] = 1;
         }
@@ -88,9 +88,9 @@ final class QueryPager implements CurlerPagerInterface
         $data = ($this->EntitySelector)($data);
 
         if ($data && (
-            $this->PageSize === null ||
-            $this->PageSize < 1 ||
-            count($data) === $this->PageSize
+            $this->PageSize === null
+            || $this->PageSize < 1
+            || count($data) === $this->PageSize
         )) {
             if ($this->PageKey === null && !$previousPage) {
                 $this->CurrentPageKey =

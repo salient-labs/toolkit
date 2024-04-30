@@ -12,23 +12,23 @@ use TypeError;
 abstract class PhpTokenTestCase extends TestCase
 {
     private const CODE = <<<'PHP'
-        <div><?php
-        class A
-        {
-            const PUBLIC = 'public';
+<div><?php
+class A
+{
+    const PUBLIC = 'public';
 
-            /* comment #1 */
-            function f(int $a): string
-            {
-                /** comment #2 */
-                return sprintf('0x%02x', $a);
-            }
-        }
+    /* comment #1 */
+    function f(int $a): string
+    {
+        /** comment #2 */
+        return sprintf('0x%02x', $a);
+    }
+}
 
-        $b = f(77);
-        echo "Value: {$b}";
-        ?></div>
-        PHP;
+$b = f(77);
+echo "Value: {$b}";
+?></div>
+PHP;
 
     /**
      * @var class-string<PhpToken|\PhpToken>

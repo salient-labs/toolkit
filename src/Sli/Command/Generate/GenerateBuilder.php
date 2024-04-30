@@ -514,8 +514,8 @@ EOF)
                         do {
                             $T = sprintf('T%s', $i < 0 ? '' : $i);
                             $i++;
-                        } while (array_key_exists($T, $this->InputClassTemplates) ||
-                            array_key_exists(Str::lower($T), $this->AliasMap));
+                        } while (array_key_exists($T, $this->InputClassTemplates)
+                            || array_key_exists(Str::lower($T), $this->AliasMap));
                         $templateTag = clone $templateTag;
                         $templateTag->Name = $T;
                         $templateTag->Variance = null;
@@ -563,14 +563,14 @@ EOF)
                 $_docBlocks = Reflect::getAllMethodDocComments($_method, null, $classDocBlocks);
                 $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $name . '()');
 
-                if ($_method->isConstructor() ||
-                        $_method->isStatic() ||
-                        strpos($name, '__') === 0 ||
-                        isset($phpDoc->TagsByName['deprecated']) ||
-                        in_array(Str::toCamelCase($name), $names) ||
-                        in_array(Str::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names) ||
-                        in_array($name, $this->Skip) ||
-                        ($this->Forward !== [] && !in_array($name, $this->Forward))) {
+                if ($_method->isConstructor()
+                        || $_method->isStatic()
+                        || strpos($name, '__') === 0
+                        || isset($phpDoc->TagsByName['deprecated'])
+                        || in_array(Str::toCamelCase($name), $names)
+                        || in_array(Str::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names)
+                        || in_array($name, $this->Skip)
+                        || ($this->Forward !== [] && !in_array($name, $this->Forward))) {
                     continue;
                 }
 
@@ -605,10 +605,10 @@ EOF)
                         $propertyFile,
                         $templates
                     );
-                    if ($templates &&
-                        count($templates) === 1 &&
-                        ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>' ||
-                            $type === $key)) {
+                    if ($templates
+                        && count($templates) === 1
+                        && ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>'
+                            || $type === $key)) {
                         $declareTemplates[$name] = $templates;
                         if (!$declare) {
                             $this->ToDeclare[$name] = $_method;
@@ -681,8 +681,8 @@ EOF)
 
                 if ($declare) {
                     $params = array_filter($params);
-                    $return = ($type && (!$_method->hasReturnType() ||
-                            Reflect::getTypeDeclaration(
+                    $return = ($type && (!$_method->hasReturnType()
+                            || Reflect::getTypeDeclaration(
                                 $_method->getReturnType(),
                                 $classPrefix,
                                 fn(string $type): ?string =>
@@ -754,9 +754,9 @@ EOF)
             foreach ($this->InputClassTemplates as $template => $tag) {
                 $tag = clone $tag;
                 if (
-                    $tag->Type !== null &&
-                    !Test::isBuiltinType($tag->Type) &&
-                    !array_key_exists($tag->Type, $this->InputClassTemplates)
+                    $tag->Type !== null
+                    && !Test::isBuiltinType($tag->Type)
+                    && !array_key_exists($tag->Type, $this->InputClassTemplates)
                 ) {
                     $tag->Type = $this->getPHPDocTypeAlias(
                         $tag,

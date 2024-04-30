@@ -44,12 +44,12 @@ final class CurlerTest extends HttpTestCase
         $this->assertSame(self::OUT, $this->getCurler('/foo')->get(self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
-            GET /foo?quux=1 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json
+GET /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
 
 
-            EOF,
+EOF,
             $server->getOutput(),
         );
     }
@@ -63,12 +63,12 @@ final class CurlerTest extends HttpTestCase
         ], $this->getCurler('/foo')->head(self::QUERY)->all());
         $this->assertSameHttpMessage(
             <<<EOF
-            HEAD /foo?quux=1 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json
+HEAD /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
 
 
-            EOF,
+EOF,
             $server->getOutput(),
         );
     }
@@ -101,28 +101,28 @@ final class CurlerTest extends HttpTestCase
         $this->assertSame(self::OUT, $this->getCurler('/foo')->{$m}(self::IN, self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
-            {$method} /foo?quux=1 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json
-            Content-Length: 13
-            Content-Type: application/json
+{$method} /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+Content-Length: 13
+Content-Type: application/json
 
-            {"baz":"qux"}
-            EOF,
+{"baz":"qux"}
+EOF,
             $server->getOutput(),
         );
 
         $this->assertSame(self::OUT, $this->getCurler('/foo')->{$m}(null, self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
-            {$method} /foo?quux=1 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json
-            Content-Length: 0
-            Content-Type: application/x-www-form-urlencoded
+{$method} /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+Content-Length: 0
+Content-Type: application/x-www-form-urlencoded
 
 
-            EOF,
+EOF,
             $server->getNewOutput(),
         );
 
@@ -141,24 +141,24 @@ final class CurlerTest extends HttpTestCase
         $this->assertSame(self::OUT, $result);
         $this->assertSameHttpMessage(
             <<<EOF
-            {$method} /foo?quux=1 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json
-            Content-Length: {$length}
-            Content-Type: multipart/form-data; boundary={$boundaryParam}
+{$method} /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+Content-Length: {$length}
+Content-Type: multipart/form-data; boundary={$boundaryParam}
 
-            --{$boundary}
-            Content-Disposition: form-data; name="baz"
+--{$boundary}
+Content-Disposition: form-data; name="baz"
 
-            qux
-            --{$boundary}
-            Content-Disposition: form-data; name="attachment"; filename="profile.gif"
-            Content-Type: image/gif
+qux
+--{$boundary}
+Content-Disposition: form-data; name="attachment"; filename="profile.gif"
+Content-Type: image/gif
 
-            {$content}
-            --{$boundary}--
+{$content}
+--{$boundary}--
 
-            EOF,
+EOF,
             $output,
         );
     }
@@ -228,26 +228,26 @@ final class CurlerTest extends HttpTestCase
         $body = $method === Method::GET ? '' : '{"baz":"qux"}';
         $headers = $method === Method::GET ? '' : <<<EOF
 
-            Content-Length: 13
-            Content-Type: application/json
-            EOF;
+Content-Length: 13
+Content-Type: application/json
+EOF;
         $result = iterator_to_array($curler->{$m}(...$args), false);
         $this->assertSame(Arr::flatten(self::OUT_PAGES, 1), $result);
         $this->assertSameHttpMessages([
             <<<EOF
-            {$method} /foo HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json{$headers}
+{$method} /foo HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json{$headers}
 
-            {$body}
-            EOF,
+{$body}
+EOF,
             <<<EOF
-            GET /foo?page=2 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json
+GET /foo?page=2 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
 
 
-            EOF,
+EOF,
         ], $output);
     }
 
@@ -283,14 +283,14 @@ final class CurlerTest extends HttpTestCase
         $this->assertSame(self::OUT, $curler->{$m}($content, 'image/gif', self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
-            {$method} /foo?quux=1 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: */*
-            Content-Length: {$length}
-            Content-Type: image/gif
+{$method} /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: */*
+Content-Length: {$length}
+Content-Type: image/gif
 
-            {$content}
-            EOF,
+{$content}
+EOF,
             $server->getOutput(),
         );
     }
@@ -308,12 +308,12 @@ final class CurlerTest extends HttpTestCase
         $this->assertSame(self::OUT, $curler->get(self::QUERY));
         $this->assertSameHttpMessage(
             $request = <<<EOF
-                GET /foo?quux=1 HTTP/1.1
-                Host: {{HTTP_SERVER_AUTHORITY}}
-                Accept: application/json
+GET /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
 
 
-                EOF,
+EOF,
             $server->getOutput(),
         );
         $this->assertSame(self::OUT, $curler->get(self::QUERY));
@@ -337,14 +337,14 @@ final class CurlerTest extends HttpTestCase
         $this->assertSame(self::OUT, $curler->post(self::IN, self::QUERY));
         $this->assertSameHttpMessage(
             $request = <<<EOF
-                POST /foo?quux=1 HTTP/1.1
-                Host: {{HTTP_SERVER_AUTHORITY}}
-                Accept: application/json
-                Content-Length: 13
-                Content-Type: application/json
+POST /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+Content-Length: 13
+Content-Type: application/json
 
-                {"baz":"qux"}
-                EOF,
+{"baz":"qux"}
+EOF,
             $server->getNewOutput(),
         );
         $this->assertSame($cacheKeys, $cache->getAllKeys());
@@ -358,14 +358,14 @@ final class CurlerTest extends HttpTestCase
         $this->assertSame(self::OUT, $curler->post([], self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
-            POST /foo?quux=1 HTTP/1.1
-            Host: {{HTTP_SERVER_AUTHORITY}}
-            Accept: application/json
-            Content-Length: 2
-            Content-Type: application/json
+POST /foo?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+Content-Length: 2
+Content-Type: application/json
 
-            []
-            EOF,
+[]
+EOF,
             $server->getNewOutput(),
         );
         $this->assertSame([

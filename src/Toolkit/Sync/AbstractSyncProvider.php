@@ -105,9 +105,9 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     public function isValidIdentifier($id, string $entity): bool
     {
         if (
-            is_int($id) ||
-            Pcre::match(Pcre::delimit('^' . Regex::MONGODB_OBJECTID . '$', '/'), $id) ||
-            Pcre::match(Pcre::delimit('^' . Regex::UUID . '$', '/'), $id)
+            is_int($id)
+            || Pcre::match(Pcre::delimit('^' . Regex::MONGODB_OBJECTID . '$', '/'), $id)
+            || Pcre::match(Pcre::delimit('^' . Regex::UUID . '$', '/'), $id)
         ) {
             return true;
         }

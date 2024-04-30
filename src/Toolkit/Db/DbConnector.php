@@ -128,8 +128,8 @@ final class DbConnector implements Readable
             } else {
                 $value = (string) $value;
             }
-            if (($enclose && strpos($value, '}') !== false) ||
-                    (!$enclose && strpos($value, ';') !== false)) {
+            if (($enclose && strpos($value, '}') !== false)
+                    || (!$enclose && strpos($value, ';') !== false)) {
                 throw new UnexpectedValueException(sprintf(
                     'Illegal character in attribute: %s',
                     $keyword,

@@ -147,8 +147,8 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
     public function registerStdioTargets(bool $replace = false)
     {
         if (
-            \PHP_SAPI !== 'cli' ||
-            ($this->State->StdioTargetsByLevel && !$replace)
+            \PHP_SAPI !== 'cli'
+            || ($this->State->StdioTargetsByLevel && !$replace)
         ) {
             return $this;
         }
@@ -200,8 +200,8 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
         bool $force = false
     ) {
         if (
-            !($force || \PHP_SAPI === 'cli') ||
-            ($this->State->StdioTargetsByLevel && !$replace)
+            !($force || \PHP_SAPI === 'cli')
+            || ($this->State->StdioTargetsByLevel && !$replace)
         ) {
             return $this;
         }
@@ -339,8 +339,8 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
 
         // Reinstate previous STDOUT and STDERR targets if possible
         if (
-            $this->State->Targets &&
-            (!$this->State->StdoutTarget || !$this->State->StderrTarget)
+            $this->State->Targets
+            && (!$this->State->StdoutTarget || !$this->State->StderrTarget)
         ) {
             foreach (array_reverse($this->State->Targets) as $target) {
                 if (!($target instanceof TargetStream)) {
@@ -408,8 +408,8 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
 
         foreach ($this->State->Targets as $targetId => $target) {
             if (!($target instanceof TargetPrefix) || (
-                $flags &&
-                !($this->State->TargetTypeFlags[$targetId] & $flags xor $invertFlags)
+                $flags
+                && !($this->State->TargetTypeFlags[$targetId] & $flags xor $invertFlags)
             )) {
                 continue;
             }
@@ -946,10 +946,10 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
     public function groupEnd(bool $printMessage = false)
     {
         $msg = array_pop($this->State->GroupMessageStack);
-        if ($printMessage &&
-                $msg !== null &&
-                $msg !== '' &&
-                ($msg = Formatter::removeTags($msg)) !== '') {
+        if ($printMessage
+                && $msg !== null
+                && $msg !== ''
+                && ($msg = Formatter::removeTags($msg)) !== '') {
             $this->write(Level::NOTICE, '', $msg ? "{ $msg } complete" : null, MessageType::GROUP_END);
         }
         $this->out('', Level::NOTICE);
@@ -987,8 +987,8 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
                 $msg2 .= sprintf("\nCaused by __%s__: ", $class);
             }
 
-            if ($ex instanceof MultipleErrorExceptionInterface &&
-                    !$ex->hasUnreportedErrors()) {
+            if ($ex instanceof MultipleErrorExceptionInterface
+                    && !$ex->hasUnreportedErrors()) {
                 $message = Formatter::escapeTags($ex->getMessageWithoutErrors());
             } else {
                 $message = Formatter::escapeTags($ex->getMessage());

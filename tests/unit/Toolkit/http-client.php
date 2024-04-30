@@ -34,8 +34,8 @@ array_unshift(
 );
 
 if (
-    $body !== '' ||
-    ([
+    $body !== ''
+    || ([
         Method::POST => true,
         Method::PUT => true,
         Method::PATCH => true,
@@ -46,10 +46,10 @@ if (
 
 $headers = implode(\PHP_EOL, $headers);
 $request = <<<EOF
-    $headers
+$headers
 
-    $body
-    EOF;
+$body
+EOF;
 
 $errorCode = null;
 $errorMessage = null;
@@ -66,11 +66,11 @@ if ($client === false) {
 fprintf(
     \STDERR,
     <<<EOF
-    ==> Connected to %s:%d
-    > %s
-    >
+==> Connected to %s:%d
+> %s
+>
 
-    EOF,
+EOF,
     $host,
     $port,
     str_replace(\PHP_EOL, \PHP_EOL . '> ', $headers),

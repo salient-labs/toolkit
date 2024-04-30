@@ -93,8 +93,8 @@ final class SyncIntrospector extends Introspector
      */
     public static function entityToProvider(string $entity, ?ContainerInterface $container = null): string
     {
-        if (($store = self::maybeGetStore($container)) &&
-                ($resolver = $store->getNamespaceResolver($entity))) {
+        if (($store = self::maybeGetStore($container))
+                && ($resolver = $store->getNamespaceResolver($entity))) {
             return $resolver::entityToProvider($entity);
         }
 
@@ -113,8 +113,8 @@ final class SyncIntrospector extends Introspector
      */
     public static function providerToEntity(string $provider, ?ContainerInterface $container = null): array
     {
-        if (($store = self::maybeGetStore($container)) &&
-                ($resolver = $store->getNamespaceResolver($provider))) {
+        if (($store = self::maybeGetStore($container))
+                && ($resolver = $store->getNamespaceResolver($provider))) {
             return $resolver::providerToEntity($provider);
         }
 
@@ -538,9 +538,9 @@ final class SyncIntrospector extends Introspector
 
         // Check for relationships to honour by applying deferred entities
         // instead of raw data
-        if ($this->_Class->IsSyncEntity &&
-            ($this->_Class->OneToOneRelationships ||
-                $this->_Class->OneToManyRelationships)) {
+        if ($this->_Class->IsSyncEntity
+            && ($this->_Class->OneToOneRelationships
+                || $this->_Class->OneToManyRelationships)) {
             $missing = null;
             foreach ([
                 $this->_Class->OneToOneRelationships,
@@ -663,8 +663,8 @@ final class SyncIntrospector extends Introspector
                         : ($this->_Class->OneToOneRelationships[$match] ?? null))
                     : null;
 
-            if ($relationship !== null &&
-                    !is_a($relationship, SyncEntityInterface::class, true)) {
+            if ($relationship !== null
+                    && !is_a($relationship, SyncEntityInterface::class, true)) {
                 throw new LogicException(sprintf(
                     '%s does not implement %s',
                     $relationship,
@@ -739,11 +739,11 @@ final class SyncIntrospector extends Introspector
                 $isChildren
             ): void {
                 if (
-                    $data[$key] === null ||
-                    (Arr::isList($data[$key]) xor $isList) ||
-                    !($entity instanceof SyncEntityInterface) ||
-                    !($provider instanceof SyncProviderInterface) ||
-                    !($context instanceof SyncContextInterface)
+                    $data[$key] === null
+                    || (Arr::isList($data[$key]) xor $isList)
+                    || !($entity instanceof SyncEntityInterface)
+                    || !($provider instanceof SyncProviderInterface)
+                    || !($context instanceof SyncContextInterface)
                 ) {
                     $entity->{$property} = $data[$key];
                     return;
@@ -876,10 +876,10 @@ final class SyncIntrospector extends Introspector
                 $entityProvider
             ): void {
                 if (
-                    !($context instanceof SyncContextInterface) ||
-                    !($provider instanceof SyncProviderInterface) ||
-                    !is_a($provider, $entityProvider) ||
-                    $data[$idKey] === null
+                    !($context instanceof SyncContextInterface)
+                    || !($provider instanceof SyncProviderInterface)
+                    || !is_a($provider, $entityProvider)
+                    || $data[$idKey] === null
                 ) {
                     return;
                 }

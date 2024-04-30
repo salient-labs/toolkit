@@ -43,8 +43,8 @@ trait HasUnderlyingService
 
         foreach ($serviceList as $service) {
             if (
-                !class_exists($service) ||
-                !(new ReflectionClass($service))->isInstantiable()
+                !class_exists($service)
+                || !(new ReflectionClass($service))->isInstantiable()
             ) {
                 continue;
             }

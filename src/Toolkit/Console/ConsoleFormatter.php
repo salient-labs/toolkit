@@ -65,73 +65,73 @@ final class ConsoleFormatter
      * code spans
      */
     private const MARKUP = <<<'REGEX'
-        /
-        (?(DEFINE)
-          (?<endofline> \h*+ \n )
-          (?<endofblock> ^ \k<indent> \k<fence> \h*+ $ )
-          (?<endofspan> \k<backtickstring> (?! ` ) )
-        )
-        # Do not allow gaps between matches
-        \G
-        # Do not allow empty matches
-        (?= . )
-        # Claim indentation early so horizontal whitespace before fenced code
-        # blocks is not mistaken for text
-        (?<indent> ^ \h*+ )?
-        (?:
-          # Whitespace before paragraphs
-          (?<breaks> (?&endofline)+ ) |
-          # Everything except unescaped backticks until the start of the next
-          # paragraph
-          (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! (?&endofline) ) )+ (?&endofline)* ) ) |
-          # CommonMark-compliant fenced code blocks
-          (?> (?(indent)
-            (?> (?<fence> ```+ ) (?<infostring> [^\n]* ) \n )
-            # Match empty blocks--with no trailing newline--and blocks with an
-            # empty line by making the subsequent newline conditional on inblock
-            (?<block> (?> (?<inblock> (?: (?! (?&endofblock) ) (?: \k<indent> | (?= (?&endofline) ) ) [^\n]* (?: (?= \n (?&endofblock) ) | \n | \z ) )+ )? ) )
-            # Allow code fences to terminate at the end of the subject
-            (?: (?(inblock) \n ) (?&endofblock) | \z ) | \z
-          ) ) |
-          # CommonMark-compliant code spans
-          (?<backtickstring> (?> `+ ) ) (?<span> (?> (?: [^`]+ | (?! (?&endofspan) ) `+ )* ) ) (?&endofspan) |
-          # Unmatched backticks
-          (?<extra> `+ ) |
-          \z
-        ) /mxs
-        REGEX;
+/
+(?(DEFINE)
+  (?<endofline> \h*+ \n )
+  (?<endofblock> ^ \k<indent> \k<fence> \h*+ $ )
+  (?<endofspan> \k<backtickstring> (?! ` ) )
+)
+# Do not allow gaps between matches
+\G
+# Do not allow empty matches
+(?= . )
+# Claim indentation early so horizontal whitespace before fenced code
+# blocks is not mistaken for text
+(?<indent> ^ \h*+ )?
+(?:
+  # Whitespace before paragraphs
+  (?<breaks> (?&endofline)+ ) |
+  # Everything except unescaped backticks until the start of the next
+  # paragraph
+  (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! (?&endofline) ) )+ (?&endofline)* ) ) |
+  # CommonMark-compliant fenced code blocks
+  (?> (?(indent)
+    (?> (?<fence> ```+ ) (?<infostring> [^\n]* ) \n )
+    # Match empty blocks--with no trailing newline--and blocks with an
+    # empty line by making the subsequent newline conditional on inblock
+    (?<block> (?> (?<inblock> (?: (?! (?&endofblock) ) (?: \k<indent> | (?= (?&endofline) ) ) [^\n]* (?: (?= \n (?&endofblock) ) | \n | \z ) )+ )? ) )
+    # Allow code fences to terminate at the end of the subject
+    (?: (?(inblock) \n ) (?&endofblock) | \z ) | \z
+  ) ) |
+  # CommonMark-compliant code spans
+  (?<backtickstring> (?> `+ ) ) (?<span> (?> (?: [^`]+ | (?! (?&endofspan) ) `+ )* ) ) (?&endofspan) |
+  # Unmatched backticks
+  (?<extra> `+ ) |
+  \z
+) /mxs
+REGEX;
 
     /**
      * Matches inline formatting tags used outside fenced code blocks and code
      * spans
      */
     private const TAG = <<<'REGEX'
-        /
-        (?(DEFINE)
-          (?<esc> \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] | \\ )
-        )
-        (?<! \\ ) (?: \\\\ )* \K (?|
-          \b  (?<tag> _ {1,3}+ )  (?! \s ) (?> (?<text> (?: [^_\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> \b ) _ + )* ) ) (?<! \s ) \k<tag> \b |
-              (?<tag> \* {1,3}+ ) (?! \s ) (?> (?<text> (?: [^*\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> ) \* + )* ) )   (?<! \s ) \k<tag>    |
-              (?<tag> < )         (?! \s ) (?> (?<text> (?: [^>\\]+ |    (?&esc) | (?! (?<! \s ) > ) > + )* ) )          (?<! \s ) >          |
-              (?<tag> ~~ )        (?! \s ) (?> (?<text> (?: [^~\\]+ |    (?&esc) | (?! (?<! \s ) ~~ ) ~ + )* ) )         (?<! \s ) ~~         |
-          ^   (?<tag> \#\# ) \h+           (?> (?<text> (?: [^\#\s\\]+ | (?&esc) | \#+ (?! \h* $ ) | \h++ (?! (?: \#+ \h* )? $ ) )* ) ) (?: \h+ \#+ | \h* ) $
-        ) /mx
-        REGEX;
+/
+(?(DEFINE)
+  (?<esc> \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] | \\ )
+)
+(?<! \\ ) (?: \\\\ )* \K (?|
+  \b  (?<tag> _ {1,3}+ )  (?! \s ) (?> (?<text> (?: [^_\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> \b ) _ + )* ) ) (?<! \s ) \k<tag> \b |
+      (?<tag> \* {1,3}+ ) (?! \s ) (?> (?<text> (?: [^*\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> ) \* + )* ) )   (?<! \s ) \k<tag>    |
+      (?<tag> < )         (?! \s ) (?> (?<text> (?: [^>\\]+ |    (?&esc) | (?! (?<! \s ) > ) > + )* ) )          (?<! \s ) >          |
+      (?<tag> ~~ )        (?! \s ) (?> (?<text> (?: [^~\\]+ |    (?&esc) | (?! (?<! \s ) ~~ ) ~ + )* ) )         (?<! \s ) ~~         |
+  ^   (?<tag> \#\# ) \h+           (?> (?<text> (?: [^\#\s\\]+ | (?&esc) | \#+ (?! \h* $ ) | \h++ (?! (?: \#+ \h* )? $ ) )* ) ) (?: \h+ \#+ | \h* ) $
+) /mx
+REGEX;
 
     /**
      * Matches a CommonMark-compliant backslash escape, or an escaped line break
      * with an optional leading space
      */
     private const ESCAPE = <<<'REGEX'
-        /
-        (?|
-          \\ ( [-\\ !"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] ) |
-          # Lookbehind assertions are unnecessary because the first branch
-          # matches escaped spaces and backslashes
-          \  ? \\ ( \n )
-        ) /x
-        REGEX;
+/
+(?|
+  \\ ( [-\\ !"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] ) |
+  # Lookbehind assertions are unnecessary because the first branch
+  # matches escaped spaces and backslashes
+  \  ? \\ ( \n )
+) /x
+REGEX;
 
     private static ConsoleFormatter $DefaultFormatter;
 
@@ -534,8 +534,8 @@ final class ConsoleFormatter
                 }
             }
         } elseif (
-            is_int($wrapToWidth) &&
-            $wrapToWidth <= 0
+            is_int($wrapToWidth)
+            && $wrapToWidth <= 0
         ) {
             $width = ($this->WidthCallback)();
             $wrapToWidth =

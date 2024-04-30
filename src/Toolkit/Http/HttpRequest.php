@@ -147,8 +147,8 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
         }
 
         if (
-            $preserveHost &&
-            $instance->Headers->getHeaderLine(HttpHeader::HOST) !== ''
+            $preserveHost
+            && $instance->Headers->getHeaderLine(HttpHeader::HOST) !== ''
         ) {
             return $instance;
         }

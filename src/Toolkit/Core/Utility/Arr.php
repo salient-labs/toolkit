@@ -414,8 +414,8 @@ final class Arr extends AbstractUtility
     public static function ofArrayKey($value, bool $orEmpty = false): bool
     {
         return
-            self::ofInt($value, $orEmpty) ||
-            self::ofString($value);
+            self::ofInt($value, $orEmpty)
+            || self::ofString($value);
     }
 
     /**
@@ -427,8 +427,8 @@ final class Arr extends AbstractUtility
     public static function isListOfArrayKey($value, bool $orEmpty = false): bool
     {
         return
-            self::isListOfInt($value, $orEmpty) ||
-            self::isListOfString($value);
+            self::isListOfInt($value, $orEmpty)
+            || self::isListOfString($value);
     }
 
     /**
@@ -1004,10 +1004,10 @@ final class Arr extends AbstractUtility
     public static function unwrap($value, int $limit = -1)
     {
         while (
-            $limit &&
-            is_array($value) &&
-            count($value) === 1 &&
-            array_key_first($value) === 0
+            $limit
+            && is_array($value)
+            && count($value) === 1
+            && array_key_first($value) === 0
         ) {
             $value = $value[0];
             $limit--;

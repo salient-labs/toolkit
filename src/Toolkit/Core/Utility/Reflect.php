@@ -288,8 +288,8 @@ final class Reflect extends AbstractUtility
             $isDeclaring =
                 ($fromClass
                     ? $method->getDeclaringClass()->getName() === $current->getName()
-                    : true) &&
-                self::isMethodInClass($method, $current);
+                    : true)
+                && self::isMethodInClass($method, $current);
 
             $comment = $isDeclaring ? $method->getDocComment() : false;
 
@@ -459,8 +459,8 @@ final class Reflect extends AbstractUtility
             $param = $type;
         }
 
-        $param .=
-            ($param === '' ? '' : ' ')
+        $param
+            .= ($param === '' ? '' : ' ')
             . ($parameter->isPassedByReference() ? '&' : '')
             . ($parameter->isVariadic() ? '...' : '')
             . '$' . ($name === null ? $parameter->getName() : $name);
@@ -534,8 +534,8 @@ final class Reflect extends AbstractUtility
             $param = $type;
         }
 
-        $param .=
-            ($param === '' ? '' : ' ')
+        $param
+            .= ($param === '' ? '' : ' ')
             . ($parameter->isVariadic() ? '...' : '')
             . '$' . ($name === null ? $parameter->getName() : $name);
 
@@ -582,8 +582,8 @@ final class Reflect extends AbstractUtility
         ];
 
         return
-            ($line && $start && $end) &&
-            Test::isBetween($line, $start, $end);
+            ($line && $start && $end)
+            && Test::isBetween($line, $start, $end);
     }
 
     /**
@@ -634,8 +634,8 @@ final class Reflect extends AbstractUtility
                     ? -1
                     : ($b->isSubclassOf($a)
                         ? 1
-                        : self::getBaseClass($a)->getName() <=>
-                            self::getBaseClass($b)->getName())
+                        : self::getBaseClass($a)->getName()
+                            <=> self::getBaseClass($b)->getName())
         );
 
         return $interfaces;

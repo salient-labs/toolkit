@@ -159,8 +159,8 @@ final class ErrorHandler implements FacadeAwareInterface
 
         // Ignore explicitly silenced errors
         foreach ($this->Silenced as [$pattern, $levels]) {
-            if (($levels & $level) &&
-                    Pcre::match($pattern, $file)) {
+            if (($levels & $level)
+                    && Pcre::match($pattern, $file)) {
                 return true;
             }
         }

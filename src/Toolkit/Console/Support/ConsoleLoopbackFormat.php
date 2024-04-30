@@ -41,9 +41,9 @@ final class ConsoleLoopbackFormat implements
         $after = $this->After;
 
         if (
-            $attributes instanceof TagAttributes &&
-            $attributes->OpenTag !== null &&
-            $attributes->OpenTag !== ''
+            $attributes instanceof TagAttributes
+            && $attributes->OpenTag !== null
+            && $attributes->OpenTag !== ''
         ) {
             $before = $attributes->OpenTag;
             $after = $before === '<' ? '>' : $attributes->OpenTag;

@@ -58,8 +58,8 @@ final class ConsoleFormat implements ConsoleFormatInterface
         // - remove indentation from the first line of code
         // - add a level of indentation to the block
         if (
-            $attributes instanceof TagAttributes &&
-            $attributes->Tag === Tag::CODE_BLOCK
+            $attributes instanceof TagAttributes
+            && $attributes->Tag === Tag::CODE_BLOCK
         ) {
             $indent = (string) $attributes->Indent;
             if ($indent !== '') {

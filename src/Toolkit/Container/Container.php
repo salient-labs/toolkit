@@ -101,8 +101,8 @@ class Container implements ContainerInterface, FacadeAwareInterface
         do {
             $this->instance($class->getName(), $this);
         } while (
-            $class->isSubclassOf(self::class) &&
-            ($class = $class->getParentClass())
+            $class->isSubclassOf(self::class)
+            && ($class = $class->getParentClass())
         );
 
         $this->Dice = $this->Dice->addCallback(
@@ -241,8 +241,8 @@ class Container implements ContainerInterface, FacadeAwareInterface
     final public function hasSingleton(string $id): bool
     {
         return $this->Dice->hasShared($id) || (
-            $this->Dice->hasRule($id) &&
-            ($this->Dice->getRule($id)['shared'] ?? false)
+            $this->Dice->hasRule($id)
+            && ($this->Dice->getRule($id)['shared'] ?? false)
         );
     }
 
@@ -455,8 +455,8 @@ class Container implements ContainerInterface, FacadeAwareInterface
         }
 
         if (
-            is_a($id, HasContextualBindings::class, true) &&
-            ($bindings = $id::getContextualBindings())
+            is_a($id, HasContextualBindings::class, true)
+            && ($bindings = $id::getContextualBindings())
         ) {
             $rule['substitutions'] = $bindings;
         }
@@ -547,9 +547,9 @@ class Container implements ContainerInterface, FacadeAwareInterface
 
         if (
             $dependency[0] === '$' && (
-                !($type = (new ReflectionParameter([$context, '__construct'], substr($dependency, 1)))->getType()) ||
-                !$type instanceof ReflectionNamedType ||
-                $type->isBuiltin()
+                !($type = (new ReflectionParameter([$context, '__construct'], substr($dependency, 1)))->getType())
+                || !$type instanceof ReflectionNamedType
+                || $type->isBuiltin()
             )
         ) {
             $rule['constructParams'][] = $value;

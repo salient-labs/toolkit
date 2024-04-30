@@ -173,8 +173,8 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
             return null;
         }
         if (
-            !Test::isAsciiString($filename) ||
-            Pcre::match('/%[0-9a-f]{2}|\\\\|"/i', $filename)
+            !Test::isAsciiString($filename)
+            || Pcre::match('/%[0-9a-f]{2}|\\\\|"/i', $filename)
         ) {
             if ($fallbackFilename === null) {
                 return null;
