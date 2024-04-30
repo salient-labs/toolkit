@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PhpDoc;
+namespace Salient\PHPDoc;
 
 use Salient\Contract\Core\Regex;
 use Salient\Core\Utility\Pcre;
@@ -9,7 +9,7 @@ use Salient\Core\Utility\Str;
 /**
  * A tag extracted from a PHP DocBlock
  */
-class PhpDocTag
+class PHPDocTag
 {
     /**
      * @var string
@@ -59,7 +59,7 @@ class PhpDocTag
     }
 
     /**
-     * Add missing values from a PhpDocTag that represents the same entity in a
+     * Add missing values from an instance that represents the same entity in a
      * parent class or interface
      *
      * @param static $parent
@@ -67,8 +67,8 @@ class PhpDocTag
      */
     public function mergeInherited($parent)
     {
-        PhpDoc::mergeValue($this->Type, $parent->Type);
-        PhpDoc::mergeValue($this->Description, $parent->Description);
+        PHPDoc::mergeValue($this->Type, $parent->Type);
+        PHPDoc::mergeValue($this->Description, $parent->Description);
 
         return $this;
     }

@@ -487,7 +487,7 @@ EOF)
         }
 
         if ($docBlock) {
-            $this->PhpDoc = implode(\PHP_EOL, $docBlock);
+            $this->PHPDoc = implode(\PHP_EOL, $docBlock);
         }
 
         $blocks = [];

@@ -513,7 +513,7 @@ final class Reflect extends AbstractUtility
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead.
      */
-    public static function getParameterPhpDoc(
+    public static function getParameterPHPDoc(
         ReflectionParameter $parameter,
         string $classPrefix = '\\',
         ?callable $typeNameCallback = null,

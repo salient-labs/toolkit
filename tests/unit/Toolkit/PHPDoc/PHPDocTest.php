@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PhpDoc;
+namespace Salient\Tests\PHPDoc;
 
 use Salient\Contract\Core\Regex;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use Salient\PhpDoc\PhpDoc;
+use Salient\PHPDoc\PHPDoc;
 use Salient\Tests\TestCase;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\PhpDoc\PhpDoc
- * @covers \Salient\PhpDoc\PhpDocParamTag
- * @covers \Salient\PhpDoc\PhpDocReturnTag
- * @covers \Salient\PhpDoc\PhpDocTag
- * @covers \Salient\PhpDoc\PhpDocTemplateTag
- * @covers \Salient\PhpDoc\PhpDocVarTag
+ * @covers \Salient\PHPDoc\PHPDoc
+ * @covers \Salient\PHPDoc\PHPDocParamTag
+ * @covers \Salient\PHPDoc\PHPDocReturnTag
+ * @covers \Salient\PHPDoc\PHPDocTag
+ * @covers \Salient\PHPDoc\PHPDocTemplateTag
+ * @covers \Salient\PHPDoc\PHPDocVarTag
  */
-final class PhpDocTest extends TestCase
+final class PHPDocTest extends TestCase
 {
     /**
      * @dataProvider invalidDocBlockProvider
@@ -25,7 +25,7 @@ final class PhpDocTest extends TestCase
     public function testInvalidDocBlock(string $docBlock): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new PhpDoc($docBlock);
+        new PHPDoc($docBlock);
     }
 
     /**
@@ -81,7 +81,7 @@ final class PhpDocTest extends TestCase
             EOF,
         ];
 
-        $phpDoc = PhpDoc::fromDocBlocks($docBlocks);
+        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
 
         $this->assertNotNull($phpDoc);
         $this->assertSame('Summary from ClassB', $phpDoc->Summary);
@@ -150,7 +150,7 @@ final class PhpDocTest extends TestCase
         array $varTypes,
         array $varDescriptions
     ): void {
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
         $this->assertSame($description, Str::eolToNative($phpDoc->Description));
         $this->assertCount(count($varKeys), $phpDoc->Vars);
@@ -291,7 +291,7 @@ final class PhpDocTest extends TestCase
              * @return T
              */
             EOF;
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
         $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
@@ -321,7 +321,7 @@ final class PhpDocTest extends TestCase
              * @template TValue of object
              */
             EOF;
-        $phpDoc = new PhpDoc($docBlock, $classDocBlock);
+        $phpDoc = new PHPDoc($docBlock, $classDocBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
         $this->assertCount(4, $phpDoc->Templates);
@@ -365,7 +365,7 @@ final class PhpDocTest extends TestCase
              */
             EOF;
 
-        $phpDoc = new PhpDoc($docBlock, null, null, null, true);
+        $phpDoc = new PHPDoc($docBlock, null, null, null, true);
 
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame(<<<'EOF'
@@ -423,7 +423,7 @@ final class PhpDocTest extends TestCase
              *
              */
             EOF;
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame('Parts are surrounded by superfluous blank lines.', $phpDoc->Description);
         $this->assertCount(2, $phpDoc->Templates);
@@ -446,7 +446,7 @@ final class PhpDocTest extends TestCase
              * @template T of object
              */
             EOF;
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame('Summary @internal @template T of object', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
         $this->assertCount(0, $phpDoc->Templates);
@@ -460,7 +460,7 @@ final class PhpDocTest extends TestCase
              * Description of $arg
              */
             EOF;
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertCount(1, $phpDoc->Params);
         $this->assertSame('arg', $phpDoc->Params['arg']->Name ?? null);
         $this->assertNull($phpDoc->Params['arg']->Type ?? null);
@@ -472,7 +472,7 @@ final class PhpDocTest extends TestCase
      */
     public function testEol(string $docBlock, string $summary, string $description): void
     {
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
         $this->assertSame($description, $phpDoc->Description);
     }

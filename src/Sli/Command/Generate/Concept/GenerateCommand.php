@@ -21,9 +21,9 @@ use Salient\Core\AbstractEntity;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Introspector;
 use Salient\Core\ProviderContext;
-use Salient\PhpDoc\PhpDoc;
-use Salient\PhpDoc\PhpDocTag;
-use Salient\PhpDoc\PhpDocTemplateTag;
+use Salient\PHPDoc\PHPDoc;
+use Salient\PHPDoc\PHPDocTag;
+use Salient\PHPDoc\PHPDocTemplateTag;
 use Salient\Sli\Command\Concept\Command;
 use Salient\Sli\Support\TokenExtractor;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
@@ -128,10 +128,10 @@ abstract class GenerateCommand extends Command
      * The PHPDoc added before the generated entity
      *
      * {@see GenerateCommand::generate()} combines
-     * {@see GenerateCommand::$OutputDescription} and
-     * {@see GenerateCommand::$OutputPhpDoc} before applying PHPDoc delimiters.
+     * {@see GenerateCommand::$Description} and {@see GenerateCommand::$PHPDoc}
+     * before applying PHPDoc delimiters.
      */
-    protected string $PhpDoc;
+    protected string $PHPDoc;
 
     /**
      * Declared properties of the generated class
@@ -187,10 +187,10 @@ abstract class GenerateCommand extends Command
      */
     protected string $InputClassName;
 
-    protected ?PhpDoc $InputClassPhpDoc;
+    protected ?PHPDoc $InputClassPHPDoc;
 
     /**
-     * @var PhpDocTemplateTag[]
+     * @var PHPDocTemplateTag[]
      */
     protected array $InputClassTemplates;
 
@@ -271,7 +271,7 @@ abstract class GenerateCommand extends Command
         $this->OutputFile = null;
         unset($this->OutputClass);
         unset($this->OutputNamespace);
-        unset($this->PhpDoc);
+        unset($this->PHPDoc);
         $this->Extends = [];
         $this->Implements = [];
         $this->Uses = [];
@@ -317,9 +317,9 @@ abstract class GenerateCommand extends Command
     {
         $this->InputClass = new ReflectionClass($fqcn);
         $this->InputClassName = $this->InputClass->getName();
-        $this->InputClassPhpDoc = PhpDoc::fromDocBlocks(Reflect::getAllClassDocComments($this->InputClass));
-        $this->InputClassTemplates = $this->InputClassPhpDoc
-            ? $this->InputClassPhpDoc->Templates
+        $this->InputClassPHPDoc = PHPDoc::fromDocBlocks(Reflect::getAllClassDocComments($this->InputClass));
+        $this->InputClassTemplates = $this->InputClassPHPDoc
+            ? $this->InputClassPHPDoc->Templates
             : [];
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
@@ -358,7 +358,7 @@ abstract class GenerateCommand extends Command
     {
         unset($this->InputClass);
         unset($this->InputClassName);
-        unset($this->InputClassPhpDoc);
+        unset($this->InputClassPHPDoc);
         unset($this->InputClassTemplates);
         unset($this->InputClassType);
         unset($this->InputIntrospector);
@@ -380,10 +380,10 @@ abstract class GenerateCommand extends Command
     /**
      * Resolve PHPDoc templates to concrete types if possible
      *
-     * @param array<string,PhpDocTemplateTag> $templates
-     * @param array<string,PhpDocTemplateTag> $inputClassTemplates
+     * @param array<string,PHPDocTemplateTag> $templates
+     * @param array<string,PHPDocTemplateTag> $inputClassTemplates
      */
-    protected function resolveTemplates(string $type, array $templates, ?PhpDocTemplateTag &$template = null, array &$inputClassTemplates = []): string
+    protected function resolveTemplates(string $type, array $templates, ?PHPDocTemplateTag &$template = null, array &$inputClassTemplates = []): string
     {
         $seen = [];
         while ($tag = $templates[$type] ?? null) {
@@ -409,17 +409,17 @@ abstract class GenerateCommand extends Command
      * Resolve a PHPDoc type to a code-safe identifier where templates and PHP
      * types are resolved, using aliases from declaring classes if possible
      *
-     * @param PhpDocTag|string $type
-     * @param array<string,PhpDocTemplateTag> $templates
-     * @param array<string,PhpDocTemplateTag> $inputClassTemplates
+     * @param PHPDocTag|string $type
+     * @param array<string,PHPDocTemplateTag> $templates
+     * @param array<string,PHPDocTemplateTag> $inputClassTemplates
      */
-    protected function getPhpDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
+    protected function getPHPDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
     {
-        $subject = $type instanceof PhpDocTag
+        $subject = $type instanceof PHPDocTag
             ? Str::coalesce($type->Type, '')
             : $type;
 
-        return PhpDocTag::normaliseType(Pcre::replaceCallback(
+        return PHPDocTag::normaliseType(Pcre::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
             function ($match) use (
                 $type,
@@ -431,14 +431,14 @@ abstract class GenerateCommand extends Command
             ) {
                 $t = $this->resolveTemplates($match[0][0], $templates, $template, $inputClassTemplates);
                 $type = $template ?: $type;
-                if ($type instanceof PhpDocTag && $type->Class !== null) {
+                if ($type instanceof PHPDocTag && $type->Class !== null) {
                     $class = new ReflectionClass($type->Class);
                     $namespace = $class->getNamespaceName();
                     $filename = $class->getFileName();
                 }
                 // Recurse if template expansion occurred
                 if ($t !== $match[0][0]) {
-                    return $this->getPhpDocTypeAlias($t, $templates, $namespace, $filename);
+                    return $this->getPHPDocTypeAlias($t, $templates, $namespace, $filename);
                 }
                 // Leave reserved words and PHPDoc types (e.g. `class-string`)
                 // alone
@@ -632,7 +632,7 @@ abstract class GenerateCommand extends Command
 
         $phpDoc = Arr::implode($blank, [
             $this->Description ?? '',
-            $this->PhpDoc ?? '',
+            $this->PHPDoc ?? '',
             $this->ApiTag ? '@api' : '',
             '@generated',
         ], null);
@@ -640,7 +640,7 @@ abstract class GenerateCommand extends Command
         $lines =
             $phpDoc === ''
                 ? []
-                : $this->generatePhpDocBlock($phpDoc);
+                : $this->generatePHPDocBlock($phpDoc);
 
         $lines[] = Arr::implode(' ', [
             ...$this->Modifiers,
@@ -794,7 +794,7 @@ abstract class GenerateCommand extends Command
         string $visibility = GenerateCommand::VISIBILITY_PUBLIC
     ): array {
         return [
-            ...$this->generatePhpDocBlock($phpDoc),
+            ...$this->generatePHPDocBlock($phpDoc),
             sprintf(
                 '%s static function %s()%s%s',
                 $visibility,
@@ -891,7 +891,7 @@ abstract class GenerateCommand extends Command
             ? sprintf('%s function %s(%s)', $modifiers, $name, $params)
             : sprintf('%s function %s(%s): %s', $modifiers, $name, $params, $returnType);
 
-        $method = $this->generatePhpDocBlock($phpDoc);
+        $method = $this->generatePHPDocBlock($phpDoc);
 
         if ($this->OutputType === GenerateCommand::GENERATE_INTERFACE) {
             $method[] = "$declaration;";
@@ -1035,7 +1035,7 @@ abstract class GenerateCommand extends Command
      * @param string[]|string $phpDoc
      * @return string[]
      */
-    private function generatePhpDocBlock($phpDoc): array
+    private function generatePHPDocBlock($phpDoc): array
     {
         if ($phpDoc === [] ||
                 (is_string($phpDoc) && trim($phpDoc) === '')) {
