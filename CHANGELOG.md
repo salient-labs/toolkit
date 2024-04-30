@@ -10,6 +10,22 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.16] - 2024-04-30
+
+### Added
+
+- Add `CurlerInterface::withUri()`
+- Add `getHeaderValues()` and `get{First,Last,One}HeaderLine()` to `CurlerInterface` and `HttpMessageInterface`
+- Add `LinkPager`
+
+### Changed
+
+- Adopt "PHPDoc" nomenclature instead of "PhpDoc"
+
+### Fixed
+
+- Fix invalid `Inflect::format()` syntax in `Curler`
+
 ## [v0.99.15] - 2024-04-29
 
 This release includes a backward-incompatible rewrite of `Curler`, the toolkit's HTTP client, with PSR-7 and PSR-18 support, stackable middleware and many other improvements.
@@ -2412,6 +2428,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.16]: https://github.com/salient-labs/toolkit/compare/v0.99.15...v0.99.16
 [v0.99.15]: https://github.com/salient-labs/toolkit/compare/v0.99.14...v0.99.15
 [v0.99.14]: https://github.com/salient-labs/toolkit/compare/v0.99.13...v0.99.14
 [v0.99.13]: https://github.com/salient-labs/toolkit/compare/v0.99.12...v0.99.13
