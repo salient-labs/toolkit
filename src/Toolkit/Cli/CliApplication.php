@@ -340,8 +340,8 @@ class CliApplication extends Application implements CliApplicationInterface
             // - If $arg cannot be a valid subcommand, print terse usage info
             //   and return a non-zero exit status
             if (
-                $arg === null ||
-                !Pcre::match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)
+                $arg === null
+                || !Pcre::match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)
             ) {
                 $usage = $this->getUsage($name, $node);
                 if ($usage !== null) {
@@ -423,9 +423,9 @@ class CliApplication extends Application implements CliApplicationInterface
                 $name = $lastName;
             }
             if (
-                $node &&
-                $name !== null &&
-                ($usage = $this->getUsage($name, $node)) !== null
+                $node
+                && $name !== null
+                && ($usage = $this->getUsage($name, $node)) !== null
             ) {
                 Console::out("\n" . $usage);
             }

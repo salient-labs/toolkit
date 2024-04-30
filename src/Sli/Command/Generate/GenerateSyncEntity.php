@@ -226,8 +226,8 @@ EOF)
         $this->OutputClass = $class;
         $this->OutputNamespace = $namespace;
 
-        if ($this->ParentProperty !== null xor
-                $this->ChildrenProperty !== null) {
+        if ($this->ParentProperty !== null
+                xor $this->ChildrenProperty !== null) {
             throw new CliInvalidArgumentsException(
                 '--parent and --children must be used together'
             );
@@ -384,16 +384,16 @@ EOF)
                     continue;
                 }
 
-                if ((is_int($value) || is_string($value) || $value === null) &&
-                        Pcre::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Id$/', $key, $matches)) {
+                if ((is_int($value) || is_string($value) || $value === null)
+                        && Pcre::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Id$/', $key, $matches)) {
                     $key = $matches['class'];
                     $properties[$key] = "$key|null";
                     $tentativeOneToOne[$key] = $key;
                     continue;
                 }
 
-                if (Arr::ofArrayKey($value, true) &&
-                        Pcre::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Ids$/', $key, $matches)) {
+                if (Arr::ofArrayKey($value, true)
+                        && Pcre::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Ids$/', $key, $matches)) {
                     $key = $matches['class'];
                     $properties[$key] = "{$key}[]|null";
                     $tentativeOneToMany[$key] = $key;
@@ -487,7 +487,7 @@ EOF)
         }
 
         if ($docBlock) {
-            $this->PhpDoc = implode(\PHP_EOL, $docBlock);
+            $this->PHPDoc = implode(\PHP_EOL, $docBlock);
         }
 
         $blocks = [];

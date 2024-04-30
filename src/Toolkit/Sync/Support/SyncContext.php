@@ -137,9 +137,9 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             $filterKeys = [];
             foreach ($args[0] as $key => $value) {
                 if (
-                    is_int($key) ||
-                    ($key = trim($key)) === '' ||
-                    Test::isNumericKey($key)
+                    is_int($key)
+                    || ($key = trim($key)) === ''
+                    || Test::isNumericKey($key)
                 ) {
                     throw new SyncInvalidFilterSignatureException($operation, ...$args);
                 }
@@ -154,10 +154,10 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 unset($filterKeys[$key]);
 
                 if (!$normalised || !(
-                    $value === null ||
-                    is_int($value) ||
-                    is_string($value) ||
-                    Arr::ofArrayKey($value, true)
+                    $value === null
+                    || is_int($value)
+                    || is_string($value)
+                    || Arr::ofArrayKey($value, true)
                 )) {
                     continue;
                 }
@@ -234,8 +234,8 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         $clone = $this->clone();
         $clone->applyHydrationPolicy($policy, $entity, $depth);
 
-        if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy &&
-                $this->FallbackHydrationPolicy === $clone->FallbackHydrationPolicy) {
+        if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy
+                && $this->FallbackHydrationPolicy === $clone->FallbackHydrationPolicy) {
             return $this;
         }
 
@@ -261,8 +261,8 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     public function maybeThrowRecursionException(): void
     {
         if (
-            $this->LastRecursedInto &&
-            $this->LastRecursedInto === end($this->Stack)
+            $this->LastRecursedInto
+            && $this->LastRecursedInto === end($this->Stack)
         ) {
             throw new SyncEntityRecursionException(sprintf(
                 'Circular reference detected: %s',
@@ -545,8 +545,8 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     private function doGetFilter(string $key, bool $orValue, bool $claim = false, $type = null)
     {
         if (
-            !array_key_exists($key, $this->Filters) &&
-            !array_key_exists($key = Str::toSnakeCase($key), $this->Filters)
+            !array_key_exists($key, $this->Filters)
+            && !array_key_exists($key = Str::toSnakeCase($key), $this->Filters)
         ) {
             if (!array_key_exists($key, $this->FilterKeys)) {
                 return $orValue
@@ -667,8 +667,8 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 $this->FallbackHydrationPolicy,
             );
         } else {
-            $this->EntityHydrationPolicy +=
-                [$entity => $this->FallbackHydrationPolicy];
+            $this->EntityHydrationPolicy
+                += [$entity => $this->FallbackHydrationPolicy];
         }
 
         foreach ($this->EntityHydrationPolicy as $entityType => &$value) {

@@ -129,8 +129,8 @@ class GenerateTests extends GenerateCommand
                 $testCase = "{$namespace}\\{$name}TestCase";
                 if (class_exists($testCase)) {
                     if (
-                        $extendsGenerality === null ||
-                        $extendsGenerality > $generality
+                        $extendsGenerality === null
+                        || $extendsGenerality > $generality
                     ) {
                         $extends = $testCase;
                         $extendsGenerality = $generality;
@@ -155,9 +155,9 @@ class GenerateTests extends GenerateCommand
             $method = $_method->getName();
 
             if (
-                $_method->isFinal() &&
-                $_method->getDeclaringClass()->getName() !== $this->InputClassName &&
-                $method !== '__invoke'
+                $_method->isFinal()
+                && $_method->getDeclaringClass()->getName() !== $this->InputClassName
+                && $method !== '__invoke'
             ) {
                 continue;
             }

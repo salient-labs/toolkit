@@ -186,8 +186,8 @@ class HttpServer implements Immutable
         }
 
         return
-            ($this->ProxyTls && $this->ProxyPort === 443) ||
-            (!$this->ProxyTls && $this->ProxyPort === 80)
+            ($this->ProxyTls && $this->ProxyPort === 443)
+            || (!$this->ProxyTls && $this->ProxyPort === 80)
                 ? sprintf(
                     '%s://%s%s',
                     $this->ProxyTls ? 'https' : 'http',
@@ -342,9 +342,9 @@ class HttpServer implements Immutable
                     $startLine = explode(' ', substr($line, 0, -2));
 
                     if (
-                        count($startLine) !== 3 ||
-                        !HttpRequestMethod::hasValue($startLine[0]) ||
-                        !Pcre::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
+                        count($startLine) !== 3
+                        || !HttpRequestMethod::hasValue($startLine[0])
+                        || !Pcre::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
                     ) {
                         throw new HttpServerException(sprintf(
                             'Invalid request line from %s: %s',

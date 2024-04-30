@@ -55,41 +55,41 @@ class Uri implements UriInterface
     private const URI_HOST = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
 
     private const URI = <<<'REGEX'
-        ` ^
-        (?(DEFINE)
-          (?<unreserved> [-a-z0-9._~] )
-          (?<sub_delims> [!$&'()*+,;=] )
-          (?<pct_encoded> % [0-9a-f]{2} )
-          (?<reg_char> (?&unreserved) | (?&pct_encoded) | (?&sub_delims) )
-          (?<pchar> (?&reg_char) | [:@] )
-        )
-        (?: (?<scheme> [a-z] [-a-z0-9+.]* ) : )?+
-        (?:
-          //
-          (?<authority>
-            (?:
-              (?<userinfo>
-                (?<user> (?&reg_char)* )
-                (?: : (?<pass> (?: (?&reg_char) | : )* ) )?
-              )
-              @
-            )?+
-            (?<host> (?&reg_char)*+ | \[ (?<ipv6address> [0-9a-f:]++ ) \] )
-            (?: : (?<port> [0-9]+ ) )?+
-          )
-          # Path after authority must be empty or begin with "/"
-          (?= / | \? | \# | $ ) |
-          # Path cannot begin with "//" except after authority
-          (?= / ) (?! // ) |
-          # Rootless paths can only begin with a ":" segment after scheme
-          (?(<scheme>) (?= (?&pchar) ) | (?= (?&reg_char) | @ ) (?! [^/:]++ : ) ) |
-          (?= \? | \# | $ )
-        )
-        (?<path> (?: (?&pchar) | / )*+ )
-        (?: \? (?<query>    (?: (?&pchar) | [?/] )* ) )?+
-        (?: \# (?<fragment> (?: (?&pchar) | [?/] )* ) )?+
-        $ `ixD
-        REGEX;
+` ^
+(?(DEFINE)
+  (?<unreserved> [-a-z0-9._~] )
+  (?<sub_delims> [!$&'()*+,;=] )
+  (?<pct_encoded> % [0-9a-f]{2} )
+  (?<reg_char> (?&unreserved) | (?&pct_encoded) | (?&sub_delims) )
+  (?<pchar> (?&reg_char) | [:@] )
+)
+(?: (?<scheme> [a-z] [-a-z0-9+.]* ) : )?+
+(?:
+  //
+  (?<authority>
+    (?:
+      (?<userinfo>
+        (?<user> (?&reg_char)* )
+        (?: : (?<pass> (?: (?&reg_char) | : )* ) )?
+      )
+      @
+    )?+
+    (?<host> (?&reg_char)*+ | \[ (?<ipv6address> [0-9a-f:]++ ) \] )
+    (?: : (?<port> [0-9]+ ) )?+
+  )
+  # Path after authority must be empty or begin with "/"
+  (?= / | \? | \# | $ ) |
+  # Path cannot begin with "//" except after authority
+  (?= / ) (?! // ) |
+  # Rootless paths can only begin with a ":" segment after scheme
+  (?(<scheme>) (?= (?&pchar) ) | (?= (?&reg_char) | @ ) (?! [^/:]++ : ) ) |
+  (?= \? | \# | $ )
+)
+(?<path> (?: (?&pchar) | / )*+ )
+(?: \? (?<query>    (?: (?&pchar) | [?/] )* ) )?+
+(?: \# (?<fragment> (?: (?&pchar) | [?/] )* ) )?+
+$ `ixD
+REGEX;
 
     private const AUTHORITY_FORM = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
 
@@ -316,9 +316,9 @@ class Uri implements UriInterface
     public function getPort(): ?int
     {
         if (
-            $this->Scheme !== null &&
-            isset(static::SCHEME_PORT[$this->Scheme]) &&
-            static::SCHEME_PORT[$this->Scheme] === $this->Port
+            $this->Scheme !== null
+            && isset(static::SCHEME_PORT[$this->Scheme])
+            && static::SCHEME_PORT[$this->Scheme] === $this->Port
         ) {
             return null;
         }
@@ -437,9 +437,9 @@ class Uri implements UriInterface
         $uri = $this->removeDotSegments();
 
         if (
-            ($flags & self::EXPAND_EMPTY_PATH) &&
-            $uri->Path === '' &&
-            ($uri->Scheme === 'http' || $uri->Scheme === 'https')
+            ($flags & self::EXPAND_EMPTY_PATH)
+            && $uri->Path === ''
+            && ($uri->Scheme === 'http' || $uri->Scheme === 'https')
         ) {
             $uri = $uri->withPath('/');
         }
@@ -529,9 +529,9 @@ class Uri implements UriInterface
 
         $authority = $this->getAuthority();
         if (
-            $authority !== '' ||
-            $this->Host !== null ||
-            $this->Scheme === 'file'
+            $authority !== ''
+            || $this->Host !== null
+            || $this->Scheme === 'file'
         ) {
             $uri .= "//{$authority}";
         }
@@ -750,9 +750,9 @@ class Uri implements UriInterface
             }
 
             if (
-                $this->Scheme === null &&
-                $this->Path !== '' &&
-                Pcre::match('/^[^\/:]*+:/', $this->Path)
+                $this->Scheme === null
+                && $this->Path !== ''
+                && Pcre::match('/^[^\/:]*+:/', $this->Path)
             ) {
                 throw new InvalidArgumentException(
                     'Path cannot begin with colon segment in URI without scheme'

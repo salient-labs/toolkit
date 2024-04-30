@@ -7,7 +7,7 @@ use Salient\Contract\Cli\CliOptionType;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\AbstractFacade;
-use Salient\PhpDoc\PhpDoc;
+use Salient\PHPDoc\PHPDoc;
 use Salient\Sli\Catalog\EnvVar;
 use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use ReflectionMethod;
@@ -157,7 +157,7 @@ final class GenerateFacade extends GenerateCommand
             $getMethodFqsen = fn() => $this->getTypeAlias($declaring) . "::{$methodName}()";
             $_params = $_method->getParameters();
             $docBlocks = Reflect::getAllMethodDocComments($_method, null, $classDocBlocks);
-            $phpDoc = PhpDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
+            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
             $methodFilename = $_method->getFileName() ?: null;
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
 
@@ -180,15 +180,15 @@ final class GenerateFacade extends GenerateCommand
                     continue;
                 }
                 $method = $methodName;
-                if (strpos($method, '__') === 0 ||
-                        in_array($method, $this->SkipMethods)) {
+                if (strpos($method, '__') === 0
+                        || in_array($method, $this->SkipMethods)) {
                     continue;
                 }
 
                 $_type = $phpDoc->Return->Type ?? null;
                 if ($_type !== null) {
-                    /** @var PhpDoc $phpDoc */
-                    $type = $this->getPhpDocTypeAlias(
+                    /** @var PHPDoc $phpDoc */
+                    $type = $this->getPHPDocTypeAlias(
                         $phpDoc->Return,
                         $phpDoc->Templates,
                         $methodNamespace,
@@ -243,8 +243,8 @@ final class GenerateFacade extends GenerateCommand
                 $tag = $phpDoc->Params[$_param->getName()] ?? null;
                 // Override the declared type if defined in the PHPDoc
                 if (($tag->Type ?? null) !== null) {
-                    /** @var PhpDoc $phpDoc */
-                    $_type = $this->getPhpDocTypeAlias(
+                    /** @var PHPDoc $phpDoc */
+                    $_type = $this->getPHPDocTypeAlias(
                         $tag,
                         $phpDoc->Templates,
                         $methodNamespace,
@@ -255,7 +255,7 @@ final class GenerateFacade extends GenerateCommand
                 }
                 $params[] =
                     $declare
-                        ? Reflect::getParameterPhpDoc(
+                        ? Reflect::getParameterPHPDoc(
                             $_param,
                             $classPrefix,
                             fn(string $type): ?string =>
@@ -275,8 +275,8 @@ final class GenerateFacade extends GenerateCommand
 
             if ($declare) {
                 $params = array_filter($params);
-                $return = ($type && (!$_method->hasReturnType() ||
-                        Reflect::getTypeDeclaration(
+                $return = ($type && (!$_method->hasReturnType()
+                        || Reflect::getTypeDeclaration(
                             $_method->getReturnType(),
                             $classPrefix,
                             fn(string $type): ?string =>

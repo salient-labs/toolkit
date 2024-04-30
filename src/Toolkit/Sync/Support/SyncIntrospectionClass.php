@@ -171,16 +171,16 @@ final class SyncIntrospectionClass extends IntrospectionClass
                 $fn = function ($operation, string $method) use ($entity, $class, $namespace) {
                     // If $method has already been processed, the entity it services
                     // is ambiguous and it can't be used
-                    if (array_key_exists($method, $this->SyncOperationMethods) ||
-                            array_key_exists($method, $this->SyncOperationMagicMethods)) {
+                    if (array_key_exists($method, $this->SyncOperationMethods)
+                            || array_key_exists($method, $this->SyncOperationMagicMethods)) {
                         $this->SyncOperationMagicMethods[$method] = $this->SyncOperationMethods[$method] = null;
 
                         return;
                     }
-                    if ($class->hasMethod($method) &&
-                            ($_method = $class->getMethod($method))->isPublic()) {
-                        if ($_method->isStatic() ||
-                                !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace)) {
+                    if ($class->hasMethod($method)
+                            && ($_method = $class->getMethod($method))->isPublic()) {
+                        if ($_method->isStatic()
+                                || !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace)) {
                             $this->SyncOperationMethods[$method] = null;
 
                             return;

@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
+use Composer\Autoload\ClassLoader;
 use Salient\Cache\CacheStore;
 use Salient\Cli\CliApplication;
 use Salient\Cli\CliOption;
@@ -59,7 +60,12 @@ use Salient\Tests\Sync\Entity\Unimplemented;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+$dir = dirname(__DIR__);
+/** @var ClassLoader */
+$loader = require "$dir/vendor/autoload.php";
+
+$loader->addPsr4('Salient\\Sli\\', "$dir/src/Sli/");
+$loader->addPsr4('Salient\\Tests\\', ["$dir/tests/unit/Toolkit/", "$dir/tests/fixtures/Toolkit/"]);
 
 $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
@@ -104,7 +110,7 @@ $providers = [
     Unimplemented::class => [],
 ];
 
-$app = new CliApplication(dirname(__DIR__));
+$app = new CliApplication($dir);
 $generateFacade = new GenerateFacade($app);
 $generateBuilder = new GenerateBuilder($app);
 $generateEntity = new GenerateSyncEntity($app);
@@ -170,7 +176,7 @@ foreach ($builders as $class => $builder) {
 
 foreach ($entities as $class => $entityArgs) {
     $entity = array_shift($entityArgs);
-    $file = dirname(__DIR__) . "/tests/data/entity/{$entity}.json";
+    $file = "{$dir}/tests/data/entity/{$entity}.json";
     $save = false;
     if (is_file($file)) {
         array_unshift($entityArgs, '--json', $file);
@@ -194,13 +200,13 @@ foreach ($providers as $class => $providerArgs) {
 }
 
 foreach (File::find()
-        ->in(dirname(__DIR__))
+        ->in($dir)
         ->include('%/phpstan-baseline.*\.neon$%')
         ->doNotRecurse() as $file) {
     generated((string) $file);
 }
 
-$file = dirname(__DIR__) . '/.gitattributes';
+$file = "$dir/.gitattributes";
 $attributes = Pcre::grep(
     '/(^#| linguist-generated$)/',
     Arr::trim(file($file)),

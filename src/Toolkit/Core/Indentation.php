@@ -121,8 +121,8 @@ final class Indentation
             $prevOffset = $offset;
 
             if (
-                ($prevLineSpaces && $prevLineTabs) ||
-                ($lineSpaces && $lineTabs)
+                ($prevLineSpaces && $prevLineTabs)
+                || ($lineSpaces && $lineTabs)
             ) {
                 continue;
             }
@@ -133,15 +133,16 @@ final class Indentation
                 // Skip if the difference could be alignment-related and doesn't
                 // match the file's default indentation
                 if (
-                    $diffSpaces &&
-                    $lineSpaces &&
-                    $lineSpaces - 1 < strlen($_prevLine) &&
-                    $_line[$lineSpaces] !== ' ' &&
-                    $_prevLine[$lineSpaces - 1] === ' ' &&
-                    $_prevLine[-1] === ',' && !(
-                        $default &&
-                        $default->InsertSpaces &&
-                        $default->TabSize === $diffSpaces
+                    $diffSpaces
+                    && $lineSpaces
+                    && $lineSpaces - 1 < strlen($_prevLine)
+                    && $_line[$lineSpaces] !== ' '
+                    && $_prevLine[$lineSpaces - 1] === ' '
+                    && $_prevLine[-1] === ','
+                    && !(
+                        $default
+                        && $default->InsertSpaces
+                        && $default->TabSize === $diffSpaces
                     )
                 ) {
                     $prevLine = $_prevLine;
@@ -181,9 +182,9 @@ final class Indentation
         }
 
         if (
-            $default &&
-            $default->InsertSpaces === $insertSpaces &&
-            $default->TabSize === $tabSize
+            $default
+            && $default->InsertSpaces === $insertSpaces
+            && $default->TabSize === $tabSize
         ) {
             return $default;
         }

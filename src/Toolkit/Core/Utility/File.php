@@ -180,9 +180,9 @@ final class File extends AbstractUtility
         }
         $parent = dirname($directory);
         $result =
-            (is_dir($parent) || @mkdir($parent, 0777, true)) &&
-            @mkdir($directory, $permissions) &&
-            @chmod($directory, $permissions);
+            (is_dir($parent) || @mkdir($parent, 0777, true))
+            && @mkdir($directory, $permissions)
+            && @chmod($directory, $permissions);
         self::maybeThrow($result, 'Error creating directory: %s', $directory);
     }
 
@@ -330,9 +330,9 @@ final class File extends AbstractUtility
             if (!$windows) {
                 foreach ($files->noFiles() as $dir) {
                     if (
-                        $dir->isReadable() &&
-                        $dir->isWritable() &&
-                        $dir->isExecutable()
+                        $dir->isReadable()
+                        && $dir->isWritable()
+                        && $dir->isExecutable()
                     ) {
                         continue;
                     }
@@ -419,8 +419,8 @@ final class File extends AbstractUtility
         $stat2 = self::stat($filename2);
 
         return
-            $stat1['dev'] === $stat2['dev'] &&
-            $stat1['ino'] === $stat2['ino'];
+            $stat1['dev'] === $stat2['dev']
+            && $stat1['ino'] === $stat2['ino'];
     }
 
     /**
@@ -549,9 +549,9 @@ final class File extends AbstractUtility
      */
     public static function isSeekableStream($value): bool
     {
-        return self::isStream($value) &&
+        return self::isStream($value)
             // @phpstan-ignore-next-line
-            (stream_get_meta_data($value)['seekable'] ?? false);
+            && (stream_get_meta_data($value)['seekable'] ?? false);
     }
 
     /**
@@ -895,8 +895,8 @@ final class File extends AbstractUtility
         $fromIsResource = is_resource($from);
         $toIsResource = is_resource($to);
         if (
-            ($fromIsResource xor $toIsResource) ||
-            (Test::isStringable($from) xor Test::isStringable($to))
+            ($fromIsResource xor $toIsResource)
+            || (Test::isStringable($from) xor Test::isStringable($to))
         ) {
             throw new InvalidArgumentException(
                 'Argument #1 ($from) and argument #2 ($to) must both be Stringable|string or resource'

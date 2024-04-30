@@ -228,9 +228,9 @@ final class CliOptionBuilderTest extends TestCase
         foreach ($constructor->getParameters() as $param) {
             $name = $param->getName();
             if (
-                $param->isPassedByReference() ||
-                $option->issetB($name) ||
-                method_exists(AbstractBuilder::class, $name)
+                $param->isPassedByReference()
+                || $option->issetB($name)
+                || method_exists(AbstractBuilder::class, $name)
             ) {
                 continue;
             }

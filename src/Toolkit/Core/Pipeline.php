@@ -410,8 +410,8 @@ final class Pipeline implements
             );
 
             if (
-                $this->Unless &&
-                ($this->Unless)($result, $this, $this->Arg) !== false
+                $this->Unless
+                && ($this->Unless)($result, $this, $this->Arg) !== false
             ) {
                 continue;
             }

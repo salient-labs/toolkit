@@ -321,8 +321,8 @@ class Application extends Container implements ApplicationInterface
         $this->WorkingDirectory = File::getcwd();
 
         $this->RunningFromSource =
-            !extension_loaded('Phar') ||
-            Phar::running() === '';
+            !extension_loaded('Phar')
+            || Phar::running() === '';
 
         if ($this->RunningFromSource) {
             $files = [];
@@ -447,10 +447,10 @@ class Application extends Container implements ApplicationInterface
         $env = Env::environment();
 
         return
-            $env === 'production' ||
-            ($env === null &&
-                (!$this->RunningFromSource ||
-                    !Package::hasDevPackages()));
+            $env === 'production'
+            || ($env === null
+                && (!$this->RunningFromSource
+                    || !Package::hasDevPackages()));
     }
 
     /**
@@ -496,8 +496,8 @@ class Application extends Container implements ApplicationInterface
      */
     final public function stopCache()
     {
-        if (!Cache::isLoaded() ||
-                !File::same($this->getCacheDb(false), Cache::getFilename())) {
+        if (!Cache::isLoaded()
+                || !File::same($this->getCacheDb(false), Cache::getFilename())) {
             return $this;
         }
         Cache::close();
@@ -519,8 +519,8 @@ class Application extends Container implements ApplicationInterface
             $this->LogTargets[$name] = $target;
         }
 
-        if (($debug || ($debug === null && Env::debug())) &&
-                !isset($this->DebugLogTargets[$name])) {
+        if (($debug || ($debug === null && Env::debug()))
+                && !isset($this->DebugLogTargets[$name])) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, LevelGroup::ALL);
             $this->DebugLogTargets[$name] = $target;
@@ -577,8 +577,8 @@ class Application extends Container implements ApplicationInterface
      */
     final public function stopSync()
     {
-        if (!Sync::isLoaded() ||
-                !File::same($this->getSyncDb(false), Sync::getFilename())) {
+        if (!Sync::isLoaded()
+                || !File::same($this->getSyncDb(false), Sync::getFilename())) {
             return $this;
         }
         Sync::close();

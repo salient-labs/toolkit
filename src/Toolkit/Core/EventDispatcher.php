@@ -98,8 +98,8 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
 
         foreach ($listeners as $listener) {
             if (
-                $event instanceof StoppableEventInterface &&
-                $event->isPropagationStopped()
+                $event instanceof StoppableEventInterface
+                && $event->isPropagationStopped()
             ) {
                 break;
             }

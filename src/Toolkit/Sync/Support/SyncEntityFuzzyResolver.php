@@ -115,9 +115,9 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
         // Throw an exception if one match is required but the list of potential
         // matches is never narrowed
         if (
-            $requireOneMatch &&
-            $uncertaintyThreshold === null &&
-            !($algorithm & (Algorithm::SAME | Algorithm::CONTAINS))
+            $requireOneMatch
+            && $uncertaintyThreshold === null
+            && !($algorithm & (Algorithm::SAME | Algorithm::CONTAINS))
         ) {
             throw new LogicException(
                 '$requireOneMatch cannot be true when $uncertaintyThreshold is null'
@@ -169,8 +169,8 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             }
 
             $threshold =
-                $this->RequireOneMatch &&
-                $algorithm & (Algorithm::SAME | Algorithm::CONTAINS)
+                $this->RequireOneMatch
+                && $algorithm & (Algorithm::SAME | Algorithm::CONTAINS)
                     ? 1.0
                     : ($this->UncertaintyThreshold === null
                         ? null
@@ -192,8 +192,8 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
                     $algorithm,
                 );
                 if ($threshold !== null && (
-                    ($threshold !== 0.0 && $entityUncertainty >= $threshold) ||
-                    ($threshold === 0.0 && $entityUncertainty > $threshold)
+                    ($threshold !== 0.0 && $entityUncertainty >= $threshold)
+                    || ($threshold === 0.0 && $entityUncertainty > $threshold)
                 )) {
                     continue;
                 }
@@ -272,8 +272,8 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
 
             case Algorithm::CONTAINS:
                 return
-                    strpos($string2, $string1) !== false ||
-                    strpos($string1, $string2) !== false
+                    strpos($string2, $string1) !== false
+                    || strpos($string1, $string2) !== false
                         ? 0.0
                         : 1.0;
 

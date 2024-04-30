@@ -76,8 +76,8 @@ final class ArrayMapper
         $this->RemoveNull = (bool) ($flags & ArrayMapperFlag::REMOVE_NULL);
 
         if (
-            count($keyMap) === count($this->OutputMap) &&
-            $conformity === ListConformity::COMPLETE
+            count($keyMap) === count($this->OutputMap)
+            && $conformity === ListConformity::COMPLETE
         ) {
             $this->OutputKeys = array_keys($this->OutputMap);
             return;

@@ -207,8 +207,8 @@ class GenerateSyncProvider extends GenerateCommand
                 $paramCode = Arr::whereNotEmpty([$context . ' $ctx', $paramCode]);
 
                 $phpDoc = [];
-                if ($paramDoc !== '' &&
-                        (SyncIntrospector::isListOperation($op) || $op === SyncOperation::READ)) {
+                if ($paramDoc !== ''
+                        && (SyncIntrospector::isListOperation($op) || $op === SyncOperation::READ)) {
                     $phpDoc[] = "@param $paramDoc";
                 }
                 if (SyncIntrospector::isListOperation($op)) {
@@ -234,7 +234,7 @@ class GenerateSyncProvider extends GenerateCommand
         }
 
         if ($docBlock) {
-            $this->PhpDoc = implode(\PHP_EOL, $docBlock);
+            $this->PHPDoc = implode(\PHP_EOL, $docBlock);
         }
 
         $this->handleOutput($this->generate());

@@ -82,8 +82,8 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 
     public function getLongDescription(): ?string
     {
-        !$this->Providers ||
-            $description =
+        !$this->Providers
+            || $description =
                 <<<EOF
 If no providers are given, all providers are checked.
 

@@ -178,16 +178,16 @@ final class StrTest extends TestCase
                 <<<'EOF'
 
 
-                EOF,
+EOF,
                 "\n",
             ],
             [
                 <<<'EOF'
-                line1
-                line2
+line1
+line2
 
 
-                EOF,
+EOF,
                 "line1\nline2\n\n",
             ],
         ];
@@ -220,16 +220,16 @@ final class StrTest extends TestCase
                 <<<'EOF'
 
 
-                EOF,
+EOF,
             ],
             [
                 "line1\nline2\n\n",
                 <<<'EOF'
-                line1
-                line2
+line1
+line2
 
 
-                EOF,
+EOF,
             ],
         ];
     }
@@ -486,13 +486,13 @@ final class StrTest extends TestCase
             ["   \nabc ", "\t\nabc\t", 4, 2],
             [
                 <<<EOF
-                    abc de  f       g
-                1   23  4
-                EOF,
+    abc de  f       g
+1   23  4
+EOF,
                 <<<EOF
-                \tabc\tde\tf\t\tg
-                1\t23\t4
-                EOF,
+\tabc\tde\tf\t\tg
+1\t23\t4
+EOF,
                 4,
             ],
         ];
@@ -543,13 +543,13 @@ final class StrTest extends TestCase
             ["   \n    abc\t", "\t\n\tabc\t", 4, false, 2],
             [
                 <<<EOF
-                    abc\tde\tf\t\tg
-                1\t23\t4
-                EOF,
+    abc\tde\tf\t\tg
+1\t23\t4
+EOF,
                 <<<EOF
-                \tabc\tde\tf\t\tg
-                1\t23\t4
-                EOF,
+\tabc\tde\tf\t\tg
+1\t23\t4
+EOF,
                 4,
             ],
         ];
@@ -693,164 +693,164 @@ final class StrTest extends TestCase
         return [
             'empty' => [
                 <<<'EOF'
-                EOF,
+EOF,
                 <<<'EOF'
-                EOF,
+EOF,
             ],
             'unwrapped' => [
                 <<<'EOF'
-                Tempor in mollit ad esse.
-                EOF,
+Tempor in mollit ad esse.
+EOF,
                 <<<'EOF'
-                Tempor in mollit ad esse.
-                EOF,
+Tempor in mollit ad esse.
+EOF,
             ],
             'paragraph + list + indent' => [
                 <<<'EOF'
-                Tempor pariatur nulla esse velit esse:
-                - Ad officia ex   reprehenderit sint et.
-                - Ea occaecat et aliqua ea officia cupidatat ad nulla cillum.
-                - Proident ullamco id eu id.
+Tempor pariatur nulla esse velit esse:
+- Ad officia ex   reprehenderit sint et.
+- Ea occaecat et aliqua ea officia cupidatat ad nulla cillum.
+- Proident ullamco id eu id.
 
-                Amet duis aliqua qui laboris ullamco dolor nostrud irure commodo ad eu anim enim.
+Amet duis aliqua qui laboris ullamco dolor nostrud irure commodo ad eu anim enim.
 
-                    Cillum adipisicing sit cillum
-                    sunt elit magna fugiat do in
-                    deserunt ut Lorem aliqua.
+    Cillum adipisicing sit cillum
+    sunt elit magna fugiat do in
+    deserunt ut Lorem aliqua.
 
 
-                EOF,
+EOF,
                 <<<'EOF'
-                Tempor pariatur nulla
-                esse velit esse:
-                - Ad officia ex
-                  reprehenderit sint et.
-                - Ea occaecat et aliqua ea officia
-                cupidatat ad nulla cillum.
-                - Proident ullamco id eu id.
+Tempor pariatur nulla
+esse velit esse:
+- Ad officia ex
+  reprehenderit sint et.
+- Ea occaecat et aliqua ea officia
+cupidatat ad nulla cillum.
+- Proident ullamco id eu id.
 
-                Amet duis aliqua qui laboris
-                ullamco dolor nostrud irure
-                commodo ad eu anim enim.
+Amet duis aliqua qui laboris
+ullamco dolor nostrud irure
+commodo ad eu anim enim.
 
-                    Cillum adipisicing sit cillum
-                    sunt elit magna fugiat do in
-                    deserunt ut Lorem aliqua.
+    Cillum adipisicing sit cillum
+    sunt elit magna fugiat do in
+    deserunt ut Lorem aliqua.
 
 
-                EOF,
+EOF,
             ],
             'leading + trailing + inner lines' => [
                 <<<'EOF'
-                 Est   esse sunt velit ea. 
-                EOF,
+ Est   esse sunt velit ea. 
+EOF,
                 <<<'EOF'
 
-                Est   esse
-                sunt velit
-                ea.
+Est   esse
+sunt velit
+ea.
 
-                EOF,
+EOF,
             ],
             'escaped #1' => [
                 <<<'EOF'
-                Nisi aliqua id in cupidatat\ consectetur irure ad nisi Lorem non ea reprehenderit id eu.
-                EOF,
+Nisi aliqua id in cupidatat\ consectetur irure ad nisi Lorem non ea reprehenderit id eu.
+EOF,
                 <<<'EOF'
-                Nisi aliqua id in cupidatat\
-                consectetur irure ad nisi
-                Lorem non ea reprehenderit id eu.
-                EOF,
+Nisi aliqua id in cupidatat\
+consectetur irure ad nisi
+Lorem non ea reprehenderit id eu.
+EOF,
             ],
             'escaped #2' => [
                 <<<'EOF'
-                Nisi aliqua id in cupidatat\
-                consectetur irure ad nisi Lorem non ea reprehenderit id eu.
-                EOF,
+Nisi aliqua id in cupidatat\
+consectetur irure ad nisi Lorem non ea reprehenderit id eu.
+EOF,
                 <<<'EOF'
-                Nisi aliqua id in cupidatat\
-                consectetur irure ad nisi
-                Lorem non ea reprehenderit id eu.
-                EOF,
+Nisi aliqua id in cupidatat\
+consectetur irure ad nisi
+Lorem non ea reprehenderit id eu.
+EOF,
                 \PHP_EOL,
                 false,
             ],
             'trimmed #1 (baseline)' => [
                 <<<'EOF'
-                Est magna\  voluptate  minim est.
+Est magna\  voluptate  minim est.
 
-                 
+ 
 
 
-                EOF,
+EOF,
                 <<<'EOF'
-                Est magna\ 
-                voluptate 
-                minim est.
+Est magna\ 
+voluptate 
+minim est.
 
-                 
+ 
 
 
-                EOF,
+EOF,
                 \PHP_EOL,
             ],
             'trimmed #2 (+ trimTrailingWhitespace)' => [
                 <<<'EOF'
-                Est magna\ voluptate minim est.
+Est magna\ voluptate minim est.
 
 
 
 
-                EOF,
+EOF,
                 <<<'EOF'
-                Est magna\ 
-                voluptate 
-                minim est.
+Est magna\ 
+voluptate 
+minim est.
 
-                 
+ 
 
 
-                EOF,
+EOF,
                 \PHP_EOL,
                 true,
                 true,
             ],
             'trimmed #3 (- ignoreEscapes)' => [
                 <<<'EOF'
-                Est magna\  voluptate minim est.
+Est magna\  voluptate minim est.
 
 
 
 
-                EOF,
+EOF,
                 <<<'EOF'
-                Est magna\ 
-                voluptate 
-                minim est.
+Est magna\ 
+voluptate 
+minim est.
 
-                 
+ 
 
 
-                EOF,
+EOF,
                 \PHP_EOL,
                 false,
                 true,
             ],
             'trimmed #4 (+ collapseBlankLines)' => [
                 <<<'EOF'
-                Est magna\  voluptate minim est.
+Est magna\  voluptate minim est.
 
 
-                EOF,
+EOF,
                 <<<'EOF'
-                Est magna\ 
-                voluptate 
-                minim est.
+Est magna\ 
+voluptate 
+minim est.
 
-                 
+ 
 
 
-                EOF,
+EOF,
                 \PHP_EOL,
                 false,
                 true,
@@ -1071,117 +1071,117 @@ final class StrTest extends TestCase
     public static function mergeListsProvider(): array
     {
         $input1 = <<<EOF
-            - Before lists
+- Before lists
 
-            Section:
-            - d
-            Other section:
-            - <not a letter>
-            Without a subsequent list
-            Section:
-            - a
-            - b
-            Section:
-            - c
-            - b
-            - d
-            EOF;
+Section:
+- d
+Other section:
+- <not a letter>
+Without a subsequent list
+Section:
+- a
+- b
+Section:
+- c
+- b
+- d
+EOF;
 
         $input2 = <<<EOF
-            - Before lists
-            📍 Section:
-            - list item
-            - another
+- Before lists
+📍 Section:
+- list item
+- another
 
-            Other section:
-            - item i
-            - item ii
+Other section:
+- item i
+- item ii
 
-            - Standalone
+- Standalone
 
-            Also standalone
+Also standalone
 
-            Section:
-            - another
-            - and another
-            EOF;
+Section:
+- another
+- and another
+EOF;
 
         $input3 = <<<EOF
-            ### Changes
+### Changes
 
-            - Description
+- Description
 
-            - Description
-              over
-              multiple
+- Description
+  over
+  multiple
 
-              ```
-              lines
-              ```
+  ```
+  lines
+  ```
 
-            ### Changes
+### Changes
 
-            - Description
-              with different details
+- Description
+  with different details
 
-            - Description
-              over
-              multiple
+- Description
+  over
+  multiple
 
-              ```
-              lines
-              ```
+  ```
+  lines
+  ```
 
 
-            EOF;
+EOF;
 
         $input4 = <<<EOF
-            - Description
-            - Description
-              over
-              multiple
+- Description
+- Description
+  over
+  multiple
 
-              ```
-              lines
-              ```
-            - Description
-              with different details
-            - Description
-              over
-              multiple
+  ```
+  lines
+  ```
+- Description
+  with different details
+- Description
+  over
+  multiple
 
-              ```
-              lines
-              ```
-            EOF;
+  ```
+  lines
+  ```
+EOF;
 
         return [
             'Default' => [
                 <<<EOF
-                - Before lists
-                Without a subsequent list
-                Section:
-                - d
-                - a
-                - b
-                - c
-                Other section:
-                - <not a letter>
-                EOF,
+- Before lists
+Without a subsequent list
+Section:
+- d
+- a
+- b
+- c
+Other section:
+- <not a letter>
+EOF,
                 $input1,
             ],
             'Default (clean)' => [
                 <<<EOF
-                Before lists
-                Without a subsequent list
-                Section:
-                - d
-                - a
-                - b
-                - c
-                Other section:
-                - <not a letter>
-                EOF,
+Before lists
+Without a subsequent list
+Section:
+- d
+- a
+- b
+- c
+Other section:
+- <not a letter>
+EOF,
                 $input1,
                 "\n",
                 null,
@@ -1190,75 +1190,75 @@ final class StrTest extends TestCase
             ],
             'Markdown' => [
                 <<<EOF
-                - Before lists
+- Before lists
 
-                Without a subsequent list
+Without a subsequent list
 
-                Section:
+Section:
 
-                - d
-                - a
-                - b
-                - c
+- d
+- a
+- b
+- c
 
-                Other section:
+Other section:
 
-                - <not a letter>
-                EOF,
+- <not a letter>
+EOF,
                 $input1,
                 "\n\n",
             ],
             'Nested' => [
                 <<<EOF
-                - Before lists
+- Before lists
 
-                - Without a subsequent list
+- Without a subsequent list
 
-                - Section:
+- Section:
 
-                  - d
-                  - a
-                  - b
-                  - c
+  - d
+  - a
+  - b
+  - c
 
-                - Other section:
+- Other section:
 
-                  - <not a letter>
-                EOF,
+  - <not a letter>
+EOF,
                 $input1,
                 "\n\n",
                 '-',
             ],
             'Default (multibyte)' => [
                 <<<EOF
-                - Before lists
-                - Standalone
-                📍 Also standalone
-                📍 Section:
-                  - list item
-                  - another
-                  - and another
-                📍 Other section:
-                  - item i
-                  - item ii
-                EOF,
+- Before lists
+- Standalone
+📍 Also standalone
+📍 Section:
+  - list item
+  - another
+  - and another
+📍 Other section:
+  - item i
+  - item ii
+EOF,
                 $input2,
                 "\n",
                 '📍',
             ],
             'Default (multibyte, clean)' => [
                 <<<EOF
-                📍 Before lists
-                📍 Standalone
-                📍 Also standalone
-                📍 Section:
-                  - list item
-                  - another
-                  - and another
-                📍 Other section:
-                  - item i
-                  - item ii
-                EOF,
+📍 Before lists
+📍 Standalone
+📍 Also standalone
+📍 Section:
+  - list item
+  - another
+  - and another
+📍 Other section:
+  - item i
+  - item ii
+EOF,
                 $input2,
                 "\n",
                 '📍',
@@ -1267,41 +1267,41 @@ final class StrTest extends TestCase
             ],
             'Markdown (multibyte)' => [
                 <<<EOF
-                - Before lists
-                - Standalone
+- Before lists
+- Standalone
 
-                📍 Also standalone
+📍 Also standalone
 
-                📍 Section:
+📍 Section:
 
-                  - list item
-                  - another
-                  - and another
+  - list item
+  - another
+  - and another
 
-                📍 Other section:
+📍 Other section:
 
-                  - item i
-                  - item ii
-                EOF,
+  - item i
+  - item ii
+EOF,
                 $input2,
                 "\n\n",
                 '📍',
             ],
             'Markdown (multiline #1, loose)' => [
                 <<<EOF
-                ### Changes
+### Changes
 
-                - Description
-                - Description
-                  over
-                  multiple
+- Description
+- Description
+  over
+  multiple
 
-                  ```
-                  lines
-                  ```
-                - Description
-                  with different details
-                EOF,
+  ```
+  lines
+  ```
+- Description
+  with different details
+EOF,
                 $input3,
                 "\n\n",
                 null,
@@ -1311,36 +1311,36 @@ final class StrTest extends TestCase
             ],
             'Markdown (multiline #1, not loose)' => [
                 <<<EOF
-                - Description
-                  over
-                  multiple
+- Description
+  over
+  multiple
 
-                  ```
-                  lines
-                  ```
+  ```
+  lines
+  ```
 
-                ### Changes
+### Changes
 
-                - Description
-                - Description
-                  with different details
-                EOF,
+- Description
+- Description
+  with different details
+EOF,
                 $input3,
                 "\n\n",
             ],
             'Markdown (multiline #2)' => [
                 <<<EOF
-                - Description
-                - Description
-                  over
-                  multiple
+- Description
+- Description
+  over
+  multiple
 
-                  ```
-                  lines
-                  ```
-                - Description
-                  with different details
-                EOF,
+  ```
+  lines
+  ```
+- Description
+  with different details
+EOF,
                 $input4,
                 "\n\n",
             ],

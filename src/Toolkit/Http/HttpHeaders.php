@@ -46,19 +46,19 @@ class HttpHeaders implements HttpHeadersInterface
     private const HTTP_HEADER_FIELD_VALUE = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
 
     private const HTTP_HEADER_FIELD = <<<'REGEX'
-        / ^
-        (?(DEFINE)
-          (?<token> [-0-9a-z!#$%&'*+.^_`|~]++ )
-          (?<field_vchar> [\x21-\x7e\x80-\xff]++ )
-          (?<field_content> (?&field_vchar) (?: \h++ (?&field_vchar) )*+ )
-        )
-        (?:
-          (?<name> (?&token) ) (?<bad_whitespace> \h++ )?+ : \h*+ (?<value> (?&field_content)? ) |
-          \h++ (?<extended> (?&field_content)? )
-        )
-        (?<carry> \h++ )?
-        $ /xiD
-        REGEX;
+/ ^
+(?(DEFINE)
+  (?<token> [-0-9a-z!#$%&'*+.^_`|~]++ )
+  (?<field_vchar> [\x21-\x7e\x80-\xff]++ )
+  (?<field_content> (?&field_vchar) (?: \h++ (?&field_vchar) )*+ )
+)
+(?:
+  (?<name> (?&token) ) (?<bad_whitespace> \h++ )?+ : \h*+ (?<value> (?&field_content)? ) |
+  \h++ (?<extended> (?&field_content)? )
+)
+(?<carry> \h++ )?
+$ /xiD
+REGEX;
 
     /**
      * [ [ Name => value ], ... ]
@@ -299,8 +299,8 @@ class HttpHeaders implements HttpHeadersInterface
         $value = null;
         if ($strict) {
             $line = substr($line, 0, -2);
-            if (!Pcre::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL) ||
-                    $matches['bad_whitespace'] !== null) {
+            if (!Pcre::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL)
+                    || $matches['bad_whitespace'] !== null) {
                 throw new InvalidArgumentException(sprintf('Invalid HTTP header field: %s', $line));
             }
             // Section 3.2.4 of [RFC7230]: "A user agent that receives an
@@ -448,11 +448,11 @@ class HttpHeaders implements HttpHeadersInterface
             $values = (array) $value;
             $lower = Str::lower($key);
             if (
-                !$addToExisting &&
+                !$addToExisting
                 // Checking against $this->Index instead of $index means any
                 // duplicates in $items will be preserved
-                isset($this->Index[$lower]) &&
-                !($unset[$lower] ?? false)
+                && isset($this->Index[$lower])
+                && !($unset[$lower] ?? false)
             ) {
                 $unset[$lower] = true;
                 foreach ($index[$lower] as $i) {
@@ -469,8 +469,8 @@ class HttpHeaders implements HttpHeadersInterface
         }
 
         if (
-            ($addToExisting && !$applied) ||
-            $this->getIndexValues($headers, $index) === $this->getIndexValues($this->Headers, $this->Index)
+            ($addToExisting && !$applied)
+            || $this->getIndexValues($headers, $index) === $this->getIndexValues($this->Headers, $this->Index)
         ) {
             return $this;
         }

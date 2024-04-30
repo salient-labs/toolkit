@@ -51,17 +51,17 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
         return [
             [
                 <<<EOF
-                ==> Sending heartbeat request to 1 provider
-                 -> Checking JSONPlaceholder { http://localhost:3001 } [#1]{$cr}
-                ==> Connected to JSONPlaceholder { http://localhost:3001 } as Leanne Graham
-                 -> Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
-                 // 1 provider checked without errors
-                ==> Sending heartbeat request to 1 provider
-                 -> Checking JSONPlaceholder { http://localhost:3001 } [#1]{$cr}
-                 -> Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
-                 // 1 provider checked without errors
+==> Sending heartbeat request to 1 provider
+ -> Checking JSONPlaceholder { http://localhost:3001 } [#1]{$cr}
+==> Connected to JSONPlaceholder { http://localhost:3001 } as Leanne Graham
+ -> Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
+ // 1 provider checked without errors
+==> Sending heartbeat request to 1 provider
+ -> Checking JSONPlaceholder { http://localhost:3001 } [#1]{$cr}
+ -> Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
+ // 1 provider checked without errors
 
-                EOF,
+EOF,
                 0,
                 [],
                 [

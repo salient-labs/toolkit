@@ -1,12 +1,10 @@
-/composer.lock
+#/composer.lock
 /vendor
 composer.phar
 
 .env
 *.log
 /var
-!/tests/.env
-/tests/.tmp
 
 /build
 /docs/api

@@ -11,8 +11,8 @@ use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
 use Salient\Core\AbstractBuilder;
 use Salient\Core\Introspector;
-use Salient\PhpDoc\PhpDoc;
-use Salient\PhpDoc\PhpDocTemplateTag;
+use Salient\PHPDoc\PHPDoc;
+use Salient\PHPDoc\PHPDocTemplateTag;
 use Salient\Sli\Catalog\EnvVar;
 use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use Closure;
@@ -193,7 +193,7 @@ EOF)
          */
         $_params = [];
 
-        /** @var array<string,array<string,PhpDocTemplateTag>> */
+        /** @var array<string,array<string,PHPDocTemplateTag>> */
         $declareTemplates = [];
 
         /**
@@ -278,9 +278,9 @@ EOF)
         /**
          * Constructor PHPDoc
          *
-         * @var PhpDoc|null
+         * @var PHPDoc|null
          */
-        $_phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $_constructor->getName() . '()');
+        $_phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $_constructor->getName() . '()');
 
         $names = array_keys($_params + $_properties);
         foreach ($names as $name) {
@@ -294,9 +294,9 @@ EOF)
                 /**
                  * Property PHPDoc
                  *
-                 * @var PhpDoc|null
+                 * @var PHPDoc|null
                  */
-                $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
+                $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
@@ -308,9 +308,9 @@ EOF)
                     ?? null;
 
                 if ($_type !== null) {
-                    /** @var PhpDoc $phpDoc */
+                    /** @var PHPDoc $phpDoc */
                     $templates = [];
-                    $type = $this->getPhpDocTypeAlias(
+                    $type = $this->getPHPDocTypeAlias(
                         $tag,
                         $phpDoc->Templates,
                         $propertyNamespace,
@@ -395,9 +395,9 @@ EOF)
                 /**
                  * Unwritable property PHPDoc
                  *
-                 * @var PhpDoc|null
+                 * @var PHPDoc|null
                  */
-                $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
+                $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
             } else {
                 $phpDoc = null;
             }
@@ -408,11 +408,11 @@ EOF)
             $_name = $_param->getName();
 
             $tag = $_phpDoc->Params[$_name] ?? null;
-            $fromPhpDoc = false;
+            $fromPHPDoc = false;
             if (($_type = $tag->Type ?? null) !== null) {
-                /** @var PhpDoc $_phpDoc */
+                /** @var PHPDoc $_phpDoc */
                 $templates = [];
-                $type = $this->getPhpDocTypeAlias(
+                $type = $this->getPHPDocTypeAlias(
                     $tag,
                     $_phpDoc->Templates,
                     $propertyNamespace,
@@ -426,7 +426,7 @@ EOF)
                         $declare = true;
                     }
                 }
-                $fromPhpDoc = true;
+                $fromPHPDoc = true;
             } else {
                 $type = $_param->hasType()
                     ? Reflect::getTypeDeclaration(
@@ -465,7 +465,7 @@ EOF)
             }
 
             if (is_a(
-                $this->expandAlias($type, $fromPhpDoc ? $propertyFile : null),
+                $this->expandAlias($type, $fromPHPDoc ? $propertyFile : null),
                 ContainerInterface::class,
                 true
             )) {
@@ -480,7 +480,7 @@ EOF)
 
             if ($declare) {
                 $templates = $declareTemplates[$name] ?? null;
-                $param = Reflect::getParameterPhpDoc(
+                $param = Reflect::getParameterPHPDoc(
                     $_param,
                     $classPrefix,
                     fn(string $type): ?string =>
@@ -509,13 +509,13 @@ EOF)
                     $returnType = array_keys($this->InputClassTemplates);
                     $returnType = array_combine($returnType, $returnType);
                     $i = count($templates) > 1 ? 0 : -1;
-                    /** @var PhpDocTemplateTag $templateTag */
+                    /** @var PHPDocTemplateTag $templateTag */
                     foreach ($templates as $template => $templateTag) {
                         do {
                             $T = sprintf('T%s', $i < 0 ? '' : $i);
                             $i++;
-                        } while (array_key_exists($T, $this->InputClassTemplates) ||
-                            array_key_exists(Str::lower($T), $this->AliasMap));
+                        } while (array_key_exists($T, $this->InputClassTemplates)
+                            || array_key_exists(Str::lower($T), $this->AliasMap));
                         $templateTag = clone $templateTag;
                         $templateTag->Name = $T;
                         $templateTag->Variance = null;
@@ -561,16 +561,16 @@ EOF)
             foreach ($_methods as $_method) {
                 $name = $_method->getName();
                 $_docBlocks = Reflect::getAllMethodDocComments($_method, null, $classDocBlocks);
-                $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $name . '()');
+                $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $name . '()');
 
-                if ($_method->isConstructor() ||
-                        $_method->isStatic() ||
-                        strpos($name, '__') === 0 ||
-                        isset($phpDoc->TagsByName['deprecated']) ||
-                        in_array(Str::toCamelCase($name), $names) ||
-                        in_array(Str::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names) ||
-                        in_array($name, $this->Skip) ||
-                        ($this->Forward !== [] && !in_array($name, $this->Forward))) {
+                if ($_method->isConstructor()
+                        || $_method->isStatic()
+                        || strpos($name, '__') === 0
+                        || isset($phpDoc->TagsByName['deprecated'])
+                        || in_array(Str::toCamelCase($name), $names)
+                        || in_array(Str::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names)
+                        || in_array($name, $this->Skip)
+                        || ($this->Forward !== [] && !in_array($name, $this->Forward))) {
                     continue;
                 }
 
@@ -596,19 +596,19 @@ EOF)
 
                 $_type = $phpDoc->Return->Type ?? null;
                 if ($_type !== null) {
-                    /** @var PhpDoc $phpDoc */
+                    /** @var PHPDoc $phpDoc */
                     $templates = [];
-                    $type = $this->getPhpDocTypeAlias(
+                    $type = $this->getPHPDocTypeAlias(
                         $phpDoc->Return,
                         $phpDoc->Templates,
                         $propertyNamespace,
                         $propertyFile,
                         $templates
                     );
-                    if ($templates &&
-                        count($templates) === 1 &&
-                        ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>' ||
-                            $type === $key)) {
+                    if ($templates
+                        && count($templates) === 1
+                        && ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>'
+                            || $type === $key)) {
                         $declareTemplates[$name] = $templates;
                         if (!$declare) {
                             $this->ToDeclare[$name] = $_method;
@@ -649,8 +649,8 @@ EOF)
                     $tag = $phpDoc->Params[$_param->getName()] ?? null;
                     // Override the declared type if defined in the PHPDoc
                     if (($tag->Type ?? null) !== null) {
-                        /** @var PhpDoc $phpDoc */
-                        $_type = $this->getPhpDocTypeAlias(
+                        /** @var PHPDoc $phpDoc */
+                        $_type = $this->getPHPDocTypeAlias(
                             $tag,
                             $phpDoc->Templates,
                             $propertyNamespace,
@@ -661,7 +661,7 @@ EOF)
                     }
                     $params[] =
                         $declare
-                            ? Reflect::getParameterPhpDoc(
+                            ? Reflect::getParameterPHPDoc(
                                 $_param,
                                 $classPrefix,
                                 fn(string $type): ?string =>
@@ -681,8 +681,8 @@ EOF)
 
                 if ($declare) {
                     $params = array_filter($params);
-                    $return = ($type && (!$_method->hasReturnType() ||
-                            Reflect::getTypeDeclaration(
+                    $return = ($type && (!$_method->hasReturnType()
+                            || Reflect::getTypeDeclaration(
                                 $_method->getReturnType(),
                                 $classPrefix,
                                 fn(string $type): ?string =>
@@ -754,11 +754,11 @@ EOF)
             foreach ($this->InputClassTemplates as $template => $tag) {
                 $tag = clone $tag;
                 if (
-                    $tag->Type !== null &&
-                    !Test::isBuiltinType($tag->Type) &&
-                    !array_key_exists($tag->Type, $this->InputClassTemplates)
+                    $tag->Type !== null
+                    && !Test::isBuiltinType($tag->Type)
+                    && !array_key_exists($tag->Type, $this->InputClassTemplates)
                 ) {
-                    $tag->Type = $this->getPhpDocTypeAlias(
+                    $tag->Type = $this->getPHPDocTypeAlias(
                         $tag,
                         [],
                         $this->InputClass->getNamespaceName(),

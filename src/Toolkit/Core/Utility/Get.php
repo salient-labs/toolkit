@@ -323,8 +323,8 @@ final class Get extends AbstractUtility
 
         /** @var mixed[]|(T&object)|int|float|string|bool|null $data */
         if (
-            ($flatten && ($data === null || $data === [])) ||
-            ($fromCallback && $data === null)
+            ($flatten && ($data === null || $data === []))
+            || ($fromCallback && $data === null)
         ) {
             return $query;
         }
@@ -1155,11 +1155,11 @@ final class Get extends AbstractUtility
         }
 
         if ((
-            !($flags & CopyFlag::COPY_CONTAINERS) &&
-            $var instanceof PsrContainerInterface
+            !($flags & CopyFlag::COPY_CONTAINERS)
+            && $var instanceof PsrContainerInterface
         ) || (
-            !($flags & CopyFlag::COPY_SINGLETONS) &&
-            $var instanceof SingletonInterface
+            !($flags & CopyFlag::COPY_SINGLETONS)
+            && $var instanceof SingletonInterface
         )) {
             $map[$id] = $var;
             return $var;
@@ -1191,21 +1191,21 @@ final class Get extends AbstractUtility
         $map[$id] = $clone;
 
         if (
-            $flags & CopyFlag::TRUST_CLONE_METHODS &&
-            $_var->hasMethod('__clone')
+            $flags & CopyFlag::TRUST_CLONE_METHODS
+            && $_var->hasMethod('__clone')
         ) {
             return $clone;
         }
 
         if (
-            $clone instanceof DateTimeInterface ||
-            $clone instanceof DateTimeZone
+            $clone instanceof DateTimeInterface
+            || $clone instanceof DateTimeZone
         ) {
             return $clone;
         }
 
-        $byRef = (bool) ($flags & CopyFlag::ASSIGN_PROPERTIES_BY_REFERENCE) &&
-            !$_var->isInternal();
+        $byRef = (bool) ($flags & CopyFlag::ASSIGN_PROPERTIES_BY_REFERENCE)
+            && !$_var->isInternal();
         foreach (Reflect::getAllProperties($_var) as $property) {
             if ($property->isStatic()) {
                 continue;

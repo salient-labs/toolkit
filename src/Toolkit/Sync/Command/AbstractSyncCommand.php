@@ -71,9 +71,9 @@ abstract class AbstractSyncCommand extends CliCommand
             $entityBasenames = $introspector->getSyncProviderEntityBasenames();
             foreach ($entityBasenames as $entityKey => $entity) {
                 $entityProviders[$providerKey] = $provider;
-                if (array_key_exists($entityKey, $entities) &&
-                    ($entities[$entityKey] === null ||
-                        strcasecmp($entities[$entityKey], $entity))) {
+                if (array_key_exists($entityKey, $entities)
+                    && ($entities[$entityKey] === null
+                        || strcasecmp($entities[$entityKey], $entity))) {
                     $entities[$entityKey] = null;
                     continue;
                 }

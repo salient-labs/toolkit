@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PhpDoc;
+namespace Salient\PHPDoc;
 
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Core\Regex;
@@ -21,12 +21,12 @@ use Salient\Core\Utility\Str;
  * @property-read string|null $Description
  * @property-read string[] $Tags
  * @property-read array<string,string[]|true> $TagsByName
- * @property-read array<string,PhpDocParamTag> $Params
- * @property-read PhpDocReturnTag|null $Return
- * @property-read PhpDocVarTag[] $Vars
- * @property-read array<string,PhpDocTemplateTag> $Templates
+ * @property-read array<string,PHPDocParamTag> $Params
+ * @property-read PHPDocReturnTag|null $Return
+ * @property-read PHPDocVarTag[] $Vars
+ * @property-read array<string,PHPDocTemplateTag> $Templates
  */
-final class PhpDoc implements Readable
+final class PHPDoc implements Readable
 {
     use ReadsProtectedProperties;
 
@@ -79,14 +79,14 @@ final class PhpDoc implements Readable
     /**
      * [ Parameter name => parameter metadata ]
      *
-     * @var array<string,PhpDocParamTag>
+     * @var array<string,PHPDocParamTag>
      */
     protected $Params = [];
 
     /**
      * Return value metadata
      *
-     * @var PhpDocReturnTag|null
+     * @var PHPDocReturnTag|null
      */
     protected $Return;
 
@@ -96,14 +96,14 @@ final class PhpDoc implements Readable
      * May be given more than once per PHPDoc, e.g. when documenting multiple
      * properties declared in one statement.
      *
-     * @var PhpDocVarTag[]
+     * @var PHPDocVarTag[]
      */
     protected $Vars = [];
 
     /**
      * [ Template name => template metadata ]
      *
-     * @var array<string,PhpDocTemplateTag>
+     * @var array<string,PHPDocTemplateTag>
      */
     protected $Templates = [];
 
@@ -125,7 +125,7 @@ final class PhpDoc implements Readable
     /**
      * @var string|null
      */
-    private static $PhpDocTypeRegex;
+    private static $PHPDocTypeRegex;
 
     /**
      * @param bool $legacyNullable If `true`, convert `<type>|null` and
@@ -213,7 +213,7 @@ final class PhpDoc implements Readable
                     $name = rtrim(substr($token, 1));
                     if ($name !== '') {
                         $metaCount++;
-                        $this->Params[$name] = new PhpDocParamTag(
+                        $this->Params[$name] = new PHPDocParamTag(
                             $name,
                             $type,
                             $variadic,
@@ -228,7 +228,7 @@ final class PhpDoc implements Readable
                 // @return <type> [description]
                 case 'return':
                     $text = $this->getTagType($text, $type);
-                    $this->Return = new PhpDocReturnTag(
+                    $this->Return = new PHPDocReturnTag(
                         $type,
                         $this->getTagDescription($text, $metaCount),
                         $class,
@@ -254,7 +254,7 @@ final class PhpDoc implements Readable
                      * (via a `ReflectionProperty|ReflectionClassConstant`
                      * parameter, perhaps?) to resolve entity names
                      */
-                    $var = new PhpDocVarTag(
+                    $var = new PHPDocVarTag(
                         $type,
                         $name ?? null,
                         $this->getTagDescription($text, $metaCount),
@@ -288,7 +288,7 @@ final class PhpDoc implements Readable
                             $this->getTagType($token, $type);
                         }
                     }
-                    $this->Templates[$name] = new PhpDocTemplateTag(
+                    $this->Templates[$name] = new PHPDocTemplateTag(
                         $name,
                         $type,
                         $covariant ? 'covariant' : null,
@@ -327,8 +327,8 @@ final class PhpDoc implements Readable
                 if (!$this->Summary) {
                     $this->Summary = $var->Description;
                 } elseif ($this->Summary !== $var->Description) {
-                    $this->Description .=
-                        ($this->Description ? "\n\n" : '')
+                    $this->Description
+                        .= ($this->Description ? "\n\n" : '')
                         . $var->Description;
                 }
                 $var->Description = null;
@@ -355,8 +355,8 @@ final class PhpDoc implements Readable
      */
     private function getTagType(string $text, ?string &$type): string
     {
-        $regex = self::$PhpDocTypeRegex
-            ?: (self::$PhpDocTypeRegex = Pcre::delimit('^' . Regex::PHPDOC_TYPE, '/'));
+        $regex = self::$PHPDocTypeRegex
+            ?: (self::$PHPDocTypeRegex = Pcre::delimit('^' . Regex::PHPDOC_TYPE, '/'));
         $type = null;
         if (Pcre::match($regex, $text, $matches, \PREG_OFFSET_CAPTURE)) {
             /** @var array<array{0:string,1:int}> $matches */
@@ -402,8 +402,8 @@ final class PhpDoc implements Readable
 
             if (!$unwrap) {
                 if (
-                    (!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence)) ||
-                    ($inFence && $line === ($fence[0] ?? null))
+                    (!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence))
+                    || ($inFence && $line === ($fence[0] ?? null))
                 ) {
                     $inFence = !$inFence;
                 }
@@ -491,8 +491,8 @@ final class PhpDoc implements Readable
     /**
      * @internal
      *
-     * @param PhpDocTag|string|null $ours
-     * @param PhpDocTag|string|null $theirs
+     * @param PHPDocTag|string|null $ours
+     * @param PHPDocTag|string|null $theirs
      */
     public static function mergeValue(&$ours, $theirs): void
     {
@@ -517,7 +517,7 @@ final class PhpDoc implements Readable
         array_push($ours, ...array_diff($theirs, $ours));
     }
 
-    private function mergeTag(?PhpDocTag &$ours, ?PhpDocTag $theirs): void
+    private function mergeTag(?PHPDocTag &$ours, ?PHPDocTag $theirs): void
     {
         if ($theirs === null) {
             return;
@@ -532,10 +532,10 @@ final class PhpDoc implements Readable
     }
 
     /**
-     * Add missing values from a PhpDocParser that represents the same
-     * structural element in a parent class or interface
+     * Add missing values from an instance that represents the same structural
+     * element in a parent class or interface
      */
-    public function mergeInherited(PhpDoc $parent): void
+    public function mergeInherited(PHPDoc $parent): void
     {
         $this->mergeValue($this->Summary, $parent->Summary);
         $this->mergeValue($this->Description, $parent->Description);
@@ -580,10 +580,10 @@ final class PhpDoc implements Readable
                 $legacyNullable
             );
 
-            if ($phpDoc->Summary === null &&
-                $phpDoc->Description === null &&
-                (!$phpDoc->Tags ||
-                    array_keys($phpDoc->TagsByName) === ['inheritDoc'])) {
+            if ($phpDoc->Summary === null
+                && $phpDoc->Description === null
+                && (!$phpDoc->Tags
+                    || array_keys($phpDoc->TagsByName) === ['inheritDoc'])) {
                 continue;
             }
 

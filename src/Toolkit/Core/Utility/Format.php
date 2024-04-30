@@ -134,9 +134,9 @@ final class Format extends AbstractUtility
         $to = Date::maybeSetTimezone($to);
 
         $sameTimezone = $from->getTimezone()->getName() === $to->getTimezone()->getName();
-        $noTime = $sameTimezone &&
-            $from->format('H:i:s') === '00:00:00' &&
-            $to->format('H:i:s') === '00:00:00';
+        $noTime = $sameTimezone
+            && $from->format('H:i:s') === '00:00:00'
+            && $to->format('H:i:s') === '00:00:00';
 
         $fromFormat = ['D j M'];
         $fromYear = $from->format('Y');

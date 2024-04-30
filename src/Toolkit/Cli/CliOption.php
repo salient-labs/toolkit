@@ -454,9 +454,9 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         }
 
         if (
-            $this->ValueOptional &&
-            ($this->DefaultValue === null || $this->DefaultValue === []) &&
-            !($this->MultipleAllowed && $this->Nullable)
+            $this->ValueOptional
+            && ($this->DefaultValue === null || $this->DefaultValue === [])
+            && !($this->MultipleAllowed && $this->Nullable)
         ) {
             throw new LogicException("'defaultValue' cannot be empty when value is optional");
         }
@@ -504,8 +504,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         }
 
         if (
-            !$this->AllowedValues ||
-            !$this->checkValueTypes($this->AllowedValues)
+            !$this->AllowedValues
+            || !$this->checkValueTypes($this->AllowedValues)
         ) {
             throw new LogicException(sprintf("'allowedValues' must be an array of values of type %s", $this->getValueTypeName()));
         }
@@ -542,8 +542,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
             if (
                 $this->DefaultValue && (
-                    Arr::same((array) $this->DefaultValue, $values) ||
-                    in_array('ALL', (array) $this->DefaultValue, true)
+                    Arr::same((array) $this->DefaultValue, $values)
+                    || in_array('ALL', (array) $this->DefaultValue, true)
                 )
             ) {
                 $this->DefaultValue = ['ALL'];
@@ -563,9 +563,9 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         }
 
         if (
-            $this->EnvVariable !== null &&
-            $this->DefaultValue !== null &&
-            $this->DefaultValue !== $this->OriginalDefaultValue
+            $this->EnvVariable !== null
+            && $this->DefaultValue !== null
+            && $this->DefaultValue !== $this->OriginalDefaultValue
         ) {
             $this->DefaultValue = $this->filterValue(
                 $this->DefaultValue,
@@ -649,8 +649,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         }
 
         if (
-            $this->OriginalDefaultValue !== null &&
-            $this->OriginalDefaultValue !== []
+            $this->OriginalDefaultValue !== null
+            && $this->OriginalDefaultValue !== []
         ) {
             $schema['default'] = $this->ValueOptional
                 ? false
@@ -725,8 +725,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         $name = Str::toKebabCase($this->ValueName, '=');
 
         if (
-            strpbrk($this->ValueName, Char::UPPER) !== false &&
-            strpbrk($this->ValueName, Char::LOWER) === false
+            strpbrk($this->ValueName, Char::UPPER) !== false
+            && strpbrk($this->ValueName, Char::LOWER) === false
         ) {
             $name = Str::upper($name);
             if (!$withMarkup) {
@@ -851,11 +851,11 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      */
     public function normaliseValue($value, bool $expand = false)
     {
-        if ($expand &&
-            $this->ValueOptional &&
-            ($value === null ||
-                ($this->ValueType !== CliOptionValueType::BOOLEAN &&
-                    $value === true))) {
+        if ($expand
+            && $this->ValueOptional
+            && ($value === null
+                || ($this->ValueType !== CliOptionValueType::BOOLEAN
+                    && $value === true))) {
             $value = $this->DefaultValue;
         }
 
@@ -925,11 +925,11 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         $policy ??= $this->UnknownValuePolicy;
 
         if (
-            $value === null ||
-            $value === '' ||
-            $value === [] ||
-            !$this->AllowedValues ||
-            ($this->CaseSensitive && $policy === CliOptionValueUnknownPolicy::ACCEPT)
+            $value === null
+            || $value === ''
+            || $value === []
+            || !$this->AllowedValues
+            || ($this->CaseSensitive && $policy === CliOptionValueUnknownPolicy::ACCEPT)
         ) {
             return $value;
         }
@@ -979,9 +979,9 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     public function normaliseValueForHelp($value): string
     {
         if (
-            $this->ValueType === CliOptionValueType::BOOLEAN &&
-            !$this->IsFlag &&
-            $value !== null
+            $this->ValueType === CliOptionValueType::BOOLEAN
+            && !$this->IsFlag
+            && $value !== null
         ) {
             $value = Get::boolean($value);
             return Format::yn($value);
@@ -998,8 +998,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     private function normaliseForSchema($value)
     {
         if (
-            $this->ValueType === CliOptionValueType::DATE ||
-            $this->ValueCallback
+            $this->ValueType === CliOptionValueType::DATE
+            || $this->ValueCallback
         ) {
             return $value;
         }

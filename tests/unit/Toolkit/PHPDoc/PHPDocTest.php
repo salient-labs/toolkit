@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PhpDoc;
+namespace Salient\Tests\PHPDoc;
 
 use Salient\Contract\Core\Regex;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
-use Salient\PhpDoc\PhpDoc;
+use Salient\PHPDoc\PHPDoc;
 use Salient\Tests\TestCase;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\PhpDoc\PhpDoc
- * @covers \Salient\PhpDoc\PhpDocParamTag
- * @covers \Salient\PhpDoc\PhpDocReturnTag
- * @covers \Salient\PhpDoc\PhpDocTag
- * @covers \Salient\PhpDoc\PhpDocTemplateTag
- * @covers \Salient\PhpDoc\PhpDocVarTag
+ * @covers \Salient\PHPDoc\PHPDoc
+ * @covers \Salient\PHPDoc\PHPDocParamTag
+ * @covers \Salient\PHPDoc\PHPDocReturnTag
+ * @covers \Salient\PHPDoc\PHPDocTag
+ * @covers \Salient\PHPDoc\PHPDocTemplateTag
+ * @covers \Salient\PHPDoc\PHPDocVarTag
  */
-final class PhpDocTest extends TestCase
+final class PHPDocTest extends TestCase
 {
     /**
      * @dataProvider invalidDocBlockProvider
@@ -25,7 +25,7 @@ final class PhpDocTest extends TestCase
     public function testInvalidDocBlock(string $docBlock): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new PhpDoc($docBlock);
+        new PHPDoc($docBlock);
     }
 
     /**
@@ -36,10 +36,10 @@ final class PhpDocTest extends TestCase
         return [
             'missing asterisk' => [
                 <<<'EOF'
-                /**
+/**
 
-                */
-                EOF,
+*/
+EOF,
             ],
         ];
     }
@@ -48,50 +48,50 @@ final class PhpDocTest extends TestCase
     {
         $docBlocks = [
             <<<'EOF'
-            /**
-             * @param $arg1 Description from ClassC (untyped)
-             * @param string[] $arg3
-             * @return $this Description from ClassC
-             */
-            EOF,
+/**
+ * @param $arg1 Description from ClassC (untyped)
+ * @param string[] $arg3
+ * @return $this Description from ClassC
+ */
+EOF,
             <<<'EOF'
-            /**
-             * Summary from ClassB
-             *
-             * @param int|string $arg1
-             * @param array $arg3
-             * @return $this
-             */
-            EOF,
+/**
+ * Summary from ClassB
+ *
+ * @param int|string $arg1
+ * @param array $arg3
+ * @return $this
+ */
+EOF,
             <<<'EOF'
-            /**
-             * Summary from ClassA
-             *
-             * Description from ClassA
-             *
-             * ```php
-             * // code here
-             * ```
-             *
-             * @param mixed $arg1 Description from ClassA
-             * @param string $arg2 Description from ClassA
-             * @param array $arg3 Description from ClassA
-             * @return $this
-             */
-            EOF,
+/**
+ * Summary from ClassA
+ *
+ * Description from ClassA
+ *
+ * ```php
+ * // code here
+ * ```
+ *
+ * @param mixed $arg1 Description from ClassA
+ * @param string $arg2 Description from ClassA
+ * @param array $arg3 Description from ClassA
+ * @return $this
+ */
+EOF,
         ];
 
-        $phpDoc = PhpDoc::fromDocBlocks($docBlocks);
+        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
 
         $this->assertNotNull($phpDoc);
         $this->assertSame('Summary from ClassB', $phpDoc->Summary);
         $this->assertSame(<<<'EOF'
-            Description from ClassA
+Description from ClassA
 
-            ```php
-            // code here
-            ```
-            EOF, Str::eolToNative($phpDoc->Description));
+```php
+// code here
+```
+EOF, Str::eolToNative($phpDoc->Description));
         $this->assertSame([
             '@param $arg1 Description from ClassC (untyped)',
             '@param string[] $arg3',
@@ -150,7 +150,7 @@ final class PhpDocTest extends TestCase
         array $varTypes,
         array $varDescriptions
     ): void {
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
         $this->assertSame($description, Str::eolToNative($phpDoc->Description));
         $this->assertCount(count($varKeys), $phpDoc->Vars);
@@ -170,8 +170,8 @@ final class PhpDocTest extends TestCase
         return [
             [
                 <<<'EOF'
-                /** @var int $int This is a counter. */
-                EOF,
+/** @var int $int This is a counter. */
+EOF,
                 'This is a counter.',
                 null,
                 ['$int'],
@@ -181,20 +181,20 @@ final class PhpDocTest extends TestCase
             ],
             [
                 <<<'EOF'
-                /**
-                 * Full docblock with a summary.
-                 *
-                 * And a description.
-                 *
-                 * @var int And a variable description.
-                 */
-                EOF,
+/**
+ * Full docblock with a summary.
+ *
+ * And a description.
+ *
+ * @var int And a variable description.
+ */
+EOF,
                 'Full docblock with a summary.',
                 <<<'EOF'
-                And a description.
+And a description.
 
-                And a variable description.
-                EOF,
+And a variable description.
+EOF,
                 [0],
                 [null],
                 ['int'],
@@ -202,12 +202,12 @@ final class PhpDocTest extends TestCase
             ],
             [
                 <<<'EOF'
-                /**
-                 * Full docblock with a summary.
-                 *
-                 * @var int And a variable description.
-                 */
-                EOF,
+/**
+ * Full docblock with a summary.
+ *
+ * @var int And a variable description.
+ */
+EOF,
                 'Full docblock with a summary.',
                 'And a variable description.',
                 [0],
@@ -217,12 +217,12 @@ final class PhpDocTest extends TestCase
             ],
             [
                 <<<'EOF'
-                /**
-                 * Full docblock with a summary.
-                 *
-                 * @var int
-                 */
-                EOF,
+/**
+ * Full docblock with a summary.
+ *
+ * @var int
+ */
+EOF,
                 'Full docblock with a summary.',
                 null,
                 [0],
@@ -232,8 +232,8 @@ final class PhpDocTest extends TestCase
             ],
             [
                 <<<'EOF'
-                /** @var string|null Short docblock, should have a summary. */
-                EOF,
+/** @var string|null Short docblock, should have a summary. */
+EOF,
                 'Short docblock, should have a summary.',
                 null,
                 [0],
@@ -243,11 +243,11 @@ final class PhpDocTest extends TestCase
             ],
             [
                 <<<'EOF'
-                /**
-                 * @var string $name        Should contain a description of $name
-                 * @var string $description Should contain a description of $description
-                 */
-                EOF,
+/**
+ * @var string $name        Should contain a description of $name
+ * @var string $description Should contain a description of $description
+ */
+EOF,
                 null,
                 null,
                 ['$name', '$description'],
@@ -257,8 +257,8 @@ final class PhpDocTest extends TestCase
             ],
             [
                 <<<'EOF'
-                /** @var int */
-                EOF,
+/** @var int */
+EOF,
                 null,
                 null,
                 [0],
@@ -268,8 +268,8 @@ final class PhpDocTest extends TestCase
             ],
             [
                 <<<'EOF'
-                /** @var */
-                EOF,
+/** @var */
+EOF,
                 null,
                 null,
                 [],
@@ -283,15 +283,15 @@ final class PhpDocTest extends TestCase
     public function testTemplateTags(): void
     {
         $docBlock = <<<'EOF'
-            /**
-             * Summary
-             *
-             * @template T
-             * @param class-string<T> $id
-             * @return T
-             */
-            EOF;
-        $phpDoc = new PhpDoc($docBlock);
+/**
+ * Summary
+ *
+ * @template T
+ * @param class-string<T> $id
+ * @return T
+ */
+EOF;
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
         $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
@@ -300,28 +300,28 @@ final class PhpDocTest extends TestCase
     public function testTemplateInheritance(): void
     {
         $docBlock = <<<'EOF'
-            /**
-             * Summary
-             *
-             * @template T
-             * @template TArray of array|null
-             * @param class-string<T> $id
-             * @param TArray $array
-             * @param TKey $key
-             * @param TValue $value
-             * @return T
-             */
-            EOF;
+/**
+ * Summary
+ *
+ * @template T
+ * @template TArray of array|null
+ * @param class-string<T> $id
+ * @param TArray $array
+ * @param TKey $key
+ * @param TValue $value
+ * @return T
+ */
+EOF;
         $classDocBlock = <<<'EOF'
-            /**
-             * Class summary
-             *
-             * @template T of string
-             * @template TKey of array-key
-             * @template TValue of object
-             */
-            EOF;
-        $phpDoc = new PhpDoc($docBlock, $classDocBlock);
+/**
+ * Class summary
+ *
+ * @template T of string
+ * @template TKey of array-key
+ * @template TValue of object
+ */
+EOF;
+        $phpDoc = new PHPDoc($docBlock, $classDocBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
         $this->assertCount(4, $phpDoc->Templates);
@@ -343,49 +343,49 @@ final class PhpDocTest extends TestCase
     {
         $docBlock =
             <<<'EOF'
-            /**
-             * Summary
-             *
-             * Description with multiple code blocks:
-             *
-             * ```php
-             * $this->doSomething();
-             * ```
-             *
-             * Three, to be precise (including within the `@var`):
-             *
-             * ```
-             * @var Not this `@var`, though. It's in a fence.
-             * ```
-             *
-             * @var callable|null Something like this:
-             * ```php
-             * callback(string $value): string
-             * ```
-             */
-            EOF;
+/**
+ * Summary
+ *
+ * Description with multiple code blocks:
+ *
+ * ```php
+ * $this->doSomething();
+ * ```
+ *
+ * Three, to be precise (including within the `@var`):
+ *
+ * ```
+ * @var Not this `@var`, though. It's in a fence.
+ * ```
+ *
+ * @var callable|null Something like this:
+ * ```php
+ * callback(string $value): string
+ * ```
+ */
+EOF;
 
-        $phpDoc = new PhpDoc($docBlock, null, null, null, true);
+        $phpDoc = new PHPDoc($docBlock, null, null, null, true);
 
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame(<<<'EOF'
-            Description with multiple code blocks:
+Description with multiple code blocks:
 
-            ```php
-            $this->doSomething();
-            ```
+```php
+$this->doSomething();
+```
 
-            Three, to be precise (including within the `@var`):
+Three, to be precise (including within the `@var`):
 
-            ```
-            @var Not this `@var`, though. It's in a fence.
-            ```
+```
+@var Not this `@var`, though. It's in a fence.
+```
 
-            Something like this:
-            ```php
-            callback(string $value): string
-            ```
-            EOF, Str::eolToNative($phpDoc->Description));
+Something like this:
+```php
+callback(string $value): string
+```
+EOF, Str::eolToNative($phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
         $this->assertNull($phpDoc->Vars[0]->Name ?? null);
         $this->assertSame('?callable', $phpDoc->Vars[0]->Type ?? null);
@@ -395,35 +395,35 @@ final class PhpDocTest extends TestCase
     public function testBlankLines(): void
     {
         $docBlock = <<<'EOF'
-            /**
-             *
-             * Summary
-             *
-             *
-             * Parts are surrounded by superfluous blank lines.
-             *
-             *
-             * @internal
-             *
-             *
-             * @template T0 of object
-             *
-             *
-             * @template T1
-             *
-             *
-             * @var class-string<T0>|null $Class
-             *
-             *
-             * @param class-string<T0>|null $class
-             *
-             *
-             * @inheritDoc
-             *
-             *
-             */
-            EOF;
-        $phpDoc = new PhpDoc($docBlock);
+/**
+ *
+ * Summary
+ *
+ *
+ * Parts are surrounded by superfluous blank lines.
+ *
+ *
+ * @internal
+ *
+ *
+ * @template T0 of object
+ *
+ *
+ * @template T1
+ *
+ *
+ * @var class-string<T0>|null $Class
+ *
+ *
+ * @param class-string<T0>|null $class
+ *
+ *
+ * @inheritDoc
+ *
+ *
+ */
+EOF;
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame('Parts are surrounded by superfluous blank lines.', $phpDoc->Description);
         $this->assertCount(2, $phpDoc->Templates);
@@ -440,13 +440,13 @@ final class PhpDocTest extends TestCase
     public function testNoBlankLineAfterSummary(): void
     {
         $docBlock = <<<'EOF'
-            /**
-             * Summary
-             * @internal
-             * @template T of object
-             */
-            EOF;
-        $phpDoc = new PhpDoc($docBlock);
+/**
+ * Summary
+ * @internal
+ * @template T of object
+ */
+EOF;
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame('Summary @internal @template T of object', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
         $this->assertCount(0, $phpDoc->Templates);
@@ -455,12 +455,12 @@ final class PhpDocTest extends TestCase
     public function testMultiLineTagDescription(): void
     {
         $docBlock = <<<'EOF'
-            /**
-             * @param $arg
-             * Description of $arg
-             */
-            EOF;
-        $phpDoc = new PhpDoc($docBlock);
+/**
+ * @param $arg
+ * Description of $arg
+ */
+EOF;
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertCount(1, $phpDoc->Params);
         $this->assertSame('arg', $phpDoc->Params['arg']->Name ?? null);
         $this->assertNull($phpDoc->Params['arg']->Type ?? null);
@@ -472,7 +472,7 @@ final class PhpDocTest extends TestCase
      */
     public function testEol(string $docBlock, string $summary, string $description): void
     {
-        $phpDoc = new PhpDoc($docBlock);
+        $phpDoc = new PHPDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
         $this->assertSame($description, $phpDoc->Description);
     }

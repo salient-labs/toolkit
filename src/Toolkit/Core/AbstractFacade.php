@@ -158,17 +158,17 @@ abstract class AbstractFacade implements FacadeInterface
 
         $dispatcher =
             // @phpstan-ignore-next-line
-            $instance instanceof EventDispatcher &&
+            $instance instanceof EventDispatcher
             // @phpstan-ignore-next-line
-            static::class === Event::class
+            && static::class === Event::class
                 ? $instance
                 : Event::getInstance();
 
         if (
             // @phpstan-ignore-next-line
-            $instance instanceof ContainerInterface &&
+            $instance instanceof ContainerInterface
             // @phpstan-ignore-next-line
-            static::class === App::class
+            && static::class === App::class
         ) {
             if (!$container) {
                 Container::setGlobalContainer($instance);
@@ -289,8 +289,8 @@ abstract class AbstractFacade implements FacadeInterface
             if ($container) {
                 $serviceName = self::getServiceName();
                 if (
-                    $container->hasInstance($serviceName) &&
-                    $container->get($serviceName) === $instance
+                    $container->hasInstance($serviceName)
+                    && $container->get($serviceName) === $instance
                 ) {
                     $container->unbindInstance($serviceName);
                 }

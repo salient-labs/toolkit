@@ -31,8 +31,8 @@ final class Test extends AbstractUtility
     public static function isBoolean($value): bool
     {
         return is_bool($value) || (
-            is_string($value) &&
-            Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value)
+            is_string($value)
+            && Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value)
         );
     }
 
@@ -44,8 +44,8 @@ final class Test extends AbstractUtility
     public static function isInteger($value): bool
     {
         return is_int($value) || (
-            is_string($value) &&
-            Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+            is_string($value)
+            && Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
         );
     }
 
@@ -59,9 +59,9 @@ final class Test extends AbstractUtility
     public static function isFloat($value): bool
     {
         return is_float($value) || (
-            is_string($value) &&
-            is_numeric(trim($value)) &&
-            !Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+            is_string($value)
+            && is_numeric(trim($value))
+            && !Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
         );
     }
 
@@ -73,10 +73,10 @@ final class Test extends AbstractUtility
      */
     public static function isNumericKey($value): bool
     {
-        return is_int($value) ||
-            is_float($value) ||
-            is_bool($value) ||
-            (is_string($value) && Pcre::match('/^(-?[1-9][0-9]*|0)$/', $value));
+        return is_int($value)
+            || is_float($value)
+            || is_bool($value)
+            || (is_string($value) && Pcre::match('/^(-?[1-9][0-9]*|0)$/', $value));
     }
 
     /**
@@ -108,9 +108,9 @@ final class Test extends AbstractUtility
      */
     public static function isStringable($value): bool
     {
-        return is_string($value) ||
-            $value instanceof Stringable ||
-            (is_object($value) && method_exists($value, '__toString'));
+        return is_string($value)
+            || $value instanceof Stringable
+            || (is_object($value) && method_exists($value, '__toString'));
     }
 
     /**

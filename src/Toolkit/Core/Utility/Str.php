@@ -84,8 +84,8 @@ final class Str extends AbstractUtility
 
         if (
             // @phpstan-ignore-next-line
-            (!$hasUpper && !$hasLower) ||
-            $upper !== $match
+            (!$hasUpper && !$hasLower)
+            || $upper !== $match
         ) {
             return $string;
         }
@@ -508,15 +508,15 @@ final class Str extends AbstractUtility
         $escaped = Pcre::quoteCharacterClass($separator, '/');
 
         $regex = <<<REGEX
-            (?x)
-            (?: [^{$quotes}()<>[\]{}{$escaped}]++ |
-              ( \( (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \) |
-                <  (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ >  |
-                \[ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \] |
-                \{ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \} {$regex}) |
-              # Match empty substrings
-              (?<= $quoted | ^ ) (?= $quoted | \$ ) )+
-            REGEX;
+(?x)
+(?: [^{$quotes}()<>[\]{}{$escaped}]++ |
+  ( \( (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \) |
+    <  (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ >  |
+    \[ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \] |
+    \{ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \} {$regex}) |
+  # Match empty substrings
+  (?<= $quoted | ^ ) (?= $quoted | \$ ) )+
+REGEX;
 
         Pcre::matchAll(
             Pcre::delimit($regex, '/'),
@@ -930,9 +930,9 @@ final class Str extends AbstractUtility
             }
 
             $marked = false;
-            if ($marker !== null &&
-                    !($markerIsItem && strpos($section, $marker) === 0) &&
-                    !Pcre::match($regex, $section)) {
+            if ($marker !== null
+                    && !($markerIsItem && strpos($section, $marker) === 0)
+                    && !Pcre::match($regex, $section)) {
                 $section = $marker . $section;
                 $marked = true;
             }

@@ -29,24 +29,24 @@ final class CacheStore extends AbstractStore
             ->openDb(
                 $filename,
                 <<<SQL
-                CREATE TABLE IF NOT EXISTS
-                  _cache_item (
-                    item_key TEXT NOT NULL PRIMARY KEY,
-                    item_value BLOB,
-                    expires_at DATETIME,
-                    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-                  ) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS
+  _cache_item (
+    item_key TEXT NOT NULL PRIMARY KEY,
+    item_value BLOB,
+    expires_at DATETIME,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  ) WITHOUT ROWID;
 
-                CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
-                UPDATE ON _cache_item BEGIN
-                UPDATE _cache_item
-                SET
-                  set_at = CURRENT_TIMESTAMP
-                WHERE
-                  item_key = NEW.item_key;
-                END;
-                SQL
+CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
+UPDATE ON _cache_item BEGIN
+UPDATE _cache_item
+SET
+  set_at = CURRENT_TIMESTAMP
+WHERE
+  item_key = NEW.item_key;
+END;
+SQL
             );
     }
 
@@ -81,23 +81,23 @@ final class CacheStore extends AbstractStore
 
         $db = $this->db();
         $sql = <<<SQL
-            INSERT INTO
-              _cache_item (item_key, item_value, expires_at)
-            VALUES
-              (
-                :item_key,
-                :item_value,
-                DATETIME(:expires_at, 'unixepoch')
-              )
-            ON CONFLICT (item_key) DO
-            UPDATE
-            SET
-              item_value = excluded.item_value,
-              expires_at = excluded.expires_at
-            WHERE
-              item_value IS NOT excluded.item_value
-              OR expires_at IS NOT excluded.expires_at;
-            SQL;
+INSERT INTO
+  _cache_item (item_key, item_value, expires_at)
+VALUES
+  (
+    :item_key,
+    :item_value,
+    DATETIME(:expires_at, 'unixepoch')
+  )
+ON CONFLICT (item_key) DO
+UPDATE
+SET
+  item_value = excluded.item_value,
+  expires_at = excluded.expires_at
+WHERE
+  item_value IS NOT excluded.item_value
+  OR expires_at IS NOT excluded.expires_at;
+SQL;
         /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
@@ -124,11 +124,11 @@ final class CacheStore extends AbstractStore
     {
         $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
-            SELECT
-              COUNT(*)
-            FROM
-              _cache_item $where
-            SQL;
+SELECT
+  COUNT(*)
+FROM
+  _cache_item $where
+SQL;
         $db = $this->db();
         /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
@@ -161,11 +161,11 @@ final class CacheStore extends AbstractStore
     {
         $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
-            SELECT
-              item_value
-            FROM
-              _cache_item $where
-            SQL;
+SELECT
+  item_value
+FROM
+  _cache_item $where
+SQL;
         $db = $this->db();
         /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
@@ -279,10 +279,10 @@ final class CacheStore extends AbstractStore
     {
         $db = $this->db();
         $sql = <<<SQL
-            DELETE FROM _cache_item
-            WHERE
-              item_key = :item_key;
-            SQL;
+DELETE FROM _cache_item
+WHERE
+  item_key = :item_key;
+SQL;
         /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
@@ -302,8 +302,8 @@ final class CacheStore extends AbstractStore
         $db = $this->db();
         $db->exec(
             <<<SQL
-            DELETE FROM _cache_item;
-            SQL
+DELETE FROM _cache_item;
+SQL
         );
 
         return $this;
@@ -317,10 +317,10 @@ final class CacheStore extends AbstractStore
     public function flush(): self
     {
         $sql = <<<SQL
-            DELETE FROM _cache_item
-            WHERE
-              expires_at <= DATETIME(:now, 'unixepoch');
-            SQL;
+DELETE FROM _cache_item
+WHERE
+  expires_at <= DATETIME(:now, 'unixepoch');
+SQL;
         $db = $this->db();
         /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
@@ -374,11 +374,11 @@ final class CacheStore extends AbstractStore
     {
         $where = $this->getWhere(null, $maxAge, $bind);
         $sql = <<<SQL
-            SELECT
-              COUNT(*)
-            FROM
-              _cache_item $where
-            SQL;
+SELECT
+  COUNT(*)
+FROM
+  _cache_item $where
+SQL;
         $db = $this->db();
         /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);
@@ -411,11 +411,11 @@ final class CacheStore extends AbstractStore
     {
         $where = $this->getWhere(null, $maxAge, $bind);
         $sql = <<<SQL
-            SELECT
-              item_key
-            FROM
-              _cache_item $where
-            SQL;
+SELECT
+  item_key
+FROM
+  _cache_item $where
+SQL;
         $db = $this->db();
         /** @var SQLite3Stmt */
         $stmt = $db->prepare($sql);

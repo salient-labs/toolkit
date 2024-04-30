@@ -123,8 +123,8 @@ trait ListTrait
     public function offsetUnset($offset): void
     {
         if (
-            !array_key_exists($offset, $this->Items) ||
-            $offset === array_key_last($this->Items)
+            !array_key_exists($offset, $this->Items)
+            || $offset === array_key_last($this->Items)
         ) {
             unset($this->Items[$offset]);
             return;
@@ -168,8 +168,8 @@ trait ListTrait
         }
 
         if (
-            !array_key_exists($key, $this->Items) &&
-            $key !== count($this->Items)
+            !array_key_exists($key, $this->Items)
+            && $key !== count($this->Items)
         ) {
             throw new InvalidArgumentException(sprintf(
                 'Item cannot be added with key: %d',

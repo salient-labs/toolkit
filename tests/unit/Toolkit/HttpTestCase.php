@@ -159,9 +159,9 @@ abstract class HttpTestCase extends TestCase
     private function filterResponse($response): string
     {
         if (
-            $response instanceof HttpResponseInterface &&
-            !$response->hasHeader(Header::CONTENT_LENGTH) &&
-            ($size = $response->getBody()->getSize()) !== null
+            $response instanceof HttpResponseInterface
+            && !$response->hasHeader(Header::CONTENT_LENGTH)
+            && ($size = $response->getBody()->getSize()) !== null
         ) {
             $response = $response->withHeader(Header::CONTENT_LENGTH, (string) $size);
         }

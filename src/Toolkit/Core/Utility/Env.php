@@ -585,13 +585,13 @@ final class Env extends AbstractUtility
             }
 
             if (!Pcre::match(<<<'REGEX'
-                    / ^
-                    (?<name> [a-z_] [a-z0-9_]*+ ) = (?:
-                    " (?<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
-                    ' (?<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
-                      (?<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
-                    ) $ /xi
-                    REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
+/ ^
+(?<name> [a-z_] [a-z0-9_]*+ ) = (?:
+" (?<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
+' (?<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
+  (?<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
+) $ /xi
+REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
                 $errors[] = $filename === null
                     ? sprintf('invalid syntax at index %d', $i)
                     : sprintf('invalid syntax at %s:%d', $filename, $i + 1);
@@ -601,9 +601,9 @@ final class Env extends AbstractUtility
             /** @var string */
             $name = $match['name'];
             if (
-                array_key_exists($name, $_ENV) ||
-                array_key_exists($name, $_SERVER) ||
-                getenv($name) !== false
+                array_key_exists($name, $_ENV)
+                || array_key_exists($name, $_SERVER)
+                || getenv($name) !== false
             ) {
                 continue;
             }

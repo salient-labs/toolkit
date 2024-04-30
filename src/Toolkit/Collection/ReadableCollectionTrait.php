@@ -355,8 +355,8 @@ trait ReadableCollectionTrait
     protected function compareItems($a, $b): int
     {
         if (
-            $a instanceof Comparable &&
-            $b instanceof Comparable
+            $a instanceof Comparable
+            && $b instanceof Comparable
         ) {
             if ($b instanceof $a) {
                 return $a->compare($a, $b);

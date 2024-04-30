@@ -26,7 +26,7 @@ parameters:
 			path: src/Sli/Command/Concept/Command.php
 
 		-
-			message: "#^Method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) should return string but returns string\\|null\\.$#"
+			message: "#^Method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
 
@@ -36,7 +36,7 @@ parameters:
 			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
 
 		-
-			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
+			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
 
@@ -81,17 +81,17 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) expects Salient\\\\PhpDoc\\\\PhpDocTag\\|string, Salient\\\\PhpDoc\\\\PhpDocParamTag\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocParamTag\\|null given\\.$#"
 			count: 2
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) expects Salient\\\\PhpDoc\\\\PhpDocTag\\|string, Salient\\\\PhpDoc\\\\PhpDocReturnTag\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) expects Salient\\\\PhpDoc\\\\PhpDocTag\\|string, Salient\\\\PhpDoc\\\\PhpDocVarTag\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocVarTag\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
@@ -106,17 +106,17 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
+			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 3
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) expects Salient\\\\PhpDoc\\\\PhpDocTag\\|string, Salient\\\\PhpDoc\\\\PhpDocParamTag\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocParamTag\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateFacade.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPhpDocTypeAlias\\(\\) expects Salient\\\\PhpDoc\\\\PhpDocTag\\|string, Salient\\\\PhpDoc\\\\PhpDocReturnTag\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateFacade.php
 
@@ -613,27 +613,27 @@ parameters:
 		-
 			message: "#^Cannot access an offset on array\\<string\\>\\|true\\.$#"
 			count: 1
-			path: src/Toolkit/PhpDoc/PhpDoc.php
+			path: src/Toolkit/PHPDoc/PHPDoc.php
 
 		-
-			message: "#^Cannot access property \\$Description on Salient\\\\PhpDoc\\\\PhpDocParamTag\\|Salient\\\\PhpDoc\\\\PhpDocReturnTag\\|Salient\\\\PhpDoc\\\\PhpDocVarTag\\|null\\.$#"
+			message: "#^Cannot access property \\$Description on Salient\\\\PHPDoc\\\\PHPDocParamTag\\|Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|Salient\\\\PHPDoc\\\\PHPDocVarTag\\|null\\.$#"
 			count: 1
-			path: src/Toolkit/PhpDoc/PhpDoc.php
+			path: src/Toolkit/PHPDoc/PHPDoc.php
 
 		-
 			message: "#^Parameter \\#1 \\$callback of function array_map expects \\(callable\\(array\\<string\\>\\|true\\)\\: mixed\\)\\|null, Closure\\(array\\)\\: \\(array\\|true\\) given\\.$#"
 			count: 1
-			path: src/Toolkit/PhpDoc/PhpDoc.php
+			path: src/Toolkit/PHPDoc/PHPDoc.php
 
 		-
 			message: "#^Parameter \\#2 \\$subject of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:match\\(\\) expects string, string\\|false given\\.$#"
 			count: 2
-			path: src/Toolkit/PhpDoc/PhpDoc.php
+			path: src/Toolkit/PHPDoc/PHPDoc.php
 
 		-
-			message: "#^Property Salient\\\\PhpDoc\\\\PhpDocTag\\:\\:\\$Class \\(class\\-string\\|null\\) does not accept string\\|null\\.$#"
+			message: "#^Property Salient\\\\PHPDoc\\\\PHPDocTag\\:\\:\\$Class \\(class\\-string\\|null\\) does not accept string\\|null\\.$#"
 			count: 1
-			path: src/Toolkit/PhpDoc/PhpDocTag.php
+			path: src/Toolkit/PHPDoc/PHPDocTag.php
 
 		-
 			message: "#^Method Salient\\\\Sync\\\\AbstractSyncDefinition\\:\\:getSyncOperationClosure\\(\\) should return \\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, int\\|string\\|null, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, TEntity, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, iterable\\<TEntity\\>, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|null but returns Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\.$#"
@@ -1241,19 +1241,19 @@ parameters:
 			path: tests/unit/Toolkit/Iterator/RecursiveFilesystemIteratorTest.php
 
 		-
-			message: "#^Cannot access property \\$Description on Salient\\\\PhpDoc\\\\PhpDocReturnTag\\|null\\.$#"
+			message: "#^Cannot access property \\$Description on Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null\\.$#"
 			count: 1
-			path: tests/unit/Toolkit/PhpDoc/PhpDocTest.php
+			path: tests/unit/Toolkit/PHPDoc/PHPDocTest.php
 
 		-
-			message: "#^Cannot access property \\$Name on Salient\\\\PhpDoc\\\\PhpDocReturnTag\\|null\\.$#"
+			message: "#^Cannot access property \\$Name on Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null\\.$#"
 			count: 1
-			path: tests/unit/Toolkit/PhpDoc/PhpDocTest.php
+			path: tests/unit/Toolkit/PHPDoc/PHPDocTest.php
 
 		-
-			message: "#^Cannot access property \\$Type on Salient\\\\PhpDoc\\\\PhpDocReturnTag\\|null\\.$#"
+			message: "#^Cannot access property \\$Type on Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null\\.$#"
 			count: 1
-			path: tests/unit/Toolkit/PhpDoc/PhpDocTest.php
+			path: tests/unit/Toolkit/PHPDoc/PHPDocTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$data of static method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:provide\\(\\) expects array, mixed given\\.$#"

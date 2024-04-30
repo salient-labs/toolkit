@@ -1113,15 +1113,15 @@ final class GetTest extends TestCase
         return [
             'default' => [
                 <<<EOF
-                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => 'This string has "double quotes", \'single quotes\', and commas.', 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1,{$esc}line 2, and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
-                EOF,
+['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => 'This string has "double quotes", \'single quotes\', and commas.', 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1,{$esc}line 2, and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+EOF,
                 $array,
                 $classes,
             ],
             'compact' => [
                 <<<EOF
-                ['list1'=>[1],'list2'=>[1,3.14,6.626e-34],'list3'=>['foo'=>1,2.0,'bar'=>3,4],'empty'=>[],'index'=>[5=>true,2=>false],"multiline{$esc}key"=>'This string has "double quotes", \'single quotes\', and commas.','classes'=>[Salient\Tests\Core\Utility\Get\GetTest::class,GetTest::class,'gettest'],"This string has line 1,{$esc}line 2, and no more lines.",'\\\\Vendor\\\\Namespace\\\\',"\\xa0",'👩🏼‍🚒']
-                EOF,
+['list1'=>[1],'list2'=>[1,3.14,6.626e-34],'list3'=>['foo'=>1,2.0,'bar'=>3,4],'empty'=>[],'index'=>[5=>true,2=>false],"multiline{$esc}key"=>'This string has "double quotes", \'single quotes\', and commas.','classes'=>[Salient\Tests\Core\Utility\Get\GetTest::class,GetTest::class,'gettest'],"This string has line 1,{$esc}line 2, and no more lines.",'\\\\Vendor\\\\Namespace\\\\',"\\xa0",'👩🏼‍🚒']
+EOF,
                 $array,
                 $classes,
                 [],
@@ -1130,38 +1130,38 @@ final class GetTest extends TestCase
             ],
             'multiline' => [
                 <<<EOF
-                [
-                    'list1' => [
-                        1,
-                    ],
-                    'list2' => [
-                        1,
-                        3.14,
-                        6.626e-34,
-                    ],
-                    'list3' => [
-                        'foo' => 1,
-                        2.0,
-                        'bar' => 3,
-                        4,
-                    ],
-                    'empty' => [],
-                    'index' => [
-                        5 => true,
-                        2 => false,
-                    ],
-                    'multiline{$eol}key' => 'This string has "double quotes", \'single quotes\', and commas.',
-                    'classes' => [
-                        Salient\Tests\Core\Utility\Get\GetTest::class,
-                        GetTest::class,
-                        'gettest',
-                    ],
-                    'This string has line 1,{$eol}line 2, and no more lines.',
-                    '\\\\Vendor\\\\Namespace\\\\',
-                    "\\xa0",
-                    '👩🏼‍🚒',
-                ]
-                EOF,
+[
+    'list1' => [
+        1,
+    ],
+    'list2' => [
+        1,
+        3.14,
+        6.626e-34,
+    ],
+    'list3' => [
+        'foo' => 1,
+        2.0,
+        'bar' => 3,
+        4,
+    ],
+    'empty' => [],
+    'index' => [
+        5 => true,
+        2 => false,
+    ],
+    'multiline{$eol}key' => 'This string has "double quotes", \'single quotes\', and commas.',
+    'classes' => [
+        Salient\Tests\Core\Utility\Get\GetTest::class,
+        GetTest::class,
+        'gettest',
+    ],
+    'This string has line 1,{$eol}line 2, and no more lines.',
+    '\\\\Vendor\\\\Namespace\\\\',
+    "\\xa0",
+    '👩🏼‍🚒',
+]
+EOF,
                 $array,
                 $classes,
                 [],
@@ -1169,8 +1169,8 @@ final class GetTest extends TestCase
             ],
             'escaped commas' => [
                 <<<EOF
-                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c{$esc}line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
-                EOF,
+['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c{$esc}line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+EOF,
                 $array,
                 $classes,
                 [],
@@ -1180,38 +1180,38 @@ final class GetTest extends TestCase
             ],
             'multiline + constants' => [
                 <<<EOF
-                [
-                    'list1' => [
-                        1,
-                    ],
-                    'list2' => [
-                        1,
-                        3.14,
-                        6.626e-34,
-                    ],
-                    'list3' => [
-                        'foo' => 1,
-                        2.0,
-                        'bar' => 3,
-                        4,
-                    ],
-                    'empty' => [],
-                    'index' => [
-                        5 => true,
-                        2 => false,
-                    ],
-                    'multiline' . \PHP_EOL . 'key' => 'This string has "double quotes", \'single quotes\', and commas.',
-                    'classes' => [
-                        Salient\Tests\Core\Utility\Get\GetTest::class,
-                        GetTest::class,
-                        'gettest',
-                    ],
-                    'This string has line 1,' . \PHP_EOL . 'line 2, and no more lines.',
-                    '\\\\Vendor\\\\Namespace\\\\',
-                    "\\xa0",
-                    '👩🏼‍🚒',
-                ]
-                EOF,
+[
+    'list1' => [
+        1,
+    ],
+    'list2' => [
+        1,
+        3.14,
+        6.626e-34,
+    ],
+    'list3' => [
+        'foo' => 1,
+        2.0,
+        'bar' => 3,
+        4,
+    ],
+    'empty' => [],
+    'index' => [
+        5 => true,
+        2 => false,
+    ],
+    'multiline' . \PHP_EOL . 'key' => 'This string has "double quotes", \'single quotes\', and commas.',
+    'classes' => [
+        Salient\Tests\Core\Utility\Get\GetTest::class,
+        GetTest::class,
+        'gettest',
+    ],
+    'This string has line 1,' . \PHP_EOL . 'line 2, and no more lines.',
+    '\\\\Vendor\\\\Namespace\\\\',
+    "\\xa0",
+    '👩🏼‍🚒',
+]
+EOF,
                 $array,
                 $classes,
                 $constants,
@@ -1219,8 +1219,8 @@ final class GetTest extends TestCase
             ],
             'escaped commas + constants' => [
                 <<<EOF
-                ['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], 'multiline' . \PHP_EOL . 'key' => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c" . \PHP_EOL . "line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
-                EOF,
+['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], 'multiline' . \PHP_EOL . 'key' => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Core\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c" . \PHP_EOL . "line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+EOF,
                 $array,
                 $classes,
                 $constants,

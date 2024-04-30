@@ -677,9 +677,9 @@ final class UriTest extends TestCase
         // Check the target path matches the output of the remove_dot_segments
         // algorithm given in [RFC3986]
         if (
-            !$reference->isReference() ||
-            $reference->getAuthority() !== '' ||
-            ($reference->getPath()[0] ?? null) === '/'
+            !$reference->isReference()
+            || $reference->getAuthority() !== ''
+            || ($reference->getPath()[0] ?? null) === '/'
         ) {
             $path = $reference->getPath();
         } elseif ($reference->getPath() === '') {

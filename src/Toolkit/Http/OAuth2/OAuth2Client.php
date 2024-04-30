@@ -247,8 +247,8 @@ abstract class OAuth2Client
                 $cache = Cache::asOfNow();
             }
             if (
-                $cache->has($this->TokenKey) ||
-                $cache->has("{$this->TokenKey}:refresh")
+                $cache->has($this->TokenKey)
+                || $cache->has("{$this->TokenKey}:refresh")
             ) {
                 $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class, 0);
                 if ($lastToken) {
@@ -351,8 +351,8 @@ abstract class OAuth2Client
     private function receiveAuthorizationCode(HttpServerRequestInterface $request, bool &$continue, &$return): HttpResponse
     {
         if (
-            Str::upper($request->getMethod()) !== Method::GET ||
-            $request->getUri()->getPath() !== '/oauth2/callback'
+            Str::upper($request->getMethod()) !== Method::GET
+            || $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
             $continue = true;
             return new HttpResponse(400, 'Invalid request.');
@@ -364,9 +364,9 @@ abstract class OAuth2Client
         $code = $fields['code'] ?? null;
 
         if (
-            $state !== null &&
-            $state === ($fields['state'] ?? null) &&
-            $code !== null
+            $state !== null
+            && $state === ($fields['state'] ?? null)
+            && $code !== null
         ) {
             Console::debug('Authorization code received and verified');
             $return = $code;
@@ -583,8 +583,8 @@ abstract class OAuth2Client
     {
         // Don't [re-]authorize for an ID token that won't be issued
         if (
-            Cache::has($this->TokenKey, 0) &&
-            !Cache::has("{$this->TokenKey}:id", 0)
+            Cache::has($this->TokenKey, 0)
+            && !Cache::has("{$this->TokenKey}:id", 0)
         ) {
             return null;
         }

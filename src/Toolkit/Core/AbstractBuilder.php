@@ -155,8 +155,8 @@ abstract class AbstractBuilder implements Chainable, Immutable
     final public function __call(string $name, array $arguments)
     {
         if (
-            ($this->Terminators[$name] ?? null) ||
-            ($this->Terminators[$this->Introspector->maybeNormalise($name)] ?? null)
+            ($this->Terminators[$name] ?? null)
+            || ($this->Terminators[$this->Introspector->maybeNormalise($name)] ?? null)
         ) {
             return $this->go()->{$name}(...$arguments);
         }

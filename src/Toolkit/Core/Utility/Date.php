@@ -52,8 +52,8 @@ final class Date extends AbstractUtility
     {
         if (!($interval instanceof DateInterval)) {
             if (
-                \PHP_VERSION_ID < 80000 &&
-                Pcre::match('/W.+D/', $interval)
+                \PHP_VERSION_ID < 80000
+                && Pcre::match('/W.+D/', $interval)
             ) {
                 throw new InvalidArgumentException(sprintf(
                     'Invalid $interval: %s',
@@ -78,8 +78,8 @@ final class Date extends AbstractUtility
     public static function maybeSetTimezone(DateTimeInterface $datetime, $timezone = null): DateTimeImmutable
     {
         if (
-            $datetime->getTimezone()->getName() !== 'UTC' ||
-            ($timezone === null && date_default_timezone_get() === 'UTC')
+            $datetime->getTimezone()->getName() !== 'UTC'
+            || ($timezone === null && date_default_timezone_get() === 'UTC')
         ) {
             return self::immutable($datetime);
         }

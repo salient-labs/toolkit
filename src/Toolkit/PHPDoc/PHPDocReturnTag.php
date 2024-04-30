@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PhpDoc;
+namespace Salient\PHPDoc;
 
 use Salient\Core\Exception\InvalidArgumentException;
 
 /**
  * A "return" tag extracted from a PHP DocBlock
  */
-class PhpDocReturnTag extends PhpDocTag
+class PHPDocReturnTag extends PHPDocTag
 {
     /**
      * @var string
