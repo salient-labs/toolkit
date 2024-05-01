@@ -2,10 +2,9 @@
 
 namespace Salient\Curler\Exception;
 
-use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 
-class CurlErrorException extends AbstractCurlerException implements NetworkExceptionInterface
+class CurlErrorException extends AbstractRequestException
 {
     protected int $CurlError;
 
@@ -22,7 +21,6 @@ class CurlErrorException extends AbstractCurlerException implements NetworkExcep
         parent::__construct(
             sprintf('cURL error %d: %s', $curlError, curl_strerror($curlError)),
             $request,
-            null,
             $data,
         );
     }
@@ -36,10 +34,13 @@ class CurlErrorException extends AbstractCurlerException implements NetworkExcep
     }
 
     /**
-     * Get the request that triggered the exception
+     * Check if the exception was caused by a network error
      */
-    public function getRequest(): RequestInterface
+    public function isNetworkError(): bool
     {
-        return $this->Request;
+        return $this->CurlError === \CURLE_COULDNT_RESOLVE_HOST
+            || $this->CurlError === \CURLE_COULDNT_CONNECT
+            || $this->CurlError === \CURLE_OPERATION_TIMEOUTED
+            || $this->CurlError === \CURLE_SSL_CONNECT_ERROR;
     }
 }
