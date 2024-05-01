@@ -54,6 +54,8 @@ final class Process
      */
     private $Input;
 
+    private bool $RewindInput;
+
     /**
      * @var (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null
      */
@@ -175,6 +177,9 @@ final class Process
 
         $this->Command = $command;
         $this->Input = $this->filterInput($input);
+        if ($this->Input !== null) {
+            $this->RewindInput = true;
+        }
         $this->Callback = $callback;
         $this->Cwd = $cwd;
         $this->Env = $env;
@@ -242,6 +247,28 @@ final class Process
         $this->assertIsNotRunning();
 
         $this->Input = $this->filterInput($input);
+        if ($this->Input !== null) {
+            $this->RewindInput = true;
+        } else {
+            unset($this->RewindInput);
+        }
+        return $this;
+    }
+
+    /**
+     * Pass input to the process without making it seekable or rewinding it
+     * between runs
+     *
+     * @param resource $input
+     * @return $this
+     * @throws ProcessException if the process is running.
+     */
+    public function pipeInput($input)
+    {
+        $this->assertIsNotRunning();
+
+        $this->Input = $input;
+        $this->RewindInput = false;
         return $this;
     }
 
@@ -287,7 +314,9 @@ final class Process
         $handles = [];
 
         if ($this->Input !== null) {
-            File::rewind($this->Input);
+            if ($this->RewindInput) {
+                File::rewind($this->Input);
+            }
             $descriptors[FileDescriptor::IN] = $this->Input;
         }
 
