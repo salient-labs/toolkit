@@ -948,13 +948,13 @@ final class File extends AbstractUtility
      * @todo Detect file encoding
      *
      * @param Stringable|string|resource $resource
-     * @return array<mixed[]>
+     * @return list<array{null}|list<string>>
      */
     public static function getCsv($resource): array
     {
         $handle = self::maybeOpen($resource, 'rb', $close, $uri);
         while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
-            /** @var array<int,string|null> $row */
+            /** @var array{null}|list<string> $row */
             $data[] = $row;
         }
         self::checkEof($handle, $uri);

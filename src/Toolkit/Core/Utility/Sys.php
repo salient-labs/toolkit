@@ -4,12 +4,13 @@ namespace Salient\Core\Utility;
 
 use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Facade\Console;
+use Salient\Core\Exception\RuntimeException;
 use Salient\Core\AbstractUtility;
-use SQLite3;
 
 /**
  * Get information about the runtime environment
+ *
+ * @api
  */
 final class Sys extends AbstractUtility
 {
@@ -41,20 +42,19 @@ final class Sys extends AbstractUtility
      * Get the current memory usage of the script as a percentage of the
      * memory_limit
      */
-    public static function getMemoryUsagePercent(): int
+    public static function getMemoryUsagePercent(): float
     {
         $limit = self::getMemoryLimit();
 
         return $limit <= 0
             ? 0
-            : (int) round(memory_get_usage() * 100 / $limit);
+            : (memory_get_usage() * 100 / $limit);
     }
 
     /**
      * Get user and system CPU times for the current run, in microseconds
      *
-     * @return array{int,int} User CPU time is at index 0 and is followed by
-     * system CPU time.
+     * @return array{int,int} `[<user_time>, <system_time>]`
      */
     public static function getCpuUsage(): array
     {
@@ -78,28 +78,28 @@ final class Sys extends AbstractUtility
     /**
      * Get the filename used to run the script
      *
-     * To get the running script's canonical path relative to the application,
-     * set `$basePath` to the application's root directory.
+     * Use `$parentDir` to get the running script's path relative to a parent
+     * directory.
      *
-     * @throws LogicException if the filename used to run the script doesn't
-     * belong to `$basePath`.
+     * @throws LogicException if the running script is not in `$parentDir`.
      */
-    public static function getProgramName(?string $basePath = null): string
+    public static function getProgramName(?string $parentDir = null): string
     {
         $filename = $_SERVER['SCRIPT_FILENAME'];
 
-        if ($basePath === null) {
+        if ($parentDir === null) {
             return $filename;
         }
 
-        $filename = File::relativeToParent($filename, $basePath);
+        $filename = File::relativeToParent($filename, $parentDir);
         if ($filename === null) {
             throw new LogicException(sprintf(
                 "'%s' is not in '%s'",
                 $_SERVER['SCRIPT_FILENAME'],
-                $basePath,
+                $parentDir,
             ));
         }
+
         return $filename;
     }
 
@@ -143,10 +143,34 @@ final class Sys extends AbstractUtility
         }
 
         $user = Env::getNullable('USER', null);
-        if ($user === null) {
-            throw new InvalidEnvironmentException('Unable to identify user');
+        if ($user !== null) {
+            return $user;
         }
-        return $user;
+
+        throw new InvalidEnvironmentException('Unable to identify user');
+    }
+
+    /**
+     * Check if a process with the given process ID is running
+     */
+    public static function isProcessRunning(int $pid): bool
+    {
+        if (!self::isWindows()) {
+            return posix_kill($pid, 0);
+        }
+
+        $command = sprintf('tasklist /fo csv /nh /fi "PID eq %d"', $pid);
+        $stream = File::openPipe($command, 'r');
+        $csv = File::getCsv($stream);
+        if (File::closePipe($stream, $command) !== 0) {
+            throw new RuntimeException(
+                sprintf('Command failed: %s', $command)
+            );
+        }
+
+        return count($csv) === 1
+            && isset($csv[0][1])
+            && $csv[0][1] === (string) $pid;
     }
 
     /**
@@ -162,7 +186,9 @@ final class Sys extends AbstractUtility
         $windows = self::isWindows();
 
         foreach ($args as &$arg) {
-            $arg = $windows ? self::escapeCmdArg($arg) : self::escapeShellArg($arg);
+            $arg = $windows
+                ? self::escapeCmdArg($arg)
+                : self::escapeShellArg($arg);
         }
 
         return implode(' ', $args);
@@ -216,16 +242,6 @@ final class Sys extends AbstractUtility
     }
 
     /**
-     * True if the SQLite3 library supports UPSERT syntax
-     *
-     * @link https://www.sqlite.org/lang_UPSERT.html
-     */
-    public static function sqliteHasUpsert(): bool
-    {
-        return SQLite3::version()['versionNumber'] >= 3024000;
-    }
-
-    /**
      * Handle SIGINT and SIGTERM to make a clean exit from the running script
      *
      * If {@see posix_getpgid()} is available, `SIGINT` is propagated to the
@@ -241,26 +257,26 @@ final class Sys extends AbstractUtility
         }
 
         $handler =
-            function (int $signal): void {
-                Console::debug(sprintf('Received signal %d', $signal));
-                if ($signal === \SIGINT
-                        && function_exists('posix_getpgid')
-                        && ($pgid = posix_getpgid(posix_getpid())) !== false) {
+            static function (int $signal): void {
+                if (
+                    $signal === \SIGINT
+                    && function_exists('posix_getpgid')
+                    && ($pgid = posix_getpgid(posix_getpid())) !== false
+                ) {
                     // Stop handling SIGINT before propagating it
                     pcntl_signal(\SIGINT, \SIG_DFL);
                     register_shutdown_function(
-                        function () use ($pgid) {
-                            Console::debug(sprintf('Sending SIGINT to process group %d', $pgid));
+                        static function () use ($pgid) {
                             posix_kill($pgid, \SIGINT);
                         }
                     );
                 }
-                exit(64 + $signal);
+
+                exit(128 + $signal);
             };
 
         pcntl_async_signals(true);
-        pcntl_signal(\SIGINT, $handler);
-        pcntl_signal(\SIGTERM, $handler);
-        return true;
+        return pcntl_signal(\SIGINT, $handler)
+            && pcntl_signal(\SIGTERM, $handler);
     }
 }

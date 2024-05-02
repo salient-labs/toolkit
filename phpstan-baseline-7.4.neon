@@ -1186,11 +1186,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/Utility/InflectTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\InflectTest\\:\\:getPluralData\\(\\) should return array\\<string, array\\{float, array\\<array\\{string, string\\}\\>\\}\\> but returns array\\{legacy\\: array\\{100\\.0, array\\{array\\{'blitz', 'blitzes'\\}, array\\{'boy', 'boys'\\}, array\\{'bus', 'buses'\\}, array\\{'cat', 'cats'\\}, array\\{'city', 'cities'\\}, array\\{'halo', 'halos'\\}, array\\{'house', 'houses'\\}, array\\{'lunch', 'lunches'\\}, \\.\\.\\.\\}\\}, plural\\-01\\.csv\\: array\\{30\\.0, array\\<array\\>\\}, plural\\-02\\.csv\\: array\\{86\\.0, array\\<array\\>\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/InflectTest.php
-
-		-
 			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/PcreTest.php

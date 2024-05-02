@@ -41,9 +41,9 @@ final class ProcessTest extends TestCase
         $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php', 'timeout'], '', null, null, null, null, true);
         $process->start();
         $pid = $process->getPid();
-        $this->assertTrue(posix_kill($pid, 0));
+        $this->assertTrue(Sys::isProcessRunning($pid));
         unset($process);
-        $this->assertFalse(posix_kill($pid, 0));
+        $this->assertFalse(Sys::isProcessRunning($pid));
     }
 
     public function testSetInput(): void

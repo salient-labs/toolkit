@@ -12,6 +12,59 @@ use Salient\Tests\TestCase;
 final class SysTest extends TestCase
 {
     /**
+     * @runInSeparateProcess
+     */
+    public function testGetMemoryLimit(): void
+    {
+        ini_set('memory_limit', '-1');
+        $this->assertSame(-1, Sys::getMemoryLimit());
+        ini_set('memory_limit', '512M');
+        $this->assertSame(512 * 2 ** 20, Sys::getMemoryLimit());
+    }
+
+    public function testGetMemoryUsage(): void
+    {
+        $this->assertGreaterThan(0, $current = Sys::getMemoryUsage());
+        $this->assertGreaterThanOrEqual($current, Sys::getPeakMemoryUsage());
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testGetMemoryUsagePercent(): void
+    {
+        ini_set('memory_limit', '-1');
+        $this->assertSame(0.0, Sys::getMemoryUsagePercent());
+        ini_set('memory_limit', '512M');
+        $this->assertGreaterThan(0.0, Sys::getMemoryUsagePercent());
+    }
+
+    public function testGetCpuUsage(): void
+    {
+        $this->assertCount(2, $usage = Sys::getCpuUsage());
+        foreach ($usage as $cpuTime) {
+            $this->assertIsInt($cpuTime);
+            $this->assertGreaterThan(0, $cpuTime);
+        }
+    }
+
+    public function testIsProcessRunning(): void
+    {
+        $this->assertIsInt($pid = getmypid());
+        $this->assertTrue(Sys::isProcessRunning($pid));
+        $command = Sys::escapeCommand([
+            ...self::PHP_COMMAND,
+            '-r',
+            'echo getmypid();',
+        ]);
+        $handle = File::openPipe($command, 'r');
+        $output = File::getContents($handle);
+        $status = File::closePipe($handle);
+        $this->assertSame(0, $status);
+        $this->assertFalse(Sys::isProcessRunning((int) $output));
+    }
+
+    /**
      * @dataProvider escapeCommandProvider
      */
     public function testEscapeCommand(string $arg): void
@@ -20,13 +73,11 @@ final class SysTest extends TestCase
             $this->markTestSkipped();
         }
 
-        $command = [
-            \PHP_BINARY,
-            '-ddisplay_startup_errors=0',
+        $command = Sys::escapeCommand([
+            ...self::PHP_COMMAND,
             self::getFixturesPath(__CLASS__) . '/unescape.php',
             $arg,
-        ];
-        $command = Sys::escapeCommand($command);
+        ]);
         $handle = File::openPipe($command, 'rb');
         $output = File::getContents($handle);
         $status = File::closePipe($handle);
@@ -59,13 +110,13 @@ final class SysTest extends TestCase
                 '"string"',
             ],
             'quoted + backslashes' => [
-                '"\string\"',
+                '\"string\"',
             ],
             'quoted + whitespace' => [
                 '"string with words"',
             ],
             'quoted + whitespace + backslashes' => [
-                '"\string with words\"',
+                '\"string with words\"',
             ],
             'quoted (single + double)' => [
                 '\'quotable\' "quotes"',
@@ -91,6 +142,18 @@ final class SysTest extends TestCase
             'cmd variable expansion #4' => [
                 'success!',
             ],
+            'cmd variable expansion #5' => [
+                'string^%',
+            ],
+            'cmd variable expansion #6' => [
+                'string^!',
+            ],
+            'cmd variable expansion #7' => [
+                '^%string^%',
+            ],
+            'cmd variable expansion #8' => [
+                '^!string^!',
+            ],
             'with newline' => [
                 'line' . \PHP_EOL . 'line',
             ],
@@ -102,6 +165,12 @@ final class SysTest extends TestCase
             ],
             'with trailing space' => [
                 'string ',
+            ],
+            'with trailing backslash' => [
+                'string\\',
+            ],
+            'with trailing backslashes' => [
+                'string\\\\',
             ],
         ];
     }
