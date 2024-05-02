@@ -26,6 +26,46 @@ final class ProcessTest extends TestCase
         'XPC_SERVICE_NAME' => true,
     ];
 
+    public function testWithShellCommand(): void
+    {
+        $process = Process::withShellCommand('echo foo');
+        $this->assertSame(0, $process->run());
+        $this->assertSame('foo' . \PHP_EOL, $process->getOutput());
+        $this->assertSame('', $process->getNewOutput());
+        $this->assertSame('', $process->getNewText());
+        $this->assertSame('foo', $process->getText());
+    }
+
+    public function testDestructor(): void
+    {
+        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php', 'timeout'], '', null, null, null, null, true);
+        $process->start();
+        $pid = $process->getPid();
+        $this->assertTrue(Sys::isProcessRunning($pid));
+        unset($process);
+        $this->assertFalse(Sys::isProcessRunning($pid));
+    }
+
+    public function testSetInput(): void
+    {
+        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php'], null);
+        $process->setInput(null);
+        // The process won't terminate with null input, so replace it before
+        // running
+        $this->assertSame(0, $process->setInput('foo')->run());
+        $this->assertSame('foo', $process->getOutput());
+    }
+
+    public function testPipeInput(): void
+    {
+        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php']);
+        $pipe = File::openPipe(Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'foo';"]), 'r');
+        $this->assertSame(0, $process->pipeInput($pipe)->run());
+        $this->assertSame('foo', $process->getOutput());
+        $this->assertSame(0, $process->run());
+        $this->assertSame('', $process->getOutput());
+    }
+
     public function testStart(): void
     {
         foreach (self::runProvider() as $key => $run) {

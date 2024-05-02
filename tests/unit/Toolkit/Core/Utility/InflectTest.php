@@ -292,6 +292,7 @@ final class InflectTest extends TestCase
     {
         $dir = self::getFixturesPath(__CLASS__);
 
+        /** @var array<string,array{float,array<array{string,string}>}> */
         return [
             'legacy' => [
                 100.0,
