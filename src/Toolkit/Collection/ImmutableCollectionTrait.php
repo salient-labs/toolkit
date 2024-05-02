@@ -3,6 +3,7 @@
 namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 
@@ -19,6 +20,7 @@ use Salient\Core\Concern\ImmutableArrayAccessTrait;
  * @template TValue
  *
  * @phpstan-require-implements CollectionInterface
+ * @phpstan-require-implements Immutable
  */
 trait ImmutableCollectionTrait
 {

@@ -2,11 +2,18 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Exception\BadMethodCallException;
+use Salient\Core\Exception\LogicException;
+use ArrayAccess;
 
 /**
+ * Implements ArrayAccess setters for immutable objects
+ *
+ * @api
+ *
  * @template TKey of array-key
  * @template TValue
+ *
+ * @phpstan-require-implements ArrayAccess
  */
 trait ImmutableArrayAccessTrait
 {
@@ -19,7 +26,7 @@ trait ImmutableArrayAccessTrait
      */
     public function offsetSet($offset, $value): void
     {
-        throw new BadMethodCallException(sprintf(
+        throw new LogicException(sprintf(
             '%s values are read-only',
             static::class,
         ));
@@ -33,7 +40,7 @@ trait ImmutableArrayAccessTrait
      */
     public function offsetUnset($offset): void
     {
-        throw new BadMethodCallException(sprintf(
+        throw new LogicException(sprintf(
             '%s values are read-only',
             static::class,
         ));

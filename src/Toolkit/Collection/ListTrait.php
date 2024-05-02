@@ -30,16 +30,7 @@ trait ListTrait
     }
 
     /**
-     * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
-     */
-    public function __construct($items = [])
-    {
-        $this->Items = $this->getItems($items);
-    }
-
-    /**
-     * @param TValue $value
-     * @return static
+     * @inheritDoc
      */
     public function add($value)
     {
@@ -49,9 +40,7 @@ trait ListTrait
     }
 
     /**
-     * @param int $key
-     * @param TValue $value
-     * @return static
+     * @inheritDoc
      */
     public function set($key, $value)
     {
@@ -62,8 +51,7 @@ trait ListTrait
     }
 
     /**
-     * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
-     * @return static
+     * @inheritDoc
      */
     public function merge($items)
     {
@@ -76,8 +64,7 @@ trait ListTrait
     }
 
     /**
-     * @param TValue ...$item
-     * @return static
+     * @inheritDoc
      */
     public function push(...$item)
     {
@@ -90,8 +77,7 @@ trait ListTrait
     }
 
     /**
-     * @param TValue ...$item
-     * @return static
+     * @inheritDoc
      */
     public function unshift(...$item)
     {

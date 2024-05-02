@@ -65,7 +65,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<array-key,TValue> $array
-     * @return TValue|null
+     * @return ($array is non-empty-array ? TValue : null)
      */
     public static function first(array $array)
     {
@@ -81,7 +81,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<array-key,TValue> $array
-     * @return TValue|null
+     * @return ($array is non-empty-array ? TValue : null)
      */
     public static function last(array $array)
     {

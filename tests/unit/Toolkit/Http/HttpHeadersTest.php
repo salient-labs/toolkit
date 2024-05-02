@@ -567,7 +567,7 @@ final class HttpHeadersTest extends TestCase
         $this->assertSame(
             ['Accept' => ['*/*']],
             $headers->filter(
-                fn(array $map) => $map === ['accept' => ['*/*']],
+                fn(array $map) => $map === ['accept', ['*/*']],
                 CollectionInterface::CALLBACK_USE_BOTH
             )->getHeaders()
         );
