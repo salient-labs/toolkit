@@ -2,6 +2,7 @@
 
 namespace Salient\Curler;
 
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
@@ -41,6 +42,8 @@ use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
 use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\Exception\HttpErrorException;
+use Salient\Curler\Exception\NetworkException;
+use Salient\Curler\Exception\RequestException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\HasHttpHeaders;
@@ -53,6 +56,7 @@ use Closure;
 use CurlHandle;
 use Generator;
 use Stringable;
+use Throwable;
 
 /**
  * An HTTP client optimised for RESTful APIs
@@ -116,6 +120,7 @@ class Curler implements CurlerInterface, Buildable
     protected bool $ThrowHttpErrors;
     protected ?RequestInterface $LastRequest = null;
     protected ?HttpResponseInterface $LastResponse = null;
+    private ?Curler $WithoutThrowHttpErrors = null;
     private ?Closure $Closure = null;
 
     private static string $DefaultUserAgent;
@@ -228,6 +233,7 @@ class Curler implements CurlerInterface, Buildable
     {
         $this->LastRequest = null;
         $this->LastResponse = null;
+        $this->WithoutThrowHttpErrors = null;
         $this->Closure = null;
     }
 
@@ -363,7 +369,7 @@ class Curler implements CurlerInterface, Buildable
             $request = $pager->getFirstRequest($request, $this);
         }
 
-        $this->sendRequest($request);
+        $this->doSendRequest($request);
 
         if ($method === Method::HEAD) {
             return $this->LastResponse->getHttpHeaders();
@@ -436,7 +442,7 @@ class Curler implements CurlerInterface, Buildable
         $request = $this->Pager->getFirstRequest($request, $this);
         $prev = null;
         do {
-            $this->sendRequest($request);
+            $this->doSendRequest($request);
             $page = $this->Pager->getPage(
                 $this->getLastResponseBody(),
                 $request,
@@ -494,7 +500,7 @@ class Curler implements CurlerInterface, Buildable
     {
         $request = $this->createRequest($method, $query, $data);
         $request = $request->withHeader(HttpHeader::CONTENT_TYPE, $mediaType);
-        $this->sendRequest($request);
+        $this->doSendRequest($request);
         return $this->getLastResponseBody();
     }
 
@@ -966,15 +972,45 @@ class Curler implements CurlerInterface, Buildable
 
     /**
      * @inheritDoc
-     *
-     * @phpstan-assert !null $this->LastRequest
-     * @phpstan-assert !null $this->LastResponse
      */
     public function sendRequest(RequestInterface $request): HttpResponseInterface
     {
+        // PSR-18: "A Client MUST NOT treat a well-formed HTTP request or HTTP
+        // response as an error condition. For example, response status codes in
+        // the 400 and 500 range MUST NOT cause an exception and MUST be
+        // returned to the Calling Library as normal."
+        $curler = $this->WithoutThrowHttpErrors
+            ??= $this->withThrowHttpErrors(false);
+        try {
+            try {
+                return $curler->doSendRequest($request);
+            } finally {
+                $this->LastRequest = $curler->LastRequest;
+                $this->LastResponse = $curler->LastResponse;
+            }
+        } catch (ClientExceptionInterface $ex) {
+            throw $ex;
+        } catch (CurlErrorException $ex) {
+            throw $ex->isNetworkError()
+                ? new NetworkException($ex->getMessage(), $this->LastRequest ?? $request, [], $ex)
+                : new RequestException($ex->getMessage(), $this->LastRequest ?? $request, [], $ex);
+        } catch (Throwable $ex) {
+            throw new RequestException($ex->getMessage(), $this->LastRequest ?? $request, [], $ex);
+        }
+    }
+
+    /**
+     * @phpstan-assert !null $this->LastRequest
+     * @phpstan-assert !null $this->LastResponse
+     */
+    private function doSendRequest(RequestInterface $request): HttpResponseInterface
+    {
+        $this->LastRequest = null;
+        $this->LastResponse = null;
+
         return $this->Middleware
             ? ($this->Closure ??= $this->getClosure())($request)
-            : $this->doSendRequest($request);
+            : $this->getResponse($request);
     }
 
     /**
@@ -983,7 +1019,7 @@ class Curler implements CurlerInterface, Buildable
     private function getClosure(): Closure
     {
         $closure = fn(RequestInterface $request): HttpResponseInterface =>
-            $this->doSendRequest($request);
+            $this->getResponse($request);
 
         foreach (array_reverse($this->Middleware) as [$middleware]) {
             $closure = $middleware instanceof CurlerMiddlewareInterface
@@ -999,7 +1035,7 @@ class Curler implements CurlerInterface, Buildable
         return $closure;
     }
 
-    private function doSendRequest(RequestInterface $request): HttpResponseInterface
+    private function getResponse(RequestInterface $request): HttpResponseInterface
     {
         $uri = $request->getUri()->withFragment('');
         $request = $request->withUri($uri);

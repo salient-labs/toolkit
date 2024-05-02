@@ -3,15 +3,14 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Utility\Format;
 use Salient\Core\AbstractException;
+use Salient\Http\HttpRequest;
 use Throwable;
 
-abstract class AbstractCurlerException extends AbstractException
+abstract class AbstractRequestException extends AbstractException
 {
     protected RequestInterface $Request;
-    protected HttpResponseInterface $Response;
     /** @var array<string,mixed> */
     protected array $Data;
 
@@ -19,37 +18,23 @@ abstract class AbstractCurlerException extends AbstractException
      * @param array<string,mixed> $data
      */
     public function __construct(
-        string $message = '',
-        ?RequestInterface $request = null,
-        ?HttpResponseInterface $response = null,
+        string $message,
+        RequestInterface $request,
         array $data = [],
         ?Throwable $previous = null
     ) {
-        if ($request !== null) {
-            $this->Request = $request;
-        }
-        if ($response !== null) {
-            $this->Response = $response;
-        }
+        $this->Request = $request;
         $this->Data = $data;
 
         parent::__construct($message, $previous);
     }
 
     /**
-     * Get the request that triggered the exception, if applicable
+     * Get the request that triggered the exception
      */
-    public function getRequest(): ?RequestInterface
+    public function getRequest(): RequestInterface
     {
-        return $this->Request ?? null;
-    }
-
-    /**
-     * Get the response that triggered the exception, if applicable
-     */
-    public function getResponse(): ?HttpResponseInterface
-    {
-        return $this->Response ?? null;
+        return $this->Request;
     }
 
     /**
@@ -68,10 +53,8 @@ abstract class AbstractCurlerException extends AbstractException
     public function getMetadata(): array
     {
         return [
-            'Response' =>
-                (string) ($this->Response ?? '<no response>'),
             'Request' =>
-                (string) ($this->Response ?? '<no request>'),
+                (string) HttpRequest::fromPsr7($this->Request),
             'Data' =>
                 $this->Data
                     ? Format::array($this->Data)

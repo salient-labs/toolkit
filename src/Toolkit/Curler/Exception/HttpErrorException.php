@@ -7,7 +7,7 @@ use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Utility\Arr;
 use Throwable;
 
-class HttpErrorException extends AbstractCurlerException
+class HttpErrorException extends AbstractResponseException
 {
     protected int $StatusCode;
 
@@ -35,22 +35,6 @@ class HttpErrorException extends AbstractCurlerException
     }
 
     /**
-     * Get the request that triggered the exception
-     */
-    public function getRequest(): RequestInterface
-    {
-        return $this->Request;
-    }
-
-    /**
-     * Get the response that triggered the exception
-     */
-    public function getResponse(): HttpResponseInterface
-    {
-        return $this->Response;
-    }
-
-    /**
      * Get the exception's underlying HTTP status code
      */
     public function getStatusCode(): int
@@ -62,8 +46,9 @@ class HttpErrorException extends AbstractCurlerException
      * Check if the exception's underlying HTTP status code is 404 (Not Found)
      * or 410 (Gone)
      */
-    public function isNotFound(): bool
+    public function isNotFoundError(): bool
     {
-        return $this->StatusCode === 404 || $this->StatusCode === 410;
+        return $this->StatusCode === 404
+            || $this->StatusCode === 410;
     }
 }
