@@ -15,6 +15,6 @@ use Salient\Contract\Collection\ListInterface;
  */
 final class ListCollection implements ListInterface
 {
-    /** @use ListTrait<TValue> */
+    /** @use ListTrait<int,TValue> */
     use ListTrait;
 }

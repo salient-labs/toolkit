@@ -15,8 +15,12 @@ use Salient\Core\Exception\InvalidArgumentTypeException;
  *
  * @see ListInterface
  *
+ * @todo Remove `@template TKey of int` when PHPStan propagates trait templates
+ * properly
+ *
  * @api
  *
+ * @template TKey of int
  * @template TValue
  *
  * @phpstan-require-implements ListInterface
