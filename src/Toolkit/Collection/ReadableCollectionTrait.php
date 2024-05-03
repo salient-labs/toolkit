@@ -33,7 +33,7 @@ trait ReadableCollectionTrait
     protected $Items = [];
 
     /**
-     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
+     * @inheritDoc
      */
     public function __construct($items = [])
     {
@@ -41,7 +41,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
     public static function empty()
     {
@@ -49,7 +49,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
     public function copy()
     {
@@ -57,11 +57,9 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @template T of TValue|TKey|array<TKey,TValue>
+     * @template T of TValue|TKey|array{TKey,TValue}
      *
-     * @param callable(T, T|null $nextValue, T|null $prevValue): mixed $callback
-     * @param CollectionInterface::CALLBACK_USE_* $mode
-     * @return $this
+     * @param callable(T, T|null $next, T|null $prev): mixed $callback
      */
     public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
@@ -70,11 +68,7 @@ trait ReadableCollectionTrait
         $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
-                ? $nextKey
-                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
-                    ? [$nextKey => $nextValue]
-                    : $nextValue);
+            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
             if ($i++) {
                 /** @var T $item */
                 /** @var T $next */
@@ -92,46 +86,46 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @template T of TValue|TKey|array<TKey,TValue>
+     * @template T of TValue|TKey|array{TKey,TValue}
      *
-     * @param callable(T, T|null $nextValue, T|null $prevValue): bool $callback
-     * @param CollectionInterface::CALLBACK_USE_* $mode
-     * @return TValue|null
+     * @param callable(T, T|null $next, T|null $prev): bool $callback
      */
-    public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
+    public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE | CollectionInterface::FIND_VALUE)
     {
         $prev = null;
         $item = null;
+        $key = null;
         $value = null;
         $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
-                ? $nextKey
-                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
-                    ? [$nextKey => $nextValue]
-                    : $nextValue);
+            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
             if ($i++) {
                 /** @var T $item */
                 /** @var T $next */
                 if ($callback($item, $next, $prev)) {
-                    return $value;
+                    /** @var TKey $key */
+                    /** @var TValue $value */
+                    return $this->getReturnValue($mode, $key, $value);
                 }
                 $prev = $item;
             }
             $item = $next;
+            $key = $nextKey;
             $value = $nextValue;
         }
         /** @var T $item */
         if ($i && $callback($item, null, $prev)) {
-            return $value;
+            /** @var TKey $key */
+            /** @var TValue $value */
+            return $this->getReturnValue($mode, $key, $value);
         }
 
         return null;
     }
 
     /**
-     * @param TValue $value
+     * @inheritDoc
      */
     public function has($value, bool $strict = false): bool
     {
@@ -149,8 +143,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @param TValue $value
-     * @return TKey|null
+     * @inheritDoc
      */
     public function keyOf($value, bool $strict = false)
     {
@@ -171,8 +164,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @param TValue $value
-     * @return TValue|null
+     * @inheritDoc
      */
     public function get($value)
     {
@@ -185,7 +177,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @return array<TKey,TValue>
+     * @inheritDoc
      */
     public function all(): array
     {
@@ -193,7 +185,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @return array<TKey,mixed>
+     * @inheritDoc
      */
     public function toArray(): array
     {
@@ -224,13 +216,16 @@ trait ReadableCollectionTrait
         return $array;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function toJson(int $flags = 0): string
     {
         return Json::stringify($this->jsonSerialize(), $flags);
     }
 
     /**
-     * @return TValue|null
+     * @inheritDoc
      */
     public function first()
     {
@@ -241,7 +236,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @return TValue|null
+     * @inheritDoc
      */
     public function last()
     {
@@ -252,7 +247,7 @@ trait ReadableCollectionTrait
     }
 
     /**
-     * @return TValue|null
+     * @inheritDoc
      */
     public function nth(int $n)
     {
@@ -331,7 +326,6 @@ trait ReadableCollectionTrait
             $items = iterator_to_array($items);
         }
 
-        /** @var array<TKey,TValue> $items */
         return $this->filterItems($items);
     }
 
@@ -366,5 +360,37 @@ trait ReadableCollectionTrait
             }
         }
         return $a <=> $b;
+    }
+
+    /**
+     * @param int-mask-of<CollectionInterface::*> $mode
+     * @param TKey $key
+     * @param TValue|null $value
+     * @return TValue|TKey|array{TKey,TValue}
+     */
+    protected function getCallbackValue(int $mode, $key, $value)
+    {
+        $mode &= CollectionInterface::CALLBACK_USE_BOTH;
+        if ($mode === CollectionInterface::CALLBACK_USE_KEY) {
+            return $key;
+        }
+        assert($value !== null);
+        return $mode === CollectionInterface::CALLBACK_USE_BOTH
+            ? [$key, $value]
+            : $value;
+    }
+
+    /**
+     * @param int-mask-of<CollectionInterface::*> $mode
+     * @param TKey $key
+     * @param TValue $value
+     * @return TValue|TKey
+     */
+    protected function getReturnValue(int $mode, $key, $value)
+    {
+        return $mode & CollectionInterface::FIND_KEY
+            && !($mode & CollectionInterface::FIND_VALUE)
+                ? $key
+                : $value;
     }
 }

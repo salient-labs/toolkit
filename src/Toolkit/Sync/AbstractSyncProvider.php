@@ -67,7 +67,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     private $MagicMethodClosures = [];
 
     /**
-     * Creates a new SyncProvider object
+     * Creates a new sync provider object
      *
      * Creating an instance of the provider registers it with the entity store
      * injected by the container.

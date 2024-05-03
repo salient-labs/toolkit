@@ -514,7 +514,9 @@ REGEX;
     }
 
     /**
-     * @inheritDoc
+     * @template T of string[]|string|array{string,string[]}
+     *
+     * @param callable(T, T|null $next, T|null $prev): bool $callback
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
@@ -527,23 +529,15 @@ REGEX;
 
         foreach ($index as $nextLower => $headerIndex) {
             $nextValue = null;
-            foreach ($headerIndex as $i) {
-                $header = $this->Headers[$i];
-                $value = reset($header);
-                if ($mode === CollectionInterface::CALLBACK_USE_KEY) {
-                    break;
+            if ($mode & CollectionInterface::CALLBACK_USE_BOTH !== CollectionInterface::CALLBACK_USE_KEY) {
+                foreach ($headerIndex as $i) {
+                    $nextValue[] = Arr::first($this->Headers[$i]);
                 }
-                $nextValue[] = $value;
             }
-            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
-                ? $nextLower
-                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
-                    ? [$nextLower => $nextValue]
-                    : $nextValue);
+            $next = $this->getCallbackValue($mode, $nextLower, $nextValue);
             if ($count++) {
-                /** @var string[]|string|array<string,string[]> $item */
-                /** @var string[]|string|array<string,string[]> $next */
-                /** @var string[]|string|array<string,string[]>|null $prev */
+                /** @var T $item */
+                /** @var T $next */
                 if (!$callback($item, $next, $prev)) {
                     unset($index[$lower]);
                     $changed = true;
@@ -553,8 +547,7 @@ REGEX;
             $item = $next;
             $lower = $nextLower;
         }
-        /** @var string[]|string|array<string,string[]> $item */
-        /** @var string[]|string|array<string,string[]> $prev */
+        /** @var T $item */
         if ($count && !$callback($item, null, $prev)) {
             unset($index[$lower]);
             $changed = true;

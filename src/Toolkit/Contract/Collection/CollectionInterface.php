@@ -18,7 +18,7 @@ use JsonSerializable;
  * @template TValue
  *
  * @extends ArrayAccess<TKey,TValue>
- * @extends Arrayable<TKey,TValue>
+ * @extends Arrayable<TKey,TValue|mixed[]>
  * @extends IteratorAggregate<TKey,TValue>
  */
 interface CollectionInterface extends
@@ -32,17 +32,27 @@ interface CollectionInterface extends
     /**
      * Pass the value of each item to the callback
      */
-    public const CALLBACK_USE_VALUE = 0;
+    public const CALLBACK_USE_VALUE = 1;
 
     /**
      * Pass the key of each item to the callback
      */
-    public const CALLBACK_USE_KEY = 1;
+    public const CALLBACK_USE_KEY = 2;
 
     /**
-     * Pass an array to the callback that maps the key of each item to its value
+     * Pass a key-value pair to the callback for each item
      */
-    public const CALLBACK_USE_BOTH = 2;
+    public const CALLBACK_USE_BOTH = 3;
+
+    /**
+     * Return the first item that satisfies the callback
+     */
+    public const FIND_VALUE = 4;
+
+    /**
+     * Return the key of the first item that satisfies the callback
+     */
+    public const FIND_KEY = 8;
 
     /**
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
@@ -105,8 +115,10 @@ interface CollectionInterface extends
     /**
      * Apply a callback to items in the collection
      *
-     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
-     * @param CollectionInterface::CALLBACK_USE_* $mode
+     * @template T of TValue|TKey|array{TKey,TValue}
+     *
+     * @param callable(T, T|null $next, T|null $prev): mixed $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @return $this
      */
     public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -114,8 +126,10 @@ interface CollectionInterface extends
     /**
      * Reduce the collection to items that satisfy a callback
      *
-     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
-     * @param CollectionInterface::CALLBACK_USE_* $mode
+     * @template T of TValue|TKey|array{TKey,TValue}
+     *
+     * @param callable(T, T|null $next, T|null $prev): bool $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @return static
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -124,11 +138,13 @@ interface CollectionInterface extends
      * Get the first item that satisfies a callback, or null if there is no such
      * item in the collection
      *
-     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
-     * @param CollectionInterface::CALLBACK_USE_* $mode
-     * @return TValue|null
+     * @template T of TValue|TKey|array{TKey,TValue}
+     *
+     * @param callable(T, T|null $next, T|null $prev): bool $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
+     * @return TValue|TKey|null
      */
-    public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
+    public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE | CollectionInterface::FIND_VALUE);
 
     /**
      * Reduce the collection to items with keys in an array

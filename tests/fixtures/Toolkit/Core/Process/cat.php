@@ -21,6 +21,7 @@ switch ($action) {
         $stream = \STDOUT;
         // No break
     case 'cat':
+    case 'fail':
     case 'delay':
     case 'timeout':
     default:
@@ -35,10 +36,14 @@ switch ($action) {
 
         fprintf(\STDOUT, '%s', stream_get_contents(\STDIN));
 
+        if ($action === 'fail') {
+            exit(1);
+        }
+
         if ($action === 'delay') {
             File::close(\STDOUT);
             File::close(\STDERR);
-            usleep(100000);
+            usleep(10000);
             exit(2);
         }
 

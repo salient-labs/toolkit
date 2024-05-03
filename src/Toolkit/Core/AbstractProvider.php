@@ -20,7 +20,7 @@ abstract class AbstractProvider implements ProviderInterface
     private DateFormatterInterface $DateFormatter;
 
     /**
-     * Creates a new Provider object
+     * Creates a new provider object
      */
     public function __construct(ContainerInterface $app)
     {

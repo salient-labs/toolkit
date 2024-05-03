@@ -4,14 +4,15 @@ namespace Salient\Tests\Core;
 
 use Salient\Contract\Core\FileDescriptor;
 use Salient\Core\Exception\ProcessException;
+use Salient\Core\Exception\ProcessTerminatedBySignalException;
 use Salient\Core\Exception\ProcessTimedOutException;
-use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Sys;
 use Salient\Core\Process;
 use Salient\Tests\TestCase;
 use Closure;
 use InvalidArgumentException;
+use LogicException;
 
 /**
  * @covers \Salient\Core\Process
@@ -38,7 +39,7 @@ final class ProcessTest extends TestCase
 
     public function testDestructor(): void
     {
-        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php', 'timeout'], '', null, null, null, null, true);
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php', 'timeout'], '', null, null, null, null, true, true);
         $process->start();
         $pid = $process->getPid();
         $this->assertTrue(Sys::isProcessRunning($pid));
@@ -46,24 +47,80 @@ final class ProcessTest extends TestCase
         $this->assertFalse(Sys::isProcessRunning($pid));
     }
 
-    public function testSetInput(): void
-    {
-        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php'], null);
-        $process->setInput(null);
-        // The process won't terminate with null input, so replace it before
-        // running
-        $this->assertSame(0, $process->setInput('foo')->run());
-        $this->assertSame('foo', $process->getOutput());
-    }
-
     public function testPipeInput(): void
     {
-        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php']);
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php']);
         $pipe = File::openPipe(Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'foo';"]), 'r');
         $this->assertSame(0, $process->pipeInput($pipe)->run());
         $this->assertSame('foo', $process->getOutput());
         $this->assertSame(0, $process->run());
         $this->assertSame('', $process->getOutput());
+    }
+
+    public function testWithoutCollectingOutput(): void
+    {
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo', $this->getCallback($output), null, null, null, false);
+        $this->assertSame(0, $process->run());
+        $this->assertSame('foo', $output[FileDescriptor::OUT]);
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Output not collected');
+        $process->getOutput();
+    }
+
+    public function testEnableOutputCollection(): void
+    {
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo', $this->getCallback($output));
+        $process->disableOutputCollection();
+        $this->assertSame(0, $process->run());
+        $this->assertSame('foo', $output[FileDescriptor::OUT]);
+        $process->enableOutputCollection();
+        $process->clearOutput();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Output not collected');
+        // Should fail because output was not collected when the process was run
+        $process->getOutput();
+    }
+
+    public function testRunWithoutFail(): void
+    {
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo');
+        $this->assertTrue($process->runWithoutFail()->isTerminated());
+        $this->assertSame('foo', $process->getOutput());
+
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php', 'fail']);
+        $this->expectException(ProcessException::class);
+        $this->expectExceptionMessage('Process failed with exit status 1: ');
+        $process->runWithoutFail();
+    }
+
+    public function testWaitForStoppedProcess(): void
+    {
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php', 'timeout']);
+        $process->start();
+        $pid = $process->getPid();
+        $this->assertTrue(Sys::isProcessRunning($pid));
+        $process->stop();
+        $this->assertFalse(Sys::isProcessRunning($pid));
+        if (!Sys::isWindows()) {
+            $this->assertTrue($process->isTerminatedBySignal());
+        }
+        $this->assertNotSame(0, $process->getExitStatus());
+    }
+
+    public function testWaitForKilledProcess(): void
+    {
+        if (Sys::isWindows()) {
+            $this->markTestSkipped();
+        }
+
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php', 'timeout']);
+        $process->start();
+        $pid = $process->getPid();
+        $this->assertTrue(Sys::isProcessRunning($pid));
+        posix_kill($pid, \SIGKILL);
+        $this->expectException(ProcessTerminatedBySignalException::class);
+        $this->expectExceptionMessage('Process terminated by signal ' . \SIGKILL);
+        $process->wait();
     }
 
     public function testStart(): void
@@ -144,7 +201,7 @@ final class ProcessTest extends TestCase
     }
 
     /**
-     * @return non-empty-array<string,array{int|string,string,string,string[],4?:resource|string|null,5?:string|null,6?:array<string,string>|null,7?:int|null}>
+     * @return non-empty-array<string,array{int|string,string,string,string[],4?:resource|string|null,5?:string|null,6?:array<string,string>|null,7?:float|null}>
      */
     public static function runProvider(): array
     {
@@ -247,7 +304,7 @@ EOF,
                 '',
                 null,
                 null,
-                1,
+                0.1,
             ],
         ];
     }
@@ -300,18 +357,20 @@ EOF,
         return [[-1], [0], [0.0]];
     }
 
-    public function testRunTwice(): void
+    public function testMultipleRuns(): void
     {
-        $process = new Process([\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo');
+        $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo');
         $this->assertSame(0, $process->run());
         $this->assertSame('foo', $process->getOutput());
         $this->assertSame(0, $process->setInput('bar')->run());
         $this->assertSame('bar', $process->getOutput());
+        $this->assertSame(0, $process->setInput(null)->run());
+        $this->assertSame('', $process->getOutput());
     }
 
     public function testCallback(): void
     {
-        $command = [\PHP_BINARY, self::getFixturesPath(__CLASS__) . '/cat.php'];
+        $command = [...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'];
         $input = File::getContents(__FILE__);
 
         $this->assertSame(0, $this->doTestCallback(
@@ -391,17 +450,17 @@ EOF,
 
     public function testGetExitStatusBeforeRun(): void
     {
-        $this->expectException(ProcessException::class);
-        $this->expectExceptionMessage('Process is not terminated');
-        $process = new Process([\PHP_BINARY]);
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Process has not terminated');
+        $process = new Process([]);
         $process->getExitStatus();
     }
 
     public function testGetPidBeforeRun(): void
     {
-        $this->expectException(ProcessException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Process has not run');
-        $process = new Process([\PHP_BINARY]);
+        $process = new Process([]);
         $process->getPid();
     }
 
@@ -418,13 +477,19 @@ EOF,
         }
     }
 
-    protected function setUp(): void
+    /**
+     * @param array<FileDescriptor::OUT|FileDescriptor::ERR,string>|null $output
+     * @return Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed
+     */
+    private function getCallback(?array &$output): Closure
     {
-        Profile::push();
-    }
+        $output = [
+            FileDescriptor::OUT => '',
+            FileDescriptor::ERR => '',
+        ];
 
-    protected function tearDown(): void
-    {
-        Profile::pop();
+        return static function (int $fd, string $data) use (&$output): void {
+            $output[$fd] .= $data;
+        };
     }
 }

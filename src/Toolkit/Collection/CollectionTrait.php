@@ -3,7 +3,6 @@
 namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
-use Salient\Contract\Core\Arrayable;
 
 /**
  * Implements CollectionInterface
@@ -27,9 +26,7 @@ trait CollectionTrait
     use ReadableCollectionTrait;
 
     /**
-     * @param TKey $key
-     * @param TValue $value
-     * @return static
+     * @inheritDoc
      */
     public function set($key, $value)
     {
@@ -39,8 +36,7 @@ trait CollectionTrait
     }
 
     /**
-     * @param TKey $key
-     * @return static
+     * @inheritDoc
      */
     public function unset($key)
     {
@@ -53,9 +49,7 @@ trait CollectionTrait
     }
 
     /**
-     * @param TValue|null $last
-     * @param-out TValue|null $last
-     * @return static
+     * @inheritDoc
      */
     public function pop(&$last = null)
     {
@@ -88,10 +82,9 @@ trait CollectionTrait
     }
 
     /**
-     * @template T of TValue|TKey|array<TKey,TValue>
+     * @template T of TValue|TKey|array{TKey,TValue}
      *
-     * @param callable(T, T|null $nextValue, T|null $prevValue): bool $callback
-     * @param CollectionInterface::CALLBACK_USE_* $mode
+     * @param callable(T, T|null $next, T|null $prev): bool $callback
      * @return static A copy of the collection with items that satisfy `$callback`.
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
@@ -104,11 +97,7 @@ trait CollectionTrait
         $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $mode === CollectionInterface::CALLBACK_USE_KEY
-                ? $nextKey
-                : ($mode === CollectionInterface::CALLBACK_USE_BOTH
-                    ? [$nextKey => $nextValue]
-                    : $nextValue);
+            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
             if ($i++) {
                 /** @var T $item */
                 /** @var T $next */
@@ -134,7 +123,6 @@ trait CollectionTrait
     }
 
     /**
-     * @param TKey[] $keys
      * @return static A copy of the collection with items that have keys in
      * `$keys`.
      */
@@ -147,7 +135,6 @@ trait CollectionTrait
     }
 
     /**
-     * @param array<TKey,true> $index
      * @return static A copy of the collection with items that have keys in
      * `$index`.
      */
@@ -160,7 +147,6 @@ trait CollectionTrait
     }
 
     /**
-     * @param TKey[] $keys
      * @return static A copy of the collection with items that have keys not in
      * `$keys`.
      */
@@ -173,7 +159,6 @@ trait CollectionTrait
     }
 
     /**
-     * @param array<TKey,true> $index
      * @return static A copy of the collection with items that have keys not in
      * `$index`.
      */
@@ -196,9 +181,7 @@ trait CollectionTrait
     }
 
     /**
-     * @param TValue|null $first
-     * @param-out TValue|null $first
-     * @return static
+     * @inheritDoc
      */
     public function shift(&$first = null)
     {
@@ -212,8 +195,7 @@ trait CollectionTrait
     }
 
     /**
-     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
-     * @return static
+     * @inheritDoc
      */
     public function merge($items)
     {
