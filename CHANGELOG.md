@@ -10,6 +10,36 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.17] - 2024-05-03
+
+### Added
+
+- Add `Process` methods `pipeInput()`, `setCwd()`, `setEnv()`, `setTimeout ()`, `disableOutputCollection()`, `enableOutputCollection()`, `isTerminatedBySignal()`
+- Add `Sys::isProcessRunning()`
+
+### Changed
+
+- In `Process` and `Sys::handleExitSignals()`, use exit status `128 + <signal_number>` when processes are terminated by signal
+- Review `Process`:
+  - Update constructor and `withShellCommand()` parameters
+  - Replace `null` input with an empty stream (`STDIN` must now be passed explicitly via `pipeInput()`)
+  - Improve robustness and precision of timeout handling and process termination
+  - In `runWithoutFail()`, throw `ProcessFailedException` when a process returns a non-zero exit status
+  - Throw `ProcessTerminatedBySignalException` when a process monitored by `wait()` is terminated by a signal that isn't a `SIGTERM` or `SIGKILL` sent after calling `stop()`
+  - Throw `LogicException` instead of `ProcessException` where appropriate
+  - Build out `getStats()` metrics
+- Create key-value pairs for `CollectionInterface::CALLBACK_USE_BOTH` (`[<key>, <value>]` instead of `[<key> => <value>]`)
+- Optionally return key from `CollectionInterface::find()`
+- Throw PSR-18 compliant exceptions from `Curler::sendRequest()`
+
+### Removed
+
+- Remove unused `Sys::sqliteHasUpsert()`
+
+### Fixed
+
+- Fix `Process` output collection bugs
+
 ## [v0.99.16] - 2024-04-30
 
 ### Added
@@ -2428,6 +2458,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.17]: https://github.com/salient-labs/toolkit/compare/v0.99.16...v0.99.17
 [v0.99.16]: https://github.com/salient-labs/toolkit/compare/v0.99.15...v0.99.16
 [v0.99.15]: https://github.com/salient-labs/toolkit/compare/v0.99.14...v0.99.15
 [v0.99.14]: https://github.com/salient-labs/toolkit/compare/v0.99.13...v0.99.14
