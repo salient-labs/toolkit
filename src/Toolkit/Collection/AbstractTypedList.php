@@ -15,6 +15,6 @@ use Salient\Contract\Collection\ListInterface;
  */
 abstract class AbstractTypedList implements ListInterface
 {
-    /** @use ListTrait<TValue> */
+    /** @use ListTrait<int,TValue> */
     use ListTrait;
 }

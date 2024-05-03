@@ -142,7 +142,7 @@ interface CollectionInterface extends
      *
      * @param callable(T, T|null $next, T|null $prev): bool $callback
      * @param int-mask-of<CollectionInterface::*> $mode
-     * @return TValue|TKey|null
+     * @return ($mode is 8|9|10|11 ? TKey : TValue)|null
      */
     public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE | CollectionInterface::FIND_VALUE);
 

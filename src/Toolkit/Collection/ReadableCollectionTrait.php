@@ -384,7 +384,7 @@ trait ReadableCollectionTrait
      * @param int-mask-of<CollectionInterface::*> $mode
      * @param TKey $key
      * @param TValue $value
-     * @return TValue|TKey
+     * @return ($mode is 8|9|10|11 ? TKey : TValue)
      */
     protected function getReturnValue(int $mode, $key, $value)
     {

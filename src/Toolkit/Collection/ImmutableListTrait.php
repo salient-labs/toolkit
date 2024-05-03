@@ -23,7 +23,7 @@ use Salient\Core\Concern\ImmutableArrayAccessTrait;
  */
 trait ImmutableListTrait
 {
-    /** @use ListTrait<TValue> */
+    /** @use ListTrait<int,TValue> */
     use ListTrait;
     /** @use ImmutableArrayAccessTrait<int,TValue> */
     use ImmutableArrayAccessTrait {
