@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.18] - 2024-05-03
+
+### Fixed
+
+- Fix return type regression in `CollectionInterface::find()`
+
 ## [v0.99.17] - 2024-05-03
 
 ### Added
@@ -2458,6 +2464,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.18]: https://github.com/salient-labs/toolkit/compare/v0.99.17...v0.99.18
 [v0.99.17]: https://github.com/salient-labs/toolkit/compare/v0.99.16...v0.99.17
 [v0.99.16]: https://github.com/salient-labs/toolkit/compare/v0.99.15...v0.99.16
 [v0.99.15]: https://github.com/salient-labs/toolkit/compare/v0.99.14...v0.99.15
