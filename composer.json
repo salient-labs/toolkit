@@ -1,18 +1,18 @@
 {
     "name": "salient/toolkit",
-    "type": "library",
-    "license": "MIT",
     "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
-    "support": {
-        "issues": "https://github.com/salient-labs/toolkit/issues",
-        "source": "https://github.com/salient-labs/toolkit"
-    },
+    "license": "MIT",
+    "type": "library",
     "authors": [
         {
             "name": "Luke Arms",
             "email": "luke@linacreative.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/salient-labs/toolkit/issues",
+        "source": "https://github.com/salient-labs/toolkit"
+    },
     "require": {
         "php": ">=7.4",
         "composer-runtime-api": "^2.2",
@@ -24,18 +24,10 @@
         "psr/http-message": "^1.1 || ^2",
         "psr/log": "^1"
     },
-    "conflict": {
-        "lkrms/util": "*"
-    },
-    "suggest": {
-        "adodb/adodb-php": "Required for access to databases",
-        "league/oauth2-client": "Required for integration with OAuth 2.0 service providers",
-        "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
-        "analog/analog": "Allows Analog handlers to be used as console message targets"
-    },
     "require-dev": {
         "adodb/adodb-php": "^5",
         "analog/analog": "^1",
+        "ergebnis/composer-normalize": "^2",
         "ergebnis/phpunit-slow-test-detector": "^2",
         "firebase/php-jwt": "^6",
         "league/oauth2-client": "^2",
@@ -50,10 +42,19 @@
         "phpunit/phpunit": "^9",
         "sebastian/diff": "^4 || ^5"
     },
+    "conflict": {
+        "lkrms/util": "*"
+    },
     "provide": {
         "psr/event-dispatcher-implementation": "^1",
         "psr/http-factory-implementation": "^1",
         "psr/http-message-implementation": "^1.1 || ^2"
+    },
+    "suggest": {
+        "adodb/adodb-php": "Required for access to databases",
+        "analog/analog": "Allows Analog handlers to be used as console message targets",
+        "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
+        "league/oauth2-client": "Required for integration with OAuth 2.0 service providers"
     },
     "autoload": {
         "psr-4": {
@@ -83,13 +84,14 @@
         "bin/sli"
     ],
     "config": {
-        "sort-packages": true,
         "allow-plugins": {
+            "ergebnis/composer-normalize": true,
             "phpstan/extension-installer": true
         },
         "platform": {
             "php": "7.4.33"
-        }
+        },
+        "sort-packages": true
     },
     "extra": {
         "phpstan": {
