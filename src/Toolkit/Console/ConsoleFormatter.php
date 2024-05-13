@@ -11,7 +11,6 @@ use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
-use Salient\Contract\Console\ConsoleTargetInterface as Target;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\LogicException;
@@ -21,8 +20,6 @@ use Salient\Core\Utility\Str;
 
 /**
  * Formats messages for a console output target
- *
- * @see Target::getFormatter()
  */
 final class ConsoleFormatter
 {
@@ -275,11 +272,8 @@ REGEX;
             return $string;
         }
 
-        /**
-         * [ [ Offset, length, replacement ] ]
-         *
-         * @var array<array{int,int,string}>
-         */
+        // [ [ Offset, length, replacement ] ]
+        /** @var array<array{int,int,string}> */
         $replace = [];
         $append = '';
         $unescape = $this->getUnescape();
@@ -381,12 +375,12 @@ REGEX;
             }
 
             if ($match['block'] !== null) {
-                /** @var array{fence:string,infostring:string,block:string} $match */
                 // Reinstate unwrapped newlines before blocks
                 if ($unwrap && $string !== '' && $string[-1] !== "\n") {
                     $string[-1] = "\n";
                 }
 
+                /** @var array{fence:string,infostring:string,block:string} $match */
                 $formatted = $formattedFormats->apply(
                     $match['block'],
                     new TagAttributes(
@@ -443,21 +437,21 @@ REGEX;
 
         // Remove backslash escapes and adjust the offsets of any subsequent
         // replacement strings
+        $replacements = count($replace);
         $adjustable = [];
         foreach ($replace as $i => [$offset]) {
             $adjustable[$i] = $offset;
         }
         $adjust = 0;
-        $placeholders = 0;
         $string = Pcre::replaceCallback(
             self::ESCAPE,
             function (array $match) use (
+                $unformat,
                 $unescape,
                 $wrapAfterApply,
                 &$replace,
                 &$adjustable,
-                &$adjust,
-                &$placeholders
+                &$adjust
             ): string {
                 // If the escape character is being wrapped, do nothing other
                 // than temporarily replace "\ " with "\x"
@@ -466,7 +460,6 @@ REGEX;
                         return $match[0][0];
                     }
                     $placeholder = '\x';
-                    $placeholders++;
                     $replace[] = [
                         $match[0][1] + $adjust,
                         strlen($placeholder),
@@ -486,15 +479,14 @@ REGEX;
                 $placeholder = null;
                 if ($match[1][0] === ' ') {
                     $placeholder = 'x';
-                    $placeholders++;
                 }
 
-                if (!$unescape || $placeholder !== null) {
+                if ($unformat || !$unescape || $placeholder !== null) {
                     // Use `$replace` to reinstate the escape after wrapping
                     $replace[] = [
                         $match[0][1] + $adjust,
                         strlen($match[1][0]),
-                        !$unescape ? $match[0][0] : $match[1][0],
+                        $unformat || !$unescape ? $match[0][0] : $match[1][0],
                     ];
                 }
 
@@ -534,16 +526,16 @@ REGEX;
                 $string = Str::wordwrap($string, $wrapToWidth, $break);
             } else {
                 if (strpos($string, "\x7f") !== false) {
-                    $string = $this->insertPlaceholders($string, '/\x7f/', $replace, $placeholders);
+                    $string = $this->insertPlaceholders($string, '/\x7f/', $replace);
                 }
                 $string = Str::wordwrap($string, $wrapToWidth, "\x7f");
-                $string = $this->insertPlaceholders($string, '/\x7f/', $replace, $placeholders, "\n", $break);
+                $string = $this->insertPlaceholders($string, '/\x7f/', $replace, "\n", $break);
             }
         }
 
         // Get `$replace` in reverse offset order, sorting from scratch if any
         // substitutions were made in the callbacks above
-        if ((!$unescape && !$wrapAfterApply) || $placeholders) {
+        if (count($replace) !== $replacements) {
             usort($replace, fn(array $a, array $b): int => $b[0] <=> $a[0]);
         } else {
             $replace = array_reverse($replace);
@@ -707,7 +699,6 @@ REGEX;
         string $string,
         string $pattern,
         array &$replace,
-        int &$placeholders,
         string $placeholder = 'x',
         ?string $replacement = null
     ): string {
@@ -716,11 +707,9 @@ REGEX;
             function (array $match) use (
                 $placeholder,
                 $replacement,
-                &$replace,
-                &$placeholders
+                &$replace
             ): string {
                 $replacement ??= $match[0][0];
-                $placeholders++;
                 $replace[] = [
                     $match[0][1],
                     strlen($placeholder),
