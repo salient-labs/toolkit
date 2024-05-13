@@ -935,13 +935,17 @@ abstract class GenerateCommand extends Command
                     return;
                 }
                 if ($this->Check || !$this->ReplaceIfExists) {
-                    $relative = File::relativeToParent($file, Package::path(), $file);
-                    $formatter = Console::getStdoutTarget()->getFormatter();
-                    $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
-                        'fromFile' => "a/$relative",
-                        'toFile' => "b/$relative",
-                    ])))->diff($input, $output);
-                    print $formatter->formatDiff($diff);
+                    if (class_exists(Differ::class)) {
+                        $relative = File::relativeToParent($file, Package::path(), $file);
+                        $formatter = Console::getStdoutTarget()->getFormatter();
+                        $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
+                            'fromFile' => "a/$relative",
+                            'toFile' => "b/$relative",
+                        ])))->diff($input, $output);
+                        print $formatter->formatDiff($diff);
+                    } else {
+                        Console::log('Install sebastian/diff to show changes');
+                    }
                     if (!$this->Check) {
                         Console::info('Out of date:', $file);
                         return;
@@ -954,8 +958,8 @@ abstract class GenerateCommand extends Command
                 $verb = 'Replacing';
             } elseif ($this->Check) {
                 Console::info('Would create', $file);
-                $this->setExitStatus(1);
                 Console::count(Level::ERROR);
+                $this->setExitStatus(1);
                 return;
             }
         }

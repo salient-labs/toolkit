@@ -25,6 +25,7 @@ $files = File::find()
 
 $count = count($files);
 $replaced = 0;
+$status = 0;
 
 $i = 0;
 foreach ($files as $file) {
@@ -42,7 +43,7 @@ foreach ($files as $file) {
         ));
     }
 
-    $output = Pcre::grep('/^ ++\* @covers(?:Nothing)?\b/i', $input, \PREG_GREP_INVERT);
+    $output = Pcre::grep('/^(?: ++| *+\/\*)\* @covers(?:Nothing)?\b/i', $input, \PREG_GREP_INVERT);
     if ($output === $input) {
         Console::log('Nothing to do:', $relative);
         continue;
@@ -51,6 +52,13 @@ foreach ($files as $file) {
     $replaced++;
 
     if ($check) {
+        Console::count(Level::ERROR);
+        $status |= 1;
+        if (!class_exists(Differ::class)) {
+            Console::log('Install sebastian/diff to show changes');
+            Console::info('Would replace', $relative);
+            continue;
+        }
         $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
             'fromFile' => "a/$relative",
             'toFile' => "b/$relative",
@@ -74,3 +82,5 @@ Console::summary(Inflect::format(
     '@covers removed from %d of {{#}} {{#:test}}',
     $replaced,
 ), '', true);
+
+exit($status);
