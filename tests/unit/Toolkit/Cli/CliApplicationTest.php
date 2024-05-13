@@ -175,6 +175,75 @@ EOF],
                 ],
                 ['required' => 'start'],
             ],
+            'synopsis (positional)' => [
+                null,
+                1,
+                [],
+                [
+                    [Level::ERROR, 'Error: INPUT-FILE required'],
+                    [Level::ERROR, 'Error: <endpoint-uri> required'],
+                    [Level::INFO, <<<'EOF'
+
+app [-fF] [--nullable] [-v <entity>] [-V <value>,...] [-s <date>]
+    [-r[<pattern>]] [--] <INPUT-FILE> <endpoint-uri> [<key>=<VALUE>...]
+
+See 'app --help' for more information.
+EOF],
+                ],
+                ['positional' => '1'],
+            ],
+            'help (positional)' => [
+                null,
+                0,
+                ['--help'],
+                [
+                    [Level::INFO, <<<'EOF'
+NAME
+    app - Test CliCommand options
+
+SYNOPSIS
+    app [-fF] [--nullable] [-v entity] [-V value,...] [-s date] [-r[pattern]]
+        [--] INPUT-FILE endpoint-uri [key=VALUE...]
+
+OPTIONS
+    -f, --flag
+        Flag
+
+    -F, --flags
+        Flag with multipleAllowed()
+
+    --nullable
+        Flag with nullable() and no short form
+
+    -v, --value entity
+        Value with defaultValue() and valueName entity
+
+        The default entity is: foo
+
+    -V, --values value,...
+        Value with multipleAllowed(), unique() and nullable()
+
+    -s, --start date
+        Value with conditional required(), valueType DATE and valueName date
+
+    -r, --filter-regex[=pattern]
+        VALUE_OPTIONAL with valueName pattern and a default value
+
+        The default pattern is: /./
+
+    INPUT-FILE
+        required() VALUE_POSITIONAL with valueType FILE and valueName
+        "INPUT_FILE"
+
+    endpoint-uri
+        required() VALUE_POSITIONAL with valueName "endpoint_uri"
+
+    key=VALUE...
+        VALUE_POSITIONAL with multipleAllowed() and valueName "<key>=<VALUE>"
+EOF],
+                ],
+                ['positional' => '1'],
+            ],
             'with required arguments' => [
                 <<<'EOF'
 {

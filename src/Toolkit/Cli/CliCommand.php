@@ -394,7 +394,7 @@ abstract class CliCommand implements CliCommandInterface
                     }
                 }
                 if ($_line === null) {
-                    $_line = substr_replace($line, $option->formatValueName(), $pos, 2);
+                    $_line = substr_replace($line, $option->getValueName(true), $pos, 2);
                 }
                 $line = $_line;
             }
@@ -409,7 +409,7 @@ abstract class CliCommand implements CliCommandInterface
                 foreach ($allowed as &$value) {
                     $value = sprintf('%s- %s', $indent, $value);
                 }
-                $valueName = $option->getValueName();
+                $valueName = $option->getValueNameWords();
                 $lines[] = sprintf(
                     "%sThe %s can be:\n\n%s",
                     $indent,
@@ -439,7 +439,7 @@ abstract class CliCommand implements CliCommandInterface
                     $lines[] = sprintf(
                         '%sThe default %s is: %s',
                         $indent,
-                        $valueName ?? $option->getValueName(),
+                        $valueName ?? $option->getValueNameWords(),
                         $default,
                     );
                 }
@@ -608,7 +608,7 @@ abstract class CliCommand implements CliCommandInterface
                 continue;
             }
 
-            $valueName = $option->formatValueName();
+            $valueName = $option->getValueName(true);
             $valueName = $style->maybeEscapeTags($valueName);
 
             if ($option->IsPositional) {

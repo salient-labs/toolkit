@@ -33,32 +33,32 @@ use DateTimeImmutable;
  * A getopt-style option for a CLI command
  *
  * @property-read string|null $Name The name of the option
- * @property-read string|null $Long The long form of the option, e.g. 'verbose'
- * @property-read string|null $Short The short form of the option, e.g. 'v'
+ * @property-read string|null $Long The long form of the option, e.g. "verbose"
+ * @property-read string|null $Short The short form of the option, e.g. "v"
  * @property-read string $Key The option's internal identifier
  * @property-read string|null $ValueName The name of the option's value as it appears in usage information
  * @property-read string $DisplayName The option's name as it appears in error messages
+ * @property-read string|null $Description A description of the option
  * @property-read CliOptionType::* $OptionType The option's type
- * @property-read CliOptionValueType::* $ValueType The data type of the option's value
  * @property-read bool $IsFlag True if the option is a flag
  * @property-read bool $IsOneOf True if the option accepts values from a list
  * @property-read bool $IsPositional True if the option is positional
- * @property-read bool $Required True if the option is mandatory
- * @property-read bool $WasRequired True if the option was mandatory before applying values from the environment
  * @property-read bool $ValueRequired True if the option has a mandatory value
  * @property-read bool $ValueOptional True if the option has an optional value
- * @property-read bool $MultipleAllowed True if the option may be given more than once
- * @property-read bool $Unique True if the same value may not be given more than once
- * @property-read non-empty-string|null $Delimiter The separator between values passed to the option as a single argument
- * @property-read string|null $Description A description of the option
+ * @property-read CliOptionValueType::* $ValueType The data type of the option's value
  * @property-read array<string|int|bool>|null $AllowedValues The option's possible values, indexed by lowercase value if not case-sensitive
  * @property-read bool $CaseSensitive True if the option's values are case-sensitive
  * @property-read CliOptionValueUnknownPolicy::*|null $UnknownValuePolicy The action taken if an unknown value is given
- * @property-read bool $AddAll True if 'ALL' should be added to the list of possible values when the option can be given more than once
+ * @property-read bool $Required True if the option is mandatory
+ * @property-read bool $WasRequired True if the option was mandatory before applying values from the environment
+ * @property-read bool $MultipleAllowed True if the option may be given more than once
+ * @property-read bool $Unique True if the same value may not be given more than once
+ * @property-read bool $AddAll True if "ALL" should be added to the list of possible values when the option can be given more than once
  * @property-read array<string|int|bool>|string|int|bool|null $DefaultValue Assigned to the option if no value is given on the command line
  * @property-read array<string|int|bool>|string|int|bool|null $OriginalDefaultValue The option's default value before applying values from the environment
  * @property-read bool $Nullable True if the option's value should be null if it is not given on the command line
  * @property-read string|null $EnvVariable The name of a value in the environment that replaces the option's default value
+ * @property-read non-empty-string|null $Delimiter The separator between values passed to the option as a single argument
  * @property-read (callable(array<string|int|bool>|string|int|bool): mixed)|null $ValueCallback Applied to the option's value as it is assigned
  * @property-read int-mask-of<CliOptionVisibility::*> $Visibility The option's visibility to users
  * @property-read bool $IsBound True if the option is bound to a variable
@@ -71,8 +71,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     use HasBuilder;
     use ReadsProtectedProperties;
 
-    private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/i';
-    private const SHORT_REGEX = '/^[a-z0-9_]$/i';
+    private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/iD';
+    private const SHORT_REGEX = '/^[a-z0-9_]$/iD';
 
     private const ONE_OF_INDEX = [
         CliOptionType::ONE_OF => true,
@@ -114,26 +114,16 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
     /**
      * The name of the option
-     *
-     * May be given instead of {@see CliOption::$Long} if the option is
-     * positional.
      */
     protected ?string $Name;
 
     /**
      * The long form of the option, e.g. "verbose"
-     *
-     * Must start with a letter, number or underscore, followed by one or more
-     * letters, numbers, underscores or hyphens.
      */
     protected ?string $Long;
 
     /**
      * The short form of the option, e.g. "v"
-     *
-     * Must contain one letter, number or underscore.
-     *
-     * Ignored if the option is positional.
      */
     protected ?string $Short;
 
@@ -144,8 +134,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
     /**
      * The name of the option's value as it appears in usage information
-     *
-     * @see CliOption::formatValueName()
      */
     protected ?string $ValueName;
 
@@ -155,18 +143,16 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     protected string $DisplayName;
 
     /**
+     * A description of the option
+     */
+    protected ?string $Description;
+
+    /**
      * The option's type
      *
      * @var CliOptionType::*
      */
     protected int $OptionType;
-
-    /**
-     * The data type of the option's value
-     *
-     * @var CliOptionValueType::*
-     */
-    protected int $ValueType;
 
     /**
      * True if the option is a flag
@@ -184,6 +170,46 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     protected bool $IsPositional;
 
     /**
+     * True if the option has a mandatory value
+     */
+    protected bool $ValueRequired;
+
+    /**
+     * True if the option has an optional value
+     */
+    protected bool $ValueOptional;
+
+    /**
+     * The data type of the option's value
+     *
+     * @var CliOptionValueType::*
+     */
+    protected int $ValueType;
+
+    /**
+     * The option's possible values, indexed by lowercase value if not
+     * case-sensitive
+     *
+     * @var array<string|int|bool>|null
+     */
+    protected ?array $AllowedValues;
+
+    /**
+     * True if the option's values are case-sensitive
+     *
+     * If strings in {@see CliOption::$AllowedValues} are unique after
+     * conversion to lowercase, {@see CliOption::$CaseSensitive} is `false`.
+     */
+    protected bool $CaseSensitive = true;
+
+    /**
+     * The action taken if an unknown value is given
+     *
+     * @var CliOptionValueUnknownPolicy::*|null
+     */
+    protected ?int $UnknownValuePolicy;
+
+    /**
      * True if the option is mandatory
      */
     protected bool $Required;
@@ -195,76 +221,18 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     protected bool $WasRequired;
 
     /**
-     * True if the option has a mandatory value
-     */
-    protected bool $ValueRequired;
-
-    /**
-     * True if the option has an optional value
-     */
-    protected bool $ValueOptional;
-
-    /**
      * True if the option may be given more than once
      */
     protected bool $MultipleAllowed;
 
     /**
      * True if the same value may not be given more than once
-     *
-     * Ignored if {@see CliOption::$MultipleAllowed} is `false`.
      */
     protected bool $Unique;
 
     /**
-     * The separator between values passed to the option as a single argument
-     *
-     * Ignored if {@see CliOption::$MultipleAllowed} is `false`.
-     *
-     * @var non-empty-string|null
-     */
-    protected ?string $Delimiter;
-
-    /**
-     * A description of the option
-     */
-    protected ?string $Description;
-
-    /**
-     * The option's possible values, indexed by lowercase value if not
-     * case-sensitive
-     *
-     * Ignored if {@see CliOption::$IsOneOf} is `false`.
-     *
-     * @var array<string|int|bool>|null
-     */
-    protected ?array $AllowedValues;
-
-    /**
-     * True if the option's values are case-sensitive
-     *
-     * If strings in {@see CliOption::$AllowedValues} are unique after
-     * conversion to lowercase, {@see CliOption::$CaseSensitive} is `false`.
-     *
-     * Ignored if {@see CliOption::$IsOneOf} is `false`.
-     */
-    protected bool $CaseSensitive = true;
-
-    /**
-     * The action taken if an unknown value is given
-     *
-     * Ignored if {@see CliOption::$IsOneOf} is `false`.
-     *
-     * @var CliOptionValueUnknownPolicy::*|null
-     */
-    protected ?int $UnknownValuePolicy;
-
-    /**
      * True if "ALL" should be added to the list of possible values when the
      * option can be given more than once
-     *
-     * Ignored if {@see CliOption::$IsOneOf} or
-     * {@see CliOption::$MultipleAllowed} are `false`.
      */
     protected bool $AddAll;
 
@@ -291,10 +259,15 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     /**
      * The name of a value in the environment that replaces the option's default
      * value
-     *
-     * Ignored if the option is positional.
      */
     protected ?string $EnvVariable;
+
+    /**
+     * The separator between values passed to the option as a single argument
+     *
+     * @var non-empty-string|null
+     */
+    protected ?string $Delimiter;
 
     /**
      * Applied to the option's value as it is assigned
@@ -330,11 +303,22 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     /**
      * Creates a new CliOption object
      *
+     * @param string|null $name The name of the option (ignored if not
+     * positional; must start with a letter, number or underscore, followed by
+     * one or more letters, numbers, underscores or hyphens)
+     * @param string|null $long The long form of the option, e.g. "verbose"
+     * (ignored if positional and name is given; must start with a letter,
+     * number or underscore, followed by one or more letters, numbers,
+     * underscores or hyphens)
+     * @param string|null $short The short form of the option, e.g. "v" (ignored
+     * if positional; must contain one letter, number or underscore)
      * @param CliOptionType::* $optionType
      * @param CliOptionValueType::* $valueType
      * @param array<string|int|bool>|null $allowedValues
      * @param CliOptionValueUnknownPolicy::* $unknownValuePolicy
      * @param array<string|int|bool>|string|int|bool|null $defaultValue
+     * @param string|null $envVariable The name of a value in the environment
+     * that replaces the option's default value (ignored if positional)
      * @param (callable(array<string|int|bool>|string|int|bool): mixed)|null $valueCallback
      * @param int-mask-of<CliOptionVisibility::*> $visibility
      * @param bool $inSchema True if the option should be included when
@@ -371,28 +355,66 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         $this->IsFlag = $optionType === CliOptionType::FLAG;
         $this->IsOneOf = self::ONE_OF_INDEX[$optionType] ?? false;
         $this->IsPositional = self::POSITIONAL_INDEX[$optionType] ?? false;
-        $this->Required = $required && !$this->IsFlag;
-        $this->WasRequired = $this->Required;
         $this->ValueRequired = self::VALUE_REQUIRED_INDEX[$optionType] ?? false;
         $this->ValueOptional = self::VALUE_OPTIONAL_INDEX[$optionType] ?? false;
+
+        if ($this->IsPositional) {
+            $name = Str::coalesce($name, $long, null);
+            $long = null;
+            $short = null;
+            $envVariable = null;
+        } else {
+            $name = null;
+        }
+
+        $this->Name = Str::coalesce($name, $long, $short, null);
+        $this->Long = Str::coalesce($long, null);
+        $this->Short = Str::coalesce($short, null);
+        $this->Key = sprintf('%s|%s', $this->Short, $this->Long ?? $this->Name);
+        $this->EnvVariable = Str::coalesce($envVariable, null);
+
+        if ($this->IsPositional) {
+            $this->ValueName = Str::coalesce($valueName, Str::toKebabCase((string) $name, '='), 'value');
+            $this->DisplayName = $this->getValueName();
+        } else {
+            $this->ValueName = $this->IsFlag ? null : Str::coalesce($valueName, 'value');
+            $this->DisplayName = $this->Long !== null ? '--' . $long : '-' . $short;
+        }
+
+        if ($this->IsFlag) {
+            if ($multipleAllowed) {
+                $valueType = CliOptionValueType::INTEGER;
+                $defaultValue = 0;
+            } else {
+                $valueType = CliOptionValueType::BOOLEAN;
+                $defaultValue = false;
+            }
+            $required = false;
+            $this->Delimiter = null;
+        } elseif ($multipleAllowed) {
+            $this->Delimiter = Str::coalesce($delimiter, null);
+            $defaultValue = $this->maybeSplitValue($defaultValue);
+        } else {
+            $this->Delimiter = null;
+        }
+
+        $this->ValueType = $valueType;
+        $this->WasRequired = $this->Required = $required;
         $this->MultipleAllowed = $multipleAllowed;
         $this->Unique = $unique && $multipleAllowed;
-        $this->EnvVariable = $this->IsPositional ? null : Str::coalesce($envVariable, null);
-
-        $this->Name = Str::coalesce($name, $long, $this->IsPositional ? null : $short, null);
-        $this->Long = Str::coalesce($long, null);
-        $this->Short = $this->IsPositional ? null : Str::coalesce($short, null);
-        $this->Key = $this->IsPositional ? (string) $this->Name : ($short . '|' . $long);
-        $this->ValueName = $this->IsFlag ? null : Str::coalesce($valueName, $this->IsPositional ? Str::toKebabCase((string) $this->Name, '=') : null, 'value');
-        $this->DisplayName = $this->IsPositional ? $this->formatValueName(false) : ($this->Long !== null ? '--' . $long : '-' . $short);
-        $this->ValueType = $this->IsFlag ? ($multipleAllowed ? CliOptionValueType::INTEGER : CliOptionValueType::BOOLEAN) : $valueType;
-        $this->Delimiter = $multipleAllowed && !$this->IsFlag ? Str::coalesce($delimiter, null) : null;
         $this->Description = $description;
-        $this->AllowedValues = $this->IsOneOf ? $allowedValues : null;
-        $this->UnknownValuePolicy = $this->IsOneOf ? $unknownValuePolicy : null;
-        $this->AddAll = $this->IsOneOf ? $addAll && $multipleAllowed && $allowedValues : false;
-        $this->DefaultValue = $this->IsFlag ? ($multipleAllowed ? 0 : false) : ($multipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
-        $this->OriginalDefaultValue = $this->DefaultValue;
+        $this->OriginalDefaultValue = $this->DefaultValue = $defaultValue;
+
+        if ($this->IsOneOf) {
+            $this->AllowedValues = $allowedValues;
+            $this->UnknownValuePolicy = $unknownValuePolicy;
+            $this->AddAll = $addAll && $multipleAllowed;
+        } else {
+            $this->AllowedValues = null;
+            $this->UnknownValuePolicy = null;
+            $this->AddAll = false;
+        }
+
         $this->Nullable = $nullable;
         $this->ValueCallback = $valueCallback;
         $this->Visibility = $hide ? CliOptionVisibility::NONE : $visibility;
@@ -432,21 +454,18 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     {
         if ($this->IsPositional) {
             if ($this->Name === null) {
-                throw new LogicException("At least one of 'name' and 'long' must be set");
+                throw new LogicException("'name' or 'long' must be set");
             }
-
-            if ($this->Long !== null && $this->Name !== $this->Long) {
-                throw new LogicException("'name' and 'long' must have the same value when both are applied to a positional option");
+            if (!Pcre::match(self::LONG_REGEX, $this->Name)) {
+                throw new LogicException("'name' must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens");
             }
         } else {
             if ($this->Long === null && $this->Short === null) {
                 throw new LogicException("At least one of 'long' and 'short' must be set");
             }
-
             if ($this->Long !== null && !Pcre::match(self::LONG_REGEX, $this->Long)) {
                 throw new LogicException("'long' must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens");
             }
-
             if ($this->Short !== null && !Pcre::match(self::SHORT_REGEX, $this->Short)) {
                 throw new LogicException("'short' must contain one letter, number or underscore");
             }
@@ -605,7 +624,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         if ($this->IsOneOf) {
             $type['enum'] = $this->normaliseForSchema(array_values((array) $this->AllowedValues));
         } else {
-            $type['type'][] = $this->getJsonSchemaType();
+            $type['type'][] = self::JSON_SCHEMA_TYPE_MAP[$this->ValueType];
         }
 
         if ($this->ValueOptional) {
@@ -625,7 +644,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             $types[] = 'null';
             $schema['description'][] = sprintf(
                 'The %s applied if %s is: %s',
-                $this->getValueName(),
+                $this->getValueNameWords(),
                 implode(' or ', $types),
                 Format::value($this->DefaultValue),
             );
@@ -663,11 +682,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         return $schema;
     }
 
-    private function getJsonSchemaType(): string
-    {
-        return self::JSON_SCHEMA_TYPE_MAP[$this->ValueType];
-    }
-
     /**
      * Get the option's names
      *
@@ -677,17 +691,13 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      */
     public function getNames(): array
     {
-        return Arr::unique(Arr::whereNotNull([
-            $this->Name,
-            $this->Long,
-            $this->Short,
-        ]));
+        return Arr::unique(Arr::whereNotNull([$this->Long ?? $this->Name, $this->Short]));
     }
 
     /**
      * Get the option's value name as lowercase, space-separated words
      */
-    public function getValueName(): string
+    public function getValueNameWords(): string
     {
         if ($this->ValueName === null) {
             return '';
@@ -700,25 +710,24 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * Get the option's value name
      *
      * - If {@see CliOption::$ValueName} contains one or more angle brackets, it
-     *   is returned as-is, e.g. `<key>=<value>`
+     *   is returned as-is, e.g. `<key>=<VALUE>`
      * - If it contains uppercase characters and no lowercase characters, it is
      *   converted to kebab-case and capitalised, e.g. `VALUE-NAME`
      * - Otherwise, it is converted to kebab-case and enclosed between angle
      *   brackets, e.g. `<value-name>`
      *
-     * If `$withMarkup` is `true`, capitalised value names are enclosed between
-     * angle brackets, e.g. `<VALUE-NAME>`.
+     * If `$encloseUpper` is `true`, capitalised value names are enclosed
+     * between angle brackets, e.g. `<VALUE-NAME>`.
      *
      * In conversions to kebab-case, `=` is preserved.
      */
-    public function formatValueName(bool $withMarkup = true): string
+    public function getValueName(bool $encloseUpper = false): string
     {
-        if ($this->ValueName === null) {
-            return '';
-        }
-
-        if (strpbrk($this->ValueName, '<>') !== false) {
-            return $this->ValueName;
+        if (
+            $this->ValueName === null
+            || strpbrk($this->ValueName, '<>') !== false
+        ) {
+            return (string) $this->ValueName;
         }
 
         $name = Str::toKebabCase($this->ValueName, '=');
@@ -728,7 +737,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             && strpbrk($this->ValueName, Char::LOWER) === false
         ) {
             $name = Str::upper($name);
-            if (!$withMarkup) {
+            if (!$encloseUpper) {
                 return $name;
             }
         }

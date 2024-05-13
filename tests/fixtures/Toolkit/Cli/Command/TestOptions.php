@@ -52,6 +52,7 @@ class TestOptions extends CliCommand
         $required = Arr::toIndex(
             Str::split(',', Env::get('required', ''))
         );
+        $positional = Env::getBool('positional', false);
 
         return [
             // CliOption::build()
@@ -156,6 +157,29 @@ class TestOptions extends CliCommand
                 ->defaultValue('/./')
                 ->inSchema()
                 ->bindTo($this->OptionalValue),
+            ...($positional
+                ? [
+                    CliOption::build()
+                        ->long('file')
+                        ->valueName('INPUT_FILE')
+                        ->description('required() VALUE_POSITIONAL with valueType FILE and valueName "INPUT_FILE"')
+                        ->optionType(CliOptionType::VALUE_POSITIONAL)
+                        ->valueType(CliOptionValueType::FILE)
+                        ->required(),
+                    CliOption::build()
+                        ->name('uri')
+                        ->valueName('endpoint_uri')
+                        ->description('required() VALUE_POSITIONAL with valueName "endpoint_uri"')
+                        ->optionType(CliOptionType::VALUE_POSITIONAL)
+                        ->required(),
+                    CliOption::build()
+                        ->name('property')
+                        ->valueName('<key>=<VALUE>')
+                        ->description('VALUE_POSITIONAL with multipleAllowed() and valueName "\<key>=\<VALUE>"')
+                        ->optionType(CliOptionType::VALUE_POSITIONAL)
+                        ->multipleAllowed(),
+                ]
+                : []),
         ];
     }
 
