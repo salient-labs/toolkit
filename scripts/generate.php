@@ -125,6 +125,7 @@ foreach ($class->getReflectionConstants() as $constant) {
 }
 
 $args = [
+    '--collapse',
     '--force',
     ...array_slice($_SERVER['argv'], 1),
 ];

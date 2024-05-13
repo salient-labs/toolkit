@@ -69,6 +69,7 @@ abstract class GenerateCommand extends Command
     protected ?string $Description = null;
 
     protected bool $ApiTag = false;
+    protected bool $Collapse = false;
     protected bool $ToStdout = false;
     protected bool $Check = false;
     protected bool $ReplaceIfExists = false;
@@ -232,6 +233,11 @@ abstract class GenerateCommand extends Command
                 ->short('a')
                 ->description("Add an `@api` tag to the $outputType")
                 ->bindTo($this->ApiTag),
+            CliOption::build()
+                ->long('collapse')
+                ->short('C')
+                ->description("Collapse one-line declarations in the $outputType")
+                ->bindTo($this->Collapse),
             CliOption::build()
                 ->long('stdout')
                 ->short('s')

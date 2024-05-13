@@ -462,12 +462,21 @@ EOF)
         $blocks = [];
 
         foreach ($properties as $property => $type) {
-            $blocks[] = <<<EOF
+            $blocks[] = $this->Collapse
+                ? <<<EOF
+/** @var $type */
+$visibility \$$property;
+EOF
+                : <<<EOF
 /**
  * @var $type
  */
 $visibility \$$property;
 EOF;
+        }
+
+        if ($this->Collapse) {
+            $blocks = [implode(\PHP_EOL, $blocks)];
         }
 
         if ($parent) {
