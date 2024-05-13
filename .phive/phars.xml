@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phive xmlns="https://phar.io/phive">
-  <phar name="lkrms/pretty-php" version="^0.4.48" installed="0.4.60" location="./tools/pretty-php" copy="true"/>
-  <phar name="php-cs-fixer" version="^3.46.0" installed="3.54.0" location="./tools/php-cs-fixer" copy="true"/>
+  <phar name="lkrms/pretty-php" version="^0.4.48" installed="0.4.64" location="./tools/pretty-php" copy="true"/>
+  <phar name="php-cs-fixer" version="^3.46.0" installed="3.56.1" location="./tools/php-cs-fixer" copy="true"/>
   <phar name="salient-labs/php-changelog" version="^1.0.0" installed="1.0.4" location="./tools/changelog" copy="true"/>
 </phive>
