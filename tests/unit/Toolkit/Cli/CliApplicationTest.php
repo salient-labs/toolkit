@@ -372,6 +372,24 @@ EOF,
                 fn(TestOptions $command) =>
                     static::assertSame($command, $command->Result),
             ],
+            'apply option values (invalid values)' => [
+                null,
+                1,
+                [
+                    '--action=apply-values',
+                    '--data=' . Json::stringify(['value' => 3.14]),
+                ],
+                [
+                    [Level::ERROR, 'Error: Invalid option values'],
+                    [Level::INFO, <<<'EOF'
+
+app [-fF] [--nullable] [-v <entity>] [-V <value>,...] [-s <date>]
+    [-r[<pattern>]]
+
+See 'app --help' for more information.
+EOF],
+                ],
+            ],
         ];
     }
 

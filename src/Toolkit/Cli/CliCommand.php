@@ -867,6 +867,35 @@ abstract class CliCommand implements CliCommandInterface
     }
 
     /**
+     * Check that an array of option values is valid
+     *
+     * @param mixed[] $values
+     * @phpstan-assert-if-true array<string,array<string|int|bool>|string|int|bool|null> $values
+     */
+    final protected function checkOptionValues(array $values): bool
+    {
+        foreach ($values as $value) {
+            if (
+                $value === null
+                || is_string($value)
+                || is_int($value)
+                || is_bool($value)
+            ) {
+                continue;
+            }
+            if (!is_array($value)) {
+                return false;
+            }
+            foreach ($value as $v) {
+                if (!(is_string($v) || is_int($v) || is_bool($v))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Get an array that maps option names to values
      *
      * @api

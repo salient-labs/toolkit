@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Cli\Command;
 
+use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
@@ -183,16 +184,20 @@ class TestOptions extends CliCommand
             case self::ACTION_APPLY_VALUES:
                 /** @var string */
                 $data = $this->Data;
-                /** @var array<string,array<string|int|bool>|string|int|bool|null> */
                 $data = Json::parseObjectAsArray($data);
+                if (!is_array($data) || !$this->checkOptionValues($data)) {
+                    throw new CliInvalidArgumentsException('Invalid option values');
+                }
                 $this->applyOptionValues($data, true, true, false, true, true);
                 break;
 
             case self::ACTION_APPLY_SCHEMA_VALUES:
                 /** @var string */
                 $data = $this->Data;
-                /** @var array<string,array<string|int|bool>|string|int|bool|null> */
                 $data = Json::parseObjectAsArray($data);
+                if (!is_array($data) || !$this->checkOptionValues($data)) {
+                    throw new CliInvalidArgumentsException('Invalid option values');
+                }
                 $this->applyOptionValues($data, true, true, true, true, true);
                 break;
 
