@@ -61,9 +61,7 @@ final class SqlQuery implements Chainable, Readable
      */
     protected $Values = [];
 
-    /**
-     * @var callable(string): string
-     */
+    /** @var callable(string): string */
     protected $ParamCallback;
 
     /**

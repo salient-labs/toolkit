@@ -23,7 +23,6 @@ use ADODB_Exception;
 abstract class DbSyncProvider extends AbstractSyncProvider
 {
     private DbConnector $DbConnector;
-
     private ADOConnection $Db;
 
     /**

@@ -31,15 +31,10 @@ class CliApplication extends Application implements CliApplicationInterface
 {
     private const COMMAND_REGEX = '/^[a-z][a-z0-9_-]*$/iD';
 
-    /**
-     * @var array<string,class-string<CliCommandInterface>|mixed[]>
-     */
+    /** @var array<string,class-string<CliCommandInterface>|mixed[]> */
     private $CommandTree = [];
-
     private ?CliCommandInterface $RunningCommand = null;
-
     private ?CliCommandInterface $LastCommand = null;
-
     private int $LastExitStatus = 0;
 
     /**

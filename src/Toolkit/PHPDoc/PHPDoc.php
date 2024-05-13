@@ -107,24 +107,13 @@ final class PHPDoc implements Readable
      */
     protected $Templates = [];
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $LegacyNullable;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $Lines;
-
-    /**
-     * @var string|false
-     */
+    /** @var string|false */
     private $NextLine;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private static $PHPDocTypeRegex;
 
     /**

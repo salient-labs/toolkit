@@ -16,14 +16,9 @@ use Salient\Sync\Exception\SyncFilterPolicyViolationException;
  */
 final class SyncEntityResolver implements SyncEntityResolverInterface
 {
-    /**
-     * @var SyncEntityProviderInterface<TEntity>
-     */
+    /** @var SyncEntityProviderInterface<TEntity> */
     private $EntityProvider;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     private $NameProperty;
 
     /**

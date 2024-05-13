@@ -21,9 +21,7 @@ use Traversable;
  */
 class MapIterator extends IteratorIterator
 {
-    /**
-     * @var Closure(TInput, TKey, Traversable<TKey,TInput>): TOutput
-     */
+    /** @var Closure(TInput, TKey, Traversable<TKey,TInput>): TOutput */
     private Closure $Callback;
 
     /**

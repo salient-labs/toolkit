@@ -13,24 +13,14 @@ use ReflectionClass;
  */
 trait HasUnderlyingService
 {
-    /**
-     * @var array<class-string<static>,class-string<TService>>
-     */
+    /** @var array<class-string<static>,class-string<TService>> */
     private static array $ServiceNames = [];
-
-    /**
-     * @var array<class-string<static>,array<class-string<TService>>>
-     */
+    /** @var array<class-string<static>,array<class-string<TService>>> */
     private static array $ServiceLists = [];
-
-    /**
-     * @var array<class-string<static>,true>
-     */
+    /** @var array<class-string<static>,true> */
     private static array $LoadedServices = [];
 
-    /**
-     * @return class-string<TService>|array<class-string<TService>,class-string<TService>|array<class-string<TService>>>
-     */
+    /** @return class-string<TService>|array<class-string<TService>,class-string<TService>|array<class-string<TService>>> */
     abstract protected static function getService();
 
     /**

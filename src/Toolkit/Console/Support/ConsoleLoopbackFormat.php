@@ -19,7 +19,6 @@ final class ConsoleLoopbackFormat implements
     ConsoleTagFormatFactory
 {
     private string $Before;
-
     private string $After;
 
     public function __construct(string $before = '', string $after = '')

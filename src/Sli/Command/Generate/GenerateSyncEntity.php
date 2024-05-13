@@ -31,55 +31,27 @@ use DateTimeInterface;
  */
 class GenerateSyncEntity extends GenerateCommand
 {
-    /**
-     * @var mixed[]|null
-     */
+    /** @var mixed[]|null */
     public ?array $Entity;
-
     private string $ClassFqcn = '';
-
     private string $MemberVisibility = '';
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $OneToOneRelationships = [];
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $OneToManyRelationships = [];
-
     private ?string $ParentProperty = null;
-
     private ?string $ChildrenProperty = null;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $RemovablePrefixes = [];
-
     private ?string $ReferenceEntityFile = null;
-
-    /**
-     * @var class-string<HttpSyncProvider>|null
-     */
+    /** @var class-string<HttpSyncProvider>|null */
     private ?string $Provider = null;
-
     private ?string $HttpEndpoint = null;
-
     private string $HttpMethod = '';
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $HttpQuery = [];
-
     private ?string $HttpDataFile = null;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $SkipProperties = [];
 
     public function description(): string
@@ -304,11 +276,8 @@ EOF)
         }
 
         $entityClass = new class extends AbstractSyncEntity {
-            /**
-             * @var string[]
-             */
+            /** @var string[] */
             public static array $Prefixes;
-
             public static bool $Expand = true;
 
             protected static function getRemovablePrefixes(): ?array

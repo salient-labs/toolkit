@@ -45,21 +45,12 @@ class GenerateBuilder extends GenerateCommand
     ];
 
     private string $ClassFqcn = '';
-
     private ?string $BuilderFqcn = null;
-
     private bool $IncludeProperties = false;
-
     private bool $IgnoreProperties = false;
-
-    /**
-     * @var string[]|null
-     */
+    /** @var string[]|null */
     private ?array $Forward = null;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Skip = [];
 
     // --

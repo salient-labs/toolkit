@@ -18,9 +18,7 @@ use Closure;
  */
 trait HasNormaliser
 {
-    /**
-     * @var array<string,Closure(string $name, bool $greedy=, string...$hints): string>
-     */
+    /** @var array<string,Closure(string $name, bool $greedy=, string...$hints): string> */
     private static $Normaliser = [];
 
     /**

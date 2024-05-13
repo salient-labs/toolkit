@@ -12,8 +12,6 @@ use Salient\Core\AbstractEnumeration;
 class OAuth2GrantType extends AbstractEnumeration
 {
     public const AUTHORIZATION_CODE = 'authorization_code';
-
     public const REFRESH_TOKEN = 'refresh_token';
-
     public const CLIENT_CREDENTIALS = 'client_credentials';
 }

@@ -38,16 +38,11 @@ use Closure;
 final class SyncIntrospector extends Introspector
 {
     private const ID_KEY = 0;
-
     private const PARENT_KEY = 1;
-
     private const CHILDREN_KEY = 2;
-
     private const ID_PROPERTY = 'Id';
 
-    /**
-     * @var SyncIntrospectionClass<TClass>
-     */
+    /** @var SyncIntrospectionClass<TClass> */
     protected $_Class;
 
     /**

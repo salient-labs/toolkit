@@ -18,21 +18,12 @@ use Salient\Core\Exception\LogicException;
  */
 trait HasFacade
 {
-    /**
-     * @var class-string<TFacade>|null
-     */
+    /** @var class-string<TFacade>|null */
     protected ?string $Facade = null;
-
-    /**
-     * @var static|null
-     */
+    /** @var static|null */
     private ?self $InstanceWithoutFacade = null;
-
-    /**
-     * @var static|null
-     */
+    /** @var static|null */
     private ?self $InstanceWithFacade = null;
-
     private bool $HasTentativeFacade = false;
 
     /**

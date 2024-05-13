@@ -32,9 +32,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
     /** @use HasBuilder<DbSyncDefinitionBuilder<TEntity,TProvider>> */
     use HasBuilder;
 
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Table;
 
     /**

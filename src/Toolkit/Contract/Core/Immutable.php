@@ -2,7 +2,5 @@
 
 namespace Salient\Contract\Core;
 
-/**
- * @api
- */
+/** @api */
 interface Immutable {}

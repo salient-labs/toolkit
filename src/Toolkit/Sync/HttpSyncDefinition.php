@@ -230,9 +230,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      */
     protected $Callback;
 
-    /**
-     * @var mixed[]|null
-     */
+    /** @var mixed[]|null */
     private $Args;
 
     /**

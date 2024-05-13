@@ -19,44 +19,27 @@ class TestOptions extends CliCommand
     private const ACTION_APPLY_SCHEMA_VALUES = 'apply-schema-values';
     private const ACTION_GET_RUNNING_COMMAND = 'get-running-command';
 
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     public $Result;
 
     // --
 
     private ?string $Action = null;
-
     private ?string $Data = null;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Print = [];
-
     private bool $Flag = false;
-
     private int $RepeatableFlag = 0;
-
     private ?bool $NullableFlag = null;
-
     private string $Value = '';
-
-    /**
-     * @var string[]|null
-     */
+    /** @var string[]|null */
     private ?array $RepeatableValue = null;
-
     private ?DateTimeInterface $RequiredValue = null;
-
     private ?string $OptionalValue = null;
 
     // --
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Args;
 
     public function description(): string

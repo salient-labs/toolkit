@@ -401,9 +401,7 @@ final class ContainerTest extends TestCase
 }
 
 interface ITestService1 {}
-
 interface ITestService2 {}
-
 interface I {}
 
 class TestServiceImplA implements HasServices, HasContextualBindings, ITestService1, ITestService2
@@ -454,9 +452,7 @@ class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
 {
     use TestTrait;
 
-    /**
-     * @var A<T>
-     */
+    /** @var A<T> */
     public A $a;
 
     /**
@@ -482,12 +478,8 @@ class D extends C {}
 trait TestTrait
 {
     protected ?ContainerInterface $Container = null;
-
-    /**
-     * @var class-string|null
-     */
+    /** @var class-string|null */
     protected ?string $Service = null;
-
     protected int $SetServiceCount = 0;
 
     public function getService(): string
@@ -528,11 +520,8 @@ trait TestTrait
 class OrgUnit implements HasServices, HasContextualBindings
 {
     public Office $MainOffice;
-
     public Department $Department;
-
     public Staff $Manager;
-
     public User $Admin;
 
     public function __construct(Office $mainOffice, Department $department, Staff $manager, User $admin)
@@ -561,7 +550,6 @@ class OrgUnit implements HasServices, HasContextualBindings
 class User
 {
     public int $Id;
-
     public Office $Office;
 
     public function __construct(IdGenerator $idGenerator, Office $office)
@@ -596,9 +584,7 @@ class DepartmentStaff extends Staff
 class Department
 {
     public int $Id;
-
     public ?string $Name;
-
     public Office $MainOffice;
 
     public function __construct(IdGenerator $idGenerator, Office $mainOffice, ?string $name = null)
@@ -612,7 +598,6 @@ class Department
 class Office
 {
     public int $Id;
-
     public ?string $Name;
 
     public function __construct(IdGenerator $idGenerator, ?string $name = null)
@@ -626,9 +611,7 @@ class FancyOffice extends Office {}
 
 class IdGenerator
 {
-    /**
-     * @var array<string,int>
-     */
+    /** @var array<string,int> */
     private array $Counters = [];
 
     public function getNext(string $type): int

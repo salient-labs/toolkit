@@ -45,9 +45,7 @@ final class MetricCollector
      */
     private array $ElapsedTime = [];
 
-    /**
-     * @var array<array{array<string,array<string,Metric::*>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}>
-     */
+    /** @var array<array{array<string,array<string,Metric::*>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}> */
     private array $Stack = [];
 
     /**

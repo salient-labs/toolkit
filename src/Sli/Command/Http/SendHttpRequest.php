@@ -19,27 +19,17 @@ use Salient\Sync\HttpSyncProvider;
  */
 final class SendHttpRequest extends Command
 {
-    /**
-     * @var class-string<HttpSyncProvider>
-     */
+    /** @var class-string<HttpSyncProvider> */
     private string $Provider = HttpSyncProvider::class;
-
     private string $HttpEndpoint = '';
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $HttpQuery = [];
-
     private ?string $HttpDataFile = null;
-
     private bool $Paginate = false;
 
     // --
 
-    /**
-     * @var HttpRequestMethod::*
-     */
+    /** @var HttpRequestMethod::* */
     private string $HttpMethod;
 
     private function getMethod(): string

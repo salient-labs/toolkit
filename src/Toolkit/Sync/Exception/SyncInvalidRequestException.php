@@ -12,29 +12,15 @@ use Salient\Contract\Sync\SyncProviderInterface;
  */
 class SyncInvalidRequestException extends AbstractSyncException
 {
-    /**
-     * @var SyncProviderInterface
-     */
+    /** @var SyncProviderInterface */
     protected $Provider;
-
-    /**
-     * @var class-string<SyncEntityInterface>
-     */
+    /** @var class-string<SyncEntityInterface> */
     protected $Entity;
-
-    /**
-     * @var SyncContextInterface
-     */
+    /** @var SyncContextInterface */
     protected $Context;
-
-    /**
-     * @var SyncOperation::*
-     */
+    /** @var SyncOperation::* */
     protected $Operation;
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     protected $Args;
 
     /**

@@ -12,26 +12,14 @@ use Salient\Contract\Core\EscapeSequence as Colour;
  */
 final class ConsoleFormat implements ConsoleFormatInterface
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $Before;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     private $After;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $Search;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $Replace;
-
     private static ConsoleFormat $DefaultFormat;
 
     /**

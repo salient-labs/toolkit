@@ -78,9 +78,7 @@ interface ProviderContextInterface extends
      */
     public function withConformity($conformity);
 
-    /**
-     * @return TProvider
-     */
+    /** @return TProvider */
     public function getProvider(): ProviderInterface;
 
     /**

@@ -18,34 +18,17 @@ use Stringable;
  */
 class HttpServerRequest extends HttpRequest implements HttpServerRequestInterface
 {
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     protected array $ServerParams;
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     protected array $CookieParams = [];
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     protected array $QueryParams = [];
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     protected array $UploadedFiles = [];
-
-    /**
-     * @var mixed[]|object|null
-     */
+    /** @var mixed[]|object|null */
     protected $ParsedBody;
-
-    /**
-     * @var array<string,mixed>
-     */
+    /** @var array<string,mixed> */
     protected array $Attributes = [];
 
     /**

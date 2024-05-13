@@ -16,7 +16,6 @@ use Salient\Core\Exception\MethodNotImplementedException;
 abstract class AbstractProvider implements ProviderInterface
 {
     protected ContainerInterface $App;
-
     private DateFormatterInterface $DateFormatter;
 
     /**

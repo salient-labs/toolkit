@@ -72,7 +72,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     use ReadsProtectedProperties;
 
     private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/i';
-
     private const SHORT_REGEX = '/^[a-z0-9_]$/i';
 
     private const ONE_OF_INDEX = [

@@ -51,19 +51,11 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
         return [];
     }
 
-    /**
-     * @var SyncStore
-     */
+    /** @var SyncStore */
     protected $Store;
-
-    /**
-     * @var int|null
-     */
+    /** @var int|null */
     private $Id;
-
-    /**
-     * @var array<string,Closure>
-     */
+    /** @var array<string,Closure> */
     private $MagicMethodClosures = [];
 
     /**

@@ -4,7 +4,5 @@ namespace Salient\Core\Exception;
 
 use Salient\Core\AbstractMultipleErrorException;
 
-/**
- * @api
- */
+/** @api */
 class InvalidDotEnvSyntaxException extends AbstractMultipleErrorException {}

@@ -42,19 +42,11 @@ use SQLite3Stmt;
  */
 final class SyncStore extends AbstractStore
 {
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $ErrorReporting = false;
-
-    /**
-     * @var int|null
-     */
+    /** @var int|null */
     private $RunId;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private $RunUuid;
 
     /**
@@ -136,19 +128,11 @@ final class SyncStore extends AbstractStore
      */
     private $DeferredRelationships = [];
 
-    /**
-     * @var SyncErrorCollection
-     */
+    /** @var SyncErrorCollection */
     private $Errors;
-
-    /**
-     * @var int
-     */
+    /** @var int */
     private $ErrorCount = 0;
-
-    /**
-     * @var int
-     */
+    /** @var int */
     private $WarningCount = 0;
 
     /**
@@ -158,19 +142,11 @@ final class SyncStore extends AbstractStore
      */
     private $RegisteredNamespaces = [];
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $DeferralCheckpoint = 0;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private $Command;
-
-    /**
-     * @var string[]|null
-     */
+    /** @var string[]|null */
     private $Arguments;
 
     /**

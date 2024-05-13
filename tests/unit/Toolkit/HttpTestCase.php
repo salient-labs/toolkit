@@ -14,11 +14,8 @@ use Salient\Http\HttpHeaders;
 abstract class HttpTestCase extends TestCase
 {
     protected const HTTP_SERVER_HOST = 'localhost';
-
     protected const HTTP_SERVER_PORT = '3007';
-
     protected const HTTP_SERVER_AUTHORITY = self::HTTP_SERVER_HOST . ':' . self::HTTP_SERVER_PORT;
-
     protected const HTTP_SERVER_URI = 'http://' . self::HTTP_SERVER_AUTHORITY;
 
     protected const HTTP_HEADER_IGNORE_LIST = [

@@ -33,9 +33,7 @@ use stdClass;
 final class CliApplicationTest extends TestCase
 {
     private static string $BasePath;
-
     private CliApplicationInterface $App;
-
     private MockTarget $ConsoleTarget;
 
     public static function setUpBeforeClass(): void

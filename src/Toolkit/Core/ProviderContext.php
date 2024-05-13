@@ -27,30 +27,15 @@ class ProviderContext implements ProviderContextInterface
     use HasImmutableProperties;
 
     protected ContainerInterface $Container;
-
-    /**
-     * @var TProvider
-     */
+    /** @var TProvider */
     protected ProviderInterface $Provider;
-
-    /**
-     * @var TEntity[]
-     */
+    /** @var TEntity[] */
     protected array $Stack = [];
-
-    /**
-     * @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null>
-     */
+    /** @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> */
     protected array $Values = [];
-
-    /**
-     * @var (TEntity&Treeable)|null
-     */
+    /** @var (TEntity&Treeable)|null */
     protected ?Treeable $Parent = null;
-
-    /**
-     * @var ListConformity::*
-     */
+    /** @var ListConformity::* */
     protected $Conformity = ListConformity::NONE;
 
     /**

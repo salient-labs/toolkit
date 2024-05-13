@@ -25,19 +25,11 @@ final class AccessToken implements AccessTokenInterface, Immutable, Readable
     use ReadsProtectedProperties;
 
     protected string $Token;
-
     protected string $Type;
-
     protected ?DateTimeImmutable $Expires;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected array $Scopes;
-
-    /**
-     * @var array<string,mixed>
-     */
+    /** @var array<string,mixed> */
     protected array $Claims;
 
     /**

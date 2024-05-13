@@ -60,124 +60,56 @@ final class Process
     ];
 
     private const SIGTERM = 15;
-
     private const SIGKILL = 9;
 
-    /**
-     * @var string[]|string
-     */
+    /** @var string[]|string */
     private $Command;
-
-    /**
-     * @var resource
-     */
+    /** @var resource */
     private $Input;
-
     private bool $RewindInput;
-
-    /**
-     * @var (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null
-     */
+    /** @var (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null */
     private ?Closure $Callback;
-
     private ?string $Cwd;
-
-    /**
-     * @var array<string,string>|null
-     */
+    /** @var array<string,string>|null */
     private ?array $Env;
-
     private ?float $Timeout;
-
     private ?int $Sec;
-
     private int $Usec;
-
     private bool $CollectOutput;
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     private bool $UseOutputFiles;
-
-    /**
-     * @var array<string,bool>|null
-     */
+    /** @var array<string,bool>|null */
     private ?array $Options = null;
-
     private int $State = self::READY;
-
-    /**
-     * @var (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null
-     */
+    /** @var (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null */
     private ?Closure $OutputCallback = null;
-
     private ?string $OutputDir = null;
-
-    /**
-     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource>
-     */
+    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource> */
     private array $OutputFiles;
-
-    /**
-     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>>
-     */
+    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>> */
     private array $OutputFilePos;
-
-    /**
-     * @var int|float|null
-     */
+    /** @var int|float|null */
     private $StartTime = null;
-
-    /**
-     * @var resource|null
-     */
+    /** @var resource|null */
     private $Process = null;
-
     private bool $Stopped = false;
-
-    /**
-     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource>
-     */
+    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource> */
     private array $Pipes;
-
-    /**
-     * @var array{command:string,pid:int,running:bool,signaled:bool,stopped:bool,exitcode:int,termsig:int,stopsig:int}
-     */
+    /** @var array{command:string,pid:int,running:bool,signaled:bool,stopped:bool,exitcode:int,termsig:int,stopsig:int} */
     private array $ProcessStatus;
-
     private int $Pid;
-
     private int $ExitStatus;
-
-    /**
-     * @var int|float|null
-     */
+    /** @var int|float|null */
     private $LastPollTime = null;
-
-    /**
-     * @var int|float|null
-     */
+    /** @var int|float|null */
     private $LastReadTime = null;
-
-    /**
-     * @var int|float|null
-     */
+    /** @var int|float|null */
     private $LastStopTime = null;
-
-    /**
-     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource>
-     */
+    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource> */
     private array $Output = [];
-
-    /**
-     * @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>>
-     */
+    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>> */
     private array $OutputPos = [];
-
-    /**
-     * @var array{start_time:float,spawn_interval:float,poll_time:float,poll_count:int,read_time:float,read_count:int,stop_time:float,stop_count:int}
-     */
+    /** @var array{start_time:float,spawn_interval:float,poll_time:float,poll_count:int,read_time:float,read_count:int,stop_time:float,stop_count:int} */
     private array $Stats = self::DEFAULT_STATS;
 
     /**

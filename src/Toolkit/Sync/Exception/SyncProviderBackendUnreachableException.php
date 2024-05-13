@@ -11,9 +11,7 @@ use Throwable;
  */
 class SyncProviderBackendUnreachableException extends AbstractSyncException
 {
-    /**
-     * @var SyncProviderInterface|null
-     */
+    /** @var SyncProviderInterface|null */
     protected $Provider;
 
     public function __construct(

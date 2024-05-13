@@ -1409,30 +1409,16 @@ class DateTimeWrapper
 class ClassWithRefs
 {
     public int $Foo = 0;
-
     public string $Bar = '';
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     public array $Baz = [];
-
     public ?object $Qux = null;
-
     public int $FooByVal;
-
     public string $BarByVal;
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     public array $BazByVal;
-
     public object $QuxByVal;
-
-    /**
-     * @var RefClass[]
-     */
+    /** @var RefClass[] */
     public array $Refs;
 
     public function bind(): void
@@ -1467,9 +1453,7 @@ class ClassWithRefs
 
 class ClassWithValue
 {
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     public $Value;
 
     /**
@@ -1504,7 +1488,6 @@ class SingletonWithContainer implements HasServices, HasContextualBindings, Sing
 class ClassWithCloneMethod
 {
     public static int $Instances = 0;
-
     public object $Foo;
 
     public function __construct()
@@ -1526,9 +1509,7 @@ class UncloneableClass
 
 class RefClass
 {
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     public $BindTo;
 
     /**

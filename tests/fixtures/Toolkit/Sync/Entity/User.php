@@ -14,54 +14,25 @@ use Salient\Sync\AbstractSyncEntity;
  */
 class User extends AbstractSyncEntity
 {
-    /**
-     * @var int|string|null
-     */
+    /** @var int|string|null */
     public $Id;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Name;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Username;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Email;
-
-    /**
-     * @var array<string,mixed>|null
-     */
+    /** @var array<string,mixed>|null */
     public $Address;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Phone;
-
-    /**
-     * @var array<string,mixed>|null
-     */
+    /** @var array<string,mixed>|null */
     public $Company;
-
-    /**
-     * @var array<Task|DeferredEntity<Task>>|DeferredRelationship<Task>|null
-     */
+    /** @var array<Task|DeferredEntity<Task>>|DeferredRelationship<Task>|null */
     public $Tasks;
-
-    /**
-     * @var array<Post|DeferredEntity<Post>>|DeferredRelationship<Post>|null
-     */
+    /** @var array<Post|DeferredEntity<Post>>|DeferredRelationship<Post>|null */
     public $Posts;
-
-    /**
-     * @var array<Album|DeferredEntity<Album>>|DeferredRelationship<Album>|null
-     */
+    /** @var array<Album|DeferredEntity<Album>>|DeferredRelationship<Album>|null */
     public $Albums;
 
     /**

@@ -33,9 +33,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
     /** @use HasBuilder<SyncErrorBuilder> */
     use HasBuilder;
 
-    /**
-     * @var SyncErrorType::*
-     */
+    /** @var SyncErrorType::* */
     protected $ErrorType;
 
     /**
@@ -63,9 +61,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
      */
     protected $Values;
 
-    /**
-     * @var Level::*
-     */
+    /** @var Level::* */
     protected $Level;
 
     /**

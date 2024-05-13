@@ -29,14 +29,9 @@ use Throwable;
 abstract class OAuth2Client
 {
     private ?HttpServer $Listener;
-
     private AbstractProvider $Provider;
-
-    /**
-     * @var OAuth2Flow::*
-     */
+    /** @var OAuth2Flow::* */
     private int $Flow;
-
     private string $TokenKey;
 
     /**

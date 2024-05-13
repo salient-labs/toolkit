@@ -32,26 +32,14 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     private const STRING = 2;
     private const LIST = 8;
 
-    /**
-     * @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null>
-     */
+    /** @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> */
     protected array $Filters = [];
-
-    /**
-     * @var array<string,string>
-     */
+    /** @var array<string,string> */
     protected array $FilterKeys = [];
-
-    /**
-     * @var (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null
-     */
+    /** @var (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null */
     protected $FilterPolicyCallback;
-
     protected ?bool $Offline = null;
-
-    /**
-     * @var DeferralPolicy::*
-     */
+    /** @var DeferralPolicy::* */
     protected int $DeferralPolicy = DeferralPolicy::RESOLVE_EARLY;
 
     /**
@@ -61,16 +49,10 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     protected array $EntityHydrationPolicy = [];
 
-    /**
-     * @var array<int<0,max>,HydrationPolicy::*>
-     */
+    /** @var array<int<0,max>,HydrationPolicy::*> */
     protected array $FallbackHydrationPolicy = [0 => HydrationPolicy::DEFER];
-
     protected ?SyncEntityInterface $LastRecursedInto = null;
-
-    /**
-     * @var array<class-string,string>
-     */
+    /** @var array<class-string,string> */
     private static array $ServiceKeyMap;
 
     /**

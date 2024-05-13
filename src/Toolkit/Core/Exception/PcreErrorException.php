@@ -27,10 +27,7 @@ class PcreErrorException extends AbstractException
     protected $Pattern;
     /** @var string[]|string */
     protected $Subject;
-
-    /**
-     * @var array<int,string>
-     */
+    /** @var array<int,string> */
     private static array $ErrorNameMap;
 
     /**

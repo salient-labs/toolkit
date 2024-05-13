@@ -14,25 +14,14 @@ use Salient\Core\Utility\File;
 final class MockTarget implements ConsoleTargetStreamInterface
 {
     private bool $IsStdout;
-
     private bool $IsStderr;
-
     private bool $IsTty;
-
     private ?int $Width;
-
-    /**
-     * @var resource|null
-     */
+    /** @var resource|null */
     private $Stream;
-
     private Formatter $Formatter;
-
-    /**
-     * @var array<array{Level::*,string,2?:array<string,mixed>}>
-     */
+    /** @var array<array{Level::*,string,2?:array<string,mixed>}> */
     private array $Messages = [];
-
     private bool $IsValid = true;
 
     /**

@@ -11,11 +11,8 @@ use Salient\Console\Support\ConsoleMessageAttributes as MessageAttributes;
 final class ConsoleMessageFormat
 {
     private Format $Msg1Format;
-
     private Format $Msg2Format;
-
     private Format $PrefixFormat;
-
     private static ConsoleMessageFormat $DefaultMessageFormat;
 
     public function __construct(

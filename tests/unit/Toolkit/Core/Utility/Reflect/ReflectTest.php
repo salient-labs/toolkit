@@ -730,34 +730,17 @@ class MyClass extends MyBaseClass implements MyInterface
 
     public const MY_CONSTANT = 'my constant';
 
-    /**
-     * @var int|string
-     */
+    /** @var int|string */
     public $Id;
-
-    /**
-     * @var int|null
-     */
+    /** @var int|null */
     public $AltId;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     public $Name;
-
-    /**
-     * @var MyClass|null
-     */
+    /** @var MyClass|null */
     public $Parent;
-
-    /**
-     * @var MyClass|null
-     */
+    /** @var MyClass|null */
     public $AltParent;
-
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     protected $MyPrivateProperty2;
 
     /**

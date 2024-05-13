@@ -16,16 +16,10 @@ use Traversable;
  */
 class GraphIterator implements Iterator
 {
-    /**
-     * @var object|mixed[]
-     */
+    /** @var object|mixed[] */
     protected $Graph;
-
-    /**
-     * @var array<array-key>
-     */
+    /** @var array<array-key> */
     protected array $Keys = [];
-
     protected bool $IsObject = true;
 
     /**

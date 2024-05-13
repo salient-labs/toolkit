@@ -26,14 +26,9 @@ use RecursiveIterator;
  */
 class RecursiveCallbackIterator extends IteratorIterator implements RecursiveIterator
 {
-    /**
-     * @var RecursiveIterator<TKey,TValue>
-     */
+    /** @var RecursiveIterator<TKey,TValue> */
     private RecursiveIterator $Iterator;
-
-    /**
-     * @var Closure(TValue, TKey, RecursiveIterator<TKey,TValue>): bool
-     */
+    /** @var Closure(TValue, TKey, RecursiveIterator<TKey,TValue>): bool */
     private Closure $Callback;
 
     /**

@@ -9,14 +9,9 @@ use Salient\Core\Exception\InvalidArgumentException;
  */
 class PHPDocParamTag extends PHPDocTag
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public $Name;
-
-    /**
-     * @var bool
-     */
+    /** @var bool */
     public $IsVariadic;
 
     public function __construct(

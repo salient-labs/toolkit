@@ -41,17 +41,10 @@ final class GenerateFacade extends GenerateCommand
     ];
 
     private string $ClassFqcn = '';
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $AliasFqcn = [];
-
     private string $FacadeFqcn = '';
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $SkipMethods = [];
 
     public function description(): string

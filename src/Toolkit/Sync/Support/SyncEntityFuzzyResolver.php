@@ -31,34 +31,17 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
         Algorithm::NGRAM_INTERSECTION,
     ];
 
-    /**
-     * @var SyncEntityProviderInterface<TEntity>
-     */
+    /** @var SyncEntityProviderInterface<TEntity> */
     private $EntityProvider;
-
-    /**
-     * @var string|Closure(TEntity): (string|null)
-     */
+    /** @var string|Closure(TEntity): (string|null) */
     private $NameProperty;
-
-    /**
-     * @var int-mask-of<Algorithm::*>
-     */
+    /** @var int-mask-of<Algorithm::*> */
     private $Algorithm;
-
-    /**
-     * @var array<Algorithm::*,float>|float|null
-     */
+    /** @var array<Algorithm::*,float>|float|null */
     private $UncertaintyThreshold;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private $WeightProperty;
-
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $RequireOneMatch;
 
     /**

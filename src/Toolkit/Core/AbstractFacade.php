@@ -28,14 +28,9 @@ abstract class AbstractFacade implements FacadeInterface
     /** @use HasUnderlyingService<TService> */
     use HasUnderlyingService;
 
-    /**
-     * @var array<class-string<static>,TService>
-     */
+    /** @var array<class-string<static>,TService> */
     private static array $Instances = [];
-
-    /**
-     * @var array<class-string<static>,int>
-     */
+    /** @var array<class-string<static>,int> */
     private static array $ListenerIds = [];
 
     /**

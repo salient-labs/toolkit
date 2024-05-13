@@ -11,34 +11,17 @@ use Salient\Core\Utility\Str;
  */
 class PHPDocTag
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public $Tag;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Name;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Type;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Description;
-
-    /**
-     * @var class-string|null
-     */
+    /** @var class-string|null */
     public $Class;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Member;
 
     public function __construct(

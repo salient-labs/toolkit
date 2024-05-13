@@ -14,24 +14,13 @@ use Salient\Sync\AbstractSyncEntity;
  */
 class Album extends AbstractSyncEntity
 {
-    /**
-     * @var int|string|null
-     */
+    /** @var int|string|null */
     public $Id;
-
-    /**
-     * @var User|DeferredEntity<User>|null
-     */
+    /** @var User|DeferredEntity<User>|null */
     public $User;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Title;
-
-    /**
-     * @var array<Photo|DeferredEntity<Photo>>|DeferredRelationship<Photo>|null
-     */
+    /** @var array<Photo|DeferredEntity<Photo>>|DeferredRelationship<Photo>|null */
     public $Photos;
 
     /**

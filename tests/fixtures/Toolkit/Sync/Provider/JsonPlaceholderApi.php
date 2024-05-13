@@ -68,9 +68,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     TaskProvider,
     UserProvider
 {
-    /**
-     * @var array<string,int>
-     */
+    /** @var array<string,int> */
     public array $HttpRequests = [];
 
     public function name(): string

@@ -40,14 +40,9 @@ class GenerateSyncProvider extends GenerateCommand
     ];
 
     private string $ClassFqcn = '';
-
     private bool $NoMagic = false;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Operations = [];
-
     private ?string $Plural = null;
 
     public function description(): string

@@ -13,29 +13,15 @@ use Salient\Sync\AbstractSyncEntity;
  */
 class Comment extends AbstractSyncEntity
 {
-    /**
-     * @var int|string|null
-     */
+    /** @var int|string|null */
     public $Id;
-
-    /**
-     * @var Post|DeferredEntity<Post>|null
-     */
+    /** @var Post|DeferredEntity<Post>|null */
     public $Post;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Name;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Email;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Body;
 
     /**

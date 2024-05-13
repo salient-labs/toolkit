@@ -14,17 +14,11 @@ use Salient\Core\Introspector;
 trait TreeableTrait
 {
     abstract public static function getParentProperty(): string;
-
     abstract public static function getChildrenProperty(): string;
 
-    /**
-     * @var array<class-string<self>,string>
-     */
+    /** @var array<class-string<self>,string> */
     private static $ParentProperties = [];
-
-    /**
-     * @var array<class-string<self>,string>
-     */
+    /** @var array<class-string<self>,string> */
     private static $ChildrenProperties = [];
 
     private static function loadHierarchyProperties(): void

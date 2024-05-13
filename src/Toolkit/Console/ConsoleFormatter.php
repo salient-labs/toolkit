@@ -134,30 +134,16 @@ REGEX;
 REGEX;
 
     private static ConsoleFormatter $DefaultFormatter;
-
     private static TagFormats $DefaultTagFormats;
-
     private static MessageFormats $DefaultMessageFormats;
-
     private static TagFormats $LoopbackTagFormats;
-
     private TagFormats $TagFormats;
-
     private MessageFormats $MessageFormats;
-
-    /**
-     * @var callable(): (int|null)
-     */
+    /** @var callable(): (int|null) */
     private $WidthCallback;
-
-    /**
-     * @var array<Level::*,string>
-     */
+    /** @var array<Level::*,string> */
     private array $LevelPrefixMap;
-
-    /**
-     * @var array<MessageType::*,string>
-     */
+    /** @var array<MessageType::*,string> */
     private array $TypePrefixMap;
 
     /**

@@ -7,9 +7,7 @@ if (\PHP_VERSION_ID < 80100) {
 
     interface UnitEnum
     {
-        /**
-         * @return static[]
-         */
+        /** @return static[] */
         public static function cases(): array;
     }
 }

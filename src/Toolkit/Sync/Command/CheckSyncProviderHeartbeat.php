@@ -15,18 +15,11 @@ use Salient\Core\Utility\Inflect;
  */
 final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 {
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $ProviderBasename = [];
-
-    /**
-     * @var array<class-string<SyncProviderInterface>>
-     */
+    /** @var array<class-string<SyncProviderInterface>> */
     private array $Provider = [];
-
     private int $Ttl = 0;
-
     private bool $FailEarly = false;
 
     public function description(): string

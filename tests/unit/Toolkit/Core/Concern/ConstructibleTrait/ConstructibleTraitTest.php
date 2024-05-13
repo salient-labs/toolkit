@@ -137,12 +137,8 @@ class A implements Constructible
     use ConstructibleTrait;
 
     public int $Id;
-
     public string $Name;
-
-    /**
-     * @var array-key
-     */
+    /** @var array-key */
     public $OtherId;
 
     public function __construct(int $id, string $name)
@@ -165,12 +161,8 @@ class B implements Constructible, Readable, Writable, Normalisable, NormaliserFa
     use HasNormaliser;
 
     protected int $Id;
-
     protected string $Name;
-
-    /**
-     * @var array-key
-     */
+    /** @var array-key */
     protected $OtherId;
 
     public static function getReadableProperties(): array

@@ -2,9 +2,7 @@
 
 abstract class ADOConnection
 {
-    /**
-     * @var string|false
-     */
+    /** @var string|false */
     public $sysTimeStamp = false;
 
     /**
@@ -80,9 +78,7 @@ abstract class ADOConnection
      */
     public function GetOne($sql, $inputarr = false) {}
 
-    /**
-     * @return mixed
-     */
+    /** @return mixed */
     public function Close() {}
 
     /**

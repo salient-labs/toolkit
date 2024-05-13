@@ -14,11 +14,8 @@ use Salient\Contract\Core\MessageLevel as Level;
  */
 final class ConsoleMessageFormats
 {
-    /**
-     * @var array<Level::*,array<MessageType::*,MessageFormat>>
-     */
+    /** @var array<Level::*,array<MessageType::*,MessageFormat>> */
     private array $Formats = [];
-
     private MessageFormat $FallbackFormat;
 
     public function __construct(?MessageFormat $fallbackFormat = null)

@@ -17,9 +17,7 @@ use Salient\Sync\SyncStore;
  */
 abstract class AbstractSyncCommand extends CliCommand
 {
-    /**
-     * @var SyncStore
-     */
+    /** @var SyncStore */
     protected $Store;
 
     /**

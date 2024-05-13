@@ -34,64 +34,29 @@ final class Pipeline implements
     use HasChainableMethods;
 
     private bool $HasPayload = false;
-
     private bool $HasStream = false;
-
-    /**
-     * @var iterable<TInput>|TInput
-     */
+    /** @var iterable<TInput>|TInput */
     private $Payload;
-
-    /**
-     * @var TArgument
-     */
+    /** @var TArgument */
     private $Arg;
-
-    /**
-     * @var ListConformity::*
-     */
+    /** @var ListConformity::* */
     private int $PayloadConformity = ListConformity::NONE;
-
-    /**
-     * @var (Closure(TInput $payload, static $pipeline, TArgument $arg): (TInput|TOutput))|null
-     */
+    /** @var (Closure(TInput $payload, static $pipeline, TArgument $arg): (TInput|TOutput))|null */
     private ?Closure $After = null;
-
-    /**
-     * @var array<(Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>>>
-     */
+    /** @var array<(Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>>> */
     private array $Pipes = [];
-
-    /**
-     * @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapperFlag::*>}>
-     */
+    /** @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapperFlag::*>}> */
     private array $KeyMaps = [];
-
-    /**
-     * @var ArrayMapper[]
-     */
+    /** @var ArrayMapper[] */
     private array $ArrayMappers;
-
-    /**
-     * @var (Closure(TInput $result, static $pipeline, TArgument $arg): TOutput)|(Closure(TOutput $result, static $pipeline, TArgument $arg): TOutput)|null
-     */
+    /** @var (Closure(TInput $result, static $pipeline, TArgument $arg): TOutput)|(Closure(TOutput $result, static $pipeline, TArgument $arg): TOutput)|null */
     private ?Closure $Then = null;
-
-    /**
-     * @var (Closure(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput>)|null
-     */
+    /** @var (Closure(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput>)|null */
     private ?Closure $CollectThen = null;
-
-    /**
-     * @var array<Closure(TOutput $result, static $pipeline, TArgument $arg): mixed>
-     */
+    /** @var array<Closure(TOutput $result, static $pipeline, TArgument $arg): mixed> */
     private array $Cc = [];
-
-    /**
-     * @var (Closure(TOutput, static, TArgument): bool)|null
-     */
+    /** @var (Closure(TOutput, static, TArgument): bool)|null */
     private ?Closure $Unless = null;
-
     private ?ContainerInterface $Container;
 
     /**

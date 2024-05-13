@@ -39,20 +39,11 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     protected ContainerInterface $Container;
-
-    /**
-     * @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>>
-     */
+    /** @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
     private Introspector $Introspector;
-
-    /**
-     * @var array<string,true>
-     */
+    /** @var array<string,true> */
     private array $Terminators = [];
-
-    /**
-     * @var array<string,mixed>
-     */
+    /** @var array<string,mixed> */
     private array $Data = [];
 
     /**

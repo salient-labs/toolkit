@@ -4,16 +4,10 @@ namespace Salient\Tests\Core\AbstractFacade;
 
 trait MyInstanceTrait
 {
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     private array $Args;
-
     private int $Clones = 0;
-
-    /**
-     * @var static[]
-     */
+    /** @var static[] */
     private static array $Unloaded = [];
 
     /**

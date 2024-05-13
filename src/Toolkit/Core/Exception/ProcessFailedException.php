@@ -2,7 +2,5 @@
 
 namespace Salient\Core\Exception;
 
-/**
- * @api
- */
+/** @api */
 class ProcessFailedException extends ProcessException {}

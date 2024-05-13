@@ -19,5 +19,6 @@
         "strict-lists"
     ],
     "operatorsFirst": true,
+    "tight": true,
     "heredocIndent": "none"
 }

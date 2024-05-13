@@ -12,9 +12,7 @@ use Salient\Sync\SyncStore;
  */
 class SyncProviderHeartbeatCheckFailedException extends AbstractSyncException
 {
-    /**
-     * @var SyncProviderInterface[]
-     */
+    /** @var SyncProviderInterface[] */
     protected $Providers;
 
     public function __construct(SyncProviderInterface ...$provider)

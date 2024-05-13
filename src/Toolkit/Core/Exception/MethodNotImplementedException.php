@@ -10,19 +10,11 @@ use ReflectionMethod;
  */
 class MethodNotImplementedException extends BadMethodCallException
 {
-    /**
-     * @var class-string
-     */
+    /** @var class-string */
     protected $Class;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $Method;
-
-    /**
-     * @var class-string
-     */
+    /** @var class-string */
     protected $PrototypeClass;
 
     /**

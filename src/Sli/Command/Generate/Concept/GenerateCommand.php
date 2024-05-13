@@ -69,11 +69,8 @@ abstract class GenerateCommand extends Command
     protected ?string $Description = null;
 
     protected bool $ApiTag = false;
-
     protected bool $ToStdout = false;
-
     protected bool $Check = false;
-
     protected bool $ReplaceIfExists = false;
 
     // --
@@ -177,21 +174,12 @@ abstract class GenerateCommand extends Command
 
     // --
 
-    /**
-     * @var ReflectionClass<object>
-     */
+    /** @var ReflectionClass<object> */
     protected ReflectionClass $InputClass;
-
-    /**
-     * @var class-string
-     */
+    /** @var class-string */
     protected string $InputClassName;
-
     protected ?PHPDoc $InputClassPHPDoc;
-
-    /**
-     * @var PHPDocTemplateTag[]
-     */
+    /** @var PHPDocTemplateTag[] */
     protected array $InputClassTemplates;
 
     /**
@@ -199,14 +187,9 @@ abstract class GenerateCommand extends Command
      */
     protected string $InputClassType;
 
-    /**
-     * @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>>
-     */
+    /** @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
     protected Introspector $InputIntrospector;
-
-    /**
-     * @var array<class-string,string>
-     */
+    /** @var array<class-string,string> */
     protected array $InputFiles;
 
     /**

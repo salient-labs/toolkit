@@ -9,19 +9,11 @@ use Salient\Core\Exception\InvalidArgumentException;
  */
 class PHPDocTemplateTag extends PHPDocTag
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public $Name;
-
-    /**
-     * @var null
-     */
+    /** @var null */
     public $Description;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Variance;
 
     public function __construct(

@@ -14,15 +14,9 @@ class MyImmutableClass
     }
 
     public int $A;
-
-    /**
-     * @var int
-     */
+    /** @var int */
     public $B;
-
-    /**
-     * @var int
-     */
+    /** @var int */
     public $C = 3;
 
     /**
@@ -33,31 +27,16 @@ class MyImmutableClass
         'b' => 'bar',
     ];
 
-    /**
-     * @var array<string,string>
-     */
+    /** @var array<string,string> */
     public $Arr2 = [];
-
-    /**
-     * @var array<string,string>
-     */
+    /** @var array<string,string> */
     public array $Arr3;
-
-    /**
-     * @var array<string,string>|null
-     */
+    /** @var array<string,string>|null */
     public $Arr4;
-
-    /**
-     * @var stdClass
-     */
+    /** @var stdClass */
     public $Obj;
-
-    /**
-     * @var ImmutableCollection<array-key,mixed>
-     */
+    /** @var ImmutableCollection<array-key,mixed> */
     public $Coll;
-
     public stdClass $TypedObj;
 
     public function __construct()

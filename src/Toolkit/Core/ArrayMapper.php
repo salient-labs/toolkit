@@ -36,11 +36,8 @@ final class ArrayMapper
     private array $KeyMap;
 
     private bool $RemoveNull;
-
     private bool $AddUnmapped;
-
     private bool $AddMissing;
-
     private bool $RequireMapped;
 
     /**

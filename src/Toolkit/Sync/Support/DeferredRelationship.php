@@ -72,19 +72,11 @@ final class DeferredRelationship implements IteratorAggregate
      */
     private $Filter;
 
-    /**
-     * @var array<TEntity>|DeferredRelationship<TEntity>|null
-     */
+    /** @var array<TEntity>|DeferredRelationship<TEntity>|null */
     private $Replace;
-
-    /**
-     * @var (callable(TEntity[]): void)|null
-     */
+    /** @var (callable(TEntity[]): void)|null */
     private $Callback;
-
-    /**
-     * @var array<TEntity>|null
-     */
+    /** @var array<TEntity>|null */
     private $Resolved;
 
     /**

@@ -49,17 +49,10 @@ class Container implements ContainerInterface, FacadeAwareInterface
     ];
 
     private static ?ContainerInterface $GlobalContainer = null;
-
     private Dice $Dice;
-
-    /**
-     * @var array<class-string,true>
-     */
+    /** @var array<class-string,true> */
     private array $Providers = [];
-
-    /**
-     * @var array<class-string,class-string>
-     */
+    /** @var array<class-string,class-string> */
     private array $GetAsServiceMap = [];
 
     /**

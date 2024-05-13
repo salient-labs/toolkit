@@ -10,14 +10,9 @@ use Stringable;
  */
 final class Indentation
 {
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public bool $InsertSpaces;
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public int $TabSize;
 
     public function __construct(bool $insertSpaces, int $tabSize)

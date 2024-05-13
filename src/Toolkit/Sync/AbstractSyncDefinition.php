@@ -208,14 +208,9 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      */
     protected $ProviderIntrospector;
 
-    /**
-     * @var array<OP::*,Closure>
-     */
+    /** @var array<OP::*,Closure> */
     private array $Closures = [];
-
-    /**
-     * @var static|null
-     */
+    /** @var static|null */
     private $WithoutOverrides;
 
     /**

@@ -39,11 +39,8 @@ class Application extends Container implements ApplicationInterface
     private const DIR_STATE = 'STATE';
 
     private string $AppName;
-
     private string $BasePath;
-
     private string $WorkingDirectory;
-
     private bool $RunningFromSource;
 
     // @phpstan-ignore-next-line
@@ -60,34 +57,17 @@ class Application extends Container implements ApplicationInterface
 
     // @phpstan-ignore-next-line
     private ?string $TempPath;
-
-    /**
-     * @var StreamTarget[]
-     */
+    /** @var StreamTarget[] */
     private array $LogTargets = [];
-
-    /**
-     * @var StreamTarget[]
-     */
+    /** @var StreamTarget[] */
     private array $DebugLogTargets = [];
-
-    /**
-     * @var int|float|null
-     */
+    /** @var int|float|null */
     private static $StartTime;
-
-    /**
-     * @var Level::*
-     */
+    /** @var Level::* */
     private static int $ShutdownReportLevel;
-
-    /**
-     * @var string[]|string|null
-     */
+    /** @var string[]|string|null */
     private static $ShutdownReportMetricGroups;
-
     private static bool $ShutdownReportResourceUsage;
-
     private static bool $ShutdownReportIsRegistered = false;
 
     /**

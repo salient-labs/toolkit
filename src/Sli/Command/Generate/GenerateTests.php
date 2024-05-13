@@ -27,12 +27,8 @@ class GenerateTests extends GenerateCommand
     ];
 
     private string $ClassFqcn = '';
-
     private ?string $TestClassFqcn = null;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Skip = [];
 
     public function description(): string

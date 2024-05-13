@@ -14,9 +14,7 @@ use Salient\Core\AbstractEnumeration;
 final class QueryFlag extends AbstractEnumeration
 {
     public const PRESERVE_LIST_KEYS = 1;
-
     public const PRESERVE_NUMERIC_KEYS = 2;
-
     public const PRESERVE_STRING_KEYS = 4;
 
     public const PRESERVE_ALL_KEYS =

@@ -184,10 +184,7 @@ final class SyncSerializeRules implements
     protected ?bool $RecurseRules;
 
     protected ?int $Flags;
-
-    /**
-     * @var array<string,array<string,array<array<array<string|Closure>|string>|array<string|Closure>|string>>>
-     */
+    /** @var array<string,array<string,array<array<array<string|Closure>|string>|array<string|Closure>|string>>> */
     private array $RuleCache = [];
 
     /**
@@ -197,9 +194,7 @@ final class SyncSerializeRules implements
      */
     private array $RootPaths = [];
 
-    /**
-     * @var SyncIntrospector<TEntity>
-     */
+    /** @var SyncIntrospector<TEntity> */
     private SyncIntrospector $Introspector;
 
     /**

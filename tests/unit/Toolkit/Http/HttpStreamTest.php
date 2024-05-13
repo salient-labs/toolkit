@@ -24,9 +24,7 @@ use stdClass;
  */
 final class HttpStreamTest extends TestCase
 {
-    /**
-     * @var resource|null
-     */
+    /** @var resource|null */
     private $LastHandle;
 
     public function testInvalidResource(): void

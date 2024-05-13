@@ -19,29 +19,17 @@ final class StreamTarget extends ConsoleStreamTarget
 {
     public const DEFAULT_TIMESTAMP_FORMAT = '[d M y H:i:s.vO] ';
 
-    /**
-     * @var resource|null
-     */
+    /** @var resource|null */
     private $Stream;
-
     private bool $IsCloseable;
-
     private ?string $Uri;
-
     private bool $AddTimestamp;
-
     private string $TimestampFormat;
-
     private ?DateTimeZone $Timezone;
-
     private bool $IsStdout;
-
     private bool $IsStderr;
-
     private bool $IsTty;
-
     private ?string $Path = null;
-
     private static bool $HasPendingClearLine = false;
 
     /**

@@ -29,44 +29,21 @@ final class CliHelpStyle
      */
     public int $Target;
 
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public ?int $Width;
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public Formatter $Formatter;
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public bool $HasMarkup = false;
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $Bold = '';
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $Italic = '';
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $Escape = '\\';
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $SynopsisPrefix = '';
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $SynopsisNewline = "\n    ";
 
     /**
@@ -84,26 +61,14 @@ final class CliHelpStyle
      */
     public bool $CollapseSynopsis = false;
 
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $OptionIndent = '    ';
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $OptionPrefix = '';
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public string $OptionDescriptionPrefix = "\n    ";
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public int $Visibility = CliOptionVisibility::HELP;
-
     private int $Margin = 0;
 
     /**

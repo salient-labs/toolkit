@@ -25,11 +25,8 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     use UnloadsFacades;
 
     private ?SQLite3 $Db = null;
-
     private string $Filename;
-
     private bool $IsTransactionOpen = false;
-
     private bool $IsCheckRunning = false;
 
     /**

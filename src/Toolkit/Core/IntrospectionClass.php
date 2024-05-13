@@ -333,9 +333,7 @@ class IntrospectionClass
      */
     public $PropertyActionClosures = [];
 
-    /**
-     * @var Closure|null
-     */
+    /** @var Closure|null */
     public $GetNameClosure;
 
     /**
@@ -345,9 +343,7 @@ class IntrospectionClass
      */
     public $SerializeClosures = [];
 
-    /**
-     * @var ReflectionClass<TClass>
-     */
+    /** @var ReflectionClass<TClass> */
     protected $Reflector;
 
     /**

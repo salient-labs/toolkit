@@ -65,34 +65,17 @@ use Closure;
  */
 class Introspector
 {
-    /**
-     * @var IntrospectionClass<TClass>
-     */
+    /** @var IntrospectionClass<TClass> */
     protected $_Class;
-
-    /**
-     * @var class-string|null
-     */
+    /** @var class-string|null */
     protected $_Service;
-
-    /**
-     * @var class-string<TProvider>
-     */
+    /** @var class-string<TProvider> */
     protected $_Provider;
-
-    /**
-     * @var class-string<TEntity>
-     */
+    /** @var class-string<TEntity> */
     protected $_Entity;
-
-    /**
-     * @var class-string<TContext>
-     */
+    /** @var class-string<TContext> */
     protected $_Context;
-
-    /**
-     * @var array<class-string,IntrospectionClass<object>>
-     */
+    /** @var array<class-string,IntrospectionClass<object>> */
     private static $_IntrospectionClasses = [];
 
     /**

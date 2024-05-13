@@ -12,21 +12,12 @@ use Composer\InstalledVersions;
  */
 final class PackageDataReceivedEvent
 {
-    /**
-     * @var TData
-     */
+    /** @var TData */
     private $Data;
-
-    /**
-     * @var class-string<InstalledVersions|ClassLoader>
-     */
+    /** @var class-string<InstalledVersions|ClassLoader> */
     private string $Class;
-
     private string $Method;
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     private array $Arguments;
 
     /**

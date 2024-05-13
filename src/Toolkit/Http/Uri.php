@@ -51,7 +51,6 @@ class Uri implements UriInterface
     ];
 
     private const URI_SCHEME = '/^[a-z][-a-z0-9+.]*$/iD';
-
     private const URI_HOST = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
 
     private const URI = <<<'REGEX'

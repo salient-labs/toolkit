@@ -13,7 +13,6 @@ use Salient\Contract\Core\MessageLevel as Level;
 abstract class ConsolePrefixTarget extends ConsoleTarget implements ConsoleTargetPrefixInterface
 {
     private ?string $Prefix = null;
-
     private int $PrefixLength = 0;
 
     /**

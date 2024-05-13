@@ -4,14 +4,9 @@ namespace Salient\Tests\Core\EventDispatcher;
 
 class LoggableEvent extends BaseEvent
 {
-    /**
-     * @var callable(self, array<string|array{string,string}>): void
-     */
+    /** @var callable(self, array<string|array{string,string}>): void */
     protected $Logger;
-
-    /**
-     * @var array<string|array{string,string}>
-     */
+    /** @var array<string|array{string,string}> */
     protected array $Log;
 
     /**

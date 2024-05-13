@@ -23,9 +23,7 @@ final class ConfigurationManager implements ArrayAccess
     /** @use ImmutableArrayAccessTrait<string,mixed> */
     use ImmutableArrayAccessTrait;
 
-    /**
-     * @var array<string,mixed[]>
-     */
+    /** @var array<string,mixed[]> */
     private array $Items = [];
 
     /**

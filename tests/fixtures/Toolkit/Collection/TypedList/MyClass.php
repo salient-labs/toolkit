@@ -4,9 +4,7 @@ namespace Salient\Tests\Collection\TypedList;
 
 class MyClass
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public $Name;
 
     public function __construct(string $name)

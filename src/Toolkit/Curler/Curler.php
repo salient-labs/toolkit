@@ -122,7 +122,6 @@ class Curler implements CurlerInterface, Buildable
     protected ?HttpResponseInterface $LastResponse = null;
     private ?Curler $WithoutThrowHttpErrors = null;
     private ?Closure $Closure = null;
-
     private static string $DefaultUserAgent;
     /** @var CurlHandle|resource|null */
     private static $Handle;

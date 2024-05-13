@@ -17,24 +17,13 @@ use ReturnTypeWillChange;
  */
 final class Graph implements ArrayAccess
 {
-    /**
-     * @var object|mixed[]
-     */
+    /** @var object|mixed[] */
     private $Graph;
-
-    /**
-     * @var class-string|null
-     */
+    /** @var class-string|null */
     private $DefaultClass;
-
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     private $Args;
-
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $IsObject = true;
 
     /**

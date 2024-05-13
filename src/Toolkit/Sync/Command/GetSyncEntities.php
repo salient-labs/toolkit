@@ -25,24 +25,14 @@ use Salient\Sync\SyncSerializeRules;
 final class GetSyncEntities extends AbstractSyncCommand
 {
     private string $Entity = '';
-
     private ?string $EntityId = null;
-
     private ?string $Provider = null;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Filter = [];
-
     private bool $Shallow = false;
-
     private bool $IncludeCanonical = false;
-
     private bool $IncludeMeta = false;
-
     private bool $Stream = false;
-
     private bool $Csv = false;
 
     public function description(): string

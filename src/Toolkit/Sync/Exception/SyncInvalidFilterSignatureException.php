@@ -13,9 +13,7 @@ use Salient\Contract\Sync\SyncOperation;
  */
 class SyncInvalidFilterSignatureException extends SyncInvalidFilterException
 {
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     protected $Args;
 
     /**

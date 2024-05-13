@@ -101,19 +101,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      */
     public $CanonicalId;
 
-    /**
-     * @var SyncProviderInterface|null
-     */
+    /** @var SyncProviderInterface|null */
     private $Provider;
-
-    /**
-     * @var SyncContextInterface|null
-     */
+    /** @var SyncContextInterface|null */
     private $Context;
-
-    /**
-     * @var int-mask-of<SyncEntityState::*>
-     */
+    /** @var int-mask-of<SyncEntityState::*> */
     private $State = 0;
 
     /**

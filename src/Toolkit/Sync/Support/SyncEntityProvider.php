@@ -46,9 +46,7 @@ use Generator;
  */
 final class SyncEntityProvider implements SyncEntityProviderInterface
 {
-    /**
-     * @var class-string<TEntity>
-     */
+    /** @var class-string<TEntity> */
     private $Entity;
 
     /**
@@ -59,19 +57,11 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      */
     private $Provider;
 
-    /**
-     * @var SyncDefinitionInterface<TEntity,TProvider>
-     */
+    /** @var SyncDefinitionInterface<TEntity,TProvider> */
     private $Definition;
-
-    /**
-     * @var SyncContextInterface
-     */
+    /** @var SyncContextInterface */
     private $Context;
-
-    /**
-     * @var SyncStore
-     */
+    /** @var SyncStore */
     private $Store;
 
     /**

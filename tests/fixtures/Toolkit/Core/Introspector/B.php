@@ -10,18 +10,11 @@ class B extends A implements Constructible
 {
     use ConstructibleTrait;
 
-    /**
-     * @var mixed[]
-     */
+    /** @var mixed[] */
     private array $Data = [];
-
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     private $Meta;
-
     protected DateTimeImmutable $CreatedAt;
-
     protected DateTimeImmutable $ModifiedAt;
 
     // @phpstan-ignore-next-line

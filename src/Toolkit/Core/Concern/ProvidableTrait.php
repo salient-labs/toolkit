@@ -24,19 +24,11 @@ use Generator;
  */
 trait ProvidableTrait
 {
-    /**
-     * @var TProvider|null
-     */
+    /** @var TProvider|null */
     private $Provider;
-
-    /**
-     * @var TContext|null
-     */
+    /** @var TContext|null */
     private $Context;
-
-    /**
-     * @var class-string|null
-     */
+    /** @var class-string|null */
     private $Service;
 
     /**

@@ -13,14 +13,9 @@ use ReflectionClass;
  */
 abstract class AbstractCatalog
 {
-    /**
-     * @var array<class-string<static>,array<string,TValue>>
-     */
+    /** @var array<class-string<static>,array<string,TValue>> */
     private static array $Constants = [];
-
-    /**
-     * @var array<class-string<static>,array<TValue&array-key,string[]|string>>
-     */
+    /** @var array<class-string<static>,array<TValue&array-key,string[]|string>> */
     private static array $ConstantNames = [];
 
     /**

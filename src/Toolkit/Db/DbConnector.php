@@ -28,54 +28,25 @@ final class DbConnector implements Readable
 {
     use ReadsProtectedProperties;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $Name;
-
-    /**
-     * @var DbDriver::*
-     */
+    /** @var DbDriver::* */
     protected $Driver;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Dsn;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Hostname;
-
-    /**
-     * @var int|null
-     */
+    /** @var int|null */
     protected $Port;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Username;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Password;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Database;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Schema;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     private $AdodbDriver;
 
     /**

@@ -18,12 +18,8 @@ use DateTimeZone;
 final class DateFormatter implements DateFormatterInterface
 {
     private string $Format;
-
     private ?DateTimeZone $Timezone;
-
-    /**
-     * @var DateParserInterface[]
-     */
+    /** @var DateParserInterface[] */
     private array $Parsers;
 
     /**

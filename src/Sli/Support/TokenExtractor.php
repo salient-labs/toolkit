@@ -17,9 +17,7 @@ defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10009);
  */
 final class TokenExtractor
 {
-    /**
-     * @var array<string|array{0:int,1:string,2:int}>
-     */
+    /** @var array<string|array{0:int,1:string,2:int}> */
     private $Tokens;
 
     public function __construct(string $filename)

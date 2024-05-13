@@ -37,11 +37,8 @@ final class ErrorHandler implements FacadeAwareInterface
     private array $Silenced = [];
 
     private int $ExitStatus = 16;
-
     private bool $IsRegistered = false;
-
     private bool $ShutdownIsRegistered = false;
-
     private bool $IsShuttingDown = false;
 
     /**

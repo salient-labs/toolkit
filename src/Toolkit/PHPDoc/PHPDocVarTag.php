@@ -9,9 +9,7 @@ use Salient\Core\Exception\InvalidArgumentException;
  */
 class PHPDocVarTag extends PHPDocTag
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public $Type;
 
     public function __construct(

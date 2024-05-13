@@ -14,15 +14,10 @@ final class ConsoleTagFormats
 {
     use HasImmutableProperties;
 
-    /**
-     * @var array<Tag::*,Format>
-     */
+    /** @var array<Tag::*,Format> */
     private array $Formats = [];
-
     private bool $Unescape;
-
     private bool $WrapAfterApply;
-
     private Format $FallbackFormat;
 
     public function __construct(

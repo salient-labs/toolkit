@@ -13,24 +13,13 @@ use Salient\Sync\AbstractSyncEntity;
  */
 class Task extends AbstractSyncEntity
 {
-    /**
-     * @var int|string|null
-     */
+    /** @var int|string|null */
     public $Id;
-
-    /**
-     * @var User|DeferredEntity<User>|null
-     */
+    /** @var User|DeferredEntity<User>|null */
     public $User;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Title;
-
-    /**
-     * @var bool|null
-     */
+    /** @var bool|null */
     public $Completed;
 
     /**

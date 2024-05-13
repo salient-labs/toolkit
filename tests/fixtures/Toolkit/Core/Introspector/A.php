@@ -30,18 +30,10 @@ class A implements Readable, Writable, Extensible, Normalisable, NormaliserFacto
         ];
     }
 
-    /**
-     * @var int|null
-     */
+    /** @var int|null */
     protected $Id;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $Name;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $NotWritable = 'read-only';
 }

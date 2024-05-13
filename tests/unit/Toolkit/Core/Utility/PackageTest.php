@@ -59,11 +59,8 @@ final class PackageTest extends TestCase
         'dev' => false,
     ];
 
-    /**
-     * @var array<string,mixed>|null
-     */
+    /** @var array<string,mixed>|null */
     private static ?array $RootPackage = null;
-
     private static int $ListenerId;
 
     public function testHasDevPackages(): void

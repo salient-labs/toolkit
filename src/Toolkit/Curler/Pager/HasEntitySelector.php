@@ -7,9 +7,7 @@ use Closure;
 
 trait HasEntitySelector
 {
-    /**
-     * @var Closure(mixed): list<mixed>
-     */
+    /** @var Closure(mixed): list<mixed> */
     private Closure $EntitySelector;
 
     /**

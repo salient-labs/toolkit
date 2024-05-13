@@ -32,7 +32,6 @@ class HttpServerRequestUpload implements UploadedFileInterface
     protected int $Error;
     protected ?string $ClientFilename;
     protected ?string $ClientMediaType;
-
     private bool $IsMoved = false;
 
     /**

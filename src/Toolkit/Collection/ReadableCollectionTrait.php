@@ -27,9 +27,7 @@ use Traversable;
  */
 trait ReadableCollectionTrait
 {
-    /**
-     * @var array<TKey,TValue>
-     */
+    /** @var array<TKey,TValue> */
     protected $Items = [];
 
     /**

@@ -12,14 +12,9 @@ use Throwable;
 class SyncInvalidEntityException extends AbstractSyncException
 {
     protected SyncProviderInterface $Provider;
-
     protected string $EntityType;
-
-    /**
-     * @var int|string|null
-     */
+    /** @var int|string|null */
     protected $EntityId;
-
     protected ?SyncEntityInterface $Entity;
 
     /**

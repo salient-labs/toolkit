@@ -30,9 +30,7 @@ echo "Value: {$b}";
 ?></div>
 PHP;
 
-    /**
-     * @var class-string<PhpToken|\PhpToken>
-     */
+    /** @var class-string<PhpToken|\PhpToken> */
     protected static string $Token;
 
     /**

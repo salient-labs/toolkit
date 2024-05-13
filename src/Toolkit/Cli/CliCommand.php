@@ -24,71 +24,33 @@ use Throwable;
  */
 abstract class CliCommand implements CliCommandInterface
 {
-    /**
-     * @api
-     */
+    /** @api */
     protected CliApplicationInterface $App;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Name = [];
-
-    /**
-     * @var array<string,CliOption>|null
-     */
+    /** @var array<string,CliOption>|null */
     private ?array $Options = null;
-
-    /**
-     * @var array<string,CliOption>
-     */
+    /** @var array<string,CliOption> */
     private array $OptionsByName = [];
-
-    /**
-     * @var array<string,CliOption>
-     */
+    /** @var array<string,CliOption> */
     private array $PositionalOptions = [];
-
-    /**
-     * @var array<string,CliOption>
-     */
+    /** @var array<string,CliOption> */
     private array $SchemaOptions = [];
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $DeferredOptionErrors = [];
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Arguments = [];
-
-    /**
-     * @var array<string,array<string|int|bool>|string|int|bool|null>
-     */
+    /** @var array<string,array<string|int|bool>|string|int|bool|null> */
     private array $ArgumentValues = [];
-
-    /**
-     * @var array<string,mixed>|null
-     */
+    /** @var array<string,mixed>|null */
     private ?array $OptionValues = null;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $OptionErrors = [];
-
     private ?int $NextArgumentIndex = null;
-
     private bool $HasHelpArgument = false;
-
     private bool $HasVersionArgument = false;
-
     private bool $IsRunning = false;
-
     private int $ExitStatus = 0;
-
     private int $Runs = 0;
 
     /**

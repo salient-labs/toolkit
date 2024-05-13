@@ -42,7 +42,6 @@ class HttpHeaders implements HttpHeadersInterface
     }
 
     private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
-
     private const HTTP_HEADER_FIELD_VALUE = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
 
     private const HTTP_HEADER_FIELD = <<<'REGEX'

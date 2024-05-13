@@ -46,19 +46,11 @@ final class DeferredEntity
      */
     private $EntityId;
 
-    /**
-     * @var TEntity|DeferredEntity<TEntity>|null
-     */
+    /** @var TEntity|DeferredEntity<TEntity>|null */
     private $Replace;
-
-    /**
-     * @var (callable(TEntity): void)|null
-     */
+    /** @var (callable(TEntity): void)|null */
     private $Callback;
-
-    /**
-     * @var TEntity|null
-     */
+    /** @var TEntity|null */
     private $Resolved;
 
     /**

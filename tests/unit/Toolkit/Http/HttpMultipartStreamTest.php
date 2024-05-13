@@ -58,9 +58,7 @@ final class HttpMultipartStreamTest extends TestCase
         . self::CONTENTS_PART4
         . self::CONTENTS_FINAL;
 
-    /**
-     * @var resource
-     */
+    /** @var resource */
     private $LastHandle;
 
     public function testStream(): void

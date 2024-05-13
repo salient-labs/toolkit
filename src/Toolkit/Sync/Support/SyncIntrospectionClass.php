@@ -22,21 +22,14 @@ use ReflectionClass;
  */
 final class SyncIntrospectionClass extends IntrospectionClass
 {
-    /**
-     * @var bool|null
-     */
+    /** @var bool|null */
     public $IsSyncEntity;
-
-    /**
-     * @var bool|null
-     */
+    /** @var bool|null */
     public $IsSyncProvider;
 
     // Related to `SyncEntityInterface`:
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $EntityNoun;
 
     /**

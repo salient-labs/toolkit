@@ -13,29 +13,15 @@ use Salient\Sync\AbstractSyncEntity;
  */
 class Photo extends AbstractSyncEntity
 {
-    /**
-     * @var int|string|null
-     */
+    /** @var int|string|null */
     public $Id;
-
-    /**
-     * @var Album|DeferredEntity<Album>|null
-     */
+    /** @var Album|DeferredEntity<Album>|null */
     public $Album;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Title;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $Url;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     public $ThumbnailUrl;
 
     /**
