@@ -10,6 +10,26 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.20] - 2024-05-14
+
+### Added
+
+- Add `--collapse` option to `sli generate` commands
+
+### Changed
+
+- In `CliOption`, validate positional option names, discarding `long` and `short` if given
+- Rename methods for clarity:
+  - `CliOption::getValueName()` -> `CliOption::getValueNameWords()`
+  - `CliOption::formatValueName()` -> `CliOption::getValueName()`
+- Improve `CliCommand` annotations for downstream static analysis
+
+### Fixed
+
+- Fix `Cli` issue where escapes in help message content are not always honoured
+- Fix `ConsoleFormatter::formatTags()` issue where escapes are not reinstated correctly
+- In `sli generate` commands, only use `Differ` if `sebastian/diff` is installed
+
 ## [v0.99.19] - 2024-05-13
 
 ### Added
@@ -2470,6 +2490,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.20]: https://github.com/salient-labs/toolkit/compare/v0.99.19...v0.99.20
 [v0.99.19]: https://github.com/salient-labs/toolkit/compare/v0.99.18...v0.99.19
 [v0.99.18]: https://github.com/salient-labs/toolkit/compare/v0.99.17...v0.99.18
 [v0.99.17]: https://github.com/salient-labs/toolkit/compare/v0.99.16...v0.99.17
