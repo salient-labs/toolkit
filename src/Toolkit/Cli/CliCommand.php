@@ -11,6 +11,7 @@ use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Core\JsonSchemaInterface;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
@@ -125,10 +126,8 @@ abstract class CliCommand implements CliCommandInterface
      *
      * @api
      *
-     * @template T of mixed
-     *
-     * @param array<string,T> $values
-     * @return array<string,T>
+     * @param mixed[] $values
+     * @return mixed[]
      */
     protected function filterGetSchemaValues(array $values): array
     {
@@ -140,8 +139,8 @@ abstract class CliCommand implements CliCommandInterface
      *
      * @api
      *
-     * @param array<string,array<string|int|bool>|string|int|bool|null> $values
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @param array<array<string|int|bool>|string|int|bool|null> $values
+     * @return array<array<string|int|bool>|string|int|bool|null>
      */
     protected function filterNormaliseSchemaValues(array $values): array
     {
@@ -157,10 +156,10 @@ abstract class CliCommand implements CliCommandInterface
      * {@see filterNormaliseSchemaValues()} is always applied to `$values`
      * before {@see filterApplySchemaValues()}.
      *
-     * @param array<string,array<string|int|bool>|string|int|bool|null> $values
+     * @param array<array<string|int|bool>|string|int|bool|null> $values
      * @param bool $normalised `true` if `$values` have been normalised,
      * otherwise `false`.
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @return array<array<string|int|bool>|string|int|bool|null>
      */
     protected function filterApplySchemaValues(array $values, bool $normalised): array
     {
@@ -734,7 +733,7 @@ abstract class CliCommand implements CliCommandInterface
      *
      * @api
      *
-     * @param array<string,array<string|int|bool>|string|int|bool|null> $values
+     * @param array<array<string|int|bool>|string|int|bool|null> $values
      * @param bool $normalise `false` if `$values` have already been normalised.
      * @param bool $expand If `true` and an option has an optional value, expand
      * `null` or `true` to the default value of the option. Ignored if
@@ -745,7 +744,7 @@ abstract class CliCommand implements CliCommandInterface
      * @param bool $forgetArguments If `true` and `$asArguments` is also `true`,
      * apply `$values` as if any options previously given on the command line
      * had not been given.
-     * @return array<string,mixed>
+     * @return mixed[]
      */
     final protected function applyOptionValues(
         array $values,
@@ -802,11 +801,11 @@ abstract class CliCommand implements CliCommandInterface
      *
      * @api
      *
-     * @param array<string,array<string|int|bool>|string|int|bool|null> $values
+     * @param array<array<string|int|bool>|string|int|bool|null> $values
      * @param bool $expand If `true` and an option has an optional value, expand
      * `null` or `true` to the default value of the option.
      * @param bool $schema If `true`, only normalise schema options.
-     * @return array<string,mixed>
+     * @return mixed[]
      */
     final protected function normaliseOptionValues(
         array $values,
@@ -832,7 +831,7 @@ abstract class CliCommand implements CliCommandInterface
      * Check that an array of option values is valid
      *
      * @param mixed[] $values
-     * @phpstan-assert-if-true array<string,array<string|int|bool>|string|int|bool|null> $values
+     * @phpstan-assert-if-true array<array<string|int|bool>|string|int|bool|null> $values
      */
     final protected function checkOptionValues(array $values): bool
     {
@@ -868,7 +867,7 @@ abstract class CliCommand implements CliCommandInterface
      * values is returned.
      * @param bool $unexpand If `true` and an option has an optional value not
      * given on the command line, replace its value with `null` or `true`.
-     * @return array<string,mixed>
+     * @return array<array<string|int|bool>|string|int|bool|null>
      */
     final protected function getOptionValues(
         bool $export = false,
@@ -902,6 +901,7 @@ abstract class CliCommand implements CliCommandInterface
             $values[$name] = $value;
         }
 
+        /** @var array<array<string|int|bool>|string|int|bool|null> */
         return $schema
             ? $this->filterGetSchemaValues($values ?? [])
             : $values ?? [];
@@ -914,7 +914,7 @@ abstract class CliCommand implements CliCommandInterface
      *
      * @param bool $schema If `true`, an array that maps schema option names to
      * default values is returned.
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @return array<array<string|int|bool>|string|int|bool|null>
      */
     final protected function getDefaultOptionValues(bool $schema = false): array
     {
@@ -928,6 +928,7 @@ abstract class CliCommand implements CliCommandInterface
             $values[$name] = $option->OriginalDefaultValue;
         }
 
+        /** @var array<array<string|int|bool>|string|int|bool|null> */
         return $schema
             ? $this->filterGetSchemaValues($values ?? [])
             : $values ?? [];
@@ -994,7 +995,7 @@ abstract class CliCommand implements CliCommandInterface
                 ?? null;
         }
         if (!$option) {
-            throw new LogicException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 '%s not found: %s',
                 $schema ? 'Schema option' : 'option',
                 $name
