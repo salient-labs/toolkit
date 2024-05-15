@@ -1,12 +1,12 @@
 # Changelog
 
-Notable changes to this project are documented in this file.
+Notable changes to `salient/toolkit` are documented in this file.
 
 It is generated from the GitHub release notes of the project by [salient/changelog][].
 
 The format is based on [Keep a Changelog][], and this project adheres to [Semantic Versioning][].
 
-[salient/changelog]: https://github.com/salient-labs/php-changelog
+[salient/changelog]: https://github.com/salient-labs/changelog
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
