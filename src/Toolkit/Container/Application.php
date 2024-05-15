@@ -591,7 +591,7 @@ class Application extends Container implements ApplicationInterface
                 ($endTime - self::$StartTime) / 1000000000,
                 $userTime / 1000000,
                 $systemTime / 1000000,
-                Format::bytes($peakMemory, 3)
+                Format::bytes($peakMemory)
             ),
             $level,
             MessageType::UNFORMATTED,

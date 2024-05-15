@@ -532,7 +532,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             $usage = sprintf(
                 'in %.3fs (%s memory used)',
                 microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
-                Format::bytes(Sys::getPeakMemoryUsage(), 3),
+                Format::bytes(Sys::getPeakMemoryUsage()),
             );
         }
 
