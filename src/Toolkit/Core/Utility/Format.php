@@ -240,9 +240,6 @@ final class Format extends AbstractUtility
         if ($bytes >= 1000 && $precision && $power < $maxPower) {
             $power++;
             $bytes /= $base;
-        } elseif ($bytes < 1 && !$precision && $power) {
-            $power--;
-            $bytes *= $base;
         }
 
         return sprintf(
