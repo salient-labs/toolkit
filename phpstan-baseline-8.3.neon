@@ -296,11 +296,6 @@ parameters:
 			path: src/Toolkit/Core/AbstractConvertibleEnumeration.php
 
 		-
-			message: "#^Parameter \\#1 \\$list of static method Salient\\\\Core\\\\Utility\\\\Format\\:\\:list\\(\\) expects array\\<int, mixed\\>, array\\<int\\|string, string\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/AbstractMultipleErrorException.php
-
-		-
 			message: "#^Method Salient\\\\Core\\\\AbstractReflectiveEnumeration\\:\\:fromName\\(\\) should return TValue of \\(int\\|string\\) but returns int\\|string\\.$#"
 			count: 1
 			path: src/Toolkit/Core/AbstractReflectiveEnumeration.php

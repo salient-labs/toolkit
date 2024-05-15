@@ -3,24 +3,35 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Jsonable;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 use DateTimeInterface;
 
 /**
  * Format data for humans
+ *
+ * @api
  */
 final class Format extends AbstractUtility
 {
+    private const BINARY_UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+    private const DECIMAL_UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB', 'RB', 'QB'];
+
     /**
      * Format values in a list
      *
-     * @param list<mixed> $list
-     * @param string $format The format passed to `sprintf` for each value. Must
-     * include a string conversion specification (`%s`).
-     * @param int $indent Spaces to add after newlines in `$list` values.
+     * @param mixed[]|null $list
+     * @param string $format Passed to {@see sprintf()} with each value.
+     * @param int $indent Spaces to add after newlines in values.
      */
-    public static function list(array $list, string $format = "- %s\n", int $indent = 2): string
-    {
+    public static function list(
+        ?array $list,
+        string $format = "- %s\n",
+        int $indent = 2
+    ): string {
+        if ($list === null || !$list) {
+            return '';
+        }
         $indent = $indent > 0 ? str_repeat(' ', $indent) : '';
         $string = '';
         foreach ($list as $value) {
@@ -34,15 +45,20 @@ final class Format extends AbstractUtility
     }
 
     /**
-     * Format an array's keys and values
+     * Format keys and values in an array
      *
-     * @param mixed[] $array
-     * @param string $format The format passed to `sprintf` for each value. Must
-     * include two string conversion specifications (`%s`).
-     * @param int $indent Spaces to add after newlines in `$array` values.
+     * @param mixed[]|null $array
+     * @param string $format Passed to {@see sprintf()} with each key and value.
+     * @param int $indent Spaces to add after newlines in values.
      */
-    public static function array(array $array, string $format = "%s: %s\n", int $indent = 4): string
-    {
+    public static function array(
+        ?array $array,
+        string $format = "%s: %s\n",
+        int $indent = 4
+    ): string {
+        if ($array === null || !$array) {
+            return '';
+        }
         $indent = $indent > 0 ? str_repeat(' ', $indent) : '';
         $string = '';
         foreach ($array as $key => $value) {
@@ -65,6 +81,9 @@ final class Format extends AbstractUtility
      */
     public static function value($value): string
     {
+        if ($value === null) {
+            return '';
+        }
         if (Test::isStringable($value)) {
             return Str::setEol((string) $value);
         }
@@ -83,39 +102,46 @@ final class Format extends AbstractUtility
     /**
      * Format a boolean as "true" or "false"
      */
-    public static function bool(bool $value): string
+    public static function bool(?bool $value): string
     {
-        return $value ? 'true' : 'false';
+        return $value === null ? '' : ($value ? 'true' : 'false');
     }
 
     /**
      * Format a boolean as "yes" or "no"
      */
-    public static function yn(bool $value): string
+    public static function yn(?bool $value): string
     {
-        return $value ? 'yes' : 'no';
+        return $value === null ? '' : ($value ? 'yes' : 'no');
     }
 
     /**
      * Format a date and time without redundant information
      */
     public static function date(
-        DateTimeInterface $date,
+        ?DateTimeInterface $date,
         string $before = '[',
-        ?string $after = ']'
+        ?string $after = ']',
+        ?string $thisYear = null
     ): string {
+        if ($date === null) {
+            return '';
+        }
+
+        $thisYear ??= date('Y');
+
         $date = Date::maybeSetTimezone($date);
 
-        $format = ['D j M'];
-        // Add year if `$date` is not in the current year
-        if (date('Y') !== $date->format('Y')) {
-            $format[] = 'Y';
+        // - Start with "Tue 9 Apr"
+        // - Add " 2024" if `$date` is not in the current year
+        // - Add " 16:52:31 AEST" if the time is not midnight
+        $format = 'D j M';
+        if ($date->format('Y') !== $thisYear) {
+            $format .= ' Y';
         }
-        // Add time and timezone if the time is not midnight
         if ($date->format('H:i:s') !== '00:00:00') {
-            $format[] = 'H:i:s T';
+            $format .= ' H:i:s T';
         }
-        $format = implode(' ', $format);
 
         return Str::wrap($date->format($format), $before, $after);
     }
@@ -124,66 +150,105 @@ final class Format extends AbstractUtility
      * Format a date and time range without redundant information
      */
     public static function dateRange(
-        DateTimeInterface $from,
-        DateTimeInterface $to,
+        ?DateTimeInterface $from,
+        ?DateTimeInterface $to,
         string $delimiter = '–',
         string $before = '[',
-        ?string $after = ']'
+        ?string $after = ']',
+        ?string $thisYear = null
     ): string {
+        if ($from === null && $to === null) {
+            return '';
+        }
+
+        $thisYear ??= date('Y');
+
+        if ($from === null || $to === null) {
+            return sprintf(
+                '%s%s%s',
+                self::date($from, $before, $after, $thisYear),
+                $delimiter,
+                self::date($to, $before, $after, $thisYear),
+            );
+        }
+
         $from = Date::maybeSetTimezone($from);
         $to = Date::maybeSetTimezone($to);
 
-        $sameTimezone = $from->getTimezone()->getName() === $to->getTimezone()->getName();
-        $noTime = $sameTimezone
-            && $from->format('H:i:s') === '00:00:00'
-            && $to->format('H:i:s') === '00:00:00';
+        [$fromTimezone, $fromYear, $fromTime] =
+            [$from->format('T'), $from->format('Y'), $from->format('H:i:s')];
+        [$toTimezone, $toYear, $toTime] =
+            [$to->format('T'), $to->format('Y'), $to->format('H:i:s')];
 
-        $fromFormat = ['D j M'];
-        $fromYear = $from->format('Y');
-        // Add year if `$from` and `$to` are in different years or if they are
-        // not in the current year
-        if ($to->format('Y') !== $fromYear || date('Y') !== $fromYear) {
-            $fromFormat[] = 'Y';
+        // - Start with "Tue 9 Apr"
+        // - Add " 2024" to both if they are in different years, or once if they
+        //   are not in the current year
+        // - If the time of `$from` or `$to` is not midnight:
+        //   - Add " 16:52:31" to both
+        //   - Add " AEST" to both if they are in different timezones, or once
+        //     if they are in the same timezone
+        $fromFormat = $toFormat = 'D j M';
+        if ($fromYear !== $toYear) {
+            $fromFormat = $toFormat .= ' Y';
+        } elseif ($fromYear !== $thisYear) {
+            $toFormat .= ' Y';
         }
-        // Add time unless both times are midnight in the same timezone
-        if (!$noTime) {
-            $fromFormat[] = 'H:i:s';
-        }
-        $toFormat = $fromFormat;
-        // Add timezone after `$to` if both times are in the same timezone,
-        // otherwise add it after `$from` as well
-        if (!$noTime) {
-            $toFormat[] = 'T';
-            if (!$sameTimezone) {
-                $fromFormat[] = 'T';
+        if ($fromTime !== '00:00:00' || $toTime !== '00:00:00') {
+            $fromFormat .= ' H:i:s';
+            $toFormat .= ' H:i:s T';
+            if ($fromTimezone !== $toTimezone) {
+                $fromFormat .= ' T';
             }
         }
-        $fromFormat = implode(' ', $fromFormat);
-        $toFormat = implode(' ', $toFormat);
 
         return sprintf(
             '%s%s%s',
             Str::wrap($from->format($fromFormat), $before, $after),
             $delimiter,
-            Str::wrap($to->format($toFormat), $before, $after)
+            Str::wrap($to->format($toFormat), $before, $after),
         );
     }
 
     /**
-     * Format a size in bytes by rounding to an appropriate binary unit (B, KiB,
-     * MiB, TiB, ...)
+     * Format a size in bytes by rounding to an appropriate binary or decimal
+     * unit (B, KiB/kB, MiB/MB, GiB/GB, ...)
      */
-    public static function bytes(int $bytes, int $precision = 0): string
-    {
-        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-        $bytes = max(0, $bytes);
-        $power = min(count($units) - 1, floor(($bytes ? log($bytes) : 0) / log(1024)));
-        $power = max(0, $precision ? $power : $power - 1);
+    public static function bytes(
+        ?int $bytes,
+        int $precision = 3,
+        bool $binary = true
+    ): string {
+        if ($bytes === null) {
+            return '';
+        }
+        if ($bytes < 0) {
+            throw new InvalidArgumentException('$bytes cannot be less than zero');
+        }
+        if ($precision < 0) {
+            throw new InvalidArgumentException('$precision cannot be less than zero');
+        }
+
+        [$base, $units] = $binary
+            ? [1024, self::BINARY_UNITS]
+            : [1000, self::DECIMAL_UNITS];
+        $maxPower = count($units) - 1;
+        $power = $bytes
+            ? min($maxPower, (int) (log($bytes) / log($base)))
+            : 0;
+        $bytes = $bytes / $base ** $power;
+
+        if ($bytes >= 1000 && $precision && $power < $maxPower) {
+            $power++;
+            $bytes /= $base;
+        } elseif ($bytes < 1 && !$precision && $power) {
+            $power--;
+            $bytes *= $base;
+        }
 
         return sprintf(
-            $precision ? "%01.{$precision}f%s" : '%d%s',
-            $bytes / pow(1024, $power),
-            $units[$power]
+            $precision && $power ? "%.{$precision}f%s" : '%d%s',
+            $precision ? (int) ($bytes * 10 ** $precision) / 10 ** $precision : (int) $bytes,
+            $units[$power],
         );
     }
 }
