@@ -14,6 +14,7 @@ final class Str extends AbstractUtility
 {
     public const PRESERVE_DOUBLE_QUOTED = 1;
     public const PRESERVE_SINGLE_QUOTED = 2;
+    public const PRESERVE_QUOTED = Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED;
 
     /**
      * Get the first string that is not null or empty, or return the last value
