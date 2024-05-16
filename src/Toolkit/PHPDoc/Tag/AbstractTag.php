@@ -1,44 +1,118 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPDoc;
+namespace Salient\PHPDoc\Tag;
 
+use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\Regex;
+use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Test;
+use Salient\PHPDoc\Exception\InvalidTagValueException;
+use Salient\PHPDoc\PHPDoc;
+use Salient\PHPDoc\PHPDocRegex;
 
 /**
- * A tag extracted from a PHP DocBlock
+ * Base class for PHPDoc tags
  */
-class PHPDocTag
+abstract class AbstractTag implements Immutable
 {
-    /** @var string */
-    public $Tag;
-    /** @var string|null */
-    public $Name;
-    /** @var string|null */
-    public $Type;
-    /** @var string|null */
-    public $Description;
-    /** @var class-string|null */
-    public $Class;
-    /** @var string|null */
-    public $Member;
+    use HasImmutableProperties {
+        withPropertyValue as with;
+        withoutProperty as without;
+    }
 
-    public function __construct(
+    protected string $Tag;
+    protected string $Name;
+    protected string $Type;
+    protected ?string $Description;
+    /** @var class-string|null */
+    protected ?string $Class;
+    protected ?string $Member;
+
+    /**
+     * @param class-string|null $class
+     */
+    protected function __construct(
         string $tag,
         ?string $name = null,
         ?string $type = null,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null,
-        bool $legacyNullable = false
+        ?string $member = null
     ) {
-        $this->Tag = $tag;
-        $this->Name = $name === null ? null : self::sanitiseString($name);
-        $this->Type = $type === null ? null : self::normaliseType($type, $legacyNullable);
-        $this->Description = $description === null ? null : self::sanitiseString($description);
-        $this->Class = $class;
-        $this->Member = $member;
+        // Apply values least likely to be invalid--and most likely to be useful
+        // in debug output--first
+        $this->Class = $this->filterClass($class);
+        $this->Member = $this->filterMember($member);
+        $this->Tag = $this->filterTag($tag);
+        if ($name !== null) {
+            $this->Name = $this->filterString($name, 'name');
+        }
+        if ($type !== null) {
+            $this->Type = $this->filterType($type);
+        }
+        $this->Description = $this->filterString($description, 'description');
+    }
+
+    /**
+     * Get the name of the tag
+     */
+    public function getTag(): string
+    {
+        return $this->Tag;
+    }
+
+    /**
+     * Get the name of the entity associated with the tag
+     */
+    public function getName(): ?string
+    {
+        return $this->Name ?? null;
+    }
+
+    /**
+     * Get the PHPDoc type of the entity associated with the tag
+     */
+    public function getType(): ?string
+    {
+        return $this->Type ?? null;
+    }
+
+    /**
+     * Get the description of the tag
+     */
+    public function getDescription(): ?string
+    {
+        return $this->Description;
+    }
+
+    /**
+     * Get the name of the class associated with the tag's PHPDoc
+     *
+     * @return class-string|null
+     */
+    public function getClass(): ?string
+    {
+        return $this->Class;
+    }
+
+    /**
+     * Get the class member associated with the tag's PHPDoc
+     */
+    public function getMember(): ?string
+    {
+        return $this->Member;
+    }
+
+    /**
+     * Get an instance with the given description
+     *
+     * @return static
+     */
+    public function withDescription(?string $description)
+    {
+        return $this->with('Description', $this->filterString($description, 'description'));
     }
 
     /**
@@ -46,110 +120,130 @@ class PHPDocTag
      * parent class or interface
      *
      * @param static $parent
-     * @return $this
+     * @return static
      */
-    public function mergeInherited($parent)
+    public function inherit($parent)
     {
-        PHPDoc::mergeValue($this->Type, $parent->Type);
-        PHPDoc::mergeValue($this->Description, $parent->Description);
+        return $this
+            ->maybeInheritValue($parent, 'Type')
+            ->maybeInheritValue($parent, 'Description');
+    }
+
+    /**
+     * @param static $parent
+     * @return static
+     */
+    final protected function maybeInheritValue($parent, string $property)
+    {
+        if (!isset($parent->$property)) {
+            return $this;
+        }
+
+        if (!isset($this->$property)) {
+            return $this->with($property, $parent->$property);
+        }
 
         return $this;
     }
 
-    /**
-     * Normalise a PHPDoc type
-     *
-     * @param bool $legacyNullable If `true`, nullable types are returned as
-     * `"?<type>"` instead of `"<type>|null"`.
-     */
-    final public static function normaliseType(?string $type, bool $legacyNullable = false): ?string
+    final protected function filterTag(string $tag): string
     {
-        if (!($type = self::sanitiseString($type))) {
-            return null;
-        }
-
-        $pattern = [
-            '/\bclass-string<(mixed|object)>/i',
-        ];
-        $replacement = [
-            'class-string',
-        ];
-        $replace =
-            function (array $types) use ($pattern, $replacement): array {
-                /** @var string[] $types */
-                return Pcre::replace($pattern, $replacement, $types);
-            };
-
         if (!Pcre::match(
-            Pcre::delimit('^' . Regex::PHPDOC_TYPE . '$', '/'),
-            trim($type),
-            $matches
+            '/^' . PHPDocRegex::PHPDOC_TAG . '$/D',
+            '@' . $tag,
         )) {
-            return $replace([$type])[0];
+            $this->throw("Invalid tag '%s'", $tag);
         }
-
-        $types = Str::splitDelimited(
-            '|',
-            $type,
-            true,
-            null,
-            Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED
-        );
-
-        // Move `null` to the end of union types
-        $notNull = array_filter(
-            array_map(
-                fn(string $t): string => ltrim($t, '?'),
-                $types
-            ),
-            fn(string $t): bool => (bool) strcasecmp($t, 'null')
-        );
-        if ($notNull !== $types) {
-            $types = $notNull;
-            $nullable = true;
-        }
-
-        // Simplify composite types
-        $phpTypeRegex = Pcre::delimit('^' . Regex::PHP_TYPE . '$', '/');
-        foreach ($types as &$type) {
-            $brackets = false;
-            if ($type && $type[0] === '(' && $type[-1] === ')') {
-                $brackets = true;
-                $type = substr($type, 1, -1);
-            }
-            $type = implode('&', $_types = array_unique($replace(explode('&', $type))));
-            if ($brackets && (count($_types) > 1
-                    || !Pcre::match($phpTypeRegex, $type))) {
-                $type = "($type)";
-            }
-        }
-        $types = array_unique($replace($types));
-        if ($nullable ?? false) {
-            if ($legacyNullable && count($types) === 1) {
-                $types[0] = '?' . $types[0];
-            } else {
-                $types[] = 'null';
-            }
-        }
-
-        return implode('|', $types);
+        return $tag;
     }
 
     /**
-     * Return null if a string is null, empty, or only contains whitespace,
-     * otherwise remove whitespace from the end of the string
+     * @template T of string|null
+     *
+     * @param T $class
+     * @return T
      */
-    final public static function sanitiseString(?string $string): ?string
+    final protected function filterClass(?string $class): ?string
     {
-        if ($string === null) {
+        if ($class !== null && !Test::isFqcn($class)) {
+            $this->throw("Invalid class '%s'", $class);
+        }
+        return $class;
+    }
+
+    /**
+     * @template T of string|null
+     *
+     * @param T $member
+     * @return T
+     */
+    final protected function filterMember(?string $member): ?string
+    {
+        if ($member !== null && !Pcre::match(
+            '/^(\$?' . Regex::PHP_IDENTIFIER
+                . '|' . Regex::PHP_IDENTIFIER . '(?:\(\))?)$/D',
+            $member,
+        )) {
+            $this->throw("Invalid member '%s'", $member);
+        }
+        return $member;
+    }
+
+    /**
+     * @template T of string|null
+     *
+     * @param T $type
+     * @return T
+     */
+    final protected function filterType(?string $type): ?string
+    {
+        if ($type === null) {
             return null;
         }
 
-        $string = rtrim($string);
-        if ($string === '') {
-            return null;
+        try {
+            return PHPDoc::normaliseType($type, true);
+        } catch (InvalidArgumentException $ex) {
+            $this->throw('%s', $ex->getMessage());
+        }
+    }
+
+    /**
+     * @template T of string|null
+     *
+     * @param T $value
+     * @return T
+     */
+    final protected function filterString(?string $value, string $name): ?string
+    {
+        if ($value !== null && trim($value) === '') {
+            $this->throw("Invalid %s '%s'", $name, $value);
+        }
+        return $value;
+    }
+
+    /**
+     * @param string|int|float ...$args
+     * @return never
+     */
+    final protected function throw(string $message, ...$args): void
+    {
+        if (isset($this->Tag)) {
+            $message .= ' for @%s';
+            $args[] = $this->Tag;
         }
 
-        return $string;
+        $message .= ' in DocBlock';
+
+        if (isset($this->Class)) {
+            $message .= ' of %s';
+            $args[] = $this->Class;
+            if (isset($this->Member)) {
+                $message .= '::%s';
+                $args[] = $this->Member;
+            }
+        }
+
+        throw new InvalidTagValueException(sprintf($message, ...$args));
     }
 }

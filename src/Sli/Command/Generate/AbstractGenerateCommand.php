@@ -21,9 +21,9 @@ use Salient\Core\AbstractEntity;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Introspector;
 use Salient\Core\ProviderContext;
+use Salient\PHPDoc\Tag\AbstractTag;
+use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocTag;
-use Salient\PHPDoc\PHPDocTemplateTag;
 use Salient\Sli\Command\AbstractCommand;
 use Salient\Sli\TokenExtractor;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
@@ -181,7 +181,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     /** @var class-string */
     protected string $InputClassName;
     protected ?PHPDoc $InputClassPHPDoc;
-    /** @var PHPDocTemplateTag[] */
+    /** @var TemplateTag[] */
     protected array $InputClassTemplates;
 
     /**
@@ -362,6 +362,16 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         return $this->OutputNamespace === '' ? '' : '\\';
     }
 
+    /**
+     * @param class-string $fqcn
+     * @return class-string
+     */
+    protected function applyClassPrefix(string $fqcn): string
+    {
+        /** @var class-string */
+        return ($this->OutputNamespace === '' ? '' : '\\') . $fqcn;
+    }
+
     protected function getOutputFqcn(): string
     {
         return Arr::implode('\\', [$this->OutputNamespace, $this->OutputClass]);
@@ -370,27 +380,28 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     /**
      * Resolve PHPDoc templates to concrete types if possible
      *
-     * @param array<string,PHPDocTemplateTag> $templates
-     * @param array<string,PHPDocTemplateTag> $inputClassTemplates
+     * @param array<string,TemplateTag> $templates
+     * @param array<string,TemplateTag> $inputClassTemplates
      */
-    protected function resolveTemplates(string $type, array $templates, ?PHPDocTemplateTag &$template = null, array &$inputClassTemplates = []): string
+    protected function resolveTemplates(string $type, array $templates, ?TemplateTag &$template = null, array &$inputClassTemplates = []): string
     {
         $seen = [];
         while ($tag = $templates[$type] ?? null) {
             $template = $tag;
             // Don't resolve templates that will appear in the output
-            if ($tag->Class === $this->InputClassName
-                    && $tag->Member === null
+            if ($tag->getClass() === $this->InputClassName
+                    && $tag->getMember() === null
                     && ($_template = $this->InputClassTemplates[$type] ?? null)) {
                 $inputClassTemplates[$type] = $_template;
                 return $type;
             }
             // Prevent recursion
-            if (!$tag->Type || ($seen[$tag->Type] ?? null)) {
+            $tagType = $tag->getType();
+            if ($tagType === null || ($seen[$tagType] ?? null)) {
                 break;
             }
-            $seen[$tag->Type] = true;
-            $type = $tag->Type;
+            $seen[$tagType] = true;
+            $type = $tagType;
         }
         return $type;
     }
@@ -399,17 +410,17 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      * Resolve a PHPDoc type to a code-safe identifier where templates and PHP
      * types are resolved, using aliases from declaring classes if possible
      *
-     * @param PHPDocTag|string $type
-     * @param array<string,PHPDocTemplateTag> $templates
-     * @param array<string,PHPDocTemplateTag> $inputClassTemplates
+     * @param AbstractTag|string $type
+     * @param array<string,TemplateTag> $templates
+     * @param array<string,TemplateTag> $inputClassTemplates
      */
     protected function getPHPDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
     {
-        $subject = $type instanceof PHPDocTag
-            ? Str::coalesce($type->Type, '')
+        $subject = $type instanceof AbstractTag
+            ? $type->getType() ?? ''
             : $type;
 
-        return PHPDocTag::normaliseType(Pcre::replaceCallback(
+        return PHPDoc::normaliseType(Pcre::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
             function ($match) use (
                 $type,
@@ -421,10 +432,13 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             ) {
                 $t = $this->resolveTemplates($match[0][0], $templates, $template, $inputClassTemplates);
                 $type = $template ?: $type;
-                if ($type instanceof PHPDocTag && $type->Class !== null) {
-                    $class = new ReflectionClass($type->Class);
+                if ($type instanceof AbstractTag && ($class = $type->getClass()) !== null) {
+                    $class = new ReflectionClass($class);
                     $namespace = $class->getNamespaceName();
                     $filename = $class->getFileName();
+                    if ($filename === false) {
+                        $filename = null;
+                    }
                 }
                 // Recurse if template expansion occurred
                 if ($t !== $match[0][0]) {
@@ -484,17 +498,24 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      * `$type` if the alias has already been claimed.
      * @return (TReturnFqcn is true ? string : string|null)
      */
-    protected function getTypeAlias(string $type, ?string $filename = null, bool $returnFqcn = true): ?string
-    {
+    protected function getTypeAlias(
+        string $type,
+        ?string $filename = null,
+        bool $returnFqcn = true
+    ): ?string {
         $type = ltrim($type, '\\');
         $lower = Str::lower($type);
-        if ($filename !== null
-                && ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null)) {
+        if (
+            $filename !== null
+            && ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null) !== null
+        ) {
+            /** @var class-string $type */
             return $this->getFqcnAlias($type, $alias, $returnFqcn);
         }
         if (Test::isBuiltinType($type)) {
             return $returnFqcn ? $lower : null;
         }
+        /** @var class-string $type */
         return $this->getFqcnAlias($type, null, $returnFqcn);
     }
 
@@ -510,15 +531,20 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      *
      * @template TReturnFqcn of bool
      *
+     * @param class-string $fqcn
      * @param string|null $alias If `null`, the basename of `$fqcn` will be
      * used.
      * @param TReturnFqcn $returnFqcn If `false`, return `null` instead of the
      * FQCN if `$alias` has already been claimed.
      * @return (TReturnFqcn is true ? string : string|null)
      */
-    protected function getFqcnAlias(string $fqcn, ?string $alias = null, bool $returnFqcn = true): ?string
-    {
+    protected function getFqcnAlias(
+        string $fqcn,
+        ?string $alias = null,
+        bool $returnFqcn = true
+    ): ?string {
         $fqcn = ltrim($fqcn, '\\');
+        /** @var class-string */
         $_fqcn = Str::lower($fqcn);
 
         // If $fqcn has already been imported, use its alias
@@ -549,7 +575,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             !strcasecmp($alias, $this->OutputClass)
             || isset($this->AliasMap[$_alias])
         ) {
-            $this->FqcnMap[$_fqcn] ??= $this->getClassPrefix() . $fqcn;
+            $this->FqcnMap[$_fqcn] ??= $this->applyClassPrefix($fqcn);
 
             return $returnFqcn
                 ? $this->FqcnMap[$_fqcn]
@@ -847,9 +873,10 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         bool $static = true,
         string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): array {
-        $callback =
-            fn(string $name): ?string =>
-                $this->getFqcnAlias($name, null, false);
+        $callback = function (string $name): ?string {
+            /** @var class-string $name */
+            return $this->getFqcnAlias($name, null, false);
+        };
 
         foreach ($params as &$param) {
             if ($param instanceof ReflectionParameter) {

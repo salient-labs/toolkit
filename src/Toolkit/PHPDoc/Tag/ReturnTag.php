@@ -1,29 +1,32 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPDoc;
-
-use Salient\Core\Exception\InvalidArgumentException;
+namespace Salient\PHPDoc\Tag;
 
 /**
- * A "return" tag extracted from a PHP DocBlock
+ * A "@return" tag
  */
-class PHPDocReturnTag extends PHPDocTag
+class ReturnTag extends AbstractTag
 {
-    /** @var string */
-    public $Type;
-    /** @var null */
-    public $Name;
-
+    /**
+     * Creates a new ReturnTag object
+     *
+     * @param class-string|null $class
+     */
     public function __construct(
         string $type,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null,
-        bool $legacyNullable = false
+        ?string $member = null
     ) {
-        parent::__construct('return', null, $type, $description, $class, $member, $legacyNullable);
-        if (!$this->Type) {
-            throw new InvalidArgumentException(sprintf('Invalid type: %s', $type));
-        }
+        parent::__construct('return', null, $type, $description, $class, $member);
+        $this->Type = $this->filterType($type);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getType(): string
+    {
+        return $this->Type;
     }
 }

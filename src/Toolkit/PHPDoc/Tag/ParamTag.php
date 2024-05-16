@@ -1,32 +1,55 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPDoc;
-
-use Salient\Core\Exception\InvalidArgumentException;
+namespace Salient\PHPDoc\Tag;
 
 /**
- * A "param" tag extracted from a PHP DocBlock
+ * A "@param" tag
  */
-class PHPDocParamTag extends PHPDocTag
+class ParamTag extends AbstractTag
 {
-    /** @var string */
-    public $Name;
-    /** @var bool */
-    public $IsVariadic;
+    protected bool $IsPassedByReference;
+    protected bool $IsVariadic;
 
+    /**
+     * Creates a new ParamTag object
+     *
+     * @param class-string|null $class
+     */
     public function __construct(
         string $name,
         ?string $type = null,
+        bool $isPassedByReference = false,
         bool $isVariadic = false,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null,
-        bool $legacyNullable = false
+        ?string $member = null
     ) {
-        parent::__construct('param', $name, $type, $description, $class, $member, $legacyNullable);
+        parent::__construct('param', $name, $type, $description, $class, $member);
+        $this->IsPassedByReference = $isPassedByReference;
         $this->IsVariadic = $isVariadic;
-        if (!$this->Name) {
-            throw new InvalidArgumentException(sprintf('Invalid name: %s', $name));
-        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getName(): string
+    {
+        return $this->Name;
+    }
+
+    /**
+     * Check if the parameter is passed by reference
+     */
+    public function isPassedByReference(): bool
+    {
+        return $this->IsPassedByReference;
+    }
+
+    /**
+     * Check if the parameter is variadic
+     */
+    public function isVariadic(): bool
+    {
+        return $this->IsVariadic;
     }
 }

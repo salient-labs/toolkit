@@ -161,7 +161,7 @@ final class GenerateFacade extends AbstractGenerateCommand
                 fn(ReflectionParameter $p) =>
                     $p->isPassedByReference()
             );
-            $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
+            $internal = isset($phpDoc->TagsByName['internal']);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
             $returnsVoid = false;
 
@@ -177,7 +177,7 @@ final class GenerateFacade extends AbstractGenerateCommand
                     continue;
                 }
 
-                $_type = $phpDoc->Return->Type ?? null;
+                $_type = $phpDoc && $phpDoc->Return ? $phpDoc->Return->getType() : null;
                 if ($_type !== null) {
                     /** @var PHPDoc $phpDoc */
                     $type = $this->getPHPDocTypeAlias(
@@ -234,7 +234,7 @@ final class GenerateFacade extends AbstractGenerateCommand
             foreach ($_params as $_param) {
                 $tag = $phpDoc->Params[$_param->getName()] ?? null;
                 // Override the declared type if defined in the PHPDoc
-                if (($tag->Type ?? null) !== null) {
+                if ($tag && $tag->getType() !== null) {
                     /** @var PHPDoc $phpDoc */
                     $_type = $this->getPHPDocTypeAlias(
                         $tag,
