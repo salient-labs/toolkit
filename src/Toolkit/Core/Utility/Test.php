@@ -76,7 +76,7 @@ final class Test extends AbstractUtility
         return is_int($value)
             || is_float($value)
             || is_bool($value)
-            || (is_string($value) && Pcre::match('/^(-?[1-9][0-9]*|0)$/', $value));
+            || (is_string($value) && Pcre::match('/^(-?[1-9][0-9]*|0)$/D', $value));
     }
 
     /**
@@ -116,11 +116,9 @@ final class Test extends AbstractUtility
     /**
      * Check if a value is a number within a range
      *
-     * @template T of int|float
-     *
-     * @param T $value
-     * @param T $min
-     * @param T $max
+     * @param int|float $value
+     * @param int|float $min
+     * @param int|float $max
      */
     public static function isBetween($value, $min, $max): bool
     {
@@ -156,5 +154,17 @@ final class Test extends AbstractUtility
             'true',
             'void',
         ], true);
+    }
+
+    /**
+     * Check if a value is a valid PHP class name
+     *
+     * @param mixed $value
+     * @phpstan-assert-if-true class-string $value
+     */
+    public static function isFqcn($value): bool
+    {
+        return is_string($value)
+            && Pcre::match('/^' . Regex::PHP_TYPE . '$/D', $value);
     }
 }

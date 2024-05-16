@@ -40,6 +40,7 @@ final class TestTest extends TestCase
             [false, 0],
             [false, 1],
             [false, null],
+            [true, ' true '],
             [true, '0'],
             [true, '1'],
             [true, 'disable'],
@@ -58,6 +59,7 @@ final class TestTest extends TestCase
             [true, 'y'],
             [true, 'Y'],
             [true, 'yes'],
+            [true, "false\n"],
             [true, false],
             [true, true],
         ];
@@ -95,6 +97,7 @@ final class TestTest extends TestCase
             [false, true],
             [true, -1],
             [true, -71],
+            [true, ' 71 '],
             [true, '-0'],
             [true, '-1'],
             [true, '-71'],
@@ -103,6 +106,7 @@ final class TestTest extends TestCase
             [true, '0'],
             [true, '1'],
             [true, '71'],
+            [true, "+0\n"],
             [true, 0],
             [true, 1],
             [true, 71],
@@ -144,6 +148,7 @@ final class TestTest extends TestCase
             [false, 0],
             [false, 1],
             [true, -1.23],
+            [true, ' +0.0 '],
             [true, '-0.0'],
             [true, '-1.2e3'],
             [true, '-1.23'],
@@ -153,6 +158,7 @@ final class TestTest extends TestCase
             [true, '0.0'],
             [true, '1.2e3'],
             [true, '1.23'],
+            [true, "+1.2e3\n"],
             [true, 0.0],
             [true, 1.23],
         ];
@@ -184,20 +190,22 @@ final class TestTest extends TestCase
     public static function isNumericKeyProvider(): array
     {
         return [
-            [false, null],
-            [false, ''],
-            [true, '-1'],
+            [false, ' 123'],
             [false, '-0'],
-            [true, '0'],
+            [false, ''],
             [false, '+0'],
             [false, '+1'],
-            [true, '123'],
             [false, '0755'],
             [false, 'abc'],
-            [true, 123],
+            [false, "0\n"],
+            [false, null],
+            [true, '-1'],
+            [true, '0'],
+            [true, '123'],
             [true, 12.34],
-            [true, true],
+            [true, 123],
             [true, false],
+            [true, true],
         ];
     }
 
@@ -337,6 +345,32 @@ final class TestTest extends TestCase
             [false, ''],
             [false, 'not a type'],
             [true, 'array'],
+        ];
+    }
+
+    /**
+     * @dataProvider isFqcnProvider
+     *
+     * @param mixed $value
+     */
+    public function testIsFqcn(bool $expected, $value): void
+    {
+        $this->assertSame($expected, Test::isFqcn($value));
+    }
+
+    /**
+     * @return array<array{bool,mixed}>
+     */
+    public static function isFqcnProvider(): array
+    {
+        return [
+            [false, ''],
+            [false, 'not a class'],
+            [false, "AcmeSyncProvider\n"],
+            [true, 'AcmeSyncProvider'],
+            [true, '\AcmeSyncProvider'],
+            [true, 'Acme\Sync\Provider'],
+            [true, '\Acme\Sync\Provider'],
         ];
     }
 }
