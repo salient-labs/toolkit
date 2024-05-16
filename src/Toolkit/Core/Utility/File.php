@@ -384,6 +384,11 @@ final class File extends AbstractUtility
      * Returns `$fallback` if `$filename` does not belong to `$parentDir`.
      *
      * An exception is thrown if `$filename` or `$parentDir` do not exist.
+     *
+     * @template T of string|null
+     *
+     * @param T $fallback
+     * @return string|T
      */
     public static function relativeToParent(
         string $filename,
