@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sli\Command\Generate\Concept;
+namespace Salient\Sli\Command\Generate;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
@@ -24,8 +24,8 @@ use Salient\Core\ProviderContext;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocTag;
 use Salient\PHPDoc\PHPDocTemplateTag;
-use Salient\Sli\Command\Concept\Command;
-use Salient\Sli\Support\TokenExtractor;
+use Salient\Sli\Command\AbstractCommand;
+use Salient\Sli\TokenExtractor;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use ReflectionClass;
@@ -36,7 +36,7 @@ use ReflectionType;
 /**
  * Base class for code generation commands
  */
-abstract class GenerateCommand extends Command
+abstract class AbstractGenerateCommand extends AbstractCommand
 {
     protected const GENERATE_CLASS = 'class';
     protected const GENERATE_INTERFACE = 'interface';
@@ -54,8 +54,8 @@ abstract class GenerateCommand extends Command
     /**
      * The path to the generated file
      *
-     * Set by {@see GenerateCommand::handleOutput()} unless output is written to
-     * the standard output.
+     * Set by {@see AbstractGenerateCommand::handleOutput()} unless output is
+     * written to the standard output.
      *
      * May be relative to the current working directory.
      */
@@ -79,9 +79,9 @@ abstract class GenerateCommand extends Command
     /**
      * The type of entity to generate
      *
-     * @var GenerateCommand::GENERATE_*
+     * @var AbstractGenerateCommand::GENERATE_*
      */
-    protected string $OutputType = GenerateCommand::GENERATE_CLASS;
+    protected string $OutputType = AbstractGenerateCommand::GENERATE_CLASS;
 
     /**
      * The unqualified name of the entity to generate
@@ -125,23 +125,24 @@ abstract class GenerateCommand extends Command
     /**
      * The PHPDoc added before the generated entity
      *
-     * {@see GenerateCommand::generate()} combines
-     * {@see GenerateCommand::$Description} and {@see GenerateCommand::$PHPDoc}
-     * before applying PHPDoc delimiters.
+     * {@see AbstractGenerateCommand::generate()} combines
+     * {@see AbstractGenerateCommand::$Description} and
+     * {@see AbstractGenerateCommand::$PHPDoc} before applying PHPDoc
+     * delimiters.
      */
     protected string $PHPDoc;
 
     /**
      * Declared properties of the generated class
      *
-     * @var array<GenerateCommand::VISIBILITY_*,string[]>
+     * @var array<AbstractGenerateCommand::VISIBILITY_*,string[]>
      */
     protected array $Properties = self::MEMBER_STUB;
 
     /**
      * Declared methods of the generated entity
      *
-     * @var array<GenerateCommand::VISIBILITY_*,string[]>
+     * @var array<AbstractGenerateCommand::VISIBILITY_*,string[]>
      */
     protected array $Methods = self::MEMBER_STUB;
 
@@ -677,7 +678,7 @@ abstract class GenerateCommand extends Command
      *
      * @return string[]
      *
-     * @see GenerateCommand::getFqcnAlias()
+     * @see AbstractGenerateCommand::getFqcnAlias()
      */
     protected function generateImports(): array
     {
@@ -780,7 +781,7 @@ abstract class GenerateCommand extends Command
         string $valueCode,
         $phpDoc = '@inheritDoc',
         ?string $returnType = 'string',
-        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): array {
         return [
             ...$this->generatePHPDocBlock($phpDoc),
@@ -804,7 +805,7 @@ abstract class GenerateCommand extends Command
      * @param array<ReflectionParameter|string> $params
      * @param ReflectionType|string $returnType
      * @param string[]|string $phpDoc
-     * @param GenerateCommand::VISIBILITY_* $visibility
+     * @param AbstractGenerateCommand::VISIBILITY_* $visibility
      */
     protected function addMethod(
         string $name,
@@ -813,7 +814,7 @@ abstract class GenerateCommand extends Command
         $returnType = null,
         $phpDoc = '',
         bool $static = true,
-        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): void {
         $this->Methods[$visibility][] =
             implode(\PHP_EOL, $this->generateMethod(
@@ -834,7 +835,7 @@ abstract class GenerateCommand extends Command
      * @param array<ReflectionParameter|string> $params
      * @param ReflectionType|string $returnType
      * @param string[]|string $phpDoc
-     * @param GenerateCommand::VISIBILITY_* $visibility
+     * @param AbstractGenerateCommand::VISIBILITY_* $visibility
      * @return string[]
      */
     protected function generateMethod(
@@ -844,7 +845,7 @@ abstract class GenerateCommand extends Command
         $returnType = null,
         $phpDoc = '',
         bool $static = true,
-        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): array {
         $callback =
             fn(string $name): ?string =>
@@ -882,7 +883,7 @@ abstract class GenerateCommand extends Command
 
         $method = $this->generatePHPDocBlock($phpDoc);
 
-        if ($this->OutputType === GenerateCommand::GENERATE_INTERFACE) {
+        if ($this->OutputType === AbstractGenerateCommand::GENERATE_INTERFACE) {
             $method[] = "$declaration;";
             return $method;
         }

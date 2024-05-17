@@ -30,12 +30,12 @@ use Salient\Core\EventDispatcher;
 use Salient\Core\MetricCollector;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerBuilder;
-use Salient\Sli\Catalog\EnvVar;
-use Salient\Sli\Command\Generate\Concept\GenerateCommand;
+use Salient\Sli\Command\Generate\AbstractGenerateCommand;
 use Salient\Sli\Command\Generate\GenerateBuilder;
 use Salient\Sli\Command\Generate\GenerateFacade;
 use Salient\Sli\Command\Generate\GenerateSyncEntity;
 use Salient\Sli\Command\Generate\GenerateSyncProvider;
+use Salient\Sli\EnvVar;
 use Salient\Sync\DbSyncDefinition;
 use Salient\Sync\DbSyncDefinitionBuilder;
 use Salient\Sync\HttpSyncDefinition;
@@ -131,13 +131,13 @@ $args = [
 ];
 
 /**
- * @param GenerateCommand|string $commandOrFile
+ * @param AbstractGenerateCommand|string $commandOrFile
  */
 function generated($commandOrFile): void
 {
     global $generated;
 
-    $file = $commandOrFile instanceof GenerateCommand
+    $file = $commandOrFile instanceof AbstractGenerateCommand
         ? $commandOrFile->OutputFile
         : $commandOrFile;
 

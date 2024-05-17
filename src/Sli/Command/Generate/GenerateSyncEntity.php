@@ -18,7 +18,7 @@ use Salient\Core\Utility\Str;
 use Salient\Core\DateFormatter;
 use Salient\Core\DateParser;
 use Salient\Core\DotNetDateParser;
-use Salient\Sli\Command\Generate\Concept\GenerateCommand;
+use Salient\Sli\EnvVar;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\AbstractSyncEntity;
@@ -29,7 +29,7 @@ use DateTimeInterface;
 /**
  * Generates sync entities
  */
-class GenerateSyncEntity extends GenerateCommand
+class GenerateSyncEntity extends AbstractGenerateCommand
 {
     /** @var mixed[]|null */
     public ?array $Entity;
@@ -133,7 +133,7 @@ EOF)
                 ->valueName('provider')
                 ->description('The HttpSyncProvider class to retrieve a reference entity from')
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue('provider', $value))
                 ->bindTo($this->Provider),
             CliOption::build()
                 ->long('endpoint')
@@ -187,7 +187,7 @@ EOF)
 
         $this->Entity = null;
 
-        $fqcn = $this->getRequiredFqcnOptionValue(
+        $fqcn = $this->requireFqcnOptionValue(
             'class',
             $this->ClassFqcn,
             null,
@@ -222,8 +222,7 @@ EOF)
 
         $provider = $this->Provider;
         if ($provider !== null) {
-            /** @var HttpSyncProvider */
-            $provider = $this->getProvider($provider, HttpSyncProvider::class);
+            $provider = $this->getFqcnOptionInstance('provider', $provider, HttpSyncProvider::class, EnvVar::NS_PROVIDER);
         }
 
         $properties = ['Id' => 'int|string|null'];

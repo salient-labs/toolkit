@@ -13,8 +13,7 @@ use Salient\Core\AbstractBuilder;
 use Salient\Core\Introspector;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocTemplateTag;
-use Salient\Sli\Catalog\EnvVar;
-use Salient\Sli\Command\Generate\Concept\GenerateCommand;
+use Salient\Sli\EnvVar;
 use Closure;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -23,7 +22,7 @@ use ReflectionProperty;
 /**
  * Generates builders
  */
-class GenerateBuilder extends GenerateCommand
+class GenerateBuilder extends AbstractGenerateCommand
 {
     /**
      * Properties and methods that shouldn't be surfaced by the builder
@@ -132,14 +131,14 @@ EOF)
         $this->Skip = array_merge($this->Skip, self::SKIP);
         $this->ToDeclare = [];
 
-        $classFqcn = $this->getRequiredFqcnOptionValue(
+        $classFqcn = $this->requireFqcnOptionValue(
             'class',
             $this->ClassFqcn,
             null,
             $classClass
         );
 
-        $this->getRequiredFqcnOptionValue(
+        $this->requireFqcnOptionValue(
             'builder',
             $this->BuilderFqcn ?: $classFqcn . 'Builder',
             EnvVar::NS_BUILDER,

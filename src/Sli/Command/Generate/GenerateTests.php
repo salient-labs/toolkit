@@ -7,13 +7,12 @@ use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\Utility\Str;
-use Salient\Sli\Catalog\EnvVar;
-use Salient\Sli\Command\Generate\Concept\GenerateCommand;
+use Salient\Sli\EnvVar;
 
 /**
  * Generates PHPUnit tests
  */
-class GenerateTests extends GenerateCommand
+class GenerateTests extends AbstractGenerateCommand
 {
     /**
      * Methods that don't generally need to be tested explicitly
@@ -69,14 +68,14 @@ class GenerateTests extends GenerateCommand
 
         $this->Skip = array_merge($this->Skip, self::SKIP);
 
-        $classFqcn = $this->getRequiredFqcnOptionValue(
+        $classFqcn = $this->requireFqcnOptionValue(
             'class',
             $this->ClassFqcn,
             null,
             $classClass
         );
 
-        $this->getRequiredFqcnOptionValue(
+        $this->requireFqcnOptionValue(
             'class',
             $this->TestClassFqcn ?: $classFqcn . 'Test',
             EnvVar::NS_TESTS,

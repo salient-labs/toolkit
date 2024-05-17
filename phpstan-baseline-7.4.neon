@@ -16,16 +16,6 @@ parameters:
 			path: scripts/generate.php
 
 		-
-			message: "#^Method Salient\\\\Sli\\\\Command\\\\Concept\\\\Command\\:\\:getFqcnOptionValue\\(\\) should return ''\\|class\\-string but returns string\\.$#"
-			count: 1
-			path: src/Sli/Command/Concept/Command.php
-
-		-
-			message: "#^Method Salient\\\\Sli\\\\Command\\\\Concept\\\\Command\\:\\:getProvider\\(\\) should return TProvider of TBaseProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface but returns TBaseProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface\\.$#"
-			count: 1
-			path: src/Sli/Command/Concept/Command.php
-
-		-
 			message: "#^Method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
