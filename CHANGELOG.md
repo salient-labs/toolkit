@@ -10,6 +10,42 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.21] - 2024-05-20
+
+### Added
+
+- Add `Str::PRESERVE_QUOTED`
+
+### Changed
+
+- Allow `null` to be passed to all `Format` methods
+- Allow the current year to be passed to `Format::date()` and `Format::dateRange()`
+- In `Format::dateRange()`:
+  - Do not report time when the time of both dates is `00:00:00`, even if they are in different timezones
+  - Report time with both timezones when daylight saving time is active in one date but not the other
+- In `Format::bytes()`:
+  - Add option to use decimal units
+  - Change default precision from `0` to `3`
+  - Improve output for values near binary unit boundaries
+  - Suppress redundant decimal output when unit is 'B'
+- Move DocBlock-related regular expressions from `Regex` to `PHPDocRegex`
+- Move `normaliseType()` from `PHPDocTag` to `PHPDoc`
+- Move `PHPDocTag` and related classes to `PHPDoc\Tag`, then rename and make them immutable
+- Allow PHPDoc `@param` tags to indicate they are passed by reference
+- Improve parsing, e.g. when invalid whitespace is added between tokens
+- Fail with an exception when a DocBlock cannot be parsed
+
+### Removed
+
+- Remove `$legacyNullable` support from `PHPDoc` classes
+
+### Fixed
+
+- Fix rounding bugs in `Format::bytes()`
+- Fix issue where `Test::isNumericKey()` ignores trailing newlines
+- Fix issue where `PHPDoc::$Summary` may not be `null` when a DocBlock has no summary
+- Fix issue where `/***/` is not recognised as an invalid DocBlock
+
 ## [v0.99.20] - 2024-05-14
 
 ### Added
@@ -2490,6 +2526,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.21]: https://github.com/salient-labs/toolkit/compare/v0.99.20...v0.99.21
 [v0.99.20]: https://github.com/salient-labs/toolkit/compare/v0.99.19...v0.99.20
 [v0.99.19]: https://github.com/salient-labs/toolkit/compare/v0.99.18...v0.99.19
 [v0.99.18]: https://github.com/salient-labs/toolkit/compare/v0.99.17...v0.99.18
