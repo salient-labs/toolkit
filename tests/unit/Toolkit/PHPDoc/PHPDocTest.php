@@ -2,20 +2,21 @@
 
 namespace Salient\Tests\PHPDoc;
 
-use Salient\Contract\Core\Regex;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\PHPDoc;
+use Salient\PHPDoc\PHPDocRegex;
 use Salient\Tests\TestCase;
 use InvalidArgumentException;
 
 /**
  * @covers \Salient\PHPDoc\PHPDoc
- * @covers \Salient\PHPDoc\PHPDocParamTag
- * @covers \Salient\PHPDoc\PHPDocReturnTag
- * @covers \Salient\PHPDoc\PHPDocTag
- * @covers \Salient\PHPDoc\PHPDocTemplateTag
- * @covers \Salient\PHPDoc\PHPDocVarTag
+ * @covers \Salient\PHPDoc\Tag\AbstractTag
+ * @covers \Salient\PHPDoc\Tag\ParamTag
+ * @covers \Salient\PHPDoc\Tag\ReturnTag
+ * @covers \Salient\PHPDoc\Tag\TemplateTag
+ * @covers \Salient\PHPDoc\Tag\VarTag
  */
 final class PHPDocTest extends TestCase
 {
@@ -34,13 +35,92 @@ final class PHPDocTest extends TestCase
     public static function invalidDocBlockProvider(): array
     {
         return [
+            'no whitespace after opening delimiter' => [
+                '/***/',
+            ],
             'missing asterisk' => [
                 <<<'EOF'
 /**
+ *
 
-*/
+ */
 EOF,
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider docBlockWithNoSummaryProvider
+     */
+    public function testDocBlockWithNoSummary(string $docBlock): void
+    {
+        $phpDoc = new PHPDoc($docBlock);
+        $this->assertNull($phpDoc->Summary);
+        $this->assertNull($phpDoc->Description);
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function docBlockWithNoSummaryProvider(): array
+    {
+        return [
+            [
+                '/** */',
+            ],
+            [
+                <<<'EOF'
+/**
+ */
+EOF,
+            ],
+            [
+                <<<'EOF'
+/**
+ *
+ */
+EOF,
+            ],
+            [
+                <<<'EOF'
+/**
+ * @internal
+ */
+EOF,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider docBlockWithNoDescriptionProvider
+     */
+    public function testDocBlockWithNoDescription(string $docBlock): void
+    {
+        $phpDoc = new PHPDoc($docBlock);
+        $this->assertSame('Summary', $phpDoc->Summary);
+        $this->assertNull($phpDoc->Description);
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function docBlockWithNoDescriptionProvider(): array
+    {
+        return [
+            [<<<'EOF'
+/**
+ * Summary
+ */
+EOF],
+            [<<<'EOF'
+/**
+ * Summary
+ *
+ *
+ *
+ * @internal
+ */
+EOF],
         ];
     }
 
@@ -51,6 +131,8 @@ EOF,
 /**
  * @param $arg1 Description from ClassC (untyped)
  * @param string[] $arg3
+ * @param bool &$arg4
+ * @param mixed ...$arg5
  * @return $this Description from ClassC
  */
 EOF,
@@ -85,16 +167,12 @@ EOF,
 
         $this->assertNotNull($phpDoc);
         $this->assertSame('Summary from ClassB', $phpDoc->Summary);
-        $this->assertSame(<<<'EOF'
-Description from ClassA
-
-```php
-// code here
-```
-EOF, Str::eolToNative($phpDoc->Description));
+        $this->assertSame("Description from ClassA\n\n```php\n// code here\n```", $phpDoc->Description);
         $this->assertSame([
             '@param $arg1 Description from ClassC (untyped)',
             '@param string[] $arg3',
+            '@param bool &$arg4',
+            '@param mixed ...$arg5',
             '@return $this Description from ClassC',
             '@param int|string $arg1',
             '@param array $arg3',
@@ -107,6 +185,8 @@ EOF, Str::eolToNative($phpDoc->Description));
             'param' => [
                 '$arg1 Description from ClassC (untyped)',
                 'string[] $arg3',
+                'bool &$arg4',
+                'mixed ...$arg5',
                 'int|string $arg1',
                 'array $arg3',
                 'mixed $arg1 Description from ClassA',
@@ -118,19 +198,111 @@ EOF, Str::eolToNative($phpDoc->Description));
                 '$this',
             ],
         ], $phpDoc->TagsByName);
-        $this->assertCount(3, $phpDoc->Params);
-        $this->assertSame('arg1', $phpDoc->Params['arg1']->Name);
-        $this->assertSame('int|string', $phpDoc->Params['arg1']->Type);
-        $this->assertSame('Description from ClassC (untyped)', $phpDoc->Params['arg1']->Description);
-        $this->assertSame('arg3', $phpDoc->Params['arg3']->Name);
-        $this->assertSame('string[]', $phpDoc->Params['arg3']->Type);
-        $this->assertSame('Description from ClassA', $phpDoc->Params['arg3']->Description);
-        $this->assertSame('arg2', $phpDoc->Params['arg2']->Name);
-        $this->assertSame('string', $phpDoc->Params['arg2']->Type);
-        $this->assertSame('Description from ClassA', $phpDoc->Params['arg2']->Description);
-        $this->assertNull($phpDoc->Return->Name);
-        $this->assertSame('$this', $phpDoc->Return->Type);
-        $this->assertSame('Description from ClassC', $phpDoc->Return->Description);
+
+        $this->assertSame(
+            ['arg1', 'arg3', 'arg4', 'arg5', 'arg2'],
+            array_keys($phpDoc->Params),
+        );
+
+        $tag = $phpDoc->Params['arg1'];
+        $this->assertSame('arg1', $tag->getName());
+        $this->assertSame('int|string', $tag->getType());
+        $this->assertSame('Description from ClassC (untyped)', $tag->getDescription());
+        $this->assertFalse($tag->isPassedByReference());
+        $this->assertFalse($tag->isVariadic());
+
+        $tag = $phpDoc->Params['arg3'];
+        $this->assertSame('arg3', $tag->getName());
+        $this->assertSame('string[]', $tag->getType());
+        $this->assertSame('Description from ClassA', $tag->getDescription());
+        $this->assertFalse($tag->isPassedByReference());
+        $this->assertFalse($tag->isVariadic());
+
+        $tag = $phpDoc->Params['arg4'];
+        $this->assertSame('arg4', $tag->getName());
+        $this->assertSame('bool', $tag->getType());
+        $this->assertNull($tag->getDescription());
+        $this->assertTrue($tag->isPassedByReference());
+        $this->assertFalse($tag->isVariadic());
+
+        $tag = $phpDoc->Params['arg5'];
+        $this->assertSame('arg5', $tag->getName());
+        $this->assertSame('mixed', $tag->getType());
+        $this->assertNull($tag->getDescription());
+        $this->assertFalse($tag->isPassedByReference());
+        $this->assertTrue($tag->isVariadic());
+
+        $tag = $phpDoc->Params['arg2'];
+        $this->assertSame('arg2', $tag->getName());
+        $this->assertSame('string', $tag->getType());
+        $this->assertSame('Description from ClassA', $tag->getDescription());
+        $this->assertFalse($tag->isPassedByReference());
+        $this->assertFalse($tag->isVariadic());
+
+        $this->assertNotNull($tag = $phpDoc->Return);
+        $this->assertSame('$this', $tag->getType());
+        $this->assertSame('Description from ClassC', $tag->getDescription());
+    }
+
+    /**
+     * @dataProvider paramTagsProvider
+     *
+     * @param string[] $paramNames
+     * @param array<string|null> $paramTypes
+     * @param array<string|null> $paramDescriptions
+     * @param bool[] $paramIsReferenceValues
+     * @param bool[] $paramIsVariadicValues
+     */
+    public function testParamTags(
+        string $docBlock,
+        array $paramNames,
+        array $paramTypes,
+        array $paramDescriptions,
+        array $paramIsReferenceValues,
+        array $paramIsVariadicValues
+    ): void {
+        $phpDoc = new PHPDoc($docBlock);
+        $this->assertSame($paramNames, array_keys($phpDoc->Params));
+        foreach ($paramNames as $i => $name) {
+            $this->assertSame($name, ($param = $phpDoc->Params[$name])->getName());
+            $this->assertSame($paramTypes[$i], $param->getType());
+            $this->assertSame($paramDescriptions[$i], $param->getDescription());
+            $this->assertSame($paramIsReferenceValues[$i], $param->isPassedByReference());
+            $this->assertSame($paramIsVariadicValues[$i], $param->isVariadic());
+        }
+    }
+
+    /**
+     * @return array<array{string,string[],array<string|null>,array<string|null>,bool[],bool[]}>
+     */
+    public static function paramTagsProvider(): array
+    {
+        return [
+            [
+                <<<'EOF'
+/**
+ * @param (int|string)[] & ... $idListsByReference
+ */
+EOF,
+                ['idListsByReference'],
+                ['(int|string)[]'],
+                [null],
+                [true],
+                [true],
+            ],
+            [
+                <<<'EOF'
+/**
+ * @param (int|string)[] & ... $idListsByReference Description of $idListsByReference
+ */
+EOF,
+                ['idListsByReference'],
+                ['(int|string)[]'],
+                ['Description of $idListsByReference'],
+                [true],
+                [true],
+            ],
+        ];
     }
 
     /**
@@ -156,9 +328,9 @@ EOF, Str::eolToNative($phpDoc->Description));
         $this->assertCount(count($varKeys), $phpDoc->Vars);
         foreach ($varKeys as $i => $key) {
             $this->assertArrayHasKey($key, $phpDoc->Vars);
-            $this->assertSame($varNames[$i], $phpDoc->Vars[$key]->Name);
-            $this->assertSame($varTypes[$i], $phpDoc->Vars[$key]->Type);
-            $this->assertSame($varDescriptions[$i], $phpDoc->Vars[$key]->Description);
+            $this->assertSame($varNames[$i], ($var = $phpDoc->Vars[$key])->getName());
+            $this->assertSame($varTypes[$i], $var->getType());
+            $this->assertSame($varDescriptions[$i], $var->getDescription());
         }
     }
 
@@ -266,17 +438,6 @@ EOF,
                 ['int'],
                 [null],
             ],
-            [
-                <<<'EOF'
-/** @var */
-EOF,
-                null,
-                null,
-                [],
-                [],
-                [],
-                [],
-            ]
         ];
     }
 
@@ -294,7 +455,7 @@ EOF;
         $phpDoc = new PHPDoc($docBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
-        $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
+        $this->assertSame('mixed', $phpDoc->Templates['T']->getType());
     }
 
     public function testTemplateInheritance(): void
@@ -325,18 +486,14 @@ EOF;
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertNull($phpDoc->Description);
         $this->assertCount(4, $phpDoc->Templates);
-        $this->assertSame('T', $phpDoc->Templates['T']->Name);
-        $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
-        $this->assertNull($phpDoc->Templates['T']->Description);
-        $this->assertSame('TArray', $phpDoc->Templates['TArray']->Name);
-        $this->assertSame('array|null', $phpDoc->Templates['TArray']->Type);
-        $this->assertNull($phpDoc->Templates['TArray']->Description);
-        $this->assertSame('TKey', $phpDoc->Templates['TKey']->Name);
-        $this->assertSame('array-key', $phpDoc->Templates['TKey']->Type);
-        $this->assertNull($phpDoc->Templates['TKey']->Description);
-        $this->assertSame('TValue', $phpDoc->Templates['TValue']->Name);
-        $this->assertSame('object', $phpDoc->Templates['TValue']->Type);
-        $this->assertNull($phpDoc->Templates['TValue']->Description);
+        $this->assertSame('T', $phpDoc->Templates['T']->getName());
+        $this->assertSame('mixed', $phpDoc->Templates['T']->getType());
+        $this->assertSame('TArray', $phpDoc->Templates['TArray']->getName());
+        $this->assertSame('array|null', $phpDoc->Templates['TArray']->getType());
+        $this->assertSame('TKey', $phpDoc->Templates['TKey']->getName());
+        $this->assertSame('array-key', $phpDoc->Templates['TKey']->getType());
+        $this->assertSame('TValue', $phpDoc->Templates['TValue']->getName());
+        $this->assertSame('object', $phpDoc->Templates['TValue']->getType());
     }
 
     public function testFences(): void
@@ -365,7 +522,7 @@ EOF;
  */
 EOF;
 
-        $phpDoc = new PHPDoc($docBlock, null, null, null, true);
+        $phpDoc = new PHPDoc($docBlock);
 
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame(<<<'EOF'
@@ -387,9 +544,9 @@ callback(string $value): string
 ```
 EOF, Str::eolToNative($phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
-        $this->assertNull($phpDoc->Vars[0]->Name ?? null);
-        $this->assertSame('?callable', $phpDoc->Vars[0]->Type ?? null);
-        $this->assertNull($phpDoc->Vars[0]->Description ?? null);
+        $this->assertNull($phpDoc->Vars[0]->getName());
+        $this->assertSame('callable|null', $phpDoc->Vars[0]->getType());
+        $this->assertNull($phpDoc->Vars[0]->getDescription());
     }
 
     public function testBlankLines(): void
@@ -427,14 +584,14 @@ EOF;
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame('Parts are surrounded by superfluous blank lines.', $phpDoc->Description);
         $this->assertCount(2, $phpDoc->Templates);
-        $this->assertSame('T0', $phpDoc->Templates['T0']->Name ?? null);
-        $this->assertSame('object', $phpDoc->Templates['T0']->Type ?? null);
-        $this->assertSame('T1', $phpDoc->Templates['T1']->Name ?? null);
-        $this->assertSame('mixed', $phpDoc->Templates['T1']->Type ?? null);
+        $this->assertSame('T0', $phpDoc->Templates['T0']->getName());
+        $this->assertSame('object', $phpDoc->Templates['T0']->getType());
+        $this->assertSame('T1', $phpDoc->Templates['T1']->getName());
+        $this->assertSame('mixed', $phpDoc->Templates['T1']->getType());
         $this->assertCount(1, $phpDoc->Vars);
-        $this->assertSame('class-string<T0>|null', $phpDoc->Vars['$Class']->Type ?? null);
+        $this->assertSame('class-string<T0>|null', $phpDoc->Vars['$Class']->getType());
         $this->assertCount(1, $phpDoc->Params);
-        $this->assertSame('class-string<T0>|null', $phpDoc->Params['class']->Type ?? null);
+        $this->assertSame('class-string<T0>|null', $phpDoc->Params['class']->getType());
     }
 
     public function testNoBlankLineAfterSummary(): void
@@ -462,9 +619,73 @@ EOF;
 EOF;
         $phpDoc = new PHPDoc($docBlock);
         $this->assertCount(1, $phpDoc->Params);
-        $this->assertSame('arg', $phpDoc->Params['arg']->Name ?? null);
-        $this->assertNull($phpDoc->Params['arg']->Type ?? null);
-        $this->assertSame('Description of $arg', $phpDoc->Params['arg']->Description ?? null);
+        $this->assertSame('arg', $phpDoc->Params['arg']->getName());
+        $this->assertNull($phpDoc->Params['arg']->getType());
+        $this->assertSame('Description of $arg', $phpDoc->Params['arg']->getDescription());
+    }
+
+    /**
+     * @dataProvider invalidTagProvider
+     *
+     * @param class-string|null $class
+     */
+    public function testInvalidTag(
+        string $expectedMessage,
+        string $docBlock,
+        ?string $class = null,
+        ?string $member = null
+    ): void {
+        $this->expectException(InvalidTagValueException::class);
+        $this->expectExceptionMessage($expectedMessage);
+        new PHPDoc($docBlock, null, $class, $member);
+    }
+
+    /**
+     * @return array<array{string,string,2?:string|null,3?:string|null}>
+     */
+    public static function invalidTagProvider(): array
+    {
+        return [
+            [
+                'No name for @param in DocBlock',
+                '/** @param */',
+            ],
+            [
+                'No name for @param in DocBlock of Foo',
+                '/** @param */',
+                'Foo',
+            ],
+            [
+                'No name for @param in DocBlock of Foo::bar()',
+                '/** @param */',
+                'Foo',
+                'bar()',
+            ],
+            [
+                "Invalid name 'notAVariable' for @param in DocBlock",
+                '/** @param bool notAVariable */',
+            ],
+            [
+                'No type for @return in DocBlock',
+                '/** @return */',
+            ],
+            [
+                'No type for @return in DocBlock',
+                '/** @return /notAType */',
+            ],
+            [
+                'No type for @var in DocBlock',
+                '/** @var */',
+            ],
+            [
+                'No type for @var in DocBlock',
+                '/** @var $variable */',
+            ],
+            [
+                'No name for @template in DocBlock',
+                '/** @template */',
+            ],
+        ];
     }
 
     /**
@@ -506,7 +727,7 @@ EOF;
      */
     public function testTypeRegex(string $phpDocType, bool $expectMatch = true): void
     {
-        $regex = Pcre::delimit('^' . Regex::PHPDOC_TYPE . '$', '/');
+        $regex = Pcre::delimit('^' . PHPDocRegex::PHPDOC_TYPE . '$', '/');
         if ($expectMatch) {
             $this->assertMatchesRegularExpression($regex, trim($phpDocType));
         } else {

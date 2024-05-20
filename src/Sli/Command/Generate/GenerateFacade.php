@@ -8,15 +8,14 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Reflect;
 use Salient\Core\AbstractFacade;
 use Salient\PHPDoc\PHPDoc;
-use Salient\Sli\Catalog\EnvVar;
-use Salient\Sli\Command\Generate\Concept\GenerateCommand;
+use Salient\Sli\EnvVar;
 use ReflectionMethod;
 use ReflectionParameter;
 
 /**
  * Generates facades
  */
-final class GenerateFacade extends GenerateCommand
+final class GenerateFacade extends AbstractGenerateCommand
 {
     /**
      * Methods that shouldn't be surfaced by the Facade
@@ -93,16 +92,16 @@ final class GenerateFacade extends GenerateCommand
 
         $this->SkipMethods = array_merge($this->SkipMethods, self::SKIP_METHODS);
 
-        $classFqcn = $this->getRequiredFqcnOptionValue(
+        $classFqcn = $this->requireFqcnOptionValue(
             'class',
             $this->ClassFqcn,
             null,
             $classClass
         );
 
-        $aliasFqcn = $this->requireMultipleFqcnValues('alias', $this->AliasFqcn);
+        $aliasFqcn = $this->requireFqcnOptionValues('alias', $this->AliasFqcn);
 
-        $this->getRequiredFqcnOptionValue(
+        $this->requireFqcnOptionValue(
             'facade',
             $this->FacadeFqcn,
             EnvVar::NS_FACADE,
@@ -162,7 +161,7 @@ final class GenerateFacade extends GenerateCommand
                 fn(ReflectionParameter $p) =>
                     $p->isPassedByReference()
             );
-            $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
+            $internal = isset($phpDoc->TagsByName['internal']);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
             $returnsVoid = false;
 
@@ -178,7 +177,7 @@ final class GenerateFacade extends GenerateCommand
                     continue;
                 }
 
-                $_type = $phpDoc->Return->Type ?? null;
+                $_type = $phpDoc && $phpDoc->Return ? $phpDoc->Return->getType() : null;
                 if ($_type !== null) {
                     /** @var PHPDoc $phpDoc */
                     $type = $this->getPHPDocTypeAlias(
@@ -235,7 +234,7 @@ final class GenerateFacade extends GenerateCommand
             foreach ($_params as $_param) {
                 $tag = $phpDoc->Params[$_param->getName()] ?? null;
                 // Override the declared type if defined in the PHPDoc
-                if (($tag->Type ?? null) !== null) {
+                if ($tag && $tag->getType() !== null) {
                     /** @var PHPDoc $phpDoc */
                     $_type = $this->getPHPDocTypeAlias(
                         $tag,

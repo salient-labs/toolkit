@@ -12,13 +12,12 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
-use Salient\Sli\Command\Generate\Concept\GenerateCommand;
 use Salient\Sync\Support\SyncIntrospector;
 
 /**
  * Generates provider interfaces for sync entities
  */
-class GenerateSyncProvider extends GenerateCommand
+class GenerateSyncProvider extends AbstractGenerateCommand
 {
     private const OPERATION_MAP = [
         'create' => SyncOperation::CREATE,
@@ -99,7 +98,7 @@ class GenerateSyncProvider extends GenerateCommand
 
         $this->OutputType = self::GENERATE_INTERFACE;
 
-        $fqcn = $this->getRequiredFqcnOptionValue(
+        $fqcn = $this->requireFqcnOptionValue(
             'class',
             $this->ClassFqcn,
             null,
@@ -116,7 +115,7 @@ class GenerateSyncProvider extends GenerateCommand
             );
         }
 
-        $this->getRequiredFqcnOptionValue(
+        $this->requireFqcnOptionValue(
             'interface',
             SyncIntrospector::entityToProvider($fqcn),
             null,

@@ -11,10 +11,10 @@ use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
 use Salient\Core\AbstractBuilder;
 use Salient\Core\Introspector;
+use Salient\PHPDoc\Tag\ParamTag;
+use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocTemplateTag;
-use Salient\Sli\Catalog\EnvVar;
-use Salient\Sli\Command\Generate\Concept\GenerateCommand;
+use Salient\Sli\EnvVar;
 use Closure;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -23,7 +23,7 @@ use ReflectionProperty;
 /**
  * Generates builders
  */
-class GenerateBuilder extends GenerateCommand
+class GenerateBuilder extends AbstractGenerateCommand
 {
     /**
      * Properties and methods that shouldn't be surfaced by the builder
@@ -132,14 +132,14 @@ EOF)
         $this->Skip = array_merge($this->Skip, self::SKIP);
         $this->ToDeclare = [];
 
-        $classFqcn = $this->getRequiredFqcnOptionValue(
+        $classFqcn = $this->requireFqcnOptionValue(
             'class',
             $this->ClassFqcn,
             null,
             $classClass
         );
 
-        $this->getRequiredFqcnOptionValue(
+        $this->requireFqcnOptionValue(
             'builder',
             $this->BuilderFqcn ?: $classFqcn . 'Builder',
             EnvVar::NS_BUILDER,
@@ -184,7 +184,7 @@ EOF)
          */
         $_params = [];
 
-        /** @var array<string,array<string,PHPDocTemplateTag>> */
+        /** @var array<string,array<string,TemplateTag>> */
         $declareTemplates = [];
 
         /**
@@ -291,12 +291,11 @@ EOF)
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
-                $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
+                $internal = isset($phpDoc->TagsByName['internal']);
                 $link = !$internal && $phpDoc && $phpDoc->hasDetail();
 
-                $_type = ($tag = $phpDoc->Vars[0] ?? null)->Type
-                    ?? ($tag = $phpDoc->Vars[$_property->getName()] ?? null)->Type
-                    ?? null;
+                $tag = $phpDoc->Vars[0] ?? $phpDoc->Vars[$_property->getName()] ?? null;
+                $_type = $tag ? $tag->getType() : null;
 
                 if ($_type !== null) {
                     /** @var PHPDoc $phpDoc */
@@ -352,7 +351,10 @@ EOF)
                 }
                 $summary = $phpDoc->Summary ?? null;
                 if ($summary === null && ($_param = $_params[$name] ?? null) !== null) {
-                    $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]->Description ?? null) : null;
+                    $_name = $_param->getName();
+                    $summary = isset($_phpDoc->Params[$_name])
+                        ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->getDescription())
+                        : null;
                 }
 
                 $type = $type !== '' ? "$type " : '';
@@ -392,16 +394,18 @@ EOF)
             } else {
                 $phpDoc = null;
             }
-            $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
+            $internal = isset($phpDoc->TagsByName['internal']);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
 
             $_param = $_params[$name];
             $_name = $_param->getName();
 
             $tag = $_phpDoc->Params[$_name] ?? null;
+            $_type = $tag ? $tag->getType() : null;
             $fromPHPDoc = false;
-            if (($_type = $tag->Type ?? null) !== null) {
+            if ($_type !== null) {
                 /** @var PHPDoc $_phpDoc */
+                /** @var ParamTag $tag */
                 $templates = [];
                 $type = $this->getPHPDocTypeAlias(
                     $tag,
@@ -464,7 +468,9 @@ EOF)
                 continue;
             }
 
-            $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->Description ?? null) : null;
+            $summary = isset($_phpDoc->Params[$_name])
+                ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->getDescription())
+                : null;
             if ($summary === null && $phpDoc) {
                 $summary = $phpDoc->Summary;
             }
@@ -500,17 +506,14 @@ EOF)
                     $returnType = array_keys($this->InputClassTemplates);
                     $returnType = array_combine($returnType, $returnType);
                     $i = count($templates) > 1 ? 0 : -1;
-                    /** @var PHPDocTemplateTag $templateTag */
+                    /** @var TemplateTag $templateTag */
                     foreach ($templates as $template => $templateTag) {
                         do {
                             $T = sprintf('T%s', $i < 0 ? '' : $i);
                             $i++;
                         } while (array_key_exists($T, $this->InputClassTemplates)
                             || array_key_exists(Str::lower($T), $this->AliasMap));
-                        $templateTag = clone $templateTag;
-                        $templateTag->Name = $T;
-                        $templateTag->Variance = null;
-                        $lines[] = (string) $templateTag;
+                        $lines[] = (string) $templateTag->withName($T)->withVariance(null);
                         $returnType[$template] = $T;
                         $param = Pcre::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
                     }
@@ -577,7 +580,7 @@ EOF)
                     fn(ReflectionParameter $p) =>
                         $p->isPassedByReference()
                 );
-                $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
+                $internal = isset($phpDoc->TagsByName['internal']);
                 $link = !$internal && $phpDoc && $phpDoc->hasDetail();
                 $returnsVoid = false;
 
@@ -585,7 +588,7 @@ EOF)
                     $this->ToDeclare[$name] = $_method;
                 }
 
-                $_type = $phpDoc->Return->Type ?? null;
+                $_type = $phpDoc && $phpDoc->Return ? $phpDoc->Return->getType() : null;
                 if ($_type !== null) {
                     /** @var PHPDoc $phpDoc */
                     $templates = [];
@@ -639,7 +642,7 @@ EOF)
                     /** @todo: check for templates here? */
                     $tag = $phpDoc->Params[$_param->getName()] ?? null;
                     // Override the declared type if defined in the PHPDoc
-                    if (($tag->Type ?? null) !== null) {
+                    if ($tag && $tag->getType() !== null) {
                         /** @var PHPDoc $phpDoc */
                         $_type = $this->getPHPDocTypeAlias(
                             $tag,
@@ -743,18 +746,18 @@ EOF)
         if ($this->InputClassTemplates) {
             $docBlock[] = ' *';
             foreach ($this->InputClassTemplates as $template => $tag) {
-                $tag = clone $tag;
+                $tagType = $tag->getType();
                 if (
-                    $tag->Type !== null
-                    && !Test::isBuiltinType($tag->Type)
-                    && !array_key_exists($tag->Type, $this->InputClassTemplates)
+                    $tagType !== null
+                    && !Test::isBuiltinType($tagType)
+                    && !array_key_exists($tagType, $this->InputClassTemplates)
                 ) {
-                    $tag->Type = $this->getPHPDocTypeAlias(
+                    $tag = $tag->withType($this->getPHPDocTypeAlias(
                         $tag,
                         [],
                         $this->InputClass->getNamespaceName(),
                         $this->InputClass->getFileName()
-                    );
+                    ));
                 }
                 $docBlock[] = " * $tag";
             }

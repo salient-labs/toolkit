@@ -1,0 +1,55 @@
+<?php declare(strict_types=1);
+
+namespace Salient\PHPDoc\Tag;
+
+/**
+ * A "@param" tag
+ */
+class ParamTag extends AbstractTag
+{
+    protected bool $IsPassedByReference;
+    protected bool $IsVariadic;
+
+    /**
+     * Creates a new ParamTag object
+     *
+     * @param class-string|null $class
+     */
+    public function __construct(
+        string $name,
+        ?string $type = null,
+        bool $isPassedByReference = false,
+        bool $isVariadic = false,
+        ?string $description = null,
+        ?string $class = null,
+        ?string $member = null
+    ) {
+        parent::__construct('param', $name, $type, $description, $class, $member);
+        $this->IsPassedByReference = $isPassedByReference;
+        $this->IsVariadic = $isVariadic;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getName(): string
+    {
+        return $this->Name;
+    }
+
+    /**
+     * Check if the parameter is passed by reference
+     */
+    public function isPassedByReference(): bool
+    {
+        return $this->IsPassedByReference;
+    }
+
+    /**
+     * Check if the parameter is variadic
+     */
+    public function isVariadic(): bool
+    {
+        return $this->IsVariadic;
+    }
+}

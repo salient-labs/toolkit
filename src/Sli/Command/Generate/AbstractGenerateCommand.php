@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sli\Command\Generate\Concept;
+namespace Salient\Sli\Command\Generate;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
@@ -21,11 +21,11 @@ use Salient\Core\AbstractEntity;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Introspector;
 use Salient\Core\ProviderContext;
+use Salient\PHPDoc\Tag\AbstractTag;
+use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocTag;
-use Salient\PHPDoc\PHPDocTemplateTag;
-use Salient\Sli\Command\Concept\Command;
-use Salient\Sli\Support\TokenExtractor;
+use Salient\Sli\Command\AbstractCommand;
+use Salient\Sli\TokenExtractor;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use ReflectionClass;
@@ -36,7 +36,7 @@ use ReflectionType;
 /**
  * Base class for code generation commands
  */
-abstract class GenerateCommand extends Command
+abstract class AbstractGenerateCommand extends AbstractCommand
 {
     protected const GENERATE_CLASS = 'class';
     protected const GENERATE_INTERFACE = 'interface';
@@ -54,8 +54,8 @@ abstract class GenerateCommand extends Command
     /**
      * The path to the generated file
      *
-     * Set by {@see GenerateCommand::handleOutput()} unless output is written to
-     * the standard output.
+     * Set by {@see AbstractGenerateCommand::handleOutput()} unless output is
+     * written to the standard output.
      *
      * May be relative to the current working directory.
      */
@@ -79,9 +79,9 @@ abstract class GenerateCommand extends Command
     /**
      * The type of entity to generate
      *
-     * @var GenerateCommand::GENERATE_*
+     * @var AbstractGenerateCommand::GENERATE_*
      */
-    protected string $OutputType = GenerateCommand::GENERATE_CLASS;
+    protected string $OutputType = AbstractGenerateCommand::GENERATE_CLASS;
 
     /**
      * The unqualified name of the entity to generate
@@ -125,23 +125,24 @@ abstract class GenerateCommand extends Command
     /**
      * The PHPDoc added before the generated entity
      *
-     * {@see GenerateCommand::generate()} combines
-     * {@see GenerateCommand::$Description} and {@see GenerateCommand::$PHPDoc}
-     * before applying PHPDoc delimiters.
+     * {@see AbstractGenerateCommand::generate()} combines
+     * {@see AbstractGenerateCommand::$Description} and
+     * {@see AbstractGenerateCommand::$PHPDoc} before applying PHPDoc
+     * delimiters.
      */
     protected string $PHPDoc;
 
     /**
      * Declared properties of the generated class
      *
-     * @var array<GenerateCommand::VISIBILITY_*,string[]>
+     * @var array<AbstractGenerateCommand::VISIBILITY_*,string[]>
      */
     protected array $Properties = self::MEMBER_STUB;
 
     /**
      * Declared methods of the generated entity
      *
-     * @var array<GenerateCommand::VISIBILITY_*,string[]>
+     * @var array<AbstractGenerateCommand::VISIBILITY_*,string[]>
      */
     protected array $Methods = self::MEMBER_STUB;
 
@@ -180,7 +181,7 @@ abstract class GenerateCommand extends Command
     /** @var class-string */
     protected string $InputClassName;
     protected ?PHPDoc $InputClassPHPDoc;
-    /** @var PHPDocTemplateTag[] */
+    /** @var TemplateTag[] */
     protected array $InputClassTemplates;
 
     /**
@@ -361,6 +362,16 @@ abstract class GenerateCommand extends Command
         return $this->OutputNamespace === '' ? '' : '\\';
     }
 
+    /**
+     * @param class-string $fqcn
+     * @return class-string
+     */
+    protected function applyClassPrefix(string $fqcn): string
+    {
+        /** @var class-string */
+        return ($this->OutputNamespace === '' ? '' : '\\') . $fqcn;
+    }
+
     protected function getOutputFqcn(): string
     {
         return Arr::implode('\\', [$this->OutputNamespace, $this->OutputClass]);
@@ -369,27 +380,28 @@ abstract class GenerateCommand extends Command
     /**
      * Resolve PHPDoc templates to concrete types if possible
      *
-     * @param array<string,PHPDocTemplateTag> $templates
-     * @param array<string,PHPDocTemplateTag> $inputClassTemplates
+     * @param array<string,TemplateTag> $templates
+     * @param array<string,TemplateTag> $inputClassTemplates
      */
-    protected function resolveTemplates(string $type, array $templates, ?PHPDocTemplateTag &$template = null, array &$inputClassTemplates = []): string
+    protected function resolveTemplates(string $type, array $templates, ?TemplateTag &$template = null, array &$inputClassTemplates = []): string
     {
         $seen = [];
         while ($tag = $templates[$type] ?? null) {
             $template = $tag;
             // Don't resolve templates that will appear in the output
-            if ($tag->Class === $this->InputClassName
-                    && $tag->Member === null
+            if ($tag->getClass() === $this->InputClassName
+                    && $tag->getMember() === null
                     && ($_template = $this->InputClassTemplates[$type] ?? null)) {
                 $inputClassTemplates[$type] = $_template;
                 return $type;
             }
             // Prevent recursion
-            if (!$tag->Type || ($seen[$tag->Type] ?? null)) {
+            $tagType = $tag->getType();
+            if ($tagType === null || ($seen[$tagType] ?? null)) {
                 break;
             }
-            $seen[$tag->Type] = true;
-            $type = $tag->Type;
+            $seen[$tagType] = true;
+            $type = $tagType;
         }
         return $type;
     }
@@ -398,17 +410,17 @@ abstract class GenerateCommand extends Command
      * Resolve a PHPDoc type to a code-safe identifier where templates and PHP
      * types are resolved, using aliases from declaring classes if possible
      *
-     * @param PHPDocTag|string $type
-     * @param array<string,PHPDocTemplateTag> $templates
-     * @param array<string,PHPDocTemplateTag> $inputClassTemplates
+     * @param AbstractTag|string $type
+     * @param array<string,TemplateTag> $templates
+     * @param array<string,TemplateTag> $inputClassTemplates
      */
     protected function getPHPDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
     {
-        $subject = $type instanceof PHPDocTag
-            ? Str::coalesce($type->Type, '')
+        $subject = $type instanceof AbstractTag
+            ? $type->getType() ?? ''
             : $type;
 
-        return PHPDocTag::normaliseType(Pcre::replaceCallback(
+        return PHPDoc::normaliseType(Pcre::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
             function ($match) use (
                 $type,
@@ -420,10 +432,13 @@ abstract class GenerateCommand extends Command
             ) {
                 $t = $this->resolveTemplates($match[0][0], $templates, $template, $inputClassTemplates);
                 $type = $template ?: $type;
-                if ($type instanceof PHPDocTag && $type->Class !== null) {
-                    $class = new ReflectionClass($type->Class);
+                if ($type instanceof AbstractTag && ($class = $type->getClass()) !== null) {
+                    $class = new ReflectionClass($class);
                     $namespace = $class->getNamespaceName();
                     $filename = $class->getFileName();
+                    if ($filename === false) {
+                        $filename = null;
+                    }
                 }
                 // Recurse if template expansion occurred
                 if ($t !== $match[0][0]) {
@@ -483,17 +498,24 @@ abstract class GenerateCommand extends Command
      * `$type` if the alias has already been claimed.
      * @return (TReturnFqcn is true ? string : string|null)
      */
-    protected function getTypeAlias(string $type, ?string $filename = null, bool $returnFqcn = true): ?string
-    {
+    protected function getTypeAlias(
+        string $type,
+        ?string $filename = null,
+        bool $returnFqcn = true
+    ): ?string {
         $type = ltrim($type, '\\');
         $lower = Str::lower($type);
-        if ($filename !== null
-                && ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null)) {
+        if (
+            $filename !== null
+            && ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null) !== null
+        ) {
+            /** @var class-string $type */
             return $this->getFqcnAlias($type, $alias, $returnFqcn);
         }
         if (Test::isBuiltinType($type)) {
             return $returnFqcn ? $lower : null;
         }
+        /** @var class-string $type */
         return $this->getFqcnAlias($type, null, $returnFqcn);
     }
 
@@ -509,15 +531,20 @@ abstract class GenerateCommand extends Command
      *
      * @template TReturnFqcn of bool
      *
+     * @param class-string $fqcn
      * @param string|null $alias If `null`, the basename of `$fqcn` will be
      * used.
      * @param TReturnFqcn $returnFqcn If `false`, return `null` instead of the
      * FQCN if `$alias` has already been claimed.
      * @return (TReturnFqcn is true ? string : string|null)
      */
-    protected function getFqcnAlias(string $fqcn, ?string $alias = null, bool $returnFqcn = true): ?string
-    {
+    protected function getFqcnAlias(
+        string $fqcn,
+        ?string $alias = null,
+        bool $returnFqcn = true
+    ): ?string {
         $fqcn = ltrim($fqcn, '\\');
+        /** @var class-string */
         $_fqcn = Str::lower($fqcn);
 
         // If $fqcn has already been imported, use its alias
@@ -548,7 +575,7 @@ abstract class GenerateCommand extends Command
             !strcasecmp($alias, $this->OutputClass)
             || isset($this->AliasMap[$_alias])
         ) {
-            $this->FqcnMap[$_fqcn] ??= $this->getClassPrefix() . $fqcn;
+            $this->FqcnMap[$_fqcn] ??= $this->applyClassPrefix($fqcn);
 
             return $returnFqcn
                 ? $this->FqcnMap[$_fqcn]
@@ -677,7 +704,7 @@ abstract class GenerateCommand extends Command
      *
      * @return string[]
      *
-     * @see GenerateCommand::getFqcnAlias()
+     * @see AbstractGenerateCommand::getFqcnAlias()
      */
     protected function generateImports(): array
     {
@@ -780,7 +807,7 @@ abstract class GenerateCommand extends Command
         string $valueCode,
         $phpDoc = '@inheritDoc',
         ?string $returnType = 'string',
-        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): array {
         return [
             ...$this->generatePHPDocBlock($phpDoc),
@@ -804,7 +831,7 @@ abstract class GenerateCommand extends Command
      * @param array<ReflectionParameter|string> $params
      * @param ReflectionType|string $returnType
      * @param string[]|string $phpDoc
-     * @param GenerateCommand::VISIBILITY_* $visibility
+     * @param AbstractGenerateCommand::VISIBILITY_* $visibility
      */
     protected function addMethod(
         string $name,
@@ -813,7 +840,7 @@ abstract class GenerateCommand extends Command
         $returnType = null,
         $phpDoc = '',
         bool $static = true,
-        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): void {
         $this->Methods[$visibility][] =
             implode(\PHP_EOL, $this->generateMethod(
@@ -834,7 +861,7 @@ abstract class GenerateCommand extends Command
      * @param array<ReflectionParameter|string> $params
      * @param ReflectionType|string $returnType
      * @param string[]|string $phpDoc
-     * @param GenerateCommand::VISIBILITY_* $visibility
+     * @param AbstractGenerateCommand::VISIBILITY_* $visibility
      * @return string[]
      */
     protected function generateMethod(
@@ -844,11 +871,12 @@ abstract class GenerateCommand extends Command
         $returnType = null,
         $phpDoc = '',
         bool $static = true,
-        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): array {
-        $callback =
-            fn(string $name): ?string =>
-                $this->getFqcnAlias($name, null, false);
+        $callback = function (string $name): ?string {
+            /** @var class-string $name */
+            return $this->getFqcnAlias($name, null, false);
+        };
 
         foreach ($params as &$param) {
             if ($param instanceof ReflectionParameter) {
@@ -882,7 +910,7 @@ abstract class GenerateCommand extends Command
 
         $method = $this->generatePHPDocBlock($phpDoc);
 
-        if ($this->OutputType === GenerateCommand::GENERATE_INTERFACE) {
+        if ($this->OutputType === AbstractGenerateCommand::GENERATE_INTERFACE) {
             $method[] = "$declaration;";
             return $method;
         }

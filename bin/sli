@@ -19,8 +19,6 @@ $loader = require $_composer_autoload_path
 $loader->addPsr4('Salient\\Sli\\', dirname(__DIR__) . '/src/Sli/');
 
 (new CliApplication())
-    ->resumeCache()
-    ->logOutput()
     ->command(['generate', 'builder'], GenerateBuilder::class)
     ->command(['generate', 'facade'], GenerateFacade::class)
     ->command(['generate', 'tests'], GenerateTests::class)
@@ -34,4 +32,6 @@ $loader->addPsr4('Salient\\Sli\\', dirname(__DIR__) . '/src/Sli/');
     ->command(['http', 'put'], SendHttpRequest::class)
     ->command(['http', 'delete'], SendHttpRequest::class)
     ->command(['http', 'patch'], SendHttpRequest::class)
+    ->resumeCache()
+    ->logOutput()
     ->runAndExit();

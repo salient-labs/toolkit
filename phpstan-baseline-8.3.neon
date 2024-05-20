@@ -16,46 +16,6 @@ parameters:
 			path: scripts/generate.php
 
 		-
-			message: "#^Method Salient\\\\Sli\\\\Command\\\\Concept\\\\Command\\:\\:getFqcnOptionValue\\(\\) should return ''\\|class\\-string but returns string\\.$#"
-			count: 1
-			path: src/Sli/Command/Concept/Command.php
-
-		-
-			message: "#^Method Salient\\\\Sli\\\\Command\\\\Concept\\\\Command\\:\\:getProvider\\(\\) should return TProvider of TBaseProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface but returns TBaseProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface\\.$#"
-			count: 1
-			path: src/Sli/Command/Concept/Command.php
-
-		-
-			message: "#^Method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
-
-		-
-			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
-
-		-
-			message: "#^Property Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:\\$AliasMap \\(array\\<string, class\\-string\\>\\) does not accept array\\<string, string\\>\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
-
-		-
-			message: "#^Property Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:\\$FqcnMap \\(array\\<class\\-string, class\\-string\\>\\) does not accept array\\<string, string\\>\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
-
-		-
-			message: "#^Property Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:\\$ImportMap \\(array\\<class\\-string, string\\>\\) does not accept array\\<string, string\\>\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/Concept/GenerateCommand.php
-
-		-
 			message: "#^Cannot call method getDeclaringClass\\(\\) on ReflectionMethod\\|null\\.$#"
 			count: 2
 			path: src/Sli/Command/Generate/GenerateBuilder.php
@@ -81,42 +41,27 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocParamTag\\|null given\\.$#"
-			count: 2
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\Tag\\\\AbstractTag\\|string, Salient\\\\PHPDoc\\\\Tag\\\\ReturnTag\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocVarTag\\|null given\\.$#"
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:expandAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:expandAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 7
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
+			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 3
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocParamTag\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateFacade.php
-
-		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\PHPDocTag\\|string, Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\Tag\\\\AbstractTag\\|string, Salient\\\\PHPDoc\\\\Tag\\\\ReturnTag\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateFacade.php
 
@@ -151,7 +96,7 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateSyncProvider.php
 
 		-
-			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\Concept\\\\GenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateTests.php
 
@@ -191,9 +136,9 @@ parameters:
 			path: src/Sli/Command/Http/SendHttpRequest.php
 
 		-
-			message: "#^Method Salient\\\\Sli\\\\Support\\\\TokenExtractor\\:\\:getUseMap\\(\\) should return array\\<string, class\\-string\\> but returns array\\<string\\>\\.$#"
+			message: "#^Method Salient\\\\Sli\\\\TokenExtractor\\:\\:getUseMap\\(\\) should return array\\<string, class\\-string\\> but returns array\\<string\\>\\.$#"
 			count: 1
-			path: src/Sli/Support/TokenExtractor.php
+			path: src/Sli/TokenExtractor.php
 
 		-
 			message: "#^Parameter \\#2 \\$openTag of class Salient\\\\Console\\\\Support\\\\ConsoleTagAttributes constructor expects string, array\\<int, int\\|string\\>\\|string given\\.$#"
@@ -559,31 +504,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string1 of function strcasecmp expects string, int\\|string given\\.$#"
 			count: 2
 			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
-
-		-
-			message: "#^Cannot access an offset on array\\<string\\>\\|true\\.$#"
-			count: 1
-			path: src/Toolkit/PHPDoc/PHPDoc.php
-
-		-
-			message: "#^Cannot access property \\$Description on Salient\\\\PHPDoc\\\\PHPDocParamTag\\|Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|Salient\\\\PHPDoc\\\\PHPDocVarTag\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/PHPDoc/PHPDoc.php
-
-		-
-			message: "#^Parameter \\#1 \\$callback of function array_map expects \\(callable\\(array\\<string\\>\\|true\\)\\: mixed\\)\\|null, Closure\\(array\\)\\: \\(array\\|true\\) given\\.$#"
-			count: 1
-			path: src/Toolkit/PHPDoc/PHPDoc.php
-
-		-
-			message: "#^Parameter \\#2 \\$subject of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:match\\(\\) expects string, string\\|false given\\.$#"
-			count: 2
-			path: src/Toolkit/PHPDoc/PHPDoc.php
-
-		-
-			message: "#^Property Salient\\\\PHPDoc\\\\PHPDocTag\\:\\:\\$Class \\(class\\-string\\|null\\) does not accept string\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/PHPDoc/PHPDocTag.php
 
 		-
 			message: "#^Method Salient\\\\Sync\\\\AbstractSyncDefinition\\:\\:getSyncOperationClosure\\(\\) should return \\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, int\\|string\\|null, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, TEntity, mixed \\.\\.\\.\\)\\: TEntity\\)\\|\\(Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, iterable\\<TEntity\\>, mixed \\.\\.\\.\\)\\: iterable\\<TEntity\\>\\)\\|null but returns Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\.$#"
@@ -1164,21 +1084,6 @@ parameters:
 			message: "#^Cannot call method getDepth\\(\\) on RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<string, SplFileInfo, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\|null\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Iterator/RecursiveFilesystemIteratorTest.php
-
-		-
-			message: "#^Cannot access property \\$Description on Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/PHPDoc/PHPDocTest.php
-
-		-
-			message: "#^Cannot access property \\$Name on Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/PHPDoc/PHPDocTest.php
-
-		-
-			message: "#^Cannot access property \\$Type on Salient\\\\PHPDoc\\\\PHPDocReturnTag\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/PHPDoc/PHPDocTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$data of static method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:provide\\(\\) expects array, mixed given\\.$#"

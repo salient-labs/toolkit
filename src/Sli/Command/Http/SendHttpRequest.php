@@ -11,13 +11,14 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
-use Salient\Sli\Command\Concept\Command;
+use Salient\Sli\Command\AbstractCommand;
+use Salient\Sli\EnvVar;
 use Salient\Sync\HttpSyncProvider;
 
 /**
  * Sends HTTP requests to HTTP sync providers
  */
-final class SendHttpRequest extends Command
+final class SendHttpRequest extends AbstractCommand
 {
     /** @var class-string<HttpSyncProvider> */
     private string $Provider = HttpSyncProvider::class;
@@ -55,7 +56,7 @@ final class SendHttpRequest extends Command
                 ->valueName('provider')
                 ->description('The HttpSyncProvider class to use')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue('provider', $value))
                 ->required()
                 ->bindTo($this->Provider),
             CliOption::build()
@@ -100,8 +101,7 @@ final class SendHttpRequest extends Command
 
     protected function run(string ...$args)
     {
-        /** @var HttpSyncProvider */
-        $provider = $this->getProvider($this->Provider, HttpSyncProvider::class);
+        $provider = $this->getFqcnOptionInstance('provider', $this->Provider, HttpSyncProvider::class, EnvVar::NS_PROVIDER);
         $query = Get::filter($this->HttpQuery) ?: null;
         $data = ($this->HttpDataFile ?? null) === null
             ? null

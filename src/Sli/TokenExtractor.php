@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sli\Support;
+namespace Salient\Sli;
 
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\File;
