@@ -46,7 +46,6 @@ class HttpStream implements HttpStreamInterface
 
         $meta = stream_get_meta_data($stream);
 
-        // @phpstan-ignore-next-line
         $this->Uri = $meta['uri'] ?? null;
         $this->IsReadable = strpbrk($meta['mode'], 'r+') !== false;
         $this->IsWritable = strpbrk($meta['mode'], 'waxc+') !== false;

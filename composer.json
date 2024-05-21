@@ -49,7 +49,8 @@
     "provide": {
         "psr/event-dispatcher-implementation": "^1",
         "psr/http-factory-implementation": "^1",
-        "psr/http-message-implementation": "^1.1 || ^2"
+        "psr/http-message-implementation": "^1.1 || ^2",
+        "psr/simple-cache-implementation": "^1 || ^2 || ^3"
     },
     "suggest": {
         "adodb/adodb-php": "Required for access to databases",
