@@ -8,6 +8,7 @@ use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\Exception\UnexpectedValueException;
+use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
@@ -30,7 +31,7 @@ use Salient\PHPDoc\Tag\VarTag;
  * @property-read array<string,ParamTag> $Params "@param" tags, indexed by name
  * @property-read ReturnTag|null $Return "@return" tag (if provided)
  * @property-read VarTag[] $Vars "@var" tags
- * @property-read array<string,TemplateTag> $Templates "template" tags, indexed by name
+ * @property-read array<string,TemplateTag> $Templates "@template" tags, indexed by name
  * @property-read class-string|null $Class
  * @property-read string|null $Member
  */
@@ -187,7 +188,7 @@ final class PHPDoc implements Readable
                     );
                     break;
 
-                // @var [type] [$<name>] [description]
+                // @var <type> [$<name>] [description]
                 case 'var':
                     $name = null;
                     // Assume the first token is a type
@@ -199,7 +200,7 @@ final class PHPDoc implements Readable
                     // Also assume that if a name is given, it's for a variable
                     // and not a constant
                     if ($token !== false && $token[0] === '$') {
-                        $name = rtrim($token);
+                        $name = rtrim(substr($token, 1));
                         $metaCount++;
                     }
 
@@ -288,17 +289,17 @@ final class PHPDoc implements Readable
             }
         }
 
-        // Replace tags that have no content with `true`
-        $this->TagsByName = array_map(
-            fn(array $tag) => count(array_filter($tag)) ? $tag : true,
-            $this->TagsByName
-        );
+        // Remove empty strings, reducing tags with no content to an empty array
+        foreach ($this->TagsByName as &$tags) {
+            $tags = Arr::whereNotEmpty($tags);
+        }
+        unset($tags);
 
         // Merge @template types from the declaring class, if available
-        if ($classDocBlock) {
+        if ($classDocBlock !== null) {
             $phpDoc = new self($classDocBlock, null, $class);
             foreach ($phpDoc->Templates as $name => $tag) {
-                $this->inheritValue($this->Templates[$name], $tag);
+                $this->Templates[$name] ??= $tag;
             }
         }
     }
@@ -439,6 +440,31 @@ final class PHPDoc implements Readable
     }
 
     /**
+     * Get the PHPDoc's template tags, optionally including class templates and
+     * any templates inherited from parent classes
+     *
+     * @return array<string,TemplateTag>
+     */
+    public function getTemplates(bool $all = false): array
+    {
+        if ($this->Class === null || $all) {
+            return $this->Templates;
+        }
+
+        foreach ($this->Templates as $name => $template) {
+            if (
+                $template->getClass() !== $this->Class
+                || ($this->Member !== null && $template->getMember() !== $this->Member)
+            ) {
+                continue;
+            }
+            $templates[$name] = $template;
+        }
+
+        return $templates ?? [];
+    }
+
+    /**
      * True if the PHPDoc contains more than a summary and/or variable type
      * information
      */
@@ -470,33 +496,6 @@ final class PHPDoc implements Readable
         return false;
     }
 
-    /**
-     * @param AbstractTag|string|null $ours
-     * @param AbstractTag|string|null $theirs
-     */
-    private function inheritValue(&$ours, $theirs): void
-    {
-        // Do nothing if there's nothing to merge
-        if ($theirs === null) {
-            return;
-        }
-
-        // If we have nothing to keep, use the incoming value
-        if ($ours === null) {
-            $ours = $theirs;
-        }
-    }
-
-    /**
-     * @param string[] $ours
-     * @param string[] $theirs
-     */
-    private function mergeStrings(array &$ours, array $theirs): void
-    {
-        // Add unique incoming lines
-        array_push($ours, ...array_diff($theirs, $ours));
-    }
-
     private function mergeTag(?AbstractTag &$ours, ?AbstractTag $theirs): void
     {
         if ($theirs === null) {
@@ -504,7 +503,7 @@ final class PHPDoc implements Readable
         }
 
         if ($ours === null) {
-            $ours = clone $theirs;
+            $ours = $theirs;
             return;
         }
 
@@ -517,22 +516,25 @@ final class PHPDoc implements Readable
      */
     public function mergeInherited(PHPDoc $parent): void
     {
-        $this->inheritValue($this->Summary, $parent->Summary);
-        $this->inheritValue($this->Description, $parent->Description);
-        $this->mergeStrings($this->Tags, $parent->Tags);
+        $this->Summary ??= $parent->Summary;
+        $this->Description ??= $parent->Description;
+        $this->Tags = Arr::extend($this->Tags, ...$parent->Tags);
         foreach ($parent->TagsByName as $name => $tags) {
-            // Whether $this->TagsByName[$name] is unset or boolean, assigning
-            // $tags won't result in loss of information
-            if (!is_array($this->TagsByName[$name] ?? null)) {
-                $this->TagsByName[$name] = $tags;
-            } elseif (is_array($tags)) {
-                $this->mergeStrings($this->TagsByName[$name], $tags);
-            }
+            $this->TagsByName[$name] = Arr::extend(
+                $this->TagsByName[$name] ?? [],
+                ...$tags,
+            );
         }
         foreach ($parent->Params as $name => $theirs) {
             $this->mergeTag($this->Params[$name], $theirs);
         }
         $this->mergeTag($this->Return, $parent->Return);
+        if (isset($parent->Vars[0])) {
+            $this->mergeTag($this->Vars[0], $parent->Vars[0]);
+        }
+        foreach ($parent->Templates as $name => $theirs) {
+            $this->Templates[$name] ??= $theirs;
+        }
     }
 
     /**

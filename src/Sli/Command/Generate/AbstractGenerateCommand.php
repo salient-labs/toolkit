@@ -309,7 +309,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $this->InputClassName = $this->InputClass->getName();
         $this->InputClassPHPDoc = PHPDoc::fromDocBlocks(Reflect::getAllClassDocComments($this->InputClass));
         $this->InputClassTemplates = $this->InputClassPHPDoc
-            ? $this->InputClassPHPDoc->Templates
+            ? $this->InputClassPHPDoc->getTemplates()
             : [];
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
@@ -413,6 +413,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      * @param AbstractTag|string $type
      * @param array<string,TemplateTag> $templates
      * @param array<string,TemplateTag> $inputClassTemplates
+     * @param-out array<string,TemplateTag> $inputClassTemplates
      */
     protected function getPHPDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
     {
