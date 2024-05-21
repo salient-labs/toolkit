@@ -10,6 +10,30 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.22] - 2024-05-21
+
+### Added
+
+- Implement PSR-16 caching interface in `CacheStore`
+  - In `set()`, rename `$expires` parameter to `$ttl`
+  - **Remove values from the cache when `$ttl` is an integer less than or equal to `0`**
+  - **Add `$default` parameter to `get()`, `getInstanceOf()`, etc.**
+  - Rename `deleteAll()` -> `clear()`
+  - Rename `flush()` -> `clearExpired()` for consistency
+  - Adopt PSR-16 return types (`bool` instead of `$this`)
+  - Add `setMultiple()`, `getMultiple()`, `deleteMultiple()`
+  - Add `CacheStoreInterface`
+- Add `PHPDoc::getTemplates()`
+
+### Changed
+
+- Improve `PHPDoc` tag inheritance
+- Remove leading `$` from `PHPDoc` `@var` names
+
+### Removed
+
+- Remove unused `CacheStore::maybeGet()` method
+
 ## [v0.99.21] - 2024-05-20
 
 ### Added
@@ -2526,6 +2550,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.22]: https://github.com/salient-labs/toolkit/compare/v0.99.21...v0.99.22
 [v0.99.21]: https://github.com/salient-labs/toolkit/compare/v0.99.20...v0.99.21
 [v0.99.20]: https://github.com/salient-labs/toolkit/compare/v0.99.19...v0.99.20
 [v0.99.19]: https://github.com/salient-labs/toolkit/compare/v0.99.18...v0.99.19
