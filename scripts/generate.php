@@ -69,7 +69,7 @@ $loader->addPsr4('Salient\\Tests\\', ["$dir/tests/unit/Toolkit/", "$dir/tests/fi
 
 $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
-    Cache::class => CacheStore::class,
+    Cache::class => [CacheStore::class, '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
     Console::class => [ConsoleWriter::class, '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],

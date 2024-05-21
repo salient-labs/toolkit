@@ -5,6 +5,7 @@ namespace Salient\Tests\Cache;
 use Salient\Cache\CacheStore;
 use Salient\Core\Utility\File;
 use Salient\Tests\TestCase;
+use DateInterval;
 use DateTimeImmutable;
 use stdClass;
 
@@ -54,7 +55,7 @@ final class CacheStoreTest extends TestCase
         $this->Cache->set(__METHOD__, $arr, new DateTimeImmutable('24 hours ago'));
         $this->Cache->set('key0', 'value0', new DateTimeImmutable('10 seconds ago'));
         $this->Cache->set('key1', 'value1', 60);
-        $this->Cache->set('key2', 'value2', time() + 60);
+        $this->Cache->set('key2', 'value2', new DateInterval('PT1M'));
         $now = time();
 
         $this->reopenCache();
@@ -68,8 +69,8 @@ final class CacheStoreTest extends TestCase
         $this->assertTrue($this->Cache->has(__METHOD__, 30));
         $this->assertTrue($this->Cache->has(__METHOD__, 0));
         $this->assertSame('value0', $current->get('key0'));
-        $this->assertSame($arr, $this->Cache->get(__METHOD__, 30));
-        $this->assertSame($arr, $this->Cache->get(__METHOD__, 0));
+        $this->assertSame($arr, $this->Cache->get(__METHOD__, null, 30));
+        $this->assertSame($arr, $this->Cache->get(__METHOD__, null, 0));
 
         $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getAllKeys());
         $this->assertEqualsCanonicalizing(['key0', 'key1', 'key2'], $current->getAllKeys());
@@ -80,9 +81,9 @@ final class CacheStoreTest extends TestCase
         $this->assertSame(4, $this->Cache->getItemCount(30));
         $this->assertSame(4, $this->Cache->getItemCount(0));
 
-        $this->Cache->flush();
+        $this->Cache->clearExpired();
         $this->assertFalse($this->Cache->has(__METHOD__, 0));
-        $this->assertNull($this->Cache->get(__METHOD__, 0));
+        $this->assertNull($this->Cache->get(__METHOD__, null, 0));
 
         $this->assertSame('value1', $this->Cache->get('key1'));
         $this->assertSame('value2', $this->Cache->get('key2'));
@@ -96,6 +97,20 @@ final class CacheStoreTest extends TestCase
         $current = $this->Cache->asOfNow($now + 120);
         $this->assertNull($current->get('key1'));
         $this->assertNull($current->get('key2'));
+    }
+
+    public function testMultiple(): void
+    {
+        $this->Cache->setMultiple($values = [
+            'key1' => 'value1',
+            'key2' => 'value2',
+            'key3' => 'value3',
+        ]);
+        $this->assertEqualsCanonicalizing(['key1', 'key2', 'key3'], $this->Cache->getAllKeys());
+        $this->assertSame($values, $this->Cache->getMultiple(['key1', 'key2', 'key3']));
+        $this->assertSame(['key0' => 'VALUE', 'key1' => 'value1'], $this->Cache->getMultiple(['key0', 'key1'], 'VALUE'));
+        $this->Cache->deleteMultiple(['key1', 'key3']);
+        $this->assertSame(['key2'], $this->Cache->getAllKeys());
     }
 
     public function testGetInstanceOf(): void
@@ -144,21 +159,6 @@ final class CacheStoreTest extends TestCase
         $this->assertNull($this->Cache->getString(__METHOD__));
     }
 
-    public function testMaybeGet(): void
-    {
-        $counter = 0;
-        $callback = function () use (&$counter) { return ++$counter; };
-        for ($i = 0; $i < 4; $i++) {
-            $this->Cache->maybeGet(__METHOD__, $callback, 60);
-        }
-        $this->assertSame(1, $this->Cache->get(__METHOD__));
-
-        // "sleep" for 2 minutes
-        $current = $this->Cache->asOfNow(time() + 120);
-        $current->maybeGet(__METHOD__, $callback, 60);
-        $this->assertSame(2, $this->Cache->get(__METHOD__));
-    }
-
     public function testDeleteAll(): void
     {
         $this->Cache->set('key1', 'value1');
@@ -166,7 +166,7 @@ final class CacheStoreTest extends TestCase
         $this->assertSame('value1', $this->Cache->get('key1'));
         $this->assertSame('value2', $this->Cache->get('key2'));
         $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getAllKeys(0));
-        $this->Cache->deleteAll();
+        $this->Cache->clear();
         $this->assertNull($this->Cache->get('key1'));
         $this->assertNull($this->Cache->get('key2'));
         $this->assertSame([], $this->Cache->getAllKeys(0));

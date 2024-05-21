@@ -2,9 +2,11 @@
 
 namespace Salient\Cache;
 
-use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\AbstractStore;
+use DateInterval;
+use DateTimeImmutable;
 use DateTimeInterface;
 use SQLite3Result;
 use SQLite3Stmt;
@@ -15,7 +17,7 @@ use SQLite3Stmt;
  * Expired items are not implicitly flushed. {@see CacheStore::flush()} must be
  * called explicitly, e.g. on a schedule or once per run.
  */
-final class CacheStore extends AbstractStore
+final class CacheStore extends AbstractStore implements CacheStoreInterface
 {
     private ?int $Now = null;
 
@@ -51,32 +53,20 @@ SQL
     }
 
     /**
-     * Store an item under a given key
-     *
-     * @param mixed $value
-     * @param DateTimeInterface|int|null $expires `null` or `0` if the value
-     * should be cached indefinitely, otherwise a {@see DateTimeInterface} or
-     * Unix timestamp representing its expiration time, or an integer
-     * representing its lifetime in seconds.
-     * @return $this
+     * @inheritDoc
      */
-    public function set(string $key, $value, $expires = null): self
+    public function set($key, $value, $ttl = null): bool
     {
-        if ($expires instanceof DateTimeInterface) {
-            $expires = $expires->getTimestamp();
-        } elseif (!$expires) {
+        if ($ttl === null) {
             $expires = null;
-        } elseif (!is_int($expires) || $expires < 0) {
-            // @codeCoverageIgnoreStart
-            throw new InvalidArgumentException(sprintf(
-                'Invalid $expires: %s',
-                $expires
-            ));
-            // @codeCoverageIgnoreEnd
-        } elseif ($expires < 1625061600) {
-            // Assume values less than the timestamp of 1 Jul 2021 00:00:00 AEST
-            // are lifetimes in seconds
-            $expires += time();
+        } elseif ($ttl instanceof DateInterval) {
+            $expires = (new DateTimeImmutable())->add($ttl)->getTimestamp();
+        } elseif ($ttl instanceof DateTimeInterface) {
+            $expires = $ttl->getTimestamp();
+        } elseif ($ttl > 0) {
+            $expires = time() + $ttl;
+        } else {
+            return $this->delete($key);
         }
 
         $db = $this->db();
@@ -106,21 +96,13 @@ SQL;
         $stmt->execute();
         $stmt->close();
 
-        return $this;
+        return true;
     }
 
     /**
-     * True if an item exists and has not expired
-     *
-     * If `$maxAge` is `null` (the default), the item's expiration time is
-     * honoured, otherwise it is ignored and the item is considered fresh if:
-     *
-     * - its age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
-     *
      * @phpstan-impure
      */
-    public function has(string $key, ?int $maxAge = null): bool
+    public function has($key, ?int $maxAge = null): bool
     {
         $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
@@ -145,19 +127,9 @@ SQL;
     }
 
     /**
-     * Retrieve an item stored under a given key
-     *
-     * If `$maxAge` is `null` (the default), the item's expiration time is
-     * honoured, otherwise it is ignored and the item is considered fresh if:
-     *
-     * - its age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
-     *
-     * @return mixed|null `null` if the item has expired or doesn't exist.
-     *
      * @phpstan-impure
      */
-    public function get(string $key, ?int $maxAge = null)
+    public function get($key, $default = null, ?int $maxAge = null)
     {
         $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
@@ -177,105 +149,79 @@ SQL;
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
-        if ($row === false) {
-            return null;
-        }
-        return unserialize($row[0]);
+        return $row === false
+            ? $default
+            : unserialize($row[0]);
     }
 
     /**
-     * Retrieve an instance of a class stored under a given key
-     *
-     * @template T of object
-     *
-     * @param class-string<T> $class
-     * @return T|null `null` if the item has expired, doesn't exist or is not an
-     * instance of `$class`.
-     *
      * @phpstan-impure
      */
-    public function getInstanceOf(string $key, string $class, ?int $maxAge = null): ?object
+    public function getInstanceOf($key, string $class, ?object $default = null, ?int $maxAge = null): ?object
     {
         $store = $this->maybeAsOfNow();
         if (!$store->has($key, $maxAge)) {
-            return null;
+            return $default;
         }
-        $item = $store->get($key, $maxAge);
+        $item = $store->get($key, $default, $maxAge);
         if (!is_object($item) || !is_a($item, $class)) {
-            return null;
+            return $default;
         }
         return $item;
     }
 
     /**
-     * Retrieve an array stored under a given key
-     *
-     * @return mixed[]|null `null` if the item has expired, doesn't exist or is
-     * not an array.
-     *
      * @phpstan-impure
      */
-    public function getArray(string $key, ?int $maxAge = null): ?array
+    public function getArray($key, ?array $default = null, ?int $maxAge = null): ?array
     {
         $store = $this->maybeAsOfNow();
         if (!$store->has($key, $maxAge)) {
-            return null;
+            return $default;
         }
-        $item = $store->get($key, $maxAge);
+        $item = $store->get($key, $default, $maxAge);
         if (!is_array($item)) {
-            return null;
+            return $default;
         }
         return $item;
     }
 
     /**
-     * Retrieve an integer stored under a given key
-     *
-     * @return int|null `null` if the item has expired, doesn't exist or is not
-     * an integer.
-     *
      * @phpstan-impure
      */
-    public function getInt(string $key, ?int $maxAge = null): ?int
+    public function getInt($key, ?int $default = null, ?int $maxAge = null): ?int
     {
         $store = $this->maybeAsOfNow();
         if (!$store->has($key, $maxAge)) {
-            return null;
+            return $default;
         }
-        $item = $store->get($key, $maxAge);
+        $item = $store->get($key, $default, $maxAge);
         if (!is_int($item)) {
-            return null;
+            return $default;
         }
         return $item;
     }
 
     /**
-     * Retrieve a string stored under a given key
-     *
-     * @return string|null `null` if the item has expired, doesn't exist or is
-     * not a string.
-     *
      * @phpstan-impure
      */
-    public function getString(string $key, ?int $maxAge = null): ?string
+    public function getString($key, ?string $default = null, ?int $maxAge = null): ?string
     {
         $store = $this->maybeAsOfNow();
         if (!$store->has($key, $maxAge)) {
-            return null;
+            return $default;
         }
-        $item = $store->get($key, $maxAge);
+        $item = $store->get($key, $default, $maxAge);
         if (!is_string($item)) {
-            return null;
+            return $default;
         }
         return $item;
     }
 
     /**
-     * Delete an item stored under a given key
-     *
-     * @return $this
+     * @inheritDoc
      */
-    public function delete(string $key): self
+    public function delete($key): bool
     {
         $db = $this->db();
         $sql = <<<SQL
@@ -289,15 +235,13 @@ SQL;
         $stmt->execute();
         $stmt->close();
 
-        return $this;
+        return true;
     }
 
     /**
-     * Delete all items
-     *
-     * @return $this
+     * @inheritDoc
      */
-    public function deleteAll(): self
+    public function clear(): bool
     {
         $db = $this->db();
         $db->exec(
@@ -306,15 +250,15 @@ DELETE FROM _cache_item;
 SQL
         );
 
-        return $this;
+        return true;
     }
 
     /**
      * Delete expired items
      *
-     * @return $this
+     * @return true
      */
-    public function flush(): self
+    public function clearExpired(): bool
     {
         $sql = <<<SQL
 DELETE FROM _cache_item
@@ -328,46 +272,43 @@ SQL;
         $stmt->execute();
         $stmt->close();
 
-        return $this;
+        return true;
     }
 
     /**
-     * Retrieve an item stored under a given key, or get it from a callback and
-     * store it for subsequent retrieval
-     *
-     * @template T
-     *
-     * @param callable(): T $callback
-     * @param DateTimeInterface|int|null $expires `null` or `0` if the value
-     * should be cached indefinitely, otherwise a {@see DateTimeInterface} or
-     * Unix timestamp representing its expiration time, or an integer
-     * representing its lifetime in seconds.
-     * @return T
-     *
-     * @phpstan-impure
+     * @inheritDoc
      */
-    public function maybeGet(string $key, callable $callback, $expires = null)
+    public function getMultiple($keys, $default = null, ?int $maxAge = null)
     {
-        $store = $this->maybeAsOfNow();
-        if ($store->has($key)) {
-            return $store->get($key);
+        foreach ($keys as $key) {
+            $values[$key] = $this->get($key, $default, $maxAge);
         }
-
-        $value = $callback();
-        $this->set($key, $value, $expires);
-
-        return $value;
+        return $values ?? [];
     }
 
     /**
-     * Get the number of unexpired items in the store
-     *
-     * If `$maxAge` is `null` (the default), each item's expiration time is
-     * honoured, otherwise it is ignored and items are considered fresh if:
-     *
-     * - their age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
-     *
+     * @inheritDoc
+     */
+    public function setMultiple($values, $ttl = null): bool
+    {
+        foreach ($values as $key => $value) {
+            $this->set($key, $value, $ttl);
+        }
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteMultiple($keys): bool
+    {
+        foreach ($keys as $key) {
+            $this->delete($key);
+        }
+        return true;
+    }
+
+    /**
      * @phpstan-impure
      */
     public function getItemCount(?int $maxAge = null): int
@@ -395,16 +336,6 @@ SQL;
     }
 
     /**
-     * Get a list of keys under which unexpired items are stored
-     *
-     * If `$maxAge` is `null` (the default), each item's expiration time is
-     * honoured, otherwise it is ignored and items are considered fresh if:
-     *
-     * - their age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
-     *
-     * @return string[]
-     *
      * @phpstan-impure
      */
     public function getAllKeys(?int $maxAge = null): array
@@ -434,18 +365,9 @@ SQL;
     }
 
     /**
-     * Get a copy of the store where items do not expire over time
-     *
-     * Returns a {@see CacheStore} instance where items expire relative to the
-     * time {@see CacheStore::asOfNow()} is called, allowing clients to mitigate
-     * race conditions arising from items expiring between subsequent calls to
-     * {@see CacheStore::has()} and {@see CacheStore::get()}, for example.
-     *
-     * @param int|null $now If given, items expire relative to this Unix
-     * timestamp instead of the time {@see CacheStore::asOfNow()} is called.
-     * @return static
+     * @inheritDoc
      */
-    public function asOfNow(?int $now = null): self
+    public function asOfNow(?int $now = null): CacheStoreInterface
     {
         if ($this->Now !== null) {
             // @codeCoverageIgnoreStart
@@ -464,9 +386,7 @@ SQL;
 
     private function now(): int
     {
-        return $this->Now === null
-            ? time()
-            : $this->Now;
+        return $this->Now ?? time();
     }
 
     /**

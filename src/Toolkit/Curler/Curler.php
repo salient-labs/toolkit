@@ -1273,6 +1273,9 @@ class Curler implements CurlerInterface, Buildable
         }
 
         if ($cacheKey !== null && $this->CacheLifetime >= 0) {
+            $ttl = $this->CacheLifetime === 0
+                ? null
+                : $this->CacheLifetime;
             $this->getCache()->set(
                 $cacheKey,
                 [
@@ -1282,7 +1285,7 @@ class Curler implements CurlerInterface, Buildable
                     'reason' => $reason,
                     'version' => $version,
                 ],
-                $this->CacheLifetime,
+                $ttl,
             );
         }
 
