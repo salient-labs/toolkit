@@ -12,10 +12,12 @@ use SQLite3Result;
 use SQLite3Stmt;
 
 /**
- * A SQLite-backed key-value store
+ * A SQLite-backed PSR-16 key-value store
  *
- * Expired items are not implicitly flushed. {@see CacheStore::flush()} must be
- * called explicitly, e.g. on a schedule or once per run.
+ * Expired items are not implicitly flushed. {@see CacheStore::clearExpired()}
+ * must be called explicitly, e.g. on a schedule or once per run.
+ *
+ * @api
  */
 final class CacheStore extends AbstractStore implements CacheStoreInterface
 {

@@ -47,6 +47,11 @@ final class CacheStoreTest extends TestCase
         $this->assertSame(['key1'], $this->Cache->getAllKeys());
         $this->assertFalse($this->Cache->has(__METHOD__));
         $this->assertNull($this->Cache->get(__METHOD__));
+
+        $this->Cache->set('key1', 'value1', 0);
+        $this->assertSame([], $this->Cache->getAllKeys());
+        $this->assertFalse($this->Cache->has('key1'));
+        $this->assertNull($this->Cache->get('key1'));
     }
 
     public function testWithExpiration(): void
