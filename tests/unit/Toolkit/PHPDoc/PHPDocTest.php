@@ -342,12 +342,12 @@ EOF,
         return [
             [
                 <<<'EOF'
-/** @var int $int This is a counter. */
+/** @var int $counter This is a counter. */
 EOF,
                 'This is a counter.',
                 null,
-                ['$int'],
-                ['$int'],
+                ['counter'],
+                ['counter'],
                 ['int'],
                 [null],
             ],
@@ -422,8 +422,8 @@ EOF,
 EOF,
                 null,
                 null,
-                ['$name', '$description'],
-                ['$name', '$description'],
+                ['name', 'description'],
+                ['name', 'description'],
                 ['string', 'string'],
                 ['Should contain a description of $name', 'Should contain a description of $description'],
             ],
@@ -589,7 +589,7 @@ EOF;
         $this->assertSame('T1', $phpDoc->Templates['T1']->getName());
         $this->assertSame('mixed', $phpDoc->Templates['T1']->getType());
         $this->assertCount(1, $phpDoc->Vars);
-        $this->assertSame('class-string<T0>|null', $phpDoc->Vars['$Class']->getType());
+        $this->assertSame('class-string<T0>|null', $phpDoc->Vars['Class']->getType());
         $this->assertCount(1, $phpDoc->Params);
         $this->assertSame('class-string<T0>|null', $phpDoc->Params['class']->getType());
     }

@@ -115,7 +115,7 @@ abstract class DbSyncProvider extends AbstractSyncProvider
             Get::hash(implode("\0", $this->getBackendIdentifier())),
         ]);
 
-        if (Cache::get($key, $ttl) === null) {
+        if (Cache::get($key, null, $ttl) === null) {
             try {
                 $this->dbConnector()->getConnection(5);
             } catch (ADODB_Exception $ex) {

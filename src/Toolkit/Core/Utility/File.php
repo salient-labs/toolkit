@@ -540,7 +540,6 @@ final class File extends AbstractUtility
     public static function getStreamUri($stream): ?string
     {
         if (self::isStream($stream)) {
-            // @phpstan-ignore-next-line
             return stream_get_meta_data($stream)['uri'] ?? null;
         }
         return null;

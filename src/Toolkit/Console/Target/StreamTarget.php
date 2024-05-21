@@ -73,7 +73,6 @@ final class StreamTarget extends ConsoleStreamTarget
         $meta = stream_get_meta_data($stream);
 
         $this->Stream = $stream;
-        // @phpstan-ignore-next-line
         $this->Uri = $meta['uri'] ?? null;
         $this->IsStdout = $this->Uri === 'php://stdout';
         $this->IsStderr = $this->Uri === 'php://stderr';
