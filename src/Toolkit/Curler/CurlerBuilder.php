@@ -5,7 +5,7 @@ namespace Salient\Curler;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Cache\CacheStore;
+use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\JsonDecodeFlag;
@@ -16,6 +16,7 @@ use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
+use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\AbstractBuilder;
 use Closure;
 use Stringable;
@@ -35,10 +36,10 @@ use Stringable;
  * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to format and parse the endpoint's date and time values
  * @method $this queryFlags(int-mask-of<QueryFlag::*> $value) Flags used to encode data for query strings and `POST`/`PUT`/`PATCH`/`DELETE` bodies (default: {@see QueryFlag::PRESERVE_NUMERIC_KEYS} `|` {@see QueryFlag::PRESERVE_STRING_KEYS})
  * @method $this jsonDecodeFlags(int-mask-of<JsonDecodeFlag::*> $value) Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
- * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
+ * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
  * @method $this pager(CurlerPagerInterface|null $value) Pagination handler
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
- * @method $this cacheStore(CacheStore|null $value) Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+ * @method $this cacheStore(CacheStoreInterface|null $value) Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
  * @method $this handleCookies(bool $value = true) Enable cookie handling (default: false)
  * @method $this cookiesCacheKey(string|null $value) Key to cache cookies under (cookie handling is implicitly enabled if given)
  * @method $this cacheResponses(bool $value = true) Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY) (default: false)

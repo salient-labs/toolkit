@@ -4,6 +4,7 @@ namespace Salient\Container;
 
 use Salient\Cache\CacheStore;
 use Salient\Console\Target\StreamTarget;
+use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Core\EnvFlag;
@@ -446,17 +447,14 @@ class Application extends Container implements ApplicationInterface
      */
     final public function startCache()
     {
-        $cacheDb = $this->getCacheDb();
-
         if (Cache::isLoaded()) {
-            $file = Cache::getFilename();
-            if (File::same($cacheDb, $file)) {
+            if ($this->checkCache(Cache::getInstance())) {
                 return $this;
             }
-            throw new LogicException(sprintf('Cache store already started: %s', $file));
+            throw new LogicException('Cache store already started');
         }
 
-        Cache::load(new CacheStore($cacheDb));
+        Cache::load(new CacheStore($this->getCacheDb()));
 
         return $this;
     }
@@ -476,12 +474,23 @@ class Application extends Container implements ApplicationInterface
      */
     final public function stopCache()
     {
-        if (!Cache::isLoaded()
-                || !File::same($this->getCacheDb(false), Cache::getFilename())) {
+        if (
+            !Cache::isLoaded()
+            || !$this->checkCache($cache = Cache::getInstance())
+        ) {
             return $this;
         }
-        Cache::close();
+
+        /** @var CacheStore $cache */
+        $cache->close();
+
         return $this;
+    }
+
+    private function checkCache(CacheStoreInterface $cache): bool
+    {
+        return $cache instanceof CacheStore
+            && File::same($this->getCacheDb(false), $cache->getFilename());
     }
 
     /**

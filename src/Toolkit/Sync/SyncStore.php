@@ -184,15 +184,15 @@ final class SyncStore extends AbstractStore
         string $command = '',
         array $arguments = []
     ) {
+        $this->assertCanUpsert();
+
         $this->Errors = new SyncErrorCollection();
         $this->Command = $command;
         $this->Arguments = $arguments;
 
-        $this
-            ->requireUpsert()
-            ->openDb(
-                $filename,
-                <<<SQL
+        $this->openDb(
+            $filename,
+            <<<SQL
 CREATE TABLE IF NOT EXISTS
   _sync_run (
     run_id INTEGER NOT NULL PRIMARY KEY,
@@ -263,7 +263,7 @@ CREATE TABLE IF NOT EXISTS
   );
 
 SQL
-            );
+        );
 
         Event::dispatch(new SyncStoreLoadedEvent($this));
     }
@@ -1392,6 +1392,9 @@ SQL;
         return $this;
     }
 
+    /**
+     * @internal
+     */
     public function __destruct()
     {
         // If not closed explicitly, assume something went wrong

@@ -90,7 +90,7 @@ interface ApplicationInterface extends ContainerInterface
     public function logOutput(?string $name = null, ?bool $debug = null);
 
     /**
-     * Start a cache store in the application's cache directory
+     * Start a SQLite-backed cache store in the application's cache directory
      *
      * @see CacheStore
      *
@@ -99,17 +99,15 @@ interface ApplicationInterface extends ContainerInterface
     public function startCache();
 
     /**
-     * Start a cache store in the application's cache directory if a backing
-     * database was created on a previous run
-     *
-     * @see CacheStore
+     * Start a SQLite-backed cache store if a database file created by
+     * startCache() on a previous run is found
      *
      * @return $this
      */
     public function resumeCache();
 
     /**
-     * Stop a previously started cache store
+     * Stop a cache store started by startCache() or resumeCache()
      *
      * @return $this
      */

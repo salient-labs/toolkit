@@ -63,8 +63,6 @@ final class CacheStoreTest extends TestCase
         $this->Cache->set('key2', 'value2', new DateInterval('PT1M'));
         $now = time();
 
-        $this->reopenCache();
-
         // "rewind" by 30 seconds
         $current = $this->Cache->asOfNow($now - 30);
         $this->assertFalse($this->Cache->has(__METHOD__));
@@ -102,6 +100,18 @@ final class CacheStoreTest extends TestCase
         $current = $this->Cache->asOfNow($now + 120);
         $this->assertNull($current->get('key1'));
         $this->assertNull($current->get('key2'));
+    }
+
+    public function testDestructor(): void
+    {
+        $this->Cache->close();
+        $cache = new CacheStore($this->File);
+        $cache->set(__METHOD__, 'foo', new DateTimeImmutable('10 seconds ago'));
+        $now = time();
+        $this->assertSame('foo', $cache->asOfNow($now - 30)->get(__METHOD__));
+        unset($cache);
+        $cache = new CacheStore($this->File);
+        $this->assertNull($cache->asOfNow($now - 30)->get(__METHOD__));
     }
 
     public function testMultiple(): void

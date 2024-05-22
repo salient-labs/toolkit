@@ -60,14 +60,6 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @inheritDoc
      */
-    final public function getApp(): ContainerInterface
-    {
-        return $this->App;
-    }
-
-    /**
-     * @inheritDoc
-     */
     final public function getContainer(): ContainerInterface
     {
         return $this->App;

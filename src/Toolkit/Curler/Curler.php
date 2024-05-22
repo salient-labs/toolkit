@@ -6,7 +6,7 @@ use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Cache\CacheStore;
+use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
@@ -96,11 +96,11 @@ class Curler implements CurlerInterface, Buildable
     protected int $QueryFlags;
     /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY> */
     protected int $JsonDecodeFlags;
-    /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface,string|null}> */
+    /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,string|null}> */
     protected array $Middleware = [];
     protected ?CurlerPagerInterface $Pager;
     protected bool $AlwaysPaginate;
-    protected ?CacheStore $CacheStore;
+    protected ?CacheStoreInterface $CacheStore;
     protected ?string $CookiesCacheKey;
     protected bool $CacheResponses;
     protected bool $CachePostResponses;
@@ -141,10 +141,10 @@ class Curler implements CurlerInterface, Buildable
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
      * @param int-mask-of<QueryFlag::*> $queryFlags Flags used to encode data for query strings and `POST`/`PUT`/`PATCH`/`DELETE` bodies (default: {@see QueryFlag::PRESERVE_NUMERIC_KEYS} `|` {@see QueryFlag::PRESERVE_STRING_KEYS})
      * @param int-mask-of<JsonDecodeFlag::*> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
-     * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
+     * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
      * @param bool $alwaysPaginate Use the pager to process requests even if no pagination is required
-     * @param CacheStore|null $cacheStore Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+     * @param CacheStoreInterface|null $cacheStore Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
      * @param bool $handleCookies Enable cookie handling
      * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
      * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
@@ -175,7 +175,7 @@ class Curler implements CurlerInterface, Buildable
         array $middleware = [],
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
-        ?CacheStore $cacheStore = null,
+        ?CacheStoreInterface $cacheStore = null,
         bool $handleCookies = false,
         ?string $cookiesCacheKey = null,
         bool $cacheResponses = false,
@@ -615,7 +615,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getCacheStore(): ?CacheStore
+    public function getCacheStore(): ?CacheStoreInterface
     {
         return $this->CacheStore;
     }
@@ -858,7 +858,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withCacheStore(?CacheStore $store = null)
+    public function withCacheStore(?CacheStoreInterface $store = null)
     {
         return $this->with('CacheStore', $store);
     }
@@ -1404,7 +1404,7 @@ class Curler implements CurlerInterface, Buildable
         return Arr::implode(':', [self::class, 'cookies', $cacheKey]);
     }
 
-    private function getCache(): CacheStore
+    private function getCache(): CacheStoreInterface
     {
         return $this->CacheStore ?? Cache::getInstance();
     }

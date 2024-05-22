@@ -8,6 +8,7 @@ use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
 use Salient\Console\ConsoleWriter;
 use Salient\Container\Container;
+use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\App;
@@ -69,7 +70,7 @@ $loader->addPsr4('Salient\\Tests\\', ["$dir/tests/unit/Toolkit/", "$dir/tests/fi
 
 $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
-    Cache::class => [CacheStore::class, '--api'],
+    Cache::class => [CacheStoreInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache store', '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
     Console::class => [ConsoleWriter::class, '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],

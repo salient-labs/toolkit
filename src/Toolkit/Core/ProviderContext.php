@@ -54,14 +54,6 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getApp(): ContainerInterface
-    {
-        return $this->Container;
-    }
-
-    /**
-     * @inheritDoc
-     */
     final public function getContainer(): ContainerInterface
     {
         return $this->Container;

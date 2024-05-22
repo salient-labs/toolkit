@@ -2,7 +2,6 @@
 
 namespace Salient\Sync;
 
-use Salient\Cache\CacheStore;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
@@ -224,8 +223,6 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      *
      * Called when {@see HttpSyncProvider::getCurler()} is called with a
      * negative `$expiry`.
-     *
-     * @see CacheStore::set() for more information about `$expiry` values
      *
      * @return int<0,max>|null
      */

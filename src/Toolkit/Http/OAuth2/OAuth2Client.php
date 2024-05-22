@@ -6,7 +6,7 @@ use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
-use Salient\Cache\CacheStore;
+use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpServerRequestInterface;
 use Salient\Core\Exception\InvalidArgumentException;
@@ -212,7 +212,7 @@ abstract class OAuth2Client
      * If an unexpired refresh token is available, use it to get a new access
      * token from the provider if possible
      */
-    final protected function refreshAccessToken(CacheStore $cache): ?AccessToken
+    final protected function refreshAccessToken(CacheStoreInterface $cache): ?AccessToken
     {
         if (!$cache->has("{$this->TokenKey}:refresh")) {
             return null;
@@ -231,7 +231,7 @@ abstract class OAuth2Client
      */
     final protected function authorize(
         array $options = [],
-        CacheStore $cache = null
+        CacheStoreInterface $cache = null
     ): AccessToken {
         if (isset($options['scope'])) {
             $scopes = $this->resolveScopes($options['scope']);

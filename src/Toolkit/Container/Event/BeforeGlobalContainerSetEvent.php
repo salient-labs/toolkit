@@ -8,7 +8,7 @@ use Salient\Contract\Container\ContainerInterface;
 /**
  * Dispatched before the global container is set or unset
  */
-class BeforeGlobalContainerSetEvent extends ContainerEvent implements BeforeGlobalContainerSetEventInterface
+class BeforeGlobalContainerSetEvent extends AbstractContainerEvent implements BeforeGlobalContainerSetEventInterface
 {
     protected ?ContainerInterface $Container;
 
@@ -17,6 +17,9 @@ class BeforeGlobalContainerSetEvent extends ContainerEvent implements BeforeGlob
         $this->Container = $container;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getContainer(): ?ContainerInterface
     {
         return $this->Container;
