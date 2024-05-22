@@ -28,7 +28,6 @@
     "require-dev": {
         "adodb/adodb-php": "^5",
         "analog/analog": "^1",
-        "ergebnis/composer-normalize": "^2",
         "ergebnis/phpunit-slow-test-detector": "^2",
         "firebase/php-jwt": "^6",
         "league/oauth2-client": "^2",
@@ -42,6 +41,11 @@
         "phpstan/phpstan-phpunit": "^1",
         "phpunit/phpunit": "^9",
         "sebastian/diff": "^4 || ^5"
+    },
+    "replace": {
+        "salient/cache": "self.version",
+        "salient/contracts": "self.version",
+        "salient/core": "self.version"
     },
     "conflict": {
         "lkrms/util": "*"
@@ -87,7 +91,6 @@
     ],
     "config": {
         "allow-plugins": {
-            "ergebnis/composer-normalize": true,
             "phpstan/extension-installer": true
         },
         "platform": {

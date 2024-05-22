@@ -1,0 +1,33 @@
+{
+    "name": "salient/core",
+    "description": "The core package of the Salient toolkit",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Luke Arms",
+            "email": "luke@linacreative.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/salient-labs/toolkit/issues",
+        "source": "https://github.com/salient-labs/toolkit"
+    },
+    "require": {
+        "php": ">=7.4",
+        "composer-runtime-api": "^2.2",
+        "psr/event-dispatcher": "^1",
+        "salient/contracts": "self.version"
+    },
+    "provide": {
+        "psr/event-dispatcher-implementation": "^1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Salient\\Core\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
