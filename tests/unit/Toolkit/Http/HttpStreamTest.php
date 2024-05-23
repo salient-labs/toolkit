@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Core\QueryFlag;
+use Salient\Contract\Http\FormDataFlag;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Sys;
@@ -76,12 +76,12 @@ final class HttpStreamTest extends TestCase
      * @dataProvider fromDataProvider
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<QueryFlag::*> $flags
+     * @param int-mask-of<FormDataFlag::*> $flags
      */
     public function testFromData(
         ?string $expected,
         $data,
-        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null,
         bool $asJson = false
     ): void {
@@ -94,7 +94,7 @@ final class HttpStreamTest extends TestCase
     }
 
     /**
-     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<QueryFlag::*>,3?:DateFormatter|null,4?:bool}>
+     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<FormDataFlag::*>,3?:DateFormatter|null,4?:bool}>
      */
     public static function fromDataProvider(): array
     {
@@ -157,14 +157,14 @@ final class HttpStreamTest extends TestCase
             [
                 '{"user_id":7654,"fields":{"email":"JWilliams432@gmail.com","groups":["staff","editor"],"created":"2021-10-02T17:23:14+10:00"}}',
                 $data,
-                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],
             [
                 null,
                 $multipartData,
-                QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+                FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],

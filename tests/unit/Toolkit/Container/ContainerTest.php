@@ -487,11 +487,6 @@ trait TestTrait
         return $this->Service ?? static::class;
     }
 
-    public function getApp(): ContainerInterface
-    {
-        return $this->getContainer();
-    }
-
     public function getContainer(): ContainerInterface
     {
         return $this->Container ??= new Container();

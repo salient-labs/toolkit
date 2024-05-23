@@ -256,11 +256,6 @@ parameters:
 			path: src/Toolkit/Core/AbstractReflectiveEnumeration.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\AbstractStore\\:\\:db\\(\\) should return SQLite3 but returns SQLite3\\|null\\.$#"
-			count: 2
-			path: src/Toolkit/Core/AbstractStore.php
-
-		-
 			message: "#^Property Salient\\\\Core\\\\ArrayMapper\\:\\:\\$KeyMap \\(array\\<\\(int\\|string\\)\\>\\) does not accept array\\<array\\<\\(int\\|string\\)\\>\\|int\\|string\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Core/ArrayMapper.php

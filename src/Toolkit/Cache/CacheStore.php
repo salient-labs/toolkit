@@ -12,10 +12,7 @@ use SQLite3Result;
 use SQLite3Stmt;
 
 /**
- * A SQLite-backed PSR-16 key-value store
- *
- * Expired items are not implicitly flushed. {@see CacheStore::clearExpired()}
- * must be called explicitly, e.g. on a schedule or once per run.
+ * A PSR-16 key-value store backed by a SQLite database
  *
  * @api
  */
@@ -28,11 +25,11 @@ final class CacheStore extends AbstractStore implements CacheStoreInterface
      */
     public function __construct(string $filename = ':memory:')
     {
-        $this
-            ->requireUpsert()
-            ->openDb(
-                $filename,
-                <<<SQL
+        $this->assertCanUpsert();
+
+        $this->openDb(
+            $filename,
+            <<<SQL
 CREATE TABLE IF NOT EXISTS
   _cache_item (
     item_key TEXT NOT NULL PRIMARY KEY,
@@ -51,7 +48,7 @@ WHERE
   item_key = NEW.item_key;
 END;
 SQL
-            );
+        );
     }
 
     /**
@@ -380,10 +377,35 @@ SQL;
         }
 
         $clone = clone $this;
-        $clone->Now = $now === null
-            ? time()
-            : $now;
+        $clone->Now = $now ?? time();
         return $clone;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function close()
+    {
+        // Do nothing if this is an instance returned by asOfNow()
+        if ($this->Now !== null) {
+            return $this;
+        }
+
+        if (!$this->isOpen()) {
+            return $this->closeDb();
+        }
+
+        $this->clearExpired();
+
+        return $this->closeDb();
+    }
+
+    /**
+     * @internal
+     */
+    public function __destruct()
+    {
+        $this->close();
     }
 
     private function now(): int

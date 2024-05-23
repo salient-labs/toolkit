@@ -94,6 +94,14 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
+     * Get the builder's container
+     */
+    final public function getContainer(): ContainerInterface
+    {
+        return $this->Container;
+    }
+
+    /**
      * Get a value applied to the builder
      *
      * @return mixed|null

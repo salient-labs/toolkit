@@ -2,6 +2,7 @@
 
 namespace Salient\Sync;
 
+use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Describable;
 use Salient\Contract\Core\ListConformity;
@@ -26,7 +27,6 @@ use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ProvidableTrait;
-use Salient\Core\Concern\RequiresContainer;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Sync;

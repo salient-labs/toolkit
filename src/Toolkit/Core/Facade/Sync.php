@@ -38,7 +38,7 @@ use Salient\Sync\SyncStore;
  * @method static int getRunId() Get the run ID of the current run
  * @method static string getRunUuid(bool $binary = false) Get the UUID of the current run (see {@see SyncStore::getRunUuid()})
  * @method static bool hasRunId() Check if a run has started
- * @method static bool isOpen() Check if a database is open
+ * @method static bool isOpen() Check if the database is open
  * @method static SyncStore namespace(string $prefix, string $uri, string $namespace, class-string<SyncClassResolverInterface>|null $resolver = null) Register a sync entity namespace (see {@see SyncStore::namespace()})
  * @method static SyncStore provider(SyncProviderInterface $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
  * @method static SyncStore reportErrors(string $successText = 'No sync errors recorded') Report sync errors recorded so far to the console (see {@see SyncStore::reportErrors()})

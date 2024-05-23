@@ -9,4 +9,4 @@ use Psr\Container\NotFoundExceptionInterface;
  *
  * @api
  */
-class ContainerServiceNotFoundException extends ContainerException implements NotFoundExceptionInterface {}
+class ContainerServiceNotFoundException extends AbstractContainerException implements NotFoundExceptionInterface {}

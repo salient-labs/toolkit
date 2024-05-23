@@ -231,14 +231,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @inheritDoc
      */
-    final public function getApp(): CliApplicationInterface
-    {
-        return $this->App;
-    }
-
-    /**
-     * @inheritDoc
-     */
     final public function getContainer(): CliApplicationInterface
     {
         return $this->App;

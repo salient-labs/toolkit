@@ -33,6 +33,7 @@ class GenerateBuilder extends AbstractGenerateCommand
         'apply',
         'build',
         'getB',
+        'getContainer',
         'getService',
         'getTerminators',
         'go',

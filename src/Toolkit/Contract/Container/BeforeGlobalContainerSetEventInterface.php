@@ -3,8 +3,6 @@
 namespace Salient\Contract\Container;
 
 /**
- * Dispatched before the global container is set or unset
- *
  * @api
  */
 interface BeforeGlobalContainerSetEventInterface

@@ -4,13 +4,12 @@ namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\QueryFlag;
+use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\StreamDetachedException;
@@ -71,15 +70,16 @@ class HttpStream implements HttpStreamInterface
      * HttpMultipartStream object
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<QueryFlag::*> $flags
+     * @param int-mask-of<FormDataFlag::*> $flags
      */
     public static function fromData(
         $data,
-        int $flags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         bool $asJson = false,
         ?string $boundary = null
     ): HttpStreamInterface {
+        $formData = new FormData($data);
         if ($asJson) {
             $callback = static function (object $value) {
                 if ($value instanceof HttpMultipartStreamPartInterface) {
@@ -87,7 +87,7 @@ class HttpStream implements HttpStreamInterface
                 }
                 return false;
             };
-            $data = Get::data($data, $flags, $dateFormatter, $callback);
+            $data = $formData->getData($flags, $dateFormatter, $callback);
             return self::fromString(Json::stringify($data));
         }
 
@@ -99,7 +99,7 @@ class HttpStream implements HttpStreamInterface
             }
             return false;
         };
-        $data = Get::formData($data, $flags, $dateFormatter, $callback);
+        $data = $formData->getValues($flags, $dateFormatter, $callback);
 
         if (!$multipart) {
             /** @var string $content */

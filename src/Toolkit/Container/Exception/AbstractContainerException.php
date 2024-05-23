@@ -10,4 +10,4 @@ use Salient\Core\AbstractException;
  *
  * @api
  */
-abstract class ContainerException extends AbstractException implements ContainerExceptionInterface {}
+abstract class AbstractContainerException extends AbstractException implements ContainerExceptionInterface {}

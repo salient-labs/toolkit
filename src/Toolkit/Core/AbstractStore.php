@@ -30,15 +30,21 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     private bool $IsCheckRunning = false;
 
     /**
-     * Create or open a database
+     * Open the database, creating it if necessary
      *
+     * @param string $filename Use `':memory:'` to create a temporary database,
+     * otherwise `$filename` is created with file mode `0600` if it doesn't
+     * exist. Its parent directory is created with mode `0700` if it doesn't
+     * exist.
      * @return $this
-     * @throws LogicException if a database is already open.
+     * @throws LogicException if the database is already open.
      */
     final protected function openDb(string $filename, ?string $query = null)
     {
         if ($this->Db) {
+            // @codeCoverageIgnoreStart
             throw new LogicException('Database already open');
+            // @codeCoverageIgnoreEnd
         }
 
         if ($filename !== ':memory:') {
@@ -55,7 +61,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
         $db->exec('PRAGMA journal_mode=WAL');
         $db->exec('PRAGMA foreign_keys=ON');
 
-        if ($query) {
+        if ($query !== null) {
             $db->exec($query);
         }
 
@@ -74,7 +80,8 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * Close the database
+     * Close the database and unload any facades where the store is the
+     * underlying instance
      *
      * @return $this
      */
@@ -84,13 +91,15 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * If a database is open, close it
+     * If the database is open, close it, and unload any facades where the store
+     * is the underlying instance
      *
      * @return $this
      */
     final protected function closeDb()
     {
         if (!$this->Db) {
+            // Necessary because the database may not have been opened yet
             $this->unloadFacades();
             return $this;
         }
@@ -98,6 +107,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
         $this->Db->close();
         $this->Db = null;
         unset($this->Filename);
+        $this->IsTransactionOpen = false;
 
         $this->unloadFacades();
 
@@ -105,10 +115,11 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * Override to perform an action whenever the open SQLite3 instance is
+     * Override to perform an action whenever the underlying SQLite3 instance is
      * accessed
      *
-     * Called once per call to {@see AbstractStore::db()}.
+     * Called once per call to {@see AbstractStore::db()}. Use
+     * {@see AbstractStore::safeCheck()} to prevent recursion if necessary.
      *
      * @return $this
      */
@@ -118,7 +129,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * Check if a database is open
+     * Check if the database is open
      */
     final public function isOpen(): bool
     {
@@ -138,7 +149,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * True if check() is running via safeCheck()
+     * Check if safeCheck() is currently running
      */
     final protected function isCheckRunning(): bool
     {
@@ -179,7 +190,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * Get the open SQLite3 instance
+     * Get the underlying SQLite3 instance
      *
      * @throws LogicException if the database is not open.
      */
@@ -191,12 +202,9 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
             return $this->Db;
         }
 
-        return $this->safeCheck()->Db;
-    }
-
-    final protected function isTransactionOpen(): bool
-    {
-        return $this->Db && $this->IsTransactionOpen;
+        $this->safeCheck();
+        $this->assertIsOpen();
+        return $this->Db;
     }
 
     /**
@@ -207,9 +215,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      */
     final protected function beginTransaction()
     {
-        if ($this->Db && $this->IsTransactionOpen) {
-            throw new LogicException('Transaction already open');
-        }
+        $this->assertTransactionNotOpen();
 
         $this->db()->exec('BEGIN');
         $this->IsTransactionOpen = true;
@@ -225,7 +231,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      */
     final protected function commitTransaction()
     {
-        if ($this->Db && !$this->IsTransactionOpen) {
+        if (!$this->IsTransactionOpen) {
             throw new LogicException('No transaction open');
         }
 
@@ -239,18 +245,17 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      * ROLLBACK a transaction
      *
      * @param bool $ignoreNoTransaction If `true` and no transaction is open,
-     * return without throwing an exception. Recommended in `catch` blocks where
-     * a transaction may or may not have been successfully opened.
+     * return without throwing an exception. Useful in `catch` blocks where a
+     * transaction may or may not have been successfully opened.
      * @return $this
      * @throws LogicException if no transaction is open.
      */
     final protected function rollbackTransaction(bool $ignoreNoTransaction = false)
     {
-        if ($this->Db && !$this->IsTransactionOpen) {
+        if (!$this->IsTransactionOpen) {
             if ($ignoreNoTransaction) {
                 return $this;
             }
-
             throw new LogicException('No transaction open');
         }
 
@@ -271,9 +276,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      */
     final protected function callInTransaction(callable $callback)
     {
-        if ($this->Db && $this->IsTransactionOpen) {
-            throw new LogicException('Transaction already open');
-        }
+        $this->assertTransactionNotOpen();
 
         $this->beginTransaction();
 
@@ -282,7 +285,6 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
             $this->commitTransaction();
         } catch (Throwable $ex) {
             $this->rollbackTransaction();
-
             throw $ex;
         }
 
@@ -290,30 +292,36 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * Throw an exception if the SQLite3 library doesn't support UPSERT syntax
+     * Throw an exception if the underlying SQLite3 library doesn't support
+     * UPSERT queries
      *
      * @link https://www.sqlite.org/lang_UPSERT.html
-     *
-     * @return $this
      */
-    final protected function requireUpsert()
+    final protected function assertCanUpsert(): void
     {
-        if (SQLite3::version()['versionNumber'] >= 3024000) {
-            return $this;
+        if (SQLite3::version()['versionNumber'] < 3024000) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidRuntimeConfigurationException('SQLite 3.24 or above required');
+            // @codeCoverageIgnoreEnd
         }
-
-        // @codeCoverageIgnoreStart
-        throw new InvalidRuntimeConfigurationException('SQLite 3.24 or above required');
-        // @codeCoverageIgnoreEnd
     }
 
     /**
-     * Throw an exception if the database is not open
+     * @phpstan-assert !null $this->Db
      */
     final protected function assertIsOpen(): void
     {
         if (!$this->Db) {
+            // @codeCoverageIgnoreStart
             throw new LogicException('No database open');
+            // @codeCoverageIgnoreEnd
+        }
+    }
+
+    private function assertTransactionNotOpen(): void
+    {
+        if ($this->IsTransactionOpen) {
+            throw new LogicException('Transaction already open');
         }
     }
 }

@@ -245,14 +245,6 @@ final class SyncSerializeRules implements
     /**
      * @inheritDoc
      */
-    public function getApp(): ContainerInterface
-    {
-        return $this->App;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getContainer(): ContainerInterface
     {
         return $this->App;

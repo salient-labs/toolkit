@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Concern;
+namespace Salient\Container;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Facade\App;
