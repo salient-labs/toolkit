@@ -8,8 +8,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\QueryFlag;
 use Salient\Contract\Http\AccessTokenInterface;
+use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -46,18 +46,18 @@ interface CurlerInterface extends ClientInterface
     public function withUri($uri);
 
     /**
-     * Get the last request sent to the endpoint
+     * Get the last request sent to the endpoint or passed to middleware
      */
     public function getLastRequest(): ?RequestInterface;
 
     /**
-     * Get the last response received from the endpoint
+     * Get the last response received from the endpoint or returned by
+     * middleware
      */
     public function getLastResponse(): ?HttpResponseInterface;
 
     /**
-     * Check if the last response received from the endpoint contains
-     * JSON-encoded data
+     * Check if the last response contains JSON-encoded data
      */
     public function lastResponseIsJson(): bool;
 
@@ -405,20 +405,18 @@ interface CurlerInterface extends ClientInterface
     public function withDateFormatter(?DateFormatterInterface $formatter);
 
     /**
-     * Get an instance with the given Get::query() flags
+     * Get an instance with the given form data flags
      *
-     * Query flags are used to encode data for query strings and
-     * `POST`/`PUT`/`PATCH`/`DELETE` bodies.
+     * Form data flags are used to encode data for query strings and message
+     * bodies.
      *
-     * {@see QueryFlag::PRESERVE_NUMERIC_KEYS} and
-     * {@see QueryFlag::PRESERVE_STRING_KEYS} are applied by default.
+     * {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} and
+     * {@see FormDataFlag::PRESERVE_STRING_KEYS} are applied by default.
      *
-     * @see Get::query()
-     *
-     * @param int-mask-of<QueryFlag::*> $flags
+     * @param int-mask-of<FormDataFlag::*> $flags
      * @return static
      */
-    public function withQueryFlags(int $flags);
+    public function withFormDataFlags(int $flags);
 
     /**
      * Get an instance with the given json_decode() flags
@@ -529,7 +527,7 @@ interface CurlerInterface extends ClientInterface
      * The callback's return value is hashed and combined with request method
      * and URI to create a response cache key.
      *
-     * @param (callable(RequestInterface): (string[]|string))|null $callback
+     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $callback
      * @return static
      */
     public function withCacheKeyCallback(?callable $callback);

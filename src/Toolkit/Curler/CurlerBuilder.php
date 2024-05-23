@@ -9,11 +9,11 @@ use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\JsonDecodeFlag;
-use Salient\Contract\Core\QueryFlag;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\AccessTokenInterface;
+use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\HttpResponseInterface;
@@ -34,7 +34,7 @@ use Stringable;
  * @method $this expectJson(bool $value = true) Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON (default: true)
  * @method $this postJson(bool $value = true) Use JSON to encode POST/PUT/PATCH/DELETE data (default: true)
  * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to format and parse the endpoint's date and time values
- * @method $this queryFlags(int-mask-of<QueryFlag::*> $value) Flags used to encode data for query strings and `POST`/`PUT`/`PATCH`/`DELETE` bodies (default: {@see QueryFlag::PRESERVE_NUMERIC_KEYS} `|` {@see QueryFlag::PRESERVE_STRING_KEYS})
+ * @method $this formDataFlags(int-mask-of<FormDataFlag::*> $value) Flags used to encode data for query strings and message bodies (default: {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} `|` {@see FormDataFlag::PRESERVE_STRING_KEYS})
  * @method $this jsonDecodeFlags(int-mask-of<JsonDecodeFlag::*> $value) Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
  * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
  * @method $this pager(CurlerPagerInterface|null $value) Pagination handler
@@ -44,7 +44,7 @@ use Stringable;
  * @method $this cookiesCacheKey(string|null $value) Key to cache cookies under (cookie handling is implicitly enabled if given)
  * @method $this cacheResponses(bool $value = true) Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY) (default: false)
  * @method $this cachePostResponses(bool $value = true) Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled) (default: false)
- * @method $this cacheKeyCallback((callable(RequestInterface): (string[]|string))|null $value) Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
+ * @method $this cacheKeyCallback((callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $value) Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
  * @method $this cacheLifetime(int<-1,max> $value) Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
  * @method $this refreshCache(bool $value = true) Replace cached responses even if they haven't expired (default: false)
  * @method $this timeout(int<0,max>|null $value) Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)

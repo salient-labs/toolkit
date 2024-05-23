@@ -12,11 +12,11 @@ use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\JsonDecodeFlag;
 use Salient\Contract\Core\MimeType;
-use Salient\Contract\Core\QueryFlag;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\AccessTokenInterface;
+use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -46,6 +46,7 @@ use Salient\Curler\Exception\NetworkException;
 use Salient\Curler\Exception\RequestException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Exception\StreamEncapsulationException;
+use Salient\Http\FormData;
 use Salient\Http\HasHttpHeaders;
 use Salient\Http\HttpHeaders;
 use Salient\Http\HttpRequest;
@@ -92,8 +93,8 @@ class Curler implements CurlerInterface, Buildable
     protected bool $ExpectJson;
     protected bool $PostJson;
     protected ?DateFormatterInterface $DateFormatter;
-    /** @var int-mask-of<QueryFlag::*> */
-    protected int $QueryFlags;
+    /** @var int-mask-of<FormDataFlag::*> */
+    protected int $FormDataFlags;
     /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY> */
     protected int $JsonDecodeFlags;
     /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,string|null}> */
@@ -104,7 +105,7 @@ class Curler implements CurlerInterface, Buildable
     protected ?string $CookiesCacheKey;
     protected bool $CacheResponses;
     protected bool $CachePostResponses;
-    /** @var (Closure(RequestInterface): (string[]|string))|null */
+    /** @var (Closure(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null */
     protected ?Closure $CacheKeyClosure;
     /** @var int<-1,max> */
     protected int $CacheLifetime;
@@ -139,7 +140,7 @@ class Curler implements CurlerInterface, Buildable
      * @param bool $expectJson Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON
      * @param bool $postJson Use JSON to encode POST/PUT/PATCH/DELETE data
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
-     * @param int-mask-of<QueryFlag::*> $queryFlags Flags used to encode data for query strings and `POST`/`PUT`/`PATCH`/`DELETE` bodies (default: {@see QueryFlag::PRESERVE_NUMERIC_KEYS} `|` {@see QueryFlag::PRESERVE_STRING_KEYS})
+     * @param int-mask-of<FormDataFlag::*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} `|` {@see FormDataFlag::PRESERVE_STRING_KEYS})
      * @param int-mask-of<JsonDecodeFlag::*> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
      * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
@@ -149,7 +150,7 @@ class Curler implements CurlerInterface, Buildable
      * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
      * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
      * @param bool $cachePostResponses Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled)
-     * @param (callable(RequestInterface): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
+     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
      * @param int<-1,max> $cacheLifetime Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
      * @param bool $refreshCache Replace cached responses even if they haven't expired
      * @param int<0,max>|null $timeout Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
@@ -170,7 +171,7 @@ class Curler implements CurlerInterface, Buildable
         bool $expectJson = true,
         bool $postJson = true,
         ?DateFormatterInterface $dateFormatter = null,
-        int $queryFlags = QueryFlag::PRESERVE_NUMERIC_KEYS | QueryFlag::PRESERVE_STRING_KEYS,
+        int $formDataFlags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
         int $jsonDecodeFlags = JsonDecodeFlag::OBJECT_AS_ARRAY,
         array $middleware = [],
         ?CurlerPagerInterface $pager = null,
@@ -204,7 +205,7 @@ class Curler implements CurlerInterface, Buildable
         $this->ExpectJson = $expectJson;
         $this->PostJson = $postJson;
         $this->DateFormatter = $dateFormatter;
-        $this->QueryFlags = $queryFlags;
+        $this->FormDataFlags = $formDataFlags;
         $this->JsonDecodeFlags = $jsonDecodeFlags;
         foreach ($middleware as $value) {
             $this->Middleware[] = [$value[0], $value[1] ?? null];
@@ -255,7 +256,7 @@ class Curler implements CurlerInterface, Buildable
 
         return $this->Uri->withQuery(
             is_array($query)
-                ? Get::query($query, $this->QueryFlags, $this->DateFormatter)
+                ? (new FormData($query))->getQuery($this->FormDataFlags, $this->DateFormatter)
                 : $query
         );
     }
@@ -804,9 +805,9 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withQueryFlags(int $flags)
+    public function withFormDataFlags(int $flags)
     {
-        return $this->with('QueryFlags', $flags);
+        return $this->with('FormDataFlags', $flags);
     }
 
     /**
@@ -1023,12 +1024,12 @@ class Curler implements CurlerInterface, Buildable
         foreach (array_reverse($this->Middleware) as [$middleware]) {
             $closure = $middleware instanceof CurlerMiddlewareInterface
                 ? fn(RequestInterface $request): HttpResponseInterface =>
-                    $middleware($request, $closure, $this)
+                    $this->handleHttpResponse($middleware($request, $closure, $this), $request)
                 : ($middleware instanceof HttpRequestHandlerInterface
                     ? fn(RequestInterface $request): HttpResponseInterface =>
-                        $this->getHttpResponse($middleware($request, $closure))
+                        $this->handleResponse($middleware($request, $closure), $request)
                     : fn(RequestInterface $request): HttpResponseInterface =>
-                        $this->getHttpResponse($middleware($request, $closure, $this)));
+                        $this->handleResponse($middleware($request, $closure, $this), $request));
         }
 
         return $closure;
@@ -1146,7 +1147,7 @@ class Curler implements CurlerInterface, Buildable
             && ([Method::GET => true, Method::HEAD => true, Method::POST => $this->CachePostResponses][$method] ?? false)
         ) {
             $cacheKey = $this->CacheKeyClosure
-                ? (array) ($this->CacheKeyClosure)($request)
+                ? (array) ($this->CacheKeyClosure)($request, $this)
                 : $headers->exceptIn($this->SensitiveHeaders)->getLines('%s:%s');
 
             if ($size !== 0 || $method === Method::POST) {
@@ -1328,7 +1329,7 @@ class Curler implements CurlerInterface, Buildable
         }
         if ($this->PostJson) {
             try {
-                $body = HttpStream::fromData($data, $this->QueryFlags, $this->DateFormatter, true);
+                $body = HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter, true);
                 $mediaType = MimeType::JSON;
             } catch (StreamEncapsulationException $ex) {
                 Console::debug(sprintf(
@@ -1338,7 +1339,7 @@ class Curler implements CurlerInterface, Buildable
                 ));
             }
         }
-        $body ??= HttpStream::fromData($data, $this->QueryFlags, $this->DateFormatter);
+        $body ??= HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter);
         $mediaType ??= $body instanceof HttpMultipartStreamInterface
             ? MimeType::FORM_MULTIPART
             : MimeType::FORM;
@@ -1361,11 +1362,25 @@ class Curler implements CurlerInterface, Buildable
             : $body;
     }
 
-    private function getHttpResponse(ResponseInterface $response): HttpResponseInterface
-    {
-        return $response instanceof HttpResponseInterface
-            ? $response
-            : HttpResponse::fromPsr7($response);
+    private function handleResponse(
+        ResponseInterface $response,
+        RequestInterface $request
+    ): HttpResponseInterface {
+        return $this->handleHttpResponse(
+            $response instanceof HttpResponseInterface
+                ? $response
+                : HttpResponse::fromPsr7($response),
+            $request,
+        );
+    }
+
+    private function handleHttpResponse(
+        HttpResponseInterface $response,
+        RequestInterface $request
+    ): HttpResponseInterface {
+        $this->LastRequest = $request;
+        $this->LastResponse = $response;
+        return $response;
     }
 
     /**
