@@ -54,14 +54,15 @@ final class HttpTest extends TestCase
         $expected,
         string $value,
         bool $firstIsParameter = false,
+        bool $unquote = true,
         bool $strict = false
     ): void {
         $this->maybeExpectException($expected);
-        $this->assertSame($expected, Http::getParameters($value, $firstIsParameter, true, $strict));
+        $this->assertSame($expected, Http::getParameters($value, $firstIsParameter, $unquote, $strict));
     }
 
     /**
-     * @return array<array{string[]|string,string,2?:bool,3?:bool}>
+     * @return array<array{string[]|string,string,2?:bool,3?:bool,4?:bool}>
      */
     public static function getParametersProvider(): array
     {
@@ -78,6 +79,7 @@ final class HttpTest extends TestCase
             [
                 InvalidArgumentException::class . ',Invalid parameter: ',
                 '',
+                true,
                 true,
                 true,
             ],
@@ -105,10 +107,19 @@ final class HttpTest extends TestCase
                 '"Not a token";Foo=bar;Baz=',
                 false,
                 true,
+                true,
+            ],
+            [
+                ['"Double \"Quotes\""', 'foo' => 'bar', 'baz' => '"Escaped\\\\Backslash"'],
+                '"Double \"Quotes\"";Foo=bar;Baz="Escaped\\\\Backslash"',
+                false,
+                false,
+                true,
             ],
             [
                 InvalidArgumentException::class . ',Invalid parameter: "Not a token"',
                 '"Not a token";Foo=bar;Baz=',
+                true,
                 true,
                 true,
             ],
@@ -116,6 +127,12 @@ final class HttpTest extends TestCase
                 ['foo' => 'bar', 'baz' => '', 'qux' => 'Double "Quotes"'],
                 'Foo=bar;Baz;QUX="Double \"Quotes\""',
                 true,
+            ],
+            [
+                ['foo' => 'bar', 'baz' => '', 'qux' => '"Double \"Quotes\""'],
+                'Foo=bar;Baz;QUX="Double \"Quotes\""',
+                true,
+                false,
             ],
         ];
     }

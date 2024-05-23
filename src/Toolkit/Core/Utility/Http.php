@@ -11,7 +11,7 @@ use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * Work with HTTP messages
+ * @api
  */
 final class Http extends AbstractUtility
 {
