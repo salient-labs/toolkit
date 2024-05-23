@@ -18,4 +18,11 @@ final class HttpHeaderGroup extends AbstractDictionary
         HttpHeader::AUTHORIZATION,
         HttpHeader::PROXY_AUTHORIZATION,
     ];
+
+    /**
+     * @var list<HttpHeader::*>
+     */
+    public const UNSTABLE = [
+        HttpHeader::USER_AGENT,
+    ];
 }

@@ -46,6 +46,13 @@ interface CurlerInterface extends ClientInterface
     public function withUri($uri);
 
     /**
+     * Apply the URI and headers of the given request to a copy of the instance
+     *
+     * @return static
+     */
+    public function withRequest(RequestInterface $request);
+
+    /**
      * Get the last request sent to the endpoint or passed to middleware
      */
     public function getLastRequest(): ?RequestInterface;
