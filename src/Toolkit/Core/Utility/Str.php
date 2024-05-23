@@ -2,8 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Contract\Core\Char;
-use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 
@@ -12,6 +10,12 @@ use Salient\Core\AbstractUtility;
  */
 final class Str extends AbstractUtility
 {
+    public const ALPHA = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    public const ALPHANUMERIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    public const HEX = '0123456789abcdefABCDEF';
+    public const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+    public const NUMERIC = '0123456789';
+    public const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     public const PRESERVE_DOUBLE_QUOTED = 1;
     public const PRESERVE_SINGLE_QUOTED = 2;
     public const PRESERVE_QUOTED = Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED;
@@ -36,7 +40,7 @@ final class Str extends AbstractUtility
      */
     public static function lower(string $string): string
     {
-        return strtr($string, Char::UPPER, Char::LOWER);
+        return strtr($string, self::UPPER, self::LOWER);
     }
 
     /**
@@ -44,7 +48,7 @@ final class Str extends AbstractUtility
      */
     public static function upper(string $string): string
     {
-        return strtr($string, Char::LOWER, Char::UPPER);
+        return strtr($string, self::LOWER, self::UPPER);
     }
 
     /**
@@ -71,9 +75,9 @@ final class Str extends AbstractUtility
             return $string;
         }
 
-        $upper = strpbrk($match, Char::UPPER);
+        $upper = strpbrk($match, self::UPPER);
         $hasUpper = $upper !== false;
-        $hasLower = strpbrk($match, Char::LOWER) !== false;
+        $hasLower = strpbrk($match, self::LOWER) !== false;
 
         if ($hasUpper && !$hasLower && strlen($match) > 1) {
             return self::upper($string);
@@ -595,7 +599,7 @@ REGEX;
         bool $collapseBlankLines = false
     ): string {
         $newline = preg_quote($break, '/');
-        $escapes = $ignoreEscapes ? '' : Regex::BEFORE_UNESCAPED . '\K';
+        $escapes = $ignoreEscapes ? '' : '(?<!\\\\)(?:\\\\\\\\)*\K';
 
         if ($trimTrailingWhitespace) {
             $search[] = "/{$escapes}\h+{$newline}/";

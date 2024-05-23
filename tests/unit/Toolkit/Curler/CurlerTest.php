@@ -302,7 +302,6 @@ EOF,
 
         $curler = $this
             ->getCurler('/foo')
-            ->withUserAgent(sprintf('%s/1.0.0', __FUNCTION__))
             ->withCacheStore($cache)
             ->withResponseCache();
         $this->assertSame(self::OUT, $curler->get(self::QUERY));
@@ -369,9 +368,9 @@ EOF,
             $server->getNewOutput(),
         );
         $this->assertSame([
-            Curler::class . ':response:GET:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:e3b031126bf034cbe4d43a69e4cdba43',
-            Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:24019ed5d14784ec817eec6ed1ec38f1',
-            Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:97d09f76c4d19c288d5c81c866058962',
+            Curler::class . ':response:GET:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:a4801c4a7640292ec53bad9241ee376d',
+            Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:025083437c7862fbace55c0ed8bbf16b',
+            Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:ef13041d0a8b2d2f3084b396b3648def',
         ], $cache->getAllKeys());
         $this->assertCount(0, $cache->asOfNow(time() + 3601)->getAllKeys());
     }

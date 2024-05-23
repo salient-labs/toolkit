@@ -2,7 +2,6 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Core\Char;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Utility\Arr;
@@ -47,7 +46,7 @@ final class TestUtility extends AbstractUtility
                     continue;
                 }
                 $line = Str::split(';', $line, 2)[0] ?? '';
-                if ($line === '' || strspn($line, Char::HEX) !== strlen($line)) {
+                if ($line === '' || strspn($line, Str::HEX) !== strlen($line)) {
                     throw new RuntimeException('Invalid chunk size');
                 }
                 /** @var int<0,max> */

@@ -10,7 +10,6 @@ use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Buildable;
-use Salient\Contract\Core\Char;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Contract\Core\MessageLevel as Level;
@@ -560,7 +559,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
             if (
                 $this->DefaultValue && (
-                    Arr::same((array) $this->DefaultValue, $values)
+                    Arr::sameValues((array) $this->DefaultValue, $values)
                     || in_array('ALL', (array) $this->DefaultValue, true)
                 )
             ) {
@@ -733,8 +732,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         $name = Str::toKebabCase($this->ValueName, '=');
 
         if (
-            strpbrk($this->ValueName, Char::UPPER) !== false
-            && strpbrk($this->ValueName, Char::LOWER) === false
+            strpbrk($this->ValueName, Str::UPPER) !== false
+            && strpbrk($this->ValueName, Str::LOWER) === false
         ) {
             $name = Str::upper($name);
             if (!$encloseUpper) {

@@ -3,10 +3,9 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Jsonable;
-use Salient\Contract\Core\SortFlag;
-use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\AbstractUtility;
 use ArrayAccess;
+use OutOfRangeException;
 use Stringable;
 
 /**
@@ -16,6 +15,13 @@ use Stringable;
  */
 final class Arr extends AbstractUtility
 {
+    public const SORT_REGULAR = \SORT_REGULAR;
+    public const SORT_NUMERIC = \SORT_NUMERIC;
+    public const SORT_STRING = \SORT_STRING;
+    public const SORT_LOCALE_STRING = \SORT_LOCALE_STRING;
+    public const SORT_NATURAL = \SORT_NATURAL;
+    public const SORT_FLAG_CASE = \SORT_FLAG_CASE;
+
     /**
      * Get a value from nested arrays using dot notation
      *
@@ -120,7 +126,7 @@ final class Arr extends AbstractUtility
      *
      * @param array<TKey,TValue> $array
      * @param TValue|null $shifted
-     * @param-out TValue $shifted
+     * @param-out ($array is non-empty-array ? TValue : null) $shifted
      * @return array<TKey,TValue>
      */
     public static function shift(array $array, &$shifted = null): array
@@ -130,7 +136,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Add one or more elements to the beginning of an array
+     * Add elements to the beginning of an array
      *
      * @template TKey of array-key
      * @template TValue
@@ -153,7 +159,7 @@ final class Arr extends AbstractUtility
      *
      * @param array<TKey,TValue> $array
      * @param TValue|null $popped
-     * @param-out TValue $popped
+     * @param-out ($array is non-empty-array ? TValue : null) $popped
      * @return array<TKey,TValue>
      */
     public static function pop(array $array, &$popped = null): array
@@ -163,7 +169,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Push one or more values onto the end of an array
+     * Push values onto the end of an array
      *
      * @template TKey of array-key
      * @template TValue
@@ -179,8 +185,8 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Push one or more values onto the end of an array after removing values
-     * already present
+     * Push values onto the end of an array after excluding any that are already
+     * present
      *
      * @template TKey of array-key
      * @template TValue
@@ -192,17 +198,11 @@ final class Arr extends AbstractUtility
      */
     public static function extend(array $array, ...$values): array
     {
-        return array_merge(
-            $array,
-            array_diff(
-                $values,
-                $array,
-            ),
-        );
+        return array_merge($array, array_diff($values, $array));
     }
 
     /**
-     * Assign a value to an array
+     * Assign a value to an element of an array
      *
      * @template TKey of array-key
      * @template TValue
@@ -219,7 +219,26 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Remove a value from an array
+     * Assign a value to an element of an array if it isn't already set
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TKey $key
+     * @param TValue $value
+     * @return array<TKey,TValue>
+     */
+    public static function setIf(array $array, $key, $value): array
+    {
+        if (!array_key_exists($key, $array)) {
+            $array[$key] = $value;
+        }
+        return $array;
+    }
+
+    /**
+     * Remove a key from an array
      *
      * @template TKey of array-key
      * @template TValue
@@ -241,7 +260,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<Arr::SORT_*> $callbackOrFlags
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sort(
@@ -254,16 +273,13 @@ final class Arr extends AbstractUtility
                 uasort($array, $callbackOrFlags);
                 return $array;
             }
-
             usort($array, $callbackOrFlags);
             return $array;
         }
-
         if ($preserveKeys) {
             asort($array, $callbackOrFlags);
             return $array;
         }
-
         sort($array, $callbackOrFlags);
         return $array;
     }
@@ -275,7 +291,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<SortFlag::*> $flags
+     * @param int-mask-of<Arr::SORT_*> $flags
      * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public static function sortDesc(
@@ -287,7 +303,6 @@ final class Arr extends AbstractUtility
             arsort($array, $flags);
             return $array;
         }
-
         rsort($array, $flags);
         return $array;
     }
@@ -299,7 +314,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TKey, TKey): int)|int-mask-of<SortFlag::*> $callbackOrFlags
+     * @param (callable(TKey, TKey): int)|int-mask-of<Arr::SORT_*> $callbackOrFlags
      * @return array<TKey,TValue>
      */
     public static function sortByKey(
@@ -310,7 +325,6 @@ final class Arr extends AbstractUtility
             uksort($array, $callbackOrFlags);
             return $array;
         }
-
         ksort($array, $callbackOrFlags);
         return $array;
     }
@@ -322,7 +336,7 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<SortFlag::*> $flags
+     * @param int-mask-of<Arr::SORT_*> $flags
      * @return array<TKey,TValue>
      */
     public static function sortByKeyDesc(
@@ -361,7 +375,8 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is an array with consecutive integer keys numbered from 0
+     * Check if a value is an array with integer keys numbered consecutively
+     * from 0
      *
      * @param mixed $value
      * @phpstan-assert-if-true list<mixed> $value
@@ -384,7 +399,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is an array with integer keys
+     * Check if a value is an array with integer keys
      *
      * @param mixed $value
      * @phpstan-assert-if-true array<int,mixed> $value
@@ -406,33 +421,29 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is an array of integers or an array of strings
+     * Check if a value is an array of integers or an array of strings
      *
      * @param mixed $value
      * @phpstan-assert-if-true int[]|string[] $value
      */
     public static function ofArrayKey($value, bool $orEmpty = false): bool
     {
-        return
-            self::ofInt($value, $orEmpty)
-            || self::ofString($value);
+        return self::ofInt($value, $orEmpty) || self::ofString($value);
     }
 
     /**
-     * True if a value is a list of integers or a list of strings
+     * Check if a value is a list of integers or a list of strings
      *
      * @param mixed $value
      * @phpstan-assert-if-true list<int>|list<string> $value
      */
     public static function isListOfArrayKey($value, bool $orEmpty = false): bool
     {
-        return
-            self::isListOfInt($value, $orEmpty)
-            || self::isListOfString($value);
+        return self::isListOfInt($value, $orEmpty) || self::isListOfString($value);
     }
 
     /**
-     * True if a value is an array of integers
+     * Check if a value is an array of integers
      *
      * @param mixed $value
      * @phpstan-assert-if-true int[] $value
@@ -443,7 +454,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is a list of integers
+     * Check if a value is a list of integers
      *
      * @param mixed $value
      * @phpstan-assert-if-true list<int> $value
@@ -454,7 +465,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is an array of strings
+     * Check if a value is an array of strings
      *
      * @param mixed $value
      * @phpstan-assert-if-true string[] $value
@@ -465,7 +476,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is a list of strings
+     * Check if a value is a list of strings
      *
      * @param mixed $value
      * @phpstan-assert-if-true list<string> $value
@@ -476,7 +487,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is an array of instances of a given class
+     * Check if a value is an array of instances of a given class
      *
      * @template T of object
      *
@@ -490,7 +501,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if a value is a list of instances of a given class
+     * Check if a value is a list of instances of a given class
      *
      * @template T of object
      *
@@ -529,7 +540,30 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * True if arrays have the same values after sorting for comparison
+     * Check if arrays have the same values after sorting for comparison
+     *
+     * Returns `false` if fewer than two arrays are given.
+     *
+     * @param mixed[] ...$arrays
+     */
+    public static function sameValues(array ...$arrays): bool
+    {
+        if (count($arrays) < 2) {
+            return false;
+        }
+        $last = null;
+        foreach ($arrays as $array) {
+            usort($array, fn($a, $b) => gettype($a) <=> gettype($b) ?: $a <=> $b);
+            if ($last !== null && $last !== $array) {
+                return false;
+            }
+            $last = $array;
+        }
+        return true;
+    }
+
+    /**
+     * Check if arrays are the same after sorting by key
      *
      * Returns `false` if fewer than two arrays are given.
      *
@@ -540,16 +574,14 @@ final class Arr extends AbstractUtility
         if (count($arrays) < 2) {
             return false;
         }
-
         $last = null;
         foreach ($arrays as $array) {
-            usort($array, fn($a, $b) => gettype($a) <=> gettype($b) ?: $a <=> $b);
+            ksort($array, \SORT_STRING);
             if ($last !== null && $last !== $array) {
                 return false;
             }
             $last = $array;
         }
-
         return true;
     }
 
@@ -598,9 +630,8 @@ final class Arr extends AbstractUtility
      * removing empty strings
      *
      * @param iterable<int|float|string|bool|Stringable|null> $array
-     * @param string|null $characters Specify characters to remove from the
-     * beginning and end of each value. If `null`, whitespace is trimmed. If an
-     * empty string is given, values are not trimmed.
+     * @param string|null $characters Characters to trim from each value, `null`
+     * to trim whitespace, or an empty string (the default) to trim nothing.
      */
     public static function implode(
         string $separator,
@@ -610,10 +641,9 @@ final class Arr extends AbstractUtility
         foreach ($array as $value) {
             $value = (string) $value;
             if ($characters !== '') {
-                $value =
-                    $characters === null
-                        ? trim($value)
-                        : trim($value, $characters);
+                $value = $characters === null
+                    ? trim($value)
+                    : trim($value, $characters);
             }
             if ($value === '') {
                 continue;
@@ -624,15 +654,15 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Remove whitespace from the beginning and end of each value in an array of
-     * strings and Stringables before removing empty strings
+     * Trim characters from each value in an array of strings and Stringables
+     * before removing empty strings
      *
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     * @param string|null $characters Specify characters to trim instead of
-     * whitespace. If an empty string is given, values are not trimmed.
+     * @param string|null $characters Characters to trim, `null` (the default)
+     * to trim whitespace, or an empty string to trim nothing.
      * @return ($removeEmpty is false ? array<TKey,string> : list<string>)
      */
     public static function trim(
@@ -643,10 +673,9 @@ final class Arr extends AbstractUtility
         foreach ($array as $key => $value) {
             $value = (string) $value;
             if ($characters !== '') {
-                $value =
-                    $characters === null
-                        ? trim($value)
-                        : trim($value, $characters);
+                $value = $characters === null
+                    ? trim($value)
+                    : trim($value, $characters);
             }
             if ($removeEmpty) {
                 if ($value !== '') {
@@ -691,24 +720,6 @@ final class Arr extends AbstractUtility
             $upper[$key] = Str::upper((string) $value);
         }
         return $upper ?? [];
-    }
-
-    /**
-     * Make the first character of each entry in an array of strings and
-     * Stringables uppercase
-     *
-     * @template TKey of array-key
-     * @template TValue of int|float|string|bool|Stringable|null
-     *
-     * @param iterable<TKey,TValue> $array
-     * @return array<TKey,string>
-     */
-    public static function upperFirst(iterable $array): array
-    {
-        foreach ($array as $key => $value) {
-            $upperFirst[$key] = Str::upperFirst((string) $value);
-        }
-        return $upperFirst ?? [];
     }
 
     /**
@@ -793,14 +804,12 @@ final class Arr extends AbstractUtility
      */
     public static function rename(array $array, $key, $newKey): array
     {
-        if (!isset($array[$key])) {
+        if (!array_key_exists($key, $array)) {
             throw new OutOfRangeException(sprintf('Array key not found: %s', $key));
         }
-
         if ($key === $newKey) {
             return $array;
         }
-
         return self::spliceByKey($array, $key, 1, [$newKey => $array[$key]]);
     }
 
@@ -957,7 +966,6 @@ final class Arr extends AbstractUtility
                 $flattened[] = $value;
             }
         }
-
         return $flattened;
     }
 

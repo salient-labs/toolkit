@@ -6,9 +6,9 @@ use Salient\Contract\Core\MimeType;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
-use Salient\Core\DateFormatter;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 
 /**
  * Work with HTTP messages
@@ -71,8 +71,9 @@ final class Http extends AbstractUtility
      */
     public static function getDate(?DateTimeInterface $date = null): string
     {
-        return (new DateFormatter(DateTimeInterface::RFC7231, 'UTC'))
-            ->format($date ?? new DateTimeImmutable());
+        return ($date ? Date::immutable($date) : new DateTimeImmutable())
+            ->setTimezone(new DateTimeZone('UTC'))
+            ->format(DateTimeInterface::RFC7231);
     }
 
     /**

@@ -5,7 +5,6 @@ namespace Salient\Core\Utility;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Core\Char;
 use Salient\Contract\Core\CopyFlag;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
@@ -404,7 +403,7 @@ final class Get extends AbstractUtility
     /**
      * Get a sequence of random characters
      */
-    public static function randomText(int $length, string $chars = Char::ALPHANUMERIC): string
+    public static function randomText(int $length, string $chars = Str::ALPHANUMERIC): string
     {
         if ($chars === '') {
             throw new InvalidArgumentException('Argument #1 ($chars) must be a non-empty string');

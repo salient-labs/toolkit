@@ -3,7 +3,6 @@
 namespace Salient\Tests\Core\Utility;
 
 use Salient\Contract\Core\Jsonable;
-use Salient\Contract\Core\SortFlag;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Json;
 use Salient\Tests\TestCase;
@@ -958,7 +957,7 @@ final class ArrTest extends TestCase
             'a' => 'value0',
             'b' => 'value1',
             'A' => 'value2',
-            'B' => 'value3',
+            'B' => null,
         ];
 
         return [
@@ -979,7 +978,7 @@ final class ArrTest extends TestCase
                     'a' => 'value0',
                     'b_2' => 'value1',
                     'A' => 'value2',
-                    'B' => 'value3',
+                    'B' => null,
                 ],
                 $array,
                 'b',
@@ -990,7 +989,7 @@ final class ArrTest extends TestCase
                     'a' => 'value0',
                     'b' => 'value1',
                     'A' => 'value2',
-                    0 => 'value3',
+                    0 => null,
                 ],
                 $array,
                 'B',
@@ -1000,7 +999,19 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @dataProvider sameProvider
+     * @dataProvider sameProvider1
+     * @dataProvider sameValuesProvider
+     *
+     * @param mixed[] ...$arrays
+     */
+    public function testSameValues(bool $expected, array ...$arrays): void
+    {
+        $this->assertSame($expected, Arr::sameValues(...$arrays));
+    }
+
+    /**
+     * @dataProvider sameProvider1
+     * @dataProvider sameProvider2
      *
      * @param mixed[] ...$arrays
      */
@@ -1010,17 +1021,26 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @return array<array{bool,mixed[],...}>
+     * @return array<array{bool,...}>
      */
-    public static function sameProvider(): array
+    public static function sameProvider1(): array
     {
         return [
+            [
+                false,
+            ],
             [
                 false,
                 [],
             ],
             [
                 true,
+                [],
+                [],
+            ],
+            [
+                true,
+                [],
                 [],
                 [],
             ],
@@ -1074,6 +1094,15 @@ final class ArrTest extends TestCase
                 ['a', 1, null, true],
                 ['a', 1, null, true],
             ],
+        ];
+    }
+
+    /**
+     * @return array<array{bool,mixed[],...}>
+     */
+    public static function sameValuesProvider(): array
+    {
+        return [
             [
                 true,
                 ['a', 1, null, true],
@@ -1088,6 +1117,47 @@ final class ArrTest extends TestCase
                 false,
                 ['a', 1, null, true],
                 [true, false, 1, 'a'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<array{bool,mixed[],...}>
+     */
+    public static function sameProvider2(): array
+    {
+        return [
+            [
+                false,
+                ['a', 1, null, true],
+                [true, null, 1, 'a'],
+            ],
+            [
+                false,
+                ['a', 1, null, true],
+                ['foo' => true, 'bar' => null, 'qux' => 1, 'quux' => 'a'],
+            ],
+            [
+                true,
+                ['a', 1, null, true],
+                [3 => true, 2 => null, 1 => 1, 0 => 'a'],
+                [0 => 'a', 3 => true, 2 => null, 1 => 1],
+            ],
+            [
+                false,
+                ['a', 1, null, true],
+                [3 => true, 2 => null, 1 => 1, 0 => 'a'],
+                [true, null, 1, 'a'],
+            ],
+            [
+                true,
+                ['quux' => 'a', 'qux' => 1, 'bar' => null, 'foo' => true],
+                ['foo' => true, 'bar' => null, 'qux' => 1, 'quux' => 'a'],
+            ],
+            [
+                true,
+                [0 => false, 'quux' => 'a', 'qux' => 1, 'bar' => null, 'foo' => true],
+                ['foo' => true, 'bar' => null, 'qux' => 1, 'quux' => 'a', 0 => false],
             ],
         ];
     }
@@ -1130,7 +1200,7 @@ final class ArrTest extends TestCase
      *
      * @param mixed[] $expected
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SortFlag::*> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<Arr::SORT_*> $callbackOrFlags
      */
     public function testSort(array $expected, array $array, bool $preserveKeys = false, $callbackOrFlags = \SORT_REGULAR): void
     {
@@ -1213,7 +1283,7 @@ final class ArrTest extends TestCase
      *
      * @param mixed[] $expected
      * @param array<TKey,TValue> $array
-     * @param (callable(TKey, TKey): int)|int-mask-of<SortFlag::*> $callbackOrFlags
+     * @param (callable(TKey, TKey): int)|int-mask-of<Arr::SORT_*> $callbackOrFlags
      */
     public function testSortByKey(array $expected, array $array, $callbackOrFlags = \SORT_REGULAR): void
     {
@@ -1697,6 +1767,13 @@ final class ArrTest extends TestCase
         $this->assertSame(['foo' => 'bar', 'baz' => 'qux', 'bar' => 'baz'], Arr::set($array, 'bar', 'baz'));
     }
 
+    public function testSetIf(): void
+    {
+        $array = ['foo' => 'bar', 'baz' => 'qux'];
+        $this->assertSame(['foo' => 'bar', 'baz' => 'qux'], Arr::setIf($array, 'foo', ['bar', 'quux']));
+        $this->assertSame(['foo' => 'bar', 'baz' => 'qux', 'bar' => 'baz'], Arr::setIf($array, 'bar', 'baz'));
+    }
+
     /**
      * @dataProvider trimProvider
      *
@@ -1989,55 +2066,6 @@ final class ArrTest extends TestCase
                         public function __toString()
                         {
                             return "I'm Batman.";
-                        }
-                    },
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider upperFirstProvider
-     *
-     * @param string[] $expected
-     * @param array<int|float|string|bool|Stringable|null> $array
-     */
-    public function testUpperFirst($expected, $array): void
-    {
-        $this->assertSame($expected, Arr::upperFirst($array));
-    }
-
-    /**
-     * @return array<array{string[],array<int|float|string|bool|Stringable|null>}>
-     */
-    public static function upperFirstProvider(): array
-    {
-        return [
-            [
-                [],
-                [],
-            ],
-            [
-                [
-                    '0',
-                    '3.14',
-                    'null' => '',
-                    '1',
-                    'false' => '',
-                    'string' => 'Title',
-                    Stringable::class => 'Me tarzan.',
-                ],
-                [
-                    0,
-                    3.14,
-                    'null' => null,
-                    true,
-                    'false' => false,
-                    'string' => 'title',
-                    Stringable::class => new class implements Stringable {
-                        public function __toString()
-                        {
-                            return 'me tarzan.';
                         }
                     },
                 ],

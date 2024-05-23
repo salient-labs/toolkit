@@ -44,7 +44,7 @@ use Stringable;
  * @method $this cookiesCacheKey(string|null $value) Key to cache cookies under (cookie handling is implicitly enabled if given)
  * @method $this cacheResponses(bool $value = true) Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY) (default: false)
  * @method $this cachePostResponses(bool $value = true) Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled) (default: false)
- * @method $this cacheKeyCallback((callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $value) Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
+ * @method $this cacheKeyCallback((callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $value) Override values hashed and combined with request method and URI to create response cache keys (headers not in {@see HttpHeaderGroup::UNSTABLE} are used by default)
  * @method $this cacheLifetime(int<-1,max> $value) Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
  * @method $this refreshCache(bool $value = true) Replace cached responses even if they haven't expired (default: false)
  * @method $this timeout(int<0,max>|null $value) Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)

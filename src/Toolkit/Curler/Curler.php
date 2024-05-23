@@ -89,7 +89,7 @@ class Curler implements CurlerInterface, Buildable
     /** @var array<string,true> */
     protected array $SensitiveHeaders;
     protected ?string $MediaType;
-    protected string $UserAgent;
+    protected ?string $UserAgent;
     protected bool $ExpectJson;
     protected bool $PostJson;
     protected ?DateFormatterInterface $DateFormatter;
@@ -124,6 +124,8 @@ class Curler implements CurlerInterface, Buildable
     private ?Curler $WithoutThrowHttpErrors = null;
     private ?Closure $Closure = null;
     private static string $DefaultUserAgent;
+    /** @var array<string,true> */
+    private static array $UnstableHeaders;
     /** @var CurlHandle|resource|null */
     private static $Handle;
 
@@ -150,7 +152,7 @@ class Curler implements CurlerInterface, Buildable
      * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
      * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
      * @param bool $cachePostResponses Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled)
-     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers returned by {@see Curler::getPublicHttpHeaders()} are used by default)
+     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers not in {@see HttpHeaderGroup::UNSTABLE} are used by default)
      * @param int<-1,max> $cacheLifetime Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
      * @param bool $refreshCache Replace cached responses even if they haven't expired
      * @param int<0,max>|null $timeout Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
@@ -538,7 +540,11 @@ class Curler implements CurlerInterface, Buildable
             $headers = $headers->set(HttpHeader::ACCEPT, MimeType::JSON);
         }
 
-        return $headers->set(HttpHeader::USER_AGENT, $this->UserAgent);
+        if ($this->UserAgent !== null) {
+            $headers = $headers->set(HttpHeader::USER_AGENT, $this->UserAgent);
+        }
+
+        return $headers;
     }
 
     /**
@@ -578,7 +584,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function getUserAgent(): string
     {
-        return $this->UserAgent;
+        return $this->UserAgent ?? '';
     }
 
     /**
@@ -724,6 +730,37 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
+    public function withRequest(RequestInterface $request)
+    {
+        $uri = $request->getUri()->withQuery('')->withFragment('');
+        $curler = $this->withUri($uri);
+
+        $headers = HttpHeaders::from($request);
+        $currentHeaders = $this->getHttpHeaders();
+        if (Arr::same($headers->all(), $currentHeaders->all())) {
+            return $curler;
+        }
+
+        if ($this->AccessToken !== null) {
+            $header = $this->AccessTokenHeaderName;
+            if ($headers->getHeader($header) !== $currentHeaders->getHeader($header)) {
+                $curler = $curler->withAccessToken(null);
+            }
+        }
+
+        $mediaType = $headers->getHeaderValues(HttpHeader::CONTENT_TYPE);
+        $userAgent = $headers->getHeaderLine(HttpHeader::USER_AGENT);
+        $expectJson = $headers->getHeader(HttpHeader::ACCEPT) === [MimeType::JSON];
+        return $curler
+            ->withMediaType(count($mediaType) === 1 ? $mediaType[0] : null)
+            ->withUserAgent($userAgent)
+            ->withExpectJson($expectJson)
+            ->with('Headers', $headers);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function withAccessToken(
         ?AccessTokenInterface $token,
         string $headerName = HttpHeader::AUTHORIZATION
@@ -772,9 +809,11 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withUserAgent(?string $userAgent)
     {
+        // - `null` => default
+        // - `""` => `null`
         return $this->with(
             'UserAgent',
-            $userAgent ?? $this->getDefaultUserAgent()
+            Str::coalesce($userAgent ?? $this->getDefaultUserAgent(), null),
         );
     }
 
@@ -1148,7 +1187,7 @@ class Curler implements CurlerInterface, Buildable
         ) {
             $cacheKey = $this->CacheKeyClosure
                 ? (array) ($this->CacheKeyClosure)($request, $this)
-                : $headers->exceptIn($this->SensitiveHeaders)->getLines('%s:%s');
+                : $headers->exceptIn($this->getUnstableHeaders())->getLines('%s:%s');
 
             if ($size !== 0 || $method === Method::POST) {
                 $cacheKey[] = $size === 0 ? '' : $body;
@@ -1427,6 +1466,15 @@ class Curler implements CurlerInterface, Buildable
     private function getDefaultUserAgent(): string
     {
         return self::$DefaultUserAgent ??= Http::getProduct();
+    }
+
+    /**
+     * @return array<string,true>
+     */
+    private function getUnstableHeaders(): array
+    {
+        return self::$UnstableHeaders
+            ??= array_fill_keys(HttpHeaderGroup::UNSTABLE, true);
     }
 
     /**
