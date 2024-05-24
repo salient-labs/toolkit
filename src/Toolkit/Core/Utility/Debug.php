@@ -6,6 +6,8 @@ use Salient\Core\AbstractUtility;
 
 /**
  * Get information about the running script
+ *
+ * @api
  */
 final class Debug extends AbstractUtility
 {

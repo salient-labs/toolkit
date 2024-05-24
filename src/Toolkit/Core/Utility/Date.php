@@ -2,15 +2,17 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use InvalidArgumentException;
 
 /**
  * Work with dates and times
+ *
+ * @api
  */
 final class Date extends AbstractUtility
 {
