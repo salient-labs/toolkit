@@ -2,10 +2,9 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Exception\InvalidEnvironmentException;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\RuntimeException;
 use Salient\Core\AbstractUtility;
+use LogicException;
+use RuntimeException;
 
 /**
  * Get information about the runtime environment
@@ -150,7 +149,7 @@ final class Sys extends AbstractUtility
             return $user;
         }
 
-        throw new InvalidEnvironmentException('Unable to identify user');
+        throw new RuntimeException('Unable to identify user');
         // @codeCoverageIgnoreEnd
     }
 
