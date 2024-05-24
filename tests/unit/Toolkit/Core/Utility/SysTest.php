@@ -5,6 +5,7 @@ namespace Salient\Tests\Core\Utility;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Sys;
 use Salient\Tests\TestCase;
+use LogicException;
 
 /**
  * @covers \Salient\Core\Utility\Sys
@@ -46,6 +47,44 @@ final class SysTest extends TestCase
             $this->assertIsInt($cpuTime);
             $this->assertGreaterThan(0, $cpuTime);
         }
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testGetProgramName(): void
+    {
+        $dir = self::getPackagePath();
+        $file = self::getFixturesPath(__CLASS__) . '/unescape.php';
+        $_SERVER['SCRIPT_FILENAME'] = $file;
+        $this->assertTrue(File::same($file, Sys::getProgramName()));
+        $this->assertTrue(File::same($file, $dir . '/' . Sys::getProgramName($dir)));
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage("' is not in '");
+        Sys::getProgramName(__DIR__);
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testGetProgramBasename(): void
+    {
+        $file = self::getFixturesPath(__CLASS__) . '/unescape.php';
+        $_SERVER['SCRIPT_FILENAME'] = $file;
+        $this->assertSame('unescape.php', Sys::getProgramBasename());
+        $this->assertSame('unescape', Sys::getProgramBasename('.php'));
+    }
+
+    public function testGetUserId(): void
+    {
+        $userId = Sys::getUserId();
+        if (Sys::isWindows()) {
+            $this->assertIsString($userId);
+            $this->assertNotEquals('', $userId);
+            return;
+        }
+        $this->assertIsInt($userId);
+        $this->assertNotEquals(0, $userId);
     }
 
     public function testIsProcessRunning(): void
@@ -91,92 +130,46 @@ final class SysTest extends TestCase
     public static function escapeCommandProvider(): array
     {
         return [
-            'empty string' => [
-                '',
-            ],
-            'special characters' => [
-                '!"$%&\'*+,;<=>?[\]^`{|}~',
-            ],
-            'special characters + whitespace' => [
-                ' ! " $ % & \' * + , ; < = > ? [ \ ] ^ ` { | } ~ ',
-            ],
-            'path' => [
-                '/some/path',
-            ],
-            'path + spaces' => [
-                '/some/path with spaces',
-            ],
-            'quoted' => [
-                '"string"',
-            ],
-            'quoted + backslashes' => [
-                '\"string\"',
-            ],
-            'quoted + whitespace' => [
-                '"string with words"',
-            ],
-            'quoted + whitespace + backslashes' => [
-                '\"string with words\"',
-            ],
-            'quoted (single + double)' => [
-                '\'quotable\' "quotes"',
-            ],
-            'unquoted + special (cmd) #1' => [
-                'this&that',
-            ],
-            'unquoted + special (cmd) #2' => [
-                'this^that',
-            ],
-            'unquoted + special (cmd) #3' => [
-                '(this|that)',
-            ],
-            'cmd variable expansion #1' => [
-                '%path%',
-            ],
-            'cmd variable expansion #2' => [
-                '!path!',
-            ],
-            'cmd variable expansion #3' => [
-                'value%',
-            ],
-            'cmd variable expansion #4' => [
-                'success!',
-            ],
-            'cmd variable expansion #5' => [
-                'string^%',
-            ],
-            'cmd variable expansion #6' => [
-                'string^!',
-            ],
-            'cmd variable expansion #7' => [
-                '^%string^%',
-            ],
-            'cmd variable expansion #8' => [
-                '^!string^!',
-            ],
-            'with newline' => [
-                'line' . \PHP_EOL . 'line',
-            ],
-            'with blank line' => [
-                'line' . \PHP_EOL . \PHP_EOL . 'line',
-            ],
-            'with trailing newline' => [
-                'line' . \PHP_EOL,
-            ],
-            'with trailing space' => [
-                'string ',
-            ],
-            'with trailing backslash' => [
-                'string\\',
-            ],
-            'with trailing backslashes' => [
-                'string\\\\',
-            ],
+            'empty string' => [''],
+            'special characters' => ['!"$%&\'*+,;<=>?[\]^`{|}~'],
+            'special characters + whitespace' => [' ! " $ % & \' * + , ; < = > ? [ \ ] ^ ` { | } ~ '],
+            'path' => ['/some/path'],
+            'path + spaces' => ['/some/path with spaces'],
+            'quoted' => ['"string"'],
+            'quoted + backslashes' => ['\"string\"'],
+            'quoted + whitespace' => ['"string with words"'],
+            'quoted + whitespace + backslashes' => ['\"string with words\"'],
+            'quoted (single + double)' => ['\'quotable\' "quotes"'],
+            'unquoted + special (cmd) #1' => ['this&that'],
+            'unquoted + special (cmd) #2' => ['this^that'],
+            'unquoted + special (cmd) #3' => ['(this|that)'],
+            'cmd variable expansion #1' => ['%path%'],
+            'cmd variable expansion #2' => ['!path!'],
+            'cmd variable expansion #3' => ['value%'],
+            'cmd variable expansion #4' => ['success!'],
+            'cmd variable expansion #5' => ['string^%'],
+            'cmd variable expansion #6' => ['string^!'],
+            'cmd variable expansion #7' => ['^%string^%'],
+            'cmd variable expansion #8' => ['^!string^!'],
+            'with newline' => ['line' . \PHP_EOL . 'line'],
+            'with blank line' => ['line' . \PHP_EOL . \PHP_EOL . 'line'],
+            'with trailing newline' => ['line' . \PHP_EOL],
+            'with trailing space' => ['string '],
+            'with trailing backslash' => ['string\\'],
+            'with trailing backslashes' => ['string\\\\'],
         ];
     }
 
     public function testIsWindows(): void
     {
         $this->assertSame(\DIRECTORY_SEPARATOR === '\\', Sys::isWindows());
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testHandleExitSignals(): void
+    {
+        $this->assertSame(!Sys::isWindows(), Sys::handleExitSignals());
     }
 }

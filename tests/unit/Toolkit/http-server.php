@@ -6,10 +6,10 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Http\Http;
 use Salient\Http\HttpResponse;
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';

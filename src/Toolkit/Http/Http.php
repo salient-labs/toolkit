@@ -1,17 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Http;
 
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Utility\Date;
+use Salient\Core\Utility\Package;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Salient\Core\AbstractUtility;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * Work with HTTP messages
+ * @api
  */
 final class Http extends AbstractUtility
 {

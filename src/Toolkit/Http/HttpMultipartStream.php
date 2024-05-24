@@ -7,7 +7,6 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Pcre;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;

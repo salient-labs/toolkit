@@ -3,9 +3,9 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Jsonable;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\AbstractUtility;
 use DateTimeInterface;
+use InvalidArgumentException;
 
 /**
  * Format data for humans

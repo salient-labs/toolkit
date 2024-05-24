@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Core\Utility;
 
+use Salient\Core\Utility\Debug;
 use Salient\Tests\Core\Utility\Debug\GetCallerClass;
 use Salient\Tests\TestCase;
 
@@ -117,6 +118,16 @@ final class DebugTest extends TestCase
         ];
         $this->assertIsCaller($expected, (Salient_Tests_Core_Utility_Debug_getFunctionCallback())(1));
         $this->assertIsCaller($thisMethod, (Salient_Tests_Core_Utility_Debug_getFunctionCallback())(2));
+
+        /** @var non-empty-array<array{file:string,...}> */
+        $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
+        $last = end($backtrace);
+        $expected = [
+            'file' => $last['file'],
+            0 => ':',
+        ];
+        $this->assertIsCaller($expected, Debug::getCaller(($depth = count($backtrace)) - 1));
+        $this->assertSame([], Debug::getCaller($depth));
     }
 
     /**

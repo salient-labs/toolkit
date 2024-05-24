@@ -16,7 +16,6 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
