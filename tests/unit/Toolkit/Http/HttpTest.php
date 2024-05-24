@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Http;
 
 use Salient\Contract\Core\MimeType;
-use Salient\Core\Utility\Http;
+use Salient\Http\Http;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\Core\Utility\Http
+ * @covers \Salient\Http\Http
  */
 final class HttpTest extends TestCase
 {

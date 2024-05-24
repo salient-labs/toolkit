@@ -13,7 +13,6 @@ use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Http;
 use Salient\Core\Utility\Pcre;
 
 /**
