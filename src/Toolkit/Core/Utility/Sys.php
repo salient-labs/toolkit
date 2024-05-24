@@ -61,7 +61,9 @@ final class Sys extends AbstractUtility
         $usage = getrusage();
 
         if ($usage === false) {
+            // @codeCoverageIgnoreStart
             return [0, 0];
+            // @codeCoverageIgnoreEnd
         }
 
         $user_s = $usage['ru_utime.tv_sec'] ?? 0;
@@ -142,12 +144,14 @@ final class Sys extends AbstractUtility
             return $user;
         }
 
+        // @codeCoverageIgnoreStart
         $user = Env::getNullable('USER', null);
         if ($user !== null) {
             return $user;
         }
 
         throw new InvalidEnvironmentException('Unable to identify user');
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -163,9 +167,11 @@ final class Sys extends AbstractUtility
         $stream = File::openPipe($command, 'r');
         $csv = File::getCsv($stream);
         if (File::closePipe($stream, $command) !== 0) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException(
                 sprintf('Command failed: %s', $command)
             );
+            // @codeCoverageIgnoreEnd
         }
 
         return count($csv) === 1
@@ -242,10 +248,7 @@ final class Sys extends AbstractUtility
     }
 
     /**
-     * Handle SIGINT and SIGTERM to make a clean exit from the running script
-     *
-     * If {@see posix_getpgid()} is available, `SIGINT` is propagated to the
-     * current process group just before PHP exits.
+     * Make a clean exit from the running script on SIGTERM, SIGINT or SIGHUP
      *
      * @return bool `false` if signal handlers can't be installed on this
      * platform, otherwise `true`.
@@ -255,28 +258,14 @@ final class Sys extends AbstractUtility
         if (!function_exists('pcntl_async_signals')) {
             return false;
         }
-
-        $handler =
-            static function (int $signal): void {
-                if (
-                    $signal === \SIGINT
-                    && function_exists('posix_getpgid')
-                    && ($pgid = posix_getpgid(posix_getpid())) !== false
-                ) {
-                    // Stop handling SIGINT before propagating it
-                    pcntl_signal(\SIGINT, \SIG_DFL);
-                    register_shutdown_function(
-                        static function () use ($pgid) {
-                            posix_kill($pgid, \SIGINT);
-                        }
-                    );
-                }
-
-                exit(128 + $signal);
-            };
-
+        $handler = static function (int $signal): void {
+            // @codeCoverageIgnoreStart
+            exit(128 + $signal);
+            // @codeCoverageIgnoreEnd
+        };
         pcntl_async_signals(true);
-        return pcntl_signal(\SIGINT, $handler)
-            && pcntl_signal(\SIGTERM, $handler);
+        return pcntl_signal(\SIGTERM, $handler)
+            && pcntl_signal(\SIGINT, $handler)
+            && pcntl_signal(\SIGHUP, $handler);
     }
 }
