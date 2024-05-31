@@ -233,7 +233,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     final public static function getSerializeRules(?ContainerInterface $container = null): SerializeRules
     {
         $container = self::requireContainer($container);
-        $rulesB = SerializeRulesBuilder::build($container)->entity(static::class);
+        $rulesB = SerializeRules::build($container)->entity(static::class);
         $rulesB = static::buildSerializeRules($rulesB);
 
         return $rulesB->go();

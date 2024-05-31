@@ -3,7 +3,7 @@
 namespace Salient\Tests\Sync;
 
 use Salient\Container\Container;
-use Salient\Sync\SyncSerializeRulesBuilder;
+use Salient\Sync\SyncSerializeRules;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
@@ -19,7 +19,7 @@ final class SyncSerializeRulesTest extends TestCase
     {
         $container = new Container();
 
-        $rules1 = SyncSerializeRulesBuilder::build($container)
+        $rules1 = SyncSerializeRules::build($container)
             ->entity(User::class)
             ->remove([
                 'l1.l2.field1',
@@ -28,7 +28,7 @@ final class SyncSerializeRulesTest extends TestCase
                 User::class => ['e3_field', ['e4_field', 'e4_field_id_1']],
             ])
             ->go();
-        $rules2 = SyncSerializeRulesBuilder::build($container)
+        $rules2 = SyncSerializeRules::build($container)
             ->entity(User::class)
             ->remove([
                 ['l1.l2.field1', 'field1_id_2'],
@@ -39,7 +39,7 @@ final class SyncSerializeRulesTest extends TestCase
                 User::class => ['e4_field', ['e3_field', 'e3_field_id_2']],
             ])
             ->go();
-        $rules3 = SyncSerializeRulesBuilder::build($container)
+        $rules3 = SyncSerializeRules::build($container)
             ->entity(User::class)
             ->remove([
                 'l1.l2.field2',

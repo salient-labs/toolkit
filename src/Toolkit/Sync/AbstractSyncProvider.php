@@ -19,6 +19,7 @@ use Salient\Core\Pipeline;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\SyncSerializeRules as SerializeRules;
 use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
 
@@ -220,7 +221,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      */
     final protected function buildSerializeRules(string $entity): SerializeRulesBuilder
     {
-        return SerializeRulesBuilder::build($this->App)
+        return SerializeRules::build($this->App)
             ->entity($entity);
     }
 

@@ -12,6 +12,7 @@ use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Utility\Get;
 use Salient\Curler\Exception\CurlErrorException;
+use Salient\Curler\Curler;
 use Salient\Curler\CurlerBuilder;
 use Salient\Http\HttpHeaders;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
@@ -40,7 +41,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
         ?DateFormatterInterface $dateFormatter = null
     ): CurlerInterface {
         $curlerB = $this->buildCurler(
-            CurlerBuilder::build()
+            Curler::build()
                 ->uri($this->getEndpointUrl($path))
         );
 

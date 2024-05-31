@@ -5,7 +5,7 @@ namespace Salient\Tests\Sync;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
+use Salient\Sync\SyncSerializeRules as SerializeRules;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
 
@@ -114,13 +114,13 @@ final class AbstractSyncEntityTest extends SyncTestCase
         $user->Posts[] = $post;
 
         $_user = $user->toArrayWith(
-            SerializeRulesBuilder::build($this->App)
+            SerializeRules::build($this->App)
                 ->entity(User::class)
                 ->sortByKey(true)
                 ->go()
         );
         $_post = $post->toArrayWith(
-            SerializeRulesBuilder::build($this->App)
+            SerializeRules::build($this->App)
                 ->entity(Post::class)
                 ->sortByKey(true)
                 ->go()
