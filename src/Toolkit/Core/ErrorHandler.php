@@ -6,6 +6,7 @@ use Salient\Contract\Core\ExceptionInterface;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
 use Salient\Core\Concern\UnloadsFacades;
+use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Pcre;
@@ -22,6 +23,8 @@ final class ErrorHandler implements FacadeAwareInterface
     /** @use UnloadsFacades<FacadeInterface<self>> */
     use UnloadsFacades;
 
+    private const DEFAULT_EXIT_STATUS = 16;
+
     private const FATAL_ERRORS = \E_ERROR
         | \E_PARSE
         | \E_CORE_ERROR
@@ -36,10 +39,12 @@ final class ErrorHandler implements FacadeAwareInterface
      */
     private array $Silenced = [];
 
-    private int $ExitStatus = 16;
+    private int $ExitStatus = 0;
     private bool $IsRegistered = false;
     private bool $ShutdownIsRegistered = false;
     private bool $IsShuttingDown = false;
+    private bool $IsShuttingDownOnFatalError = false;
+    private bool $IsShuttingDownOnUncaughtException = false;
 
     /**
      * Register error, exception and shutdown handlers
@@ -69,11 +74,40 @@ final class ErrorHandler implements FacadeAwareInterface
     }
 
     /**
-     * True if error, exception and shutdown handlers are registered
+     * Check if error, exception and shutdown handlers are registered
      */
     public function isRegistered(): bool
     {
         return $this->IsRegistered;
+    }
+
+    /**
+     * Check if the running script is terminating
+     */
+    public function isShuttingDown(): bool
+    {
+        return $this->IsShuttingDown;
+    }
+
+    /**
+     * Check if the running script is terminating after a fatal error or
+     * uncaught exception
+     */
+    public function isShuttingDownOnError(): bool
+    {
+        return $this->IsShuttingDownOnFatalError
+            || $this->IsShuttingDownOnUncaughtException;
+    }
+
+    /**
+     * Get the exit status of the running script if it is terminating
+     */
+    public function getExitStatus(): int
+    {
+        if (!$this->IsShuttingDown) {
+            throw new LogicException('Script is not terminating');
+        }
+        return $this->ExitStatus;
     }
 
     /**
@@ -140,6 +174,8 @@ final class ErrorHandler implements FacadeAwareInterface
 
         $error = error_get_last();
         if ($error && ($error['type'] & self::FATAL_ERRORS)) {
+            $this->IsShuttingDownOnFatalError = true;
+            $this->ExitStatus = 255;
             $this->handleError($error['type'], $error['message'], $error['file'], $error['line']);
         }
     }
@@ -181,13 +217,13 @@ final class ErrorHandler implements FacadeAwareInterface
         Console::exception($exception);
 
         if (!$this->IsShuttingDown) {
+            $this->IsShuttingDown = true;
+            $this->IsShuttingDownOnUncaughtException = true;
+            $exitStatus = self::DEFAULT_EXIT_STATUS;
             if ($exception instanceof ExceptionInterface) {
-                $exitStatus = $exception->getExitStatus();
-                if ($exitStatus !== null) {
-                    exit($exitStatus);
-                }
+                $exitStatus = $exception->getExitStatus() ?? $exitStatus;
             }
-            exit($this->ExitStatus);
+            exit($this->ExitStatus = $exitStatus);
         }
     }
 }
