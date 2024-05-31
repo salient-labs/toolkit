@@ -644,8 +644,8 @@ final class PHPDoc implements Readable
     private static function replace(array $types): array
     {
         return Pcre::replace(
-            '/\bclass-string<(mixed|object)>/i',
-            'class-string',
+            ['/\bclass-string<(?:mixed|object)>/i', '/(?:\bmixed&|&mixed\b)/i'],
+            ['class-string', ''],
             $types,
         );
     }

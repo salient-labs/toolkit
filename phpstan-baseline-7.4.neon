@@ -196,22 +196,7 @@ parameters:
 			path: src/Toolkit/Container/Application.php
 
 		-
-			message: "#^Method Salient\\\\Container\\\\Container\\:\\:_get\\(\\) should return T of TService of object but returns object\\.$#"
-			count: 2
-			path: src/Toolkit/Container/Container.php
-
-		-
-			message: "#^Method Salient\\\\Container\\\\Container\\:\\:getAs\\(\\) should return T of object&TService of object but returns T of object\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Container.php
-
-		-
 			message: "#^Method Salient\\\\Container\\\\Container\\:\\:getGlobalContainer\\(\\) should return Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Container.php
-
-		-
-			message: "#^Parameter \\#1 \\$id of method Salient\\\\Container\\\\Container\\:\\:get\\(\\) expects class\\-string\\<T of object\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Container/Container.php
 
@@ -1021,7 +1006,7 @@ parameters:
 			path: tests/unit/Toolkit/Container/ContainerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$id of method Salient\\\\Container\\\\Container\\:\\:get\\(\\) expects class\\-string\\<T of object\\>, string given\\.$#"
+			message: "#^Parameter \\#1 \\$id of method Salient\\\\Container\\\\Container\\:\\:get\\(\\) expects class\\-string\\<T\\>, string given\\.$#"
 			count: 4
 			path: tests/unit/Toolkit/Container/ContainerTest.php
 

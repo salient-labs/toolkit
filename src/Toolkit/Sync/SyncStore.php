@@ -10,6 +10,7 @@ use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Console;
@@ -40,7 +41,7 @@ use SQLite3Stmt;
  * terminated by calling {@see SyncStore::close()}, otherwise a failed run is
  * recorded.
  */
-final class SyncStore extends AbstractStore
+final class SyncStore extends AbstractStore implements SyncStoreInterface
 {
     /** @var bool */
     private $ErrorReporting = false;
