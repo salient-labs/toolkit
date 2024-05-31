@@ -153,14 +153,6 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     /**
      * @inheritDoc
      */
-    public function requireProvider(): SyncProviderInterface
-    {
-        return $this->Provider;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function entity(): string
     {
         return $this->Entity;

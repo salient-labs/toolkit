@@ -70,14 +70,6 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function requireProvider(): ProviderInterface
-    {
-        return $this->Provider;
-    }
-
-    /**
-     * @inheritDoc
-     */
     final public function withContainer(ContainerInterface $container)
     {
         return $this->withPropertyValue('Container', $container);
