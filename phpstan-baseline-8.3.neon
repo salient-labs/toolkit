@@ -371,11 +371,6 @@ parameters:
 			path: src/Toolkit/Core/SqlQuery.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Debug\\:\\:getCaller\\(\\) should return array\\{namespace\\?\\: string, class\\?\\: string, file\\?\\: string, 0\\?\\: string, function\\?\\: string, 1\\?\\: string, line\\?\\: int\\} but returns array\\<int\\|string, int\\|string\\|null\\>\\.$#"
-			count: 2
-			path: src/Toolkit/Core/Utility/Debug.php
-
-		-
 			message: "#^Method Salient\\\\Core\\\\Utility\\\\Env\\:\\:getNullableInt\\(\\) should return int\\|null but returns T of int\\|false\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Env.php
@@ -552,11 +547,6 @@ parameters:
 
 		-
 			message: "#^Cannot call method isSubclassOf\\(\\) on ReflectionClass\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:toLink\\(\\) should return array\\<string, int\\|string\\> but returns array\\<string, int\\|string\\|null\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
@@ -936,11 +926,6 @@ parameters:
 			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
-			message: "#^Parameter \\#2 \\$callback of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replaceCallback\\(\\) expects callable\\(array\\<string\\>\\)\\: string, Closure\\(mixed\\)\\: \\(array\\<string\\>\\|string\\) given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\|false given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/SyncSerializeRules.php
@@ -1049,6 +1034,11 @@ parameters:
 			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/PcreTest.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and array\\{'accept', array\\{'\\*/\\*'\\}\\} will always evaluate to false\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
 
 		-
 			message: "#^Cannot access an offset on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"

@@ -310,15 +310,15 @@ final class SyncSerializeRules implements
 
         $this->Entity = $merge->Entity;
         $this->DateFormatter = $merge->DateFormatter ?: $base->DateFormatter;
-        $this->IncludeMeta = Get::coalesce($merge->IncludeMeta, $base->IncludeMeta);
-        $this->SortByKey = Get::coalesce($merge->SortByKey, $base->SortByKey);
-        $this->MaxDepth = Get::coalesce($merge->MaxDepth, $base->MaxDepth);
-        $this->DetectRecursion = Get::coalesce($merge->DetectRecursion, $base->DetectRecursion);
-        $this->RemoveCanonicalId = Get::coalesce($merge->RemoveCanonicalId, $base->RemoveCanonicalId);
+        $this->IncludeMeta = $merge->IncludeMeta ?? $base->IncludeMeta;
+        $this->SortByKey = $merge->SortByKey ?? $base->SortByKey;
+        $this->MaxDepth = $merge->MaxDepth ?? $base->MaxDepth;
+        $this->DetectRecursion = $merge->DetectRecursion ?? $base->DetectRecursion;
+        $this->RemoveCanonicalId = $merge->RemoveCanonicalId ?? $base->RemoveCanonicalId;
         $this->Remove = $this->flattenRules($base->Remove, $merge->Remove);
         $this->Replace = $this->flattenRules($base->Replace, $merge->Replace);
-        $this->RecurseRules = Get::coalesce($merge->RecurseRules, $base->RecurseRules);
-        $this->Flags = Get::coalesce($merge->Flags, $base->Flags);
+        $this->RecurseRules = $merge->RecurseRules ?? $base->RecurseRules;
+        $this->Flags = $merge->Flags ?? $base->Flags;
 
         return $this;
     }
@@ -525,7 +525,7 @@ final class SyncSerializeRules implements
      */
     public function getIncludeMeta(): bool
     {
-        return Get::coalesce($this->IncludeMeta, true);
+        return $this->IncludeMeta ?? true;
     }
 
     /**
@@ -533,7 +533,7 @@ final class SyncSerializeRules implements
      */
     public function getSortByKey(): bool
     {
-        return Get::coalesce($this->SortByKey, false);
+        return $this->SortByKey ?? false;
     }
 
     /**
@@ -541,7 +541,7 @@ final class SyncSerializeRules implements
      */
     public function getMaxDepth(): ?int
     {
-        return Get::coalesce($this->MaxDepth, 99);
+        return $this->MaxDepth ?? 99;
     }
 
     /**
@@ -549,7 +549,7 @@ final class SyncSerializeRules implements
      */
     public function getDetectRecursion(): bool
     {
-        return Get::coalesce($this->DetectRecursion, true);
+        return $this->DetectRecursion ?? true;
     }
 
     /**
@@ -557,12 +557,12 @@ final class SyncSerializeRules implements
      */
     public function getRemoveCanonicalId(): bool
     {
-        return Get::coalesce($this->RemoveCanonicalId, true);
+        return $this->RemoveCanonicalId ?? true;
     }
 
     public function getRecurseRules(): bool
     {
-        return Get::coalesce($this->RecurseRules, true);
+        return $this->RecurseRules ?? true;
     }
 
     /**
@@ -570,7 +570,7 @@ final class SyncSerializeRules implements
      */
     public function getFlags(): int
     {
-        return Get::coalesce($this->Flags, 0);
+        return $this->Flags ?? 0;
     }
 
     /**
