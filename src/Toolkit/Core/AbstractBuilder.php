@@ -2,13 +2,13 @@
 
 namespace Salient\Core;
 
+use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Facade\App;
 
 /**
  * Base class for builders
@@ -20,6 +20,7 @@ use Salient\Core\Facade\App;
 abstract class AbstractBuilder implements Chainable, Immutable
 {
     use HasChainableMethods;
+    use RequiresContainer;
 
     /**
      * Get the class to build
@@ -38,6 +39,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
         return [];
     }
 
+    /** @todo Decouple from the service container */
     protected ContainerInterface $Container;
     /** @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
     private Introspector $Introspector;
@@ -51,7 +53,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
      */
     final public function __construct(?ContainerInterface $container = null)
     {
-        $this->Container = $container ?? App::getInstance();
+        $this->Container = self::requireContainer($container);
         $this->Introspector = Introspector::getService($this->Container, static::getService());
         foreach (static::getTerminators() as $terminator) {
             $this->Terminators[$terminator] = true;
@@ -64,7 +66,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
      *
      * @return static
      */
-    final public static function build(?ContainerInterface $container = null)
+    final public static function create(?ContainerInterface $container = null)
     {
         return new static($container);
     }
@@ -78,7 +80,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     final public static function resolve($object)
     {
         if ($object instanceof static) {
-            return $object->go();
+            return $object->build();
         }
 
         if (is_a($object, static::getService())) {
@@ -140,8 +142,9 @@ abstract class AbstractBuilder implements Chainable, Immutable
      *
      * @return TClass
      */
-    final public function go()
+    final public function build()
     {
+        /** @var TClass */
         return $this->Introspector->getCreateFromClosure(true)($this->Data, $this->Container);
     }
 
@@ -157,7 +160,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
             ($this->Terminators[$name] ?? null)
             || ($this->Terminators[$this->Introspector->maybeNormalise($name)] ?? null)
         ) {
-            return $this->go()->{$name}(...$arguments);
+            return $this->build()->{$name}(...$arguments);
         }
 
         $count = count($arguments);
@@ -193,5 +196,17 @@ abstract class AbstractBuilder implements Chainable, Immutable
         $clone = clone $this;
         $clone->Data[$name] = &$variable;
         return $clone;
+    }
+
+    /**
+     * @deprecated Use {@see build()} instead
+     *
+     * @return TClass
+     *
+     * @codeCoverageIgnore
+     */
+    final public function go()
+    {
+        return $this->build();
     }
 }

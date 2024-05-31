@@ -1204,7 +1204,7 @@ SQL;
     public function error($error, bool $deduplicate = false)
     {
         if ($error instanceof SyncErrorBuilder) {
-            $error = $error->go();
+            $error = $error->build();
         }
 
         $seen = $deduplicate

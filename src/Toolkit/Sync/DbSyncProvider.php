@@ -73,7 +73,7 @@ abstract class DbSyncProvider extends AbstractSyncProvider
                     ->entity($entity)
                     ->provider($this)
             )
-            ->go();
+            ->build();
 
         return $def;
     }

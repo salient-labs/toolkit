@@ -72,7 +72,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
             $curlerB = $curlerB->dateFormatter($this->getDateFormatter($path));
         }
 
-        return $curlerB->go();
+        return $curlerB->build();
     }
 
     /**
@@ -91,7 +91,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
                     ->entity($entity)
                     ->provider($this)
             )
-            ->go();
+            ->build();
 
         return $def;
     }

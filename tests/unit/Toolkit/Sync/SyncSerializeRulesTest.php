@@ -27,7 +27,7 @@ final class SyncSerializeRulesTest extends TestCase
                 Post::class => [['e1_field1', 'e1_field1_id']],
                 User::class => ['e3_field', ['e4_field', 'e4_field_id_1']],
             ])
-            ->go();
+            ->build();
         $rules2 = SyncSerializeRules::build($container)
             ->entity(User::class)
             ->remove([
@@ -38,7 +38,7 @@ final class SyncSerializeRulesTest extends TestCase
                 CustomPost::class => ['e2_field2', ['e2_field2', 'e2_field2_id_2']],
                 User::class => ['e4_field', ['e3_field', 'e3_field_id_2']],
             ])
-            ->go();
+            ->build();
         $rules3 = SyncSerializeRules::build($container)
             ->entity(User::class)
             ->remove([
@@ -47,7 +47,7 @@ final class SyncSerializeRulesTest extends TestCase
                 CustomPost::class => ['e2_field3', ['e2_field2', 'e2_field2_id_3']],
                 User::class => ['e3_field', ['e4_field', 'e4_field_id_3']],
             ])
-            ->go();
+            ->build();
 
         $this->assertEquals([
             ['l1.l2.field1', 'field1_id_2'],

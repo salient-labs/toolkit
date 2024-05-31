@@ -836,7 +836,7 @@ EOF)
                 $_params = $_param->getParameters();
                 $return = $returnsValue[$name] ? 'return ' : '';
                 $code = sprintf(
-                    '%s$this->go()->%s(%s);',
+                    '%s$this->build()->%s(%s);',
                     $return,
                     $name,
                     implode(', ', array_map(
