@@ -52,6 +52,8 @@ class GenerateBuilder extends AbstractGenerateCommand
     /** @var string[]|null */
     private ?array $Forward = null;
     /** @var string[] */
+    private array $NoDeclare = [];
+    /** @var string[] */
     private array $Skip = [];
 
     // --
@@ -115,6 +117,19 @@ EOF)
                 ->multipleAllowed()
                 ->nullable()
                 ->bindTo($this->Forward),
+            CliOption::build()
+                ->long('no-declare')
+                ->short('D')
+                ->valueName('name')
+                ->description(<<<EOF
+Do not declare a method for <name>
+
+By default, values passed by reference or with a template in their PHPDoc type
+are accepted via a declared method. Use this option to override this behaviour.
+EOF)
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()
+                ->bindTo($this->NoDeclare),
             CliOption::build()
                 ->long('skip')
                 ->short('k')
@@ -216,7 +231,7 @@ EOF)
                 $_params[$name] = $_param;
                 // Variables can't be passed to __call by reference, so this
                 // parameter needs to be received via a declared method
-                if ($_param->isPassedByReference()) {
+                if ($_param->isPassedByReference() && !in_array($name, $this->NoDeclare)) {
                     $this->ToDeclare[$name] = $_param;
                 }
             }
@@ -308,7 +323,7 @@ EOF)
                         $propertyFile,
                         $templates
                     );
-                    if (count($templates) === 1) {
+                    if (count($templates) === 1 && !in_array($name, $this->NoDeclare)) {
                         $declareTemplates[$name] = $templates;
                         $this->ToDeclare[$name] ??= $_property;
                     }
@@ -415,7 +430,7 @@ EOF)
                     $propertyFile,
                     $templates
                 );
-                if (count($templates) === 1) {
+                if (count($templates) === 1 && !in_array($name, $this->NoDeclare)) {
                     $declareTemplates[$name] = $templates;
                     if (!$declare) {
                         $this->ToDeclare[$name] = $_param;
@@ -580,7 +595,7 @@ EOF)
                     $_params,
                     fn(ReflectionParameter $p) =>
                         $p->isPassedByReference()
-                );
+                ) && !in_array($name, $this->NoDeclare);
                 $internal = isset($phpDoc->TagsByName['internal']);
                 $link = !$internal && $phpDoc && $phpDoc->hasDetail();
                 $returnsVoid = false;
@@ -601,9 +616,10 @@ EOF)
                         $templates
                     );
                     if ($templates
-                        && count($templates) === 1
-                        && ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>'
-                            || $type === $key)) {
+                            && count($templates) === 1
+                            && ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>'
+                                || $type === $key)
+                            && !in_array($name, $this->NoDeclare)) {
                         $declareTemplates[$name] = $templates;
                         if (!$declare) {
                             $this->ToDeclare[$name] = $_method;
