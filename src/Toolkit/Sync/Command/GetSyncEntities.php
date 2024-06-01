@@ -156,7 +156,7 @@ final class GetSyncEntities extends AbstractSyncCommand
             $rules = $rules->withIncludeMeta(false);
         }
         if ($this->IncludeCanonical) {
-            $rules = $rules->withRemoveCanonicalId(false);
+            $rules = $rules->withIncludeCanonicalId();
         }
 
         if ($this->Csv) {

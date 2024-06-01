@@ -90,7 +90,7 @@ $builders = [
     DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--forward=bindOverride'],
     HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--forward=bindOverride'],
     SyncError::class => SyncErrorBuilder::class,
-    SyncSerializeRules::class => SyncSerializeRulesBuilder::class,
+    SyncSerializeRules::class => [SyncSerializeRulesBuilder::class, '--no-declare=remove,replace'],
 ];
 
 $entities = [

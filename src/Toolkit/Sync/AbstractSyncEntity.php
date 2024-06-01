@@ -4,6 +4,7 @@ namespace Salient\Sync;
 
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Describable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFactory;
@@ -294,11 +295,13 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      */
     final public function toArray(): array
     {
-        return $this->_toArray(static::getSerializeRules(
+        /** @var SerializeRules<self> */
+        $rules = static::getSerializeRules(
             $this->Provider
                 ? $this->Provider->getContainer()
                 : null
-        ));
+        );
+        return $this->_toArray($rules);
     }
 
     /**
@@ -443,6 +446,15 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      */
     private function _toArray(SerializeRules $rules): array
     {
+        /** @var SerializeRules<self> $rules */
+        if ($rules->getDateFormatter() === null) {
+            $rules = $rules->withDateFormatter(
+                $this->Provider
+                    ? $this->Provider->dateFormatter()
+                    : new DateFormatter()
+            );
+        }
+
         $array = $this;
         $this->_serialize($array, [], $rules);
 
@@ -452,13 +464,29 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @param AbstractSyncEntity|DeferredEntity<AbstractSyncEntity>|DeferredRelationship<AbstractSyncEntity>|DateTimeInterface|mixed[] $node
      * @param string[] $path
-     * @param SerializeRules<static> $rules
+     * @param SerializeRules<self> $rules
      * @param array<int,true> $parents
      */
     private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
     {
-        if (null !== ($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
+        $maxDepth = $rules->getMaxDepth();
+        if ($maxDepth !== null && count($path) > $maxDepth) {
             throw new UnexpectedValueException('In too deep: ' . implode('.', $path));
+        }
+
+        if ($node instanceof DateTimeInterface) {
+            /** @var DateFormatterInterface */
+            $formatter = $rules->getDateFormatter();
+            $node = $formatter->format($node);
+            return;
+        }
+
+        // Now is not the time to resolve deferred entities
+        if ($node instanceof DeferredEntity) {
+            $node = $node->toLink($rules->getForSyncStore()
+                ? LinkType::INTERNAL
+                : LinkType::DEFAULT);
+            return;
         }
 
         /** @todo Serialize deferred relationships */
@@ -467,15 +495,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             return;
         }
 
-        if ($node instanceof DeferredEntity) {
-            $node = $node->toLink($rules->getFlags() & SerializeRules::SYNC_STORE
-                ? LinkType::INTERNAL
-                : LinkType::DEFAULT);
-            return;
-        }
-
         if ($node instanceof AbstractSyncEntity) {
-            if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
+            if ($path && $rules->getForSyncStore()) {
                 $node = $node->toLink($rules->getContainer(), LinkType::INTERNAL);
                 return;
             }
@@ -486,7 +507,6 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                 if ($parents[spl_object_id($node)] ?? false) {
                     $node = $node->toLink($rules->getContainer(), LinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
-
                     return;
                 }
                 $parents[spl_object_id($node)] = true;
@@ -496,108 +516,71 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             $node = $node->serialize($rules);
         }
 
-        $delete = $rules->getRemoveFrom($class ?? null, null, $path);
-        $replace = $rules->getReplaceIn($class ?? null, null, $path);
+        $delete = $rules->getRemovableKeys($class ?? null, null, $path);
+        $replace = $rules->getReplaceableKeys($class ?? null, null, $path);
 
         // Don't delete values returned in both lists
         $delete = array_diff_key($delete, $replace);
 
         if ($delete) {
-            $node = array_diff_key($node, array_flip($delete));
+            $node = array_diff_key($node, $delete);
         }
-        foreach ($replace as $rule) {
-            if (is_array($rule)) {
-                $_rule = $rule;
-                $key = array_shift($rule);
-                $newKey = $key;
-                $callback = null;
 
-                while ($rule) {
-                    $arg = array_shift($rule);
-                    if (is_string($arg)) {
-                        $newKey = SyncIntrospector::get(static::class)
-                            ->maybeNormalise($arg, NormaliserFlag::CAREFUL);
-                        continue;
-                    }
-                    if ($arg instanceof Closure) {
-                        $callback = $arg;
-                        continue;
-                    }
-                    throw new LogicException('Invalid rule: ' . var_export($_rule, true));
+        $replace = array_intersect_key($replace, $node + ['[]' => null]);
+
+        foreach ($replace as $key => [$newKey, $closure]) {
+            $store ??= $this->store($rules->getContainer());
+            if ($key !== '[]') {
+                if ($newKey !== null && $key !== $newKey) {
+                    $node = Arr::rename($node, $key, $newKey);
+                    $key = $newKey;
                 }
 
-                if ($key !== '[]') {
-                    if (!array_key_exists($key, $node)) {
-                        continue;
-                    }
-
-                    if ($key !== $newKey) {
-                        /** @var mixed[] $node */
-                        if (array_key_exists($newKey, $node)) {
-                            throw new UnexpectedValueException("Cannot rename '$key': '$newKey' already set");
-                        }
-                        $node = Arr::rename($node, $key, $newKey);
-                        $key = $newKey;
-                    }
-
-                    if ($callback) {
-                        $node[$key] = $callback($node[$key]);
-
-                        continue;
-                    }
-                } elseif ($callback) {
-                    $node = array_map($callback, $node);
-
+                if ($closure) {
+                    $node[$key] = $closure($node[$key], $store);
                     continue;
                 }
-            } else {
-                $key = $rule;
-            }
 
-            if ($key === '[]') {
                 $_path = $path;
-                $lastKey = array_pop($_path);
-                $_path[] = $lastKey . '[]';
-
-                foreach ($node as &$child) {
-                    $this->_serializeId($child, $_path);
-                }
-                unset($child);
-
+                $_path[] = (string) $key;
+                $this->_serializeId($node[$key], $_path);
                 continue;
             }
 
-            if (!array_key_exists($key, $node)) {
+            if ($closure) {
+                foreach ($node as &$child) {
+                    $child = $closure($child, $store);
+                }
+                unset($child);
                 continue;
             }
 
             $_path = $path;
-            $_path[] = $key;
-            $this->_serializeId($node[$key], $_path);
+            $last = array_pop($_path) . '[]';
+            $_path[] = $last;
+            foreach ($node as &$child) {
+                $this->_serializeId($child, $_path);
+            }
+            unset($child);
         }
 
-        if (is_array($node)) {
-            if (Arr::isIndexed($node)) {
-                $isList = true;
-                $lastKey = array_pop($path);
-                $path[] = $lastKey . '[]';
+        $isList = false;
+        if (Arr::isIndexed($node)) {
+            $isList = true;
+            $last = array_pop($path) . '[]';
+            $path[] = $last;
+        }
+
+        unset($_path);
+        foreach ($node as $key => &$child) {
+            if ($child === null || is_scalar($child)) {
+                continue;
             }
-            foreach ($node as $key => &$child) {
-                if ($child === null || is_scalar($child)) {
-                    continue;
-                }
-                if (!($isList ?? null)) {
-                    $_path = $path;
-                    $_path[] = $key;
-                }
-                $this->_serialize($child, $_path ?? $path, $rules, $parents);
+            if (!$isList) {
+                $_path = $path;
+                $_path[] = (string) $key;
             }
-        } elseif ($node instanceof DateTimeInterface) {
-            $node = ($rules->getDateFormatter()
-                ?: ($this->getProvider() ? $this->getProvider()->dateFormatter() : null)
-                ?: new DateFormatter())->format($node);
-        } else {
-            throw new UnexpectedValueException('Array or AbstractSyncEntity expected: ' . print_r($node, true));
+            $this->_serialize($child, $_path ?? $path, $rules, $parents);
         }
     }
 
@@ -643,7 +626,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         $array = SyncIntrospector::get(static::class)
             ->getSerializeClosure($rules)($clone);
 
-        if ($rules->getRemoveCanonicalId()) {
+        if (!$rules->getIncludeCanonicalId()) {
             unset($array[
                 SyncIntrospector::get(static::class)
                     ->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)
