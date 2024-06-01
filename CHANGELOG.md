@@ -10,6 +10,147 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.23] - 2024-06-01
+
+### Added
+
+#### `Core`
+
+- Add `ErrorHandler` methods `isShuttingDown()`, `isShuttingDownOnError()` and `getExitStatus()`
+  - Destructors can use these via the `Err` facade to determine the script's exit status during shutdown and respond accordingly
+- Add `Arr::setIf()`
+- Add `getContainer()` to builders
+
+#### `Curler`
+
+- Add `CurlerInterface::withRequest()` so middleware can use `Curler` to inspect arbitrary requests
+
+#### `Sync`
+
+- Add `SyncStore::getBinaryRunUuid()` and remove `$binary` parameter from `getRunUuid()`
+- Add `SyncStore::getEntityId()`
+- Add `SyncStoreInterface` and adopt where appropriate
+
+#### `PHPStan`
+
+- Add PHPStan extensions:
+  - `GetCoalesceRule` to report unnecessary use of `Get::coalesce()`
+  - `ArrWhereNotEmptyMethodReturnTypeExtension` to resolve return type of `Arr::whereNotEmpty()`, including for constant arrays
+  - `ArrWhereNotNullMethodReturnTypeExtension` to similarly resolve return type of `Arr::whereNotNull()`
+
+#### `sli`
+
+- Add `--no-declare` option to `sli generate builder`
+
+### Changed
+
+#### `Cache`
+
+- **Automatically remove expired items from `CacheStore`**
+- Adopt `CacheStoreInterface` instead of `CacheStore` where appropriate
+
+#### `Container`
+
+- Resolve internal interfaces to internal implementations by default, e.g. resolve `CacheStoreInterface` to `CacheStore` if it hasn't been bound to something else
+- Move `RequiresContainer` to `Container` namespace
+- In `RequiresContainer::requireContainer()`, fall back to the global container if it exists, otherwise create a standalone container (unless `$createGlobalContainer = true`)
+
+#### `Core`
+
+- Rename builder methods for consistency and clarity:
+  - `build()` -> `create()`
+  - `go()` -> `build()`
+- Move `Http` utility class to `Http` namespace
+- Move `Get` methods to new `FormData` class in `Http` namespace:
+  - `query()` -> `getQuery()`
+  - `formData()` -> `getValues()`
+  - `data()` -> `getData()`
+- Rename `QueryFlag` to `FormDataFlag` and move to `Http` namespace
+- Rename `Arr::same()` to `Arr::sameValues()` and add `Arr::same()`, which also checks keys (as one would expect)
+- Simplify `Sys::handleExitSignals()`
+- Move `Char` constants to `Str`
+- Move `SortFlag` constants to `Arr`
+- Rename `AbstractStore::requireUpsert()` to `assertCanUpsert()` and return `void`
+
+#### `Curler`
+
+- Surface middleware messages via `Curler::getLastRequest()` and `Curler::getLastResponse()`
+- Pass `$curler` to `Curler` cache key callbacks
+- Add signature to `$next` closure in `Curler` middleware annotations
+- Allow `Curler`'s user agent header to be suppressed
+- Rename `CurlerInterface::withQueryFlags()` to `CurlerInterface::withFormDataFlags()`
+- Rename `CurlerBuilder::queryFlags()` to `CurlerBuilder::formDataFlags()`
+
+#### `Sync`
+
+- Revert serialization changes in @9344acb3, where containers are propagated via serialization rules, in favour of passing an optional entity store to serialize operations
+  - This allows serialization of possibly-detached entities--that may belong to a namespace registered with a store they can't locate--without making serialization rules container-dependent
+- In `SyncEntityInterface`:
+  - Rename `defaultProvider()` -> `getDefaultProvider()`
+  - Make `$container` a required parameter for `getDefaultProvider()` and `withDefaultProvider()`
+  - Remove `$container` parameter from `getSerializeRules()`
+  - Rename `plural()` -> `getPlural()` and make return type nullable
+  - Add `$store` parameter to `toArray()` and `toArrayWith()`
+  - In `toArrayWith()`, don't allow `$rules` to be an unresolved builder
+  - Pass `$store` instead of `$container` to `toLink()` and `uri()`
+- Remove `static` modifier from `SyncClassResolverInterface` methods
+- Rename `SyncStore` methods:
+  - `hasRunId()` -> `runHasStarted()`
+  - `provider()` -> `registerProvider()`
+  - `getProviderHash()` -> `getProviderSignature()`
+  - `entityType()` -> `registerEntity()`
+  - `namespace()` -> `registerNamespace()` and require `$resolver` to be a `SyncClassResolverInterface` instance
+  - `getEntityTypeUri()` -> `getEntityUri()`
+  - `getEntityTypeNamespace()` -> `getEntityPrefix()`
+  - `getNamespaceResolver()` -> `getClassResolver()` and return `SyncClassResolverInterface|null`
+  - `entity()` -> `setEntity()`
+  - `deferredEntity()` -> `deferEntity()`
+  - `deferredRelationship()` -> `deferRelationship()`
+  - `resolveDeferred()` -> `resolveDeferrals()` and add `$providerId`, remove `$return`, always return resolved entities
+  - `checkHeartbeats()` -> `checkProviderHeartbeats()`
+  - `error()` -> `recordError()`
+- Add `$forEntityProperty` parameter to `SyncStore::resolveDeferredRelationships()`
+- Automatically detect exit status during `SyncStore` shutdown
+- In `SyncSerializeRules`:
+  - Don't flatten rules until they are compiled, in case rules for entities with different normalisers are merged
+  - Normalise new key names during compilation
+- Add/rename/replace in `SyncSerializeRules` and related interfaces:
+  - `getEntity()`
+  - `apply()` -> `merge()`
+  - `getRemoveFrom()` -> `getRemovableKeys()`
+  - `getReplaceIn()` -> `getReplaceableKeys()`
+  - `withDateFormatter()`
+  - `withDetectRecursion()`
+  - `getRecurseRules()`
+  - `withRecurseRules()`
+  - `getForSyncStore()` and remove `getFlags()`
+  - `withForSyncStore()`
+  - `getRemoveCanonicalId()` -> `getIncludeCanonicalId()`
+  - `withRemoveCanonicalId()` -> `withIncludeCanonicalId()`
+- In `SyncProviderInterface::with()`, do not accept `ContainerInterface` as a `$context`
+
+### Removed
+
+- Remove `getApp()` methods in favour of `getContainer()`
+- Remove container method `instanceIf()` to address unexpected outcome when existing bindings are not shared instances
+- Remove `Arr::upperFirst()`
+- Remove `HasProvider::requireProvider()`
+- Remove `AbstractStore::isTransactionOpen()`
+- Remove `AbstractSyncEntity::store()`
+- Remove `AbstractSyncProvider::buildSerializeRules()`
+- Remove `SyncEntityLinkType::INTERNAL`
+
+### Fixed
+
+- Fix `Arr::rename()` bug when renaming a key with a `null` value
+- Remove `of object` from container method templates to fix static analysis errors when binding or resolving interfaces
+- Fix issue where serialization rules applied to date and time values trigger an exception
+- Fix issue where nested value paths may be incorrect during serialization, preventing rules from applying correctly
+
+### Security
+
+- Add "unstable" HTTP header group and use it to filter headers for inclusion in `Curler`'s default cache key instead of "sensitive" headers, which had non-obvious security implications by default
+
 ## [v0.99.22] - 2024-05-21
 
 ### Added
@@ -2550,6 +2691,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.23]: https://github.com/salient-labs/toolkit/compare/v0.99.22...v0.99.23
 [v0.99.22]: https://github.com/salient-labs/toolkit/compare/v0.99.21...v0.99.22
 [v0.99.21]: https://github.com/salient-labs/toolkit/compare/v0.99.20...v0.99.21
 [v0.99.20]: https://github.com/salient-labs/toolkit/compare/v0.99.19...v0.99.20
