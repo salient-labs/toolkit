@@ -566,6 +566,11 @@ parameters:
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
 		-
+			message: "#^Parameter \\#2 \\$context of method Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\:\\:with\\(\\) expects Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|null, Salient\\\\Contract\\\\Container\\\\ContainerInterface\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/AbstractSyncEntity.php
+
+		-
 			message: "#^Property Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:\\$State \\(int\\<0, 1\\>\\) does not accept int\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php

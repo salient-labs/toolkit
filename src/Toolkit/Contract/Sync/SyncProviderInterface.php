@@ -67,8 +67,7 @@ interface SyncProviderInterface extends ProviderInterface
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @param SyncContextInterface|ContainerInterface|null $context
      * @return SyncEntityProviderInterface<T>
      */
-    public function with(string $entity, $context = null): SyncEntityProviderInterface;
+    public function with(string $entity, ?SyncContextInterface $context = null): SyncEntityProviderInterface;
 }

@@ -20,8 +20,6 @@ use Salient\Core\Pipeline;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\SyncSerializeRules as SerializeRules;
-use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
 
 /**
@@ -212,21 +210,6 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     }
 
     /**
-     * Use the provider's container to get a serialization rules builder
-     * for an entity
-     *
-     * @template T of SyncEntityInterface
-     *
-     * @param class-string<T> $entity
-     * @return SerializeRulesBuilder<T>
-     */
-    final protected function buildSerializeRules(string $entity): SerializeRulesBuilder
-    {
-        return SerializeRules::build($this->App)
-            ->entity($entity);
-    }
-
-    /**
      * @inheritDoc
      */
     final public static function getServices(): array
@@ -240,25 +223,23 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      * @param class-string<TEntity> $entity
      * @return SyncEntityProvider<TEntity,static>
      */
-    final public function with(string $entity, $context = null): SyncEntityProvider
+    final public function with(string $entity, ?SyncContextInterface $context = null): SyncEntityProvider
     {
-        if ($context instanceof SyncContextInterface) {
+        if ($context) {
             $context->maybeThrowRecursionException();
             $container = $context->getContainer();
         } else {
-            /** @var ContainerInterface */
-            $container = $context ?? $this->App;
+            $container = $this->App;
         }
 
         $container = $container->inContextOf(static::class);
-
-        $context = $context instanceof SyncContextInterface
+        $context = $context
             ? $context->withContainer($container)
             : $this->getContext($container);
 
         return $container->get(
             SyncEntityProvider::class,
-            [$entity, $this, $context]
+            ['entity' => $entity, 'provider' => $this, 'context' => $context],
         );
     }
 
