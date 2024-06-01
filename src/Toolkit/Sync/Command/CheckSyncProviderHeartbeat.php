@@ -137,7 +137,7 @@ EOF;
             'Sending heartbeat request to {{#}} {{#:provider}}',
         ));
 
-        $this->Store->checkHeartbeats(
+        $this->Store->checkProviderHeartbeats(
             max(1, $this->Ttl),
             $this->FailEarly,
             ...array_values($providers)

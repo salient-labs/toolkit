@@ -3,21 +3,21 @@
 namespace Salient\Sync\Event;
 
 use Salient\Contract\Sync\SyncStoreEventInterface;
-use Salient\Sync\SyncStore;
+use Salient\Contract\Sync\SyncStoreInterface;
 
 /**
  * Base class for entity store events
  */
 abstract class AbstractSyncStoreEvent extends AbstractSyncEvent implements SyncStoreEventInterface
 {
-    protected SyncStore $Store;
+    protected SyncStoreInterface $Store;
 
-    public function __construct(SyncStore $store)
+    public function __construct(SyncStoreInterface $store)
     {
         $this->Store = $store;
     }
 
-    public function store(): SyncStore
+    public function store(): SyncStoreInterface
     {
         return $this->Store;
     }

@@ -5,48 +5,45 @@ namespace Salient\Core\Facade;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractFacade;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncErrorCollection;
 use Salient\Sync\SyncError;
-use Salient\Sync\SyncErrorBuilder;
 use Salient\Sync\SyncStore;
 
 /**
- * A facade for SyncStore
+ * A facade for the global sync entity store
  *
- * @method static SyncStore checkHeartbeats(int $ttl = 300, bool $failEarly = true, SyncProviderInterface ...$providers) Throw an exception if a provider has an unreachable backend (see {@see SyncStore::checkHeartbeats()})
- * @method static SyncStore close(int $exitStatus = 0) Terminate the current run and close the database
- * @method static SyncStore deferredEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, DeferredEntity<SyncEntityInterface> $deferred) Register a deferred sync entity (see {@see SyncStore::deferredEntity()})
- * @method static SyncStore deferredRelationship(int $providerId, class-string<SyncEntityInterface> $entityType, class-string<SyncEntityInterface> $forEntityType, string $forEntityProperty, int|string $forEntityId, DeferredRelationship<SyncEntityInterface> $deferred) Register a deferred relationship
- * @method static SyncStore disableErrorReporting() Disable sync error reporting
- * @method static SyncStore enableErrorReporting() Report sync errors to the console as they occur (disabled by default)
- * @method static SyncStore entity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, SyncEntityInterface $entity) Register a sync entity (see {@see SyncStore::entity()})
- * @method static SyncStore entityType(class-string<SyncEntityInterface> $entity) Register a sync entity type and set its ID (unless already registered) (see {@see SyncStore::entityType()})
- * @method static SyncStore error(SyncError|SyncErrorBuilder $error, bool $deduplicate = false) Report an error that occurred during a sync operation
- * @method static int getDeferralCheckpoint() Get a checkpoint to delineate between deferred entities and relationships already in their respective queues, and any subsequent deferrals (see {@see SyncStore::getDeferralCheckpoint()})
- * @method static SyncEntityInterface|null getEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, bool|null $offline = null) Get a previously registered and/or stored sync entity (see {@see SyncStore::getEntity()})
- * @method static string|null getEntityTypeNamespace(class-string<SyncEntityInterface> $entity) Get the namespace of a sync entity type (see {@see SyncStore::getEntityTypeNamespace()})
- * @method static string|null getEntityTypeUri(class-string<SyncEntityInterface> $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
- * @method static SyncErrorCollection getErrors() Get sync errors recorded so far
- * @method static string getFilename() Get the filename of the database
- * @method static class-string<SyncClassResolverInterface>|null getNamespaceResolver(class-string<SyncEntityInterface|SyncProviderInterface> $class) Get the class resolver for an entity or provider's namespace
- * @method static SyncProviderInterface|null getProvider(string $hash) Get a registered sync provider
- * @method static string getProviderHash(SyncProviderInterface $provider) Get the stable identifier of a sync provider
- * @method static int getProviderId(SyncProviderInterface $provider) Get the provider ID of a registered sync provider, starting a run if necessary
+ * @method static SyncStoreInterface checkProviderHeartbeats(int $ttl = 300, bool $failEarly = true, SyncProviderInterface ...$providers) Throw an exception if a sync provider's backend is unreachable (see {@see SyncStoreInterface::checkProviderHeartbeats()})
+ * @method static SyncStoreInterface deferEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, DeferredEntity<SyncEntityInterface> $entity) Register a deferred entity with the entity store (see {@see SyncStoreInterface::deferEntity()})
+ * @method static SyncStoreInterface deferRelationship(int $providerId, class-string<SyncEntityInterface> $entityType, class-string<SyncEntityInterface> $forEntityType, string $forEntityProperty, int|string $forEntityId, DeferredRelationship<SyncEntityInterface> $relationship) Register a deferred relationship with the entity store
+ * @method static string getBinaryRunUuid() Get the UUID of the current run in raw binary form
+ * @method static SyncClassResolverInterface|null getClassResolver(class-string<SyncEntityInterface|SyncProviderInterface> $class) Get a class resolver for a sync entity or provider interface, or null if it is not in a namespace with a registered resolver
+ * @method static int getDeferralCheckpoint() Get a checkpoint to delineate between deferred entities and relationships that have already been registered, and any subsequent deferrals (see {@see SyncStoreInterface::getDeferralCheckpoint()})
+ * @method static SyncEntityInterface|null getEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, bool|null $offline = null) Get a sync entity from the entity store if it is available (see {@see SyncStoreInterface::getEntity()})
+ * @method static int getEntityId(class-string<SyncEntityInterface> $entity) Get the entity ID of a registered sync entity type
+ * @method static string|null getEntityPrefix(class-string<SyncEntityInterface> $entity) Get the prefix of a sync entity's namespace, or null if it is not in a registered namespace
+ * @method static string|null getEntityUri(class-string<SyncEntityInterface> $entity, bool $compact = true) Get the canonical URI of a sync entity, or null if it is not in a registered namespace
+ * @method static SyncErrorCollection getErrors() Get sync operation errors recorded so far
+ * @method static SyncProviderInterface|null getProvider(string $signature) Get a sync provider if it is registered with the entity store
+ * @method static int getProviderId(SyncProviderInterface $provider) Get the provider ID of a registered sync provider
+ * @method static string getProviderSignature(SyncProviderInterface $provider) Get a stable value that uniquely identifies a sync provider with the entity store
  * @method static int getRunId() Get the run ID of the current run
- * @method static string getRunUuid(bool $binary = false) Get the UUID of the current run (see {@see SyncStore::getRunUuid()})
- * @method static bool hasRunId() Check if a run has started
- * @method static bool isOpen() Check if the database is open
- * @method static SyncStore namespace(string $prefix, string $uri, string $namespace, class-string<SyncClassResolverInterface>|null $resolver = null) Register a sync entity namespace (see {@see SyncStore::namespace()})
- * @method static SyncStore provider(SyncProviderInterface $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
- * @method static SyncStore reportErrors(string $successText = 'No sync errors recorded') Report sync errors recorded so far to the console (see {@see SyncStore::reportErrors()})
- * @method static SyncEntityInterface[]|null resolveDeferred(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, bool $return = false) Resolve deferred sync entities and relationships recursively until no deferrals remain
- * @method static SyncEntityInterface[] resolveDeferredEntities(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, ?int $providerId = null) Resolve deferred sync entities from their respective providers and/or the local entity store
- * @method static array<SyncEntityInterface[]> resolveDeferredRelationships(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, class-string<SyncEntityInterface>|null $forEntityType = null, ?int $providerId = null) Resolve deferred relationships from their respective providers and/or the local entity store
+ * @method static string getRunUuid() Get the UUID of the current run in hexadecimal form
+ * @method static SyncStoreInterface recordError(SyncError $error, bool $deduplicate = false) Register a non-fatal sync operation error with the entity store
+ * @method static SyncStoreInterface registerEntity(class-string<SyncEntityInterface> $entity) Register a sync entity type with the entity store if it is not already registered (see {@see SyncStoreInterface::registerEntity()})
+ * @method static SyncStoreInterface registerNamespace(string $prefix, string $uri, string $namespace, ?SyncClassResolverInterface $resolver = null) Register a namespace for sync entities and their provider interfaces (see {@see SyncStoreInterface::registerNamespace()})
+ * @method static SyncStoreInterface registerProvider(SyncProviderInterface $provider) Register a sync provider with the entity store
+ * @method static SyncStoreInterface reportErrors(string $successText = 'No sync errors recorded') Write a summary of sync operation errors recorded so far to the console (see {@see SyncStoreInterface::reportErrors()})
+ * @method static SyncEntityInterface[] resolveDeferrals(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, ?int $providerId = null) Resolve deferred entities and relationships recursively until no deferrals remain
+ * @method static SyncEntityInterface[] resolveDeferredEntities(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, ?int $providerId = null) Resolve deferred entities
+ * @method static SyncEntityInterface[][] resolveDeferredRelationships(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, class-string<SyncEntityInterface>|null $forEntityType = null, ?string $forEntityProperty = null, ?int $providerId = null) Resolve deferred relationships
+ * @method static bool runHasStarted() Check if a run of sync operations has started
+ * @method static SyncStoreInterface setEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, SyncEntityInterface $entity) Apply a sync entity retrieved from a provider to the entity store, resolving any matching deferred entities
  *
- * @extends AbstractFacade<SyncStore>
+ * @extends AbstractFacade<SyncStoreInterface>
  *
  * @generated
  */
@@ -57,6 +54,8 @@ final class Sync extends AbstractFacade
      */
     protected static function getService()
     {
-        return SyncStore::class;
+        return [
+            SyncStoreInterface::class => SyncStore::class,
+        ];
     }
 }

@@ -5,6 +5,7 @@ namespace Salient\Tests\Sync\Support;
 use Salient\Container\Container;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Sync\SyncOperation;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncStore;
 use Salient\Tests\Sync\Entity\Provider\TaskProvider;
@@ -59,15 +60,15 @@ final class SyncIntrospectorTest extends TestCase
     private function getContainer(): ContainerInterface
     {
         $container = (new Container())
-            ->singleton(SyncStore::class);
+            ->singleton(SyncStoreInterface::class, SyncStore::class);
 
         $container
-            ->get(SyncStore::class)
-            ->namespace(
+            ->get(SyncStoreInterface::class)
+            ->registerNamespace(
                 'component',
                 'https://sync.salient-labs.github.io/component',
                 'Component\Sync',
-                SyncClassResolver::class
+                new SyncClassResolver(),
             );
 
         return $container;

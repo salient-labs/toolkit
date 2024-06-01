@@ -14,6 +14,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncOperationGroup;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
@@ -22,7 +23,6 @@ use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
-use Salient\Sync\SyncStore;
 use Closure;
 
 /**
@@ -89,8 +89,8 @@ final class SyncIntrospector extends Introspector
     public static function entityToProvider(string $entity, ?ContainerInterface $container = null): string
     {
         if (($store = self::maybeGetStore($container))
-                && ($resolver = $store->getNamespaceResolver($entity))) {
-            return $resolver::entityToProvider($entity);
+                && ($resolver = $store->getClassResolver($entity))) {
+            return $resolver->entityToProvider($entity);
         }
 
         return sprintf(
@@ -109,8 +109,8 @@ final class SyncIntrospector extends Introspector
     public static function providerToEntity(string $provider, ?ContainerInterface $container = null): array
     {
         if (($store = self::maybeGetStore($container))
-                && ($resolver = $store->getNamespaceResolver($provider))) {
-            return $resolver::providerToEntity($provider);
+                && ($resolver = $store->getClassResolver($provider))) {
+            return $resolver->providerToEntity($provider);
         }
 
         if (Pcre::match(
@@ -125,10 +125,10 @@ final class SyncIntrospector extends Introspector
         return [];
     }
 
-    private static function maybeGetStore(?ContainerInterface $container = null): ?SyncStore
+    private static function maybeGetStore(?ContainerInterface $container = null): ?SyncStoreInterface
     {
-        if ($container && $container->hasInstance(SyncStore::class)) {
-            return $container->get(SyncStore::class);
+        if ($container && $container->hasInstance(SyncStoreInterface::class)) {
+            return $container->get(SyncStoreInterface::class);
         }
         if (Sync::isLoaded()) {
             return Sync::getInstance();
@@ -463,7 +463,7 @@ final class SyncIntrospector extends Introspector
                     return $obj;
                 }
 
-                $store = $provider->store()->entityType($service ?? $entityType);
+                $store = $provider->store()->registerEntity($service ?? $entityType);
                 $providerId = $provider->getProviderId();
                 $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context->getOffline());
 
@@ -478,7 +478,7 @@ final class SyncIntrospector extends Introspector
 
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-                $store->entity($providerId, $service ?? $entityType, $id, $obj);
+                $store->setEntity($providerId, $service ?? $entityType, $id, $obj);
                 $obj = $resolver($array, $service, $obj, $provider, $context);
                 if ($obj instanceof Providable) {
                     $obj->postLoad();

@@ -122,7 +122,7 @@ final class GetSyncEntities extends AbstractSyncCommand
         /** @var SyncProviderInterface */
         $provider = $this->App->get($this->Providers[$provider]);
 
-        $entityUri = $this->Store->getEntityTypeUri($entity);
+        $entityUri = $this->Store->getEntityUri($entity);
         if ($entityUri === null) {
             $entityUri = '/' . str_replace('\\', '/', ltrim($entity, '\\'));
         }

@@ -5,9 +5,9 @@ namespace Salient\Sync\Support;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Utility\Get;
-use Salient\Sync\SyncStore;
 use ArrayIterator;
 use IteratorAggregate;
 use Traversable;
@@ -117,9 +117,9 @@ final class DeferredRelationship implements IteratorAggregate
 
         $this
             ->store()
-            ->entityType($entity)
-            ->entityType($forEntity)
-            ->deferredRelationship(
+            ->registerEntity($entity)
+            ->registerEntity($forEntity)
+            ->deferRelationship(
                 $this->Provider->getProviderId(),
                 $entity,
                 $forEntity,
@@ -249,7 +249,7 @@ final class DeferredRelationship implements IteratorAggregate
         return $this->Context;
     }
 
-    private function store(): SyncStore
+    private function store(): SyncStoreInterface
     {
         return $this->Provider->store();
     }

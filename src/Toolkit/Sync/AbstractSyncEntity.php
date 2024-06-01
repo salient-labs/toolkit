@@ -21,6 +21,7 @@ use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityState;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;
@@ -418,19 +419,19 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * Get the entity store servicing the entity's provider or the Sync facade
      */
-    final protected function store(?ContainerInterface $container = null): SyncStore
+    final protected function store(?ContainerInterface $container = null): SyncStoreInterface
     {
         return $this->Provider
             ? $this->Provider->store()
             : ($container
-                ? $container->get(SyncStore::class)
+                ? $container->get(SyncStoreInterface::class)
                 : Sync::getInstance());
     }
 
     private function typeUri(?ContainerInterface $container, bool $compact): string
     {
         $service = $this->getService();
-        $typeUri = $this->store($container)->getEntityTypeUri($service, $compact);
+        $typeUri = $this->store($container)->getEntityUri($service, $compact);
 
         return $typeUri
             ?? '/' . str_replace('\\', '/', ltrim($service, '\\'));
@@ -775,7 +776,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         $data['Provider'] = $this->Provider === null
             ? null
-            : $this->store()->getProviderHash($this->Provider);
+            : $this->store()->getProviderSignature($this->Provider);
 
         return $data;
     }

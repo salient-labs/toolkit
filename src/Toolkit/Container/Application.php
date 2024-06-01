@@ -10,6 +10,7 @@ use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
+use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Exception\LogicException;
@@ -526,11 +527,17 @@ class Application extends Container implements ApplicationInterface
         $syncDb = $this->getSyncDb();
 
         if (Sync::isLoaded()) {
-            $file = Sync::getFilename();
-            if (File::same($syncDb, $file)) {
-                return $this;
+            $store = Sync::getInstance();
+            if ($store instanceof SyncStore) {
+                $file = $store->getFilename();
+                if (File::same($syncDb, $file)) {
+                    return $this;
+                }
             }
-            throw new LogicException(sprintf('Entity store already started: %s', $file));
+            throw new LogicException(sprintf(
+                'Entity store already started: %s',
+                $file ?? get_class($store),
+            ));
         }
 
         Sync::load(new SyncStore(
@@ -551,12 +558,16 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function syncNamespace(string $prefix, string $uri, string $namespace, ?string $resolver = null)
-    {
+    final public function syncNamespace(
+        string $prefix,
+        string $uri,
+        string $namespace,
+        ?SyncClassResolverInterface $resolver = null
+    ) {
         if (!Sync::isLoaded()) {
             throw new LogicException('Entity store not started');
         }
-        Sync::namespace($prefix, $uri, $namespace, $resolver);
+        Sync::registerNamespace($prefix, $uri, $namespace, $resolver);
 
         return $this;
     }
@@ -566,11 +577,20 @@ class Application extends Container implements ApplicationInterface
      */
     final public function stopSync()
     {
-        if (!Sync::isLoaded()
-                || !File::same($this->getSyncDb(false), Sync::getFilename())) {
+        if (!Sync::isLoaded()) {
             return $this;
         }
-        Sync::close();
+
+        $store = Sync::getInstance();
+        if (
+            !($store instanceof SyncStore)
+            || !File::same($this->getSyncDb(false), $store->getFilename())
+        ) {
+            return $this;
+        }
+
+        $store->close();
+
         return $this;
     }
 

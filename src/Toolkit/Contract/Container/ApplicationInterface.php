@@ -5,10 +5,12 @@ namespace Salient\Contract\Container;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\SyncClassResolverInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Package;
 use Salient\Sync\SyncStore;
+use LogicException;
 
 /**
  * A service container for applications
@@ -114,11 +116,8 @@ interface ApplicationInterface extends ContainerInterface
     public function stopCache();
 
     /**
-     * Start an entity store in the application's data directory
-     *
-     * If an entity store is started but not stopped by calling
-     * {@see ApplicationInterface::stopSync()} or {@see SyncStore::close()}, a
-     * failed run may be recorded.
+     * Start a SQLite-backed entity store in the application's data directory
+     * and make it the Sync facade's underlying instance
      *
      * @see SyncStore
      *
@@ -128,41 +127,26 @@ interface ApplicationInterface extends ContainerInterface
     public function startSync(?string $command = null, ?array $arguments = null);
 
     /**
-     * Stop a previously started entity store
-     *
-     * If an entity store is started but not stopped, a failed run may be
-     * recorded.
+     * Stop an entity store started by startSync()
      *
      * @return $this
      */
     public function stopSync();
 
     /**
-     * Register a sync entity namespace with a previously started entity store
+     * Register a namespace for sync entities and their provider interfaces with
+     * the global sync entity store if it is loaded
      *
-     * A prefix can only be associated with one namespace per application and
-     * cannot be changed without resetting the entity store's backing database.
+     * @see SyncStoreInterface::registerNamespace()
      *
-     * If a prefix has already been registered, its previous URI and PHP
-     * namespace are updated if they differ. This is by design and is intended
-     * to facilitate refactoring.
-     *
-     * @see SyncStore::namespace()
-     *
-     * @param string $prefix A short alternative to `$uri`. Case-insensitive.
-     * Must be unique to the application. Must be a scheme name compliant with
-     * Section 3.1 of \[RFC3986], i.e. a match for the regular expression
-     * `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
-     * @param string $uri A globally unique namespace URI.
-     * @param string $namespace A fully-qualified PHP namespace.
-     * @param class-string<SyncClassResolverInterface>|null $resolver
      * @return $this
+     * @throws LogicException if the global sync entity store is not loaded.
      */
     public function syncNamespace(
         string $prefix,
         string $uri,
         string $namespace,
-        ?string $resolver = null
+        ?SyncClassResolverInterface $resolver = null
     );
 
     /**

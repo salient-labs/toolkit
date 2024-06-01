@@ -6,8 +6,8 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
-use Salient\Sync\SyncStore;
 
 /**
  * The promise of a sync entity that hasn't been retrieved yet
@@ -83,8 +83,8 @@ final class DeferredEntity
 
         $this
             ->store()
-            ->entityType($entity)
-            ->deferredEntity(
+            ->registerEntity($entity)
+            ->deferEntity(
                 $this->Provider->getProviderId(),
                 $entity,
                 $entityId,
@@ -127,7 +127,7 @@ final class DeferredEntity
 
     private function typeUri(bool $compact): string
     {
-        $uri = $this->store()->getEntityTypeUri($this->Entity, $compact);
+        $uri = $this->store()->getEntityUri($this->Entity, $compact);
 
         return
             $uri === null
@@ -280,7 +280,7 @@ final class DeferredEntity
         return $this->Context;
     }
 
-    private function store(): SyncStore
+    private function store(): SyncStoreInterface
     {
         return $this->Provider->store();
     }

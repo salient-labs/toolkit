@@ -536,12 +536,7 @@ parameters:
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
 		-
-			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntityTypeUri\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, class\\-string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$hash of method Salient\\\\Sync\\\\SyncStore\\:\\:getProvider\\(\\) expects string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getEntityUri\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, class\\-string given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
@@ -552,6 +547,11 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$name of method Salient\\\\Contract\\\\Sync\\\\SyncEntityResolverInterface\\<static\\(Salient\\\\Sync\\\\AbstractSyncEntity\\)\\>\\:\\:getByName\\(\\) expects string, int\\|string given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/AbstractSyncEntity.php
+
+		-
+			message: "#^Parameter \\#1 \\$signature of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getProvider\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
@@ -721,16 +721,6 @@ parameters:
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
 		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:deferredEntity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/DeferredEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:deferredRelationship\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/DeferredRelationship.php
-
-		-
 			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"
 			count: 2
 			path: src/Toolkit/Sync/Support/SyncEntityFuzzyResolver.php
@@ -761,12 +751,7 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
 
 		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
-
-		-
-			message: "#^Parameter \\#3 \\$entityId of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects int\\|string, int\\|string\\|null given\\.$#"
+			message: "#^Parameter \\#3 \\$entityId of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getEntity\\(\\) expects int\\|string, int\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
 
@@ -821,27 +806,17 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Sync\\\\SyncStore\\:\\:entityType\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
+			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:registerEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:entity\\(\\) expects int, int\\|null given\\.$#"
+			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Sync\\\\SyncStore\\:\\:entity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
+			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:setEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
@@ -856,7 +831,7 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Parameter \\#4 \\$entity of method Salient\\\\Sync\\\\SyncStore\\:\\:entity\\(\\) expects Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, TClass of object given\\.$#"
+			message: "#^Parameter \\#4 \\$entity of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:setEntity\\(\\) expects Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, TClass of object given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 

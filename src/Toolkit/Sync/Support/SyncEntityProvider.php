@@ -14,11 +14,11 @@ use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\AbstractSyncEntity;
-use Salient\Sync\SyncStore;
 use Generator;
 
 /**
@@ -61,7 +61,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     private $Definition;
     /** @var SyncContextInterface */
     private $Context;
-    /** @var SyncStore */
+    /** @var SyncStoreInterface */
     private $Store;
 
     /**
@@ -201,7 +201,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
             $result = $this->_run($operation, ...$args);
 
             if ($deferralPolicy === DeferralPolicy::RESOLVE_LATE) {
-                $this->Store->resolveDeferred($fromCheckpoint);
+                $this->Store->resolveDeferrals($fromCheckpoint);
             }
 
             return $result;
@@ -243,7 +243,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, $operation, ...$args): Generator
     {
         yield from $this->_run($operation, ...$args);
-        $this->Store->resolveDeferred($fromCheckpoint);
+        $this->Store->resolveDeferrals($fromCheckpoint);
     }
 
     /**
@@ -301,7 +301,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     {
         $offline = $this->Context->getOffline();
         if ($offline !== false) {
-            $entity = $this->Store->entityType($this->Entity)->getEntity(
+            $entity = $this->Store->registerEntity($this->Entity)->getEntity(
                 $this->Provider->getProviderId(),
                 $this->Entity,
                 $id,
@@ -500,7 +500,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         }
 
         if ($deferralPolicy === DeferralPolicy::RESOLVE_LATE) {
-            $this->Store->resolveDeferred($fromCheckpoint);
+            $this->Store->resolveDeferrals($fromCheckpoint);
         }
 
         return $result;
