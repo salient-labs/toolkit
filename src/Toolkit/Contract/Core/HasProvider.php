@@ -3,7 +3,7 @@
 namespace Salient\Contract\Core;
 
 /**
- * Returns the provider servicing the object
+ * @api
  *
  * @template TProvider of ProviderInterface
  */
@@ -15,12 +15,4 @@ interface HasProvider
      * @return TProvider|null
      */
     public function getProvider(): ?ProviderInterface;
-
-    /**
-     * Get the object's provider, or throw an exception if no provider has been
-     * set
-     *
-     * @return TProvider
-     */
-    public function requireProvider(): ProviderInterface;
 }

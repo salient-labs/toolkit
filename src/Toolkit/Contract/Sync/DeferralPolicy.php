@@ -5,7 +5,6 @@ namespace Salient\Contract\Sync;
 use Salient\Core\AbstractEnumeration;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
-use Salient\Sync\SyncStore;
 
 /**
  * Policies for deferral of sync entities and relationships
@@ -17,9 +16,9 @@ final class DeferralPolicy extends AbstractEnumeration
     /**
      * Do not resolve deferred entities or relationships
      *
-     * If {@see SyncStore::resolveDeferred()} is not called manually, unresolved
-     * {@see DeferredEntity} and {@see DeferredRelationship} instances may
-     * appear in object graphs returned by sync operations.
+     * If {@see SyncStoreInterface::resolveDeferrals()} is not called manually,
+     * unresolved {@see DeferredEntity} and {@see DeferredRelationship}
+     * instances may appear in object graphs returned by sync operations.
      */
     public const DO_NOT_RESOLVE = 0;
 

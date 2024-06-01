@@ -54,17 +54,6 @@ trait ProvidableTrait
     }
 
     /**
-     * @return TProvider
-     */
-    final public function requireProvider(): ProviderInterface
-    {
-        if (!$this->Provider) {
-            throw new LogicException('Provider required');
-        }
-        return $this->Provider;
-    }
-
-    /**
      * @param TContext $context
      * @return $this
      */

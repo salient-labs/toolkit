@@ -35,7 +35,7 @@ trait HasBuilder
      */
     final public static function build(?ContainerInterface $container = null): AbstractBuilder
     {
-        return static::getBuilder()::build($container);
+        return static::getBuilder()::create($container);
     }
 
     /**

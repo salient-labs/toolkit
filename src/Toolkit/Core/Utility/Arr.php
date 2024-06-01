@@ -609,15 +609,15 @@ final class Arr extends AbstractUtility
      * Remove empty strings from an array of strings and Stringables
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|Stringable|null
+     * @template TValue of int|float|string|bool|Stringable
      *
-     * @param iterable<TKey,TValue> $array
+     * @param iterable<TKey,TValue|null> $array
      * @return array<TKey,TValue>
      */
     public static function whereNotEmpty(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            if ((string) $value === '') {
+            if ($value === null || (string) $value === '') {
                 continue;
             }
             $filtered[$key] = $value;

@@ -7,22 +7,15 @@ use Salient\Tests\TestCase;
 
 abstract class MethodReturnTypeExtensionTestCase extends TypeInferenceTestCase
 {
-    /**
-     * @dataProvider assertionsProvider
-     *
-     * @param mixed ...$args
-     */
-    public function testAssertions(string $assertType, string $file, ...$args): void
+    public function testAssertions(): void
     {
-        $this->assertFileAsserts($assertType, $file, ...$args);
-    }
-
-    /**
-     * @return iterable<mixed>
-     */
-    public static function assertionsProvider(): iterable
-    {
-        yield from self::gatherAssertTypes(TestCase::getFixturesPath(static::class) . 'Assertions.php');
+        foreach (self::gatherAssertTypes(TestCase::getFixturesPath(static::class) . 'Assertions.php') as $args) {
+            $assertType = array_shift($args);
+            $file = array_shift($args);
+            /** @var string $assertType */
+            /** @var string $file */
+            $this->assertFileAsserts($assertType, $file, ...$args);
+        }
     }
 
     /**

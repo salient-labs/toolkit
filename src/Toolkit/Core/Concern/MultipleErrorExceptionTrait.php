@@ -8,7 +8,7 @@ use Salient\Contract\Core\MultipleErrorExceptionInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Str;
 
 /**
  * @phpstan-require-implements MultipleErrorExceptionInterface
@@ -50,7 +50,7 @@ trait MultipleErrorExceptionTrait
 
     public function getMessageWithoutErrors(): string
     {
-        return Get::coalesce($this->MessageWithoutErrors, $this->message);
+        return Str::coalesce($this->MessageWithoutErrors, $this->message);
     }
 
     /**

@@ -17,6 +17,9 @@ use Salient\Core\Utility\Str;
 
 class StrCoalesceMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
+    /**
+     * @codeCoverageIgnore
+     */
     public function getClass(): string
     {
         return Str::class;

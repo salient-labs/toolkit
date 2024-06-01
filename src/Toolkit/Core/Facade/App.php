@@ -28,7 +28,6 @@ use Salient\Core\AbstractFacade;
  * @method static ContainerInterface if((callable($this): bool)|bool $condition, (callable($this): $this)|null $then = null, (callable($this): $this)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see Chainable::if()})
  * @method static ContainerInterface inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
  * @method static ContainerInterface instance(class-string $id, object $instance) Bind a shared instance to the container
- * @method static ContainerInterface instanceIf(class-string $id, object $instance) Bind a shared instance to the container if it isn't already bound
  * @method static ContainerInterface provider(class-string $id, class-string[]|null $services = null, class-string[] $exceptServices = [], ServiceLifetime::* $lifetime = ServiceLifetime::INHERIT) Register a service provider with the container, optionally specifying which of its services to bind or ignore (see {@see ContainerInterface::provider()})
  * @method static ContainerInterface providers(array<class-string,class-string> $serviceMap, ServiceLifetime::* $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see ContainerInterface::providers()})
  * @method static void setGlobalContainer(?ContainerInterface $container) Set or unset the global container

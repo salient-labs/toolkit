@@ -11,6 +11,7 @@ use Salient\Container\Container;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
@@ -75,7 +76,7 @@ $facades = [
     Console::class => [ConsoleWriter::class, '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
     Event::class => [EventDispatcher::class, '--api'],
-    Sync::class => SyncStore::class,
+    Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],
     Profile::class => [MetricCollector::class, '--api'],
     // Test fixtures
     MyBrokenFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass']],
@@ -89,7 +90,7 @@ $builders = [
     DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--forward=bindOverride'],
     HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--forward=bindOverride'],
     SyncError::class => SyncErrorBuilder::class,
-    SyncSerializeRules::class => SyncSerializeRulesBuilder::class,
+    SyncSerializeRules::class => [SyncSerializeRulesBuilder::class, '--no-declare=remove,replace'],
 ];
 
 $entities = [

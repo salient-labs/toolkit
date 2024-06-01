@@ -2,38 +2,46 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\SerializeRulesInterface;
+use Closure;
 
 /**
- * Instructions for serializing nested sync entities
+ * @api
  *
- * @extends HasContainer<ContainerInterface>
+ * @template TEntity of SyncEntityInterface
+ *
+ * @extends SerializeRulesInterface<TEntity>
  */
-interface SyncSerializeRulesInterface extends SerializeRulesInterface, HasContainer
+interface SyncSerializeRulesInterface extends SerializeRulesInterface
 {
     /**
-     * Values are being serialized for an entity store
-     */
-    public const SYNC_STORE = 1;
-
-    /**
-     * A bitmask of enabled flags
+     * @inheritDoc
      *
-     * @return int-mask-of<SyncSerializeRulesInterface::*>
+     * @return array<string,array{int|string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>
      */
-    public function getFlags(): int;
+    public function getReplaceableKeys(?string $class, ?string $baseClass, array $path): array;
 
     /**
-     * Remove CanonicalId from sync entities?
+     * Check if values are being serialized for an entity store
      */
-    public function getRemoveCanonicalId(): bool;
+    public function getForSyncStore(): bool;
 
     /**
-     * Set the value of RemoveCanonicalId on a copy of the instance
+     * Get an instance that serializes values for an entity store
      *
-     * @return $this
+     * @return static
      */
-    public function withRemoveCanonicalId(?bool $value);
+    public function withForSyncStore(?bool $forSyncStore = true);
+
+    /**
+     * Check if canonical identifiers of sync entities are serialized
+     */
+    public function getIncludeCanonicalId(): bool;
+
+    /**
+     * Get an instance that serializes canonical identifiers of sync entities
+     *
+     * @return static
+     */
+    public function withIncludeCanonicalId(?bool $include = true);
 }

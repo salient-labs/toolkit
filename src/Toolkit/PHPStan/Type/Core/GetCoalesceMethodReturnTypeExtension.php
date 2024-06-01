@@ -16,6 +16,9 @@ use Salient\Core\Utility\Get;
 
 class GetCoalesceMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
+    /**
+     * @codeCoverageIgnore
+     */
     public function getClass(): string
     {
         return Get::class;

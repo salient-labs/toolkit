@@ -122,7 +122,7 @@ final class GetSyncEntities extends AbstractSyncCommand
         /** @var SyncProviderInterface */
         $provider = $this->App->get($this->Providers[$provider]);
 
-        $entityUri = $this->Store->getEntityTypeUri($entity);
+        $entityUri = $this->Store->getEntityUri($entity);
         if ($entityUri === null) {
             $entityUri = '/' . str_replace('\\', '/', ltrim($entity, '\\'));
         }
@@ -151,12 +151,12 @@ final class GetSyncEntities extends AbstractSyncCommand
                 : $provider->with($entity, $context)->getListA($filter));
 
         /** @var SyncSerializeRules<T> */
-        $rules = $entity::getSerializeRules($this->App);
+        $rules = $entity::getSerializeRules();
         if (!$this->IncludeMeta) {
             $rules = $rules->withIncludeMeta(false);
         }
         if ($this->IncludeCanonical) {
-            $rules = $rules->withRemoveCanonicalId(false);
+            $rules = $rules->withIncludeCanonicalId();
         }
 
         if ($this->Csv) {

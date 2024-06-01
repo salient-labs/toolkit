@@ -843,6 +843,9 @@ class Introspector
                 };
     }
 
+    /**
+     * @param SerializeRulesInterface<TClass>|null $rules
+     */
     final public function getSerializeClosure(?SerializeRulesInterface $rules = null): Closure
     {
         $rules = $rules

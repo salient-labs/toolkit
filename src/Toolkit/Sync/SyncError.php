@@ -112,7 +112,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
     ) {
         $this->EntityName = $entityName
             ?? ($entity
-                ? $entity->uri($provider ? $provider->getContainer() : null)
+                ? $entity->uri($provider ? $provider->store() : null)
                 : null);
         $this->ErrorType = $errorType;
         $this->Message = $message;

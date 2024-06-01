@@ -76,5 +76,5 @@ $opt = Option::build()  // or `$opt = (new OptionBuilder())` if `Option` doesn't
     ->type(OptionType::VALUE)
     ->valueType(ValueType::STRING)
     ->description('Write output to <FILE>')
-    ->go();
+    ->build();
 ```

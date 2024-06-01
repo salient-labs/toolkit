@@ -6,6 +6,7 @@ use Salient\Core\Utility\Get;
 
 use function PHPStan\Testing\assertType;
 
+assertType('null', Get::coalesce());
 assertType('null', Get::coalesce(null));
 assertType('0', Get::coalesce(null, 0));
 assertType('0', Get::coalesce(0, null));

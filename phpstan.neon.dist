@@ -19,3 +19,14 @@ parameters:
 		- stubs/ADORecordSet.stub
 	universalObjectCratesClasses:
 		- Salient\Contract\Core\Extensible
+	ignoreErrors:
+		-
+			identifier: salient.needless.coalesce
+			paths:
+				- tests/fixtures/Toolkit/PHPStan/Rules/Core/GetCoalesceRuleFailures.php
+				- tests/fixtures/Toolkit/PHPStan/Type/Core/GetCoalesceMethodReturnTypeExtensionAssertions.php
+		-
+			identifier: argument.templateType
+			paths:
+				- tests/fixtures/Toolkit/PHPStan/Rules/Core/GetCoalesceRuleFailures.php
+				- tests/fixtures/Toolkit/PHPStan/Type/Core/GetCoalesceMethodReturnTypeExtensionAssertions.php

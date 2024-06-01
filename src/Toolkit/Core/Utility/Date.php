@@ -46,7 +46,7 @@ final class Date extends AbstractUtility
     }
 
     /**
-     * Get the duration of a DateInterval or ISO 8601 duration in seconds
+     * Get a DateInterval or ISO-8601 duration in seconds
      *
      * @param DateInterval|string $interval
      */

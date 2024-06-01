@@ -8,7 +8,7 @@ use Salient\Sync\SyncStore;
 /**
  * Thrown when an entity store's provider heartbeat check fails
  *
- * @see SyncStore::checkHeartbeats()
+ * @see SyncStore::checkProviderHeartbeats()
  */
 class SyncProviderHeartbeatCheckFailedException extends AbstractSyncException
 {

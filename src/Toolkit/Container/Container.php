@@ -5,10 +5,12 @@ namespace Salient\Container;
 use Dice\Dice;
 use Dice\DiceException;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Cache\CacheStore;
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Container\Exception\ContainerServiceNotFoundException;
 use Salient\Container\Exception\ContainerUnusableArgumentsException;
 use Salient\Container\Exception\InvalidContainerBindingException;
+use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasBindings;
@@ -18,11 +20,13 @@ use Salient\Contract\Container\ServiceAwareInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Event;
+use Salient\Sync\SyncStore;
 use Closure;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -46,6 +50,11 @@ class Container implements ContainerInterface, FacadeAwareInterface
         HasServices::class,
         HasBindings::class,
         HasContextualBindings::class,
+    ];
+
+    private const DEFAULT_SERVICES = [
+        CacheStoreInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
+        SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],
     ];
 
     private static ?ContainerInterface $GlobalContainer = null;
@@ -169,13 +178,13 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @template TService of object
-     * @template T of TService
+     * @template T
+     * @template TService
      *
      * @param class-string<T> $id
      * @param class-string<TService> $service
      * @param mixed[] $args
-     * @return T
+     * @return T&TService&object
      */
     private function _get(string $id, string $service, array $args): object
     {
@@ -194,6 +203,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
                 $instance->setService($service);
             }
 
+            /** @var T&TService&object */
             return $instance;
         }
 
@@ -201,14 +211,53 @@ class Container implements ContainerInterface, FacadeAwareInterface
             $this->GetAsServiceMap[$id] = $service;
         }
 
+        if (isset(self::DEFAULT_SERVICES[$id]) && !$this->Dice->hasRule($id)) {
+            $this->bindDefaultService($id);
+        }
+
         try {
-            return $this->Dice->create($id, $args);
-        } catch (DiceException $ex) {
-            throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
+            do {
+                try {
+                    /** @var T&TService&object */
+                    return $this->Dice->create($id, $args);
+                } catch (DiceException $ex) {
+                    /** @var class-string|null */
+                    $failed = $ex->getClass();
+                    if (
+                        $failed !== null
+                        && isset(self::DEFAULT_SERVICES[$failed])
+                        && !$this->has($failed)
+                    ) {
+                        $this->bindDefaultService($failed);
+                        continue;
+                    }
+                    throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
+                }
+            } while (true);
         } finally {
             if ($service !== $id) {
                 unset($this->GetAsServiceMap[$id]);
             }
+        }
+    }
+
+    /**
+     * @param class-string $id
+     */
+    private function bindDefaultService(string $id): void
+    {
+        /** @var array{class-string,ServiceLifetime::*} */
+        $defaultService = self::DEFAULT_SERVICES[$id];
+        [$class, $lifetime] = $defaultService;
+        if (
+            $lifetime === ServiceLifetime::SINGLETON || (
+                $lifetime === ServiceLifetime::INHERIT
+                && is_a($class, SingletonInterface::class, true)
+            )
+        ) {
+            $this->singleton($id, $class);
+        } else {
+            $this->bind($id, $class);
         }
     }
 
@@ -295,7 +344,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @param array<string,string|object|array<string,mixed>> $subs
+     * @param array<class-string,string|object|array<string,mixed>> $subs
      */
     private function applyBindings(array $subs): void
     {
@@ -322,7 +371,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @template TService of object
+     * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
@@ -563,18 +612,6 @@ class Container implements ContainerInterface, FacadeAwareInterface
         $this->Dice = $this->Dice->addShared($id, $instance);
 
         return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    final public function instanceIf(string $id, $instance): self
-    {
-        if ($this->has($id)) {
-            return $this;
-        }
-
-        return $this->instance($id, $instance);
     }
 
     /**

@@ -177,14 +177,14 @@ abstract class AbstractFacade implements FacadeInterface
                 }
             );
         } else {
-            if ($container) {
-                $container->instanceIf($serviceName, $instance);
+            if ($container && !$container->hasInstance($serviceName)) {
+                $container->instance($serviceName, $instance);
             }
 
             $listenerId = $dispatcher->listen(
                 static function (BeforeGlobalContainerSetEventInterface $event) use ($serviceName, $instance): void {
-                    if ($container = $event->getContainer()) {
-                        $container->instanceIf($serviceName, $instance);
+                    if (($container = $event->getContainer()) && !$container->hasInstance($serviceName)) {
+                        $container->instance($serviceName, $instance);
                     }
                 }
             );

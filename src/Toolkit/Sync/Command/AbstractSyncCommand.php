@@ -6,19 +6,18 @@ use Salient\Cli\CliCommand;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Str;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\SyncStore;
 
 /**
  * Base class for generic sync commands
  */
 abstract class AbstractSyncCommand extends CliCommand
 {
-    /** @var SyncStore */
-    protected $Store;
+    protected SyncStoreInterface $Store;
 
     /**
      * Entities serviced by sync providers
@@ -47,7 +46,7 @@ abstract class AbstractSyncCommand extends CliCommand
      */
     protected $EntityProviders = [];
 
-    public function __construct(CliApplicationInterface $container, SyncStore $store)
+    public function __construct(CliApplicationInterface $container, SyncStoreInterface $store)
     {
         parent::__construct($container);
 

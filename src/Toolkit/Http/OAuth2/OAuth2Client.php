@@ -17,7 +17,7 @@ use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
-use Salient\Curler\CurlerBuilder;
+use Salient\Curler\Curler;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpServer;
 use Throwable;
@@ -560,7 +560,7 @@ abstract class OAuth2Client
         }
 
         /** @var array{keys:array<array<string,string[]|string>>} */
-        return CurlerBuilder::build()
+        return Curler::build()
             ->uri($url)
             ->cacheResponses()
             ->cacheLifetime(0)
@@ -603,7 +603,7 @@ abstract class OAuth2Client
     {
         return (function () {
             /** @var AbstractProvider $this */
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore method.protected
             return $this->getDefaultScopes();
         })->bindTo($this->Provider, $this->Provider)();
     }
@@ -615,7 +615,7 @@ abstract class OAuth2Client
     {
         return (function () {
             /** @var AbstractProvider $this */
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore method.protected
             return $this->getScopeSeparator();
         })->bindTo($this->Provider, $this->Provider)();
     }

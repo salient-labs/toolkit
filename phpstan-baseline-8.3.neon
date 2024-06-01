@@ -196,22 +196,7 @@ parameters:
 			path: src/Toolkit/Container/Application.php
 
 		-
-			message: "#^Method Salient\\\\Container\\\\Container\\:\\:_get\\(\\) should return T of TService of object but returns object\\.$#"
-			count: 2
-			path: src/Toolkit/Container/Container.php
-
-		-
-			message: "#^Method Salient\\\\Container\\\\Container\\:\\:getAs\\(\\) should return T of object&TService of object but returns T of object\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Container.php
-
-		-
 			message: "#^Method Salient\\\\Container\\\\Container\\:\\:getGlobalContainer\\(\\) should return Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Container/Container.php
-
-		-
-			message: "#^Parameter \\#1 \\$id of method Salient\\\\Container\\\\Container\\:\\:get\\(\\) expects class\\-string\\<T of object\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Container/Container.php
 
@@ -229,11 +214,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$value of method Salient\\\\Container\\\\Container\\:\\:addContextualBinding\\(\\) expects \\(callable\\(Salient\\\\Container\\\\Container\\)\\: TValue\\)\\|class\\-string\\<TValue\\>\\|TValue, \\(callable\\(\\$this\\)\\: TValue\\)\\|class\\-string\\<TValue\\>\\|TValue given\\.$#"
 			count: 1
 			path: src/Toolkit/Container/Container.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\AbstractBuilder\\:\\:go\\(\\) should return TClass of object but returns object\\.$#"
-			count: 1
-			path: src/Toolkit/Core/AbstractBuilder.php
 
 		-
 			message: "#^Method Salient\\\\Core\\\\AbstractConvertibleEnumeration\\:\\:fromName\\(\\) should return TValue of \\(int\\|string\\) but returns int\\|string\\.$#"
@@ -369,11 +349,6 @@ parameters:
 			message: "#^Part \\$glue \\(array\\|string\\) of encapsed string cannot be cast to string\\.$#"
 			count: 1
 			path: src/Toolkit/Core/SqlQuery.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Debug\\:\\:getCaller\\(\\) should return array\\{namespace\\?\\: string, class\\?\\: string, file\\?\\: string, 0\\?\\: string, function\\?\\: string, 1\\?\\: string, line\\?\\: int\\} but returns array\\<int\\|string, int\\|string\\|null\\>\\.$#"
-			count: 2
-			path: src/Toolkit/Core/Utility/Debug.php
 
 		-
 			message: "#^Method Salient\\\\Core\\\\Utility\\\\Env\\:\\:getNullableInt\\(\\) should return int\\|null but returns T of int\\|false\\|null\\.$#"
@@ -531,106 +506,6 @@ parameters:
 			path: src/Toolkit/Sync/AbstractSyncDefinition.php
 
 		-
-			message: "#^Argument of an invalid type array\\<mixed\\>\\|DateTimeInterface supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Cannot access offset array\\<Closure\\|string\\>\\|Closure\\|string\\|null on array\\<mixed\\>\\|DateTimeInterface\\.$#"
-			count: 2
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Cannot call method getName\\(\\) on ReflectionClass\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Cannot call method getParentClass\\(\\) on ReflectionClass\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Cannot call method isSubclassOf\\(\\) on ReflectionClass\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:toLink\\(\\) should return array\\<string, int\\|string\\> but returns array\\<string, int\\|string\\|null\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of function array_diff_key expects array, array\\|DateTimeInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntityTypeUri\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, class\\-string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$hash of method Salient\\\\Sync\\\\SyncStore\\:\\:getProvider\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$key of function array_key_exists expects int\\|string, array\\<Closure\\|string\\>\\|Closure\\|string\\|null given\\.$#"
-			count: 3
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$name of method Salient\\\\Contract\\\\Sync\\\\SyncEntityResolverInterface\\<static\\(Salient\\\\Sync\\\\AbstractSyncEntity\\)\\>\\:\\:getByName\\(\\) expects string, int\\|string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of function array_key_exists expects array, array\\<mixed\\>\\|DateTimeInterface given\\.$#"
-			count: 2
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of function array_map expects array, array\\<mixed\\>\\|DateTimeInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#2 \\$key of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:rename\\(\\) expects \\(int\\|string\\), array\\<Closure\\|string\\>\\|Closure\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#2 \\$path of method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:_serialize\\(\\) expects array\\<string\\>, array\\<array\\<Closure\\|string\\>\\|Closure\\|int\\|string\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#2 \\$path of method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:_serializeId\\(\\) expects array\\<string\\>, array\\<array\\<Closure\\|string\\>\\|Closure\\|string\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#3 \\$newKey of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:rename\\(\\) expects \\(int\\|string\\), array\\<Closure\\|string\\>\\|Closure\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Part \\$key \\(array\\<Closure\\|string\\>\\|Closure\\|string\\|null\\) of encapsed string cannot be cast to string\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Possibly invalid array key type array\\<Closure\\|string\\>\\|Closure\\|string\\|null\\.$#"
-			count: 3
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Property Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:\\$State \\(int\\<0, 1\\>\\) does not accept int\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
 			message: "#^Method Salient\\\\Sync\\\\AbstractSyncProvider\\:\\:getServices\\(\\) should return array\\<class\\-string\\> but returns array\\<string\\>\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncProvider.php
@@ -751,16 +626,6 @@ parameters:
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
 		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:deferredEntity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/DeferredEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:deferredRelationship\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/DeferredRelationship.php
-
-		-
 			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"
 			count: 2
 			path: src/Toolkit/Sync/Support/SyncEntityFuzzyResolver.php
@@ -787,16 +652,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$iterable of class Salient\\\\Iterator\\\\IterableIterator constructor expects iterable\\<TKey of \\(int\\|string\\), TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, iterable\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
-
-		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
-
-		-
-			message: "#^Parameter \\#3 \\$entityId of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects int\\|string, int\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
 
@@ -851,42 +706,7 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Sync\\\\SyncStore\\:\\:entityType\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:entity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#1 \\$providerId of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects int, int\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Sync\\\\SyncStore\\:\\:entity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Sync\\\\SyncStore\\:\\:getEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
 			message: "#^Parameter \\#2 of closure expects TClass of object, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 of closure expects class\\-string\\|null, string\\|null given\\.$#"
-			count: 3
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#4 \\$entity of method Salient\\\\Sync\\\\SyncStore\\:\\:entity\\(\\) expects Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, TClass of object given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
@@ -904,46 +724,6 @@ parameters:
 			message: "#^Trying to invoke \\(Closure\\(string\\)\\: string\\)\\|null but it might not be a callable\\.$#"
 			count: 2
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Argument of an invalid type array\\<array\\<Closure\\|string\\>\\|Closure\\|string\\>\\|string supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getFlags\\(\\) should return int\\<0, 1\\> but returns int\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\SyncSerializeRules\\:\\:getRemoveFrom\\(\\) should return array\\<string, string\\> but returns array\\<string, array\\<Closure\\|string\\>\\|Closure\\|string\\|false\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Only iterables can be unpacked, array\\<array\\<Closure\\|string\\>\\|Closure\\|string\\>\\|string given in argument \\#2\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Parameter \\#1 \\$rules of method Salient\\\\Sync\\\\SyncSerializeRules\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\:\\:applyRules\\(\\) expects Salient\\\\Sync\\\\SyncSerializeRules\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, Salient\\\\Sync\\\\SyncSerializeRules\\<T of TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Parameter \\#2 \\$callback of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replaceCallback\\(\\) expects callable\\(array\\<string\\>\\)\\: string, Closure\\(mixed\\)\\: \\(array\\<string\\>\\|string\\) given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
-
-		-
-			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\|false given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/SyncSerializeRules.php
 
 		-
 			message: "#^Cannot access property \\$Facade on static\\(Salient\\\\Tests\\\\Core\\\\AbstractFacade\\\\MyHasFacadeClass\\)\\|null\\.$#"
@@ -996,7 +776,7 @@ parameters:
 			path: tests/unit/Toolkit/Container/ContainerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$id of method Salient\\\\Container\\\\Container\\:\\:get\\(\\) expects class\\-string\\<T of object\\>, string given\\.$#"
+			message: "#^Parameter \\#1 \\$id of method Salient\\\\Container\\\\Container\\:\\:get\\(\\) expects class\\-string\\<T\\>, string given\\.$#"
 			count: 4
 			path: tests/unit/Toolkit/Container/ContainerTest.php
 
@@ -1049,6 +829,11 @@ parameters:
 			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/PcreTest.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and array\\{'accept', array\\{'\\*/\\*'\\}\\} will always evaluate to false\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
 
 		-
 			message: "#^Cannot access an offset on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"

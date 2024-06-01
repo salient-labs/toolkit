@@ -11,6 +11,7 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
@@ -19,7 +20,6 @@ use Salient\Core\Pipeline;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
 
 /**
@@ -51,7 +51,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
         return [];
     }
 
-    /** @var SyncStore */
+    /** @var SyncStoreInterface */
     protected $Store;
     /** @var int|null */
     private $Id;
@@ -64,11 +64,11 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      * Creating an instance of the provider registers it with the entity store
      * injected by the container.
      */
-    public function __construct(ContainerInterface $app, SyncStore $store)
+    public function __construct(ContainerInterface $app, SyncStoreInterface $store)
     {
         parent::__construct($app);
         $this->Store = $store;
-        $this->Store->provider($this);
+        $this->Store->registerProvider($this);
     }
 
     /**
@@ -110,7 +110,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     /**
      * @inheritDoc
      */
-    final public function store(): SyncStore
+    final public function store(): SyncStoreInterface
     {
         return $this->Store;
     }
@@ -127,7 +127,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     /**
      * @inheritDoc
      */
-    final public function getProviderId(): ?int
+    final public function getProviderId(): int
     {
         return $this->Id
             ?? $this->Store->getProviderId($this);
@@ -210,21 +210,6 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     }
 
     /**
-     * Use the provider's container to get a serialization rules builder
-     * for an entity
-     *
-     * @template T of SyncEntityInterface
-     *
-     * @param class-string<T> $entity
-     * @return SerializeRulesBuilder<T>
-     */
-    final protected function buildSerializeRules(string $entity): SerializeRulesBuilder
-    {
-        return SerializeRulesBuilder::build($this->App)
-            ->entity($entity);
-    }
-
-    /**
      * @inheritDoc
      */
     final public static function getServices(): array
@@ -238,25 +223,23 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      * @param class-string<TEntity> $entity
      * @return SyncEntityProvider<TEntity,static>
      */
-    final public function with(string $entity, $context = null): SyncEntityProvider
+    final public function with(string $entity, ?SyncContextInterface $context = null): SyncEntityProvider
     {
-        if ($context instanceof SyncContextInterface) {
+        if ($context) {
             $context->maybeThrowRecursionException();
             $container = $context->getContainer();
         } else {
-            /** @var ContainerInterface */
-            $container = $context ?? $this->App;
+            $container = $this->App;
         }
 
         $container = $container->inContextOf(static::class);
-
-        $context = $context instanceof SyncContextInterface
+        $context = $context
             ? $context->withContainer($container)
             : $this->getContext($container);
 
         return $container->get(
             SyncEntityProvider::class,
-            [$entity, $this, $context]
+            ['entity' => $entity, 'provider' => $this, 'context' => $context],
         );
     }
 

@@ -10,9 +10,12 @@ use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
+use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
@@ -40,14 +43,10 @@ use SQLite3Stmt;
  * terminated by calling {@see SyncStore::close()}, otherwise a failed run is
  * recorded.
  */
-final class SyncStore extends AbstractStore
+final class SyncStore extends AbstractStore implements SyncStoreInterface
 {
-    /** @var bool */
-    private $ErrorReporting = false;
-    /** @var int|null */
-    private $RunId;
-    /** @var string|null */
-    private $RunUuid;
+    private ?int $RunId = null;
+    private ?string $RunUuid = null;
 
     /**
      * Provider ID => provider
@@ -95,7 +94,7 @@ final class SyncStore extends AbstractStore
     /**
      * Prefix => resolver
      *
-     * @var array<string,class-string<SyncClassResolverInterface>>|null
+     * @var array<string,SyncClassResolverInterface>|null
      */
     private $NamespaceResolversByPrefix;
 
@@ -168,7 +167,7 @@ final class SyncStore extends AbstractStore
      *
      * Prefix => [ namespace base URI, PHP namespace, class resolver ]
      *
-     * @var array<string,array{string,string,class-string<SyncClassResolverInterface>|null}>
+     * @var array<string,array{string,string,SyncClassResolverInterface|null}>
      */
     private $DeferredNamespaces = [];
 
@@ -306,63 +305,70 @@ SQL;
     }
 
     /**
-     * Check if a run has started
-     *
      * @phpstan-assert-if-true !null $this->RunId
      * @phpstan-assert-if-true !null $this->RunUuid
      * @phpstan-assert-if-true !null $this->NamespacesByPrefix
      * @phpstan-assert-if-true !null $this->NamespaceUrisByPrefix
      */
-    public function hasRunId(): bool
+    public function runHasStarted(): bool
     {
         return $this->RunId !== null;
     }
 
     /**
-     * Get the run ID of the current run
+     * @inheritDoc
      */
     public function getRunId(): int
     {
-        $this->check();
+        $this->assertRunHasStarted();
 
         return $this->RunId;
     }
 
     /**
-     * Get the UUID of the current run
-     *
-     * @param bool $binary If `true`, return 16 bytes of raw binary data,
-     * otherwise return a 36-byte hexadecimal representation.
+     * @inheritDoc
      */
-    public function getRunUuid(bool $binary = false): string
+    public function getRunUuid(): string
     {
-        $this->check();
+        $this->assertRunHasStarted();
 
-        return $binary
-            ? $this->RunUuid
-            : Get::uuid($this->RunUuid);
+        return Get::uuid($this->RunUuid);
     }
 
     /**
-     * Register a sync provider and set its provider ID
-     *
-     * If a sync run has started, the provider is registered immediately and its
-     * provider ID is passed to {@see SyncProviderInterface::setProviderId()}
-     * before {@see SyncStore::provider()} returns. Otherwise, registration is
-     * deferred until a sync run starts.
-     *
-     * @return $this
+     * @inheritDoc
      */
-    public function provider(SyncProviderInterface $provider)
+    public function getBinaryRunUuid(): string
+    {
+        $this->assertRunHasStarted();
+
+        return $this->RunUuid;
+    }
+
+    /**
+     * @phpstan-assert !null $this->RunId
+     * @phpstan-assert !null $this->RunUuid
+     */
+    private function assertRunHasStarted(): void
+    {
+        if ($this->RunId === null) {
+            throw new LogicException('Run has not started');
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function registerProvider(SyncProviderInterface $provider)
     {
         // Don't start a run just to register a provider
-        if (!$this->hasRunId()) {
+        if (!$this->runHasStarted()) {
             $this->DeferredProviders[] = $provider;
             return $this;
         }
 
         $class = get_class($provider);
-        $hash = $this->getProviderHash($provider);
+        $hash = $this->getProviderSignature($provider);
 
         if (isset($this->ProviderMap[$hash])) {
             throw new LogicException(sprintf(
@@ -419,16 +425,15 @@ SQL;
     }
 
     /**
-     * Get the provider ID of a registered sync provider, starting a run if
-     * necessary
+     * @inheritDoc
      */
     public function getProviderId(SyncProviderInterface $provider): int
     {
-        if (!$this->hasRunId()) {
+        if (!$this->runHasStarted()) {
             $this->check();
         }
 
-        $hash = $this->getProviderHash($provider);
+        $hash = $this->getProviderSignature($provider);
         $id = $this->ProviderMap[$hash] ?? null;
         if ($id === null) {
             throw new LogicException(sprintf(
@@ -440,21 +445,21 @@ SQL;
     }
 
     /**
-     * Get a registered sync provider
+     * @inheritDoc
      */
-    public function getProvider(string $hash): ?SyncProviderInterface
+    public function getProvider(string $signature): ?SyncProviderInterface
     {
         // Don't start a run just to get a provider
-        if (!$this->hasRunId()) {
+        if (!$this->runHasStarted()) {
             foreach ($this->DeferredProviders as $provider) {
-                if ($this->getProviderHash($provider) === $hash) {
+                if ($this->getProviderSignature($provider) === $signature) {
                     return $provider;
                 }
             }
             return null;
         }
 
-        $id = $this->ProviderMap[$hash] ?? null;
+        $id = $this->ProviderMap[$signature] ?? null;
         if ($id === null) {
             return null;
         }
@@ -462,9 +467,9 @@ SQL;
     }
 
     /**
-     * Get the stable identifier of a sync provider
+     * @inheritDoc
      */
-    public function getProviderHash(SyncProviderInterface $provider): string
+    public function getProviderSignature(SyncProviderInterface $provider): string
     {
         $class = get_class($provider);
         return Get::binaryHash(implode("\0", [
@@ -474,18 +479,12 @@ SQL;
     }
 
     /**
-     * Register a sync entity type and set its ID (unless already registered)
-     *
-     * For performance reasons, `$entity` is case-sensitive and must exactly
-     * match the declared name of the sync entity class.
-     *
-     * @param class-string<SyncEntityInterface> $entity
-     * @return $this
+     * @inheritDoc
      */
-    public function entityType(string $entity)
+    public function registerEntity(string $entity)
     {
         // Don't start a run just to register an entity type
-        if (!$this->hasRunId()) {
+        if (!$this->runHasStarted()) {
             $this->DeferredEntityTypes[] = $entity;
             return $this;
         }
@@ -557,33 +556,36 @@ SQL;
     }
 
     /**
-     * Register a sync entity namespace
-     *
-     * A prefix can only be associated with one namespace per {@see SyncStore}
-     * and cannot be changed without resetting its backing database.
-     *
-     * If a prefix has already been registered, its previous URI and PHP
-     * namespace are updated if they differ. This is by design and is intended
-     * to facilitate refactoring.
-     *
-     * @param string $prefix A short alternative to `$uri`. Case-insensitive.
-     * Must be unique to the {@see SyncStore}. Must be a scheme name that
-     * complies with Section 3.1 of \[RFC3986], i.e. a match for the regular
-     * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
-     * @param string $uri A globally unique namespace URI.
-     * @param string $namespace A fully-qualified PHP namespace.
-     * @param class-string<SyncClassResolverInterface>|null $resolver
-     * @return $this
+     * @inheritDoc
      */
-    public function namespace(
+    public function getEntityId(string $entity): int
+    {
+        if (!$this->runHasStarted()) {
+            $this->check();
+        }
+
+        $id = $this->EntityTypeMap[$entity] ?? null;
+        if ($id === null) {
+            throw new LogicException(sprintf(
+                'Entity not registered: %s',
+                $entity,
+            ));
+        }
+        return $id;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function registerNamespace(
         string $prefix,
         string $uri,
         string $namespace,
-        ?string $resolver = null
+        ?SyncClassResolverInterface $resolver = null
     ) {
         $prefix = Str::lower($prefix);
         if (isset($this->RegisteredNamespaces[$prefix])
-            || (!$this->hasRunId()
+            || (!$this->runHasStarted()
                 && isset($this->DeferredNamespaces[$prefix]))) {
             throw new LogicException(sprintf(
                 'Prefix already registered: %s',
@@ -595,8 +597,8 @@ SQL;
         // `classToNamespace()` resolves entity classes without starting a run.
         // `$DeferredNamespaces` is used to ensure it's only done once.
         if (!isset($this->DeferredNamespaces[$prefix])) {
-            if (!Pcre::match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
-                throw new LogicException(sprintf(
+            if (!Pcre::match('/^[a-z][-a-z0-9+.]*$/iD', $prefix)) {
+                throw new InvalidArgumentException(sprintf(
                     'Invalid prefix: %s',
                     $prefix,
                 ));
@@ -606,7 +608,7 @@ SQL;
         }
 
         // Don't start a run just to register a namespace
-        if (!$this->hasRunId()) {
+        if (!$this->runHasStarted()) {
             $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $resolver];
             return $this;
         }
@@ -651,18 +653,10 @@ SQL;
     }
 
     /**
-     * Get the canonical URI of a sync entity type
-     *
-     * @param class-string<SyncEntityInterface> $entity
-     * @return string|null `null` if `$entity` is not in a registered sync
-     * entity namespace.
-     *
-     * @see SyncStore::namespace()
+     * @inheritDoc
      */
-    public function getEntityTypeUri(
-        string $entity,
-        bool $compact = true
-    ): ?string {
+    public function getEntityUri(string $entity, bool $compact = true): ?string
+    {
         $prefix = $this->classToNamespace($entity, $uri, $namespace);
         if ($prefix === null) {
             return null;
@@ -675,26 +669,17 @@ SQL;
     }
 
     /**
-     * Get the namespace of a sync entity type
-     *
-     * @param class-string<SyncEntityInterface> $entity
-     * @return string|null `null` if `$entity` is not in a registered sync
-     * entity namespace.
-     *
-     * @see SyncStore::namespace()
+     * @inheritDoc
      */
-    public function getEntityTypeNamespace(string $entity): ?string
+    public function getEntityPrefix(string $entity): ?string
     {
         return $this->classToNamespace($entity);
     }
 
     /**
-     * Get the class resolver for an entity or provider's namespace
-     *
-     * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
-     * @return class-string<SyncClassResolverInterface>|null
+     * @inheritDoc
      */
-    public function getNamespaceResolver(string $class): ?string
+    public function getClassResolver(string $class): ?SyncClassResolverInterface
     {
         if ($this->classToNamespace(
             $class,
@@ -710,19 +695,19 @@ SQL;
 
     /**
      * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
-     * @param class-string<SyncClassResolverInterface>|null $resolver
+     * @param-out SyncClassResolverInterface|null $resolver
      */
     private function classToNamespace(
         string $class,
         ?string &$uri = null,
         ?string &$namespace = null,
-        ?string &$resolver = null
+        ?SyncClassResolverInterface &$resolver = null
     ): ?string {
         $class = ltrim($class, '\\');
         $lower = Str::lower($class);
 
         // Don't start a run just to resolve a class to a namespace
-        if (!$this->hasRunId()) {
+        if (!$this->runHasStarted()) {
             foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_resolver]) {
                 $_namespace = Str::lower($_namespace);
                 if (strpos($lower, $_namespace) === 0) {
@@ -748,16 +733,9 @@ SQL;
     }
 
     /**
-     * Register a sync entity
-     *
-     * Sync entities are uniquely identified by provider ID, entity type, and
-     * entity ID. They cannot be registered multiple times.
-     *
-     * @param class-string<SyncEntityInterface> $entityType
-     * @param int|string $entityId
-     * @return $this
+     * @inheritDoc
      */
-    public function entity(
+    public function setEntity(
         int $providerId,
         string $entityType,
         $entityId,
@@ -784,15 +762,7 @@ SQL;
     }
 
     /**
-     * Get a previously registered and/or stored sync entity
-     *
-     * @param class-string<SyncEntityInterface> $entityType
-     * @param int|string $entityId
-     * @param bool|null $offline If `null` (the default), the local entity store
-     * is used if its copy of the entity is sufficiently fresh, or if the
-     * provider cannot be reached. If `true`, the local entity store is used
-     * unconditionally. If `false`, the local entity store is unconditionally
-     * ignored.
+     * @inheritDoc
      */
     public function getEntity(
         int $providerId,
@@ -809,36 +779,28 @@ SQL;
     }
 
     /**
-     * Register a deferred sync entity
-     *
-     * If an entity with the same provider ID, entity type, and entity ID has
-     * already been registered, `$deferred` is resolved immediately, otherwise
-     * it is added to the deferred entity queue.
-     *
      * @template TEntity of SyncEntityInterface
      *
      * @param class-string<TEntity> $entityType
-     * @param int|string $entityId
-     * @param DeferredEntity<TEntity> $deferred
-     * @return $this
+     * @param DeferredEntity<TEntity> $entity
      */
-    public function deferredEntity(
+    public function deferEntity(
         int $providerId,
         string $entityType,
         $entityId,
-        DeferredEntity $deferred
+        DeferredEntity $entity
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         /** @var TEntity|null */
-        $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
-        if ($entity) {
-            $deferred->replace($entity);
+        $_entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
+        if ($_entity) {
+            $entity->replace($_entity);
             return $this;
         }
 
         // Get the deferral policy of the context within which the entity was
         // deferred
-        $context = $deferred->getContext();
+        $context = $entity->getContext();
         if ($context) {
             $last = $context->last();
             if ($last) {
@@ -851,13 +813,14 @@ SQL;
 
         $this->DeferredEntities[$providerId][$entityTypeId][$entityId][
             $this->DeferralCheckpoint++
-        ] = $deferred;
+        ] = $entity;
 
         // In `RESOLVE_EARLY` mode, deferred entities are added to
-        // `$this->DeferredEntities` for the benefit of `$this->entity()`, which
-        // only calls `DeferredEntity::replace()` method on registered instances
+        // `$this->DeferredEntities` for the benefit of `$this->setEntity()`,
+        // which only calls `DeferredEntity::replace()` method on registered
+        // instances
         if ($policy === DeferralPolicy::RESOLVE_EARLY) {
-            $deferred->resolve();
+            $entity->resolve();
             return $this;
         }
 
@@ -865,23 +828,15 @@ SQL;
     }
 
     /**
-     * Register a deferred relationship
-     *
-     * @template TEntity of SyncEntityInterface
-     *
-     * @param class-string<TEntity> $entityType
-     * @param class-string<SyncEntityInterface> $forEntityType
-     * @param int|string $forEntityId
-     * @param DeferredRelationship<TEntity> $deferred
-     * @return $this
+     * @inheritDoc
      */
-    public function deferredRelationship(
+    public function deferRelationship(
         int $providerId,
         string $entityType,
         string $forEntityType,
         string $forEntityProperty,
         $forEntityId,
-        DeferredRelationship $deferred
+        DeferredRelationship $relationship
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         $forEntityTypeId = $this->EntityTypeMap[$forEntityType];
@@ -901,7 +856,7 @@ SQL;
 
         // Get hydration policy from the context within which the deferral was
         // created
-        $context = $deferred->getContext();
+        $context = $relationship->getContext();
         if ($context) {
             $last = $context->last();
             if ($last) {
@@ -917,36 +872,29 @@ SQL;
         }
 
         if ($policy === HydrationPolicy::EAGER) {
-            $deferred->resolve();
+            $relationship->resolve();
             return $this;
         }
 
-        $deferredList[$this->DeferralCheckpoint++] = $deferred;
+        $deferredList[$this->DeferralCheckpoint++] = $relationship;
         return $this;
     }
 
     /**
-     * Resolve deferred sync entities and relationships recursively until no
-     * deferrals remain
-     *
-     * @param class-string<SyncEntityInterface>|null $entityType
-     * @return SyncEntityInterface[]|null
+     * @inheritDoc
      */
-    public function resolveDeferred(
+    public function resolveDeferrals(
         ?int $fromCheckpoint = null,
         ?string $entityType = null,
-        bool $return = false
-    ): ?array {
+        ?int $providerId = null
+    ): array {
         $checkpoint = $this->DeferralCheckpoint;
         do {
             // Resolve relationships first because they typically deliver
             // multiple entities per round trip, some of which may be in the
             // deferred entity queue
-            $deferred = $this->resolveDeferredRelationships($fromCheckpoint, $entityType);
+            $deferred = $this->resolveDeferredRelationships($fromCheckpoint, $entityType, null, null, $providerId);
             if ($deferred) {
-                if (!$return) {
-                    continue;
-                }
                 foreach ($deferred as $relationship) {
                     foreach ($relationship as $entity) {
                         $objectId = spl_object_id($entity);
@@ -959,8 +907,8 @@ SQL;
                 continue;
             }
 
-            $deferred = $this->resolveDeferredEntities($fromCheckpoint, $entityType);
-            if (!$deferred || !$return) {
+            $deferred = $this->resolveDeferredEntities($fromCheckpoint, $entityType, $providerId);
+            if (!$deferred) {
                 continue;
             }
             foreach ($deferred as $entity) {
@@ -968,20 +916,11 @@ SQL;
             }
         } while ($deferred);
 
-        return $return
-            ? array_values($resolved ?? [])
-            : null;
+        return array_values($resolved ?? []);
     }
 
     /**
-     * Get a checkpoint to delineate between deferred entities and relationships
-     * already in their respective queues, and any subsequent deferrals
-     *
-     * The return value of this method can be used with
-     * {@see SyncStore::resolveDeferred()},
-     * {@see SyncStore::resolveDeferredEntities()} and
-     * {@see SyncStore::resolveDeferredRelationships()} to limit the range of
-     * entities to resolve, e.g. to those produced by a particular operation.
+     * @inheritDoc
      */
     public function getDeferralCheckpoint(): int
     {
@@ -989,11 +928,7 @@ SQL;
     }
 
     /**
-     * Resolve deferred sync entities from their respective providers and/or the
-     * local entity store
-     *
-     * @param class-string<SyncEntityInterface>|null $entityType
-     * @return SyncEntityInterface[]
+     * @inheritDoc
      */
     public function resolveDeferredEntities(
         ?int $fromCheckpoint = null,
@@ -1044,17 +979,13 @@ SQL;
     }
 
     /**
-     * Resolve deferred relationships from their respective providers and/or the
-     * local entity store
-     *
-     * @param class-string<SyncEntityInterface>|null $entityType
-     * @param class-string<SyncEntityInterface>|null $forEntityType
-     * @return array<SyncEntityInterface[]>
+     * @inheritDoc
      */
     public function resolveDeferredRelationships(
         ?int $fromCheckpoint = null,
         ?string $entityType = null,
         ?string $forEntityType = null,
+        ?string $forEntityProperty = null,
         ?int $providerId = null
     ): array {
         $entityTypeId = $entityType === null
@@ -1078,6 +1009,9 @@ SQL;
                         continue;
                     }
                     foreach ($relationshipsByForEntProp as $forEntProp => $relationshipsByForEntId) {
+                        if ($forEntityProperty !== null && $forEntProp !== $forEntityProperty) {
+                            continue;
+                        }
                         foreach ($relationshipsByForEntId as $forEntId => $relationships) {
                             if ($fromCheckpoint !== null) {
                                 $_relationships = $relationships;
@@ -1106,15 +1040,9 @@ SQL;
     }
 
     /**
-     * Throw an exception if a provider has an unreachable backend
-     *
-     * If called with no `$providers`, all registered providers are checked.
-     *
-     * Duplicates are ignored.
-     *
-     * @return $this
+     * @inheritDoc
      */
-    public function checkHeartbeats(
+    public function checkProviderHeartbeats(
         int $ttl = 300,
         bool $failEarly = true,
         SyncProviderInterface ...$providers
@@ -1132,13 +1060,8 @@ SQL;
         $failed = [];
         /** @var SyncProviderInterface $provider */
         foreach ($providers as $provider) {
-            $name = $provider->name();
             $id = $provider->getProviderId();
-            if ($id === null) {
-                $name .= ' [unregistered]';
-            } else {
-                $name .= " [#$id]";
-            }
+            $name = sprintf('%s [#%d]', $provider->name(), $id);
             Console::logProgress('Checking', $name);
             try {
                 $provider->checkHeartbeat($ttl);
@@ -1149,7 +1072,7 @@ SQL;
                 Console::exception($ex, Level::DEBUG, null);
                 Console::log('No heartbeat:', $name);
                 $failed[] = $provider;
-                $this->error(
+                $this->recordError(
                     SyncError::build()
                         ->errorType(SyncErrorType::BACKEND_UNREACHABLE)
                         ->message('Heartbeat check failed: %s')
@@ -1174,37 +1097,12 @@ SQL;
     }
 
     /**
-     * Report sync errors to the console as they occur (disabled by default)
-     *
-     * @return $this
-     */
-    public function enableErrorReporting()
-    {
-        $this->ErrorReporting = true;
-        return $this;
-    }
-
-    /**
-     * Disable sync error reporting
-     *
-     * @return $this
-     */
-    public function disableErrorReporting()
-    {
-        $this->ErrorReporting = false;
-        return $this;
-    }
-
-    /**
-     * Report an error that occurred during a sync operation
-     *
      * @param SyncError|SyncErrorBuilder $error
-     * @return $this
      */
-    public function error($error, bool $deduplicate = false)
+    public function recordError($error, bool $deduplicate = false)
     {
         if ($error instanceof SyncErrorBuilder) {
-            $error = $error->go();
+            $error = $error->build();
         }
 
         $seen = $deduplicate
@@ -1231,25 +1129,12 @@ SQL;
                 break;
         }
 
-        if (!$this->ErrorReporting) {
-            Console::count($error->Level);
-            return $this;
-        }
-
-        Console::message(
-            $error->Level,
-            '[' . SyncErrorType::toName($error->ErrorType) . ']',
-            sprintf(
-                $error->Message,
-                ...Arr::toScalars($error->Values),
-            ),
-        );
-
+        Console::count($error->Level);
         return $this;
     }
 
     /**
-     * Get sync errors recorded so far
+     * @inheritDoc
      */
     public function getErrors(): SyncErrorCollection
     {
@@ -1257,16 +1142,10 @@ SQL;
     }
 
     /**
-     * Report sync errors recorded so far to the console
-     *
-     * If no sync-related errors or warnings have been recorded, `$successText`
-     * is printed with level NOTICE.
-     *
-     * @return $this
+     * @inheritDoc
      */
-    public function reportErrors(
-        string $successText = 'No sync errors recorded'
-    ) {
+    public function reportErrors(string $successText = 'No sync errors recorded')
+    {
         if (!$this->ErrorCount && !$this->WarningCount) {
             Console::info($successText);
             return $this;
@@ -1342,17 +1221,17 @@ SQL;
         unset($this->Command, $this->Arguments);
 
         foreach ($this->DeferredProviders as $provider) {
-            $this->provider($provider);
+            $this->registerProvider($provider);
         }
         unset($this->DeferredProviders);
 
         foreach ($this->DeferredEntityTypes as $entity) {
-            $this->entityType($entity);
+            $this->registerEntity($entity);
         }
         unset($this->DeferredEntityTypes);
 
         foreach ($this->DeferredNamespaces as $prefix => [$uri, $namespace, $resolver]) {
-            $this->namespace($prefix, $uri, $namespace, $resolver);
+            $this->registerNamespace($prefix, $uri, $namespace, $resolver);
         }
         unset($this->DeferredNamespaces);
 
@@ -1397,7 +1276,12 @@ SQL;
      */
     public function __destruct()
     {
-        // If not closed explicitly, assume something went wrong
-        $this->close(1);
+        $exitStatus = -1;
+        if (Err::isLoaded() && Err::isShuttingDown()) {
+            $exitStatus = Err::getExitStatus();
+        }
+        $this->close($exitStatus);
     }
+
+    private function __clone() {}
 }

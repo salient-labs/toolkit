@@ -4,14 +4,10 @@ namespace Salient\Contract\Sync;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\ProviderInterface;
-use Salient\Sync\AbstractSyncProvider;
-use Salient\Sync\SyncStore;
 
 /**
  * Base interface for providers that sync entities to and from third-party
  * backends
- *
- * @see AbstractSyncProvider
  *
  * @extends ProviderInterface<SyncContextInterface>
  */
@@ -25,8 +21,6 @@ interface SyncProviderInterface extends ProviderInterface
     /**
      * Called when the provider is registered with an entity store
      *
-     * @see SyncStore::provider()
-     *
      * @return $this
      */
     public function setProviderId(int $providerId);
@@ -34,7 +28,7 @@ interface SyncProviderInterface extends ProviderInterface
     /**
      * Get the provider ID assigned to the backend instance by the entity store
      */
-    public function getProviderId(): ?int;
+    public function getProviderId(): int;
 
     /**
      * Get the provider's implementation of sync operations for an entity
@@ -64,7 +58,7 @@ interface SyncProviderInterface extends ProviderInterface
     /**
      * Get the provider's entity store
      */
-    public function store(): SyncStore;
+    public function store(): SyncStoreInterface;
 
     /**
      * Use an entity-agnostic interface to the provider's implementation of sync
@@ -73,8 +67,7 @@ interface SyncProviderInterface extends ProviderInterface
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @param SyncContextInterface|ContainerInterface|null $context
      * @return SyncEntityProviderInterface<T>
      */
-    public function with(string $entity, $context = null): SyncEntityProviderInterface;
+    public function with(string $entity, ?SyncContextInterface $context = null): SyncEntityProviderInterface;
 }

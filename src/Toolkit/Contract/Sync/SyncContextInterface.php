@@ -83,25 +83,22 @@ interface SyncContextInterface extends ProviderContextInterface
     public function withFilterPolicyCallback(?callable $callback);
 
     /**
-     * Reject entities from the local entity store
+     * Only retrieve entities from the provider
      *
      * @return static
      */
     public function online();
 
     /**
-     * Reject entities from the provider
-     *
-     * An exception is thrown if the local entity store is unable to satisfy
-     * subsequent entity requests.
+     * Only retrieve entities from the local entity store
      *
      * @return static
      */
     public function offline();
 
     /**
-     * Accept entities from the local entity store if they are sufficiently
-     * fresh or if the provider cannot be reached
+     * Retrieve entities from the provider as needed to update the local entity
+     * store
      *
      * This is the default behaviour.
      *

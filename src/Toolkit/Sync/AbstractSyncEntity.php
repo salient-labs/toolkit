@@ -4,6 +4,7 @@ namespace Salient\Sync;
 
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Describable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFactory;
@@ -21,6 +22,8 @@ use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityState;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Contract\Sync\SyncSerializeRulesInterface as SerializeRulesInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;
@@ -118,7 +121,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    public static function plural(): string
+    public static function getPlural(): ?string
     {
         return Inflect::plural(Get::basename(static::class));
     }
@@ -181,12 +184,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     protected static function getRemovablePrefixes(): ?array
     {
         $current = new ReflectionClass(static::class);
-        while ($current->isSubclassOf(self::class)) {
+        do {
             $prefixes[] = Get::basename($current->getName());
             $current = $current->getParentClass();
-        }
+        } while ($current && $current->isSubclassOf(self::class));
 
-        return self::expandPrefixes($prefixes ?? []);
+        return self::expandPrefixes($prefixes);
     }
 
     // --
@@ -210,33 +213,28 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public static function defaultProvider(?ContainerInterface $container = null): SyncProviderInterface
+    final public static function getDefaultProvider(ContainerInterface $container): SyncProviderInterface
     {
-        return self::requireContainer($container)->get(
-            SyncIntrospector::entityToProvider(static::class)
-        );
+        return $container->get(SyncIntrospector::entityToProvider(static::class, $container));
     }
 
     /**
      * @inheritDoc
      */
-    final public static function withDefaultProvider(?ContainerInterface $container = null, ?SyncContextInterface $context = null): SyncEntityProviderInterface
+    final public static function withDefaultProvider(ContainerInterface $container, ?SyncContextInterface $context = null): SyncEntityProviderInterface
     {
-        return static::defaultProvider($container)->with(
-            static::class, $context
-        );
+        return static::getDefaultProvider($container)->with(static::class, $context);
     }
 
     /**
      * @inheritDoc
      */
-    final public static function getSerializeRules(?ContainerInterface $container = null): SerializeRules
+    final public static function getSerializeRules(): SerializeRulesInterface
     {
-        $container = self::requireContainer($container);
-        $rulesB = SerializeRulesBuilder::build($container)->entity(static::class);
-        $rulesB = static::buildSerializeRules($rulesB);
-
-        return $rulesB->go();
+        return static::buildSerializeRules(
+            SerializeRules::build()
+                ->entity(static::class)
+        )->build();
     }
 
     /**
@@ -291,33 +289,31 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function toArray(): array
+    final public function toArray(?SyncStoreInterface $store = null): array
     {
-        return $this->_toArray(static::getSerializeRules(
-            $this->Provider
-                ? $this->Provider->getContainer()
-                : null
-        ));
+        /** @var SerializeRulesInterface<self> */
+        $rules = static::getSerializeRules();
+        return $this->_toArray($rules, $store);
     }
 
     /**
      * @inheritDoc
      */
-    final public function toArrayWith($rules): array
+    final public function toArrayWith(SerializeRulesInterface $rules, ?SyncStoreInterface $store = null): array
     {
-        return $this->_toArray(SerializeRules::resolve($rules));
+        /** @var SerializeRulesInterface<self> $rules */
+        return $this->_toArray($rules, $store);
     }
 
     /**
      * @inheritDoc
      */
-    final public function toLink(?ContainerInterface $container = null, int $type = LinkType::DEFAULT, bool $compact = true): array
+    final public function toLink(?SyncStoreInterface $store = null, int $type = LinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
-            case LinkType::INTERNAL:
             case LinkType::DEFAULT:
                 return [
-                    '@type' => $this->typeUri($container, $compact),
+                    '@type' => $this->typeUri($store, $compact),
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
@@ -325,12 +321,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
             case LinkType::COMPACT:
                 return [
-                    '@id' => $this->uri($container, $compact),
+                    '@id' => $this->uri($store, $compact),
                 ];
 
             case LinkType::FRIENDLY:
                 return Arr::whereNotEmpty([
-                    '@type' => $this->typeUri($container, $compact),
+                    '@type' => $this->typeUri($store, $compact),
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
@@ -349,11 +345,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function uri(?ContainerInterface $container = null, bool $compact = true): string
+    final public function uri(?SyncStoreInterface $store = null, bool $compact = true): string
     {
         return sprintf(
             '%s/%s',
-            $this->typeUri($container, $compact),
+            $this->typeUri($store, $compact),
             $this->Id === null
                 ? spl_object_id($this)
                 : $this->Id
@@ -415,35 +411,36 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         return array_keys($expanded);
     }
 
-    /**
-     * Get the entity store servicing the entity's provider or the Sync facade
-     */
-    final protected function store(?ContainerInterface $container = null): SyncStore
+    private function typeUri(?SyncStoreInterface $store, bool $compact): string
     {
-        return $this->Provider
-            ? $this->Provider->store()
-            : ($container
-                ? $container->get(SyncStore::class)
-                : Sync::getInstance());
-    }
-
-    private function typeUri(?ContainerInterface $container, bool $compact): string
-    {
+        /** @var class-string<self> */
         $service = $this->getService();
-        $typeUri = $this->store($container)->getEntityTypeUri($service, $compact);
+        $store ??= $this->Provider ? $this->Provider->store() : null;
+        if ($store) {
+            $typeUri = $store->getEntityUri($service, $compact);
+        }
 
         return $typeUri
             ?? '/' . str_replace('\\', '/', ltrim($service, '\\'));
     }
 
     /**
-     * @param SerializeRules<static> $rules
+     * @param SerializeRulesInterface<self> $rules
      * @return array<string,mixed>
      */
-    private function _toArray(SerializeRules $rules): array
+    private function _toArray(SerializeRulesInterface $rules, ?SyncStoreInterface $store): array
     {
+        /** @var SerializeRulesInterface<self> $rules */
+        if ($rules->getDateFormatter() === null) {
+            $rules = $rules->withDateFormatter(
+                $this->Provider
+                    ? $this->Provider->dateFormatter()
+                    : new DateFormatter()
+            );
+        }
+
         $array = $this;
-        $this->_serialize($array, [], $rules);
+        $this->_serialize($array, [], $rules, $store);
 
         return (array) $array;
     }
@@ -451,13 +448,27 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @param AbstractSyncEntity|DeferredEntity<AbstractSyncEntity>|DeferredRelationship<AbstractSyncEntity>|DateTimeInterface|mixed[] $node
      * @param string[] $path
-     * @param SerializeRules<static> $rules
+     * @param SerializeRulesInterface<self> $rules
      * @param array<int,true> $parents
      */
-    private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
+    private function _serialize(&$node, array $path, SerializeRulesInterface $rules, ?SyncStoreInterface $store, array $parents = []): void
     {
-        if (null !== ($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
+        $maxDepth = $rules->getMaxDepth();
+        if ($maxDepth !== null && count($path) > $maxDepth) {
             throw new UnexpectedValueException('In too deep: ' . implode('.', $path));
+        }
+
+        if ($node instanceof DateTimeInterface) {
+            /** @var DateFormatterInterface */
+            $formatter = $rules->getDateFormatter();
+            $node = $formatter->format($node);
+            return;
+        }
+
+        // Now is not the time to resolve deferred entities
+        if ($node instanceof DeferredEntity) {
+            $node = $node->toLink(LinkType::DEFAULT);
+            return;
         }
 
         /** @todo Serialize deferred relationships */
@@ -466,16 +477,9 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             return;
         }
 
-        if ($node instanceof DeferredEntity) {
-            $node = $node->toLink($rules->getFlags() & SerializeRules::SYNC_STORE
-                ? LinkType::INTERNAL
-                : LinkType::DEFAULT);
-            return;
-        }
-
         if ($node instanceof AbstractSyncEntity) {
-            if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
-                $node = $node->toLink($rules->getContainer(), LinkType::INTERNAL);
+            if ($path && $rules->getForSyncStore()) {
+                $node = $node->toLink($store, LinkType::DEFAULT);
                 return;
             }
 
@@ -483,9 +487,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                 // Prevent infinite recursion by replacing each sync entity
                 // descended from itself with a link
                 if ($parents[spl_object_id($node)] ?? false) {
-                    $node = $node->toLink($rules->getContainer(), LinkType::DEFAULT);
+                    $node = $node->toLink($store, LinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
-
                     return;
                 }
                 $parents[spl_object_id($node)] = true;
@@ -495,108 +498,70 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             $node = $node->serialize($rules);
         }
 
-        $delete = $rules->getRemoveFrom($class ?? null, null, $path);
-        $replace = $rules->getReplaceIn($class ?? null, null, $path);
+        $delete = $rules->getRemovableKeys($class ?? null, null, $path);
+        $replace = $rules->getReplaceableKeys($class ?? null, null, $path);
 
         // Don't delete values returned in both lists
         $delete = array_diff_key($delete, $replace);
 
         if ($delete) {
-            $node = array_diff_key($node, array_flip($delete));
+            $node = array_diff_key($node, $delete);
         }
-        foreach ($replace as $rule) {
-            if (is_array($rule)) {
-                $_rule = $rule;
-                $key = array_shift($rule);
-                $newKey = $key;
-                $callback = null;
 
-                while ($rule) {
-                    $arg = array_shift($rule);
-                    if (is_string($arg)) {
-                        $newKey = SyncIntrospector::get(static::class)
-                            ->maybeNormalise($arg, NormaliserFlag::CAREFUL);
-                        continue;
-                    }
-                    if ($arg instanceof Closure) {
-                        $callback = $arg;
-                        continue;
-                    }
-                    throw new LogicException('Invalid rule: ' . var_export($_rule, true));
+        $replace = array_intersect_key($replace, $node + ['[]' => null]);
+
+        foreach ($replace as $key => [$newKey, $closure]) {
+            if ($key !== '[]') {
+                if ($newKey !== null && $key !== $newKey) {
+                    $node = Arr::rename($node, $key, $newKey);
+                    $key = $newKey;
                 }
 
-                if ($key !== '[]') {
-                    if (!array_key_exists($key, $node)) {
-                        continue;
-                    }
-
-                    if ($key !== $newKey) {
-                        /** @var mixed[] $node */
-                        if (array_key_exists($newKey, $node)) {
-                            throw new UnexpectedValueException("Cannot rename '$key': '$newKey' already set");
-                        }
-                        $node = Arr::rename($node, $key, $newKey);
-                        $key = $newKey;
-                    }
-
-                    if ($callback) {
-                        $node[$key] = $callback($node[$key]);
-
-                        continue;
-                    }
-                } elseif ($callback) {
-                    $node = array_map($callback, $node);
-
+                if ($closure) {
+                    $node[$key] = $closure($node[$key], $store);
                     continue;
                 }
-            } else {
-                $key = $rule;
-            }
 
-            if ($key === '[]') {
                 $_path = $path;
-                $lastKey = array_pop($_path);
-                $_path[] = $lastKey . '[]';
-
-                foreach ($node as &$child) {
-                    $this->_serializeId($child, $_path);
-                }
-                unset($child);
-
+                $_path[] = (string) $key;
+                $this->_serializeId($node[$key], $_path);
                 continue;
             }
 
-            if (!array_key_exists($key, $node)) {
+            if ($closure) {
+                foreach ($node as &$child) {
+                    $child = $closure($child, $store);
+                }
+                unset($child);
                 continue;
             }
 
             $_path = $path;
-            $_path[] = $key;
-            $this->_serializeId($node[$key], $_path);
+            $last = array_pop($_path) . '[]';
+            $_path[] = $last;
+            foreach ($node as &$child) {
+                $this->_serializeId($child, $_path);
+            }
+            unset($child);
         }
 
-        if (is_array($node)) {
-            if (Arr::isIndexed($node)) {
-                $isList = true;
-                $lastKey = array_pop($path);
-                $path[] = $lastKey . '[]';
+        $isList = false;
+        if (Arr::isIndexed($node)) {
+            $isList = true;
+            $last = array_pop($path) . '[]';
+            $path[] = $last;
+        }
+
+        unset($_path);
+        foreach ($node as $key => &$child) {
+            if ($child === null || is_scalar($child)) {
+                continue;
             }
-            foreach ($node as $key => &$child) {
-                if ($child === null || is_scalar($child)) {
-                    continue;
-                }
-                if (!($isList ?? null)) {
-                    $_path = $path;
-                    $_path[] = $key;
-                }
-                $this->_serialize($child, $_path ?? $path, $rules, $parents);
+            if (!$isList) {
+                $_path = $path;
+                $_path[] = (string) $key;
             }
-        } elseif ($node instanceof DateTimeInterface) {
-            $node = ($rules->getDateFormatter()
-                ?: ($this->getProvider() ? $this->getProvider()->dateFormatter() : null)
-                ?: new DateFormatter())->format($node);
-        } else {
-            throw new UnexpectedValueException('Array or AbstractSyncEntity expected: ' . print_r($node, true));
+            $this->_serialize($child, $_path ?? $path, $rules, $store, $parents);
         }
     }
 
@@ -632,17 +597,17 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * Nested objects and lists are returned as-is. Only the top-level entity is
      * replaced.
      *
-     * @param SerializeRules<static> $rules
+     * @param SerializeRulesInterface<static> $rules
      * @return array<string,mixed>
      */
-    private function serialize(SerializeRules $rules): array
+    private function serialize(SerializeRulesInterface $rules): array
     {
         $clone = clone $this;
         $clone->State |= SyncEntityState::SERIALIZING;
         $array = SyncIntrospector::get(static::class)
             ->getSerializeClosure($rules)($clone);
 
-        if ($rules->getRemoveCanonicalId()) {
+        if (!$rules->getIncludeCanonicalId()) {
             unset($array[
                 SyncIntrospector::get(static::class)
                     ->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)
@@ -719,7 +684,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         if ($providerOrContext instanceof SyncProviderInterface) {
             $provider = $providerOrContext;
-            $context = $provider->getContainer();
+            $context = $provider->getContext();
         } else {
             $context = $providerOrContext;
             $provider = $context->getProvider();
@@ -740,7 +705,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                     null,
                     true,
                 )
-                ->getByName($nameOrId, $uncertainty);
+                ->getByName((string) $nameOrId, $uncertainty);
 
         if ($entity) {
             return $entity->Id;
@@ -775,7 +740,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         $data['Provider'] = $this->Provider === null
             ? null
-            : $this->store()->getProviderHash($this->Provider);
+            : $this->Provider->store()->getProviderSignature($this->Provider);
 
         return $data;
     }
@@ -787,8 +752,10 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     {
         foreach ($data as $property => $value) {
             if ($property === 'Provider' && $value !== null) {
-                $value = $this->store()->getProvider($value);
-                if (!$value) {
+                $value = is_string($value) && Sync::isLoaded()
+                    ? Sync::getProvider($value)
+                    : null;
+                if ($value === null) {
                     throw new UnexpectedValueException('Cannot unserialize missing provider');
                 }
             }

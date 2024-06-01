@@ -2,12 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Sync\SyncStore;
-
 /**
  * Base interface for entity store events
  */
 interface SyncStoreEventInterface
 {
-    public function store(): SyncStore;
+    public function store(): SyncStoreInterface;
 }

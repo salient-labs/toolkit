@@ -4,24 +4,25 @@ namespace Salient\Sync;
 
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractBuilder;
 use Closure;
 
 /**
  * A fluent SyncSerializeRules factory
  *
- * @method $this dateFormatter(?DateFormatterInterface $value) Override the default date formatter (default: null)
- * @method $this includeMeta(?bool $value = true) Include undeclared property values? (default: true)
- * @method $this sortByKey(?bool $value = true) Sort arrays by key? (default: false)
- * @method $this maxDepth(?int $value) Throw an exception when values are nested beyond this depth (default: 99) (see {@see SyncSerializeRules::$MaxDepth})
- * @method $this detectRecursion(?bool $value = true) Check for recursion? (default: true) (see {@see SyncSerializeRules::$DetectRecursion})
- * @method $this removeCanonicalId(?bool $value = true) Remove CanonicalId from sync entities? (default: true) (see {@see SyncSerializeRules::$RemoveCanonicalId})
- * @method $this remove(array<array<array<string|Closure>|string>|array<string|Closure>|string> $value) Values to remove (see {@see SyncSerializeRules::$Remove})
- * @method $this replace(array<array<array<string|Closure>|string>|array<string|Closure>|string> $value) Values to replace with IDs (see {@see SyncSerializeRules::$Replace})
- * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
- * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
+ * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to serialize date and time values
+ * @method $this includeMeta(bool|null $value = true) Serialize undeclared property values? (default: true)
+ * @method $this sortByKey(bool|null $value = true) Sort serialized entities by key? (default: false)
+ * @method $this maxDepth(int|null $value) Maximum depth of nested values (default: 99)
+ * @method $this detectRecursion(bool|null $value = true) Detect recursion when serializing nested entities? (default: true)
+ * @method $this recurseRules(bool|null $value = true) Apply path-based rules to nested instances of the entity? (default: true)
+ * @method $this forSyncStore(bool|null $value = true) Are values being serialized for an entity store? (default: false)
+ * @method $this includeCanonicalId(bool|null $value = true) Serialize canonical identifiers of sync entities? (default: false)
+ * @method $this remove(array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string> $value) Values to remove, e.g. `[OrgUnit::class => ['users']]` to remove `users` from `OrgUnit` objects
+ * @method $this replace(array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string> $value) Values to replace, e.g. `[User::class => [['org_unit', 'org_unit_id', fn($ou) => $ou->Id]]]` to replace `"org_unit" => $entity` with `"org_unit_id" => $entity->Id` in `User` objects
  *
- * @template-covariant TEntity of SyncEntityInterface
+ * @template TEntity of SyncEntityInterface
  *
  * @extends AbstractBuilder<SyncSerializeRules<TEntity>>
  *
@@ -38,7 +39,7 @@ final class SyncSerializeRulesBuilder extends AbstractBuilder
     }
 
     /**
-     * The class name of the AbstractSyncEntity being serialized (required)
+     * Entity to which the rules apply (required)
      *
      * @template T of SyncEntityInterface
      *

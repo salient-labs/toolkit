@@ -7,7 +7,7 @@ use Salient\Core\Utility\Pcre;
 
 class SyncClassResolver implements SyncClassResolverInterface
 {
-    public static function entityToProvider(string $entity): string
+    public function entityToProvider(string $entity): string
     {
         return Pcre::replace(
             [
@@ -24,7 +24,7 @@ class SyncClassResolver implements SyncClassResolverInterface
         );
     }
 
-    public static function providerToEntity(string $provider): array
+    public function providerToEntity(string $provider): array
     {
         return [
             Pcre::replace(

@@ -77,11 +77,11 @@ interface ContainerInterface extends
      * - match other values to parameters by name
      * - match remaining values by type, then position
      *
-     * @template T of object
+     * @template T
      *
      * @param class-string<T> $id
      * @param mixed[] $args
-     * @return T
+     * @return T&object
      * @throws ContainerUnusableArgumentsException if `$args` are given and
      * `$id` resolves to a shared instance.
      */
@@ -93,13 +93,13 @@ interface ContainerInterface extends
      * This method resolves `$id` normally but passes `$service` to
      * {@see ServiceAwareInterface::setService()} instead of `$id`.
      *
-     * @template T of object
-     * @template TService of object
+     * @template T
+     * @template TService
      *
      * @param class-string<T> $id
      * @param class-string<TService> $service
      * @param mixed[] $args
-     * @return T&TService
+     * @return T&TService&object
      * @throws ContainerUnusableArgumentsException if `$args` are given and
      * `$id` resolves to a shared instance.
      */
@@ -108,7 +108,7 @@ interface ContainerInterface extends
     /**
      * Resolve a service from the container to a concrete class name
      *
-     * @template T of object
+     * @template T
      *
      * @param class-string<T> $id
      * @return class-string<T>
@@ -153,7 +153,7 @@ interface ContainerInterface extends
      * `$args` are merged with `$args` passed to {@see get()} or {@see getAs()}
      * when `$id` resolves to a new instance of `$class`.
      *
-     * @template TService of object
+     * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
@@ -170,7 +170,7 @@ interface ContainerInterface extends
     /**
      * Bind a service to the container if it isn't already bound
      *
-     * @template TService of object
+     * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
@@ -190,7 +190,7 @@ interface ContainerInterface extends
      * Subsequent requests for `$id` resolve to the instance of `$class` created
      * when `$id` is first requested.
      *
-     * @template TService of object
+     * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
@@ -207,7 +207,7 @@ interface ContainerInterface extends
     /**
      * Bind a shared service to the container if it isn't already bound
      *
-     * @template TService of object
+     * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
@@ -224,26 +224,14 @@ interface ContainerInterface extends
     /**
      * Bind a shared instance to the container
      *
-     * @template TService of object
+     * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
-     * @param T $instance
+     * @param T&object $instance
      * @return $this
      */
     public function instance(string $id, $instance): self;
-
-    /**
-     * Bind a shared instance to the container if it isn't already bound
-     *
-     * @template TService of object
-     * @template T of TService
-     *
-     * @param class-string<TService> $id
-     * @param T $instance
-     * @return $this
-     */
-    public function instanceIf(string $id, $instance): self;
 
     /**
      * Register a contextual binding with the container

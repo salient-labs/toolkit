@@ -5,7 +5,7 @@ namespace Salient\Tests\Sync;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
+use Salient\Sync\SyncSerializeRules as SerializeRules;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
 
@@ -18,7 +18,7 @@ final class AbstractSyncEntityTest extends SyncTestCase
 {
     public function testDefaultProvider(): void
     {
-        $this->assertSame($this->Provider, Post::defaultProvider($this->App));
+        $this->assertSame($this->Provider, Post::getDefaultProvider($this->App));
     }
 
     public function testWithDefaultProvider(): void
@@ -50,7 +50,7 @@ final class AbstractSyncEntityTest extends SyncTestCase
         $uncertainty = -1.0;
 
         /** @var SyncProviderInterface */
-        $provider = [$entity, 'defaultProvider']($this->App);
+        $provider = [$entity, 'getDefaultProvider']($this->App);
         $actual = [$entity, 'idFromNameOrId']($nameOrId, $provider, $uncertaintyThreshold, $nameProperty, $uncertainty);
         $this->assertSame($expected, $actual);
         $this->assertSame($expectedUncertainty, $uncertainty);
@@ -114,16 +114,18 @@ final class AbstractSyncEntityTest extends SyncTestCase
         $user->Posts[] = $post;
 
         $_user = $user->toArrayWith(
-            SerializeRulesBuilder::build($this->App)
+            SerializeRules::build($this->App)
                 ->entity(User::class)
                 ->sortByKey(true)
-                ->go()
+                ->build(),
+            $this->Store,
         );
         $_post = $post->toArrayWith(
-            SerializeRulesBuilder::build($this->App)
+            SerializeRules::build($this->App)
                 ->entity(Post::class)
                 ->sortByKey(true)
-                ->go()
+                ->build(),
+            $this->Store,
         );
 
         $this->assertSame([
