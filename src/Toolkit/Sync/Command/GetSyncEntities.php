@@ -151,7 +151,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 : $provider->with($entity, $context)->getListA($filter));
 
         /** @var SyncSerializeRules<T> */
-        $rules = $entity::getSerializeRules($this->App);
+        $rules = $entity::getSerializeRules();
         if (!$this->IncludeMeta) {
             $rules = $rules->withIncludeMeta(false);
         }

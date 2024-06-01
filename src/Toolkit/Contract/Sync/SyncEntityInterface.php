@@ -5,19 +5,14 @@ namespace Salient\Contract\Sync;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Identifiable;
 use Salient\Contract\Core\Nameable;
-use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProvidableEntityInterface;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\AbstractSyncEntity;
-use Salient\Sync\SyncSerializeRules as SerializeRules;
 use JsonSerializable;
 
 /**
  * Represents the state of an entity in an external system
- *
- * @see AbstractSyncEntity
  *
  * @extends ProvidableEntityInterface<SyncProviderInterface,SyncContextInterface>
  */
@@ -29,36 +24,80 @@ interface SyncEntityInterface extends
     JsonSerializable
 {
     /**
-     * Get the name of the entity
+     * Get the entity's default provider
      */
-    public function name(): string;
+    public static function getDefaultProvider(ContainerInterface $container): SyncProviderInterface;
 
     /**
-     * Get an instance of the entity's default provider
-     */
-    public static function defaultProvider(?ContainerInterface $container = null): SyncProviderInterface;
-
-    /**
-     * Get an interface to perform sync operations on the entity with its
-     * default provider
+     * Perform sync operations on the entity using its default provider
      *
      * @return SyncEntityProviderInterface<static>
      */
-    public static function withDefaultProvider(?ContainerInterface $container = null, ?SyncContextInterface $context = null): SyncEntityProviderInterface;
+    public static function withDefaultProvider(ContainerInterface $container, ?SyncContextInterface $context = null): SyncEntityProviderInterface;
 
     /**
-     * Get the entity's default serialization rules
+     * Get the entity's serialization rules
      *
-     * @return SerializeRules<static>
+     * @return SyncSerializeRulesInterface<static>
      */
-    public static function getSerializeRules(?ContainerInterface $container = null): SerializeRules;
+    public static function getSerializeRules(): SyncSerializeRulesInterface;
 
     /**
-     * Get the plural form of the entity's class name
+     * Get the plural form of the entity's unqualified name
      *
-     * e.g. `Faculty::plural()` should return `'Faculties'`.
+     * If this method returns a value other than `null`, an empty string, or the
+     * unqualified name of the entity, it may be used to identify provider
+     * methods that implement sync operations on the entity.
+     *
+     * For example, if `Faculty::getPlural()` returns `null`, a provider may
+     * implement `Faculty` sync operations via one or more of the following:
+     *
+     * - `create_faculty()`
+     * - `get_faculty()`
+     * - `update_faculty()`
+     * - `delete_faculty()`
+     * - `createList_faculty()`
+     * - `getList_faculty()`
+     * - `updateList_faculty()`
+     * - `deleteList_faculty()`
+     *
+     * If the same method returns `'Faculties'`, these are also recognised as
+     * `Faculty` sync implementations:
+     *
+     * - `createFaculty()`
+     * - `getFaculty()`
+     * - `updateFaculty()`
+     * - `deleteFaculty()`
+     * - `createFaculties()`
+     * - `getFaculties()`
+     * - `updateFaculties()`
+     * - `deleteFaculties()`
      */
-    public static function plural(): string;
+    public static function getPlural(): ?string;
+
+    /**
+     * Get the unique identifier assigned to the entity by its provider
+     */
+    public function id();
+
+    /**
+     * Get the unique identifier assigned to the entity by its canonical backend
+     *
+     * If a provider is bound to the service container as the default
+     * implementation of the entity's underlying provider interface, it is
+     * regarded as its canonical backend.
+     *
+     * To improve the accuracy and performance of sync operations, providers
+     * should propagate this value to and from backends capable of storing it.
+     *
+     * @return int|string|null
+     */
+    public function canonicalId();
+
+    /**
+     * Get the name of the entity
+     */
+    public function name(): string;
 
     /**
      * Resolve a name or entity ID to the entity ID of one matching entity
@@ -88,47 +127,23 @@ interface SyncEntityInterface extends
     );
 
     /**
-     * The unique identifier assigned to the entity by its provider
-     *
-     * @return int|string|null
-     */
-    public function id();
-
-    /**
-     * The unique identifier assigned to the entity by its canonical backend
-     *
-     * If a provider is bound to the service container as the default
-     * implementation of the provider interface associated with an entity's
-     * underlying {@see Providable::getService()}, it is regarded as the
-     * entity's canonical backend.
-     *
-     * To improve the accuracy and performance of sync operations, providers
-     * should propagate this value to and from backends capable of storing it,
-     * but this is not strictly required.
-     *
-     * @return int|string|null
-     */
-    public function canonicalId();
-
-    /**
      * Serialize the entity and any nested entities
      *
-     * The entity's {@see SerializeRules} are applied to each
-     * {@see SyncEntityInterface} encountered during this recursive operation.
+     * Rules returned by {@see SyncEntityInterface::getSerializeRules()} are
+     * used.
      *
      * @return array<string,mixed>
-     *
-     * @see SyncEntityInterface::getSerializeRules()
      */
-    public function toArray(): array;
+    public function toArray(?SyncStoreInterface $store = null): array;
 
     /**
-     * Use custom rules to serialize the entity and any nested entities
+     * Use the given serialization rules to serialize the entity and any nested
+     * entities
      *
-     * @param SerializeRules<static> $rules
+     * @param SyncSerializeRulesInterface<static> $rules
      * @return array<string,mixed>
      */
-    public function toArrayWith(SerializeRules $rules): array;
+    public function toArrayWith(SyncSerializeRulesInterface $rules, ?SyncStoreInterface $store = null): array;
 
     /**
      * Get the entity's canonical location in the form of an array
@@ -138,12 +153,12 @@ interface SyncEntityInterface extends
      * @param LinkType::* $type
      * @return array<string,int|string>
      */
-    public function toLink(?ContainerInterface $container = null, int $type = LinkType::DEFAULT, bool $compact = true): array;
+    public function toLink(?SyncStoreInterface $store = null, int $type = LinkType::DEFAULT, bool $compact = true): array;
 
     /**
      * Get the entity's canonical location in the form of a URI
      *
      * Inspired by OData.
      */
-    public function uri(?ContainerInterface $container = null, bool $compact = true): string;
+    public function uri(?SyncStoreInterface $store = null, bool $compact = true): string;
 }

@@ -2,8 +2,6 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\SerializeRulesInterface;
 use Closure;
 
@@ -13,9 +11,8 @@ use Closure;
  * @template TEntity of SyncEntityInterface
  *
  * @extends SerializeRulesInterface<TEntity>
- * @extends HasContainer<ContainerInterface>
  */
-interface SyncSerializeRulesInterface extends SerializeRulesInterface, HasContainer
+interface SyncSerializeRulesInterface extends SerializeRulesInterface
 {
     /**
      * @inheritDoc

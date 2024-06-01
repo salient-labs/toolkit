@@ -126,8 +126,8 @@ final class SyncIntrospectionClass extends IntrospectionClass
 
         if ($this->IsSyncEntity) {
             $this->EntityNoun = Get::basename($this->Class);
-            $plural = $class->getMethod('plural')->invoke(null);
-            if (strcasecmp($this->EntityNoun, $plural)) {
+            $plural = $class->getMethod('getPlural')->invoke(null);
+            if ($plural !== null && $plural !== '' && strcasecmp($this->EntityNoun, $plural)) {
                 $this->EntityPlural = $plural;
             }
         }

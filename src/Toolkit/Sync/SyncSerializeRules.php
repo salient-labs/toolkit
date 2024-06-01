@@ -2,7 +2,6 @@
 
 namespace Salient\Sync;
 
-use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\NormaliserFlag;
@@ -94,7 +93,6 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         withPropertyValue as with;
     }
 
-    private ContainerInterface $App;
     /** @var class-string<TEntity> */
     private string $Entity;
     private ?DateFormatterInterface $DateFormatter;
@@ -135,7 +133,6 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
      * @param SyncSerializeRules<TEntity>|null $inherit Inherit rules from another instance
      */
     public function __construct(
-        ContainerInterface $app,
         string $entity,
         ?DateFormatterInterface $dateFormatter = null,
         ?bool $includeMeta = null,
@@ -149,7 +146,6 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         array $replace = [],
         ?SyncSerializeRules $inherit = null
     ) {
-        $this->App = $app;
         $this->Entity = $entity;
         $this->DateFormatter = $dateFormatter;
         $this->IncludeMeta = $includeMeta;
@@ -173,14 +169,6 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         unset($this->CompileCache);
         unset($this->EntityPathIndex);
         unset($this->Introspector);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getContainer(): ContainerInterface
-    {
-        return $this->App;
     }
 
     /**

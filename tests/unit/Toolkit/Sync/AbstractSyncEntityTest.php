@@ -18,7 +18,7 @@ final class AbstractSyncEntityTest extends SyncTestCase
 {
     public function testDefaultProvider(): void
     {
-        $this->assertSame($this->Provider, Post::defaultProvider($this->App));
+        $this->assertSame($this->Provider, Post::getDefaultProvider($this->App));
     }
 
     public function testWithDefaultProvider(): void
@@ -50,7 +50,7 @@ final class AbstractSyncEntityTest extends SyncTestCase
         $uncertainty = -1.0;
 
         /** @var SyncProviderInterface */
-        $provider = [$entity, 'defaultProvider']($this->App);
+        $provider = [$entity, 'getDefaultProvider']($this->App);
         $actual = [$entity, 'idFromNameOrId']($nameOrId, $provider, $uncertaintyThreshold, $nameProperty, $uncertainty);
         $this->assertSame($expected, $actual);
         $this->assertSame($expectedUncertainty, $uncertainty);
@@ -117,13 +117,15 @@ final class AbstractSyncEntityTest extends SyncTestCase
             SerializeRules::build($this->App)
                 ->entity(User::class)
                 ->sortByKey(true)
-                ->build()
+                ->build(),
+            $this->Store,
         );
         $_post = $post->toArrayWith(
             SerializeRules::build($this->App)
                 ->entity(Post::class)
                 ->sortByKey(true)
-                ->build()
+                ->build(),
+            $this->Store,
         );
 
         $this->assertSame([

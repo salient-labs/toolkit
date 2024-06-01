@@ -101,7 +101,6 @@ final class DeferredEntity
     public function toLink(int $type = LinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
-            case LinkType::INTERNAL:
             case LinkType::DEFAULT:
                 return [
                     '@type' => $this->typeUri($compact),

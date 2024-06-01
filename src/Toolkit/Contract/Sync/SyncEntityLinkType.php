@@ -49,7 +49,4 @@ final class SyncEntityLinkType extends AbstractEnumeration
      * ```
      */
     public const FRIENDLY = 2;
-
-    /** @internal */
-    public const INTERNAL = -1;
 }

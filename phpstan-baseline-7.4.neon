@@ -561,17 +561,7 @@ parameters:
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
 		-
-			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getEntityUri\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, class\\-string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
 			message: "#^Parameter \\#1 \\$name of method Salient\\\\Contract\\\\Sync\\\\SyncEntityResolverInterface\\<static\\(Salient\\\\Sync\\\\AbstractSyncEntity\\)\\>\\:\\:getByName\\(\\) expects string, int\\|string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$signature of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getProvider\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
