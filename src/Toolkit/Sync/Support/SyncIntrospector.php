@@ -424,6 +424,7 @@ final class SyncIntrospector extends Introspector
                 ?DateFormatterInterface $dateFormatter,
                 ?Treeable $parent
             ) use ($constructor, $updater, $resolver) {
+                /** @var class-string<SyncEntityInterface>|null $service */
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                 $obj = $resolver($array, $service, $obj, $provider, $context);
@@ -433,6 +434,7 @@ final class SyncIntrospector extends Introspector
                 return $obj;
             };
         } else {
+            /** @var class-string<TClass&SyncEntityInterface> */
             $entityType = $this->_Class->Class;
             $closure = static function (
                 array $array,
@@ -453,6 +455,7 @@ final class SyncIntrospector extends Introspector
             ) {
                 $id = $array[$idKey];
 
+                /** @var class-string<SyncEntityInterface>|null $service */
                 if ($id === null || !$provider) {
                     $obj = $constructor($array, $service, $container);
                     $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
@@ -477,6 +480,7 @@ final class SyncIntrospector extends Introspector
                 }
 
                 $obj = $constructor($array, $service, $container);
+                /** @var TClass&SyncEntityInterface */
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                 $store->setEntity($providerId, $service ?? $entityType, $id, $obj);
                 $obj = $resolver($array, $service, $obj, $provider, $context);

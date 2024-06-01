@@ -541,37 +541,7 @@ parameters:
 			path: src/Toolkit/Sync/AbstractSyncDefinition.php
 
 		-
-			message: "#^Cannot call method getName\\(\\) on ReflectionClass\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Cannot call method getParentClass\\(\\) on ReflectionClass\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Cannot call method isSubclassOf\\(\\) on ReflectionClass\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
 			message: "#^Method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:getMetaProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$name of method Salient\\\\Contract\\\\Sync\\\\SyncEntityResolverInterface\\<static\\(Salient\\\\Sync\\\\AbstractSyncEntity\\)\\>\\:\\:getByName\\(\\) expects string, int\\|string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Parameter \\#2 \\$context of method Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\:\\:with\\(\\) expects Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|null, Salient\\\\Contract\\\\Container\\\\ContainerInterface\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
-			message: "#^Property Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:\\$State \\(int\\<0, 1\\>\\) does not accept int\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
@@ -726,11 +696,6 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
 
 		-
-			message: "#^Parameter \\#3 \\$entityId of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getEntity\\(\\) expects int\\|string, int\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
-
-		-
 			message: "#^Parameter \\#1 \\$provider of static method Salient\\\\Sync\\\\Support\\\\SyncIntrospector\\<object\\>\\:\\:providerToEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\>, string given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospectionClass.php
@@ -781,32 +746,7 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Parameter \\#1 \\$entity of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:registerEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:getEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 \\$entityType of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:setEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
 			message: "#^Parameter \\#2 of closure expects TClass of object, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#2 of closure expects class\\-string\\|null, string\\|null given\\.$#"
-			count: 3
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Parameter \\#4 \\$entity of method Salient\\\\Contract\\\\Sync\\\\SyncStoreInterface\\:\\:setEntity\\(\\) expects Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, TClass of object given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 

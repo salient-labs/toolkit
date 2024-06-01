@@ -301,6 +301,9 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     {
         $offline = $this->Context->getOffline();
         if ($offline !== false) {
+            if ($id === null) {
+                throw new LogicException('$id cannot be null when working offline');
+            }
             $entity = $this->Store->registerEntity($this->Entity)->getEntity(
                 $this->Provider->getProviderId(),
                 $this->Entity,

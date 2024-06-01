@@ -14,5 +14,5 @@ final class SyncEntityState extends AbstractEnumeration
     /**
      * The entity is being serialized
      */
-    public const SERIALIZING = 1;
+    public const SERIALIZING = 2;
 }

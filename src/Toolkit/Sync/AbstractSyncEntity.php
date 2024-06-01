@@ -184,12 +184,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     protected static function getRemovablePrefixes(): ?array
     {
         $current = new ReflectionClass(static::class);
-        while ($current->isSubclassOf(self::class)) {
+        do {
             $prefixes[] = Get::basename($current->getName());
             $current = $current->getParentClass();
-        }
+        } while ($current && $current->isSubclassOf(self::class));
 
-        return self::expandPrefixes($prefixes ?? []);
+        return self::expandPrefixes($prefixes);
     }
 
     // --
@@ -684,7 +684,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         if ($providerOrContext instanceof SyncProviderInterface) {
             $provider = $providerOrContext;
-            $context = $provider->getContainer();
+            $context = $provider->getContext();
         } else {
             $context = $providerOrContext;
             $provider = $context->getProvider();
@@ -705,7 +705,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                     null,
                     true,
                 )
-                ->getByName($nameOrId, $uncertainty);
+                ->getByName((string) $nameOrId, $uncertainty);
 
         if ($entity) {
             return $entity->Id;

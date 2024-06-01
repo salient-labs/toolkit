@@ -587,7 +587,7 @@ interface CurlerInterface extends ClientInterface
      *
      * @param int<0,max>|null $seconds - `0`: wait indefinitely
      * - `null` (default): use the underlying client's default connection
-     *   timeout.
+     *   timeout
      * @return static
      */
     public function withTimeout(?int $seconds);

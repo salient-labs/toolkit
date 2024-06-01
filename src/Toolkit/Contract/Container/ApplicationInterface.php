@@ -93,6 +93,7 @@ interface ApplicationInterface extends ContainerInterface
 
     /**
      * Start a SQLite-backed cache store in the application's cache directory
+     * and make it the Cache facade's underlying instance
      *
      * @see CacheStore
      *
