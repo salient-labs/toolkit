@@ -584,7 +584,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             return;
         }
 
-        if (!($node instanceof AbstractSyncEntity)) {
+        if (!$node instanceof AbstractSyncEntity) {
             throw new UnexpectedValueException('Cannot replace (not an AbstractSyncEntity): ' . implode('.', $path));
         }
 

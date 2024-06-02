@@ -52,7 +52,7 @@ final class Date extends AbstractUtility
      */
     public static function duration($interval): int
     {
-        if (!($interval instanceof DateInterval)) {
+        if (!$interval instanceof DateInterval) {
             if (
                 \PHP_VERSION_ID < 80000
                 && Pcre::match('/W.+D/', $interval)

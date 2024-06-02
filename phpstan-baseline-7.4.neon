@@ -436,16 +436,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Pcre.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Reflect\\:\\:getFirstCallbackParameterClassNames\\(\\) should return array\\<class\\-string\\> but returns array\\<int\\<0, max\\>, string\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Reflect.php
-
-		-
-			message: "#^Parameter \\#1 of callable callable\\(class\\-string\\)\\: \\(string\\|null\\) expects class\\-string, string given\\.$#"
-			count: 2
-			path: src/Toolkit/Core/Utility/Reflect.php
-
-		-
 			message: "#^Parameter \\#2 \\.\\.\\.\\$args of function array_merge expects array, array\\<int, string\\>\\|false given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Str.php

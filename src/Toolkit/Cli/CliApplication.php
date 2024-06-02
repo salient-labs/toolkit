@@ -119,7 +119,7 @@ class CliApplication extends Application implements CliApplicationInterface
             return null;
         }
 
-        if (!(($command = $this->get($node)) instanceof CliCommandInterface)) {
+        if (!($command = $this->get($node)) instanceof CliCommandInterface) {
             throw new LogicException(sprintf(
                 'Does not implement %s: %s',
                 CliCommandInterface::class,

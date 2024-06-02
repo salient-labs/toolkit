@@ -1,14 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Core\EventDispatcher;
 
 use Salient\Contract\Core\Nameable;
 use Salient\Core\Facade\Event;
 use Salient\Core\EventDispatcher;
-use Salient\Tests\Core\EventDispatcher\BaseEvent;
-use Salient\Tests\Core\EventDispatcher\LoggableEvent;
-use Salient\Tests\Core\EventDispatcher\MainEvent;
-use Salient\Tests\Core\EventDispatcher\NamedEvent;
 use Salient\Tests\TestCase;
 use LogicException;
 
@@ -25,6 +21,8 @@ final class EventDispatcherTest extends TestCase
         $logNamedEvent = [];
         $logWithName = [];
         $logLoggableEvent = [];
+        $logNamedLoggableEvent = [];
+        $logMultipleEvents = [];
 
         $logger =
             function (object $event, array &$log): void {
@@ -50,12 +48,17 @@ final class EventDispatcherTest extends TestCase
         }, ['onLoad', 'onSave']);
         $dispatcher->listen([$this, 'listenCallback']);
 
+        if (\PHP_VERSION_ID >= 80200) {
+            $dispatcher->listen(require __DIR__ . '/listenerWithDnfType.php');
+        }
+
         $dispatcher->dispatch(new BaseEvent());
         $dispatcher->dispatch(new MainEvent());
         $dispatcher->dispatch(new NamedEvent(__METHOD__));
         $dispatcher->dispatch(new NamedEvent('onLoad'));
         $dispatcher->dispatch(new NamedEvent('onLogout'));
         $dispatcher->dispatch(new LoggableEvent($logger, $logLoggableEvent));
+        $dispatcher->dispatch(new NamedLoggableEvent('onClose', $logger, $logNamedLoggableEvent));
 
         $this->assertSame([
             BaseEvent::class,
@@ -64,6 +67,7 @@ final class EventDispatcherTest extends TestCase
             ['onLoad' => NamedEvent::class],
             ['onLogout' => NamedEvent::class],
             LoggableEvent::class,
+            ['onClose' => NamedLoggableEvent::class],
         ], $logBaseEvent);
 
         $this->assertSame([
@@ -77,6 +81,19 @@ final class EventDispatcherTest extends TestCase
         $this->assertSame([
             LoggableEvent::class,
         ], $logLoggableEvent);
+
+        $this->assertSame([
+            ['onClose' => NamedLoggableEvent::class],
+        ], $logNamedLoggableEvent);
+
+        // Note the absence of the `LoggableEvent&Nameable` event
+        /** @var mixed $logMultipleEvents */
+        $this->assertSame(\PHP_VERSION_ID >= 80200 ? [
+            MainEvent::class,
+            [__METHOD__ => NamedEvent::class],
+            ['onLoad' => NamedEvent::class],
+            ['onLogout' => NamedEvent::class],
+        ] : [], $logMultipleEvents);
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('At least one event must be given');
@@ -103,9 +120,20 @@ final class EventDispatcherTest extends TestCase
     public function testListenerWithNoParameters(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('$callable has no parameters');
+        $this->expectExceptionMessage('$callback has no parameters');
         $dispatcher = new EventDispatcher();
         $dispatcher->listen(fn() => null);
+    }
+
+    /**
+     * @requires PHP >= 8.1
+     */
+    public function testListenerWithIntersectionParameter(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('At least one event must be given');
+        $dispatcher = new EventDispatcher();
+        $dispatcher->listen(require __DIR__ . '/listenerWithIntersectionType.php');
     }
 
     protected function tearDown(): void
@@ -113,5 +141,62 @@ final class EventDispatcherTest extends TestCase
         if (Event::isLoaded()) {
             Event::unload();
         }
+    }
+}
+
+class BaseEvent {}
+class MainEvent extends BaseEvent {}
+
+trait NamedEventTrait
+{
+    protected string $Name;
+
+    public function __construct(string $name)
+    {
+        $this->Name = $name;
+    }
+
+    public function name(): string
+    {
+        return $this->Name;
+    }
+}
+
+class NamedEvent extends BaseEvent implements Nameable
+{
+    use NamedEventTrait;
+}
+
+class LoggableEvent extends BaseEvent
+{
+    /** @var callable(self, array<string|array{string,string}>): void */
+    protected $Logger;
+    /** @var array<string|array{string,string}> */
+    protected array $Log;
+
+    /**
+     * @param callable(self, array<string|array{string,string}>): void $logger
+     * @param array<string|array{string,string}> $log
+     */
+    public function __construct(callable $logger, array &$log)
+    {
+        $this->Logger = $logger;
+        $this->Log = &$log;
+    }
+
+    public function log(): void
+    {
+        ($this->Logger)($this, $this->Log);
+    }
+}
+
+class NamedLoggableEvent extends LoggableEvent implements Nameable
+{
+    use NamedEventTrait;
+
+    public function __construct(string $name, callable $logger, array &$log)
+    {
+        $this->Name = $name;
+        parent::__construct($logger, $log);
     }
 }

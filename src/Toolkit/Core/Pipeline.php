@@ -442,7 +442,7 @@ final class Pipeline implements
                     ? $this->Container->get($pipe)
                     : App::get($pipe);
 
-                if (!($pipe instanceof PipeInterface)) {
+                if (!$pipe instanceof PipeInterface) {
                     throw new LogicException(sprintf(
                         '%s does not implement %s',
                         get_class($pipe),

@@ -23,7 +23,7 @@ final class RecursiveCallbackIteratorTest extends TestCase
         $iterator = new RecursiveCallbackIterator(
             $iterator,
             fn($value): bool =>
-                !($value instanceof DateTimeInterface)
+                !$value instanceof DateTimeInterface
         );
         $selfFirst = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
         $leavesOnly = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::LEAVES_ONLY);

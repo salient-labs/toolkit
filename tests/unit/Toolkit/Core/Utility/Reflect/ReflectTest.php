@@ -5,6 +5,7 @@ namespace Salient\Tests\Core\Utility\Reflect;
 use Salient\Core\Utility\Reflect;
 use Salient\Tests\TestCase;
 use Generator;
+use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionMethod;
@@ -18,7 +19,7 @@ final class ReflectTest extends TestCase
 {
     public function testGetNames(): void
     {
-        $expected = [
+        $this->assertSame([
             'Salient\Tests\Core\Utility\Reflect\MyClass',
             'Salient\Tests\Core\Utility\Reflect\MyInterface',
             'Salient\Tests\Core\Utility\Reflect\MyTrait',
@@ -26,9 +27,7 @@ final class ReflectTest extends TestCase
             'MyDocumentedMethod',
             'parent',
             'MyDocumentedProperty',
-        ];
-
-        $names = Reflect::getNames([
+        ], Reflect::getNames([
             new ReflectionClass(MyClass::class),
             new ReflectionClass(MyInterface::class),
             new ReflectionClass(MyTrait::class),
@@ -36,9 +35,7 @@ final class ReflectTest extends TestCase
             new ReflectionMethod(MyClass::class, 'MyDocumentedMethod'),
             new ReflectionParameter([MyClass::class, '__construct'], 'parent'),
             new ReflectionProperty(MyClass::class, 'MyDocumentedProperty'),
-        ]);
-
-        $this->assertSame($expected, $names);
+        ]));
     }
 
     public function testGetAllProperties(): void
@@ -58,102 +55,185 @@ final class ReflectTest extends TestCase
     }
 
     /**
+     * @dataProvider getFirstCallbackParameterClassNamesProvider
+     *
+     * @param array<class-string[]|class-string>|string $expected
+     */
+    public function testGetFirstCallbackParameterClassNames($expected, callable $callback): void
+    {
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Reflect::getFirstCallbackParameterClassNames($callback));
+    }
+
+    /**
+     * @return Generator<array{array<class-string[]|class-string>|string,callable}>
+     */
+    public static function getFirstCallbackParameterClassNamesProvider(): Generator
+    {
+        yield from [
+            [
+                InvalidArgumentException::class . ',$callback has no parameters',
+                fn() => null,
+            ],
+            [
+                [],
+                fn($mixed) => null,
+            ],
+            [
+                [],
+                fn(?int $nullableInt) => null,
+            ],
+            [
+                [],
+                fn(string $string) => null,
+            ],
+            [
+                [MyBaseClass::class],
+                fn(MyBaseClass $class) => null,
+            ],
+            [
+                [MyClass::class],
+                fn(?MyClass $nullableClass) => null,
+            ],
+            [
+                [MyClass::class],
+                fn(?MyClass &$nullableClassByRef) => null,
+            ],
+            [
+                [MyClass::class],
+                fn(?MyClass $nullableAndOptionalClass = null) => null,
+            ],
+            [
+                [ReflectionClass::class],
+                [Reflect::class, 'getBaseClass'],
+            ],
+        ];
+
+        if (\PHP_VERSION_ID >= 80100) {
+            yield from require __DIR__ . '/callbacksWithUnionsAndIntersections.php';
+        }
+
+        if (\PHP_VERSION_ID >= 80200) {
+            yield from require __DIR__ . '/callbacksWithDnfTypes.php';
+        }
+    }
+
+    /**
      * @dataProvider getAllTypesProvider
      *
-     * @param array<string[]> $expected
+     * @param array<array<string[]|string>> $normalisedExpected
+     * @param array<string[]> $allTypesExpected
      */
-    public function testGetAllTypes(array $expected, string $class, string $method): void
-    {
+    public function testGetAllTypes(
+        array $normalisedExpected,
+        array $allTypesExpected,
+        string $class,
+        string $method
+    ): void {
         $method = new ReflectionMethod($class, $method);
+        $normalised = [];
         $allTypes = [];
+        $allTypeNames = [];
         foreach ($method->getParameters() as $param) {
             $types = [];
-            foreach (Reflect::getAllTypes($param->getType()) as $type) {
+            foreach (Reflect::normaliseType($param->getType()) as $type) {
+                if (is_array($type)) {
+                    $types[] = Reflect::getNames($type);
+                    continue;
+                }
                 $types[] = $type->getName();
             }
-            $allTypes[] = $types;
+            $normalised[] = $types;
+            $allTypes[] = Reflect::getNames(Reflect::getAllTypes($param->getType()));
+            $allTypeNames[] = Reflect::getAllTypeNames($param->getType());
         }
-        $this->assertSame($expected, $allTypes);
+
+        $this->assertSame($normalisedExpected, $normalised);
+        $this->assertSame($allTypesExpected, $allTypes);
+        $this->assertSame($allTypesExpected, $allTypeNames);
     }
 
     /**
-     * @dataProvider getAllTypesProvider
-     *
-     * @param array<string[]> $expected
-     */
-    public function testGetAllTypeNames(array $expected, string $class, string $method): void
-    {
-        $method = new ReflectionMethod($class, $method);
-        $allTypes = [];
-        foreach ($method->getParameters() as $param) {
-            $allTypes[] = Reflect::getAllTypeNames($param->getType());
-        }
-        $this->assertSame($expected, $allTypes);
-    }
-
-    /**
-     * @return Generator<string,array{array<string[]>,string,string}>
+     * @return Generator<string,array{array<array<string[]|string>>,array<string[]>,string,string}>
      */
     public static function getAllTypesProvider(): Generator
     {
+        $types = [
+            [],
+            ['int'],
+            ['string'],
+            ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+            ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+        ];
+
         yield 'MyClass::__construct()' => [
-            [
-                [],
-                ['int'],
-                ['string'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-            ],
+            $types,
+            $types,
             MyClass::class,
             '__construct',
         ];
 
         if (\PHP_VERSION_ID >= 80100) {
+            $allTypes = [
+                [],
+                ['int'],
+                ['string'],
+                ['Countable', 'ArrayAccess'],
+                ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['string'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'array'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
+                ['string'],
+            ];
+            $types = $allTypes;
+            $types[3] = [['Countable', 'ArrayAccess']];
+
             yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
-                [
-                    [],
-                    ['int'],
-                    ['string'],
-                    ['Countable', 'ArrayAccess'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                    ['string'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'array'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
-                    ['string'],
-                ],
+                $types,
+                $allTypes,
                 MyClassWithUnionsAndIntersections::class,
                 'MyMethod',
             ];
         }
 
         if (\PHP_VERSION_ID >= 80200) {
+            $allTypes = [
+                [],
+                ['int'],
+                ['string'],
+                ['Countable', 'ArrayAccess'],
+                ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['string'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'array'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'array'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'null'],
+                ['string'],
+            ];
+            $types = $allTypes;
+            $types[3] = [['Countable', 'ArrayAccess']];
+            $types[13] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string'];
+            $types[14] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
+            $types[15] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'array'];
+            $types[16] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
+            $types[17] = [['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable'], ['Salient\Tests\Core\Utility\Reflect\MyClass', 'ArrayAccess'], 'null'];
+
             yield 'MyClassWithDnfTypes::MyMethod()' => [
-                [
-                    [],
-                    ['int'],
-                    ['string'],
-                    ['Countable', 'ArrayAccess'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                    ['string'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'array'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'array'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
-                    ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'null'],
-                    ['string'],
-                ],
+                $types,
+                $allTypes,
                 MyClassWithDnfTypes::class,
                 'MyMethod',
             ];

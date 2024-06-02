@@ -202,7 +202,7 @@ class GenerateTests extends AbstractGenerateCommand
                 $code = '$this->assertTrue(true);';
             }
 
-            $this->addMethod($testMethod, $code, $_parameters, 'void', "@dataProvider $providerMethod", false);
+            $this->addMethod($testMethod, $code, $_parameters, 'void', "@dataProvider $providerMethod");
             $this->addMethod($providerMethod, 'return [];', [], 'array', '', true);
         }
 
