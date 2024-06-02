@@ -17,6 +17,10 @@ if (\PHP_VERSION_ID < 80000) {
                 'analyseAndScan' => [
                     'tests/fixtures/Toolkit/Core/Utility/Reflect/MyClassWithDnfTypes.php',
                     'tests/fixtures/Toolkit/Core/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
+                    'tests/unit/Toolkit/Core/EventDispatcher/listenerWithDnfType.php',
+                    'tests/unit/Toolkit/Core/EventDispatcher/listenerWithIntersectionType.php',
+                    'tests/unit/Toolkit/Core/Utility/Reflect/callbacksWithDnfTypes.php',
+                    'tests/unit/Toolkit/Core/Utility/Reflect/callbacksWithUnionsAndIntersections.php',
                 ],
             ],
             'ignoreErrors' => [

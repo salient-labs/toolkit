@@ -3,9 +3,9 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Regex;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\AbstractUtility;
 use Closure;
+use InvalidArgumentException;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionClassConstant;
@@ -46,40 +46,43 @@ final class Reflect extends AbstractUtility
     /**
      * Get a list of classes accepted by the first parameter of a callback
      *
-     * @return class-string[]
-     * @throws LogicException if `$callback` resolves to a closure with no
-     * parameters.
+     * @return array<class-string[]|class-string>
+     * @throws InvalidArgumentException if the callback has no parameters.
      */
     public static function getFirstCallbackParameterClassNames(callable $callback): array
     {
         if (!$callback instanceof Closure) {
             $callback = Closure::fromCallable($callback);
         }
+
         $param = Arr::first((new ReflectionFunction($callback))->getParameters());
         if (!$param) {
-            throw new LogicException('$callable has no parameters');
+            throw new InvalidArgumentException('$callback has no parameters');
         }
-        foreach (self::getAllTypes($param->getType()) as $type) {
-            if ($type->isBuiltin()) {
-                continue;
+
+        foreach (self::normaliseType($param->getType()) as $type) {
+            $intersection = [];
+            foreach (Arr::wrap($type) as $type) {
+                if ($type->isBuiltin()) {
+                    continue 2;
+                }
+                $intersection[] = $type->getName();
             }
-            $classes[] = $type->getName();
+            $union[] = Arr::unwrap($intersection);
         }
-        return $classes ?? [];
+
+        /** @var array<class-string[]|class-string> */
+        return $union ?? [];
     }
 
     /**
-     * Follow ReflectionClass->getParentClass() until an ancestor with no parent
-     * is found
+     * Follow parents of a class to the root class
      *
      * @param ReflectionClass<object> $class
      * @return ReflectionClass<object>
      */
     public static function getBaseClass(ReflectionClass $class): ReflectionClass
     {
-        if (!$class instanceof ReflectionClass) {
-            $class = new ReflectionClass($class);
-        }
         while ($parent = $class->getParentClass()) {
             $class = $parent;
         }
@@ -87,8 +90,8 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get the prototype of a method and return its declaring class, or return
-     * the method's declaring class if it doesn't have a prototype
+     * Get the declaring class of a method's prototype, falling back to the
+     * method's declaring class if it has no prototype
      *
      * @return ReflectionClass<object>
      */
@@ -124,10 +127,11 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get the simple types in a ReflectionType
+     * Resolve a ReflectionType to an array of ReflectionNamedType
      *
-     * {@see ReflectionParameter::getType()} and
-     * {@see ReflectionProperty::getType()} can return any of the following:
+     * PHP reflection methods like {@see ReflectionParameter::getType()} and
+     * {@see ReflectionFunctionAbstract::getReturnType()} can return any of the
+     * following:
      *
      * - {@see ReflectionType} (until PHP 8)
      * - {@see ReflectionNamedType}
@@ -135,8 +139,28 @@ final class Reflect extends AbstractUtility
      *   8+) and {@see ReflectionIntersectionType} (PHP 8.2+)
      * - {@see ReflectionIntersectionType} comprised of
      *   {@see ReflectionNamedType} (PHP 8.1+)
+     * - `null`
      *
-     * This method normalises them to an array of {@see ReflectionNamedType}.
+     * This method normalises these to an array that represents an equivalent
+     * union type, where each element is either:
+     *
+     * - a {@see ReflectionNamedType} instance, or
+     * - a list of {@see ReflectionNamedType} instances that represent an
+     *   intersection type.
+     *
+     * @return array<ReflectionNamedType[]|ReflectionNamedType>
+     */
+    public static function normaliseType(?ReflectionType $type): array
+    {
+        if ($type === null) {
+            return [];
+        }
+
+        return self::doNormaliseType($type);
+    }
+
+    /**
+     * Get the types in a ReflectionType
      *
      * @return ReflectionNamedType[]
      */
@@ -146,7 +170,8 @@ final class Reflect extends AbstractUtility
             return [];
         }
 
-        foreach (self::doGetAllTypes($type) as $type) {
+        foreach (Arr::flatten(self::doNormaliseType($type)) as $type) {
+            /** @var ReflectionNamedType $type */
             $name = $type->getName();
             if (isset($seen[$name])) {
                 continue;
@@ -159,11 +184,9 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get the names of the simple types in a ReflectionType
+     * Get the name of each type in a ReflectionType
      *
      * @return string[]
-     *
-     * @see Reflect::getAllTypes()
      */
     public static function getAllTypeNames(?ReflectionType $type): array
     {
@@ -171,7 +194,8 @@ final class Reflect extends AbstractUtility
             return [];
         }
 
-        foreach (self::doGetAllTypes($type) as $type) {
+        foreach (Arr::flatten(self::doNormaliseType($type)) as $type) {
+            /** @var ReflectionNamedType $type */
             $name = $type->getName();
             if (isset($seen[$name])) {
                 continue;
@@ -416,10 +440,13 @@ final class Reflect extends AbstractUtility
                 continue;
             }
             $name = $type->getName();
-            $alias =
-                $typeNameCallback === null || $type->isBuiltin()
-                    ? null
-                    : $typeNameCallback($name);
+            if ($typeNameCallback !== null && !$type->isBuiltin()) {
+                /** @var class-string $name */
+                $alias = $typeNameCallback($name);
+            } else {
+                $alias = null;
+            }
+
             $parts[] =
                 ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
                 . ($alias === null && !$type->isBuiltin() ? $classPrefix : '')
@@ -487,8 +514,10 @@ final class Reflect extends AbstractUtility
         if ($typeNameCallback) {
             $_const = Pcre::replaceCallback(
                 '/^' . Regex::PHP_TYPE . '(?=::)/',
-                fn(array $matches): string =>
-                    $typeNameCallback($matches[0]) ?? $matches[0],
+                function (array $matches) use ($typeNameCallback): string {
+                    /** @var array{class-string} $matches */
+                    return $typeNameCallback($matches[0]) ?? $matches[0];
+                },
                 $const
             );
             if ($_const !== $const) {
@@ -587,30 +616,29 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * @return ReflectionNamedType[]
+     * @return array<ReflectionNamedType[]|ReflectionNamedType>
      */
-    private static function doGetAllTypes(ReflectionType $type): array
+    private static function doNormaliseType(ReflectionType $type): array
     {
         if ($type instanceof ReflectionUnionType) {
-            $types = [];
             foreach ($type->getTypes() as $type) {
                 if ($type instanceof ReflectionIntersectionType) {
-                    array_push($types, ...$type->getTypes());
+                    $types[] = $type->getTypes();
                     continue;
                 }
                 $types[] = $type;
             }
-            /** @var ReflectionNamedType[] $types */
-            return $types;
+            /** @var array<ReflectionNamedType[]|ReflectionNamedType> */
+            return $types ?? [];
         }
 
         if ($type instanceof ReflectionIntersectionType) {
-            $types = $type->getTypes();
-            /** @var ReflectionNamedType[] $types */
+            $types = [$type->getTypes()];
+            /** @var array<ReflectionNamedType[]> */
             return $types;
         }
 
-        /** @var ReflectionNamedType $type */
+        /** @var array<ReflectionNamedType> */
         return [$type];
     }
 

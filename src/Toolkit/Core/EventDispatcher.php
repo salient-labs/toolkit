@@ -66,7 +66,12 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
         $this->assertIsListenerProvider();
 
         if ($event === null) {
-            $event = Reflect::getFirstCallbackParameterClassNames($listener);
+            $event = [];
+            foreach (Reflect::getFirstCallbackParameterClassNames($listener) as $name) {
+                if (is_string($name)) {
+                    $event[] = $name;
+                }
+            }
         }
 
         if ($event === []) {
