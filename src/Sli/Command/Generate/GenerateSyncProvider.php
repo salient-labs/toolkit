@@ -209,7 +209,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
                     $phpDoc[] = "@return $returnDoc";
                 }
 
-                $this->addMethod($opMethod[$op], null, $paramCode, $returnCode, $phpDoc);
+                $this->addMethod($opMethod[$op], null, $paramCode, $returnCode, $phpDoc, true);
             } else {
                 $methods[] = sprintf(
                     '@method %s %s(%s)',

@@ -322,7 +322,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $class = $this->InputClass;
         do {
             $file = $class->getFileName();
-            if ($file) {
+            if ($file !== false) {
                 $this->InputFiles[$class->getName()] = $file;
                 $files[$file] = true;
             }
@@ -415,8 +415,13 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      * @param array<string,TemplateTag> $inputClassTemplates
      * @param-out array<string,TemplateTag> $inputClassTemplates
      */
-    protected function getPHPDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
-    {
+    protected function getPHPDocTypeAlias(
+        $type,
+        array $templates,
+        string $namespace,
+        ?string $filename = null,
+        array &$inputClassTemplates = []
+    ): string {
         $subject = $type instanceof AbstractTag
             ? $type->getType() ?? ''
             : $type;
@@ -489,6 +494,13 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     /**
      * Convert a built-in or user-defined type to a code-safe identifier, using
      * the same alias as the declaring class if possible
+     *
+     * Use this method to prepare an arbitrary type for inclusion in a method
+     * declaration or PHPDoc tag. If a type is known to be a FQCN, bypass
+     * {@see AbstractGenerateCommand::getTypeAlias()} and call
+     * {@see AbstractGenerateCommand::getFqcnAlias()} directly instead. Types
+     * that originate from a PHPDoc should be passed to
+     * {@see AbstractGenerateCommand::getPhpDocTypeAlias()}.
      *
      * @template TReturnFqcn of bool
      *
@@ -840,7 +852,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         array $params = [],
         $returnType = null,
         $phpDoc = '',
-        bool $static = true,
+        bool $static = false,
         string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
     ): void {
         $this->Methods[$visibility][] =
