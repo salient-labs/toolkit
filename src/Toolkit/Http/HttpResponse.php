@@ -114,7 +114,7 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
             return $message;
         }
 
-        if (!($message instanceof ResponseInterface)) {
+        if (!$message instanceof ResponseInterface) {
             throw new InvalidArgumentTypeException(1, 'message', ResponseInterface::class, $message);
         }
 

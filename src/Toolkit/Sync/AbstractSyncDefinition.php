@@ -561,7 +561,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      */
     private function getFluentIterator(iterable $result): FluentIteratorInterface
     {
-        if (!($result instanceof FluentIteratorInterface)) {
+        if (!$result instanceof FluentIteratorInterface) {
             return new IterableIterator($result);
         }
 

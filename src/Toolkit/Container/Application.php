@@ -583,7 +583,7 @@ class Application extends Container implements ApplicationInterface
 
         $store = Sync::getInstance();
         if (
-            !($store instanceof SyncStore)
+            !$store instanceof SyncStore
             || !File::same($this->getSyncDb(false), $store->getFilename())
         ) {
             return $this;

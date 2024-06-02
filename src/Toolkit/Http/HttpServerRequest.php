@@ -62,7 +62,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
             return $message;
         }
 
-        if (!($message instanceof ServerRequestInterface)) {
+        if (!$message instanceof ServerRequestInterface) {
             throw new InvalidArgumentTypeException(1, 'message', ServerRequestInterface::class, $message);
         }
 

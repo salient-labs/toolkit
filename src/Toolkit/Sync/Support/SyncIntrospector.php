@@ -321,7 +321,7 @@ final class SyncIntrospector extends Introspector
      */
     public function getDeclaredSyncOperationClosure($operation, $entity, SyncProviderInterface $provider): ?Closure
     {
-        if (!($entity instanceof SyncIntrospector)) {
+        if (!$entity instanceof SyncIntrospector) {
             $entity = static::get($entity);
         }
 
@@ -740,9 +740,9 @@ final class SyncIntrospector extends Introspector
                 if (
                     $data[$key] === null
                     || (Arr::isList($data[$key]) xor $isList)
-                    || !($entity instanceof SyncEntityInterface)
-                    || !($provider instanceof SyncProviderInterface)
-                    || !($context instanceof SyncContextInterface)
+                    || !$entity instanceof SyncEntityInterface
+                    || !$provider instanceof SyncProviderInterface
+                    || !$context instanceof SyncContextInterface
                 ) {
                     $entity->{$property} = $data[$key];
                     return;
@@ -875,8 +875,8 @@ final class SyncIntrospector extends Introspector
                 $entityProvider
             ): void {
                 if (
-                    !($context instanceof SyncContextInterface)
-                    || !($provider instanceof SyncProviderInterface)
+                    !$context instanceof SyncContextInterface
+                    || !$provider instanceof SyncProviderInterface
                     || !is_a($provider, $entityProvider)
                     || $data[$idKey] === null
                 ) {

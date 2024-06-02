@@ -228,7 +228,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
                 ));
         }
 
-        if (!($result instanceof FluentIteratorInterface)) {
+        if (!$result instanceof FluentIteratorInterface) {
             return new IterableIterator($result);
         }
 

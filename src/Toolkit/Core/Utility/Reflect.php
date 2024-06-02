@@ -52,7 +52,7 @@ final class Reflect extends AbstractUtility
      */
     public static function getFirstCallbackParameterClassNames(callable $callback): array
     {
-        if (!($callback instanceof Closure)) {
+        if (!$callback instanceof Closure) {
             $callback = Closure::fromCallable($callback);
         }
         $param = Arr::first((new ReflectionFunction($callback))->getParameters());
@@ -77,7 +77,7 @@ final class Reflect extends AbstractUtility
      */
     public static function getBaseClass(ReflectionClass $class): ReflectionClass
     {
-        if (!($class instanceof ReflectionClass)) {
+        if (!$class instanceof ReflectionClass) {
             $class = new ReflectionClass($class);
         }
         while ($parent = $class->getParentClass()) {
@@ -390,7 +390,7 @@ final class Reflect extends AbstractUtility
         if ($type instanceof ReflectionUnionType) {
             $types = [];
             foreach ($type->getTypes() as $type) {
-                if (!($type instanceof ReflectionIntersectionType)) {
+                if (!$type instanceof ReflectionIntersectionType) {
                     $types[] = $type;
                     continue;
                 }

@@ -343,7 +343,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             && (!$this->State->StdoutTarget || !$this->State->StderrTarget)
         ) {
             foreach (array_reverse($this->State->Targets) as $target) {
-                if (!($target instanceof TargetStream)) {
+                if (!$target instanceof TargetStream) {
                     continue;
                 }
                 if (!$this->State->StdoutTarget && $target->isStdout()) {
@@ -407,7 +407,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
         }
 
         foreach ($this->State->Targets as $targetId => $target) {
-            if (!($target instanceof TargetPrefix) || (
+            if (!$target instanceof TargetPrefix || (
                 $flags
                 && !($this->State->TargetTypeFlags[$targetId] & $flags xor $invertFlags)
             )) {
@@ -462,7 +462,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             ?? [];
 
         $target = reset($targets);
-        if (!$target || !($target instanceof TargetStream)) {
+        if (!$target || !$target instanceof TargetStream) {
             $target = $this->getStderrTarget();
             if (!$target->isTty()) {
                 return $this->getStdoutTarget();

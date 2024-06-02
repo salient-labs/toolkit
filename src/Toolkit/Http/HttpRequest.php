@@ -67,7 +67,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
             return $message;
         }
 
-        if (!($message instanceof RequestInterface)) {
+        if (!$message instanceof RequestInterface) {
             throw new InvalidArgumentTypeException(1, 'message', RequestInterface::class, $message);
         }
 

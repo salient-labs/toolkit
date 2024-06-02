@@ -700,7 +700,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
 
         $entity = $args[0] ?? null;
 
-        if (!($entity instanceof SyncEntityInterface)) {
+        if (!$entity instanceof SyncEntityInterface) {
             return null;
         }
 
