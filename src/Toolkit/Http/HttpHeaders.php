@@ -514,6 +514,20 @@ REGEX;
     /**
      * @template T of string[]|string|array{string,string[]}
      *
+     * @param callable(T, T|null $next, T|null $prev): string[] $callback
+     */
+    public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
+    {
+        throw new MethodNotImplementedException(
+            static::class,
+            __FUNCTION__,
+            CollectionInterface::class,
+        );
+    }
+
+    /**
+     * @template T of string[]|string|array{string,string[]}
+     *
      * @param callable(T, T|null $next, T|null $prev): bool $callback
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)

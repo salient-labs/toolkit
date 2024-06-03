@@ -10,6 +10,7 @@ use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Json;
 use ArrayIterator;
 use JsonSerializable;
+use OutOfRangeException;
 use ReturnTypeWillChange;
 use Traversable;
 
@@ -52,6 +53,25 @@ trait ReadableCollectionTrait
     public function copy()
     {
         return clone $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function has($key): bool
+    {
+        return array_key_exists($key, $this->Items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function get($key)
+    {
+        if (!array_key_exists($key, $this->Items)) {
+            throw new OutOfRangeException(sprintf('Item not found: %s', $key));
+        }
+        return $this->Items[$key];
     }
 
     /**
@@ -125,7 +145,7 @@ trait ReadableCollectionTrait
     /**
      * @inheritDoc
      */
-    public function has($value, bool $strict = false): bool
+    public function hasValue($value, bool $strict = false): bool
     {
         if ($strict) {
             return in_array($value, $this->Items, true);
@@ -164,7 +184,7 @@ trait ReadableCollectionTrait
     /**
      * @inheritDoc
      */
-    public function get($value)
+    public function firstOf($value)
     {
         foreach ($this->Items as $item) {
             if (!$this->compareItems($value, $item)) {
@@ -312,10 +332,6 @@ trait ReadableCollectionTrait
      */
     protected function getItems($items): array
     {
-        if ($items instanceof static) {
-            return $items->Items;
-        }
-
         if ($items instanceof self) {
             $items = $items->Items;
         } elseif ($items instanceof Arrayable) {

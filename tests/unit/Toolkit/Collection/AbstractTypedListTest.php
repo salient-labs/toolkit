@@ -113,13 +113,13 @@ final class AbstractTypedListTest extends TestCase
 
         $e3 = new MyClass('charlie');
         $e4 = new MyClass('echo');
-        $this->assertTrue($list->has($e3));
-        $this->assertFalse($list->has($e3, true));
+        $this->assertTrue($list->hasValue($e3));
+        $this->assertFalse($list->hasValue($e3, true));
         $this->assertSame(1, $list->keyOf($e3));
         $this->assertNull($list->keyOf($e3, true));
         $this->assertSame(1, $list->keyOf($e1, true));
-        $this->assertSame($e1, $list->get($e3));
-        $this->assertNull($list->get($e4));
+        $this->assertSame($e1, $list->firstOf($e3));
+        $this->assertNull($list->firstOf($e4));
 
         $list->set(2, $e4);
         $this->assertSame([0 => $e0, 1 => $e1, 2 => $e4], $list->all());
@@ -180,11 +180,11 @@ final class AbstractTypedListTest extends TestCase
         $this->assertSame($list, $l);
 
         $e0 = new MyClass('foo');
-        $this->assertFalse($list->has($e0));
-        $this->assertFalse($list->has($e0, true));
+        $this->assertFalse($list->hasValue($e0));
+        $this->assertFalse($list->hasValue($e0, true));
         $this->assertNull($list->keyOf($e0));
         $this->assertNull($list->keyOf($e0, true));
-        $this->assertNull($list->get($e0));
+        $this->assertNull($list->firstOf($e0));
         $this->assertSame([], $list->all());
         $this->assertSame([], $list->toArray());
         $this->assertNull($list->first());

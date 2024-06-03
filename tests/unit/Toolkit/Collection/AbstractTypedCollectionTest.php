@@ -111,13 +111,13 @@ final class AbstractTypedCollectionTest extends TestCase
 
         $e3 = new MyClass('charlie');
         $e4 = new MyClass('echo');
-        $this->assertTrue($collection->has($e3));
-        $this->assertFalse($collection->has($e3, true));
+        $this->assertTrue($collection->hasValue($e3));
+        $this->assertFalse($collection->hasValue($e3, true));
         $this->assertSame(2, $collection->keyOf($e3));
         $this->assertNull($collection->keyOf($e3, true));
         $this->assertSame(2, $collection->keyOf($e2, true));
-        $this->assertSame($e2, $collection->get($e3));
-        $this->assertNull($collection->get($e4));
+        $this->assertSame($e2, $collection->firstOf($e3));
+        $this->assertNull($collection->firstOf($e4));
 
         $collection->set('n', $e4);
         $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e4], $collection->all());
@@ -178,11 +178,11 @@ final class AbstractTypedCollectionTest extends TestCase
         $this->assertSame($collection, $coll);
 
         $e0 = new MyClass('foo');
-        $this->assertFalse($collection->has($e0));
-        $this->assertFalse($collection->has($e0, true));
+        $this->assertFalse($collection->hasValue($e0));
+        $this->assertFalse($collection->hasValue($e0, true));
         $this->assertNull($collection->keyOf($e0));
         $this->assertNull($collection->keyOf($e0, true));
-        $this->assertNull($collection->get($e0));
+        $this->assertNull($collection->firstOf($e0));
         $this->assertSame([], $collection->all());
         $this->assertSame([], $collection->toArray());
         $this->assertNull($collection->first());
