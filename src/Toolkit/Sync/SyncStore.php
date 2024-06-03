@@ -2,7 +2,6 @@
 
 namespace Salient\Sync;
 
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\HydrationPolicy;
@@ -19,7 +18,6 @@ use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
@@ -1106,7 +1104,7 @@ SQL;
         }
 
         $seen = $deduplicate
-            ? $this->Errors->get($error)
+            ? $this->Errors->firstOf($error)
             : false;
 
         if ($seen) {
@@ -1139,46 +1137,6 @@ SQL;
     public function getErrors(): SyncErrorCollection
     {
         return clone $this->Errors;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function reportErrors(string $successText = 'No sync errors recorded')
-    {
-        if (!$this->ErrorCount && !$this->WarningCount) {
-            Console::info($successText);
-            return $this;
-        }
-
-        $level = $this->ErrorCount
-            ? Level::ERROR
-            : Level::WARNING;
-
-        // Print a message with level ERROR or WARNING as appropriate without
-        // Console recording an additional error or warning
-        Console::message(
-            $level,
-            Inflect::format(
-                $this->ErrorCount,
-                '{{#}} sync {{#:error}}%s recorded:',
-                $this->WarningCount
-                    ? Inflect::format($this->WarningCount, ' and {{#}} {{#:warning}}')
-                    : ''
-            ),
-            null,
-            MessageType::STANDARD,
-            null,
-            false,
-        );
-
-        Console::print(
-            $this->Errors->toString(true),
-            $level,
-            MessageType::UNFORMATTED,
-        );
-
-        return $this;
     }
 
     /**

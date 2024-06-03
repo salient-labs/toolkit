@@ -6,6 +6,7 @@ use Salient\Tests\Collection\TypedList\MyClass;
 use Salient\Tests\Collection\TypedList\MyList;
 use Salient\Tests\TestCase;
 use InvalidArgumentException;
+use OutOfRangeException;
 
 /**
  * @covers \Salient\Collection\AbstractTypedList
@@ -31,21 +32,23 @@ final class AbstractTypedListTest extends TestCase
         unset($list[2]);
         $this->assertFalse(isset($list[2]));
         $list[2] = $e2;
-        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e2], $list->all());
+        $this->assertSame([$e0, $e1, $e2], $list->all());
+        $this->assertTrue($list->has(2));
+        $this->assertSame($e2, $list->get(2));
         $sorted = $list->sort();
         $sorted2 = $sorted->sort();
         $this->assertNotSame($sorted, $list);
         $this->assertSame($sorted2, $sorted);
-        $this->assertSame([0 => $e2, 1 => $e1, 2 => $e0], $sorted->all());
+        $this->assertSame([$e2, $e1, $e0], $sorted->all());
         $reversed = $sorted->reverse();
         $this->assertNotSame($reversed, $sorted);
-        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e2], $reversed->all());
+        $this->assertSame([$e0, $e1, $e2], $reversed->all());
         $this->assertCount(3, $list);
 
         foreach ($list as $key => $value) {
             $arr[$key] = $value;
         }
-        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e2], $arr ?? null);
+        $this->assertSame([$e0, $e1, $e2], $arr ?? null);
 
         $arr = $arrNext = $arrPrev = [];
         $l = $list->forEach(
@@ -60,6 +63,16 @@ final class AbstractTypedListTest extends TestCase
         $this->assertSame([$e1, $e2, null], $arrNext);
         $this->assertSame([null, $e0, $e1], $arrPrev);
 
+        $l = $list->map(fn(MyClass $item) => $item);
+        $this->assertSame($list, $l);
+
+        $l = $list->map(fn(MyClass $item) => new MyClass($item->Name . '-2'));
+        $this->assertNotSame($list, $l);
+        $this->assertSame(
+            ['delta-2', 'charlie-2', 'november-2'],
+            array_map(fn(MyClass $item) => $item->Name, $l->all()),
+        );
+
         $arr = $arrNext = $arrPrev = [];
         $l = $list->filter(
             function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
@@ -70,7 +83,7 @@ final class AbstractTypedListTest extends TestCase
                 return (bool) $prev;
             }
         );
-        $this->assertSame([0 => $e1, 1 => $e2], $l->all());
+        $this->assertSame([$e1, $e2], $l->all());
         $this->assertSame([$e0, $e1, $e2], $arr);
         $this->assertSame([$e1, $e2, null], $arrNext);
         $this->assertSame([null, $e0, $e1], $arrPrev);
@@ -109,24 +122,24 @@ final class AbstractTypedListTest extends TestCase
         $this->assertNull($list->find(fn() => false));
 
         $slice = $list->slice(1, 1);
-        $this->assertSame([0 => $e1], $slice->toArray());
+        $this->assertSame([$e1], $slice->toArray());
 
         $e3 = new MyClass('charlie');
         $e4 = new MyClass('echo');
-        $this->assertTrue($list->has($e3));
-        $this->assertFalse($list->has($e3, true));
+        $this->assertTrue($list->hasValue($e3));
+        $this->assertFalse($list->hasValue($e3, true));
         $this->assertSame(1, $list->keyOf($e3));
         $this->assertNull($list->keyOf($e3, true));
         $this->assertSame(1, $list->keyOf($e1, true));
-        $this->assertSame($e1, $list->get($e3));
-        $this->assertNull($list->get($e4));
+        $this->assertSame($e1, $list->firstOf($e3));
+        $this->assertNull($list->firstOf($e4));
 
         $list->set(2, $e4);
-        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e4], $list->all());
+        $this->assertSame([$e0, $e1, $e4], $list->all());
         $list->unset(0);
-        $this->assertSame([0 => $e1, 1 => $e4], $list->all());
+        $this->assertSame([$e1, $e4], $list->all());
         $list->merge([13 => $e0, 7 => $e2, 11 => $e4]);
-        $this->assertSame([0 => $e1, 1 => $e4, 2 => $e0, 3 => $e2, 4 => $e4], $list->all());
+        $this->assertSame([$e1, $e4, $e0, $e2, $e4], $list->all());
     }
 
     public function testEmptyTypedList(): void
@@ -156,6 +169,9 @@ final class AbstractTypedListTest extends TestCase
         $this->assertSame($l, $list);
         $this->assertSame(0, $count);
 
+        $l = $list->map(fn(MyClass $item) => $item);
+        $this->assertSame($list, $l);
+
         $l = $list->filter(fn() => true);
         $this->assertSame($list, $l);
 
@@ -180,16 +196,21 @@ final class AbstractTypedListTest extends TestCase
         $this->assertSame($list, $l);
 
         $e0 = new MyClass('foo');
-        $this->assertFalse($list->has($e0));
-        $this->assertFalse($list->has($e0, true));
+        $this->assertFalse($list->hasValue($e0));
+        $this->assertFalse($list->hasValue($e0, true));
         $this->assertNull($list->keyOf($e0));
         $this->assertNull($list->keyOf($e0, true));
-        $this->assertNull($list->get($e0));
+        $this->assertNull($list->firstOf($e0));
         $this->assertSame([], $list->all());
         $this->assertSame([], $list->toArray());
         $this->assertNull($list->first());
         $this->assertNull($list->last());
         $this->assertNull($list->nth(1));
+        $this->assertFalse($list->has(0));
+
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Item not found: 0');
+        $list->get(0);
     }
 
     public function testInvalidKeyType(): void

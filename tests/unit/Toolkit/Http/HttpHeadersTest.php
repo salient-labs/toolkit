@@ -575,7 +575,7 @@ final class HttpHeadersTest extends TestCase
 
     public function testCompareItems(): void
     {
-        $this->assertTrue((new HttpHeaders(['foo' => 'bar']))->has(['bar']));
+        $this->assertTrue((new HttpHeaders(['foo' => 'bar']))->hasValue(['bar']));
     }
 
     /**

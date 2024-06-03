@@ -297,16 +297,4 @@ interface SyncStoreInterface
      * Get sync operation errors recorded so far
      */
     public function getErrors(): SyncErrorCollection;
-
-    /**
-     * Write a summary of sync operation errors recorded so far to the console
-     *
-     * Output is written to the console with level:
-     * - NOTICE if no errors have been recorded
-     * - ERROR if one or more recorded errors have level ERROR or higher
-     * - WARNING if all recorded errors have level WARNING or lower
-     *
-     * @return $this
-     */
-    public function reportErrors(string $successText = 'No sync errors recorded');
 }

@@ -83,6 +83,42 @@ trait CollectionTrait
 
     /**
      * @template T of TValue|TKey|array{TKey,TValue}
+     * @template TReturn
+     *
+     * @param callable(T, T|null $next, T|null $prev): TReturn $callback
+     */
+    public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
+    {
+        $items = [];
+        $prev = null;
+        $item = null;
+        $key = null;
+        $i = 0;
+
+        foreach ($this->Items as $nextKey => $nextValue) {
+            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
+            if ($i++) {
+                /** @var T $item */
+                /** @var T $next */
+                /** @var TKey $key */
+                $items[$key] = $callback($item, $next, $prev);
+                $prev = $item;
+            }
+            $item = $next;
+            $key = $nextKey;
+        }
+        if ($i) {
+            /** @var T $item */
+            /** @var TKey $key */
+            $items[$key] = $callback($item, null, $prev);
+        }
+
+        // @phpstan-ignore argument.type, return.type
+        return $this->maybeReplaceItems($items, true);
+    }
+
+    /**
+     * @template T of TValue|TKey|array{TKey,TValue}
      *
      * @param callable(T, T|null $next, T|null $prev): bool $callback
      * @return static A copy of the collection with items that satisfy `$callback`.
@@ -223,11 +259,13 @@ trait CollectionTrait
      */
     public function offsetSet($offset, $value): void
     {
+        $items = $this->Items;
         if ($offset === null) {
-            $this->Items[] = $value;
-            return;
+            $items[] = $value;
+        } else {
+            $items[$offset] = $value;
         }
-        $this->Items[$offset] = $value;
+        $this->replaceItems($items, false);
     }
 
     /**
@@ -235,7 +273,9 @@ trait CollectionTrait
      */
     public function offsetUnset($offset): void
     {
-        unset($this->Items[$offset]);
+        $items = $this->Items;
+        unset($items[$offset]);
+        $this->maybeReplaceItems($items, false);
     }
 
     // --
@@ -244,32 +284,40 @@ trait CollectionTrait
      * @param array<TKey,TValue> $items
      * @return static
      */
-    protected function maybeReplaceItems(array $items, bool $alwaysClone = false)
+    protected function maybeReplaceItems(array $items, ?bool $getClone = null)
     {
         if ($items === $this->Items) {
             return $this;
         }
-        return $this->replaceItems($items, $alwaysClone);
+        return $this->replaceItems($items, $getClone);
     }
 
     /**
      * @param array<TKey,TValue> $items
      * @return static
      */
-    protected function replaceItems(array $items, bool $alwaysClone = false)
+    protected function replaceItems(array $items, ?bool $getClone = null)
     {
-        $clone = $alwaysClone
-            ? clone $this
-            : $this->maybeClone();
+        $clone = $getClone === false
+            ? $this
+            : ($getClone
+                ? clone $this
+                : $this->maybeClone());
         $clone->Items = $items;
+        $clone->handleItemsReplaced();
         return $clone;
     }
 
     /**
-     * @return $this
+     * @return static
      */
     protected function maybeClone()
     {
         return $this;
     }
+
+    /**
+     * Called when items in the collection are replaced
+     */
+    protected function handleItemsReplaced(): void {}
 }

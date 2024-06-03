@@ -137,13 +137,13 @@ trait ListTrait
      * @param array<int,TValue> $items
      * @return static
      */
-    protected function replaceItems(array $items, bool $alwaysClone = false)
+    protected function replaceItems(array $items, ?bool $getClone = null)
     {
         $key = array_key_last($items);
         if ($key === null || $key === count($items) - 1) {
-            return $this->_replaceItems($items, $alwaysClone);
+            return $this->_replaceItems($items, $getClone);
         }
-        return $this->_replaceItems(array_values($items), $alwaysClone);
+        return $this->_replaceItems(array_values($items), $getClone);
     }
 
     /**

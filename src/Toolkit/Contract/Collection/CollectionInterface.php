@@ -8,6 +8,7 @@ use ArrayAccess;
 use Countable;
 use IteratorAggregate;
 use JsonSerializable;
+use OutOfRangeException;
 
 /**
  * An array-like collection of items
@@ -81,6 +82,22 @@ interface CollectionInterface extends
     public function set($key, $value);
 
     /**
+     * Check if an item with a given key exists
+     *
+     * @param TKey $key
+     */
+    public function has($key): bool;
+
+    /**
+     * Get the item with the given key
+     *
+     * @param TKey $key
+     * @return TValue
+     * @throws OutOfRangeException if there is no such item in the collection.
+     */
+    public function get($key);
+
+    /**
      * Remove an item with a given key
      *
      * @param TKey $key
@@ -111,7 +128,9 @@ interface CollectionInterface extends
     public function reverse();
 
     /**
-     * Apply a callback to items in the collection
+     * Pass each item in the collection to a callback
+     *
+     * The callback's return values are discarded.
      *
      * @template T of TValue|TKey|array{TKey,TValue}
      *
@@ -120,6 +139,19 @@ interface CollectionInterface extends
      * @return $this
      */
     public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
+
+    /**
+     * Pass each item in the collection to a callback and populate a new
+     * collection with its return values
+     *
+     * @template T of TValue|TKey|array{TKey,TValue}
+     * @template TReturn
+     *
+     * @param callable(T, T|null $next, T|null $prev): TReturn $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
+     * @return static<TKey,TReturn>
+     */
+    public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
 
     /**
      * Reduce the collection to items that satisfy a callback
@@ -184,11 +216,11 @@ interface CollectionInterface extends
     public function slice(int $offset, ?int $length = null);
 
     /**
-     * True if a value is in the collection
+     * Check if a value is in the collection
      *
      * @param TValue $value
      */
-    public function has($value, bool $strict = false): bool;
+    public function hasValue($value, bool $strict = false): bool;
 
     /**
      * Get the first key at which a value is found, or null if it's not in the
@@ -206,7 +238,7 @@ interface CollectionInterface extends
      * @param TValue $value
      * @return TValue|null
      */
-    public function get($value);
+    public function firstOf($value);
 
     /**
      * Get all items in the collection
