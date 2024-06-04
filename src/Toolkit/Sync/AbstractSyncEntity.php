@@ -451,8 +451,14 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * @param SerializeRulesInterface<self> $rules
      * @param array<int,true> $parents
      */
-    private function _serialize(&$node, array $path, SerializeRulesInterface $rules, ?SyncStoreInterface $store, array $parents = []): void
-    {
+    private function _serialize(
+        &$node,
+        array $path,
+        SerializeRulesInterface $rules,
+        ?SyncStoreInterface $store,
+        bool $nodeIsList = false,
+        array $parents = []
+    ): void {
         $maxDepth = $rules->getMaxDepth();
         if ($maxDepth !== null && count($path) > $maxDepth) {
             throw new UnexpectedValueException('In too deep: ' . implode('.', $path));
@@ -518,7 +524,9 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                 }
 
                 if ($closure) {
-                    $node[$key] = $closure($node[$key], $store);
+                    if ($node[$key] !== null) {
+                        $node[$key] = $closure($node[$key], $store);
+                    }
                     continue;
                 }
 
@@ -528,9 +536,15 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                 continue;
             }
 
+            if (!$nodeIsList) {
+                continue;
+            }
+
             if ($closure) {
                 foreach ($node as &$child) {
-                    $child = $closure($child, $store);
+                    if ($child !== null) {
+                        $child = $closure($child, $store);
+                    }
                 }
                 unset($child);
                 continue;
@@ -561,7 +575,14 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                 $_path = $path;
                 $_path[] = (string) $key;
             }
-            $this->_serialize($child, $_path ?? $path, $rules, $store, $parents);
+            $this->_serialize(
+                $child,
+                $_path ?? $path,
+                $rules,
+                $store,
+                $isList,
+                $parents,
+            );
         }
     }
 
