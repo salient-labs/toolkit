@@ -34,11 +34,11 @@ use Salient\Sync\SyncStore;
  * @method static string getRunUuid() Get the UUID of the current run in hexadecimal form
  * @method static SyncStoreInterface recordError(SyncError $error, bool $deduplicate = false) Register a non-fatal sync operation error with the entity store
  * @method static SyncStoreInterface registerEntity(class-string<SyncEntityInterface> $entity) Register a sync entity type with the entity store if it is not already registered (see {@see SyncStoreInterface::registerEntity()})
- * @method static SyncStoreInterface registerNamespace(string $prefix, string $uri, string $namespace, ?SyncClassResolverInterface $resolver = null) Register a namespace for sync entities and their provider interfaces (see {@see SyncStoreInterface::registerNamespace()})
+ * @method static SyncStoreInterface registerNamespace(string $prefix, string $uri, string $namespace, SyncClassResolverInterface|null $resolver = null) Register a namespace for sync entities and their provider interfaces (see {@see SyncStoreInterface::registerNamespace()})
  * @method static SyncStoreInterface registerProvider(SyncProviderInterface $provider) Register a sync provider with the entity store
- * @method static SyncEntityInterface[] resolveDeferrals(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, ?int $providerId = null) Resolve deferred entities and relationships recursively until no deferrals remain
- * @method static SyncEntityInterface[] resolveDeferredEntities(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, ?int $providerId = null) Resolve deferred entities
- * @method static SyncEntityInterface[][] resolveDeferredRelationships(?int $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, class-string<SyncEntityInterface>|null $forEntityType = null, ?string $forEntityProperty = null, ?int $providerId = null) Resolve deferred relationships
+ * @method static SyncEntityInterface[] resolveDeferrals(int|null $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, int|null $providerId = null) Resolve deferred entities and relationships recursively until no deferrals remain
+ * @method static SyncEntityInterface[] resolveDeferredEntities(int|null $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, int|null $providerId = null) Resolve deferred entities
+ * @method static SyncEntityInterface[][] resolveDeferredRelationships(int|null $fromCheckpoint = null, class-string<SyncEntityInterface>|null $entityType = null, class-string<SyncEntityInterface>|null $forEntityType = null, string|null $forEntityProperty = null, int|null $providerId = null) Resolve deferred relationships
  * @method static bool runHasStarted() Check if a run of sync operations has started
  * @method static SyncStoreInterface setEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, SyncEntityInterface $entity) Apply a sync entity retrieved from a provider to the entity store, resolving any matching deferred entities
  *

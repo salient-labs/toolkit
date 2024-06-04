@@ -120,7 +120,7 @@ final class EventDispatcherTest extends TestCase
     public function testListenerWithNoParameters(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('$callback has no parameters');
+        $this->expectExceptionMessage('$callback has no parameter at position 0');
         $dispatcher = new EventDispatcher();
         $dispatcher->listen(fn() => null);
     }

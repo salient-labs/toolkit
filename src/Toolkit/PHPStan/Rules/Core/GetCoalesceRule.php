@@ -7,6 +7,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use Salient\Core\Utility\Get;
@@ -16,6 +17,13 @@ use Salient\Core\Utility\Get;
  */
 class GetCoalesceRule implements Rule
 {
+    private ExprPrinter $Printer;
+
+    public function __construct(ExprPrinter $printer)
+    {
+        $this->Printer = $printer;
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -38,16 +46,24 @@ class GetCoalesceRule implements Rule
             // @codeCoverageIgnoreEnd
         }
 
+        $expr = [];
         foreach ($node->getArgs() as $arg) {
             if ($arg->unpack) {
                 return [];
             }
+            $expr[] = $arg->value;
+        }
+
+        if ($expr) {
+            $expr = array_map([$this->Printer, 'printExpr'], $expr);
+        } else {
+            $expr = ['null'];
         }
 
         return [
-            RuleErrorBuilder::message('Unnecessary use of Get::coalesce()')
+            RuleErrorBuilder::message('Unnecessary use of Get::coalesce().')
                 ->identifier('salient.needless.coalesce')
-                ->tip('Use variadic argument(s) or replace with ??')
+                ->tip(sprintf('Use a variadic argument or replace with: %s', implode(' ?? ', $expr)))
                 ->build(),
         ];
     }

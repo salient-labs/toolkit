@@ -22,6 +22,7 @@ class MyClassWithDnfTypes extends MyClass
      */
     public function MyMethod(
         $mixed,
+        null $null,
         ?int $nullableInt,
         string $string,
         Countable&ArrayAccess $intersection,

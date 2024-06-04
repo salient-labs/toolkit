@@ -24,7 +24,7 @@ class MethodNotImplementedException extends BadMethodCallException
     public function __construct(string $class, string $method, ?string $prototypeClass = null)
     {
         if ($prototypeClass === null) {
-            $prototypeClass = Reflect::getMethodPrototypeClass(
+            $prototypeClass = Reflect::getPrototypeClass(
                 new ReflectionMethod($class, $method)
             )->getName();
         }

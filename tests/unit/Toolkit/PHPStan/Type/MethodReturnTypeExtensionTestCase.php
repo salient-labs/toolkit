@@ -9,7 +9,8 @@ abstract class MethodReturnTypeExtensionTestCase extends TypeInferenceTestCase
 {
     public function testAssertions(): void
     {
-        foreach (self::gatherAssertTypes(TestCase::getFixturesPath(static::class) . 'Assertions.php') as $args) {
+        $_file = TestCase::getFixturesPath(static::class) . 'Assertions.php';
+        foreach (self::gatherAssertTypes($_file) as $args) {
             $assertType = array_shift($args);
             $file = array_shift($args);
             /** @var string $assertType */

@@ -44,22 +44,27 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get a list of classes accepted by the first parameter of a callback
+     * Get a list of classes accepted by a callback parameter
      *
      * @return array<class-string[]|class-string>
-     * @throws InvalidArgumentException if the callback has no parameters.
+     * @throws InvalidArgumentException if the callback has no parameter at the
+     * given position.
      */
-    public static function getFirstCallbackParameterClassNames(callable $callback): array
+    public static function getCallableParamClassNames(callable $callback, int $param = 0): array
     {
         if (!$callback instanceof Closure) {
             $callback = Closure::fromCallable($callback);
         }
 
-        $param = Arr::first((new ReflectionFunction($callback))->getParameters());
-        if (!$param) {
-            throw new InvalidArgumentException('$callback has no parameters');
+        $params = (new ReflectionFunction($callback))->getParameters();
+        if (!isset($params[$param])) {
+            throw new InvalidArgumentException(sprintf(
+                '$callback has no parameter at position %d',
+                $param,
+            ));
         }
 
+        $param = $params[$param];
         foreach (self::normaliseType($param->getType()) as $type) {
             $intersection = [];
             foreach (Arr::wrap($type) as $type) {
@@ -95,7 +100,7 @@ final class Reflect extends AbstractUtility
      *
      * @return ReflectionClass<object>
      */
-    public static function getMethodPrototypeClass(ReflectionMethod $method): ReflectionClass
+    public static function getPrototypeClass(ReflectionMethod $method): ReflectionClass
     {
         try {
             return $method->getPrototype()->getDeclaringClass();
@@ -127,7 +132,7 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Resolve a ReflectionType to an array of ReflectionNamedType
+     * Resolve a ReflectionType to an array of ReflectionNamedType instances
      *
      * PHP reflection methods like {@see ReflectionParameter::getType()} and
      * {@see ReflectionFunctionAbstract::getReturnType()} can return any of the
@@ -166,21 +171,7 @@ final class Reflect extends AbstractUtility
      */
     public static function getAllTypes(?ReflectionType $type): array
     {
-        if ($type === null) {
-            return [];
-        }
-
-        foreach (Arr::flatten(self::doNormaliseType($type)) as $type) {
-            /** @var ReflectionNamedType $type */
-            $name = $type->getName();
-            if (isset($seen[$name])) {
-                continue;
-            }
-            $types[] = $type;
-            $seen[$name] = true;
-        }
-
-        return $types ?? [];
+        return self::doGetAllTypes($type, false);
     }
 
     /**
@@ -189,6 +180,14 @@ final class Reflect extends AbstractUtility
      * @return string[]
      */
     public static function getAllTypeNames(?ReflectionType $type): array
+    {
+        return self::doGetAllTypes($type, true);
+    }
+
+    /**
+     * @return ($names is true ? string[] : ReflectionNamedType[])
+     */
+    private static function doGetAllTypes(?ReflectionType $type, bool $names): array
     {
         if ($type === null) {
             return [];
@@ -200,11 +199,11 @@ final class Reflect extends AbstractUtility
             if (isset($seen[$name])) {
                 continue;
             }
-            $names[] = $name;
+            $types[] = $names ? $name : $type;
             $seen[$name] = true;
         }
 
-        return $names ?? [];
+        return $types ?? [];
     }
 
     /**
@@ -397,14 +396,15 @@ final class Reflect extends AbstractUtility
     /**
      * Convert a ReflectionType to a PHP type declaration
      *
-     * @param (callable(class-string): (string|null))|null $typeNameCallback Applied
-     * to qualified class names if given. Must return `null` or an unqualified
+     * @param (callable(class-string): (string|null))|null $callback Applied to
+     * qualified class names if given. Must return `null` or an unqualified
      * alias.
      */
     public static function getTypeDeclaration(
         ?ReflectionType $type,
         string $classPrefix = '\\',
-        ?callable $typeNameCallback = null
+        ?callable $callback = null,
+        bool $phpDoc = false
     ): string {
         if ($type === null) {
             return '';
@@ -421,7 +421,8 @@ final class Reflect extends AbstractUtility
                 $type = self::getTypeDeclaration(
                     $type,
                     $classPrefix,
-                    $typeNameCallback
+                    $callback,
+                    $phpDoc,
                 );
                 $types[] = "($type)";
             }
@@ -429,7 +430,8 @@ final class Reflect extends AbstractUtility
             $glue = '&';
             $types = $type->getTypes();
         } else {
-            $types = [$type];
+            /** @var ReflectionNamedType $type */
+            $types = $phpDoc ? self::maybeExpandNull($type) : [$type];
         }
 
         $parts = [];
@@ -440,9 +442,9 @@ final class Reflect extends AbstractUtility
                 continue;
             }
             $name = $type->getName();
-            if ($typeNameCallback !== null && !$type->isBuiltin()) {
+            if ($callback !== null && !$type->isBuiltin()) {
                 /** @var class-string $name */
-                $alias = $typeNameCallback($name);
+                $alias = $callback($name);
             } else {
                 $alias = null;
             }
@@ -450,7 +452,7 @@ final class Reflect extends AbstractUtility
             $parts[] =
                 ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
                 . ($alias === null && !$type->isBuiltin() ? $classPrefix : '')
-                . ($alias === null ? $name : $alias);
+                . ($alias ?? $name);
         }
 
         return implode($glue, $parts);
@@ -459,8 +461,8 @@ final class Reflect extends AbstractUtility
     /**
      * Convert a ReflectionParameter to a PHP parameter declaration
      *
-     * @param (callable(class-string): (string|null))|null $typeNameCallback Applied
-     * to qualified class names if given. Must return `null` or an unqualified
+     * @param (callable(class-string): (string|null))|null $callback Applied to
+     * qualified class names if given. Must return `null` or an unqualified
      * alias.
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead. Do not use when generating code unless `$type` is
@@ -469,7 +471,7 @@ final class Reflect extends AbstractUtility
     public static function getParameterDeclaration(
         ReflectionParameter $parameter,
         string $classPrefix = '\\',
-        ?callable $typeNameCallback = null,
+        ?callable $callback = null,
         ?string $type = null,
         ?string $name = null,
         bool $phpDoc = false
@@ -479,7 +481,8 @@ final class Reflect extends AbstractUtility
         $param = self::getTypeDeclaration(
             $parameter->getType(),
             $classPrefix,
-            $typeNameCallback
+            $callback,
+            $phpDoc,
         );
 
         if ($type !== null) {
@@ -511,12 +514,12 @@ final class Reflect extends AbstractUtility
         if (Pcre::match('/^(self|parent|static)::/i', $const)) {
             return "$param$const";
         }
-        if ($typeNameCallback) {
+        if ($callback) {
             $_const = Pcre::replaceCallback(
                 '/^' . Regex::PHP_TYPE . '(?=::)/',
-                function (array $matches) use ($typeNameCallback): string {
+                function (array $matches) use ($callback): string {
                     /** @var array{class-string} $matches */
-                    return $typeNameCallback($matches[0]) ?? $matches[0];
+                    return $callback($matches[0]) ?? $matches[0];
                 },
                 $const
             );
@@ -536,8 +539,8 @@ final class Reflect extends AbstractUtility
      * - `$documentation` is empty or `null`, and
      * - there is no difference between PHPDoc and native data types
      *
-     * @param (callable(class-string): (string|null))|null $typeNameCallback Applied
-     * to qualified class names if given. Must return `null` or an unqualified
+     * @param (callable(class-string): (string|null))|null $callback Applied to
+     * qualified class names if given. Must return `null` or an unqualified
      * alias.
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead.
@@ -545,7 +548,7 @@ final class Reflect extends AbstractUtility
     public static function getParameterPHPDoc(
         ReflectionParameter $parameter,
         string $classPrefix = '\\',
-        ?callable $typeNameCallback = null,
+        ?callable $callback = null,
         ?string $type = null,
         ?string $name = null,
         ?string $documentation = null,
@@ -556,7 +559,8 @@ final class Reflect extends AbstractUtility
         $param = self::getTypeDeclaration(
             $parameter->getType(),
             $classPrefix,
-            $typeNameCallback
+            $callback,
+            true,
         );
 
         if ($type !== null) {
@@ -575,7 +579,7 @@ final class Reflect extends AbstractUtility
                 self::getParameterDeclaration(
                     $parameter,
                     $classPrefix,
-                    $typeNameCallback,
+                    $callback,
                     null,
                     $name
                 )
@@ -638,7 +642,26 @@ final class Reflect extends AbstractUtility
             return $types;
         }
 
-        /** @var array<ReflectionNamedType> */
+        /** @var ReflectionNamedType $type */
+        return self::maybeExpandNull($type);
+    }
+
+    /**
+     * @param ReflectionNamedType $type
+     * @return array<ReflectionNamedType>
+     */
+    private static function maybeExpandNull(ReflectionType $type): array
+    {
+        if ($type->allowsNull() && (
+            !$type->isBuiltin()
+            || strcasecmp($type->getName(), 'null')
+        )) {
+            return [
+                new NamedType($type->getName(), $type->isBuiltin(), false),
+                new NamedType('null', true, true),
+            ];
+        }
+
         return [$type];
     }
 
@@ -712,5 +735,45 @@ final class Reflect extends AbstractUtility
             }
             $property = $parent->getProperty($name);
         } while (true);
+    }
+}
+
+/**
+ * @internal
+ */
+class NamedType extends ReflectionNamedType
+{
+    protected string $Name;
+    protected bool $IsBuiltin;
+    protected bool $AllowsNull;
+
+    public function __construct(
+        string $name,
+        bool $isBuiltin = false,
+        bool $allowsNull = false
+    ) {
+        $this->Name = $name;
+        $this->IsBuiltin = $isBuiltin;
+        $this->AllowsNull = $allowsNull;
+    }
+
+    public function getName(): string
+    {
+        return $this->Name;
+    }
+
+    public function isBuiltin(): bool
+    {
+        return $this->IsBuiltin;
+    }
+
+    public function allowsNull(): bool
+    {
+        return $this->AllowsNull;
+    }
+
+    public function __toString(): string
+    {
+        return $this->Name;
     }
 }
