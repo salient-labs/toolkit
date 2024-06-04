@@ -173,7 +173,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
                     if ($class->hasMethod($method)
                             && ($_method = $class->getMethod($method))->isPublic()) {
                         if ($_method->isStatic()
-                                || !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace)) {
+                                || !strcasecmp(Reflect::getPrototypeClass($_method)->getNamespaceName(), $namespace)) {
                             $this->SyncOperationMethods[$method] = null;
 
                             return;

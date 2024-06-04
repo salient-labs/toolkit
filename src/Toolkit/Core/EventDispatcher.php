@@ -67,7 +67,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
 
         if ($event === null) {
             $event = [];
-            foreach (Reflect::getFirstCallbackParameterClassNames($listener) as $name) {
+            foreach (Reflect::getCallableParamClassNames($listener) as $name) {
                 if (is_string($name)) {
                     $event[] = $name;
                 }

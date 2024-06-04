@@ -55,24 +55,24 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @dataProvider getFirstCallbackParameterClassNamesProvider
+     * @dataProvider getCallableParamClassNamesProvider
      *
      * @param array<class-string[]|class-string>|string $expected
      */
-    public function testGetFirstCallbackParameterClassNames($expected, callable $callback): void
+    public function testGetCallableParamClassNames($expected, callable $callback): void
     {
         $this->maybeExpectException($expected);
-        $this->assertSame($expected, Reflect::getFirstCallbackParameterClassNames($callback));
+        $this->assertSame($expected, Reflect::getCallableParamClassNames($callback));
     }
 
     /**
      * @return Generator<array{array<class-string[]|class-string>|string,callable}>
      */
-    public static function getFirstCallbackParameterClassNamesProvider(): Generator
+    public static function getCallableParamClassNamesProvider(): Generator
     {
         yield from [
             [
-                InvalidArgumentException::class . ',$callback has no parameters',
+                InvalidArgumentException::class . ',$callback has no parameter at position 0',
                 fn() => null,
             ],
             [
@@ -160,10 +160,10 @@ final class ReflectTest extends TestCase
     {
         $types = [
             [],
-            ['int'],
+            ['int', 'null'],
             ['string'],
-            ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-            ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+            ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+            ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
         ];
 
         yield 'MyClass::__construct()' => [
@@ -176,13 +176,13 @@ final class ReflectTest extends TestCase
         if (\PHP_VERSION_ID >= 80100) {
             $allTypes = [
                 [],
-                ['int'],
+                ['int', 'null'],
                 ['string'],
                 ['Countable', 'ArrayAccess'],
                 ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
                 ['string'],
                 ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
                 ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
@@ -204,13 +204,14 @@ final class ReflectTest extends TestCase
         if (\PHP_VERSION_ID >= 80200) {
             $allTypes = [
                 [],
-                ['int'],
+                ['null'],
+                ['int', 'null'],
                 ['string'],
                 ['Countable', 'ArrayAccess'],
                 ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
                 ['string'],
                 ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
                 ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
@@ -224,12 +225,12 @@ final class ReflectTest extends TestCase
                 ['string'],
             ];
             $types = $allTypes;
-            $types[3] = [['Countable', 'ArrayAccess']];
-            $types[13] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string'];
-            $types[14] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
-            $types[15] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'array'];
-            $types[16] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
-            $types[17] = [['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable'], ['Salient\Tests\Core\Utility\Reflect\MyClass', 'ArrayAccess'], 'null'];
+            $types[4] = [['Countable', 'ArrayAccess']];
+            $types[14] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string'];
+            $types[15] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
+            $types[16] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'array'];
+            $types[17] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
+            $types[18] = [['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable'], ['Salient\Tests\Core\Utility\Reflect\MyClass', 'ArrayAccess'], 'null'];
 
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 $types,
@@ -474,8 +475,12 @@ final class ReflectTest extends TestCase
      *
      * @param string[] $expected
      */
-    public function testGetTypeDeclaration(array $expected, string $class, string $method): void
-    {
+    public function testGetTypeDeclaration(
+        array $expected,
+        string $class,
+        string $method,
+        bool $phpDoc = false
+    ): void {
         $method = new ReflectionMethod($class, $method);
         $types = [];
         foreach ($method->getParameters() as $param) {
@@ -483,26 +488,41 @@ final class ReflectTest extends TestCase
                 $param->getType(),
                 '\\',
                 fn($name) => $name === MyClass::class ? 'MyClass' : null,
+                $phpDoc,
             );
         }
         $this->assertSame($expected, $types);
     }
 
     /**
-     * @return Generator<string,array{string[],string,string}>
+     * @return Generator<string,array{string[],string,string,3?:bool}>
      */
     public static function getTypeDeclarationProvider(): Generator
     {
-        yield 'MyClass::__construct()' => [
-            [
-                '',
-                '?int',
-                'string',
-                '?MyClass',
-                '?MyClass',
+        yield from [
+            'MyClass::__construct()' => [
+                [
+                    '',
+                    '?int',
+                    'string',
+                    '?MyClass',
+                    '?MyClass',
+                ],
+                MyClass::class,
+                '__construct',
             ],
-            MyClass::class,
-            '__construct',
+            'MyClass::__construct() [phpDoc]' => [
+                [
+                    '',
+                    'int|null',
+                    'string',
+                    'MyClass|null',
+                    'MyClass|null',
+                ],
+                MyClass::class,
+                '__construct',
+                true,
+            ],
         ];
 
         if (\PHP_VERSION_ID >= 80100) {
@@ -532,6 +552,7 @@ final class ReflectTest extends TestCase
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 [
                     '',
+                    'null',
                     '?int',
                     'string',
                     '\Countable&\ArrayAccess',
@@ -620,6 +641,7 @@ final class ReflectTest extends TestCase
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 [
                     '$mixed',
+                    'null $null',
                     '?int $nullableInt',
                     'string $string',
                     'Countable&ArrayAccess $intersection',

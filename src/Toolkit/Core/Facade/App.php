@@ -30,7 +30,7 @@ use Salient\Core\AbstractFacade;
  * @method static ContainerInterface instance(class-string $id, object $instance) Bind a shared instance to the container
  * @method static ContainerInterface provider(class-string $id, class-string[]|null $services = null, class-string[] $exceptServices = [], ServiceLifetime::* $lifetime = ServiceLifetime::INHERIT) Register a service provider with the container, optionally specifying which of its services to bind or ignore (see {@see ContainerInterface::provider()})
  * @method static ContainerInterface providers(array<class-string,class-string> $serviceMap, ServiceLifetime::* $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see ContainerInterface::providers()})
- * @method static void setGlobalContainer(?ContainerInterface $container) Set or unset the global container
+ * @method static void setGlobalContainer(ContainerInterface|null $container) Set or unset the global container
  * @method static ContainerInterface singleton(class-string $id, class-string|null $class = null, mixed[] $args = []) Bind a shared service to the container (see {@see ContainerInterface::singleton()})
  * @method static ContainerInterface singletonIf(class-string $id, class-string|null $class = null, mixed[] $args = []) Bind a shared service to the container if it isn't already bound
  * @method static ContainerInterface unbind(class-string $id) Remove a binding from the container
