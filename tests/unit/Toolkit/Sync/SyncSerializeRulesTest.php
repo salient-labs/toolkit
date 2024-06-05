@@ -54,33 +54,33 @@ final class SyncSerializeRulesTest extends TestCase
 
         $this->assertEquals([
             [
-                ['l1.l2.field1', 'field1_id_2', null],
-                ['l1.l2.field3', 'field3_id_1', null],
-                ['l1.l2.field2', 'field2_id_2', null],
+                [User::class, 'l1.l2.field1', 'field1_id_2', null],
+                [User::class, 'l1.l2.field3', 'field3_id_1', null],
+                [User::class, 'l1.l2.field2', 'field2_id_2', null],
             ],
-            Post::class => [['e1_field1', 'e1_field1_id', null], ['e1_field2', null, null]],
-            CustomPost::class => [['e2_field2', 'e2_field2_id_2', null]],
-            User::class => [['e3_field', 'e3_field_id_2', null], ['e4_field', null, null]],
+            Post::class => [[User::class, 'e1_field1', 'e1_field1_id', null], [User::class, 'e1_field2', null, null]],
+            CustomPost::class => [[User::class, 'e2_field2', 'e2_field2_id_2', null]],
+            User::class => [[User::class, 'e3_field', 'e3_field_id_2', null], [User::class, 'e4_field', null, null]],
         ], $this->getRemove($rules1->merge($rules2)));
         $this->assertEquals([
             [
-                ['l1.l2.field1', null, null],
-                ['l1.l2.field2', 'field2_id_2', null],
-                ['l1.l2.field3', 'field3_id_1', null],
+                [User::class, 'l1.l2.field1', null, null],
+                [User::class, 'l1.l2.field2', 'field2_id_2', null],
+                [User::class, 'l1.l2.field3', 'field3_id_1', null],
             ],
-            Post::class => [['e1_field2', null, null], ['e1_field1', 'e1_field1_id', null]],
-            CustomPost::class => [['e2_field2', 'e2_field2_id_2', null]],
-            User::class => [['e4_field', 'e4_field_id_1', null], ['e3_field', null, null]],
+            Post::class => [[User::class, 'e1_field2', null, null], [User::class, 'e1_field1', 'e1_field1_id', null]],
+            CustomPost::class => [[User::class, 'e2_field2', 'e2_field2_id_2', null]],
+            User::class => [[User::class, 'e4_field', 'e4_field_id_1', null], [User::class, 'e3_field', null, null]],
         ], $this->getRemove($rules2->merge($rules1)));
         $this->assertEquals([
             [
-                ['l1.l2.field2', 'field2_id_2', null],
-                ['l1.l2.field3', 'field3_id_1', null],
-                ['l1.l2.field1', null, null],
+                [User::class, 'l1.l2.field2', 'field2_id_2', null],
+                [User::class, 'l1.l2.field3', 'field3_id_1', null],
+                [User::class, 'l1.l2.field1', null, null],
             ],
-            CustomPost::class => [['e2_field3', null, null], ['e2_field2', 'e2_field2_id_2', null]],
-            User::class => [['e3_field', null, null], ['e4_field', 'e4_field_id_1', null]],
-            Post::class => [['e1_field2', null, null], ['e1_field1', 'e1_field1_id', null]],
+            CustomPost::class => [[User::class, 'e2_field3', null, null], [User::class, 'e2_field2', 'e2_field2_id_2', null]],
+            User::class => [[User::class, 'e3_field', null, null], [User::class, 'e4_field', 'e4_field_id_1', null]],
+            Post::class => [[User::class, 'e1_field2', null, null], [User::class, 'e1_field1', 'e1_field1_id', null]],
         ], $this->getRemove($rules3->merge($rules2)->merge($rules1)));
     }
 
@@ -88,7 +88,7 @@ final class SyncSerializeRulesTest extends TestCase
      * @template T of SyncEntityInterface
      *
      * @param SyncSerializeRules<T> $rules
-     * @return array<0|string,array<array{string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<T>): mixed)|null}>>
+     * @return array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<T>): mixed)|null}>>
      */
     private function getRemove(SyncSerializeRules $rules): array
     {
