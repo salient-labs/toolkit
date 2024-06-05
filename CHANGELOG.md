@@ -10,6 +10,63 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.24] - 2024-06-05
+
+### Added
+
+#### `Collection`
+
+- Add collection methods `has()` and `get()` for accessing items by key (existing methods with the same name have been renamed as below)
+- Add collection method `map()` (analogous to `array_map()`)
+- Add `handleItemsReplaced()` method to `CollectionTrait`
+
+#### `Core`
+
+- Add `Reflect::normaliseType()` to allow inspection of declared types without flattening intersection types
+
+#### `Sync`
+
+- Add `AbstractSyncEntity::getParentSerializeRules()` to simplify serialization rule inheritance
+
+### Changed
+
+#### `Collection`
+
+- Rename collection methods `has()` and `get()` to more consistent `hasValue()` and `firstOf()`
+- In `ReadableCollectionTrait`, apply `filterItems()` even when merging collections of the same class
+
+#### `Core`
+
+- In `Reflect`:
+  - Normalise nullable types (`?int`) to equivalent unions (`int|null`)
+  - Rename `getFirstCallbackParameterClassNames()` to `getCallableParamClassNames()` and allow `$param` to be given, return intersection types as nested arrays
+  - Rename `getMethodPrototypeClass()` to `getPrototypeClass()`
+- Ignore intersection types in `EventDispatcher::listen()`
+
+#### `Sync`
+
+- In `SyncErrorCollection`:
+  - Rename `toSummary()` to `getSummary()`
+  - Rename `toString()` to `getSummaryText()` and simplify
+  - Add `reportErrors()` from `SyncStore::reportErrors()`
+  - Use `CollectionTrait::handleItemsReplaced()` to maintain error and warning counts
+- Do not call closures provided via serialization rules to replace `null`
+- When rule recursion is enabled in `SyncSerializeRules`:
+  - Apply inherited rules to inherited entity classes recursively
+  - Only apply rules for entities seen at each path (i.e. don't apply path-based rules for `UserSubClass` to nested instances of `User`)
+
+#### `PHPStan`
+
+- Improve `GetCoalesceRule` recommendations
+
+### Removed
+
+- Remove `SyncStoreInterface::reportErrors()` (moved to `SyncErrorCollection`)
+
+### Fixed
+
+- Fix `SyncSerializeRules` regression where rules are not applied recursively at the point of recursion (i.e. to instances of the entity class being serialized)
+
 ## [v0.99.23] - 2024-06-01
 
 ### Added
@@ -2691,6 +2748,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.24]: https://github.com/salient-labs/toolkit/compare/v0.99.23...v0.99.24
 [v0.99.23]: https://github.com/salient-labs/toolkit/compare/v0.99.22...v0.99.23
 [v0.99.22]: https://github.com/salient-labs/toolkit/compare/v0.99.21...v0.99.22
 [v0.99.21]: https://github.com/salient-labs/toolkit/compare/v0.99.20...v0.99.21
