@@ -103,15 +103,19 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     private ?bool $RecurseRules;
     private ?bool $ForSyncStore;
     private ?bool $IncludeCanonicalId;
+    /** @var class-string[] */
+    private array $EntityIndex;
+    /** @var class-string[] */
+    private array $RuleEntities;
     /** @var array<array<array<array{string,...}|string>|array{string,...}|string>> */
     private array $Remove;
     /** @var array<array<array<array{string,...}|string>|array{string,...}|string>> */
     private array $Replace;
-    /** @var array<self::TYPE_*,array<0|string,array<array{string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>> */
+    /** @var array<self::TYPE_*,array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>> */
     private array $FlattenCache;
     /** @var array{0:array<string,array<string,string>>,1:array<string,array<string,array{int|string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>>} */
     private array $CompileCache;
-    /** @var array<string,true> */
+    /** @var array<string,array<class-string,true>> */
     private array $EntityPathIndex;
     /** @var SyncIntrospector<TEntity> */
     private SyncIntrospector $Introspector;
@@ -155,12 +159,16 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         $this->RecurseRules = $recurseRules;
         $this->ForSyncStore = $forSyncStore;
         $this->IncludeCanonicalId = $includeCanonicalId;
+        $this->EntityIndex[] = $entity;
         $this->Remove[] = $remove;
         $this->Replace[] = $replace;
 
         if ($inherit) {
             $this->applyRules($inherit, true);
+            return;
         }
+
+        $this->updateRuleEntities();
     }
 
     private function __clone()
@@ -215,8 +223,16 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         $this->RecurseRules = $merge->RecurseRules ?? $base->RecurseRules;
         $this->ForSyncStore = $merge->ForSyncStore ?? $base->ForSyncStore;
         $this->IncludeCanonicalId = $merge->IncludeCanonicalId ?? $base->IncludeCanonicalId;
+        $this->EntityIndex = [...$base->EntityIndex, ...$merge->EntityIndex];
         $this->Remove = [...$base->Remove, ...$merge->Remove];
         $this->Replace = [...$base->Replace, ...$merge->Replace];
+
+        $this->updateRuleEntities();
+    }
+
+    private function updateRuleEntities(): void
+    {
+        $this->RuleEntities = array_reverse(Arr::unique($this->EntityIndex));
     }
 
     /**
@@ -236,7 +252,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     }
 
     /**
-     * @return array<0|string,array<array{string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
+     * @return array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
      */
     private function getRemove(): array
     {
@@ -244,7 +260,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     }
 
     /**
-     * @return array<0|string,array<array{string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
+     * @return array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
      */
     private function getReplace(): array
     {
@@ -255,18 +271,19 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
      * Merge and normalise rules and property names
      *
      * @param array<array<array{string,...}|string>|array{string,...}|string> ...$merge
-     * @return array<0|string,array<array{string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
+     * @return array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
      */
     private function flattenRules(array ...$merge): array
     {
         $this->Introspector ??= SyncIntrospector::get($this->Entity);
 
-        foreach ($merge as $array) {
+        foreach ($merge as $offset => $array) {
+            $entity = $this->EntityIndex[$offset];
             foreach ($array as $key => $rule) {
                 if (is_int($key)) {
                     /** @var array{string,...}|string $rule */
                     $target = $this->normaliseTarget($this->getTarget($rule));
-                    $rule = $this->normaliseRule($rule, $target);
+                    $rule = $this->normaliseRule($rule, $target, $entity);
                     $paths[$target] = $rule;
                     continue;
                 }
@@ -274,7 +291,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
                 /** @var array<array{string,...}|string> $rule */
                 foreach ($rule as $_rule) {
                     $target = $this->normaliseTarget($this->getTarget($_rule));
-                    $_rule = $this->normaliseRule($_rule, $target);
+                    $_rule = $this->normaliseRule($_rule, $target, $entity);
                     $classes[$key][$target] = $_rule;
                 }
             }
@@ -288,8 +305,10 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     }
 
     /**
+     * @param class-string|null $class
+     * @param class-string|null $untilClass
      * @param string[] $path
-     * @param array<0|string,array<array{string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>> $rules
+     * @param array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>> $rules
      * @param self::TYPE_* $ruleType
      * @return ($ruleType is 0 ? array<string,string> : array<string,array{int|string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>)
      */
@@ -307,16 +326,17 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
             return $this->CompileCache[$ruleType][$cacheKey];
         }
 
-        $keys = [$key];
+        $keys = [$key => [true]];
 
-        /** @todo Same for inherited entities? */
-        if ($this->getRecurseRules()) {
-            // If an instance of `$this->Entity` is found at '.path.to.key', add
-            // it to `$this->EntityPath`
-            if ($path && $class === $this->Entity) {
-                $this->EntityPathIndex[$key] = true;
-                $keys[] = '.';
-            } else {
+        if ($path && $this->getRecurseRules()) {
+            // If an instance of the entity being serialized is found at
+            // '.path.to.key', add it to `$this->EntityPathIndex`
+            foreach ($this->RuleEntities as $entity) {
+                if ($class !== null && is_a($class, $entity, true)) {
+                    $this->EntityPathIndex[$key][$entity] = true;
+                    $keys['.'][$entity] = true;
+                }
+
                 // Then, if `$key` is '.path.to.key.of.child', add '.of.child'
                 // to `$keys`
                 $parent = $path;
@@ -324,8 +344,10 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
                 $parts = count($parent);
                 while ($parts-- > 1) {
                     array_unshift($child, array_pop($parent));
-                    if (isset($this->EntityPathIndex['.' . implode('.', $parent)])) {
-                        $keys[] = '.' . implode('.', $child);
+                    $parentKey = '.' . implode('.', $parent);
+                    if (isset($this->EntityPathIndex[$parentKey])) {
+                        $childKey = '.' . implode('.', $child);
+                        $keys[$childKey] = $this->EntityPathIndex[$parentKey];
                     }
                 }
             }
@@ -338,11 +360,11 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         // - `['key', 'key_id', fn($value) => $value['id']]`
         $pathRules = [];
         if (isset($rules[0])) {
-            $keys = array_fill_keys($keys, true);
-            foreach ($rules[0] as $key => $rule) {
-                $target = $rule[0];
-                if (isset($keys[$this->getTargetParent($target)])) {
-                    $rule[0] = $this->getTargetProperty($target);
+            foreach ($rules[0] as $rule) {
+                $target = $rule[1];
+                $allowed = $keys[$this->getTargetParent($target)] ?? null;
+                if ($allowed === [true] || isset($allowed[$rule[0]])) {
+                    $rule[1] = $this->getTargetProperty($target);
                     $pathRules[] = $rule;
                 }
             }
@@ -367,6 +389,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         // Return the highest-precedence rule for each key
         $rules = [];
         foreach ([...$classRules, ...$pathRules] as $rule) {
+            unset($rule[0]);
             $target = array_shift($rule);
             $rules[$target] = $rule;
         }
@@ -409,11 +432,12 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
 
     /**
      * @param array{string,...}|string $rule
-     * @return array{string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}
+     * @param class-string $entity
+     * @return array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}
      */
-    private function normaliseRule($rule, string $target)
+    private function normaliseRule($rule, string $target, string $entity): array
     {
-        $normalised = [$target, null, null];
+        $normalised = [$entity, $target, null, null];
         if (!is_array($rule)) {
             return $normalised;
         }
@@ -424,10 +448,10 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
                 continue;
             }
             if ($value instanceof Closure) {
-                $normalised[2] = $value;
+                $normalised[3] = $value;
                 continue;
             }
-            $normalised[1] = is_string($value)
+            $normalised[2] = is_string($value)
                 ? $this->Introspector->maybeNormalise($value, NormaliserFlag::LAZY)
                 : $value;
         }

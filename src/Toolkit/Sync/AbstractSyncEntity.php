@@ -22,7 +22,7 @@ use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityState;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Contract\Sync\SyncSerializeRulesInterface as SerializeRulesInterface;
+use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
@@ -45,8 +45,6 @@ use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\SyncSerializeRules as SerializeRules;
-use Salient\Sync\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Closure;
 use DateTimeInterface;
 use Generator;
@@ -157,13 +155,13 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * be serialized
      *
      * To prevent infinite recursion when entities of this type are serialized,
-     * return a {@see SerializeRulesBuilder} object configured to remove or
+     * return a {@see SyncSerializeRulesBuilder} object configured to remove or
      * replace circular references.
      *
-     * @param SerializeRulesBuilder<static> $rulesB
-     * @return SerializeRulesBuilder<static>
+     * @param SyncSerializeRulesBuilder<static> $rulesB
+     * @return SyncSerializeRulesBuilder<static>
      */
-    protected static function buildSerializeRules(SerializeRulesBuilder $rulesB): SerializeRulesBuilder
+    protected static function buildSerializeRules(SyncSerializeRulesBuilder $rulesB): SyncSerializeRulesBuilder
     {
         return $rulesB;
     }
@@ -229,11 +227,35 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public static function getSerializeRules(): SerializeRulesInterface
+    final public static function getSerializeRules(): SyncSerializeRulesInterface
     {
         return static::buildSerializeRules(
-            SerializeRules::build()
+            SyncSerializeRules::build()
                 ->entity(static::class)
+        )->build();
+    }
+
+    /**
+     * Get the serialization rules of the entity's parent class
+     *
+     * @return SyncSerializeRules<static>|null
+     */
+    final protected static function getParentSerializeRules(): ?SyncSerializeRules
+    {
+        $class = get_parent_class(get_called_class());
+
+        if (
+            $class === false
+            || !is_a($class, self::class, true)
+            || $class === self::class
+        ) {
+            return null;
+        }
+
+        /** @var SyncSerializeRules<static> */
+        return $class::buildSerializeRules(
+            SyncSerializeRules::build()
+                ->entity($class)
         )->build();
     }
 
@@ -291,7 +313,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      */
     final public function toArray(?SyncStoreInterface $store = null): array
     {
-        /** @var SerializeRulesInterface<self> */
+        /** @var SyncSerializeRulesInterface<self> */
         $rules = static::getSerializeRules();
         return $this->_toArray($rules, $store);
     }
@@ -299,9 +321,9 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function toArrayWith(SerializeRulesInterface $rules, ?SyncStoreInterface $store = null): array
+    final public function toArrayWith(SyncSerializeRulesInterface $rules, ?SyncStoreInterface $store = null): array
     {
-        /** @var SerializeRulesInterface<self> $rules */
+        /** @var SyncSerializeRulesInterface<self> $rules */
         return $this->_toArray($rules, $store);
     }
 
@@ -425,12 +447,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     }
 
     /**
-     * @param SerializeRulesInterface<self> $rules
+     * @param SyncSerializeRulesInterface<self> $rules
      * @return array<string,mixed>
      */
-    private function _toArray(SerializeRulesInterface $rules, ?SyncStoreInterface $store): array
+    private function _toArray(SyncSerializeRulesInterface $rules, ?SyncStoreInterface $store): array
     {
-        /** @var SerializeRulesInterface<self> $rules */
+        /** @var SyncSerializeRulesInterface<self> $rules */
         if ($rules->getDateFormatter() === null) {
             $rules = $rules->withDateFormatter(
                 $this->Provider
@@ -448,13 +470,13 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @param AbstractSyncEntity|DeferredEntity<AbstractSyncEntity>|DeferredRelationship<AbstractSyncEntity>|DateTimeInterface|mixed[] $node
      * @param string[] $path
-     * @param SerializeRulesInterface<self> $rules
+     * @param SyncSerializeRulesInterface<self> $rules
      * @param array<int,true> $parents
      */
     private function _serialize(
         &$node,
         array $path,
-        SerializeRulesInterface $rules,
+        SyncSerializeRulesInterface $rules,
         ?SyncStoreInterface $store,
         bool $nodeIsList = false,
         array $parents = []
@@ -618,10 +640,10 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * Nested objects and lists are returned as-is. Only the top-level entity is
      * replaced.
      *
-     * @param SerializeRulesInterface<static> $rules
+     * @param SyncSerializeRulesInterface<static> $rules
      * @return array<string,mixed>
      */
-    private function serialize(SerializeRulesInterface $rules): array
+    private function serialize(SyncSerializeRulesInterface $rules): array
     {
         $clone = clone $this;
         $clone->State |= SyncEntityState::SERIALIZING;
