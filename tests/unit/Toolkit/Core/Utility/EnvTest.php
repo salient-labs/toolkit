@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Core\Utility;
 
+use Salient\Core\Utility\Exception\InvalidEnvFileSyntaxException;
 use Salient\Core\Utility\Exception\InvalidEnvironmentException;
 use Salient\Core\Utility\Env;
 use Salient\Tests\TestCase;
@@ -26,6 +27,29 @@ final class EnvTest extends TestCase
         $this->unsetKeys($expected);
         Env::load($dir . '/example.env');
         $this->assertSame($expected, $this->getKeys($expected));
+
+        $expected = [
+            'quoted_whitespace' => 'Foo B. Baz',
+            'escaped_dollar1' => '$SECRET',
+            'escaped_dollar2' => '$SECRET',
+            'escaped_double_quote' => 'Foo "Bar"',
+            'escaped_single_quote' => "Foo's Bar",
+            'good_mixed_quotes' => '\'$this\' is not an "app"',
+            'good_backtick' => '`echo foo`',
+            'glob4' => '[0-9][0-9]-20??????-*.ext',
+        ];
+        $this->unsetKeys($expected);
+        Env::load($dir . '/valid.env');
+        $this->assertSame($expected, $this->getKeys($expected));
+
+        $file = $dir . '/invalid.env';
+        $lines = ['Unable to load .env file:'];
+        foreach ([1, 3, 5, 6, 9, 11, 13, 14, 15, 17, 19, 20, 21, 23] as $line) {
+            $lines[] = "- invalid syntax at $file:$line";
+        }
+        $this->expectException(InvalidEnvFileSyntaxException::class);
+        $this->expectExceptionMessage(implode("\n", $lines));
+        Env::load($dir . '/invalid.env');
     }
 
     /**

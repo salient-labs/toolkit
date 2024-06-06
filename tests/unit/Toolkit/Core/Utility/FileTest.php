@@ -249,6 +249,14 @@ final class FileTest extends TestCase
         return [
             [
                 '',
+                '.',
+            ],
+            [
+                '',
+                '..',
+            ],
+            [
+                '',
                 './././',
             ],
             [
@@ -270,6 +278,10 @@ final class FileTest extends TestCase
             [
                 'dir/subdir/file',
                 '../dir/subdir/file',
+            ],
+            [
+                'dir/subdir/file',
+                '../../dir/subdir/file',
             ],
             [
                 '/dir/subdir/file',
