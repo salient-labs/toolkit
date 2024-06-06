@@ -8,7 +8,7 @@ use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Str;
 

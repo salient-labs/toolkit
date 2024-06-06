@@ -3,8 +3,8 @@
 
 use Salient\Cli\CliApplication;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Facade\Console;
+use Salient\Core\Utility\Exception\FilesystemErrorException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Regex;

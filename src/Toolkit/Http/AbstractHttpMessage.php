@@ -12,7 +12,7 @@ use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Regex;
 
 /**
@@ -137,7 +137,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
         }
         try {
             return new HttpStream($body);
-        } catch (InvalidArgumentException $ex) {
+        } catch (\InvalidArgumentException $ex) {
             throw new InvalidArgumentTypeException(
                 1,
                 'body',

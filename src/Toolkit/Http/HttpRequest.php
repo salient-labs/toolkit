@@ -10,7 +10,7 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\Regex;
 use Stringable;
 

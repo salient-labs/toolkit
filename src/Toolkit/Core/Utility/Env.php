@@ -2,17 +2,16 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Exception\InvalidDotEnvSyntaxException;
-use Salient\Core\Exception\InvalidEnvironmentException;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\RuntimeException;
-use Salient\Core\Facade\Console;
+use Salient\Core\Utility\Exception\InvalidEnvFileSyntaxException;
+use Salient\Core\Utility\Exception\InvalidEnvironmentException;
 use Closure;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Work with .env files and environment variables
  *
- * Non-empty lines in `.env` files may contain either a shell-compatible
+ * Non-empty lines in a `.env` file may contain either a shell-compatible
  * variable assignment (see below for limitations) or a comment.
  *
  * Example:
@@ -23,7 +22,7 @@ use Closure;
  *
  * # app_secret is parsed as: '^K&4nnE
  * app_client_id=d8f024b9-1dfb-4dde-8f29-db98eefa317c
- * app_secret='\\''^K&4nnE'
+ * app_secret=''\''^K&4nnE'
  * ```
  *
  * - Unquoted values cannot contain unescaped whitespace, `"`, `'`, `$`,
@@ -69,28 +68,40 @@ final class Env extends AbstractUtility
     public const APPLY_ALL = Env::APPLY_LOCALE | Env::APPLY_TIMEZONE;
 
     /**
-     * Load one or more .env files
+     * Load values from one or more .env files into the environment
      *
      * Values are applied to `$_ENV`, `$_SERVER` and {@see putenv()} unless
-     * already present.
+     * already present in one of them.
      *
-     * Changes are applied after parsing all files in the given order. If a file
-     * contains invalid syntax, an exception is thrown and the environment is
-     * not modified.
+     * Changes are applied after parsing all files. If a file contains invalid
+     * syntax, an exception is thrown and the environment is not modified.
      *
      * Later values override earlier ones.
      *
-     * @throws InvalidDotEnvSyntaxException if invalid syntax is found.
+     * @throws InvalidEnvFileSyntaxException if invalid syntax is found.
      */
-    public static function load(string ...$path): void
+    public static function load(string ...$filenames): void
     {
         $queue = [];
         $errors = [];
-        foreach ($path as $filename) {
+        foreach ($filenames as $filename) {
             $lines = explode("\n", Str::setEol(File::getContents($filename)));
             self::parse($lines, $queue, $errors, $filename);
         }
-        self::doLoad($queue, $errors);
+
+        if ($errors) {
+            throw new InvalidEnvFileSyntaxException(Inflect::format(
+                $filenames,
+                'Unable to load .env {{#:file}}:%s',
+                count($errors) === 1
+                    ? ' ' . $errors[0]
+                    : Format::list($errors, "\n- %s"),
+            ));
+        }
+
+        foreach ($queue as $name => $value) {
+            self::set($name, $value);
+        }
     }
 
     /**
@@ -101,12 +112,7 @@ final class Env extends AbstractUtility
     public static function apply(int $flags = Env::APPLY_ALL): void
     {
         if ($flags & self::APPLY_LOCALE) {
-            $locale = @setlocale(\LC_ALL, '');
-            if ($locale === false) {
-                Console::debug('Unable to set locale from environment');
-            } else {
-                Console::debug('Locale:', $locale);
-            }
+            @setlocale(\LC_ALL, '');
         }
 
         if ($flags & self::APPLY_TIMEZONE) {
@@ -117,12 +123,9 @@ final class Env extends AbstractUtility
             );
             if ($tz !== '') {
                 $timezone = @timezone_open($tz);
-                if ($timezone === false) {
-                    Console::debug('Invalid timezone:', $tz);
-                } else {
+                if ($timezone !== false) {
                     $tz = $timezone->getName();
                     date_default_timezone_set($tz);
-                    Console::debug('Timezone:', $tz);
                 }
             }
         }
@@ -316,7 +319,7 @@ final class Env extends AbstractUtility
     public static function getList(string $name, $default = false, string $delimiter = ','): ?array
     {
         if ($delimiter === '') {
-            throw new LogicException('Invalid delimiter');
+            throw new InvalidArgumentException('Invalid delimiter');
         }
 
         $value = self::_get($name);
@@ -344,7 +347,7 @@ final class Env extends AbstractUtility
     public static function getIntList(string $name, $default = false, string $delimiter = ','): ?array
     {
         if ($delimiter === '') {
-            throw new LogicException('Invalid delimiter');
+            throw new InvalidArgumentException('Invalid delimiter');
         }
 
         $value = self::_get($name);
@@ -565,12 +568,9 @@ final class Env extends AbstractUtility
     public static function isLocaleUtf8(): bool
     {
         $locale = @setlocale(\LC_CTYPE, '0');
-        if ($locale === false) {
-            Console::warnOnce('Invalid locale settings');
-            return false;
-        }
 
-        return (bool) Regex::match('/\.utf-?8$/i', $locale);
+        return $locale !== false
+            && Regex::match('/\.utf-?8$/i', $locale);
     }
 
     /**
@@ -645,22 +645,6 @@ REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
             /** @var string */
             $none = $match['none'];
             $queue[$name] = Regex::replace('/\\\\(.)/', '$1', $none);
-        }
-    }
-
-    /**
-     * @param array<string,string> $queue
-     * @param string[] $errors
-     */
-    private static function doLoad(array $queue, array $errors): void
-    {
-        if ($errors) {
-            throw (new InvalidDotEnvSyntaxException('Unable to load .env files', ...$errors))
-                ->reportErrors();
-        }
-
-        foreach ($queue as $name => $value) {
-            self::set($name, $value);
         }
     }
 

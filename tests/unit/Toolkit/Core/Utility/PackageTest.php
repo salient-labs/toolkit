@@ -11,7 +11,7 @@ use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Core\Utility\Package
- * @covers \Salient\Core\Event\PackageDataReceivedEvent
+ * @covers \Salient\Core\Utility\Event\PackageDataReceivedEvent
  */
 final class PackageTest extends TestCase
 {

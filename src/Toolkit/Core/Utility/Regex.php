@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Exception\PcreErrorException;
+use Salient\Core\Utility\Exception\PcreErrorException;
 use Stringable;
 
 /**

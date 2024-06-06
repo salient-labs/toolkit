@@ -3,8 +3,8 @@
 namespace Salient\Tests\Core\Utility;
 
 use org\bovigo\vfs\vfsStream;
-use Salient\Core\Exception\FilesystemErrorException;
-use Salient\Core\Exception\UnreadDataException;
+use Salient\Core\Utility\Exception\FilesystemErrorException;
+use Salient\Core\Utility\Exception\UnreadDataException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Sys;

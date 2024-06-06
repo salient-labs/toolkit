@@ -2,15 +2,14 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Salient\Core\Exception\PcreErrorException;
-use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Exception\PcreErrorException;
 use Salient\Core\Utility\Regex;
 use Salient\Tests\TestCase;
 use Stringable;
 
 /**
- * @covers \Salient\Core\Utility\Pcre
- * @covers \Salient\Core\Exception\PcreErrorException
+ * @covers \Salient\Core\Utility\Regex
+ * @covers \Salient\Core\Utility\Exception\PcreErrorException
  */
 final class PcreTest extends TestCase
 {
@@ -112,11 +111,6 @@ final class PcreTest extends TestCase
             Regex::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
         } catch (PcreErrorException $e) {
             $this->assertStringContainsString('Call to preg_match() failed with PREG_BACKTRACK_LIMIT_ERROR', $e->getMessage());
-            $this->assertSame([
-                'PcreError' => \PREG_BACKTRACK_LIMIT_ERROR,
-                'Pattern' => '/(?:\D+|<\d+>)*[!?]/',
-                'Subject' => 'foobar foobar foobar',
-            ], $e->getMetadata());
             $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
             $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
             $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');
@@ -150,11 +144,6 @@ final class PcreTest extends TestCase
                 'Call to preg_replace() failed with PREG_BACKTRACK_LIMIT_ERROR',
                 $e->getMessage(),
             );
-            $this->assertSame([
-                'PcreError' => \PREG_BACKTRACK_LIMIT_ERROR,
-                'Pattern' => Json::prettyPrint($pattern),
-                'Subject' => 'foobar foobar foobar',
-            ], $e->getMetadata());
             $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
             $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
             $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');

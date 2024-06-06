@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Utility\Event;
 
-use Composer\Autoload\ClassLoader;
-use Composer\InstalledVersions;
+use Composer\Autoload\ClassLoader as Loader;
+use Composer\InstalledVersions as Installed;
 
 /**
  * Dispatched when package data is received from the Composer runtime API
@@ -14,7 +14,7 @@ final class PackageDataReceivedEvent
 {
     /** @var TData */
     private $Data;
-    /** @var class-string<InstalledVersions|ClassLoader> */
+    /** @var class-string<Installed|Loader> */
     private string $Class;
     private string $Method;
     /** @var mixed[] */
@@ -22,7 +22,7 @@ final class PackageDataReceivedEvent
 
     /**
      * @param TData $data
-     * @param class-string<InstalledVersions|ClassLoader> $class
+     * @param class-string<Installed|Loader> $class
      * @param mixed ...$args
      */
     public function __construct(
@@ -42,7 +42,7 @@ final class PackageDataReceivedEvent
      *
      * @api
      *
-     * @param class-string<InstalledVersions|ClassLoader> $class
+     * @param class-string<Installed|Loader> $class
      */
     public function isMethod(string $class, string $method): bool
     {

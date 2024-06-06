@@ -1,14 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Exception;
-
-use Salient\Core\Utility\Json;
-use Salient\Core\AbstractException;
+namespace Salient\Core\Utility\Exception;
 
 /**
  * @api
  */
-class PcreErrorException extends AbstractException
+class PcreErrorException extends AbstractUtilityException
 {
     private const ERROR_MESSAGE_MAP = [
         \PREG_NO_ERROR => 'No error',
@@ -53,22 +50,6 @@ class PcreErrorException extends AbstractException
             (self::$ErrorNameMap ??= $this->getErrorNameMap())[$error],
             $message,
         ));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getMetadata(): array
-    {
-        return [
-            'PcreError' => $this->PcreError,
-            'Pattern' => is_scalar($this->Pattern)
-                ? $this->Pattern
-                : Json::prettyPrint($this->Pattern),
-            'Subject' => is_scalar($this->Subject)
-                ? $this->Subject
-                : Json::prettyPrint($this->Subject),
-        ];
     }
 
     /**

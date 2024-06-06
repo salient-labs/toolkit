@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * Work with strings

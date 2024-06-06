@@ -4,8 +4,8 @@ namespace Salient\Iterator;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
-use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\LogicException;
+use Salient\Core\Utility\Exception\FilesystemErrorException;
 use Salient\Core\Utility\Regex;
 use Salient\Iterator\Concern\FluentIteratorTrait;
 use AppendIterator;

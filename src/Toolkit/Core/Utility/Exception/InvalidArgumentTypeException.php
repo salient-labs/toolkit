@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Exception;
+namespace Salient\Core\Utility\Exception;
 
 use Salient\Core\Utility\Get;
+use InvalidArgumentException;
 
 /**
  * @api

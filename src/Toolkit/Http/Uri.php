@@ -188,7 +188,7 @@ REGEX;
 
         try {
             $parts = (new static($uri, $strict))->toParts();
-        } catch (InvalidArgumentException $ex) {
+        } catch (\InvalidArgumentException $ex) {
             @trigger_error($ex->getMessage(), \E_USER_NOTICE);
             return false;
         }

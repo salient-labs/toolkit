@@ -194,7 +194,7 @@ REGEX;
                 false,
                 false,
             )['boundary'] ?? null;
-        } catch (InvalidArgumentException $ex) {
+        } catch (\InvalidArgumentException $ex) {
             throw new InvalidHeaderException($ex->getMessage());
         }
     }

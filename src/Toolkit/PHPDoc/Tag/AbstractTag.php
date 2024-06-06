@@ -4,7 +4,6 @@ namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Test;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
@@ -202,7 +201,7 @@ abstract class AbstractTag implements Immutable
 
         try {
             return PHPDoc::normaliseType($type, true);
-        } catch (InvalidArgumentException $ex) {
+        } catch (\InvalidArgumentException $ex) {
             $this->throw('%s', $ex->getMessage());
         }
     }

@@ -8,7 +8,7 @@ use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Core\Exception\UncloneableObjectException;
+use Salient\Core\Utility\Exception\UncloneableObjectException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Tests\TestCase;

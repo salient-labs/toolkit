@@ -9,9 +9,8 @@ use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\HttpServerRequestInterface;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\FilesystemErrorException;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Console;
+use Salient\Core\Utility\Exception\FilesystemErrorException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
@@ -380,7 +379,7 @@ class HttpServer implements Immutable
 
                     try {
                         $targetUri = new Uri($target, true);
-                    } catch (InvalidArgumentException $ex) {
+                    } catch (\InvalidArgumentException $ex) {
                         throw new HttpServerException(sprintf(
                             'Invalid request target for %s from %s: %s',
                             $method,
@@ -408,7 +407,7 @@ class HttpServer implements Immutable
             }
             try {
                 $uri = new Uri($uri, true);
-            } catch (InvalidArgumentException $ex) {
+            } catch (\InvalidArgumentException $ex) {
                 throw new HttpServerException(sprintf(
                     'Invalid request URI from %s: %s',
                     $peer,

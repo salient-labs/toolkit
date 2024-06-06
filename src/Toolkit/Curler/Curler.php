@@ -1163,7 +1163,7 @@ class Curler implements CurlerInterface, Buildable
         if (($host = $request->getHeaderLine(HttpHeader::HOST)) !== '') {
             try {
                 $host = new Uri("//$host");
-            } catch (InvalidArgumentException $ex) {
+            } catch (\InvalidArgumentException $ex) {
                 throw new InvalidHeaderException(sprintf(
                     'Invalid value for HTTP request header %s: %s',
                     HttpHeader::HOST,

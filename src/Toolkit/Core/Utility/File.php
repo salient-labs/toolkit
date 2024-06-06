@@ -2,14 +2,14 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\Exception\FilesystemErrorException;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Exception\InvalidRuntimeConfigurationException;
-use Salient\Core\Exception\UnreadDataException;
-use Salient\Core\Exception\UnwrittenDataException;
+use Salient\Core\Utility\Exception\FilesystemErrorException;
+use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Exception\InvalidRuntimeConfigurationException;
+use Salient\Core\Utility\Exception\UnreadDataException;
+use Salient\Core\Utility\Exception\UnwrittenDataException;
 use Salient\Core\Process;
 use Salient\Iterator\RecursiveFilesystemIterator;
+use InvalidArgumentException;
 use Stringable;
 
 /**
@@ -257,9 +257,20 @@ final class File extends AbstractUtility
      */
     public static function getcwd(): string
     {
-        $process = Process::withShellCommand(Sys::isWindows() ? 'cd' : 'pwd');
-        if ($process->run() === 0) {
-            return $process->getText();
+        $command = Sys::isWindows() ? 'cd' : 'pwd';
+        if (class_exists(Process::class)) {
+            $process = Process::withShellCommand($command);
+            if ($process->run() === 0) {
+                return $process->getText();
+            }
+        } else {
+            // @codeCoverageIgnoreStart
+            $pipe = self::openPipe($command, 'r');
+            $dir = self::getContents($pipe);
+            if (self::closePipe($pipe, $command) === 0) {
+                return Str::trimNativeEol($dir);
+            }
+            // @codeCoverageIgnoreEnd
         }
         error_clear_last();
         $dir = @getcwd();

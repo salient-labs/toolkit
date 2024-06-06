@@ -7,9 +7,9 @@ use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Exception\LogicException;
+use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
@@ -199,7 +199,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
         }
         try {
             return new HttpStream($content);
-        } catch (InvalidArgumentException $ex) {
+        } catch (\InvalidArgumentException $ex) {
             throw new InvalidArgumentTypeException(
                 1,
                 'content',

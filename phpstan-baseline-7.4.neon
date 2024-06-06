@@ -426,12 +426,12 @@ parameters:
 			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
-			message: "#^Parameter \\#3 \\$pattern of class Salient\\\\Core\\\\Exception\\\\PcreErrorException constructor expects array\\<\\(callable\\(array\\<string\\|null\\>\\)\\: string\\)\\|string\\>\\|string, array\\<string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\)\\> given\\.$#"
+			message: "#^Parameter \\#3 \\$pattern of class Salient\\\\Core\\\\Utility\\\\Exception\\\\PcreErrorException constructor expects array\\<\\(callable\\(array\\<string\\|null\\>\\)\\: string\\)\\|string\\>\\|string, array\\<string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\)\\> given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
-			message: "#^Parameter \\#4 \\$subject of class Salient\\\\Core\\\\Exception\\\\PcreErrorException constructor expects array\\<string\\>\\|string, array\\<TKey of \\(int\\|string\\), TValue of bool\\|float\\|int\\|string\\|Stringable\\|null\\> given\\.$#"
+			message: "#^Parameter \\#4 \\$subject of class Salient\\\\Core\\\\Utility\\\\Exception\\\\PcreErrorException constructor expects array\\<string\\>\\|string, array\\<TKey of \\(int\\|string\\), TValue of bool\\|float\\|int\\|string\\|Stringable\\|null\\> given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Regex.php
 

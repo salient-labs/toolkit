@@ -3,9 +3,9 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Arrayable;
-use Salient\Core\Exception\InvalidArgumentException;
 use Closure;
 use Countable;
+use InvalidArgumentException;
 use Traversable;
 
 /**

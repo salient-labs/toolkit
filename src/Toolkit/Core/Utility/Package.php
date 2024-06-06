@@ -4,10 +4,10 @@ namespace Salient\Core\Utility;
 
 use Composer\Autoload\ClassLoader as Loader;
 use Composer\InstalledVersions as Installed;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Event\PackageDataReceivedEvent;
 use Closure;
+use UnexpectedValueException;
 
 /**
  * Get information from Composer's runtime API
@@ -298,8 +298,10 @@ final class Package extends AbstractUtility
         string $method,
         ...$args
     ) {
+        if (!class_exists(Event::class) || !Event::isLoaded()) {
+            return $data;
+        }
         $event = new PackageDataReceivedEvent($data, $class, $method, ...$args);
-
         return Event::getInstance()->dispatch($event)->getData();
     }
 

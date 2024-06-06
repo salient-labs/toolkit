@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\Utility;
 
-use Salient\Core\Exception\InvalidEnvironmentException;
+use Salient\Core\Utility\Exception\InvalidEnvironmentException;
 use Salient\Core\Utility\Env;
 use Salient\Tests\TestCase;
 
@@ -11,6 +11,45 @@ use Salient\Tests\TestCase;
  */
 final class EnvTest extends TestCase
 {
+    /**
+     * @runInSeparateProcess
+     */
+    public function testLoad(): void
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        $expected = [
+            'LANG' => 'en_US.UTF-8',
+            'TZ' => 'Australia/Sydney',
+            'app_client_id' => 'd8f024b9-1dfb-4dde-8f29-db98eefa317c',
+            'app_secret' => "'^K&4nnE",
+        ];
+        $this->unsetKeys($expected);
+        Env::load($dir . '/example.env');
+        $this->assertSame($expected, $this->getKeys($expected));
+    }
+
+    /**
+     * @param array<string,mixed> $expected
+     */
+    private function unsetKeys(array $expected): void
+    {
+        foreach (array_keys($expected) as $key) {
+            Env::unset($key);
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $expected
+     * @return array<string,string|null>
+     */
+    private function getKeys(array $expected): array
+    {
+        foreach (array_keys($expected) as $key) {
+            $actual[$key] = Env::get($key, null);
+        }
+        return $actual ?? [];
+    }
+
     /**
      * @dataProvider getProvider
      * @dataProvider getNullableProvider

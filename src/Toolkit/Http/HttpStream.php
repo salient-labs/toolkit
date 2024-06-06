@@ -8,7 +8,7 @@ use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\InvalidArgumentTypeException;
+use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Str;
