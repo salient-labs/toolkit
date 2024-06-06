@@ -23,6 +23,7 @@ final class DotNetDateParserTest extends TestCase
             $this->assertNull($actual);
             return;
         }
+        $this->assertNotNull($actual);
         $this->assertSame($expected, $actual->format(DateTimeInterface::RFC3339_EXTENDED));
     }
 

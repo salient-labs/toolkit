@@ -781,16 +781,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$date of method Salient\\\\Core\\\\DateFormatter\\:\\:format\\(\\) expects DateTimeInterface, DateTimeImmutable\\|null given\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Core/DateFormatterTest.php
-
-		-
-			message: "#^Cannot call method format\\(\\) on DateTimeImmutable\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/DotNetDateParserTest.php
-
-		-
 			message: "#^Cannot access offset 0 on array\\{float, int\\}\\|float\\|int\\.$#"
 			count: 8
 			path: tests/unit/Toolkit/Core/MetricCollectorTest.php

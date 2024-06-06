@@ -3,6 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\DateParserInterface;
+use Salient\Utility\Test;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -18,9 +19,12 @@ final class DateParser implements DateParserInterface
      */
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
-        $date = date_create_immutable($value, $timezone);
-        if ($date === false) {
+        if (!Test::isDateString($value)) {
             return null;
+        }
+        $date = new DateTimeImmutable($value, $timezone);
+        if ($timezone) {
+            return $date->setTimezone($timezone);
         }
         return $date;
     }

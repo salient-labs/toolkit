@@ -11,13 +11,21 @@ use DateTimeZone;
 interface DateParserInterface
 {
     /**
-     * Convert a string to a date and time, if possible
+     * Convert a value to a date and time, or return null if it can't be parsed
      *
-     * Returns `null` if `$value` cannot be parsed.
+     * If the value does not specify a timezone, one of the following is used
+     * during parsing:
      *
-     * @param DateTimeZone|null $timezone Applied to the date and time if given,
-     * otherwise timezone information in `$value` should be used if present, or
-     * a default timezone may be used.
+     * - `$timezone` (if given)
+     * - the parser's default timezone (if applicable)
+     * - the script's default timezone (if set)
+     * - `UTC`
+     *
+     * If `$timezone` is given, it is applied to the date and time before it is
+     * returned.
      */
-    public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable;
+    public function parse(
+        string $value,
+        ?DateTimeZone $timezone = null
+    ): ?DateTimeImmutable;
 }
