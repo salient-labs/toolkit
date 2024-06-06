@@ -428,9 +428,10 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance with the given json_decode() flags
      *
-     * `JSON_OBJECT_AS_ARRAY` is applied by default.
+     * {@see \JSON_OBJECT_AS_ARRAY} is applied by default.
+     * {@see \JSON_THROW_ON_ERROR} is always applied and cannot be disabled.
      *
-     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY> $flags
+     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $flags
      * @return static
      */
     public function withJsonDecodeFlags(int $flags);

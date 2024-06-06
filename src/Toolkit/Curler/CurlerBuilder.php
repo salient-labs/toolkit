@@ -8,7 +8,6 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\JsonDecodeFlag;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
@@ -35,7 +34,7 @@ use Stringable;
  * @method $this postJson(bool $value = true) Use JSON to encode POST/PUT/PATCH/DELETE data (default: true)
  * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to format and parse the endpoint's date and time values
  * @method $this formDataFlags(int-mask-of<FormDataFlag::*> $value) Flags used to encode data for query strings and message bodies (default: {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} `|` {@see FormDataFlag::PRESERVE_STRING_KEYS})
- * @method $this jsonDecodeFlags(int-mask-of<JsonDecodeFlag::*> $value) Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
+ * @method $this jsonDecodeFlags(int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $value) Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
  * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
  * @method $this pager(CurlerPagerInterface|null $value) Pagination handler
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)

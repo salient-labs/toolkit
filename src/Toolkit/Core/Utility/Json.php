@@ -2,22 +2,22 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Contract\Core\JsonDecodeFlag;
-use Salient\Contract\Core\JsonEncodeFlag;
 use Salient\Core\AbstractUtility;
 
 /**
  * Wrappers for json_encode() and json_decode()
+ *
+ * @api
  */
 final class Json extends AbstractUtility
 {
     /**
-     * Flags passed to json_encode()
+     * Flags always passed to json_encode()
      */
-    public const ENCODE_FLAGS = \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR;
+    public const ENCODE_FLAGS = \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE;
 
     /**
-     * Flags passed to json_decode()
+     * Flags always passed to json_decode()
      */
     public const DECODE_FLAGS = \JSON_THROW_ON_ERROR;
 
@@ -25,7 +25,7 @@ final class Json extends AbstractUtility
      * Convert a value to a JSON string
      *
      * @param mixed $value
-     * @param int-mask-of<JsonEncodeFlag::*> $flags
+     * @param int-mask-of<\JSON_FORCE_OBJECT|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_NUMERIC_CHECK|\JSON_PRESERVE_ZERO_FRACTION|\JSON_PRETTY_PRINT|\JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE> $flags
      */
     public static function stringify($value, int $flags = 0): string
     {
@@ -33,10 +33,10 @@ final class Json extends AbstractUtility
     }
 
     /**
-     * Convert a value to a human-readable JSON string
+     * Convert a value to a human-readable JSON string with native line endings
      *
      * @param mixed $value
-     * @param int-mask-of<JsonEncodeFlag::*> $flags
+     * @param int-mask-of<\JSON_FORCE_OBJECT|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_NUMERIC_CHECK|\JSON_PRESERVE_ZERO_FRACTION|\JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE> $flags
      */
     public static function prettyPrint($value, int $flags = 0): string
     {
@@ -48,7 +48,7 @@ final class Json extends AbstractUtility
     /**
      * Convert a JSON string to a value
      *
-     * @param int-mask-of<JsonDecodeFlag::*> $flags
+     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $flags
      * @return mixed
      */
     public static function parse(string $json, int $flags = 0)
@@ -57,10 +57,10 @@ final class Json extends AbstractUtility
     }
 
     /**
-     * Convert a JSON string to a value where JSON objects are represented as
-     * associative arrays
+     * Convert a JSON string to a value, returning JSON objects as associative
+     * arrays
      *
-     * @param int-mask-of<JsonDecodeFlag::*> $flags
+     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_THROW_ON_ERROR> $flags
      * @return mixed[]|int|float|string|bool|null
      */
     public static function parseObjectAsArray(string $json, int $flags = 0)

@@ -516,6 +516,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         ?string $filename = null,
         bool $returnFqcn = true
     ): ?string {
+        $_type = $type;
         $type = ltrim($type, '\\');
         $lower = Str::lower($type);
         if (
@@ -527,6 +528,10 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         }
         if (Test::isBuiltinType($type)) {
             return $returnFqcn ? $lower : null;
+        }
+        // If it looks like a constant, assume it is one
+        if ($lower !== $type && Str::upper($type) === $type && strpos($type, '\\') === false) {
+            return $returnFqcn ? $_type : null;
         }
         /** @var class-string $type */
         return $this->getFqcnAlias($type, null, $returnFqcn);
