@@ -11,12 +11,12 @@ use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
-use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Package;
@@ -43,7 +43,7 @@ class CliApplication extends Application implements CliApplicationInterface
     public function __construct(
         ?string $basePath = null,
         ?string $appName = null,
-        int $envFlags = EnvFlag::ALL,
+        int $envFlags = Env::APPLY_ALL,
         ?string $configDir = 'config'
     ) {
         parent::__construct($basePath, $appName, $envFlags, $configDir);

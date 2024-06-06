@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidDotEnvSyntaxException;
 use Salient\Core\Exception\InvalidEnvironmentException;
@@ -49,6 +48,29 @@ use Closure;
 final class Env extends AbstractUtility
 {
     /**
+     * Set locale information from the environment
+     *
+     * Locale names are taken from environment variables `LC_ALL`, `LC_COLLATE`,
+     * `LC_CTYPE`, `LC_MONETARY`, `LC_NUMERIC`, `LC_TIME` and `LC_MESSAGES`, or
+     * from `LANG`. On Windows, they are taken from the system's language and
+     * region settings.
+     */
+    public const APPLY_LOCALE = 1;
+
+    /**
+     * Set the default timezone from the environment
+     *
+     * If environment variable `TZ` contains a valid timezone, it is passed to
+     * `date_default_timezone_set`.
+     */
+    public const APPLY_TIMEZONE = 2;
+
+    /**
+     * Apply all recognised values from the environment to the running script
+     */
+    public const APPLY_ALL = Env::APPLY_LOCALE | Env::APPLY_TIMEZONE;
+
+    /**
      * Load one or more .env files
      *
      * Values are applied to `$_ENV`, `$_SERVER` and {@see putenv()} unless
@@ -76,11 +98,11 @@ final class Env extends AbstractUtility
     /**
      * Apply values from the environment to the running script
      *
-     * @param int-mask-of<EnvFlag::*> $flags
+     * @param int-mask-of<Env::APPLY_*> $flags
      */
-    public static function apply(int $flags = EnvFlag::ALL): void
+    public static function apply(int $flags = Env::APPLY_ALL): void
     {
-        if ($flags & EnvFlag::LOCALE) {
+        if ($flags & self::APPLY_LOCALE) {
             $locale = @setlocale(\LC_ALL, '');
             if ($locale === false) {
                 Console::debug('Unable to set locale from environment');
@@ -89,7 +111,7 @@ final class Env extends AbstractUtility
             }
         }
 
-        if ($flags & EnvFlag::TIMEZONE) {
+        if ($flags & self::APPLY_TIMEZONE) {
             $tz = Pcre::replace(
                 ['/^:?(.*\/zoneinfo\/)?/', '/^(UTC)0$/'],
                 ['', '$1'],

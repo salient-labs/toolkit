@@ -7,7 +7,6 @@ use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\EnvFlag;
 use Salient\Core\Facade\Config;
 use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
@@ -56,7 +55,7 @@ final class ApplicationTest extends TestCase
             File::writeContents("{$configDir}/{$name}.php", $data);
         }
 
-        $app = new Application($basePath, null, EnvFlag::ALL, null);
+        $app = new Application($basePath, null, Env::APPLY_ALL, null);
         $this->assertSame([], Config::all());
 
         $app = new Application($basePath);

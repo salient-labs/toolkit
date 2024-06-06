@@ -7,7 +7,6 @@ use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
-use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Sync\SyncClassResolverInterface;
@@ -251,7 +250,7 @@ class Application extends Container implements ApplicationInterface
      *
      * @api
      *
-     * @param int-mask-of<EnvFlag::*> $envFlags Values to apply from the
+     * @param int-mask-of<Env::APPLY_*> $envFlags Values to apply from the
      * environment to the running script.
      * @param string|null $configDir A path relative to the application's base
      * path, or `null` if configuration files should not be loaded.
@@ -259,7 +258,7 @@ class Application extends Container implements ApplicationInterface
     public function __construct(
         ?string $basePath = null,
         ?string $appName = null,
-        int $envFlags = EnvFlag::ALL,
+        int $envFlags = Env::APPLY_ALL,
         ?string $configDir = 'config'
     ) {
         if (!isset(self::$StartTime)) {
