@@ -6,7 +6,7 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Iterator\Concern\FluentIteratorTrait;
 use AppendIterator;
 use CallbackFilterIterator;
@@ -280,15 +280,15 @@ class RecursiveFilesystemIterator implements
                             }
                             continue;
                         }
-                        if (Pcre::match($exclude, $path)
+                        if (Regex::match($exclude, $path)
                             || ($this->MatchRelative
-                                && Pcre::match($exclude, "/{$path}"))) {
+                                && Regex::match($exclude, "/{$path}"))) {
                             return true;
                         }
                         if ($file->isDir()
-                            && (Pcre::match($exclude, "{$path}/")
+                            && (Regex::match($exclude, "{$path}/")
                                 || ($this->MatchRelative
-                                    && Pcre::match($exclude, "/{$path}/")))) {
+                                    && Regex::match($exclude, "/{$path}/")))) {
                             return true;
                         }
                     }
@@ -314,15 +314,15 @@ class RecursiveFilesystemIterator implements
                             }
                             continue;
                         }
-                        if (Pcre::match($include, $path)
+                        if (Regex::match($include, $path)
                             || ($this->MatchRelative
-                                && Pcre::match($include, "/{$path}"))) {
+                                && Regex::match($include, "/{$path}"))) {
                             return true;
                         }
                         if ($file->isDir()
-                            && (Pcre::match($include, "$path/")
+                            && (Regex::match($include, "$path/")
                                 || ($this->MatchRelative
-                                    && Pcre::match($include, "/{$path}/")))) {
+                                    && Regex::match($include, "/{$path}/")))) {
                             return true;
                         }
                     }
@@ -433,7 +433,7 @@ class RecursiveFilesystemIterator implements
      */
     public function nextWithValue($key, $value, bool $strict = false)
     {
-        $name = Pcre::replace('/^(?:get|is)/i', '', (string) $key, -1, $count);
+        $name = Regex::replace('/^(?:get|is)/i', '', (string) $key, -1, $count);
 
         if (method_exists(SplFileInfo::class, $key)) {
             // If `$key` is the name of a method, check that it starts with

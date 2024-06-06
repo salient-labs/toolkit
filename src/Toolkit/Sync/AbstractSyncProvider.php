@@ -5,7 +5,6 @@ namespace Salient\Sync;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
-use Salient\Contract\Core\Regex;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
@@ -13,7 +12,7 @@ use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
@@ -98,8 +97,8 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     {
         if (
             is_int($id)
-            || Pcre::match(Pcre::delimit('^' . Regex::MONGODB_OBJECTID . '$', '/'), $id)
-            || Pcre::match(Pcre::delimit('^' . Regex::UUID . '$', '/'), $id)
+            || Regex::match(Regex::delimit('^' . Regex::MONGODB_OBJECTID . '$', '/'), $id)
+            || Regex::match(Regex::delimit('^' . Regex::UUID . '$', '/'), $id)
         ) {
             return true;
         }

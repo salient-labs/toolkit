@@ -180,7 +180,7 @@ final class Inflect extends AbstractUtility
                 'were' => 'were',
             ], $replace);
 
-        $format = Pcre::replaceCallback(
+        $format = Regex::replaceCallback(
             '/\{\{#(?::(?<word>[-a-z0-9_\h]*+|#)(?::(?<plural_word>[-a-z0-9_\h]*+))?)?\}\}/i',
             function (array $match) use ($singular, $replace): string {
                 $word = $match['word'];
@@ -223,7 +223,7 @@ final class Inflect extends AbstractUtility
             '/is \Z/ix' => ['es', -2],
             '/on \Z/ix' => ['a', -2],
         ] as $pattern => [$replace, $offset]) {
-            if (Pcre::match($pattern, $word)) {
+            if (Regex::match($pattern, $word)) {
                 if ($offset) {
                     return substr_replace($word, $replace, $offset);
                 }
@@ -264,37 +264,37 @@ REGEX;
         $initialYAn = '/\A y (?: b[lor] | cl[ea] | fere | gg | p[ios] | rou | tt)/xi';
 
         // Handle ordinal forms
-        if (Pcre::match($ordinalA, $word)) { return 'a'; }
-        if (Pcre::match($ordinalAn, $word)) { return 'an'; }
+        if (Regex::match($ordinalA, $word)) { return 'a'; }
+        if (Regex::match($ordinalAn, $word)) { return 'an'; }
 
         // Handle special cases
-        if (Pcre::match($explicitAn, $word)) { return 'an'; }
-        if (Pcre::match($singleAn, $word)) { return 'an'; }
-        if (Pcre::match($singleA, $word)) { return 'a'; }
+        if (Regex::match($explicitAn, $word)) { return 'an'; }
+        if (Regex::match($singleAn, $word)) { return 'an'; }
+        if (Regex::match($singleA, $word)) { return 'a'; }
 
         // Handle abbreviations
-        if (Pcre::match($abbrevAn, $word)) { return 'an'; }
-        if (Pcre::match('/\A [aefhilmnorsx][.-]/xi', $word)) { return 'an'; }
-        if (Pcre::match('/\A [a-z][.-]/xi', $word)) { return 'a'; }
+        if (Regex::match($abbrevAn, $word)) { return 'an'; }
+        if (Regex::match('/\A [aefhilmnorsx][.-]/xi', $word)) { return 'an'; }
+        if (Regex::match('/\A [a-z][.-]/xi', $word)) { return 'a'; }
 
         // Handle consonants
-        if (Pcre::match('/\A [^aeiouy] /xi', $word)) { return 'a'; }
+        if (Regex::match('/\A [^aeiouy] /xi', $word)) { return 'a'; }
 
         // Handle special vowel-forms
-        if (Pcre::match('/\A e [uw] /xi', $word)) { return 'a'; }
-        if (Pcre::match('/\A onc?e \b /xi', $word)) { return 'a'; }
-        if (Pcre::match('/\A uni (?: [^nmd] | mo) /xi', $word)) { return 'a'; }
-        if (Pcre::match('/\A ut[th] /xi', $word)) { return 'an'; }
-        if (Pcre::match('/\A u [bcfhjkqrst] [aeiou] /xi', $word)) { return 'a'; }
+        if (Regex::match('/\A e [uw] /xi', $word)) { return 'a'; }
+        if (Regex::match('/\A onc?e \b /xi', $word)) { return 'a'; }
+        if (Regex::match('/\A uni (?: [^nmd] | mo) /xi', $word)) { return 'a'; }
+        if (Regex::match('/\A ut[th] /xi', $word)) { return 'an'; }
+        if (Regex::match('/\A u [bcfhjkqrst] [aeiou] /xi', $word)) { return 'a'; }
 
         // Handle special capitals
-        if (Pcre::match('/\A U [NK] [AIEO]? /x', $word)) { return 'a'; }
+        if (Regex::match('/\A U [NK] [AIEO]? /x', $word)) { return 'a'; }
 
         // Handle vowels
-        if (Pcre::match('/\A [aeiou]/xi', $word)) { return 'an'; }
+        if (Regex::match('/\A [aeiou]/xi', $word)) { return 'an'; }
 
         // Handle words beginning with "Y"
-        if (Pcre::match($initialYAn, $word)) { return 'an'; }
+        if (Regex::match($initialYAn, $word)) { return 'an'; }
 
         // Otherwise, guess "a"
         return 'a';

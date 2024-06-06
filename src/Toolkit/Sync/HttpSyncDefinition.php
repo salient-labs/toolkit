@@ -21,7 +21,7 @@ use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Core\Pipeline;
 use Salient\Curler\Exception\HttpErrorException;
@@ -587,7 +587,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             $idApplied = false;
             $path = array_shift($paths);
             try {
-                $path = Pcre::replaceCallback(
+                $path = Regex::replaceCallback(
                     '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
                     function (array $match) use (
                         $operation,

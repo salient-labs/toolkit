@@ -7,7 +7,7 @@ use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 
@@ -43,7 +43,7 @@ foreach ($files as $file) {
         ));
     }
 
-    $output = Pcre::grep('/^(?: ++| *+\/\*)\* @covers(?:Nothing)?\b/i', $input, \PREG_GREP_INVERT);
+    $output = Regex::grep('/^(?: ++| *+\/\*)\* @covers(?:Nothing)?\b/i', $input, \PREG_GREP_INVERT);
     if ($output === $input) {
         Console::log('Nothing to do:', $relative);
         continue;

@@ -25,7 +25,7 @@ use Salient\Core\Utility\File;
 use Salient\Core\Utility\Format;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Sys;
 use Salient\Sync\SyncStore;
 use Phar;
@@ -270,7 +270,7 @@ class Application extends Container implements ApplicationInterface
         static::setGlobalContainer($this);
 
         $this->AppName = $appName
-            ?? Pcre::replace(
+            ?? Regex::replace(
                 // Match `git describe --long` and similar formats
                 '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/i',
                 '',

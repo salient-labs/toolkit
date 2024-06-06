@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Contract\Core\Regex;
 use Salient\Core\AbstractUtility;
 use Stringable;
 
@@ -32,7 +31,7 @@ final class Test extends AbstractUtility
     {
         return is_bool($value) || (
             is_string($value)
-            && Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value)
+            && Regex::match('/^' . Regex::BOOLEAN_STRING . '$/', $value)
         );
     }
 
@@ -45,7 +44,7 @@ final class Test extends AbstractUtility
     {
         return is_int($value) || (
             is_string($value)
-            && Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+            && Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)
         );
     }
 
@@ -61,7 +60,7 @@ final class Test extends AbstractUtility
         return is_float($value) || (
             is_string($value)
             && is_numeric(trim($value))
-            && !Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+            && !Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)
         );
     }
 
@@ -76,7 +75,7 @@ final class Test extends AbstractUtility
         return is_int($value)
             || is_float($value)
             || is_bool($value)
-            || (is_string($value) && Pcre::match('/^(-?[1-9][0-9]*|0)$/D', $value));
+            || (is_string($value) && Regex::match('/^(-?[1-9][0-9]*|0)$/D', $value));
     }
 
     /**
@@ -97,7 +96,7 @@ final class Test extends AbstractUtility
      */
     public static function isAsciiString($value): bool
     {
-        return is_string($value) && !Pcre::match('/[^\x00-\x7f]/', $value);
+        return is_string($value) && !Regex::match('/[^\x00-\x7f]/', $value);
     }
 
     /**
@@ -165,6 +164,6 @@ final class Test extends AbstractUtility
     public static function isFqcn($value): bool
     {
         return is_string($value)
-            && Pcre::match('/^' . Regex::PHP_TYPE . '$/D', $value);
+            && Regex::match('/^' . Regex::PHP_TYPE . '$/D', $value);
     }
 }

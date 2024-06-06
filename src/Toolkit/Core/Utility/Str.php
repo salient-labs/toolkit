@@ -117,7 +117,7 @@ final class Str extends AbstractUtility
             '/[^[:alnum:]]+/u' => ' ',
         ];
 
-        return self::upper(trim(Pcre::replace(
+        return self::upper(trim(Regex::replace(
             array_keys($replace),
             array_values($replace),
             $string
@@ -256,7 +256,7 @@ final class Str extends AbstractUtility
      */
     public static function toCamelCase(string $string, ?string $preserve = null): string
     {
-        return Pcre::replaceCallback(
+        return Regex::replaceCallback(
             '/(?<![[:alnum:]])[[:alpha:]]/u',
             fn($matches) => self::lower($matches[0]),
             self::toPascalCase($string, $preserve)
@@ -307,14 +307,14 @@ final class Str extends AbstractUtility
     ): string {
         $notAfterPreserve = '';
         if ($preserve !== null && $preserve !== '') {
-            $preserve = Pcre::replace('/[[:alnum:]]/u', '', $preserve);
+            $preserve = Regex::replace('/[[:alnum:]]/u', '', $preserve);
             if ($preserve !== '') {
                 // Prevent "key=value" becoming "key= value" when preserving "="
                 // by asserting that when separating words, they must appear:
                 // - immediately after the previous word (\G)
                 // - after an unpreserved character, or
                 // - at a word boundary (e.g. "Value" in "key=someValue")
-                $preserve = Pcre::quoteCharacterClass($preserve, '/');
+                $preserve = Regex::quoteCharacterClass($preserve, '/');
                 $notAfterPreserve = "(?:\G|(?<=[^[:alnum:]{$preserve}])|(?<=[[:lower:][:digit:]])(?=[[:upper:]]))";
             }
         }
@@ -324,7 +324,7 @@ final class Str extends AbstractUtility
         // Insert separators before words not adjacent to a preserved character
         // to prevent "foo bar" becoming "foobar", for example
         if ($separator !== '') {
-            $string = Pcre::replace(
+            $string = Regex::replace(
                 "/$notAfterPreserve$word/u",
                 $separator . '$0',
                 $string
@@ -332,7 +332,7 @@ final class Str extends AbstractUtility
         }
 
         if ($callback !== null) {
-            $string = Pcre::replaceCallback(
+            $string = Regex::replaceCallback(
                 "/$word/u",
                 fn(array $match): string => $callback($match[0]),
                 $string
@@ -342,7 +342,7 @@ final class Str extends AbstractUtility
         // Trim unpreserved characters from the beginning and end of the string,
         // then replace sequences of one or more unpreserved characters with one
         // separator
-        $string = Pcre::replace([
+        $string = Regex::replace([
             "/^[^{$preserve}]++|[^{$preserve}]++\$/u",
             "/[^{$preserve}]++/u",
         ], [
@@ -404,7 +404,7 @@ final class Str extends AbstractUtility
         foreach (explode($eol, $text) as $i => $line) {
             !$i || $expanded .= $eol;
             if ($i || (!$preserveLine1 && $column === 1)) {
-                $expanded .= Pcre::replace('/(?<=\n|\G)\t/', $softTab, $line);
+                $expanded .= Regex::replace('/(?<=\n|\G)\t/', $softTab, $line);
                 continue;
             }
             if ($preserveLine1) {
@@ -510,7 +510,7 @@ final class Str extends AbstractUtility
         }
 
         $quoted = preg_quote($separator, '/');
-        $escaped = Pcre::quoteCharacterClass($separator, '/');
+        $escaped = Regex::quoteCharacterClass($separator, '/');
 
         $regex = <<<REGEX
 (?x)
@@ -523,8 +523,8 @@ final class Str extends AbstractUtility
   (?<= $quoted | ^ ) (?= $quoted | \$ ) )+
 REGEX;
 
-        Pcre::matchAll(
-            Pcre::delimit($regex, '/'),
+        Regex::matchAll(
+            Regex::delimit($regex, '/'),
             $string,
             $matches,
         );
@@ -614,7 +614,7 @@ REGEX;
             $replace[] = $break . $break;
         }
 
-        return Pcre::replace($search, $replace, $string);
+        return Regex::replace($search, $replace, $string);
     }
 
     /**
@@ -830,12 +830,12 @@ REGEX;
     ): string {
         $marker = (string) $marker !== '' ? $marker . ' ' : null;
         $indent = $marker !== null ? str_repeat(' ', mb_strlen($marker)) : '';
-        $markerIsItem = $marker !== null && Pcre::match($regex, $marker);
+        $markerIsItem = $marker !== null && Regex::match($regex, $marker);
 
         /** @var array<string,string[]> */
         $sections = [];
         $lastWasItem = false;
-        $lines = Pcre::split('/\r\n|\n|\r/', $text);
+        $lines = Regex::split('/\r\n|\n|\r/', $text);
         for ($i = 0; $i < count($lines); $i++) {
             $line = $lines[$i];
 
@@ -854,7 +854,7 @@ REGEX;
             }
 
             // Collect any subsequent indented lines
-            if (Pcre::match($regex, $line, $matches)) {
+            if (Regex::match($regex, $line, $matches)) {
                 $matchIndent = $matches['indent'] ?? '';
                 if ($matchIndent !== '') {
                     $matchIndent = str_repeat(' ', mb_strlen($matchIndent));
@@ -914,7 +914,7 @@ REGEX;
 
             // Collect second and subsequent consecutive top-level list items
             // under the first so they don't form a loose list
-            if (Pcre::match($regex, $section)) {
+            if (Regex::match($regex, $section)) {
                 if ($last !== null) {
                     $top[$last][] = $section;
                     continue;
@@ -931,13 +931,13 @@ REGEX;
         $groups = [];
         foreach ($sections as $section => $lines) {
             if ($clean) {
-                $section = Pcre::replace($regex, '', $section, 1);
+                $section = Regex::replace($regex, '', $section, 1);
             }
 
             $marked = false;
             if ($marker !== null
                     && !($markerIsItem && strpos($section, $marker) === 0)
-                    && !Pcre::match($regex, $section)) {
+                    && !Regex::match($regex, $section)) {
                 $section = $marker . $section;
                 $marked = true;
             }
@@ -948,7 +948,7 @@ REGEX;
             }
 
             // Don't separate or indent top-level list items collected above
-            if (!$marked && Pcre::match($regex, $section)) {
+            if (!$marked && Regex::match($regex, $section)) {
                 $groups[] = implode("\n", [$section, ...$lines]);
                 continue;
             }

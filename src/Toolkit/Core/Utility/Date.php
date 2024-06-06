@@ -55,7 +55,7 @@ final class Date extends AbstractUtility
         if (!$interval instanceof DateInterval) {
             if (
                 \PHP_VERSION_ID < 80000
-                && Pcre::match('/W.+D/', $interval)
+                && Regex::match('/W.+D/', $interval)
             ) {
                 throw new InvalidArgumentException(sprintf(
                     'Invalid $interval: %s',

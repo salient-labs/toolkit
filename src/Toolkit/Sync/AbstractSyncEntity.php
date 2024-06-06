@@ -36,7 +36,7 @@ use Salient\Core\Facade\Sync;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
@@ -297,14 +297,14 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         ) use ($regex): string {
             if ($greedy && !$hints) {
                 return self::$NormalisedPropertyMap[static::class][$name]
-                    ??= Pcre::replace($regex, '', Str::toSnakeCase($name));
+                    ??= Regex::replace($regex, '', Str::toSnakeCase($name));
             }
             $_name = Str::toSnakeCase($name);
             if (!$greedy || in_array($_name, $hints)) {
                 return $_name;
             }
 
-            return Pcre::replace($regex, '', $_name);
+            return Regex::replace($regex, '', $_name);
         };
     }
 

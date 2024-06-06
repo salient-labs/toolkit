@@ -4,7 +4,7 @@ namespace Salient\Tests\Core\Utility;
 
 use Salient\Core\Exception\PcreErrorException;
 use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Tests\TestCase;
 use Stringable;
 
@@ -18,7 +18,7 @@ final class PcreTest extends TestCase
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_grep() failed with PREG_BACKTRACK_LIMIT_ERROR');
-        Pcre::grep('/(?:\D+|<\d+>)*[!?]/', ['foobar foobar foobar']);
+        Regex::grep('/(?:\D+|<\d+>)*[!?]/', ['foobar foobar foobar']);
     }
 
     /**
@@ -33,7 +33,7 @@ final class PcreTest extends TestCase
     public function testGrep($expected, string $pattern, array $array, int $flags = 0): void
     {
         $this->maybeExpectException($expected);
-        $this->assertSame($expected, Pcre::grep($pattern, $array, $flags));
+        $this->assertSame($expected, Regex::grep($pattern, $array, $flags));
     }
 
     /**
@@ -103,13 +103,13 @@ final class PcreTest extends TestCase
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_match() failed with PREG_BACKTRACK_LIMIT_ERROR');
         // This was taken from PHP's manual
-        Pcre::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
+        Regex::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
     }
 
     public function testMatchException(): void
     {
         try {
-            Pcre::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
+            Regex::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
         } catch (PcreErrorException $e) {
             $this->assertStringContainsString('Call to preg_match() failed with PREG_BACKTRACK_LIMIT_ERROR', $e->getMessage());
             $this->assertSame([
@@ -130,21 +130,21 @@ final class PcreTest extends TestCase
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_match_all() failed with PREG_BACKTRACK_LIMIT_ERROR');
-        Pcre::matchAll('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
+        Regex::matchAll('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
     }
 
     public function testReplace(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_replace() failed with PREG_BACKTRACK_LIMIT_ERROR');
-        Pcre::replace('/(?:\D+|<\d+>)*[!?]/', '', 'foobar foobar foobar');
+        Regex::replace('/(?:\D+|<\d+>)*[!?]/', '', 'foobar foobar foobar');
     }
 
     public function testReplaceException(): void
     {
         $pattern = ['/(?:\D+|<\d+>)*[!?]/', '/\h+/'];
         try {
-            Pcre::replace($pattern, ['', ' '], 'foobar foobar foobar');
+            Regex::replace($pattern, ['', ' '], 'foobar foobar foobar');
         } catch (PcreErrorException $e) {
             $this->assertStringContainsString(
                 'Call to preg_replace() failed with PREG_BACKTRACK_LIMIT_ERROR',
@@ -168,21 +168,21 @@ final class PcreTest extends TestCase
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_replace_callback() failed with PREG_BACKTRACK_LIMIT_ERROR');
-        Pcre::replaceCallback('/(?:\D+|<\d+>)*[!?]/', fn() => '', 'foobar foobar foobar');
+        Regex::replaceCallback('/(?:\D+|<\d+>)*[!?]/', fn() => '', 'foobar foobar foobar');
     }
 
     public function testReplaceCallbackArray(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_replace_callback_array() failed with PREG_BACKTRACK_LIMIT_ERROR');
-        Pcre::replaceCallbackArray(['/(?:\D+|<\d+>)*[!?]/' => fn() => ''], 'foobar foobar foobar');
+        Regex::replaceCallbackArray(['/(?:\D+|<\d+>)*[!?]/' => fn() => ''], 'foobar foobar foobar');
     }
 
     public function testSplit(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_split() failed with PREG_BACKTRACK_LIMIT_ERROR');
-        Pcre::split('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
+        Regex::split('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
     }
 
     /**
@@ -190,7 +190,7 @@ final class PcreTest extends TestCase
      */
     public function testQuoteCharacterClass(string $expected, string $characters, ?string $delimiter = null): void
     {
-        $this->assertSame($expected, Pcre::quoteCharacterClass($characters, $delimiter));
+        $this->assertSame($expected, Regex::quoteCharacterClass($characters, $delimiter));
     }
 
     /**

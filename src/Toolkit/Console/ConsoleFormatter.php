@@ -15,7 +15,7 @@ use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 
 /**
@@ -293,7 +293,7 @@ REGEX;
 
         // Normalise line endings and split the string into formattable text,
         // fenced code blocks and code spans
-        if (!Pcre::matchAll(
+        if (!Regex::matchAll(
             self::MARKUP,
             Str::setEol($string),
             $matches,
@@ -332,7 +332,7 @@ REGEX;
                 }
 
                 $adjust = 0;
-                $text = Pcre::replaceCallback(
+                $text = Regex::replaceCallback(
                     self::TAG,
                     function (array $match) use (
                         &$replace,
@@ -347,7 +347,7 @@ REGEX;
                             $textFormats->getUnescape(),
                             $textFormats
                         );
-                        $placeholder = Pcre::replace('/[^ ]/u', 'x', $text);
+                        $placeholder = Regex::replace('/[^ ]/u', 'x', $text);
                         $formatted = $textFormats === $formattedFormats
                             ? $text
                             : $this->applyTags(
@@ -410,7 +410,7 @@ REGEX;
                 // - Convert line endings to spaces
                 // - If the string begins and ends with a space but doesn't
                 //   consist entirely of spaces, remove both
-                $span = Pcre::replace(
+                $span = Regex::replace(
                     '/^ ((?> *[^ ]+).*) $/u',
                     '$1',
                     strtr($span, "\n", ' '),
@@ -420,7 +420,7 @@ REGEX;
                     $match['backtickstring'],
                 );
                 $text = $textFormats->apply($span, $attributes);
-                $placeholder = Pcre::replace('/[^ ]/u', 'x', $text);
+                $placeholder = Regex::replace('/[^ ]/u', 'x', $text);
                 $formatted = $textFormats === $formattedFormats
                     ? $text
                     : $formattedFormats->apply($span, $attributes);
@@ -443,7 +443,7 @@ REGEX;
             $adjustable[$i] = $offset;
         }
         $adjust = 0;
-        $string = Pcre::replaceCallback(
+        $string = Regex::replaceCallback(
             self::ESCAPE,
             function (array $match) use (
                 $unformat,
@@ -590,7 +590,7 @@ REGEX;
             '-' => $this->TagFormats->get(Tag::DIFF_REMOVAL),
         ];
 
-        return Pcre::replaceCallback(
+        return Regex::replaceCallback(
             '/^([-+]{3}|[-+@]).*/m',
             fn(array $matches) => $formats[$matches[1]]->apply($matches[0]),
             $diff,
@@ -615,7 +615,7 @@ REGEX;
      */
     public static function unescapeTags(string $string): string
     {
-        return Pcre::replace(
+        return Regex::replace(
             self::ESCAPE,
             '$1',
             $string,
@@ -664,7 +664,7 @@ REGEX;
         $text = $matchHasOffset ? $match['text'][0] : $match['text'];
         $tag = $matchHasOffset ? $match['tag'][0] : $match['tag'];
 
-        $text = Pcre::replaceCallback(
+        $text = Regex::replaceCallback(
             self::TAG,
             fn(array $match): string =>
                 $this->applyTags($match, false, $unescape, $formats, $depth + 1),
@@ -674,7 +674,7 @@ REGEX;
         );
 
         if ($unescape) {
-            $text = Pcre::replace(
+            $text = Regex::replace(
                 self::ESCAPE,
                 '$1',
                 $text,
@@ -702,7 +702,7 @@ REGEX;
         string $placeholder = 'x',
         ?string $replacement = null
     ): string {
-        return Pcre::replaceCallback(
+        return Regex::replaceCallback(
             $pattern,
             function (array $match) use (
                 $placeholder,

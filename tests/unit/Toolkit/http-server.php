@@ -7,7 +7,7 @@ use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Http\Http;
 use Salient\Http\HttpResponse;
@@ -69,7 +69,7 @@ do {
         throw new RuntimeException('No client address');
     }
 
-    Pcre::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
+    Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
 
     /** @var array{addr:string,port?:string} $matches */
     $remoteHost = $matches['addr'];

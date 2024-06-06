@@ -13,7 +13,7 @@ use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 
 /**
  * Base class for PSR-7 HTTP message classes
@@ -105,7 +105,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
 
     private function filterProtocolVersion(string $version): string
     {
-        if (!Pcre::match('/^[0-9](?:\.[0-9])?$/D', $version)) {
+        if (!Regex::match('/^[0-9](?:\.[0-9])?$/D', $version)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid HTTP protocol version: %s', $version)
             );

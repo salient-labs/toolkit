@@ -371,34 +371,34 @@ parameters:
 			path: src/Toolkit/Core/Utility/Inflect.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replace\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
+			message: "#^Method Salient\\\\Core\\\\Utility\\\\Regex\\:\\:replace\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
 			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
+			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replaceCallback\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
+			message: "#^Method Salient\\\\Core\\\\Utility\\\\Regex\\:\\:replaceCallback\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
 			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
+			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replaceCallbackArray\\(\\) should return T of array\\<string\\>\\|string but returns array\\|string\\.$#"
+			message: "#^Method Salient\\\\Core\\\\Utility\\\\Regex\\:\\:replaceCallbackArray\\(\\) should return T of array\\<string\\>\\|string but returns array\\|string\\.$#"
 			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
+			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
 			message: "#^Parameter \\#2 \\$callback of function preg_replace_callback expects callable\\(array\\<int\\|string, string\\>\\)\\: string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\) given\\.$#"
 			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
+			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
 			message: "#^Parameter \\#3 \\$pattern of class Salient\\\\Core\\\\Exception\\\\PcreErrorException constructor expects array\\<\\(callable\\(array\\<string\\|null\\>\\)\\: string\\)\\|string\\>\\|string, array\\<string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\)\\> given\\.$#"
 			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
+			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
 			message: "#^Parameter \\#4 \\$subject of class Salient\\\\Core\\\\Exception\\\\PcreErrorException constructor expects array\\<string\\>\\|string, array\\<TKey of \\(int\\|string\\), TValue of bool\\|float\\|int\\|string\\|Stringable\\|null\\> given\\.$#"
 			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
+			path: src/Toolkit/Core/Utility/Regex.php
 
 		-
 			message: "#^Offset 'uri' on array\\{timed_out\\: bool, blocked\\: bool, eof\\: bool, unread_bytes\\: int, stream_type\\: string, wrapper_type\\: string, wrapper_data\\: mixed, mode\\: string, \\.\\.\\.\\} on left side of \\?\\? always exists and is not nullable\\.$#"
@@ -816,7 +816,7 @@ parameters:
 			path: tests/unit/Toolkit/Core/Utility/InflectTest.php
 
 		-
-			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
+			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Regex\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Utility/PcreTest.php
 

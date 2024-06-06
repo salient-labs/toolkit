@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidDotEnvSyntaxException;
 use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Exception\LogicException;
@@ -112,7 +111,7 @@ final class Env extends AbstractUtility
         }
 
         if ($flags & self::APPLY_TIMEZONE) {
-            $tz = Pcre::replace(
+            $tz = Regex::replace(
                 ['/^:?(.*\/zoneinfo\/)?/', '/^(UTC)0$/'],
                 ['', '$1'],
                 self::get('TZ', '')
@@ -255,7 +254,7 @@ final class Env extends AbstractUtility
             return $default;
         }
 
-        if (!Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+        if (!Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
             throw new InvalidEnvironmentException(sprintf(
                 'Value is not an integer: %s',
                 $name,
@@ -292,7 +291,7 @@ final class Env extends AbstractUtility
             return false;
         }
 
-        if (!Pcre::match(
+        if (!Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
             $match,
@@ -365,7 +364,7 @@ final class Env extends AbstractUtility
         }
 
         $regex = sprintf('/^%s(?:%s%1$s)*+$/', Regex::INTEGER_STRING, preg_quote($delimiter, '/'));
-        if (!Pcre::match($regex, $value)) {
+        if (!Regex::match($regex, $value)) {
             throw new InvalidEnvironmentException(sprintf(
                 'Value is not an integer list: %s',
                 $name,
@@ -426,7 +425,7 @@ final class Env extends AbstractUtility
             return null;
         }
 
-        if (!Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+        if (!Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
             throw new InvalidEnvironmentException(sprintf(
                 'Value is not an integer: %s',
                 $name,
@@ -462,7 +461,7 @@ final class Env extends AbstractUtility
             return null;
         }
 
-        if (!Pcre::match(
+        if (!Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
             $match,
@@ -572,7 +571,7 @@ final class Env extends AbstractUtility
             return false;
         }
 
-        return (bool) Pcre::match('/\.utf-?8$/i', $locale);
+        return (bool) Regex::match('/\.utf-?8$/i', $locale);
     }
 
     /**
@@ -606,7 +605,7 @@ final class Env extends AbstractUtility
                 continue;
             }
 
-            if (!Pcre::match(<<<'REGEX'
+            if (!Regex::match(<<<'REGEX'
 / ^
 (?<name> [a-z_] [a-z0-9_]*+ ) = (?:
 " (?<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
@@ -633,7 +632,7 @@ REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
             /** @var string|null */
             $double = $match['double'];
             if ($double !== null) {
-                $queue[$name] = Pcre::replace('/\\\\(["$\\\\`])/', '$1', $double);
+                $queue[$name] = Regex::replace('/\\\\(["$\\\\`])/', '$1', $double);
                 continue;
             }
 
@@ -646,7 +645,7 @@ REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
 
             /** @var string */
             $none = $match['none'];
-            $queue[$name] = Pcre::replace('/\\\\(.)/', '$1', $none);
+            $queue[$name] = Regex::replace('/\\\\(.)/', '$1', $none);
         }
     }
 

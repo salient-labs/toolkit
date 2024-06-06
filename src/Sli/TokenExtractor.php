@@ -5,7 +5,7 @@ namespace Salient\Sli;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Generator;
 
 defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);
@@ -32,7 +32,7 @@ final class TokenExtractor
     {
         foreach ($this->Tokens as $token) {
             if (is_array($token)) {
-                printf("[%4d] %s: %s\n", $token[2], token_name($token[0]), Pcre::replace('/\s+/', ' ', $token[1]));
+                printf("[%4d] %s: %s\n", $token[2], token_name($token[0]), Regex::replace('/\s+/', ' ', $token[1]));
             } else {
                 printf("[%'-4s] %s\n", '', $token);
             }

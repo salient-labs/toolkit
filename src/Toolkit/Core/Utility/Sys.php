@@ -204,7 +204,7 @@ final class Sys extends AbstractUtility
      */
     private static function escapeShellArg(string $arg): string
     {
-        if ($arg === '' || Pcre::match('/[^a-z0-9+.\/@_-]/i', $arg)) {
+        if ($arg === '' || Regex::match('/[^a-z0-9+.\/@_-]/i', $arg)) {
             return "'" . str_replace("'", "'\''", $arg) . "'";
         }
 
@@ -219,20 +219,20 @@ final class Sys extends AbstractUtility
      */
     private static function escapeCmdArg(string $arg): string
     {
-        $arg = Pcre::replace('/(\\\\*)"/', '$1$1\"', $arg, -1, $quoteCount);
+        $arg = Regex::replace('/(\\\\*)"/', '$1$1\"', $arg, -1, $quoteCount);
         $quote = $arg === '' || strpbrk($arg, " \t,") !== false;
-        $meta = $quoteCount > 0 || Pcre::match('/%[^%]+%|![^!]+!/', $arg);
+        $meta = $quoteCount > 0 || Regex::match('/%[^%]+%|![^!]+!/', $arg);
 
         if (!$meta && !$quote) {
             $quote = strpbrk($arg, '^&|<>()') !== false;
         }
 
         if ($quote) {
-            $arg = '"' . Pcre::replace('/(\\\\*)$/', '$1$1', $arg) . '"';
+            $arg = '"' . Regex::replace('/(\\\\*)$/', '$1$1', $arg) . '"';
         }
 
         if ($meta) {
-            $arg = Pcre::replace('/["^&|<>()%!]/', '^$0', $arg);
+            $arg = Regex::replace('/["^&|<>()%!]/', '^$0', $arg);
         }
 
         return $arg;

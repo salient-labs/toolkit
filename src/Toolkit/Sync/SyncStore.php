@@ -19,7 +19,7 @@ use Salient\Core\Facade\Event;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractStore;
 use Salient\Sync\Event\SyncStoreLoadedEvent;
@@ -595,7 +595,7 @@ SQL;
         // `classToNamespace()` resolves entity classes without starting a run.
         // `$DeferredNamespaces` is used to ensure it's only done once.
         if (!isset($this->DeferredNamespaces[$prefix])) {
-            if (!Pcre::match('/^[a-z][-a-z0-9+.]*$/iD', $prefix)) {
+            if (!Regex::match('/^[a-z][-a-z0-9+.]*$/iD', $prefix)) {
                 throw new InvalidArgumentException(sprintf(
                     'Invalid prefix: %s',
                     $prefix,

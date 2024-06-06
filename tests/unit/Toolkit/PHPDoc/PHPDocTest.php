@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\PHPDoc;
 
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\PHPDoc;
@@ -727,7 +727,7 @@ EOF;
      */
     public function testTypeRegex(string $phpDocType, bool $expectMatch = true): void
     {
-        $regex = Pcre::delimit('^' . PHPDocRegex::PHPDOC_TYPE . '$', '/');
+        $regex = Regex::delimit('^' . PHPDocRegex::PHPDOC_TYPE . '$', '/');
         if ($expectMatch) {
             $this->assertMatchesRegularExpression($regex, trim($phpDocType));
         } else {

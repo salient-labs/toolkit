@@ -3,7 +3,7 @@
 namespace Salient\Tests\Http;
 
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
 use Generator;
@@ -797,19 +797,19 @@ final class UriTest extends TestCase
         $out = '';
         while ($in !== '') {
             // 2A
-            $in = Pcre::replace('@^(?:\.\./|\./)@', '', $in, -1, $count);
+            $in = Regex::replace('@^(?:\.\./|\./)@', '', $in, -1, $count);
             if ($count) {
                 continue;
             }
             // 2B
-            $in = Pcre::replace('@^/\.(?:/|$)@', '/', $in, -1, $count);
+            $in = Regex::replace('@^/\.(?:/|$)@', '/', $in, -1, $count);
             if ($count) {
                 continue;
             }
             // 2C
-            $in = Pcre::replace('@^/\.\.(?:/|$)@', '/', $in, -1, $count);
+            $in = Regex::replace('@^/\.\.(?:/|$)@', '/', $in, -1, $count);
             if ($count) {
-                $out = Pcre::replace('@(?:/|^)[^/]*$@', '', $out);
+                $out = Regex::replace('@(?:/|^)[^/]*$@', '', $out);
                 continue;
             }
             // 2D
@@ -817,7 +817,7 @@ final class UriTest extends TestCase
                 break;
             }
             // 2E
-            Pcre::match('@^/?[^/]*@', $in, $matches);
+            Regex::match('@^/?[^/]*@', $in, $matches);
             $out .= $matches[0];
             $in = (string) substr($in, strlen($matches[0]));
         }

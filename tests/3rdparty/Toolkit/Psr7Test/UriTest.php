@@ -4,7 +4,7 @@ namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\UriIntegrationTest;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Http\Uri;
 
@@ -37,7 +37,7 @@ class UriTest extends UriIntegrationTest
         $data = parent::getPaths();
         foreach ($data as &$args) {
             // Convert percent-encoded octets to uppercase per [RFC3986]
-            $args[1] = Pcre::replaceCallbackArray([
+            $args[1] = Regex::replaceCallbackArray([
                 '/%([0-9a-f]{2})/i' =>
                     fn(array $matches) => '%' . Str::upper($matches[1]),
             ], $args[1]);

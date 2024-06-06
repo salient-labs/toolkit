@@ -3,13 +3,12 @@
 namespace Salient\PHPDoc;
 
 use Salient\Contract\Core\Readable;
-use Salient\Contract\Core\Regex;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\Tag\AbstractTag;
@@ -87,7 +86,7 @@ final class PHPDoc implements Readable
         ?string $class = null,
         ?string $member = null
     ) {
-        if (!Pcre::match(self::PHP_DOCBLOCK, $docBlock, $matches)) {
+        if (!Regex::match(self::PHP_DOCBLOCK, $docBlock, $matches)) {
             throw new InvalidArgumentException('Invalid DocBlock');
         }
 
@@ -99,7 +98,7 @@ final class PHPDoc implements Readable
         // - Remove leading asterisks and trailing whitespace
         // - Trim the entire PHPDoc
         // - Split into string[]
-        $this->Lines = explode("\n", trim(Pcre::replace(
+        $this->Lines = explode("\n", trim(Regex::replace(
             '/(?:^\h*+\* ?|\h+$)/m',
             '',
             Str::setEol($matches['content']),
@@ -107,7 +106,7 @@ final class PHPDoc implements Readable
 
         $this->NextLine = reset($this->Lines);
 
-        if (!Pcre::match(self::PHPDOC_TAG, $this->NextLine)) {
+        if (!Regex::match(self::PHPDOC_TAG, $this->NextLine)) {
             $this->Summary = Str::coalesce(
                 $this->getLinesUntil('/^$/', true, true),
                 null,
@@ -115,14 +114,14 @@ final class PHPDoc implements Readable
 
             if (
                 $this->NextLine !== null
-                && !Pcre::match(self::PHPDOC_TAG, $this->NextLine)
+                && !Regex::match(self::PHPDOC_TAG, $this->NextLine)
             ) {
                 $this->Description = rtrim($this->getLinesUntil(self::PHPDOC_TAG));
             }
         }
 
         $index = -1;
-        while ($this->Lines && Pcre::match(
+        while ($this->Lines && Regex::match(
             self::PHPDOC_TAG,
             $text = $this->getLinesUntil(self::PHPDOC_TAG),
             $matches,
@@ -330,7 +329,7 @@ final class PHPDoc implements Readable
      */
     private function removeType(string $text, ?string &$type): string
     {
-        if (Pcre::match(self::NEXT_PHPDOC_TYPE, $text, $matches, \PREG_OFFSET_CAPTURE)) {
+        if (Regex::match(self::NEXT_PHPDOC_TYPE, $text, $matches, \PREG_OFFSET_CAPTURE)) {
             [$type, $offset] = $matches[0];
             return ltrim(substr_replace($text, '', $offset, strlen($type)));
         }
@@ -344,7 +343,7 @@ final class PHPDoc implements Readable
      */
     private function removeValues(string $text, int $count): ?string
     {
-        return Str::coalesce(rtrim(Pcre::split('/\s++/', $text, $count + 1)[$count] ?? ''), null);
+        return Str::coalesce(rtrim(Regex::split('/\s++/', $text, $count + 1)[$count] ?? ''), null);
     }
 
     /**
@@ -374,7 +373,7 @@ final class PHPDoc implements Readable
 
             if (!$unwrap) {
                 if (
-                    (!$inFence && Pcre::match('/^(```+|~~~+)/', $line, $fence))
+                    (!$inFence && Regex::match('/^(```+|~~~+)/', $line, $fence))
                     || ($inFence && isset($fence[0]) && $line === $fence[0])
                 ) {
                     $inFence = !$inFence;
@@ -389,7 +388,7 @@ final class PHPDoc implements Readable
                 break;
             }
 
-            if (Pcre::match($pattern, $this->NextLine)) {
+            if (Regex::match($pattern, $this->NextLine)) {
                 if (!$discard) {
                     break;
                 }
@@ -397,7 +396,7 @@ final class PHPDoc implements Readable
                     $this->getLine();
                     if (
                         $this->NextLine === null
-                        || !Pcre::match($pattern, $this->NextLine)
+                        || !Regex::match($pattern, $this->NextLine)
                     ) {
                         break 2;
                     }
@@ -436,7 +435,7 @@ final class PHPDoc implements Readable
     {
         return $value === null
             ? null
-            : Pcre::replace('/\s++/', ' ', $value);
+            : Regex::replace('/\s++/', ' ', $value);
     }
 
     /**
@@ -487,7 +486,7 @@ final class PHPDoc implements Readable
         if (array_filter(
             array_diff_key($this->TagsByName, array_flip(self::STANDARD_TAGS)),
             fn(string $key): bool =>
-                !Pcre::match('/^(phpstan|psalm)-/', $key),
+                !Regex::match('/^(phpstan|psalm)-/', $key),
             \ARRAY_FILTER_USE_KEY
         )) {
             return true;
@@ -585,7 +584,7 @@ final class PHPDoc implements Readable
      */
     public static function normaliseType(string $type, bool $strict = false): string
     {
-        if (!Pcre::match(self::PHPDOC_TYPE, trim($type), $matches)) {
+        if (!Regex::match(self::PHPDOC_TYPE, trim($type), $matches)) {
             if ($strict) {
                 throw new InvalidArgumentException(sprintf(
                     "Invalid PHPDoc type '%s'",
@@ -612,7 +611,7 @@ final class PHPDoc implements Readable
         }
 
         // Simplify composite types
-        $phpTypeRegex = Pcre::delimit('^' . Regex::PHP_TYPE . '$', '/');
+        $phpTypeRegex = Regex::delimit('^' . Regex::PHP_TYPE . '$', '/');
         foreach ($types as &$type) {
             $brackets = false;
             if ($type !== '' && $type[0] === '(' && $type[-1] === ')') {
@@ -623,7 +622,7 @@ final class PHPDoc implements Readable
             $type = implode('&', $split);
             if ($brackets && (
                 count($split) > 1
-                || !Pcre::match($phpTypeRegex, $type)
+                || !Regex::match($phpTypeRegex, $type)
             )) {
                 $type = "($type)";
             }
@@ -643,7 +642,7 @@ final class PHPDoc implements Readable
      */
     private static function replace(array $types): array
     {
-        return Pcre::replace(
+        return Regex::replace(
             ['/\bclass-string<(?:mixed|object)>/i', '/(?:\bmixed&|&mixed\b)/i'],
             ['class-string', ''],
             $types,

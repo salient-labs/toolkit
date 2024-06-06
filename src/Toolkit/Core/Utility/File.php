@@ -31,7 +31,7 @@ final class File extends AbstractUtility
      */
     public static function isAbsolute(string $path): bool
     {
-        return (bool) Pcre::match(
+        return (bool) Regex::match(
             '@^(?:/|\\\\\\\\|[a-z]:[/\\\\]|[a-z][-a-z0-9+.]+:)@i',
             $path,
         );
@@ -74,13 +74,13 @@ final class File extends AbstractUtility
         $path = str_replace('\\', '/', $path);
 
         // Remove "/./" segments
-        $path = Pcre::replace('@(?<=/|^)\.(?:/|$)@', '', $path);
+        $path = Regex::replace('@(?<=/|^)\.(?:/|$)@', '', $path);
 
         // Remove "/../" segments
         $regex = $withEmptySegments ? '/' : '/+';
         $regex = "@(?:^|(?<=^/)|(?<=/|^(?!/))(?!\.\.(?:/|\$))[^/]*{$regex})\.\.(?:/|\$)@";
         do {
-            $path = Pcre::replace($regex, '', $path, -1, $count);
+            $path = Regex::replace($regex, '', $path, -1, $count);
         } while ($count);
 
         return $path;
@@ -1053,7 +1053,7 @@ final class File extends AbstractUtility
             return false;
         }
 
-        return (bool) Pcre::match('/^<\?(php\s|(?!php|xml\s))/', $line);
+        return (bool) Regex::match('/^<\?(php\s|(?!php|xml\s))/', $line);
     }
 
     /**

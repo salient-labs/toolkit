@@ -13,8 +13,8 @@ use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\Temporal;
 use Salient\Contract\Core\Treeable;
 use Salient\Contract\Core\Writable;
-use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Closure;
 use DateTimeInterface;
@@ -457,7 +457,7 @@ class IntrospectionClass
             ]);
             $regex = "/^_(?<action>{$regex})(?<property>.+)\$/i";
             foreach ($methods as $method) {
-                if (!Pcre::match($regex, $name = $method->getName(), $match)) {
+                if (!Regex::match($regex, $name = $method->getName(), $match)) {
                     continue;
                 }
                 $action = Str::lower($match['action']);

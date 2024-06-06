@@ -5,8 +5,8 @@ namespace Salient\Sli\Command\Generate;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
 use Salient\Core\AbstractBuilder;
@@ -340,7 +340,7 @@ EOF)
 
                 $default = '';
                 $defaultText = null;
-                switch (Pcre::replace('/^(\?|null\|)|\|null$/', '', $type)) {
+                switch (Regex::replace('/^(\?|null\|)|\|null$/', '', $type)) {
                     case '\static':
                     case 'static':
                     case '$this':
@@ -451,7 +451,7 @@ EOF)
 
             $default = '';
             $defaultText = null;
-            switch (Pcre::replace('/^(\?|null\|)|\|null$/', '', $type)) {
+            switch (Regex::replace('/^(\?|null\|)|\|null$/', '', $type)) {
                 case '\static':
                 case 'static':
                 case '$this':
@@ -531,7 +531,7 @@ EOF)
                             || array_key_exists(Str::lower($T), $this->AliasMap));
                         $lines[] = (string) $templateTag->withName($T)->withVariance(null);
                         $returnType[$template] = $T;
-                        $param = Pcre::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
+                        $param = Regex::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
                     }
                     $returnType = 'static<' . implode(',', $returnType) . '>';
                     $lines[] = '';
@@ -578,7 +578,7 @@ EOF)
                         || strpos($name, '__') === 0
                         || isset($phpDoc->TagsByName['deprecated'])
                         || in_array(Str::toCamelCase($name), $names)
-                        || in_array(Str::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names)
+                        || in_array(Str::toCamelCase(Regex::replace('/^(with|get)/i', '', $name)), $names)
                         || in_array($name, $this->Skip)
                         || ($this->Forward !== [] && !in_array($name, $this->Forward))) {
                     continue;

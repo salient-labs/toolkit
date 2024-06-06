@@ -7,7 +7,7 @@ use Salient\Core\Exception\InvalidConfigurationException;
 use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use ArrayAccess;
 use ReturnTypeWillChange;
 
@@ -45,7 +45,7 @@ final class ConfigurationManager implements ArrayAccess
         foreach (File::find()->in($directory)->include('/\.php$/')->doNotRecurse() as $file) {
             $basename = $file->getBasename('.php');
             $file = (string) $file;
-            if (Pcre::match('/[\s.]|^[0-9]+$/', $basename)) {
+            if (Regex::match('/[\s.]|^[0-9]+$/', $basename)) {
                 throw new InvalidConfigurationException(sprintf(
                     'Invalid configuration file name: %s',
                     $file,

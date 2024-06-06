@@ -13,7 +13,7 @@ use Salient\Core\Exception\FilesystemErrorException;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Http\Exception\HttpServerException;
 use Salient\Http\Exception\InvalidHeaderException;
@@ -291,7 +291,7 @@ class HttpServer implements Immutable
                 throw new HttpServerException('No client address');
             }
 
-            Pcre::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
+            Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
 
             /** @var array{addr:string,port?:string} $matches */
             $peer = $matches['addr'];
@@ -340,7 +340,7 @@ class HttpServer implements Immutable
                     if (
                         count($startLine) !== 3
                         || !HttpRequestMethod::hasValue($startLine[0])
-                        || !Pcre::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
+                        || !Regex::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
                     ) {
                         throw new HttpServerException(sprintf(
                             'Invalid request line from %s: %s',
@@ -403,7 +403,7 @@ class HttpServer implements Immutable
                 '://',
                 Str::coalesce($headers->getOneHeaderLine(HttpHeader::HOST), $this->ProxyHost ?? $this->Host),
             ]);
-            if (!Pcre::match('/:[0-9]++$/', $uri)) {
+            if (!Regex::match('/:[0-9]++$/', $uri)) {
                 $uri .= ':' . ($this->ProxyPort ?? $this->Port);
             }
             try {

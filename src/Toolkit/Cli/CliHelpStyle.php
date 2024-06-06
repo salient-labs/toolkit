@@ -12,7 +12,7 @@ use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 
 /**
  * Formatting instructions for help messages
@@ -181,7 +181,7 @@ final class CliHelpStyle
             $help .= "## $heading\n\n$content\n\n";
         }
 
-        return Pcre::replace('/^\h++$/m', '', rtrim($help));
+        return Regex::replace('/^\h++$/m', '', rtrim($help));
     }
 
     public function maybeEscapeTags(string $string): string

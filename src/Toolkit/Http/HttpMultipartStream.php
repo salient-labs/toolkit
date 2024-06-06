@@ -7,7 +7,7 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Throwable;
@@ -357,7 +357,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
      */
     private function encode(string $string): string
     {
-        return Pcre::replaceCallback(
+        return Regex::replaceCallback(
             '/[^!#$&+^`|]++/',
             fn(array $matches) => rawurlencode($matches[0]),
             $string,

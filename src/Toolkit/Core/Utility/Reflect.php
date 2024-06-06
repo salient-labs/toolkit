@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Contract\Core\Regex;
 use Salient\Core\AbstractUtility;
 use Closure;
 use InvalidArgumentException;
@@ -511,11 +510,11 @@ final class Reflect extends AbstractUtility
 
         /** @var string */
         $const = $parameter->getDefaultValueConstantName();
-        if (Pcre::match('/^(self|parent|static)::/i', $const)) {
+        if (Regex::match('/^(self|parent|static)::/i', $const)) {
             return "$param$const";
         }
         if ($callback) {
-            $_const = Pcre::replaceCallback(
+            $_const = Regex::replaceCallback(
                 '/^' . Regex::PHP_TYPE . '(?=::)/',
                 function (array $matches) use ($callback): string {
                     /** @var array{class-string} $matches */
@@ -573,7 +572,7 @@ final class Reflect extends AbstractUtility
             . '$' . ($name === null ? $parameter->getName() : $name);
 
         if (!$force && $documentation === null) {
-            $native = Pcre::replace(
+            $native = Regex::replace(
                 ['/ = .*/', '/&(?=(\.\.\.)?\$)/'],
                 '',
                 self::getParameterDeclaration(

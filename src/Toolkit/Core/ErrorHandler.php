@@ -9,7 +9,7 @@ use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use ErrorException;
 use Throwable;
 
@@ -193,7 +193,7 @@ final class ErrorHandler implements FacadeAwareInterface
         // Ignore explicitly silenced errors
         foreach ($this->Silenced as [$pattern, $levels]) {
             if (($levels & $level)
-                    && Pcre::match($pattern, $file)) {
+                    && Regex::match($pattern, $file)) {
                 return true;
             }
         }

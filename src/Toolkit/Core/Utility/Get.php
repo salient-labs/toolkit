@@ -5,7 +5,6 @@ namespace Salient\Core\Utility;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\UncloneableObjectException;
@@ -85,7 +84,7 @@ final class Get extends AbstractUtility
             return $value;
         }
 
-        if (is_string($value) && Pcre::match(
+        if (is_string($value) && Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
             $match,
@@ -128,7 +127,7 @@ final class Get extends AbstractUtility
             throw new InvalidArgumentTypeException(1, 'value', 'int|string|null', $value);
         }
 
-        if (Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+        if (Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
             return (int) $value;
         }
 
@@ -174,7 +173,7 @@ final class Get extends AbstractUtility
      */
     public static function filter(array $values, bool $discardInvalid = true): array
     {
-        $valid = Pcre::grep('/^[^ .=]++/', $values);
+        $valid = Regex::grep('/^[^ .=]++/', $values);
         if (!$discardInvalid && $valid !== $values) {
             $invalid = array_diff($values, $valid);
             throw new InvalidArgumentException(Inflect::format(
@@ -195,7 +194,7 @@ final class Get extends AbstractUtility
             ));
         }
 
-        $values = Pcre::replaceCallback(
+        $values = Regex::replaceCallback(
             '/^([^=]++)(?:=(.++))?/s',
             fn(array $match) =>
                 rawurlencode((string) $match[1])
@@ -385,7 +384,7 @@ final class Get extends AbstractUtility
         if ($length !== 16) {
             $uuid = str_replace('-', '', $uuid);
 
-            if (!Pcre::match('/^[0-9a-f]{32}$/i', $uuid)) {
+            if (!Regex::match('/^[0-9a-f]{32}$/i', $uuid)) {
                 throw new InvalidArgumentException(sprintf(
                     'Invalid UUID: %s',
                     $uuid,
@@ -534,7 +533,7 @@ final class Get extends AbstractUtility
         $search = [];
         $replace = [];
         if ($escapeCharacters !== null && $escapeCharacters !== '') {
-            $escapeRegex = Pcre::quoteCharacterClass($escapeCharacters, '/');
+            $escapeRegex = Regex::quoteCharacterClass($escapeCharacters, '/');
             foreach (str_split($escapeCharacters) as $character) {
                 $search[] = sprintf(
                     '/((?<!\\\\)(?:\\\\\\\\)*)%s/',
@@ -610,7 +609,7 @@ final class Get extends AbstractUtility
 
             if ($regex !== null) {
                 $parts = [];
-                while (Pcre::match($regex, $value, $matches, \PREG_OFFSET_CAPTURE)) {
+                while (Regex::match($regex, $value, $matches, \PREG_OFFSET_CAPTURE)) {
                     if ($matches[0][1] > 0) {
                         $parts[] = substr($value, 0, $matches[0][1]);
                     }
@@ -651,7 +650,7 @@ final class Get extends AbstractUtility
 
             // Escape strings that contain characters in `$escape` or
             // `$escapeCharacters`
-            if (Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}{$escapeRegex}]/", $value)) {
+            if (Regex::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}{$escapeRegex}]/", $value)) {
                 // \0..\t\v\f\x0e..\x1f = \0..\x1f without \n and \r
                 $escaped = addcslashes(
                     $value,
@@ -661,10 +660,10 @@ final class Get extends AbstractUtility
                 // Convert blank/ignorable code points to "\u{xxxx}" unless they
                 // belong to a recognised Unicode sequence
                 if ($utf8) {
-                    $escaped = Pcre::replaceCallback(
+                    $escaped = Regex::replaceCallback(
                         '/(?![\x00-\x7f])\X/u',
                         fn(array $matches): string =>
-                            Pcre::match('/^' . Regex::INVISIBLE_CHAR . '$/u', $matches[0])
+                            Regex::match('/^' . Regex::INVISIBLE_CHAR . '$/u', $matches[0])
                                 ? sprintf('\u{%04X}', mb_ord($matches[0]))
                                 : $matches[0],
                         $escaped,
@@ -674,14 +673,14 @@ final class Get extends AbstractUtility
                 // Replace characters in `$escapeCharacters` with the equivalent
                 // hexadecimal escape
                 if ($search) {
-                    $escaped = Pcre::replace($search, $replace, $escaped);
+                    $escaped = Regex::replace($search, $replace, $escaped);
                 }
 
                 // Convert octal notation to hex (e.g. "\177" to "\x7f") and
                 // correct for differences between C and PHP escape sequences:
                 // - recognised by PHP: \0 \e \f \n \r \t \v
                 // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
-                $escaped = Pcre::replaceCallback(
+                $escaped = Regex::replaceCallback(
                     '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<NUL>000(?![0-7]))|(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
                     fn(array $matches): string =>
                         $matches[1]
@@ -699,7 +698,7 @@ final class Get extends AbstractUtility
                 );
 
                 // Remove unnecessary backslashes
-                $escaped = Pcre::replace(
+                $escaped = Regex::replace(
                     '/(?<!\\\\)\\\\\\\\(?![nrtvef\\\\$"]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}|$)/',
                     '\\',
                     $escaped

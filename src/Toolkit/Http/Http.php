@@ -3,11 +3,10 @@
 namespace Salient\Http;
 
 use Salient\Contract\Core\MimeType;
-use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Utility\Date;
 use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Core\AbstractUtility;
 use DateTimeImmutable;
@@ -98,7 +97,7 @@ final class Http extends AbstractUtility
                     : $param;
                 continue;
             }
-            if (Pcre::match('/^(' . Regex::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D', $param, $matches)) {
+            if (Regex::match('/^(' . Regex::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D', $param, $matches)) {
                 $param = $matches[2] ?? '';
                 $params[Str::lower($matches[1])] = $unquote
                     ? self::unquoteString($param)
@@ -156,7 +155,7 @@ final class Http extends AbstractUtility
      */
     public static function maybeQuoteString(string $string): string
     {
-        return Pcre::match('/^' . Regex::HTTP_TOKEN . '$/D', $string)
+        return Regex::match('/^' . Regex::HTTP_TOKEN . '$/D', $string)
             ? $string
             : '"' . self::escapeQuotedString($string) . '"';
     }
@@ -175,9 +174,9 @@ final class Http extends AbstractUtility
      */
     public static function unquoteString(string $string): string
     {
-        $string = Pcre::replace('/^"(.*)"$/D', '$1', $string, -1, $count);
+        $string = Regex::replace('/^"(.*)"$/D', '$1', $string, -1, $count);
         return $count
-            ? Pcre::replace('/\\\\(.)/', '$1', $string)
+            ? Regex::replace('/\\\\(.)/', '$1', $string)
             : $string;
     }
 }

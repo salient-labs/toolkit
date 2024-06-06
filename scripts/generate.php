@@ -25,7 +25,7 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Salient\Core\ConfigurationManager;
 use Salient\Core\ErrorHandler;
 use Salient\Core\EventDispatcher;
@@ -210,7 +210,7 @@ foreach (File::find()
 }
 
 $file = "$dir/.gitattributes";
-$attributes = Pcre::grep(
+$attributes = Regex::grep(
     '/(^#| linguist-generated$)/',
     Arr::trim(file($file)),
     \PREG_GREP_INVERT

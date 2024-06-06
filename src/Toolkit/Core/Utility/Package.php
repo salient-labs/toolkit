@@ -312,7 +312,7 @@ final class Package extends AbstractUtility
         bool $withRef,
         Closure $refCallback
     ): string {
-        if (Pcre::match('/(?:^dev-|-dev$)/', $version)) {
+        if (Regex::match('/(?:^dev-|-dev$)/', $version)) {
             $ref = $refCallback();
             if ($ref !== null) {
                 return $version . "@$ref";

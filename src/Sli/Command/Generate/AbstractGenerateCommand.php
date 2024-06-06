@@ -7,14 +7,13 @@ use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\Regex;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Reflect;
+use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
 use Salient\Core\Utility\Test;
 use Salient\Core\AbstractEntity;
@@ -426,7 +425,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             ? $type->getType() ?? ''
             : $type;
 
-        return PHPDoc::normaliseType(Pcre::replaceCallback(
+        return PHPDoc::normaliseType(Regex::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
             function ($match) use (
                 $type,
@@ -461,7 +460,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                     // - before: `'array < int < 1, max > >'`
                     // - after: `['array', '<', 'int', '<', '1']`
                     $before = substr($subject, 0, $match[0][1]);
-                    $before = Pcre::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
+                    $before = Regex::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
                     $before = Arr::trim($before);
                     while ($before) {
                         $last = array_pop($before);

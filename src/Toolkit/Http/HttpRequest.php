@@ -11,7 +11,7 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Regex;
 use Stringable;
 
 /**
@@ -190,7 +190,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
 
     private function filterMethod(string $method): string
     {
-        if (!Pcre::match(self::TOKEN, $method)) {
+        if (!Regex::match(self::TOKEN, $method)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid HTTP method: %s', $method)
             );
