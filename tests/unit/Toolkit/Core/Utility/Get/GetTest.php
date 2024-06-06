@@ -8,7 +8,6 @@ use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Core\CopyFlag;
 use Salient\Core\Exception\UncloneableObjectException;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Get;
@@ -873,9 +872,9 @@ EOF,
 
         $c = Get::copy($b, [], 0);
 
-        // $b was copied without ASSIGN_PROPERTIES_BY_REFERENCE, so bound
-        // properties should be shared between $b and $c, and they should have
-        // received clones, but properties assigned by value should be intact
+        // $b was copied without COPY_BY_REFERENCE, so bound properties should
+        // be shared between $b and $c, and they should have received clones,
+        // but properties assigned by value should be intact
         $this->assertSame($b->Qux, $c->Qux);
         $this->assertEquals($B, $b->Qux);
         $this->assertNotSame($B, $b->Qux);
@@ -897,8 +896,8 @@ EOF,
         $d->bind();
         $d->apply(4, 'd', [4.0], $D = new ClassWithValue('D'));
 
-        // $c was copied with ASSIGN_PROPERTIES_BY_REFERENCE, so bound
-        // properties should be properly isolated
+        // $c was copied with COPY_BY_REFERENCE, so bound properties should be
+        // properly isolated
         $this->assertCopyHas($c, 3, 'c', [3.0], $C, true, true);
         $this->assertCopyHas($d, 4, 'd', [4.0], $D, true, true);
 
@@ -916,10 +915,10 @@ EOF,
         $container = new Container();
         $singleton = new SingletonWithContainer($container);
         $a = Get::copy($container);
-        $b = Get::copy($container, [], CopyFlag::COPY_CONTAINERS);
+        $b = Get::copy($container, [], Get::COPY_CONTAINERS);
         $c = Get::copy($singleton);
-        $d = Get::copy($singleton, [], CopyFlag::COPY_SINGLETONS);
-        $e = Get::copy($singleton, [], CopyFlag::COPY_CONTAINERS | CopyFlag::COPY_SINGLETONS);
+        $d = Get::copy($singleton, [], Get::COPY_SINGLETONS);
+        $e = Get::copy($singleton, [], Get::COPY_CONTAINERS | Get::COPY_SINGLETONS);
 
         $this->assertSame($container, $a);
         $this->assertEquals($container, $b);
@@ -938,7 +937,7 @@ EOF,
     {
         $a = new ClassWithCloneMethod();
         $b = Get::copy($a);
-        $c = Get::copy($a, [], CopyFlag::TRUST_CLONE_METHODS);
+        $c = Get::copy($a, [], Get::COPY_TRUST_CLONE);
 
         $this->assertNotSame($a, $b);
         $this->assertNotSame($a, $c);

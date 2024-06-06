@@ -5,7 +5,6 @@ namespace Salient\Core\Utility;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Core\CopyFlag;
 use Salient\Contract\Core\Regex;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
@@ -25,6 +24,34 @@ use UnitEnum;
  */
 final class Get extends AbstractUtility
 {
+    /**
+     * Do not throw an exception if an uncloneable object is encountered
+     */
+    public const COPY_SKIP_UNCLONEABLE = 1;
+
+    /**
+     * Assign values to properties by reference
+     *
+     * Required if an object graph contains nodes with properties passed or
+     * assigned by reference.
+     */
+    public const COPY_BY_REFERENCE = 2;
+
+    /**
+     * Take a shallow copy of objects with a __clone method
+     */
+    public const COPY_TRUST_CLONE = 4;
+
+    /**
+     * Copy service containers
+     */
+    public const COPY_CONTAINERS = 8;
+
+    /**
+     * Copy singletons
+     */
+    public const COPY_SINGLETONS = 16;
+
     /**
      * Throw an exception if a value is null, otherwise return it
      *
@@ -768,13 +795,13 @@ final class Get extends AbstractUtility
      *
      * @param T $object
      * @param class-string[] $skip
-     * @param int-mask-of<CopyFlag::*> $flags
+     * @param int-mask-of<Get::COPY_*> $flags
      * @return T
      */
     public static function copy(
         object $object,
         array $skip = [],
-        int $flags = CopyFlag::SKIP_UNCLONEABLE | CopyFlag::ASSIGN_PROPERTIES_BY_REFERENCE
+        int $flags = Get::COPY_SKIP_UNCLONEABLE | Get::COPY_BY_REFERENCE
     ): object {
         return self::doCopy($object, $skip, $flags);
     }
@@ -784,7 +811,7 @@ final class Get extends AbstractUtility
      *
      * @param T $var
      * @param class-string[] $skip
-     * @param int-mask-of<CopyFlag::*> $flags
+     * @param int-mask-of<Get::COPY_*> $flags
      * @param array<int,object> $map
      * @return T
      */
@@ -817,10 +844,10 @@ final class Get extends AbstractUtility
         }
 
         if ((
-            !($flags & CopyFlag::COPY_CONTAINERS)
+            !($flags & self::COPY_CONTAINERS)
             && $var instanceof PsrContainerInterface
         ) || (
-            !($flags & CopyFlag::COPY_SINGLETONS)
+            !($flags & self::COPY_SINGLETONS)
             && $var instanceof SingletonInterface
         )) {
             $map[$id] = $var;
@@ -837,7 +864,7 @@ final class Get extends AbstractUtility
         $_var = new ReflectionObject($var);
 
         if (!$_var->isCloneable()) {
-            if ($flags & CopyFlag::SKIP_UNCLONEABLE) {
+            if ($flags & self::COPY_SKIP_UNCLONEABLE) {
                 $map[$id] = $var;
                 return $var;
             }
@@ -853,7 +880,7 @@ final class Get extends AbstractUtility
         $map[$id] = $clone;
 
         if (
-            $flags & CopyFlag::TRUST_CLONE_METHODS
+            $flags & self::COPY_TRUST_CLONE
             && $_var->hasMethod('__clone')
         ) {
             return $clone;
@@ -866,7 +893,7 @@ final class Get extends AbstractUtility
             return $clone;
         }
 
-        $byRef = (bool) ($flags & CopyFlag::ASSIGN_PROPERTIES_BY_REFERENCE)
+        $byRef = (bool) ($flags & self::COPY_BY_REFERENCE)
             && !$_var->isInternal();
         foreach (Reflect::getAllProperties($_var) as $property) {
             if ($property->isStatic()) {
