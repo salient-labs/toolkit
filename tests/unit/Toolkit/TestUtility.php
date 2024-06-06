@@ -4,10 +4,10 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HttpHeader;
 use Salient\Core\Exception\RuntimeException;
+use Salient\Core\Utility\AbstractUtility;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Str;
-use Salient\Core\AbstractUtility;
 use Salient\Http\HttpHeaders;
 
 final class TestUtility extends AbstractUtility

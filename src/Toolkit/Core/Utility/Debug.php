@@ -2,8 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\AbstractUtility;
-
 /**
  * Get information about the running script
  *

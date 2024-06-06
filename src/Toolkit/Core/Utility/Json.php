@@ -2,8 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\AbstractUtility;
-
 /**
  * Wrappers for json_encode() and json_decode()
  *

@@ -7,7 +7,6 @@ use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Facade\Console;
-use Salient\Core\AbstractUtility;
 use Closure;
 
 /**

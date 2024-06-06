@@ -4,11 +4,11 @@ namespace Salient\Http;
 
 use Salient\Contract\Core\MimeType;
 use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Utility\AbstractUtility;
 use Salient\Core\Utility\Date;
 use Salient\Core\Utility\Package;
 use Salient\Core\Utility\Regex;
 use Salient\Core\Utility\Str;
-use Salient\Core\AbstractUtility;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;

@@ -3,7 +3,6 @@
 namespace Salient\Core\Utility;
 
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\AbstractUtility;
 
 /**
  * Work with strings

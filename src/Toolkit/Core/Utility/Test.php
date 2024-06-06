@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Utility;
 
-use Salient\Core\AbstractUtility;
 use Stringable;
 
 /**

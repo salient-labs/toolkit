@@ -3,7 +3,6 @@
 namespace Salient\Core\Utility;
 
 use Salient\Core\Exception\PcreErrorException;
-use Salient\Core\AbstractUtility;
 use Stringable;
 
 /**

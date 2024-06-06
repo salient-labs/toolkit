@@ -8,7 +8,6 @@ use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\InvalidRuntimeConfigurationException;
 use Salient\Core\Exception\UnreadDataException;
 use Salient\Core\Exception\UnwrittenDataException;
-use Salient\Core\AbstractUtility;
 use Salient\Core\Process;
 use Salient\Iterator\RecursiveFilesystemIterator;
 use Stringable;

@@ -8,7 +8,6 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\InvalidArgumentTypeException;
 use Salient\Core\Exception\UncloneableObjectException;
-use Salient\Core\AbstractUtility;
 use Closure;
 use Countable;
 use DateTimeInterface;

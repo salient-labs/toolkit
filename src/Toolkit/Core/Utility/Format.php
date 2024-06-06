@@ -3,7 +3,6 @@
 namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Jsonable;
-use Salient\Core\AbstractUtility;
 use DateTimeInterface;
 use InvalidArgumentException;
 

@@ -7,7 +7,6 @@ use Composer\InstalledVersions as Installed;
 use Salient\Core\Event\PackageDataReceivedEvent;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Event;
-use Salient\Core\AbstractUtility;
 use Closure;
 
 /**

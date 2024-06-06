@@ -4,7 +4,6 @@ namespace Salient\Core\Utility;
 
 use Salient\Contract\Core\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\AbstractUtility;
 use Closure;
 use Countable;
 use Traversable;
