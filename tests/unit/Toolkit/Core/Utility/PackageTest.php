@@ -3,8 +3,8 @@
 namespace Salient\Tests\Core\Utility;
 
 use Composer\InstalledVersions;
-use Salient\Core\Event\PackageDataReceivedEvent;
 use Salient\Core\Facade\Event;
+use Salient\Core\Utility\Event\PackageDataReceivedEvent;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Package;
 use Salient\Tests\TestCase;

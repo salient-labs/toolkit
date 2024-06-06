@@ -4,9 +4,9 @@ namespace Salient\Core\Utility;
 
 use Composer\Autoload\ClassLoader as Loader;
 use Composer\InstalledVersions as Installed;
-use Salient\Core\Event\PackageDataReceivedEvent;
 use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Event;
+use Salient\Core\Utility\Event\PackageDataReceivedEvent;
 use Closure;
 
 /**

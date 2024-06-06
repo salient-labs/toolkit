@@ -2,6 +2,7 @@
 
 namespace Salient\Core\Utility;
 
+use Salient\Core\Utility\Internal\NamedType;
 use Closure;
 use InvalidArgumentException;
 use ReflectionAttribute;
