@@ -1,6 +1,6 @@
 {
-    "name": "salient/core",
-    "description": "The core package of the Salient toolkit",
+    "name": "salient/utils",
+    "description": "The utils package of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [
@@ -15,16 +15,14 @@
     },
     "require": {
         "php": ">=7.4",
-        "psr/event-dispatcher": "^1",
-        "salient/contracts": "self.version",
-        "salient/utils": "self.version"
+        "composer-runtime-api": "^2.2"
     },
-    "provide": {
-        "psr/event-dispatcher-implementation": "^1"
+    "suggest": {
+        "salient/iterators": "Required by File::find()"
     },
     "autoload": {
         "psr-4": {
-            "Salient\\Core\\": ""
+            "Salient\\Utility\\": ""
         }
     },
     "config": {
