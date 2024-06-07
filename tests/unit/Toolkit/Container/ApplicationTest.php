@@ -74,7 +74,7 @@ final class ApplicationTest extends TestCase
     {
         // realpath provides cross-platform normalisation here
         $basePath = realpath(File::createTempDir()) ?: '';
-        $homeDir = Env::home();
+        $homeDir = Env::getHomeDir();
         $this->assertNotNull($homeDir);
         $homeDir = realpath($homeDir) ?: '';
         $this->assertDirectoryExists($basePath);

@@ -41,24 +41,27 @@ use RuntimeException;
  * value is not of the expected type, an {@see InvalidEnvironmentException} is
  * thrown. If the variable is not present in the environment, `$default` is
  * returned if given, otherwise an {@see InvalidEnvironmentException} is thrown.
+ *
+ * @api
  */
 final class Env extends AbstractUtility
 {
     /**
      * Set locale information from the environment
      *
-     * Locale names are taken from environment variables `LC_ALL`, `LC_COLLATE`,
+     * Locale names are set from environment variables `LC_ALL`, `LC_COLLATE`,
      * `LC_CTYPE`, `LC_MONETARY`, `LC_NUMERIC`, `LC_TIME` and `LC_MESSAGES`, or
-     * from `LANG`. On Windows, they are taken from the system's language and
+     * from `LANG`. On Windows, they are set from the system's language and
      * region settings.
      */
     public const APPLY_LOCALE = 1;
 
     /**
-     * Set the default timezone from the environment
+     * Set the default timezone used by date and time functions from the
+     * environment
      *
      * If environment variable `TZ` contains a valid timezone, it is passed to
-     * `date_default_timezone_set`.
+     * {@see date_default_timezone_set()}.
      */
     public const APPLY_TIMEZONE = 2;
 
@@ -80,13 +83,13 @@ final class Env extends AbstractUtility
      *
      * @throws InvalidEnvFileSyntaxException if invalid syntax is found.
      */
-    public static function load(string ...$filenames): void
+    public static function loadFiles(string ...$filenames): void
     {
         $queue = [];
         $errors = [];
         foreach ($filenames as $filename) {
             $lines = explode("\n", Str::setEol(File::getContents($filename)));
-            self::parse($lines, $queue, $errors, $filename);
+            self::parseLines($lines, $queue, $errors, $filename);
         }
 
         if ($errors) {
@@ -188,50 +191,9 @@ final class Env extends AbstractUtility
     public static function get(string $name, $default = false): ?string
     {
         $value = self::_get($name);
-
-        if ($value !== false) {
-            return $value;
-        }
-
-        $default = Get::value($default);
-        if ($default === false) {
-            self::throwValueNotFoundException($name);
-        }
-
-        return $default;
-    }
-
-    /**
-     * Get a class name from the environment
-     *
-     * @template TClass of object
-     * @template T of class-string<TClass>|null|false
-     *
-     * @param class-string<TClass> $class
-     * @param T|Closure(): T $default
-     * @return (T is class-string<TClass> ? class-string<TClass> : (T is null ? class-string<TClass>|null : class-string<TClass>|never))
-     */
-    public static function getClass(string $name, string $class, $default = false)
-    {
-        $value = self::_get($name);
-
         if ($value === false) {
-            $default = Get::value($default);
-            if ($default === false) {
-                self::throwValueNotFoundException($name);
-            }
-
-            return $default;
+            return self::_default($name, $default, false);
         }
-
-        if (!is_a($value, $class, true)) {
-            throw new InvalidEnvironmentException(sprintf(
-                '%s does not inherit %s',
-                $value,
-                $class,
-            ));
-        }
-
         return $value;
     }
 
@@ -246,23 +208,14 @@ final class Env extends AbstractUtility
     public static function getInt(string $name, $default = false): ?int
     {
         $value = self::_get($name);
-
         if ($value === false) {
-            $default = Get::value($default);
-            if ($default === false) {
-                self::throwValueNotFoundException($name);
-            }
-
-            return $default;
+            return self::_default($name, $default, false);
         }
-
         if (!Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not an integer: %s',
-                $name,
-            ));
+            throw new InvalidEnvironmentException(
+                sprintf('Value is not an integer: %s', $name)
+            );
         }
-
         return (int) $value;
     }
 
@@ -279,33 +232,23 @@ final class Env extends AbstractUtility
     public static function getBool(string $name, $default = -1): ?bool
     {
         $value = self::_get($name);
-
         if ($value === false) {
-            $default = Get::value($default);
-            if ($default === -1) {
-                self::throwValueNotFoundException($name);
-            }
-
-            return $default;
+            return self::_default($name, $default, -1);
         }
-
         if (trim($value) === '') {
             return false;
         }
-
         if (!Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
             $match,
             \PREG_UNMATCHED_AS_NULL
         )) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not boolean: %s',
-                $name,
-            ));
+            throw new InvalidEnvironmentException(
+                sprintf('Value is not boolean: %s', $name)
+            );
         }
-
-        return $match['true'] !== null ? true : false;
+        return $match['true'] === null ? false : true;
     }
 
     /**
@@ -321,19 +264,11 @@ final class Env extends AbstractUtility
         if ($delimiter === '') {
             throw new InvalidArgumentException('Invalid delimiter');
         }
-
         $value = self::_get($name);
-
-        if ($value !== false) {
-            return $value === '' ? [] : explode($delimiter, $value);
+        if ($value === false) {
+            return self::_default($name, $default, false);
         }
-
-        $default = Get::value($default);
-        if ($default === false) {
-            self::throwValueNotFoundException($name);
-        }
-
-        return $default;
+        return $value === '' ? [] : explode($delimiter, $value);
     }
 
     /**
@@ -349,34 +284,22 @@ final class Env extends AbstractUtility
         if ($delimiter === '') {
             throw new InvalidArgumentException('Invalid delimiter');
         }
-
         $value = self::_get($name);
-
         if ($value === false) {
-            $default = Get::value($default);
-            if ($default === false) {
-                self::throwValueNotFoundException($name);
-            }
-
-            return $default;
+            return self::_default($name, $default, false);
         }
-
         if (trim($value) === '') {
             return [];
         }
-
         $regex = sprintf('/^%s(?:%s%1$s)*+$/', Regex::INTEGER_STRING, preg_quote($delimiter, '/'));
         if (!Regex::match($regex, $value)) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not an integer list: %s',
-                $name,
-            ));
+            throw new InvalidEnvironmentException(
+                sprintf('Value is not an integer list: %s', $name)
+            );
         }
-
         foreach (explode($delimiter, $value) as $value) {
             $list[] = (int) $value;
         }
-
         return $list;
     }
 
@@ -390,17 +313,10 @@ final class Env extends AbstractUtility
     public static function getNullable(string $name, $default = false): ?string
     {
         $value = self::_get($name);
-
-        if ($value !== false) {
-            return $value === '' ? null : $value;
+        if ($value === false) {
+            return self::_default($name, $default, false);
         }
-
-        $default = Get::value($default);
-        if ($default === false) {
-            self::throwValueNotFoundException($name);
-        }
-
-        return $default;
+        return $value === '' ? null : $value;
     }
 
     /**
@@ -413,34 +329,22 @@ final class Env extends AbstractUtility
     public static function getNullableInt(string $name, $default = false): ?int
     {
         $value = self::_get($name);
-
         if ($value === false) {
-            if ($default === false) {
-                self::throwValueNotFoundException($name);
-            }
-
-            $default = Get::value($default);
-            return $default;
+            return self::_default($name, $default, false);
         }
-
         if (trim($value) === '') {
             return null;
         }
-
         if (!Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not an integer: %s',
-                $name,
-            ));
+            throw new InvalidEnvironmentException(
+                sprintf('Value is not an integer: %s', $name)
+            );
         }
-
         return (int) $value;
     }
 
     /**
      * Get a boolean value from the environment, returning null if it's empty
-     *
-     * @see Test::isBoolean()
      *
      * @template T of bool|null|-1
      *
@@ -449,33 +353,23 @@ final class Env extends AbstractUtility
     public static function getNullableBool(string $name, $default = -1): ?bool
     {
         $value = self::_get($name);
-
         if ($value === false) {
-            $default = Get::value($default);
-            if ($default === -1) {
-                self::throwValueNotFoundException($name);
-            }
-
-            return $default;
+            return self::_default($name, $default, -1);
         }
-
         if (trim($value) === '') {
             return null;
         }
-
         if (!Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
             $match,
             \PREG_UNMATCHED_AS_NULL
         )) {
-            throw new InvalidEnvironmentException(sprintf(
-                'Value is not boolean: %s',
-                $name,
-            ));
+            throw new InvalidEnvironmentException(
+                sprintf('Value is not boolean: %s', $name)
+            );
         }
-
-        return $match['true'] !== null ? true : false;
+        return $match['true'] === null ? false : true;
     }
 
     /**
@@ -501,17 +395,37 @@ final class Env extends AbstractUtility
     }
 
     /**
+     * @template T of string[]|string|int[]|int|bool|null
+     * @template TDefault of false|-1
+     *
+     * @param T|Closure(): T $default
+     * @param TDefault $defaultDefault
+     * @return (TDefault is false ? (T is false ? never : T) : (T is -1 ? never : T))
+     */
+    private static function _default(string $name, $default, $defaultDefault)
+    {
+        $default = Get::value($default);
+        if ($default === $defaultDefault) {
+            throw new InvalidEnvironmentException(
+                sprintf('Value not found in environment: %s', $name)
+            );
+        }
+        // @phpstan-ignore return.type
+        return $default;
+    }
+
+    /**
      * Get the name of the current environment, e.g. "production" or
      * "development"
      *
-     * Tries each of the following variables in turn and returns `null` if none
-     * are present in the environment:
+     * Tries each of the following in turn and returns `null` if none are
+     * present in the environment:
      *
      * - `app_env`
      * - `APP_ENV`
      * - `PHP_ENV`
      */
-    public static function environment(): ?string
+    public static function getEnvironment(): ?string
     {
         return self::getNullable(
             'app_env',
@@ -523,60 +437,64 @@ final class Env extends AbstractUtility
     }
 
     /**
-     * Get and optionally set the state of dry-run mode
-     *
-     * Dry-run mode is enabled by setting the `DRY_RUN` environment variable.
+     * Check if dry-run mode is enabled in the environment
      */
-    public static function dryRun(?bool $enable = null): bool
+    public static function getDryRun(): bool
     {
-        return self::flag('DRY_RUN', $enable);
+        return self::getFlag('DRY_RUN');
     }
 
     /**
-     * Get and optionally set the state of debug mode
-     *
-     * Debug mode is enabled by setting the `DEBUG` environment variable.
+     * Enable or disable dry-run mode in the environment
      */
-    public static function debug(?bool $enable = null): bool
+    public static function setDryRun(bool $value): void
     {
-        return self::flag('DEBUG', $enable);
+        self::setFlag('DRY_RUN', $value);
     }
 
     /**
-     * Get and optionally set the state of a boolean value in the environment
+     * Check if debug mode is enabled in the environment
      */
-    public static function flag(string $name, ?bool $enable = null): bool
+    public static function getDebug(): bool
     {
-        $state = self::getBool($name, false);
-        if ($enable === null || $enable === $state) {
-            return $state;
+        return self::getFlag('DEBUG');
+    }
+
+    /**
+     * Enable or disable debug mode in the environment
+     */
+    public static function setDebug(bool $value): void
+    {
+        self::setFlag('DEBUG', $value);
+    }
+
+    /**
+     * Check if a flag is enabled in the environment
+     */
+    public static function getFlag(string $name): bool
+    {
+        return self::getBool($name, false);
+    }
+
+    /**
+     * Enable or disable a flag in the environment
+     */
+    public static function setFlag(string $name, bool $value): void
+    {
+        if (self::getBool($name, false) === $value) {
+            return;
         }
-
-        if ($enable) {
+        if ($value) {
             self::set($name, '1');
         } else {
             self::unset($name);
         }
-
-        return $enable;
-    }
-
-    /**
-     * True if the current locale for character classification and conversion
-     * (LC_CTYPE) supports UTF-8
-     */
-    public static function isLocaleUtf8(): bool
-    {
-        $locale = @setlocale(\LC_CTYPE, '0');
-
-        return $locale !== false
-            && Regex::match('/\.utf-?8$/i', $locale);
     }
 
     /**
      * Get the current user's home directory from the environment
      */
-    public static function home(): ?string
+    public static function getHomeDir(): ?string
     {
         $home = self::get('HOME', null);
         if ($home !== null) {
@@ -595,10 +513,16 @@ final class Env extends AbstractUtility
     /**
      * @param string[] $lines
      * @param array<string,string> $queue
+     * @param-out array<string,string> $queue
      * @param string[] $errors
+     * @param-out string[] $errors
      */
-    private static function parse(array $lines, array &$queue, array &$errors, ?string $filename = null): void
-    {
+    private static function parseLines(
+        array $lines,
+        array &$queue,
+        array &$errors,
+        ?string $filename = null
+    ): void {
         foreach ($lines as $i => $line) {
             if (trim($line) === '' || $line[0] === '#') {
                 continue;
@@ -628,14 +552,12 @@ REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
                 continue;
             }
 
-            /** @var string|null */
             $double = $match['double'];
             if ($double !== null) {
                 $queue[$name] = Regex::replace('/\\\\(["$\\\\`])/', '$1', $double);
                 continue;
             }
 
-            /** @var string|null */
             $single = $match['single'];
             if ($single !== null) {
                 $queue[$name] = str_replace("'\''", "'", $single);
@@ -646,16 +568,5 @@ REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
             $none = $match['none'];
             $queue[$name] = Regex::replace('/\\\\(.)/', '$1', $none);
         }
-    }
-
-    /**
-     * @return never
-     */
-    private static function throwValueNotFoundException(string $name)
-    {
-        throw new InvalidEnvironmentException(sprintf(
-            'Value not found in environment: %s',
-            $name,
-        ));
     }
 }

@@ -145,7 +145,7 @@ class Application extends Container implements ApplicationInterface
             );
         }
 
-        $home = Env::home();
+        $home = Env::getHomeDir();
         if ($home === null || !is_dir($home)) {
             throw new InvalidEnvironmentException('Home directory not found');
         }
@@ -307,14 +307,14 @@ class Application extends Container implements ApplicationInterface
 
         if ($this->RunningFromSource) {
             $files = [];
-            $env = Env::environment();
+            $env = Env::getEnvironment();
             if ($env !== null) {
                 $files[] = "{$this->BasePath}/.env.{$env}";
             }
             $files[] = "{$this->BasePath}/.env";
             foreach ($files as $file) {
                 if (is_file($file)) {
-                    Env::load($file);
+                    Env::loadFiles($file);
                     break;
                 }
             }
@@ -425,7 +425,7 @@ class Application extends Container implements ApplicationInterface
      */
     public function isProduction(): bool
     {
-        $env = Env::environment();
+        $env = Env::getEnvironment();
 
         return
             $env === 'production'
@@ -508,7 +508,7 @@ class Application extends Container implements ApplicationInterface
             $this->LogTargets[$name] = $target;
         }
 
-        if (($debug || ($debug === null && Env::debug()))
+        if (($debug || ($debug === null && Env::getDebug()))
                 && !isset($this->DebugLogTargets[$name])) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, LevelGroup::ALL);

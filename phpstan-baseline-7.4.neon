@@ -386,11 +386,6 @@ parameters:
 			path: src/Toolkit/Core/Utility/Arr.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Env\\:\\:getNullableInt\\(\\) should return int\\|null but returns T of int\\|false\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Env.php
-
-		-
 			message: "#^Parameter \\#1 \\$value of static method Salient\\\\Core\\\\Utility\\\\Get\\:\\:value\\(\\) expects \\(Closure\\(mixed \\.\\.\\.\\)\\: string\\)\\|string, \\(Closure\\(string\\|null\\)\\: string\\)\\|string given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Utility/Inflect.php

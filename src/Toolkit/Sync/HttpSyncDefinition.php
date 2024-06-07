@@ -441,7 +441,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         }
 
         $httpClosure =
-            SyncIntrospector::isWriteOperation($operation) && Env::dryRun()
+            SyncIntrospector::isWriteOperation($operation) && Env::getDryRun()
                 ? fn(CurlerInterface $curler, ?array $query, $payload = null) =>
                     is_array($payload) ? $payload : []
                 : fn(CurlerInterface $curler, ?array $query, $payload = null) =>
@@ -729,7 +729,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     {
         switch ($this->ReturnEntitiesFrom) {
             case SyncEntitySource::HTTP_WRITE:
-                return Env::dryRun()
+                return Env::getDryRun()
                     ? $requestPayload
                     : $response;
 

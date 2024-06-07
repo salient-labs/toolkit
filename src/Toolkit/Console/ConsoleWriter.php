@@ -157,7 +157,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
         $stderrLevels = LevelGroup::ERRORS_AND_WARNINGS;
 
         $stdout = $this->getStdoutTarget();
-        $stdoutLevels = Env::debug()
+        $stdoutLevels = Env::getDebug()
             ? LevelGroup::INFO
             : LevelGroup::INFO_EXCEPT_DEBUG;
 
@@ -206,7 +206,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             return $this;
         }
 
-        $levels = Env::debug()
+        $levels = Env::getDebug()
             ? LevelGroup::ALL
             : LevelGroup::ALL_EXCEPT_DEBUG;
 

@@ -25,7 +25,7 @@ final class EnvTest extends TestCase
             'app_secret' => "'^K&4nnE",
         ];
         $this->unsetKeys($expected);
-        Env::load($dir . '/example.env');
+        Env::loadFiles($dir . '/example.env');
         $this->assertSame($expected, $this->getKeys($expected));
 
         $expected = [
@@ -39,7 +39,7 @@ final class EnvTest extends TestCase
             'glob4' => '[0-9][0-9]-20??????-*.ext',
         ];
         $this->unsetKeys($expected);
-        Env::load($dir . '/valid.env');
+        Env::loadFiles($dir . '/valid.env');
         $this->assertSame($expected, $this->getKeys($expected));
 
         $file = $dir . '/invalid.env';
@@ -49,7 +49,7 @@ final class EnvTest extends TestCase
         }
         $this->expectException(InvalidEnvFileSyntaxException::class);
         $this->expectExceptionMessage(implode("\n", $lines));
-        Env::load($dir . '/invalid.env');
+        Env::loadFiles($dir . '/invalid.env');
     }
 
     /**
@@ -274,26 +274,5 @@ final class EnvTest extends TestCase
             '[nullable] unset -> bool, default false' => [false, 'getNullableBool', ['default' => false]],
             '[nullable] unset -> bool, default true' => [true, 'getNullableBool', ['default' => true]],
         ];
-    }
-
-    public function testGetClass(): void
-    {
-        $_ENV[__METHOD__] = static::class;
-        $this->assertSame(static::class, Env::getClass(__METHOD__, TestCase::class));
-
-        $this->expectException(InvalidEnvironmentException::class);
-        $this->expectExceptionMessage(TestCase::class . ' does not inherit ' . static::class);
-        $_ENV[__METHOD__] = TestCase::class;
-        Env::getClass(__METHOD__, static::class);
-    }
-
-    public function testGetClassWithUnsetVariable(): void
-    {
-        unset($_ENV[__METHOD__]);
-        $this->assertSame(static::class, Env::getClass(__METHOD__, TestCase::class, static::class));
-
-        $this->expectException(InvalidEnvironmentException::class);
-        $this->expectExceptionMessage('Value not found in environment: ' . __METHOD__);
-        Env::getClass(__METHOD__, TestCase::class);
     }
 }
