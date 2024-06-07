@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Console\ConsoleWriter;
+use Psr\Log\LoggerInterface;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
 use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
@@ -28,10 +28,15 @@ final class ConsoleWriterState
     public ?TargetStream $StdoutTarget = null;
     public ?TargetStream $StderrTarget = null;
     public int $GroupLevel = -1;
-    /** @var string[] */
+    /** @var array<array{string|null,string|null}> */
     public array $GroupMessageStack = [];
-    public int $Errors = 0;
-    public int $Warnings = 0;
+    public int $ErrorCount = 0;
+    public int $WarningCount = 0;
     /** @var array<string,true> */
     public array $Written = [];
+    /** @var string[] */
+    public array $LastWritten = [];
+    /** @var array{int<0,max>,float} */
+    public array $SpinnerState = [0, 0.0];
+    public LoggerInterface $Logger;
 }

@@ -32,21 +32,36 @@ final class ConsoleMessageType extends AbstractEnumeration
     public const UNFORMATTED = 2;
 
     /**
+     * A message that should be displayed temporarily and should not be recorded
+     */
+    public const PROGRESS = 3;
+
+    /**
      * The start of a group of console messages
      *
      * @see ConsoleWriter::group()
      */
-    public const GROUP_START = 3;
+    public const GROUP_START = 4;
 
     /**
      * The end of a group of console messages
      *
      * @see ConsoleWriter::groupEnd()
      */
-    public const GROUP_END = 4;
+    public const GROUP_END = 5;
+
+    /**
+     * "Command finished" or similar
+     */
+    public const SUMMARY = 6;
 
     /**
      * "Command finished without errors" or similar
      */
-    public const SUCCESS = 5;
+    public const SUCCESS = 7;
+
+    /**
+     * "Command finished with errors" or similar
+     */
+    public const FAILURE = 8;
 }

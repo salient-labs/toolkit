@@ -185,14 +185,14 @@ abstract class CliCommand implements CliCommandInterface
 
         if ($this->HasHelpArgument) {
             $style = new CliHelpStyle(CliHelpTarget::NORMAL);
-            Console::stdout($style->buildHelp($this->getHelp($style)));
+            Console::printStdout($style->buildHelp($this->getHelp($style)));
             return 0;
         }
 
         if ($this->HasVersionArgument) {
             $appName = $this->App->getAppName();
             $version = Package::version(true, true);
-            Console::stdout('__' . $appName . '__ ' . $version);
+            Console::printStdout('__' . $appName . '__ ' . $version);
             return 0;
         }
 

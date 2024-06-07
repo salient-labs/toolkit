@@ -63,7 +63,7 @@ foreach ($files as $file) {
             'fromFile' => "a/$relative",
             'toFile' => "b/$relative",
         ])))->diff($input, $output);
-        Console::maybeClearLine();
+        Console::clearProgress();
         $formatter ??= Console::getStdoutTarget()->getFormatter();
         print $formatter->formatDiff($diff);
         continue;
@@ -74,7 +74,7 @@ foreach ($files as $file) {
 }
 
 if ($replaced) {
-    Console::out('', Level::INFO);
+    Console::printOut('', Level::INFO);
 }
 
 Console::summary(Inflect::format(

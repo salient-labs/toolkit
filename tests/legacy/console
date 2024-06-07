@@ -8,7 +8,7 @@ use Salient\Console\ConsoleFormatter;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 
 Err::register();
 
@@ -16,17 +16,30 @@ Err::register();
 Console::registerTarget(StreamTarget::fromStream(\STDOUT));
 
 $items = [
-    [100, 101, 102],
-    [200, 201, 202],
+    [100, 101, 102, 103],
+    [200, 201],
     [300, 301, 302],
 ];
 
 Console::summary('Test started');
+Console::summary('Initialization', 'complete', false, false, true);
+Console::summary('Initialization', 'complete', false, true, false);
+Console::summary('Initialization', 'complete', false, true, true);
+Console::summary('Initialization', 'complete', true, false, false);
+Console::summary('Initialization', 'complete', true, false, true);
+Console::summary('Initialization', 'complete', true, true, false);
+Console::summary('Initialization', 'complete', true, true, true);
 
 Console::group('Processing items');
+Console::info('Rows to process:', (string) count($items));
 
 for ($i = 0; $i < count($items); $i++) {
-    Console::info('Processing row:', (string) ($i + 1));
+    Console::group(
+        'Processing row:',
+        (string) ($i + 1),
+        $i > 1 ? null : 'Finished processing row ' . ($i + 1),
+    );
+    Console::info('Items in row:', (string) count($items[$i]));
 
     for ($j = 0; $j < count($items[$i]); $j++) {
         Console::log('Processing item:', (string) $items[$i][$j]);
@@ -37,6 +50,7 @@ for ($i = 0; $i < count($items); $i++) {
     } else {
         Console::debug('Row processing complete');
     }
+    Console::groupEnd();
 }
 
 Console::groupEnd();
@@ -101,4 +115,16 @@ TestClass::callDebugLogger(2);
 var_dump($escaped = ConsoleFormatter::escapeTags('Backticks (`) and backslashes (\) should be escaped (`, \)'));
 Console::info($escaped);
 
+for ($i = 1; $i <= 200; $i++) {
+    Console::logProgress('Actioning:', "Item #$i of 200");
+    usleep(10000);
+}
+
 Console::summary();
+Console::summary('Done', '', false, false, true);
+Console::summary('Done', '', false, true, false);
+Console::summary('Done', '', false, true, true);
+Console::summary('Done', '', true, false, false);
+Console::summary('Done', '', true, false, true);
+Console::summary('Done', '', true, true, false);
+Console::summary('Done', '', true, true, true);

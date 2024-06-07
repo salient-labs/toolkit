@@ -102,7 +102,7 @@ final class GetSyncEntities extends AbstractSyncCommand
 
     protected function run(string ...$args)
     {
-        Console::registerStderrTarget(true);
+        Console::registerStderrTarget();
 
         $entity = $this->Entities[$this->Entity];
         $provider =

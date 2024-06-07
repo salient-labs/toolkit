@@ -26,21 +26,27 @@ final class ConsoleFormatter
     use HasImmutableProperties;
 
     public const DEFAULT_LEVEL_PREFIX_MAP = [
-        Level::EMERGENCY => ' !! ',
-        Level::ALERT => ' !! ',
-        Level::CRITICAL => ' !! ',
-        Level::ERROR => ' !! ',
-        Level::WARNING => '  ! ',
-        Level::NOTICE => '==> ',
-        Level::INFO => ' -> ',
-        Level::DEBUG => '--- ',
+        Level::EMERGENCY => '‼ ',  // U+203C
+        Level::ALERT => '‼ ',  // U+203C
+        Level::CRITICAL => '‼ ',  // U+203C
+        Level::ERROR => '‼ ',  // U+203C
+        Level::WARNING => '! ',  // U+0021
+        Level::NOTICE => '➤ ',  // U+27A4
+        Level::INFO => '- ',  // U+002D
+        Level::DEBUG => '⁞ ',  // U+205E
     ];
 
     public const DEFAULT_TYPE_PREFIX_MAP = [
-        MessageType::GROUP_START => '>>> ',
-        MessageType::GROUP_END => '<<< ',
-        MessageType::SUCCESS => ' // ',
+        MessageType::PROGRESS => '⠿ ',  // U+283F
+        MessageType::GROUP_START => '▶ ',  // U+25B6
+        MessageType::GROUP_END => '◀ ',  // U+25C0
+        MessageType::SUMMARY => '✔ ',  // U+2714
+        MessageType::SUCCESS => '✔ ',  // U+2714
+        MessageType::FAILURE => '✘ ',  // U+2718
     ];
+
+    /** @link https://github.com/sindresorhus/cli-spinners */
+    private const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
     /**
      * @var array<string,int&Tag::*>
@@ -220,15 +226,30 @@ REGEX;
      *
      * @param Level::* $level
      * @param MessageType::* $type
+     * @param array{int<0,max>,float}|null $spinnerState
      */
-    public function getMessagePrefix($level, $type = MessageType::STANDARD): string
-    {
-        return
-            $type === MessageType::UNFORMATTED || $type === MessageType::UNDECORATED
-                ? ''
-                : ($this->TypePrefixMap[$type]
-                    ?? $this->LevelPrefixMap[$level]
-                    ?? '');
+    public function getMessagePrefix(
+        $level,
+        $type = MessageType::STANDARD,
+        ?array &$spinnerState = null
+    ): string {
+        if ($type === MessageType::UNFORMATTED || $type === MessageType::UNDECORATED) {
+            return '';
+        }
+        if ($type === MessageType::PROGRESS && $spinnerState !== null) {
+            $frames = count(self::SPINNER);
+            $prefix = self::SPINNER[$spinnerState[0] % $frames] . ' ';
+            $now = (float) (hrtime(true) / 1000);
+            if ($now - $spinnerState[1] >= 80000) {
+                $spinnerState[0]++;
+                $spinnerState[0] %= $frames;
+                $spinnerState[1] = $now;
+            }
+        }
+        return $prefix
+            ?? $this->TypePrefixMap[$type]
+            ?? $this->LevelPrefixMap[$level]
+            ?? '';
     }
 
     /**
@@ -553,12 +574,14 @@ REGEX;
      *
      * @param Level::* $level
      * @param MessageType::* $type
+     * @param array{int<0,max>,float}|null $spinnerState
      */
     public function formatMessage(
         string $msg1,
         ?string $msg2 = null,
         $level = Level::INFO,
-        $type = MessageType::STANDARD
+        $type = MessageType::STANDARD,
+        ?array &$spinnerState = null
     ): string {
         $attributes = new MessageAttributes($level, $type);
 
@@ -569,7 +592,7 @@ REGEX;
                 ->apply($msg1, $msg2, '', $attributes);
         }
 
-        $prefix = $this->getMessagePrefix($level, $type);
+        $prefix = $this->getMessagePrefix($level, $type, $spinnerState);
 
         return $this
             ->MessageFormats

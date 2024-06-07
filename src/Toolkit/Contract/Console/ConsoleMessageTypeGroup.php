@@ -21,8 +21,19 @@ final class ConsoleMessageTypeGroup extends AbstractDictionary
         MessageType::STANDARD,
         MessageType::UNDECORATED,
         MessageType::UNFORMATTED,
+        MessageType::PROGRESS,
         MessageType::GROUP_START,
         MessageType::GROUP_END,
+        MessageType::SUMMARY,
         MessageType::SUCCESS,
+        MessageType::FAILURE,
+    ];
+
+    /**
+     * @var list<MessageType::*>
+     */
+    public const GROUP = [
+        MessageType::GROUP_START,
+        MessageType::GROUP_END,
     ];
 }

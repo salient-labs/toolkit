@@ -317,7 +317,7 @@ class CliApplication extends Application implements CliApplicationInterface
             if ($arg === '--help' && !$args) {
                 $usage = $this->getHelp($name, $node);
                 if ($usage !== null) {
-                    Console::stdout($usage);
+                    Console::printStdout($usage);
                 }
                 return $this;
             }
@@ -326,7 +326,7 @@ class CliApplication extends Application implements CliApplicationInterface
             if ($arg === '--version' && !$args) {
                 $appName = $this->getAppName();
                 $version = Package::version(true, true);
-                Console::stdout('__' . $appName . '__ ' . $version);
+                Console::printStdout('__' . $appName . '__ ' . $version);
                 return $this;
             }
 
@@ -340,7 +340,7 @@ class CliApplication extends Application implements CliApplicationInterface
             ) {
                 $usage = $this->getUsage($name, $node);
                 if ($usage !== null) {
-                    Console::out($usage);
+                    Console::printOut($usage);
                 }
                 $this->LastExitStatus =
                     $arg === null
@@ -422,7 +422,7 @@ class CliApplication extends Application implements CliApplicationInterface
                 && $name !== null
                 && ($usage = $this->getUsage($name, $node)) !== null
             ) {
-                Console::out("\n" . $usage);
+                Console::printOut("\n" . $usage);
             }
             $this->LastExitStatus = 1;
             return $this;
