@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Exception\UncloneableObjectException;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Exception\UncloneableObjectException;
 use Closure;
 use Countable;
 use DateTimeInterface;

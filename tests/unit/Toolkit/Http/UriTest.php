@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Regex;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
+use Salient\Utility\Arr;
+use Salient\Utility\Regex;
 use Generator;
 use InvalidArgumentException;
 

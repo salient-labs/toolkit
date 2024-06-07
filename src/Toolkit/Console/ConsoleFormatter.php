@@ -15,8 +15,8 @@ use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 
 /**
  * Formats messages for a console output target

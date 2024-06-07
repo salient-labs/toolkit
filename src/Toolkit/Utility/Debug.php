@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
 /**
  * Get information about the running script
@@ -22,13 +22,13 @@ final class Debug extends AbstractUtility
      * - `line`
      *
      * The return values below, for example, would implode to:
-     * - `Salient\Tests\Core\Utility\Debug\GetCallerClass->getCallerViaMethod:23`
-     * - `/path/to/tests/fixtures/Toolkit/Core/Utility/Debug/GetCallerFile1.php::{closure}:29`
+     * - `Salient\Tests\Utility\Debug\GetCallerClass->getCallerViaMethod:23`
+     * - `/path/to/tests/fixtures/Toolkit/Utility/Debug/GetCallerFile1.php::{closure}:29`
      *
      * ```
      * <?php
      * $caller1 = [
-     *     'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+     *     'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
      *     'class' => 'GetCallerClass',
      *     '->',
      *     'function' => 'getCallerViaMethod',
@@ -37,7 +37,7 @@ final class Debug extends AbstractUtility
      * ];
      *
      * $caller2 = [
-     *     'file' => '/path/to/tests/fixtures/Toolkit/Core/Utility/Debug/GetCallerFile1.php',
+     *     'file' => '/path/to/tests/fixtures/Toolkit/Utility/Debug/GetCallerFile1.php',
      *     '::',
      *     'function' => '{closure}',
      *     ':',

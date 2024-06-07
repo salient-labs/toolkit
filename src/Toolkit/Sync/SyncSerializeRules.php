@@ -12,9 +12,9 @@ use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Regex;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Utility\Arr;
+use Salient\Utility\Regex;
 use Closure;
 
 /**

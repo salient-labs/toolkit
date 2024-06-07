@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\Date;
 use Salient\Tests\TestCase;
+use Salient\Utility\Date;
 use DateInterval;
 use DateMalformedIntervalStringException;
 use DateTime;
@@ -13,7 +13,7 @@ use Exception;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\Core\Utility\Date
+ * @covers \Salient\Utility\Date
  */
 final class DateTest extends TestCase
 {

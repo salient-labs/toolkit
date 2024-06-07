@@ -3,8 +3,8 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\DateParserInterface;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use DateTimeImmutable;
 use DateTimeZone;
 

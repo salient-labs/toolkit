@@ -6,9 +6,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
-use Salient\Core\Utility\File;
 use Salient\Http\HttpFactory;
 use Salient\Tests\TestCase;
+use Salient\Utility\File;
 
 /**
  * @covers \Salient\Http\HttpFactory

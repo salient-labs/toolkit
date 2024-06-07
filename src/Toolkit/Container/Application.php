@@ -17,17 +17,17 @@ use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Utility\Exception\FilesystemErrorException;
-use Salient\Core\Utility\Exception\InvalidEnvironmentException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Sys;
 use Salient\Sync\SyncStore;
+use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\Exception\InvalidEnvironmentException;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\File;
+use Salient\Utility\Format;
+use Salient\Utility\Inflect;
+use Salient\Utility\Package;
+use Salient\Utility\Regex;
+use Salient\Utility\Sys;
 use Phar;
 
 /**

@@ -8,9 +8,9 @@ use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\SyncErrorType as ErrorType;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Inflect;
 use Salient\Sync\SyncError;
+use Salient\Utility\Arr;
+use Salient\Utility\Inflect;
 use JsonSerializable;
 
 /**

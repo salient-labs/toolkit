@@ -4,9 +4,9 @@ namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\UriIntegrationTest;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
 use Salient\Http\Uri;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Http\Uri

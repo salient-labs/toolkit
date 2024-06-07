@@ -7,15 +7,15 @@ use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\OutOfRangeException;
 use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\ReturnTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\Tag\VarTag;
+use Salient\Utility\Arr;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 
 /**
  * A PSR-5 PHPDoc

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility\Exception;
+namespace Salient\Utility\Exception;
 
 /** @api */
 class UnreadDataException extends FilesystemErrorException {}

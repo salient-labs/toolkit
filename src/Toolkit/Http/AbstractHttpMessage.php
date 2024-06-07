@@ -12,8 +12,8 @@ use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Regex;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Regex;
 
 /**
  * Base class for PSR-7 HTTP message classes

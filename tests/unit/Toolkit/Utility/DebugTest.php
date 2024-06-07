@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\Debug;
-use Salient\Tests\Core\Utility\Debug\GetCallerClass;
+use Salient\Tests\Utility\Debug\GetCallerClass;
 use Salient\Tests\TestCase;
+use Salient\Utility\Debug;
 
-use function Salient\Tests\Core\Utility\Debug\getCallerViaFunction;
-use function Salient\Tests\Core\Utility\Debug\getFunctionCallback;
+use function Salient\Tests\Utility\Debug\getCallerViaFunction;
+use function Salient\Tests\Utility\Debug\getFunctionCallback;
 
 /**
- * @covers \Salient\Core\Utility\Debug
+ * @covers \Salient\Utility\Debug
  */
 final class DebugTest extends TestCase
 {
@@ -19,7 +19,7 @@ final class DebugTest extends TestCase
         $class = new GetCallerClass();
 
         $thisMethod = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\',
+            'namespace' => 'Salient\\Tests\\Utility\\',
             'class' => 'DebugTest',
             0 => '->',
             'function' => __FUNCTION__,
@@ -27,7 +27,7 @@ final class DebugTest extends TestCase
         ];
 
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'class' => 'GetCallerClass',
             0 => '::',
             'function' => 'getCallerViaStaticMethod',
@@ -37,7 +37,7 @@ final class DebugTest extends TestCase
         $this->assertIsCaller($thisMethod, $class::getCallerViaStaticMethod(1));
 
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'class' => 'GetCallerClass',
             0 => '->',
             'function' => 'getCallerViaMethod',
@@ -47,7 +47,7 @@ final class DebugTest extends TestCase
         $this->assertIsCaller($thisMethod, $class->getCallerViaMethod(1));
 
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'class' => 'GetCallerClass',
             0 => '->',
             'function' => 'getCallerViaMethod',
@@ -55,7 +55,7 @@ final class DebugTest extends TestCase
         ];
         $this->assertIsCaller($expected, ($class->getCallback())());
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'class' => 'GetCallerClass',
             0 => '->',
             'function' => '{closure}',
@@ -65,7 +65,7 @@ final class DebugTest extends TestCase
         $this->assertIsCaller($thisMethod, ($class->getCallback())(2));
 
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'class' => 'GetCallerClass',
             0 => '::',
             'function' => 'getCallerViaStaticMethod',
@@ -73,7 +73,7 @@ final class DebugTest extends TestCase
         ];
         $this->assertIsCaller($expected, ($class::getStaticCallback())());
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'class' => 'GetCallerClass',
             0 => '::',
             'function' => '{closure}',
@@ -83,7 +83,7 @@ final class DebugTest extends TestCase
         $this->assertIsCaller($thisMethod, ($class::getStaticCallback())(2));
 
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'function' => 'getCallerViaFunction',
             1 => ':',
         ];
@@ -91,7 +91,7 @@ final class DebugTest extends TestCase
         $this->assertIsCaller($thisMethod, getCallerViaFunction(1));
         $this->assertIsCaller($expected, (getFunctionCallback())());
         $expected = [
-            'namespace' => 'Salient\\Tests\\Core\\Utility\\Debug\\',
+            'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
             'function' => '{closure}',
             1 => ':',
         ];

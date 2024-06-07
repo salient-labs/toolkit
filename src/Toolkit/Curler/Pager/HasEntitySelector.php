@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Pager;
 
-use Salient\Core\Utility\Arr;
+use Salient\Utility\Arr;
 use Closure;
 
 trait HasEntitySelector

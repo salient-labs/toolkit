@@ -10,10 +10,10 @@ use Salient\Core\Exception\ProcessFailedException;
 use Salient\Core\Exception\ProcessTerminatedBySignalException;
 use Salient\Core\Exception\ProcessTimedOutException;
 use Salient\Core\Exception\RuntimeException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use Closure;
 use Throwable;
 

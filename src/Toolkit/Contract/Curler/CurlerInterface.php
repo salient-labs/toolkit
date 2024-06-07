@@ -17,7 +17,7 @@ use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Facade\Cache;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 use Closure;
 use Stringable;
 

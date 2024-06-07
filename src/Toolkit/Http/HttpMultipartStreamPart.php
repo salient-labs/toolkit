@@ -8,12 +8,12 @@ use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Exception\InvalidRuntimeConfigurationException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Test;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
+use Salient\Utility\File;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Test;
 
 /**
  * Part of a PSR-7 multipart data stream

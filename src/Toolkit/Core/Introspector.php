@@ -17,8 +17,8 @@ use Salient\Contract\Core\SerializeRulesInterface;
 use Salient\Contract\Core\Treeable;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
 use Closure;
 
 /**

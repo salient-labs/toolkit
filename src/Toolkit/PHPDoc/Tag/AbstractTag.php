@@ -4,11 +4,11 @@ namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Test;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
+use Salient\Utility\Regex;
+use Salient\Utility\Test;
 
 /**
  * Base class for PHPDoc tags

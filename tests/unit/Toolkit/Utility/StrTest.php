@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Str;
 use Salient\Tests\TestCase;
+use Salient\Utility\Get;
+use Salient\Utility\Str;
 use ReflectionParameter;
 
 /**
- * @covers \Salient\Core\Utility\Str
+ * @covers \Salient\Utility\Str
  */
 final class StrTest extends TestCase
 {

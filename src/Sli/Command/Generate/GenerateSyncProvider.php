@@ -10,9 +10,9 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Str;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Utility\Arr;
+use Salient\Utility\Str;
 
 /**
  * Generates provider interfaces for sync entities

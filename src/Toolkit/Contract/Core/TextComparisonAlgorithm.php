@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\Utility\Str;
 use Salient\Core\AbstractEnumeration;
+use Salient\Utility\Str;
 
 /**
  * Text comparison algorithms

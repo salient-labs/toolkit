@@ -3,9 +3,6 @@
 namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\FormDataFlag;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Sys;
 use Salient\Core\DateFormatter;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamEncapsulationException;
@@ -13,6 +10,9 @@ use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;
 use Salient\Tests\TestCase;
+use Salient\Utility\File;
+use Salient\Utility\Format;
+use Salient\Utility\Sys;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use stdClass;

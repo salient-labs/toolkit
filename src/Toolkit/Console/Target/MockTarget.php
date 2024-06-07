@@ -6,7 +6,7 @@ use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\Utility\File;
+use Salient\Utility\File;
 
 /**
  * Writes console output to an array

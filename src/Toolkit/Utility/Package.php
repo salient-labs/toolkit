@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
 use Composer\Autoload\ClassLoader as Loader;
 use Composer\InstalledVersions as Installed;
 use Salient\Core\Facade\Event;
-use Salient\Core\Utility\Event\PackageDataReceivedEvent;
+use Salient\Utility\Event\PackageDataReceivedEvent;
 use Closure;
 use UnexpectedValueException;
 

@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Sync;
 
-use Salient\Core\Utility\Regex;
 use Salient\Tests\Sync\Entity\Provider\PostProvider;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
+use Salient\Utility\Regex;
 
 /**
  * @covers \Salient\Sync\SyncStore

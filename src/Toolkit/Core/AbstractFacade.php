@@ -12,7 +12,7 @@ use Salient\Core\Concern\HasUnderlyingService;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 
 /**
  * Base class for facades

@@ -12,7 +12,7 @@ use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Regex;
+use Salient\Utility\Regex;
 
 /**
  * Formatting instructions for help messages

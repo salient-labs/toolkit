@@ -7,7 +7,7 @@ use Salient\Contract\Core\Readable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Date;
+use Salient\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
 

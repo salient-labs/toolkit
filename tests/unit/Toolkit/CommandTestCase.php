@@ -9,7 +9,7 @@ use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\File;
+use Salient\Utility\File;
 
 abstract class CommandTestCase extends TestCase
 {

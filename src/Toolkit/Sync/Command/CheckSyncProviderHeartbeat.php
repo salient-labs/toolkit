@@ -8,7 +8,7 @@ use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Inflect;
+use Salient\Utility\Inflect;
 
 /**
  * A generic sync provider heartbeat check command

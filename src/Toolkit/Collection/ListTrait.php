@@ -5,7 +5,7 @@ namespace Salient\Collection;
 use Salient\Contract\Collection\ListInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
 
 /**
  * Implements ListInterface

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use function Salient\Tests\Core\Utility\Debug\getCaller;
+use function Salient\Tests\Utility\Debug\getCaller;
 
 /**
  * @return array<int|string>

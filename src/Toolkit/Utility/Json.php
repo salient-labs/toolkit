@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
 /**
  * Wrappers for json_encode() and json_decode()

@@ -10,7 +10,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Str;
 use Closure;
 
 /**

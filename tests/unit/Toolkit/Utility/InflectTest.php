@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Inflect;
 use Salient\Tests\TestCase;
+use Salient\Utility\File;
+use Salient\Utility\Inflect;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\Core\Utility\Inflect
+ * @covers \Salient\Utility\Inflect
  */
 final class InflectTest extends TestCase
 {

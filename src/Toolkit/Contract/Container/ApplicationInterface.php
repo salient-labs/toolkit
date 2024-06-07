@@ -7,9 +7,9 @@ use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Profile;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Package;
 use Salient\Sync\SyncStore;
+use Salient\Utility\Env;
+use Salient\Utility\Package;
 use LogicException;
 
 /**

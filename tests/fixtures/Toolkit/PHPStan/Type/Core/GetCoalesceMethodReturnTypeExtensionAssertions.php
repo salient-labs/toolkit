@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\PHPStan\Type\Core;
 
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 
 use function PHPStan\Testing\assertType;
 

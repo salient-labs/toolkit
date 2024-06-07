@@ -8,8 +8,8 @@ use Salient\Contract\Core\FacadeInterface;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Regex;
+use Salient\Utility\File;
+use Salient\Utility\Regex;
 use ErrorException;
 use Throwable;
 

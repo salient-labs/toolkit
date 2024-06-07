@@ -4,10 +4,10 @@ namespace Salient\Curler;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Str;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;
+use Salient\Utility\File;
+use Salient\Utility\Str;
 use CURLFile;
 
 /**

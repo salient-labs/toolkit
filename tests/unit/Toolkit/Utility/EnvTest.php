@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\Exception\InvalidEnvFileSyntaxException;
-use Salient\Core\Utility\Exception\InvalidEnvironmentException;
-use Salient\Core\Utility\Env;
 use Salient\Tests\TestCase;
+use Salient\Utility\Exception\InvalidEnvFileSyntaxException;
+use Salient\Utility\Exception\InvalidEnvironmentException;
+use Salient\Utility\Env;
 
 /**
- * @covers \Salient\Core\Utility\Env
+ * @covers \Salient\Utility\Env
  */
 final class EnvTest extends TestCase
 {

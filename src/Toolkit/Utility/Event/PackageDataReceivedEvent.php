@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility\Event;
+namespace Salient\Utility\Event;
 
 use Composer\Autoload\ClassLoader as Loader;
 use Composer\InstalledVersions as Installed;

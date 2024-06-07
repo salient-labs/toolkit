@@ -7,10 +7,10 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Curler\CurlerPage;
 use Salient\Http\HttpHeaders;
 use Salient\Http\Uri;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
 
 final class ODataPager implements CurlerPagerInterface
 {

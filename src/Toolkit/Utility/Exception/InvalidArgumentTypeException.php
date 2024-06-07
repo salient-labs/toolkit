@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility\Exception;
+namespace Salient\Utility\Exception;
 
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 use InvalidArgumentException;
 
 /**

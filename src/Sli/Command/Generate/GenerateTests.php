@@ -5,9 +5,9 @@ namespace Salient\Sli\Command\Generate;
 use PHPUnit\Framework\TestCase;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
-use Salient\Core\Utility\Reflect;
-use Salient\Core\Utility\Str;
 use Salient\Sli\EnvVar;
+use Salient\Utility\Reflect;
+use Salient\Utility\Str;
 
 /**
  * Generates PHPUnit tests

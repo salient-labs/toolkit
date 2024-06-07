@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
-use Salient\Core\Utility\Exception\InvalidEnvFileSyntaxException;
-use Salient\Core\Utility\Exception\InvalidEnvironmentException;
+use Salient\Utility\Exception\InvalidEnvFileSyntaxException;
+use Salient\Utility\Exception\InvalidEnvironmentException;
 use Closure;
 use InvalidArgumentException;
 use RuntimeException;

@@ -5,7 +5,7 @@ namespace Salient\Core;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Arr;
+use Salient\Utility\Arr;
 
 /**
  * Moves array values from one set of keys to another

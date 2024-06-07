@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Sys;
 use Salient\Tests\TestCase;
+use Salient\Utility\File;
+use Salient\Utility\Sys;
 use LogicException;
 
 /**
- * @covers \Salient\Core\Utility\Sys
+ * @covers \Salient\Utility\Sys
  */
 final class SysTest extends TestCase
 {

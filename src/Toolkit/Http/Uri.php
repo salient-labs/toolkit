@@ -6,10 +6,10 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Arr;
+use Salient\Utility\File;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Stringable;
 
 /**

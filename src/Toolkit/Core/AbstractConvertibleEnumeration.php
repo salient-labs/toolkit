@@ -4,8 +4,8 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\ConvertibleEnumerationInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Inflect;
+use Salient\Utility\Str;
 
 /**
  * Base class for enumerations that use static arrays to map constants to and

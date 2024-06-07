@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility\Internal;
+namespace Salient\Utility\Internal;
 
 use ReflectionNamedType;
 

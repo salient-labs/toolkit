@@ -4,7 +4,7 @@ namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Normalisable;
 use Salient\Contract\Core\NormaliserFactory;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Str;
 use Closure;
 
 /**

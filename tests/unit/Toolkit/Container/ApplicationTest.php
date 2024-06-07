@@ -8,9 +8,9 @@ use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Facade\Config;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
 use Salient\Tests\TestCase;
+use Salient\Utility\Env;
+use Salient\Utility\File;
 
 /**
  * @covers \Salient\Container\Application

@@ -20,12 +20,6 @@ use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Event;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Regex;
 use Salient\Core\ConfigurationManager;
 use Salient\Core\ErrorHandler;
 use Salient\Core\EventDispatcher;
@@ -61,6 +55,12 @@ use Salient\Tests\Sync\Entity\Task;
 use Salient\Tests\Sync\Entity\Unimplemented;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\File;
+use Salient\Utility\Json;
+use Salient\Utility\Package;
+use Salient\Utility\Regex;
 
 $dir = dirname(__DIR__);
 /** @var ClassLoader */

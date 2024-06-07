@@ -10,15 +10,15 @@ use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Test;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Test;
 use DateTimeInterface;
 
 /**

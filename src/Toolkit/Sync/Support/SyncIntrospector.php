@@ -16,12 +16,12 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Closure;
 
 /**

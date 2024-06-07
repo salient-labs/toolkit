@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
 use Salient\Contract\Core\Jsonable;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Json;
+use Salient\Utility\Format;
+use Salient\Utility\Json;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -12,7 +12,7 @@ use InvalidArgumentException;
 use Stringable;
 
 /**
- * @covers \Salient\Core\Utility\Format
+ * @covers \Salient\Utility\Format
  */
 final class FormatTest extends \Salient\Tests\TestCase
 {

@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\Test;
 use Salient\Tests\TestCase;
+use Salient\Utility\Test;
 use stdClass;
 use Stringable;
 
 /**
- * @covers \Salient\Core\Utility\Test
+ * @covers \Salient\Utility\Test
  */
 final class TestTest extends TestCase
 {

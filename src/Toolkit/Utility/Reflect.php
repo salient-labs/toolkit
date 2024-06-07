@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
-use Salient\Core\Utility\Internal\NamedType;
+use Salient\Utility\Internal\NamedType;
 use Closure;
 use InvalidArgumentException;
 use ReflectionAttribute;

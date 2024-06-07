@@ -3,7 +3,7 @@
 namespace Salient\Core\Concern;
 
 use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Arr;
+use Salient\Utility\Arr;
 use ReflectionClass;
 
 /**

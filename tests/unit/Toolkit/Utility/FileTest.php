@@ -1,19 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
 use org\bovigo\vfs\vfsStream;
-use Salient\Core\Utility\Exception\FilesystemErrorException;
-use Salient\Core\Utility\Exception\UnreadDataException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
 use Salient\Tests\TestCase;
+use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\Exception\UnreadDataException;
+use Salient\Utility\File;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use InvalidArgumentException;
 use Stringable;
 
 /**
- * @covers \Salient\Core\Utility\File
+ * @covers \Salient\Utility\File
  */
 final class FileTest extends TestCase
 {
@@ -509,7 +509,7 @@ final class FileTest extends TestCase
                 "$dir/does_not_exist",
             ],
             [
-                implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Toolkit', 'Core', 'Utility', 'File', 'dir', 'file']),
+                implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Toolkit', 'Utility', 'File', 'dir', 'file']),
                 "$dir/dir/file",
                 self::getPackagePath(),
             ],

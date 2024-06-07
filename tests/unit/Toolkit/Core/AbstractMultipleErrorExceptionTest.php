@@ -6,9 +6,9 @@ use Salient\Console\Target\MockTarget;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Str;
 use Salient\Core\AbstractMultipleErrorException;
 use Salient\Tests\TestCase;
+use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Core\AbstractMultipleErrorException

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility\Reflect;
+namespace Salient\Tests\Utility\Reflect;
 
-use Salient\Core\Utility\Reflect;
 use Salient\Tests\TestCase;
+use Salient\Utility\Reflect;
 use Generator;
 use InvalidArgumentException;
 use ReflectionClass;
@@ -13,16 +13,16 @@ use ReflectionParameter;
 use ReflectionProperty;
 
 /**
- * @covers \Salient\Core\Utility\Reflect
+ * @covers \Salient\Utility\Reflect
  */
 final class ReflectTest extends TestCase
 {
     public function testGetNames(): void
     {
         $this->assertSame([
-            'Salient\Tests\Core\Utility\Reflect\MyClass',
-            'Salient\Tests\Core\Utility\Reflect\MyInterface',
-            'Salient\Tests\Core\Utility\Reflect\MyTrait',
+            'Salient\Tests\Utility\Reflect\MyClass',
+            'Salient\Tests\Utility\Reflect\MyInterface',
+            'Salient\Tests\Utility\Reflect\MyTrait',
             'MY_CONSTANT',
             'MyDocumentedMethod',
             'parent',
@@ -162,8 +162,8 @@ final class ReflectTest extends TestCase
             [],
             ['int', 'null'],
             ['string'],
-            ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
-            ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+            ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
+            ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
         ];
 
         yield 'MyClass::__construct()' => [
@@ -179,15 +179,15 @@ final class ReflectTest extends TestCase
                 ['int', 'null'],
                 ['string'],
                 ['Countable', 'ArrayAccess'],
-                ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyBaseClass'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
                 ['string'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'array'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'string'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'string', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'array'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'string', 'null'],
                 ['string'],
             ];
             $types = $allTypes;
@@ -208,29 +208,29 @@ final class ReflectTest extends TestCase
                 ['int', 'null'],
                 ['string'],
                 ['Countable', 'ArrayAccess'],
-                ['Salient\Tests\Core\Utility\Reflect\MyBaseClass'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyBaseClass'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
                 ['string'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'array'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'string', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'array'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
-                ['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'string'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'string', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'array'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'string', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'array'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'null'],
                 ['string'],
             ];
             $types = $allTypes;
             $types[4] = [['Countable', 'ArrayAccess']];
-            $types[14] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string'];
-            $types[15] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
-            $types[16] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'array'];
-            $types[17] = ['Salient\Tests\Core\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
-            $types[18] = [['Salient\Tests\Core\Utility\Reflect\MyClass', 'Countable'], ['Salient\Tests\Core\Utility\Reflect\MyClass', 'ArrayAccess'], 'null'];
+            $types[14] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string'];
+            $types[15] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
+            $types[16] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'array'];
+            $types[17] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
+            $types[18] = [['Salient\Tests\Utility\Reflect\MyClass', 'Countable'], ['Salient\Tests\Utility\Reflect\MyClass', 'ArrayAccess'], 'null'];
 
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 $types,
@@ -532,7 +532,7 @@ final class ReflectTest extends TestCase
                     '?int',
                     'string',
                     '\Countable&\ArrayAccess',
-                    '\Salient\Tests\Core\Utility\Reflect\MyBaseClass',
+                    '\Salient\Tests\Utility\Reflect\MyBaseClass',
                     '?MyClass',
                     '?MyClass',
                     '?MyClass',
@@ -556,7 +556,7 @@ final class ReflectTest extends TestCase
                     '?int',
                     'string',
                     '\Countable&\ArrayAccess',
-                    '\Salient\Tests\Core\Utility\Reflect\MyBaseClass',
+                    '\Salient\Tests\Utility\Reflect\MyBaseClass',
                     '?MyClass',
                     '?MyClass',
                     '?MyClass',
@@ -621,7 +621,7 @@ final class ReflectTest extends TestCase
                     '?int $nullableInt',
                     'string $string',
                     'Countable&ArrayAccess $intersection',
-                    'Salient\Tests\Core\Utility\Reflect\MyBaseClass $class',
+                    'Salient\Tests\Utility\Reflect\MyBaseClass $class',
                     '?MyClass $nullableClass',
                     '?MyClass &$nullableClassByRef',
                     '?MyClass $nullableAndOptionalClass = null',
@@ -645,7 +645,7 @@ final class ReflectTest extends TestCase
                     '?int $nullableInt',
                     'string $string',
                     'Countable&ArrayAccess $intersection',
-                    'Salient\Tests\Core\Utility\Reflect\MyBaseClass $class',
+                    'Salient\Tests\Utility\Reflect\MyBaseClass $class',
                     '?MyClass $nullableClass',
                     '?MyClass &$nullableClassByRef',
                     '?MyClass $nullableAndOptionalClass = null',

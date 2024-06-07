@@ -3,9 +3,9 @@
 namespace Salient\Sli;
 
 use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Regex;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Regex;
 use Generator;
 
 defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);

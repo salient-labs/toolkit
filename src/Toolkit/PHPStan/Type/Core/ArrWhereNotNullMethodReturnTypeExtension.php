@@ -12,7 +12,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use Salient\Core\Utility\Arr;
+use Salient\Utility\Arr;
 
 class ArrWhereNotNullMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {

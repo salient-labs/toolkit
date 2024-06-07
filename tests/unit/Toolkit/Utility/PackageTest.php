@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
 use Composer\InstalledVersions;
 use Salient\Core\Facade\Event;
-use Salient\Core\Utility\Event\PackageDataReceivedEvent;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Package;
 use Salient\Tests\TestCase;
+use Salient\Utility\Event\PackageDataReceivedEvent;
+use Salient\Utility\File;
+use Salient\Utility\Package;
 
 /**
- * @covers \Salient\Core\Utility\Package
- * @covers \Salient\Core\Utility\Event\PackageDataReceivedEvent
+ * @covers \Salient\Utility\Package
+ * @covers \Salient\Utility\Event\PackageDataReceivedEvent
  */
 final class PackageTest extends TestCase
 {
@@ -21,7 +21,7 @@ final class PackageTest extends TestCase
         'version' => 'dev-main',
         'reference' => 'c44d26d440cec2096284e20478a5ff984b65fa54',
         'type' => 'library',
-        'install_path' => __DIR__ . '/../../../../../',
+        'install_path' => __DIR__ . '/../../../../',
         'aliases' => [],
         'dev' => true,
     ];
@@ -32,7 +32,7 @@ final class PackageTest extends TestCase
         'version' => '0.99.12.0',
         'reference' => '5eb65f653bcbfbfa0485d2c4a56ae37636a6629e',
         'type' => 'library',
-        'install_path' => __DIR__ . '/../../../../../',
+        'install_path' => __DIR__ . '/../../../../',
         'aliases' => [],
         'dev' => false,
     ];

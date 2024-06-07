@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\PHPStan\Type\Core;
 
-use Salient\Core\Utility\Str;
+use Salient\Utility\Str;
 
 use function PHPStan\Testing\assertType;
 

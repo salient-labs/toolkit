@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
 use Salient\Contract\Core\Jsonable;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Json;
 use Salient\Tests\TestCase;
+use Salient\Utility\Arr;
+use Salient\Utility\Json;
 use ArrayIterator;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -14,7 +14,7 @@ use stdClass;
 use Stringable;
 
 /**
- * @covers \Salient\Core\Utility\Arr
+ * @covers \Salient\Utility\Arr
  */
 final class ArrTest extends TestCase
 {

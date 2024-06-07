@@ -4,9 +4,9 @@ namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\File;
 use Salient\Http\Exception\UploadedFileException;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\File;
 
 /**
  * A PSR-7 uploaded file (incoming, server-side)

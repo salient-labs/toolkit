@@ -3,7 +3,7 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\Utility\Regex;
+use Salient\Utility\Regex;
 use Closure;
 use Throwable;
 

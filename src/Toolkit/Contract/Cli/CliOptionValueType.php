@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Core\Utility\Test;
 use Salient\Core\AbstractConvertibleEnumeration;
+use Salient\Utility\Test;
 use DateTimeImmutable;
 
 /**

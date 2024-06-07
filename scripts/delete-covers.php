@@ -4,10 +4,10 @@
 use Salient\Cli\CliApplication;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Exception\FilesystemErrorException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Regex;
+use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\File;
+use Salient\Utility\Inflect;
+use Salient\Utility\Regex;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 

@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility;
+namespace Salient\Tests\Utility;
 
-use Salient\Core\Utility\Exception\PcreErrorException;
-use Salient\Core\Utility\Regex;
 use Salient\Tests\TestCase;
+use Salient\Utility\Exception\PcreErrorException;
+use Salient\Utility\Regex;
 use Stringable;
 
 /**
- * @covers \Salient\Core\Utility\Regex
- * @covers \Salient\Core\Utility\Exception\PcreErrorException
+ * @covers \Salient\Utility\Regex
+ * @covers \Salient\Utility\Exception\PcreErrorException
  */
-final class PcreTest extends TestCase
+final class RegexTest extends TestCase
 {
     public function testGrepFails(): void
     {

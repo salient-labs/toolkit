@@ -10,10 +10,6 @@ use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Str;
 use Salient\Core\Process;
 use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\Exception\HttpErrorException;
@@ -25,6 +21,10 @@ use Salient\Http\HttpHeaders;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpStream;
 use Salient\Tests\HttpTestCase;
+use Salient\Utility\Arr;
+use Salient\Utility\File;
+use Salient\Utility\Json;
+use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Curler\Curler

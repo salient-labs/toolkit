@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
-use Salient\Core\Utility\Exception\FilesystemErrorException;
-use Salient\Core\Utility\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Exception\InvalidRuntimeConfigurationException;
-use Salient\Core\Utility\Exception\UnreadDataException;
-use Salient\Core\Utility\Exception\UnwrittenDataException;
 use Salient\Core\Process;
 use Salient\Iterator\RecursiveFilesystemIterator;
+use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
+use Salient\Utility\Exception\UnreadDataException;
+use Salient\Utility\Exception\UnwrittenDataException;
 use InvalidArgumentException;
 use Stringable;
 

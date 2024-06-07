@@ -4,8 +4,8 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Core\Exception\RuntimeException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Str;
+use Salient\Utility\File;
+use Salient\Utility\Str;
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 

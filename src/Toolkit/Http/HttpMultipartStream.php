@@ -7,9 +7,9 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Regex;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
+use Salient\Utility\Regex;
 use Throwable;
 
 /**

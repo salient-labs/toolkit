@@ -7,7 +7,7 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Comparable;
 use Salient\Contract\Core\Jsonable;
 use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Json;
+use Salient\Utility\Json;
 use ArrayIterator;
 use JsonSerializable;
 use OutOfRangeException;

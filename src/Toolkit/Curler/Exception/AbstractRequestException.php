@@ -3,9 +3,9 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Core\Utility\Format;
 use Salient\Core\AbstractException;
 use Salient\Http\HttpRequest;
+use Salient\Utility\Format;
 use Throwable;
 
 abstract class AbstractRequestException extends AbstractException

@@ -14,15 +14,15 @@ use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Exception\InvalidRuntimeConfigurationException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
+use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\Get;
+use Salient\Utility\Json;
+use Salient\Utility\Package;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
 
 /**
  * A service container for CLI applications

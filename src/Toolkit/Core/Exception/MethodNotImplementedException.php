@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Core\Utility\Reflect;
+use Salient\Utility\Reflect;
 use ReflectionMethod;
 
 /**

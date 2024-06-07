@@ -4,11 +4,11 @@ namespace Salient\Sli\Command\Generate;
 
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Reflect;
 use Salient\Core\AbstractFacade;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Sli\EnvVar;
+use Salient\Utility\Arr;
+use Salient\Utility\Reflect;
 use ReflectionMethod;
 use ReflectionParameter;
 

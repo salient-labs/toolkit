@@ -10,12 +10,12 @@ use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Json;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncSerializeRules;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Json;
 
 /**
  * A generic sync entity retrieval command

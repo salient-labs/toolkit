@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\PHPDoc;
 
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
 use Salient\Tests\TestCase;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use InvalidArgumentException;
 
 /**

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Utility\Debug;
+namespace Salient\Tests\Utility\Debug;
 
-use Salient\Core\Utility\Debug;
+use Salient\Utility\Debug;
 use Closure;
 
 class GetCallerClass

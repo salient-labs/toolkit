@@ -17,9 +17,9 @@ use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
 use Salient\Tests\TestCase;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
 use LogicException;
 
 /**

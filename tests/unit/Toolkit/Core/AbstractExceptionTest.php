@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Core\Utility\Str;
 use Salient\Core\AbstractException;
 use Salient\Tests\TestCase;
+use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Core\AbstractException

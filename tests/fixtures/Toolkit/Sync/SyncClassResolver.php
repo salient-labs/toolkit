@@ -3,7 +3,7 @@
 namespace Salient\Tests\Sync;
 
 use Salient\Contract\Sync\SyncClassResolverInterface;
-use Salient\Core\Utility\Regex;
+use Salient\Utility\Regex;
 
 class SyncClassResolver implements SyncClassResolverInterface
 {

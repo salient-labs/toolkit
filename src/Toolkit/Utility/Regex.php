@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Utility;
+namespace Salient\Utility;
 
-use Salient\Core\Utility\Exception\PcreErrorException;
+use Salient\Utility\Exception\PcreErrorException;
 use Stringable;
 
 /**

@@ -18,14 +18,14 @@ use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Regex;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Test;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\Format;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Test;
 use DateTimeImmutable;
 
 /**
