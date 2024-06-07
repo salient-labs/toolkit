@@ -2,11 +2,11 @@
 
 namespace Salient\Sli;
 
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Utility\File;
 use Salient\Utility\Get;
 use Salient\Utility\Regex;
 use Generator;
+use UnexpectedValueException;
 
 defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);
 defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10008);

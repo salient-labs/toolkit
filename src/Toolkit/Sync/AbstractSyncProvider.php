@@ -11,7 +11,6 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
 use Salient\Sync\Support\SyncContext;
@@ -20,6 +19,7 @@ use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Closure;
+use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends

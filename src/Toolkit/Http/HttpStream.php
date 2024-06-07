@@ -7,7 +7,6 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Contract\Http\HttpStreamInterface;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
@@ -15,6 +14,7 @@ use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Str;
+use InvalidArgumentException;
 
 /**
  * A PSR-7 stream wrapper

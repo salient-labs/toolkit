@@ -3,7 +3,6 @@
 namespace Salient\Http;
 
 use Salient\Contract\Core\MimeType;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
 use Salient\Utility\Package;
@@ -12,6 +11,7 @@ use Salient\Utility\Str;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use InvalidArgumentException;
 
 /**
  * @api

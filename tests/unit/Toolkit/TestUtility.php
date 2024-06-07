@@ -3,12 +3,12 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Http\HttpHeader;
-use Salient\Core\Exception\RuntimeException;
 use Salient\Http\HttpHeaders;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Str;
+use RuntimeException;
 
 final class TestUtility extends AbstractUtility
 {

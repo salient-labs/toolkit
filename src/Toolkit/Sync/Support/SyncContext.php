@@ -8,8 +8,6 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
@@ -20,6 +18,8 @@ use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
 use DateTimeInterface;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * The context within which sync entities are instantiated by a provider

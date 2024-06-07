@@ -8,14 +8,13 @@ use ReflectionMethod;
 /**
  * @api
  */
-class MethodNotImplementedException extends BadMethodCallException
+class MethodNotImplementedException extends \BadMethodCallException
 {
     /** @var class-string */
-    protected $Class;
-    /** @var string */
-    protected $Method;
+    protected string $Class;
+    protected string $Method;
     /** @var class-string */
-    protected $PrototypeClass;
+    protected string $PrototypeClass;
 
     /**
      * @param class-string $class
@@ -23,11 +22,9 @@ class MethodNotImplementedException extends BadMethodCallException
      */
     public function __construct(string $class, string $method, ?string $prototypeClass = null)
     {
-        if ($prototypeClass === null) {
-            $prototypeClass = Reflect::getPrototypeClass(
-                new ReflectionMethod($class, $method)
-            )->getName();
-        }
+        $prototypeClass ??= Reflect::getPrototypeClass(
+            new ReflectionMethod($class, $method)
+        )->getName();
 
         $this->Class = $class;
         $this->Method = $method;

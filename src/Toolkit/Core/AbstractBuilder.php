@@ -7,8 +7,8 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
+use InvalidArgumentException;
 
 /**
  * Base class for builders

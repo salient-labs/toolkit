@@ -4,9 +4,6 @@ namespace Salient\PHPDoc;
 
 use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\OutOfRangeException;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\ParamTag;
@@ -16,6 +13,9 @@ use Salient\PHPDoc\Tag\VarTag;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use InvalidArgumentException;
+use OutOfRangeException;
+use UnexpectedValueException;
 
 /**
  * A PSR-5 PHPDoc

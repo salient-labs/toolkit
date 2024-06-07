@@ -15,11 +15,11 @@ use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\SerializeRulesInterface;
 use Salient\Contract\Core\Treeable;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Closure;
+use LogicException;
+use UnexpectedValueException;
 
 /**
  * Generates closures that perform operations on a class

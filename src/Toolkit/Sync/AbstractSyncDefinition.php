@@ -18,13 +18,13 @@ use Salient\Contract\Sync\SyncOperationGroup;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 use Salient\Sync\Support\SyncIntrospector;
 use Closure;
+use LogicException;
 
 /**
  * Base class for sync entity operation definitions

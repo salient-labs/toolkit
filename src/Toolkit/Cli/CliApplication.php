@@ -12,7 +12,6 @@ use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Core\JsonSchemaInterface;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Arr;
@@ -23,6 +22,7 @@ use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Sys;
+use LogicException;
 
 /**
  * A service container for CLI applications

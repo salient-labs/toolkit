@@ -4,13 +4,13 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Core\Exception\RuntimeException;
 use Salient\Http\Http;
 use Salient\Http\HttpResponse;
 use Salient\Utility\File;
 use Salient\Utility\Inflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use RuntimeException;
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 

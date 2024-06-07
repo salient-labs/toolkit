@@ -2,8 +2,8 @@
 
 namespace Salient\Iterator;
 
-use Salient\Core\Exception\LogicException;
 use Salient\Iterator\Contract\MutableIterator;
+use LogicException;
 
 /**
  * Iterates over the properties of an object or the elements of an array while

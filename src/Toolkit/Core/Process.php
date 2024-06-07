@@ -3,18 +3,18 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\FileDescriptor;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessFailedException;
 use Salient\Core\Exception\ProcessTerminatedBySignalException;
 use Salient\Core\Exception\ProcessTimedOutException;
-use Salient\Core\Exception\RuntimeException;
 use Salient\Utility\File;
 use Salient\Utility\Get;
 use Salient\Utility\Str;
 use Salient\Utility\Sys;
 use Closure;
+use InvalidArgumentException;
+use LogicException;
+use RuntimeException;
 use Throwable;
 
 /**

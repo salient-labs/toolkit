@@ -6,10 +6,10 @@ use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Utility\Regex;
+use InvalidArgumentException;
 use Throwable;
 
 /**

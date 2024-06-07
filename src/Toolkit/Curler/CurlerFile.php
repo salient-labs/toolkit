@@ -3,12 +3,12 @@
 namespace Salient\Curler;
 
 use Psr\Http\Message\StreamInterface;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;
 use Salient\Utility\File;
 use Salient\Utility\Str;
 use CURLFile;
+use InvalidArgumentException;
 
 /**
  * A file to upload to an HTTP endpoint

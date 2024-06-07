@@ -26,10 +26,6 @@ use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\OutOfRangeException;
-use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Curler\Exception\CurlErrorException;
@@ -55,6 +51,10 @@ use Salient\Utility\Str;
 use Closure;
 use CurlHandle;
 use Generator;
+use InvalidArgumentException;
+use LogicException;
+use OutOfRangeException;
+use RuntimeException;
 use Stringable;
 use Throwable;
 
@@ -1163,7 +1163,7 @@ class Curler implements CurlerInterface, Buildable
         if (($host = $request->getHeaderLine(HttpHeader::HOST)) !== '') {
             try {
                 $host = new Uri("//$host");
-            } catch (\InvalidArgumentException $ex) {
+            } catch (InvalidArgumentException $ex) {
                 throw new InvalidHeaderException(sprintf(
                     'Invalid value for HTTP request header %s: %s',
                     HttpHeader::HOST,

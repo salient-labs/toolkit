@@ -3,9 +3,9 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\ConvertibleEnumerationInterface;
-use Salient\Core\Exception\LogicException;
 use Salient\Utility\Inflect;
 use Salient\Utility\Str;
+use LogicException;
 use ReflectionClass;
 
 /**

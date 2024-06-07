@@ -30,8 +30,6 @@ use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ProvidableTrait;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Sync;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
@@ -48,7 +46,9 @@ use Salient\Utility\Str;
 use Closure;
 use DateTimeInterface;
 use Generator;
+use LogicException;
 use ReflectionClass;
+use UnexpectedValueException;
 
 /**
  * Base class for entities serviced by sync providers

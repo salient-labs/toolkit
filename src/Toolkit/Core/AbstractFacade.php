@@ -9,10 +9,10 @@ use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasUnderlyingService;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
 use Salient\Utility\Get;
+use LogicException;
 
 /**
  * Base class for facades

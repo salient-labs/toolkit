@@ -12,8 +12,6 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Utility\Arr;
@@ -21,6 +19,8 @@ use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
 use Generator;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * An [RFC7230]-compliant HTTP header collection
@@ -194,7 +194,7 @@ REGEX;
                 false,
                 false,
             )['boundary'] ?? null;
-        } catch (\InvalidArgumentException $ex) {
+        } catch (InvalidArgumentException $ex) {
             throw new InvalidHeaderException($ex->getMessage());
         }
     }

@@ -7,7 +7,7 @@ use Composer\InstalledVersions as Installed;
 use Salient\Core\Facade\Event;
 use Salient\Utility\Event\PackageDataReceivedEvent;
 use Closure;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * Get information from Composer's runtime API
@@ -241,7 +241,7 @@ final class Package extends AbstractUtility
 
         if (!array_key_exists($key, $values)) {
             // @codeCoverageIgnoreStart
-            throw new UnexpectedValueException(
+            throw new LogicException(
                 sprintf('Value not found in root package: %s', $key)
             );
             // @codeCoverageIgnoreEnd

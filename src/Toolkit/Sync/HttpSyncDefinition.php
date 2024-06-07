@@ -18,8 +18,6 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Pipeline;
 use Salient\Curler\Exception\HttpErrorException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
@@ -31,6 +29,8 @@ use Salient\Utility\Env;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Closure;
+use LogicException;
+use UnexpectedValueException;
 
 /**
  * Provides direct access to an HttpSyncProvider's implementation of sync

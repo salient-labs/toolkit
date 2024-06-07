@@ -6,11 +6,11 @@ use Salient\Contract\Core\ExceptionInterface;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
 use Salient\Core\Concern\UnloadsFacades;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use ErrorException;
+use LogicException;
 use Throwable;
 
 /**

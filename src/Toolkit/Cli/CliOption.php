@@ -16,7 +16,6 @@ use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
@@ -27,6 +26,7 @@ use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
 use DateTimeImmutable;
+use LogicException;
 
 /**
  * A getopt-style option for a CLI command

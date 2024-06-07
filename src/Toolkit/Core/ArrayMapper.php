@@ -4,8 +4,8 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Utility\Arr;
+use InvalidArgumentException;
 
 /**
  * Moves array values from one set of keys to another

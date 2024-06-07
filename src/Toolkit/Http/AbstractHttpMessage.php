@@ -11,9 +11,9 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
+use InvalidArgumentException;
 
 /**
  * Base class for PSR-7 HTTP message classes
@@ -137,7 +137,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
         }
         try {
             return new HttpStream($body);
-        } catch (\InvalidArgumentException $ex) {
+        } catch (InvalidArgumentException $ex) {
             throw new InvalidArgumentTypeException(
                 1,
                 'body',

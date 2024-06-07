@@ -10,7 +10,6 @@ use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Sync\SyncClassResolverInterface;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
@@ -28,6 +27,7 @@ use Salient\Utility\Inflect;
 use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Sys;
+use LogicException;
 use Phar;
 
 /**

@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Core\Exception\LogicException;
 use ArrayAccess;
+use LogicException;
 
 /**
  * Implements ArrayAccess setters for immutable objects

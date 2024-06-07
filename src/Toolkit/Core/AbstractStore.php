@@ -6,9 +6,9 @@ use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\UnloadsFacades;
-use Salient\Core\Exception\LogicException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
+use LogicException;
 use SQLite3;
 use Throwable;
 

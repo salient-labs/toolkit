@@ -6,14 +6,14 @@ use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * Part of a PSR-7 multipart data stream
@@ -199,7 +199,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
         }
         try {
             return new HttpStream($content);
-        } catch (\InvalidArgumentException $ex) {
+        } catch (InvalidArgumentException $ex) {
             throw new InvalidArgumentTypeException(
                 1,
                 'content',

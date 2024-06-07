@@ -4,7 +4,6 @@ namespace Salient\Iterator;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
-use Salient\Core\Exception\LogicException;
 use Salient\Iterator\Concern\FluentIteratorTrait;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Regex;
@@ -14,6 +13,7 @@ use Countable;
 use EmptyIterator;
 use FilesystemIterator;
 use IteratorAggregate;
+use LogicException;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;

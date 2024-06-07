@@ -6,7 +6,6 @@ use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Core\DateFormatter;
 use Salient\Curler\CurlerBuilder;
@@ -27,6 +26,7 @@ use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\Task;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Utility\Env;
+use LogicException;
 
 /**
  * @method Album createAlbum(SyncContextInterface $ctx, Album $album)

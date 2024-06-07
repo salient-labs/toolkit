@@ -5,12 +5,12 @@ namespace Salient\Console\Target;
 use Salient\Console\Concept\ConsoleStreamTarget;
 use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Contract\Core\EscapeSequence;
-use Salient\Core\Exception\LogicException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
 use Salient\Utility\Str;
 use DateTime;
 use DateTimeZone;
+use LogicException;
 
 /**
  * Writes console output to a PHP stream

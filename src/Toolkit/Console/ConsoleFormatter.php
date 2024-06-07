@@ -13,10 +13,10 @@ use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use LogicException;
+use UnexpectedValueException;
 
 /**
  * Formats messages for a console output target

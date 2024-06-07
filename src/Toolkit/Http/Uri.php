@@ -5,11 +5,11 @@ namespace Salient\Http;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use InvalidArgumentException;
 use Stringable;
 
 /**
@@ -188,7 +188,7 @@ REGEX;
 
         try {
             $parts = (new static($uri, $strict))->toParts();
-        } catch (\InvalidArgumentException $ex) {
+        } catch (InvalidArgumentException $ex) {
             @trigger_error($ex->getMessage(), \E_USER_NOTICE);
             return false;
         }

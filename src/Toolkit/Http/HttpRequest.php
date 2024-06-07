@@ -9,9 +9,9 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestInterface;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
+use InvalidArgumentException;
 use Stringable;
 
 /**

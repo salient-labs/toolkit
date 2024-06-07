@@ -4,8 +4,8 @@ namespace Salient\Collection;
 
 use Salient\Contract\Collection\ListInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
+use InvalidArgumentException;
 
 /**
  * Implements ListInterface

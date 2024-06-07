@@ -11,13 +11,13 @@ use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Core\JsonSchemaInterface;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use InvalidArgumentException;
+use LogicException;
 use Throwable;
 
 /**
