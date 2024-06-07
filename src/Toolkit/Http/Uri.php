@@ -5,11 +5,11 @@ namespace Salient\Http;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Arr;
+use Salient\Utility\File;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use InvalidArgumentException;
 use Stringable;
 
 /**
@@ -117,7 +117,7 @@ REGEX;
             $uri = $this->encode($uri);
         }
 
-        if (!Pcre::match(self::URI, $uri, $parts, \PREG_UNMATCHED_AS_NULL)) {
+        if (!Regex::match(self::URI, $uri, $parts, \PREG_UNMATCHED_AS_NULL)) {
             throw new InvalidArgumentException(sprintf('Invalid URI: %s', $uri));
         }
 
@@ -232,7 +232,7 @@ REGEX;
      */
     public static function isAuthorityForm(string $requestTarget): bool
     {
-        return (bool) Pcre::match(self::AUTHORITY_FORM, $requestTarget);
+        return (bool) Regex::match(self::AUTHORITY_FORM, $requestTarget);
     }
 
     /**
@@ -445,7 +445,7 @@ REGEX;
         }
 
         if ($flags & self::COLLAPSE_MULTIPLE_SLASHES) {
-            $uri = $uri->withPath(Pcre::replace('/\/\/++/', '/', $uri->Path));
+            $uri = $uri->withPath(Regex::replace('/\/\/++/', '/', $uri->Path));
         }
 
         return $uri;
@@ -606,7 +606,7 @@ REGEX;
             return null;
         }
 
-        if ($validate && !Pcre::match(self::URI_SCHEME, $scheme)) {
+        if ($validate && !Regex::match(self::URI_SCHEME, $scheme)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid scheme: %s', $scheme)
             );
@@ -632,7 +632,7 @@ REGEX;
 
         if ($validate) {
             $host = $this->encode($host);
-            if (!Pcre::match(self::URI_HOST, $host)) {
+            if (!Regex::match(self::URI_HOST, $host)) {
                 throw new InvalidArgumentException(
                     sprintf('Invalid host: %s', $host)
                 );
@@ -702,7 +702,7 @@ REGEX;
             $encodeRegex = str_replace('/', '\/', $encodeRegex) . '|';
         }
 
-        return Pcre::replaceCallbackArray([
+        return Regex::replaceCallbackArray([
             // Use uppercase hexadecimal digits
             '/%([0-9a-f]{2})/i' =>
                 fn(array $matches) => '%' . Str::upper($matches[1]),
@@ -717,7 +717,7 @@ REGEX;
      */
     private function decodeUnreserved(string $part): string
     {
-        return Pcre::replaceCallback(
+        return Regex::replaceCallback(
             '/%(2[de]|5f|7e|3[0-9]|[46][1-9a-f]|[57][0-9a])/i',
             fn(array $matches) => chr((int) hexdec($matches[1])),
             $part
@@ -730,7 +730,7 @@ REGEX;
      */
     private function encode(string $partOrUri): string
     {
-        return Pcre::replaceCallback(
+        return Regex::replaceCallback(
             '/(?:%(?![0-9a-f]{2})|[^]!#$%&\'()*+,\/:;=?@[])+/i',
             fn(array $matches) => rawurlencode($matches[0]),
             $partOrUri
@@ -752,7 +752,7 @@ REGEX;
             if (
                 $this->Scheme === null
                 && $this->Path !== ''
-                && Pcre::match('/^[^\/:]*+:/', $this->Path)
+                && Regex::match('/^[^\/:]*+:/', $this->Path)
             ) {
                 throw new InvalidArgumentException(
                     'Path cannot begin with colon segment in URI without scheme'

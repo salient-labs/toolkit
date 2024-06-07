@@ -10,7 +10,6 @@ use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\JsonDecodeFlag;
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
@@ -27,18 +26,8 @@ use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\OutOfRangeException;
-use Salient\Core\Exception\RuntimeException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Str;
 use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\Exception\HttpErrorException;
 use Salient\Curler\Exception\NetworkException;
@@ -53,9 +42,19 @@ use Salient\Http\HttpRequest;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpStream;
 use Salient\Http\Uri;
+use Salient\Utility\Arr;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Json;
+use Salient\Utility\Str;
 use Closure;
 use CurlHandle;
 use Generator;
+use InvalidArgumentException;
+use LogicException;
+use OutOfRangeException;
+use RuntimeException;
 use Stringable;
 use Throwable;
 
@@ -95,7 +94,7 @@ class Curler implements CurlerInterface, Buildable
     protected ?DateFormatterInterface $DateFormatter;
     /** @var int-mask-of<FormDataFlag::*> */
     protected int $FormDataFlags;
-    /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY> */
+    /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> */
     protected int $JsonDecodeFlags;
     /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,string|null}> */
     protected array $Middleware = [];
@@ -143,7 +142,7 @@ class Curler implements CurlerInterface, Buildable
      * @param bool $postJson Use JSON to encode POST/PUT/PATCH/DELETE data
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
      * @param int-mask-of<FormDataFlag::*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} `|` {@see FormDataFlag::PRESERVE_STRING_KEYS})
-     * @param int-mask-of<JsonDecodeFlag::*> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see JsonDecodeFlag::OBJECT_AS_ARRAY})
+     * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
      * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
      * @param bool $alwaysPaginate Use the pager to process requests even if no pagination is required
@@ -174,7 +173,7 @@ class Curler implements CurlerInterface, Buildable
         bool $postJson = true,
         ?DateFormatterInterface $dateFormatter = null,
         int $formDataFlags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
-        int $jsonDecodeFlags = JsonDecodeFlag::OBJECT_AS_ARRAY,
+        int $jsonDecodeFlags = \JSON_OBJECT_AS_ARRAY,
         array $middleware = [],
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,

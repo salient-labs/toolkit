@@ -4,12 +4,12 @@ namespace Salient\Db;
 
 use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Exception\RuntimeException;
-use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Env;
+use Salient\Utility\Format;
+use Salient\Utility\Get;
 use ADOConnection;
+use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * Creates connections to databases

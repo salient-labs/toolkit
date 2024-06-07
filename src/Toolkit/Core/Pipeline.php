@@ -10,10 +10,10 @@ use Salient\Contract\Pipeline\PipeInterface;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Pipeline\StreamPipelineInterface;
 use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\App;
 use Closure;
 use Generator;
+use LogicException;
 
 /**
  * Sends a payload through a series of pipes

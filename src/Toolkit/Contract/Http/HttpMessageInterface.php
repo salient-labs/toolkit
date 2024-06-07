@@ -6,7 +6,7 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 use JsonSerializable;
 use Stringable;
 

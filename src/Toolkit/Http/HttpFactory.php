@@ -14,7 +14,7 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
-use Salient\Core\Utility\File;
+use Salient\Utility\File;
 
 /**
  * A PSR-17 HTTP message factory

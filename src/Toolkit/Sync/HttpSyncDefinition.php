@@ -18,11 +18,6 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Core\Pipeline;
 use Salient\Curler\Exception\HttpErrorException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
@@ -30,7 +25,12 @@ use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Utility\Env;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Closure;
+use LogicException;
+use UnexpectedValueException;
 
 /**
  * Provides direct access to an HttpSyncProvider's implementation of sync
@@ -441,7 +441,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         }
 
         $httpClosure =
-            SyncIntrospector::isWriteOperation($operation) && Env::dryRun()
+            SyncIntrospector::isWriteOperation($operation) && Env::getDryRun()
                 ? fn(CurlerInterface $curler, ?array $query, $payload = null) =>
                     is_array($payload) ? $payload : []
                 : fn(CurlerInterface $curler, ?array $query, $payload = null) =>
@@ -587,7 +587,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             $idApplied = false;
             $path = array_shift($paths);
             try {
-                $path = Pcre::replaceCallback(
+                $path = Regex::replaceCallback(
                     '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
                     function (array $match) use (
                         $operation,
@@ -729,7 +729,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     {
         switch ($this->ReturnEntitiesFrom) {
             case SyncEntitySource::HTTP_WRITE:
-                return Env::dryRun()
+                return Env::getDryRun()
                     ? $requestPayload
                     : $response;
 

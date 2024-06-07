@@ -3,8 +3,8 @@
 namespace Salient\Tests\Cache;
 
 use Salient\Cache\CacheStore;
-use Salient\Core\Utility\File;
 use Salient\Tests\TestCase;
+use Salient\Utility\File;
 use DateInterval;
 use DateTimeImmutable;
 use stdClass;

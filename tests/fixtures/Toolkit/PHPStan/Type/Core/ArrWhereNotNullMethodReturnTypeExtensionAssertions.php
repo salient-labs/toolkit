@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\PHPStan\Type\Core;
 
-use Salient\Core\Utility\Arr;
+use Salient\Utility\Arr;
 use Stringable;
 
 use function PHPStan\Testing\assertType;

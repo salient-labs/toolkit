@@ -11,8 +11,8 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
 
 class GetCoalesceMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {

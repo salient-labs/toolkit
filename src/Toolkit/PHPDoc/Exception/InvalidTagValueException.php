@@ -2,6 +2,6 @@
 
 namespace Salient\PHPDoc\Exception;
 
-use Salient\Core\Exception\UnexpectedValueException;
+use UnexpectedValueException;
 
 class InvalidTagValueException extends UnexpectedValueException {}

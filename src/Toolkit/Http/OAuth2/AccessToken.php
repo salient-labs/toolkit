@@ -6,10 +6,10 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Date;
+use Salient\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
+use InvalidArgumentException;
 
 /**
  * A token issued by an authorization provider for access to protected resources

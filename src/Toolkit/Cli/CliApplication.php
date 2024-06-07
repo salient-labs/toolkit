@@ -11,18 +11,18 @@ use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
-use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\JsonSchemaInterface;
-use Salient\Core\Exception\InvalidRuntimeConfigurationException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
+use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\Get;
+use Salient\Utility\Json;
+use Salient\Utility\Package;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
+use LogicException;
 
 /**
  * A service container for CLI applications
@@ -43,7 +43,7 @@ class CliApplication extends Application implements CliApplicationInterface
     public function __construct(
         ?string $basePath = null,
         ?string $appName = null,
-        int $envFlags = EnvFlag::ALL,
+        int $envFlags = Env::APPLY_ALL,
         ?string $configDir = 'config'
     ) {
         parent::__construct($basePath, $appName, $envFlags, $configDir);
@@ -179,7 +179,7 @@ class CliApplication extends Application implements CliApplicationInterface
     public function command(array $name, string $id)
     {
         foreach ($name as $subcommand) {
-            if (!Pcre::match(self::COMMAND_REGEX, $subcommand)) {
+            if (!Regex::match(self::COMMAND_REGEX, $subcommand)) {
                 throw new LogicException(sprintf(
                     'Subcommand does not start with a letter, followed by zero or more letters, numbers, hyphens or underscores: %s',
                     $subcommand,
@@ -336,7 +336,7 @@ class CliApplication extends Application implements CliApplicationInterface
             //   and return a non-zero exit status
             if (
                 $arg === null
-                || !Pcre::match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)
+                || !Regex::match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)
             ) {
                 $usage = $this->getUsage($name, $node);
                 if ($usage !== null) {

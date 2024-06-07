@@ -7,10 +7,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpResponseInterface;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\InvalidArgumentTypeException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Arr;
+use Salient\Utility\Str;
+use InvalidArgumentException;
 
 /**
  * A PSR-7 response

@@ -1,0 +1,31 @@
+{
+    "name": "salient/utils",
+    "description": "The utils package of the Salient toolkit",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Luke Arms",
+            "email": "luke@linacreative.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/salient-labs/toolkit/issues",
+        "source": "https://github.com/salient-labs/toolkit"
+    },
+    "require": {
+        "php": ">=7.4",
+        "composer-runtime-api": "^2.2"
+    },
+    "suggest": {
+        "salient/iterators": "Required by File::find()"
+    },
+    "autoload": {
+        "psr-4": {
+            "Salient\\Utility\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

@@ -11,13 +11,13 @@ use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Core\JsonSchemaInterface;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Arr;
+use Salient\Utility\Package;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use InvalidArgumentException;
+use LogicException;
 use Throwable;
 
 /**
@@ -1091,11 +1091,11 @@ abstract class CliCommand implements CliCommandInterface
             $arg = $args[$i];
             $short = false;
             $saved = false;
-            if (Pcre::match('/^-([a-z0-9_])(.*)/i', $arg, $matches)) {
+            if (Regex::match('/^-([a-z0-9_])(.*)/i', $arg, $matches)) {
                 $name = $matches[1];
                 $value = Str::coalesce($matches[2], null);
                 $short = true;
-            } elseif (Pcre::match(
+            } elseif (Regex::match(
                 '/^--([a-z0-9_][-a-z0-9_]+)(?:=(.*))?$/i',
                 $arg,
                 $matches,

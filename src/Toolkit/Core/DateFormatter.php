@@ -4,7 +4,7 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\DateParserInterface;
-use Salient\Core\Utility\Date;
+use Salient\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;

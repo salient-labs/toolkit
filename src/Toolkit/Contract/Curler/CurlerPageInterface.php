@@ -3,7 +3,7 @@
 namespace Salient\Contract\Curler;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Core\Exception\OutOfRangeException;
+use OutOfRangeException;
 
 interface CurlerPageInterface
 {

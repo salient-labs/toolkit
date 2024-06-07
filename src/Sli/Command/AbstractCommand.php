@@ -4,13 +4,13 @@ namespace Salient\Sli\Command;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
-use Salient\Core\Exception\FilesystemErrorException;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Test;
 use Salient\Sli\EnvVar;
+use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\Env;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Json;
+use Salient\Utility\Test;
 use JsonException;
 
 /**

@@ -3,11 +3,11 @@
 namespace Salient\Cache;
 
 use Salient\Contract\Cache\CacheStoreInterface;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\AbstractStore;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
+use LogicException;
 use SQLite3Result;
 use SQLite3Stmt;
 

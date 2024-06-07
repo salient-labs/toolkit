@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Core\Utility\File;
+use Salient\Utility\File;
 use Stringable;
 
 /**

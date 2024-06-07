@@ -3,14 +3,12 @@
 namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Core\Regex;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Test;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
+use Salient\Utility\Regex;
+use Salient\Utility\Test;
 
 /**
  * Base class for PHPDoc tags
@@ -148,7 +146,7 @@ abstract class AbstractTag implements Immutable
 
     final protected function filterTag(string $tag): string
     {
-        if (!Pcre::match(
+        if (!Regex::match(
             '/^' . PHPDocRegex::PHPDOC_TAG . '$/D',
             '@' . $tag,
         )) {
@@ -179,7 +177,7 @@ abstract class AbstractTag implements Immutable
      */
     final protected function filterMember(?string $member): ?string
     {
-        if ($member !== null && !Pcre::match(
+        if ($member !== null && !Regex::match(
             '/^(\$?' . Regex::PHP_IDENTIFIER
                 . '|' . Regex::PHP_IDENTIFIER . '(?:\(\))?)$/D',
             $member,
@@ -203,7 +201,7 @@ abstract class AbstractTag implements Immutable
 
         try {
             return PHPDoc::normaliseType($type, true);
-        } catch (InvalidArgumentException $ex) {
+        } catch (\InvalidArgumentException $ex) {
             $this->throw('%s', $ex->getMessage());
         }
     }

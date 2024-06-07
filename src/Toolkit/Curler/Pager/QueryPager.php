@@ -6,8 +6,8 @@ use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Core\Utility\Arr;
 use Salient\Curler\CurlerPage;
+use Salient\Utility\Arr;
 use Closure;
 
 /**

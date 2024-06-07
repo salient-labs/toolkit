@@ -10,17 +10,10 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Event;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Core\AbstractStore;
 use Salient\Sync\Event\SyncStoreLoadedEvent;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
@@ -29,6 +22,13 @@ use Salient\Sync\Exception\SyncStoreException;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncErrorCollection;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Json;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use InvalidArgumentException;
+use LogicException;
 use ReflectionClass;
 use SQLite3Result;
 use SQLite3Stmt;
@@ -595,7 +595,7 @@ SQL;
         // `classToNamespace()` resolves entity classes without starting a run.
         // `$DeferredNamespaces` is used to ensure it's only done once.
         if (!isset($this->DeferredNamespaces[$prefix])) {
-            if (!Pcre::match('/^[a-z][-a-z0-9+.]*$/iD', $prefix)) {
+            if (!Regex::match('/^[a-z][-a-z0-9+.]*$/iD', $prefix)) {
                 throw new InvalidArgumentException(sprintf(
                     'Invalid prefix: %s',
                     $prefix,

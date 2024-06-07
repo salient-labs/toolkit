@@ -12,15 +12,15 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Exception\MethodNotImplementedException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Test;
 use Salient\Http\Exception\InvalidHeaderException;
+use Salient\Utility\Arr;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Test;
 use Generator;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * An [RFC7230]-compliant HTTP header collection
@@ -297,7 +297,7 @@ REGEX;
         $value = null;
         if ($strict) {
             $line = substr($line, 0, -2);
-            if (!Pcre::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL)
+            if (!Regex::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL)
                     || $matches['bad_whitespace'] !== null) {
                 throw new InvalidArgumentException(sprintf('Invalid HTTP header field: %s', $line));
             }
@@ -318,7 +318,7 @@ REGEX;
             }
         } else {
             $line = rtrim($line, "\r\n");
-            $carry = Pcre::match('/\h+$/', $line, $matches) ? $matches[0] : null;
+            $carry = Regex::match('/\h+$/', $line, $matches) ? $matches[0] : null;
             if (strpos(" \t", $line[0]) !== false) {
                 $extend = true;
                 $line = $this->Carry . ' ' . trim($line);
@@ -837,7 +837,7 @@ REGEX;
 
     protected function filterName(string $name): string
     {
-        if (!Pcre::match(self::HTTP_HEADER_FIELD_NAME, $name)) {
+        if (!Regex::match(self::HTTP_HEADER_FIELD_NAME, $name)) {
             throw new InvalidArgumentException(sprintf('Invalid header name: %s', $name));
         }
         return $name;
@@ -845,8 +845,8 @@ REGEX;
 
     protected function filterValue(string $value): string
     {
-        $value = Pcre::replace('/\r\n\h+/', ' ', trim($value, " \t"));
-        if (!Pcre::match(self::HTTP_HEADER_FIELD_VALUE, $value)) {
+        $value = Regex::replace('/\r\n\h+/', ' ', trim($value, " \t"));
+        if (!Regex::match(self::HTTP_HEADER_FIELD_VALUE, $value)) {
             throw new InvalidArgumentException(sprintf('Invalid header value: %s', $value));
         }
         return $value;

@@ -15,9 +15,9 @@
     },
     "require": {
         "php": ">=7.4",
-        "composer-runtime-api": "^2.2",
         "psr/event-dispatcher": "^1",
-        "salient/contracts": "self.version"
+        "salient/contracts": "self.version",
+        "salient/utils": "self.version"
     },
     "provide": {
         "psr/event-dispatcher-implementation": "^1"

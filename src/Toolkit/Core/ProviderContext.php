@@ -10,8 +10,8 @@ use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Treeable;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Get;
+use Salient\Utility\Str;
 
 /**
  * The context within which entities of a given type are instantiated by a

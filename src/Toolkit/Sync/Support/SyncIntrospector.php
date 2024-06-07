@@ -5,7 +5,6 @@ namespace Salient\Sync\Support;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Providable;
-use Salient\Contract\Core\Regex;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\Treeable;
 use Salient\Contract\Sync\HydrationPolicy;
@@ -15,15 +14,15 @@ use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncOperationGroup;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Closure;
+use LogicException;
 
 /**
  * Generates closures that perform sync-related operations on a class
@@ -113,7 +112,7 @@ final class SyncIntrospector extends Introspector
             return $resolver->providerToEntity($provider);
         }
 
-        if (Pcre::match(
+        if (Regex::match(
             '/^(?<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
                 . '(?<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
             $provider,
@@ -631,7 +630,7 @@ final class SyncIntrospector extends Introspector
         // Check for any that end with `_id`, `_ids` or similar that would match
         // a property or magic method otherwise
         foreach ($unclaimed as $normalisedKey => $key) {
-            if (!Pcre::match('/^(.+)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
+            if (!Regex::match('/^(.+)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
                 continue;
             }
 

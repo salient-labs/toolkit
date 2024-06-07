@@ -18,17 +18,17 @@ use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Core\MultipleErrorExceptionInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasFacade;
-use Salient\Core\Exception\InvalidEnvironmentException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Debug;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
+use Salient\Utility\Exception\InvalidEnvironmentException;
+use Salient\Utility\Arr;
+use Salient\Utility\Debug;
+use Salient\Utility\Env;
+use Salient\Utility\File;
+use Salient\Utility\Format;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use Throwable;
 
 /**
@@ -157,7 +157,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
         $stderrLevels = LevelGroup::ERRORS_AND_WARNINGS;
 
         $stdout = $this->getStdoutTarget();
-        $stdoutLevels = Env::debug()
+        $stdoutLevels = Env::getDebug()
             ? LevelGroup::INFO
             : LevelGroup::INFO_EXCEPT_DEBUG;
 
@@ -206,7 +206,7 @@ final class ConsoleWriter implements FacadeAwareInterface, Unloadable
             return $this;
         }
 
-        $levels = Env::debug()
+        $levels = Env::getDebug()
             ? LevelGroup::ALL
             : LevelGroup::ALL_EXCEPT_DEBUG;
 

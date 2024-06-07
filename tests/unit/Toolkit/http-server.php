@@ -4,13 +4,13 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Core\Exception\RuntimeException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Http\Http;
 use Salient\Http\HttpResponse;
+use Salient\Utility\File;
+use Salient\Utility\Inflect;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use RuntimeException;
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
@@ -69,7 +69,7 @@ do {
         throw new RuntimeException('No client address');
     }
 
-    Pcre::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
+    Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
 
     /** @var array{addr:string,port?:string} $matches */
     $remoteHost = $matches['addr'];

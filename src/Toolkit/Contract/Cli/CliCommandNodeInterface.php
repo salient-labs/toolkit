@@ -7,7 +7,7 @@ use Salient\Cli\CliHelpStyle;
 use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\Describable;
 use Salient\Contract\Core\Nameable;
-use Salient\Core\Exception\LogicException;
+use LogicException;
 
 /**
  * A node in a CLI command tree

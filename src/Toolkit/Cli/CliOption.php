@@ -16,17 +16,17 @@ use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Test;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\Format;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Test;
 use DateTimeImmutable;
+use LogicException;
 
 /**
  * A getopt-style option for a CLI command
@@ -455,17 +455,17 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             if ($this->Name === null) {
                 throw new LogicException("'name' or 'long' must be set");
             }
-            if (!Pcre::match(self::LONG_REGEX, $this->Name)) {
+            if (!Regex::match(self::LONG_REGEX, $this->Name)) {
                 throw new LogicException("'name' must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens");
             }
         } else {
             if ($this->Long === null && $this->Short === null) {
                 throw new LogicException("At least one of 'long' and 'short' must be set");
             }
-            if ($this->Long !== null && !Pcre::match(self::LONG_REGEX, $this->Long)) {
+            if ($this->Long !== null && !Regex::match(self::LONG_REGEX, $this->Long)) {
                 throw new LogicException("'long' must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens");
             }
-            if ($this->Short !== null && !Pcre::match(self::SHORT_REGEX, $this->Short)) {
+            if ($this->Short !== null && !Regex::match(self::SHORT_REGEX, $this->Short)) {
                 throw new LogicException("'short' must contain one letter, number or underscore");
             }
         }
@@ -797,7 +797,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         if ($withFullStop && strpbrk($desc[-1], '.!?') === false) {
             $desc .= '.';
         }
-        return Pcre::replace('/\s+/', ' ', $desc);
+        return Regex::replace('/\s+/', ' ', $desc);
     }
 
     /**

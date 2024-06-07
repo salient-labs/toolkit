@@ -8,11 +8,11 @@ use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface as ResponseInterface;
 use Salient\Contract\Http\HttpServerRequestInterface as ServerRequest;
-use Salient\Core\Utility\Str;
 use Salient\Core\Process;
 use Salient\Http\HttpResponse as Response;
 use Salient\Http\HttpServer;
 use Salient\Tests\TestCase;
+use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Http\HttpServer

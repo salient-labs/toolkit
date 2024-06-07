@@ -3,8 +3,8 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\DateParserInterface;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -24,7 +24,7 @@ final class DotNetDateParser implements DateParserInterface
      */
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
-        if (!Pcre::match(self::REGEX, $value, $matches, \PREG_UNMATCHED_AS_NULL)) {
+        if (!Regex::match(self::REGEX, $value, $matches, \PREG_UNMATCHED_AS_NULL)) {
             return null;
         }
 

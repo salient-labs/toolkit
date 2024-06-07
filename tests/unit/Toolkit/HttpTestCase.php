@@ -5,11 +5,11 @@ namespace Salient\Tests;
 use Salient\Contract\Core\FileDescriptor;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpResponseInterface;
-use Salient\Core\Exception\RuntimeException;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Str;
 use Salient\Core\Process;
 use Salient\Http\HttpHeaders;
+use Salient\Utility\File;
+use Salient\Utility\Str;
+use RuntimeException;
 
 abstract class HttpTestCase extends TestCase
 {

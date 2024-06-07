@@ -11,11 +11,11 @@ use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Pcre;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Utility\Arr;
+use Salient\Utility\Regex;
 use Closure;
+use LogicException;
 
 /**
  * Rules applied when serializing a sync entity
@@ -422,7 +422,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
 
     private function normaliseTarget(string $target): string
     {
-        return Pcre::replaceCallback(
+        return Regex::replaceCallback(
             '/[^].[]++/',
             fn(array $matches): string =>
                 $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),

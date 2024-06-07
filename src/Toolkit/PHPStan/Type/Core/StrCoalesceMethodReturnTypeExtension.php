@@ -12,8 +12,8 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Arr;
+use Salient\Utility\Str;
 
 class StrCoalesceMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {

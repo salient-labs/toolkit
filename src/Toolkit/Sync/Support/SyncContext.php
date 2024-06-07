@@ -8,18 +8,18 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Exception\InvalidArgumentException;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Test;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Test;
 use DateTimeInterface;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * The context within which sync entities are instantiated by a provider
@@ -127,7 +127,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 }
 
                 $normalised = false;
-                if (Pcre::match('/^([[:alnum:]]++($|[ _-]++(?!$)))++$/D', $key)) {
+                if (Regex::match('/^([[:alnum:]]++($|[ _-]++(?!$)))++$/D', $key)) {
                     $key = Str::toSnakeCase($key);
                     $normalised = true;
                 }

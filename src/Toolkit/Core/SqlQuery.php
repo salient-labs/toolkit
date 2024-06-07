@@ -6,7 +6,7 @@ use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
-use Salient\Core\Exception\LogicException;
+use LogicException;
 
 /**
  * A simple representation of a SQL query

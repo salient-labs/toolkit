@@ -3,7 +3,7 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 use Closure;
 use Throwable;
 
@@ -95,7 +95,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         return dirname(__DIR__, 2)
             . '/fixtures/'
-            . Pcre::replace([
+            . Regex::replace([
                 '/^Salient\\\\(?|Tests\\\\(.+)Test$|(.+))/',
                 '/\\\\/',
             ], [

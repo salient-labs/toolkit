@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core\Process;
 
-use Salient\Core\Utility\File;
 use Salient\Tests\Core\ProcessTest;
+use Salient\Utility\File;
 
 require dirname(__DIR__, 5) . '/vendor/autoload.php';
 

@@ -16,7 +16,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use Salient\Core\Utility\Arr;
+use Salient\Utility\Arr;
 use Stringable;
 
 class ArrWhereNotEmptyMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension

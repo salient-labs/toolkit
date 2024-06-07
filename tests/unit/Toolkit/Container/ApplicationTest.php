@@ -7,11 +7,10 @@ use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\EnvFlag;
 use Salient\Core\Facade\Config;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
 use Salient\Tests\TestCase;
+use Salient\Utility\Env;
+use Salient\Utility\File;
 
 /**
  * @covers \Salient\Container\Application
@@ -56,7 +55,7 @@ final class ApplicationTest extends TestCase
             File::writeContents("{$configDir}/{$name}.php", $data);
         }
 
-        $app = new Application($basePath, null, EnvFlag::ALL, null);
+        $app = new Application($basePath, null, Env::APPLY_ALL, null);
         $this->assertSame([], Config::all());
 
         $app = new Application($basePath);
@@ -75,7 +74,7 @@ final class ApplicationTest extends TestCase
     {
         // realpath provides cross-platform normalisation here
         $basePath = realpath(File::createTempDir()) ?: '';
-        $homeDir = Env::home();
+        $homeDir = Env::getHomeDir();
         $this->assertNotNull($homeDir);
         $homeDir = realpath($homeDir) ?: '';
         $this->assertDirectoryExists($basePath);

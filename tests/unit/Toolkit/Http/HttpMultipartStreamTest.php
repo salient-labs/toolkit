@@ -3,15 +3,15 @@
 namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStream;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpRequest;
 use Salient\Http\HttpStream;
 use Salient\Tests\TestCase;
+use Salient\Utility\File;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use InvalidArgumentException;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Salient\Polyfill;
 
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 use Stringable;
 use TypeError;
 

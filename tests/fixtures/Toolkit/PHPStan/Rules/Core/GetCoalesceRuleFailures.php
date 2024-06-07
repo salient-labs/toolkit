@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\PHPStan\Rules\Core;
 
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 
 $a = 2;
 $b = 3;

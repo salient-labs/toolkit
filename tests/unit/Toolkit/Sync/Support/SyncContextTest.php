@@ -3,12 +3,12 @@
 namespace Salient\Tests\Sync\Support;
 
 use Salient\Contract\Sync\SyncOperation;
-use Salient\Core\Utility\Arr;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
+use Salient\Utility\Arr;
 use Closure;
 
 /**

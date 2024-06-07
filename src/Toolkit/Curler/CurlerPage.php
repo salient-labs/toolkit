@@ -4,7 +4,7 @@ namespace Salient\Curler;
 
 use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
-use Salient\Core\Exception\OutOfRangeException;
+use OutOfRangeException;
 
 /**
  * Data returned by an HTTP endpoint

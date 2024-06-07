@@ -6,14 +6,14 @@ use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Http\HttpRequestMethod;
-use Salient\Core\Exception\UnexpectedValueException;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Str;
 use Salient\Sli\Command\AbstractCommand;
 use Salient\Sli\EnvVar;
 use Salient\Sync\HttpSyncProvider;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Json;
+use Salient\Utility\Str;
+use UnexpectedValueException;
 
 /**
  * Sends HTTP requests to HTTP sync providers

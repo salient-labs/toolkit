@@ -10,11 +10,6 @@ use Salient\Contract\Core\Cardinality;
 use Salient\Contract\Core\Treeable;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Concern\TreeableTrait;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Core\DateFormatter;
 use Salient\Core\DateParser;
 use Salient\Core\DotNetDateParser;
@@ -23,6 +18,11 @@ use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\AbstractSyncEntity;
 use Salient\Sync\HttpSyncProvider;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Closure;
 use DateTimeInterface;
 
@@ -332,7 +332,7 @@ EOF)
                 );
 
             foreach ($entity as $key => $value) {
-                if (!is_string($key) || !Pcre::match('/^[[:alpha:]]/', $key)) {
+                if (!is_string($key) || !Regex::match('/^[[:alpha:]]/', $key)) {
                     continue;
                 }
 
@@ -353,7 +353,7 @@ EOF)
                 }
 
                 if ((is_int($value) || is_string($value) || $value === null)
-                        && Pcre::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Id$/', $key, $matches)) {
+                        && Regex::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Id$/', $key, $matches)) {
                     $key = $matches['class'];
                     $properties[$key] = "$key|null";
                     $tentativeOneToOne[$key] = $key;
@@ -361,7 +361,7 @@ EOF)
                 }
 
                 if (Arr::ofArrayKey($value, true)
-                        && Pcre::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Ids$/', $key, $matches)) {
+                        && Regex::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Ids$/', $key, $matches)) {
                     $key = $matches['class'];
                     $properties[$key] = "{$key}[]|null";
                     $tentativeOneToMany[$key] = $key;
@@ -538,7 +538,7 @@ EOF,
         Closure $normaliser,
         array &$array
     ): void {
-        if (!Pcre::match(
+        if (!Regex::match(
             '/^(?<property>[[:alpha:]_][[:alnum:]_]*)=(?<class>[[:alpha:]_][[:alnum:]_]*)$/i',
             $relationship,
             $matches

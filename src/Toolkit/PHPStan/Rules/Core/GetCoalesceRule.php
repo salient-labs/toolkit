@@ -10,7 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 
 /**
  * @implements Rule<StaticCall>

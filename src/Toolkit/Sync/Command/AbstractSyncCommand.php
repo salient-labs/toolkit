@@ -7,10 +7,10 @@ use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Str;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Str;
 
 /**
  * Base class for generic sync commands

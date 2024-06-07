@@ -6,12 +6,12 @@ parameters:
 			path: scripts/generate.php
 
 		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:trim\\(\\) expects iterable\\<int, string\\>, array\\<int, string\\>\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Utility\\\\Arr\\:\\:trim\\(\\) expects iterable\\<int, string\\>, array\\<int, string\\>\\|false given\\.$#"
 			count: 1
 			path: scripts/generate.php
 
 		-
-			message: "#^Parameter \\#1 \\$name of static method Salient\\\\Core\\\\Utility\\\\Env\\:\\:unset\\(\\) expects string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$name of static method Salient\\\\Utility\\\\Env\\:\\:unset\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: scripts/generate.php
 
@@ -36,7 +36,7 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$method of static method Salient\\\\Core\\\\Utility\\\\Reflect\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$method of static method Salient\\\\Utility\\\\Reflect\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
@@ -176,12 +176,12 @@ parameters:
 			path: src/Toolkit/Console/Target/StreamTarget.php
 
 		-
-			message: "#^Parameter \\#1 \\$stream of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:close\\(\\) expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$stream of static method Salient\\\\Utility\\\\File\\:\\:close\\(\\) expects resource, resource\\|null given\\.$#"
 			count: 2
 			path: src/Toolkit/Console/Target/StreamTarget.php
 
 		-
-			message: "#^Parameter \\#1 \\$stream of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:write\\(\\) expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$stream of static method Salient\\\\Utility\\\\File\\:\\:write\\(\\) expects resource, resource\\|null given\\.$#"
 			count: 3
 			path: src/Toolkit/Console/Target/StreamTarget.php
 
@@ -241,7 +241,7 @@ parameters:
 			path: src/Toolkit/Core/ArrayMapper.php
 
 		-
-			message: "#^Parameter \\#1 \\$key of static method Salient\\\\Core\\\\Utility\\\\Arr\\:\\:get\\(\\) expects string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$key of static method Salient\\\\Utility\\\\Arr\\:\\:get\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/ConfigurationManager.php
 
@@ -349,56 +349,6 @@ parameters:
 			message: "#^Part \\$glue \\(array\\|string\\) of encapsed string cannot be cast to string\\.$#"
 			count: 1
 			path: src/Toolkit/Core/SqlQuery.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Env\\:\\:getNullableInt\\(\\) should return int\\|null but returns T of int\\|false\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Env.php
-
-		-
-			message: "#^Offset 'uri' on array\\{timed_out\\: bool, blocked\\: bool, eof\\: bool, unread_bytes\\: int, stream_type\\: string, wrapper_type\\: string, wrapper_data\\: mixed, mode\\: string, \\.\\.\\.\\} on left side of \\?\\? always exists and is not nullable\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/File.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of static method Salient\\\\Core\\\\Utility\\\\Get\\:\\:value\\(\\) expects \\(Closure\\(mixed \\.\\.\\.\\)\\: string\\)\\|string, \\(Closure\\(string\\|null\\)\\: string\\)\\|string given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Inflect.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Inflect.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replace\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replaceCallback\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:replaceCallbackArray\\(\\) should return T of array\\<string\\>\\|string but returns array\\|string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
-
-		-
-			message: "#^Parameter \\#2 \\$callback of function preg_replace_callback expects callable\\(array\\<int\\|string, string\\>\\)\\: string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\) given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
-
-		-
-			message: "#^Parameter \\#3 \\$pattern of class Salient\\\\Core\\\\Exception\\\\PcreErrorException constructor expects array\\<\\(callable\\(array\\<string\\|null\\>\\)\\: string\\)\\|string\\>\\|string, array\\<string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\)\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
-
-		-
-			message: "#^Parameter \\#4 \\$subject of class Salient\\\\Core\\\\Exception\\\\PcreErrorException constructor expects array\\<string\\>\\|string, array\\<TKey of \\(int\\|string\\), TValue of bool\\|float\\|int\\|string\\|Stringable\\|null\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Utility/Pcre.php
 
 		-
 			message: "#^Offset 'uri' on array\\{timed_out\\: bool, blocked\\: bool, eof\\: bool, unread_bytes\\: int, stream_type\\: string, wrapper_type\\: string, wrapper_data\\: mixed, mode\\: string, \\.\\.\\.\\} on left side of \\?\\? always exists and is not nullable\\.$#"
@@ -511,12 +461,12 @@ parameters:
 			path: src/Toolkit/Sync/Command/AbstractSyncCommand.php
 
 		-
-			message: "#^Parameter \\#2 \\$data of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:writeCsv\\(\\) expects iterable\\<array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, array\\<array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
+			message: "#^Parameter \\#2 \\$data of static method Salient\\\\Utility\\\\File\\:\\:writeCsv\\(\\) expects iterable\\<array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, array\\<array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Command/GetSyncEntities.php
 
 		-
-			message: "#^Parameter \\#5 \\$callback of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:writeCsv\\(\\) expects \\(callable\\(array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<int\\|string, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\: array\\)\\|null, Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\: array\\<string, mixed\\> given\\.$#"
+			message: "#^Parameter \\#5 \\$callback of static method Salient\\\\Utility\\\\File\\:\\:writeCsv\\(\\) expects \\(callable\\(array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<int\\|string, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\: array\\)\\|null, Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\: array\\<string, mixed\\> given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Command/GetSyncEntities.php
 
@@ -716,6 +666,51 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
 		-
+			message: "#^Offset 'uri' on array\\{timed_out\\: bool, blocked\\: bool, eof\\: bool, unread_bytes\\: int, stream_type\\: string, wrapper_type\\: string, wrapper_data\\: mixed, mode\\: string, \\.\\.\\.\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/File.php
+
+		-
+			message: "#^Parameter \\#1 \\$value of static method Salient\\\\Utility\\\\Get\\:\\:value\\(\\) expects \\(Closure\\(mixed \\.\\.\\.\\)\\: string\\)\\|string, \\(Closure\\(string\\|null\\)\\: string\\)\\|string given\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Inflect.php
+
+		-
+			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Inflect.php
+
+		-
+			message: "#^Method Salient\\\\Utility\\\\Regex\\:\\:replace\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Regex.php
+
+		-
+			message: "#^Method Salient\\\\Utility\\\\Regex\\:\\:replaceCallback\\(\\) should return T of array\\<string\\>\\|string but returns array\\<int, string\\>\\|string\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Regex.php
+
+		-
+			message: "#^Method Salient\\\\Utility\\\\Regex\\:\\:replaceCallbackArray\\(\\) should return T of array\\<string\\>\\|string but returns array\\|string\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Regex.php
+
+		-
+			message: "#^Parameter \\#2 \\$callback of function preg_replace_callback expects callable\\(array\\<int\\|string, string\\>\\)\\: string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\) given\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Regex.php
+
+		-
+			message: "#^Parameter \\#3 \\$pattern of class Salient\\\\Utility\\\\Exception\\\\PcreErrorException constructor expects array\\<\\(callable\\(array\\<string\\|null\\>\\)\\: string\\)\\|string\\>\\|string, array\\<string, \\(callable\\(array\\<array\\{string, int\\}\\>\\)\\: string\\)\\|\\(callable\\(array\\<string\\>\\)\\: string\\)\\> given\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Regex.php
+
+		-
+			message: "#^Parameter \\#4 \\$subject of class Salient\\\\Utility\\\\Exception\\\\PcreErrorException constructor expects array\\<string\\>\\|string, array\\<TKey of \\(int\\|string\\), TValue of bool\\|float\\|int\\|string\\|Stringable\\|null\\> given\\.$#"
+			count: 1
+			path: src/Toolkit/Utility/Regex.php
+
+		-
 			message: "#^Cannot access property \\$Facade on static\\(Salient\\\\Tests\\\\Core\\\\AbstractFacade\\\\MyHasFacadeClass\\)\\|null\\.$#"
 			count: 1
 			path: tests/fixtures/Toolkit/Core/AbstractFacade/MyHasFacadeClass.php
@@ -806,21 +801,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/MetricCollectorTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$exception of method PHPUnit\\\\Framework\\\\TestCase\\:\\:expectException\\(\\) expects class\\-string\\<Throwable\\>, string given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/EnvTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Utility\\\\InflectTest\\:\\:formatRangeProvider\\(\\) should return array\\<array\\{string, string, float\\|int, float\\|int, string\\}\\> but returns array\\{array\\{'on line 71', 'from lines 71 to 83', 71, 83, '\\{\\{\\#\\:on\\:from\\}\\} \\{\\{\\#…'\\}, array\\{'on line 71', 'on lines between 71…', 71, 83, 'on \\{\\{\\#\\:line\\}\\} \\{\\{\\#\\:…'\\}, array\\{'on line 71 in\\:…', 'on lines between 71…', 71, 83, 'on \\{\\{\\#\\:line\\}\\} \\{\\{\\#\\:…', 'Salient\\\\\\\\Tests\\\\\\\\Core…'\\}, array\\{'at value 3\\.14', 'between values 3\\.14…', 3\\.14, 6\\.626E\\-34, '\\{\\{\\#\\:at\\:between\\}\\} \\{\\{…'\\}, array\\{'No consecutive days…', null, 0, 0, '\\{\\{\\#\\:No\\}\\}…'\\}, array\\{'1 consecutive day…', '1 to 7 consecutive…', 1, 7, '\\{\\{\\#\\:No\\}\\}…'\\}, array\\{'No ensuites are…', null, 0, 0, '\\{\\{\\#\\:An\\}\\} \\{\\{\\#…'\\}, array\\{'An ensuite is…', '1 to 3 ensuites are…', 1, 3, '\\{\\{\\#\\:An\\}\\} \\{\\{\\#…'\\}\\}\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/InflectTest.php
-
-		-
-			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Utility/PcreTest.php
-
-		-
 			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and array\\{'accept', array\\{'\\*/\\*'\\}\\} will always evaluate to false\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
@@ -899,4 +879,19 @@ parameters:
 			message: "#^Cannot access property \\$Id on Salient\\\\Sync\\\\Support\\\\DeferredEntity\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\User\\>\\|Salient\\\\Tests\\\\Sync\\\\Entity\\\\User\\|null\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Sync/Support/SyncEntityProviderTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$exception of method PHPUnit\\\\Framework\\\\TestCase\\:\\:expectException\\(\\) expects class\\-string\\<Throwable\\>, string given\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Utility/EnvTest.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Utility\\\\InflectTest\\:\\:formatRangeProvider\\(\\) should return array\\<array\\{string, string, float\\|int, float\\|int, string\\}\\> but returns array\\{array\\{'on line 71', 'from lines 71 to 83', 71, 83, '\\{\\{\\#\\:on\\:from\\}\\} \\{\\{\\#…'\\}, array\\{'on line 71', 'on lines between 71…', 71, 83, 'on \\{\\{\\#\\:line\\}\\} \\{\\{\\#\\:…'\\}, array\\{'on line 71 in\\:…', 'on lines between 71…', 71, 83, 'on \\{\\{\\#\\:line\\}\\} \\{\\{\\#\\:…', 'Salient\\\\\\\\Tests…'\\}, array\\{'at value 3\\.14', 'between values 3\\.14…', 3\\.14, 6\\.626E\\-34, '\\{\\{\\#\\:at\\:between\\}\\} \\{\\{…'\\}, array\\{'No consecutive days…', null, 0, 0, '\\{\\{\\#\\:No\\}\\}…'\\}, array\\{'1 consecutive day…', '1 to 7 consecutive…', 1, 7, '\\{\\{\\#\\:No\\}\\}…'\\}, array\\{'No ensuites are…', null, 0, 0, '\\{\\{\\#\\:An\\}\\} \\{\\{\\#…'\\}, array\\{'An ensuite is…', '1 to 3 ensuites are…', 1, 3, '\\{\\{\\#\\:An\\}\\} \\{\\{\\#…'\\}\\}\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Utility/InflectTest.php
+
+		-
+			message: "#^Parameter \\#3 \\$flags of static method Salient\\\\Utility\\\\Regex\\:\\:grep\\(\\) expects int\\<0, 1\\>, int given\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Utility/RegexTest.php
 

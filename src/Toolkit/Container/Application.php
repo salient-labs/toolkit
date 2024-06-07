@@ -7,28 +7,27 @@ use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
-use Salient\Contract\Core\EnvFlag;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Sync\SyncClassResolverInterface;
-use Salient\Core\Exception\FilesystemErrorException;
-use Salient\Core\Exception\InvalidEnvironmentException;
-use Salient\Core\Exception\LogicException;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Format;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Package;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Sys;
 use Salient\Sync\SyncStore;
+use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\Exception\InvalidEnvironmentException;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\File;
+use Salient\Utility\Format;
+use Salient\Utility\Inflect;
+use Salient\Utility\Package;
+use Salient\Utility\Regex;
+use Salient\Utility\Sys;
+use LogicException;
 use Phar;
 
 /**
@@ -146,7 +145,7 @@ class Application extends Container implements ApplicationInterface
             );
         }
 
-        $home = Env::home();
+        $home = Env::getHomeDir();
         if ($home === null || !is_dir($home)) {
             throw new InvalidEnvironmentException('Home directory not found');
         }
@@ -251,7 +250,7 @@ class Application extends Container implements ApplicationInterface
      *
      * @api
      *
-     * @param int-mask-of<EnvFlag::*> $envFlags Values to apply from the
+     * @param int-mask-of<Env::APPLY_*> $envFlags Values to apply from the
      * environment to the running script.
      * @param string|null $configDir A path relative to the application's base
      * path, or `null` if configuration files should not be loaded.
@@ -259,7 +258,7 @@ class Application extends Container implements ApplicationInterface
     public function __construct(
         ?string $basePath = null,
         ?string $appName = null,
-        int $envFlags = EnvFlag::ALL,
+        int $envFlags = Env::APPLY_ALL,
         ?string $configDir = 'config'
     ) {
         if (!isset(self::$StartTime)) {
@@ -271,7 +270,7 @@ class Application extends Container implements ApplicationInterface
         static::setGlobalContainer($this);
 
         $this->AppName = $appName
-            ?? Pcre::replace(
+            ?? Regex::replace(
                 // Match `git describe --long` and similar formats
                 '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/i',
                 '',
@@ -308,14 +307,14 @@ class Application extends Container implements ApplicationInterface
 
         if ($this->RunningFromSource) {
             $files = [];
-            $env = Env::environment();
+            $env = Env::getEnvironment();
             if ($env !== null) {
                 $files[] = "{$this->BasePath}/.env.{$env}";
             }
             $files[] = "{$this->BasePath}/.env";
             foreach ($files as $file) {
                 if (is_file($file)) {
-                    Env::load($file);
+                    Env::loadFiles($file);
                     break;
                 }
             }
@@ -426,7 +425,7 @@ class Application extends Container implements ApplicationInterface
      */
     public function isProduction(): bool
     {
-        $env = Env::environment();
+        $env = Env::getEnvironment();
 
         return
             $env === 'production'
@@ -509,7 +508,7 @@ class Application extends Container implements ApplicationInterface
             $this->LogTargets[$name] = $target;
         }
 
-        if (($debug || ($debug === null && Env::debug()))
+        if (($debug || ($debug === null && Env::getDebug()))
                 && !isset($this->DebugLogTargets[$name])) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, LevelGroup::ALL);

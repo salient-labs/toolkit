@@ -7,10 +7,10 @@ use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\Json;
+use Salient\Utility\Str;
 use DateTimeInterface;
 
 class TestOptions extends CliCommand

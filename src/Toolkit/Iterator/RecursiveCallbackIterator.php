@@ -2,7 +2,7 @@
 
 namespace Salient\Iterator;
 
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 use Closure;
 use IteratorIterator;
 use RecursiveCallbackFilterIterator;

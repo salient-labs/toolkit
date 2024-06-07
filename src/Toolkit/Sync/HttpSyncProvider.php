@@ -10,12 +10,12 @@ use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
-use Salient\Core\Utility\Get;
 use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerBuilder;
 use Salient\Http\HttpHeaders;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Utility\Get;
 
 /**
  * Base class for HTTP-based RESTful API providers

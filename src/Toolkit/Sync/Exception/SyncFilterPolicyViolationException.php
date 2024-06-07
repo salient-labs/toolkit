@@ -5,7 +5,7 @@ namespace Salient\Sync\Exception;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Utility\Json;
+use Salient\Utility\Json;
 
 /**
  * Thrown when there are unclaimed sync operation filters

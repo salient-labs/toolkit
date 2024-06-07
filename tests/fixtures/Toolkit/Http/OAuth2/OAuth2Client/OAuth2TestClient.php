@@ -3,11 +3,11 @@
 namespace Salient\Tests\Http\OAuth2\OAuth2Client;
 
 use League\OAuth2\Client\Provider\GenericProvider;
-use Salient\Core\Utility\Env;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\OAuth2\OAuth2Client;
 use Salient\Http\OAuth2\OAuth2Flow;
 use Salient\Http\HttpServer;
+use Salient\Utility\Env;
 
 class OAuth2TestClient extends OAuth2Client
 {

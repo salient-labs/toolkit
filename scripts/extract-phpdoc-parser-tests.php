@@ -4,7 +4,7 @@
 use Composer\InstalledVersions;
 use PHPStan\PhpDocParser\Parser\ParserException;
 use PHPStan\PhpDocParser\Parser\TypeParserTest;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 

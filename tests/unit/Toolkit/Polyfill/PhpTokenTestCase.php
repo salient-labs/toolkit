@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Polyfill;
 
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Str;
 use Salient\Polyfill\PhpToken;
 use Salient\Tests\TestCase;
+use Salient\Utility\Get;
+use Salient\Utility\Str;
 use Throwable;
 use TypeError;
 

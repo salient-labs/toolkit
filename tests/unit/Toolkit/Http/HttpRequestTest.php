@@ -4,10 +4,10 @@ namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Core\Utility\Str;
 use Salient\Http\HttpRequest;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
+use Salient\Utility\Str;
 use InvalidArgumentException;
 
 /**

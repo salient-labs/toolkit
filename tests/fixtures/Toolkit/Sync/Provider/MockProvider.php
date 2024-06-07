@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Sync\Provider;
 
-use Salient\Core\Utility\Get;
 use Salient\Core\DateFormatter;
 use Salient\Sync\HttpSyncProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
+use Salient\Utility\Get;
 
 /**
  * @method User createUser(SyncContextInterface $ctx, User $user)

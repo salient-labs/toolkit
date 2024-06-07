@@ -30,14 +30,7 @@ use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ProvidableTrait;
-use Salient\Core\Exception\LogicException;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
 use Salient\Iterator\IterableIterator;
@@ -45,10 +38,17 @@ use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Closure;
 use DateTimeInterface;
 use Generator;
+use LogicException;
 use ReflectionClass;
+use UnexpectedValueException;
 
 /**
  * Base class for entities serviced by sync providers
@@ -297,14 +297,14 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         ) use ($regex): string {
             if ($greedy && !$hints) {
                 return self::$NormalisedPropertyMap[static::class][$name]
-                    ??= Pcre::replace($regex, '', Str::toSnakeCase($name));
+                    ??= Regex::replace($regex, '', Str::toSnakeCase($name));
             }
             $_name = Str::toSnakeCase($name);
             if (!$greedy || in_array($_name, $hints)) {
                 return $_name;
             }
 
-            return Pcre::replace($regex, '', $_name);
+            return Regex::replace($regex, '', $_name);
         };
     }
 

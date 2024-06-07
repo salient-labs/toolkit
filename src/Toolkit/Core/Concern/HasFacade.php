@@ -4,7 +4,7 @@ namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
-use Salient\Core\Exception\LogicException;
+use LogicException;
 
 /**
  * Implements FacadeAwareInterface by returning modified instances for use with
