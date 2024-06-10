@@ -3,6 +3,7 @@
 namespace Salient\Tests\Utility;
 
 use Salient\Contract\Core\Jsonable;
+use Salient\Utility\File;
 use Salient\Utility\Format;
 use Salient\Utility\Json;
 use DateTimeImmutable;
@@ -186,6 +187,8 @@ final class FormatTest extends \Salient\Tests\TestCase
                     return Json::stringify(['baz' => 71], $flags);
                 }
             }],
+            ['<resource (stream)>', File::open(__FILE__, 'r')],
+            ['<array>', [File::open(__FILE__, 'r')]],
         ];
     }
 

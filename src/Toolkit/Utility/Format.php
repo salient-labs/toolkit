@@ -5,6 +5,7 @@ namespace Salient\Utility;
 use Salient\Contract\Core\Jsonable;
 use DateTimeInterface;
 use InvalidArgumentException;
+use JsonException;
 
 /**
  * Format data for humans
@@ -95,7 +96,11 @@ final class Format extends AbstractUtility
         if ($value instanceof Jsonable) {
             return $value->toJson(Json::ENCODE_FLAGS);
         }
-        return Json::stringify($value);
+        try {
+            return Json::stringify($value);
+        } catch (JsonException $ex) {
+            return '<' . Get::type($value) . '>';
+        }
     }
 
     /**
