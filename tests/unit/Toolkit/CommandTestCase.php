@@ -26,17 +26,23 @@ abstract class CommandTestCase extends TestCase
         string $command,
         array $args,
         array $name = [],
-        bool $outputIncludesConsoleMessages = true,
-        bool $debugMessagesAreIncluded = false,
+        bool $outputHasConsoleMessages = true,
+        bool $outputHasDebugMessages = false,
         ?array $consoleMessages = null,
         int $runs = 1,
-        ?callable $callback = null
+        ?callable $callback = null,
+        bool $targetIsTty = false
     ): void {
         Console::registerTarget(
-            $target = $outputIncludesConsoleMessages
-                ? new MockTarget(File::open('php://output', ''))
-                : new MockTarget(),
-            $debugMessagesAreIncluded
+            $target = new MockTarget(
+                $outputHasConsoleMessages
+                    ? File::open('php://output', '')
+                    : null,
+                true,
+                true,
+                $targetIsTty,
+            ),
+            $outputHasDebugMessages
                 ? LevelGroup::ALL
                 : LevelGroup::ALL_EXCEPT_DEBUG,
         );

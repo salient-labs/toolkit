@@ -96,7 +96,7 @@ EOF;
 
     protected function run(string ...$args)
     {
-        Console::registerStderrTarget(true);
+        Console::registerStderrTarget();
 
         if ($this->Providers) {
             $providers =

@@ -21,10 +21,10 @@ temporary directory, created with mode `0600` if it doesn't already exist:
 sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
 ```
 
-If the value of environment variable `CONSOLE_TARGET` is `stderr` or `stdout`,
+If the value of environment variable `console_target` is `stderr` or `stdout`,
 [Console][Console] output is also written to `STDERR` or `STDOUT` respectively.
 
-If `CONSOLE_TARGET` is not set and the script is running on the command line:
+If `console_target` is not set and the script is running on the command line:
 
 - If `STDERR` is a TTY and `STDOUT` is not, console messages are written to
   `STDERR` so output to `STDOUT` isn't tainted
@@ -50,13 +50,13 @@ target, e.g. by calling [registerTarget()][registerTarget], before any other
 <!-- prettier-ignore -->
 | `Console` method | `ConsoleLevel`  | Message prefix | Default output target     |
 | ---------------- | --------------- | -------------- | ------------------------- |
-| `error[Once]()`  | `ERROR` = `3`   | `  !!  `       | `STDERR`                  |
-| `warn[Once]()`   | `WARNING` = `4` | `   !  `       | `STDERR`                  |
-| `info[Once]()`   | `NOTICE` = `5`  | ` ==>  `       | `STDOUT`                  |
-| `log[Once]()`    | `INFO` = `6`    | `  ->  `       | `STDOUT`                  |
-| `debug[Once]()`  | `DEBUG` = `7`   | ` ---  `       | `STDOUT` (if `DEBUG` set) |
-| `group()`[^2]    | `NOTICE` = `5`  | ` >>>  `       | `STDOUT`                  |
-| `logProgress()`  | `INFO` = `6`    | `  ->  `       | `STDOUT`                  |
+| `error[Once]()`  | `ERROR` = `3`   | ` ‼  `         | `STDERR`                  |
+| `warn[Once]()`   | `WARNING` = `4` | ` !  `         | `STDERR`                  |
+| `info[Once]()`   | `NOTICE` = `5`  | ` ➤  `         | `STDOUT`                  |
+| `log[Once]()`    | `INFO` = `6`    | ` -  `         | `STDOUT`                  |
+| `debug[Once]()`  | `DEBUG` = `7`   | ` ⁞  `         | `STDOUT` (if `DEBUG` set) |
+| `group()`[^2]    | `NOTICE` = `5`  | ` ▶  `         | `STDOUT`                  |
+| `logProgress()`  | `INFO` = `6`    | ` ⠿  `         | `STDOUT`                  |
 
 [^1]: Actually a facade for [ConsoleWriter][ConsoleWriter].
 [^2]:
@@ -77,9 +77,12 @@ The following Markdown-like syntax is supported in [Console][Console] messages:
 | Inline code  | `` ` `` text `` ` ``                                   | <code>Bold</code>                     | `` The input format can be specified using the `-f/--from` option. ``     |
 | Code block   | ` ``` `<br>text<br>` ``` `                             | <pre><code>Unchanged</code></pre>     | <pre><code>\`\`\`&#10;$baz = Foo::bar();&#10;\`\`\`</code></pre>          |
 
-[Application]: https://salient-labs.github.io/toolkit/Salient.Container.Application.html
-[CliApplication]: https://salient-labs.github.io/toolkit/Salient.Cli.CliApplication.html
-[Console]: https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html
+[Application]:
+  https://salient-labs.github.io/toolkit/Salient.Container.Application.html
+[CliApplication]:
+  https://salient-labs.github.io/toolkit/Salient.Cli.CliApplication.html
+[Console]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html
 [ConsoleWriter]:
   https://salient-labs.github.io/toolkit/Salient.Console.ConsoleWriter.html
 [logOutput]:

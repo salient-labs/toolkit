@@ -84,8 +84,8 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
         $boldRed = Format::ttyBold(Colour::RED);
         $boldGreen = Format::ttyBold(Colour::GREEN);
         $boldYellow = Format::ttyBold(Colour::YELLOW);
+        $boldMagenta = Format::ttyBold(Colour::MAGENTA);
         $boldCyan = Format::ttyBold(Colour::CYAN);
-        $green = Format::ttyColour(Colour::GREEN);
         $yellow = Format::ttyColour(Colour::YELLOW);
         $cyan = Format::ttyColour(Colour::CYAN);
 
@@ -93,8 +93,11 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
             ->set(LevelGroup::ERRORS, MessageTypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))
             ->set(Level::WARNING, MessageTypeGroup::ALL, new MessageFormat($boldYellow, $default, $boldYellow))
             ->set(Level::NOTICE, MessageTypeGroup::ALL, new MessageFormat($bold, $cyan, $boldCyan))
-            ->set(Level::INFO, MessageTypeGroup::ALL, new MessageFormat($default, $yellow, $boldYellow))
+            ->set(Level::INFO, MessageTypeGroup::ALL, new MessageFormat($default, $yellow, $yellow))
             ->set(Level::DEBUG, MessageTypeGroup::ALL, new MessageFormat($dim, $dim, $boldDim))
-            ->set(LevelGroup::INFO, MessageType::SUCCESS, new MessageFormat($green, $default, $boldGreen));
+            ->set(LevelGroup::INFO, MessageType::PROGRESS, new MessageFormat($default, $yellow, $yellow))
+            ->set(LevelGroup::INFO, MessageTypeGroup::GROUP, new MessageFormat($boldMagenta, $default, $boldMagenta))
+            ->set(LevelGroup::INFO, MessageType::SUMMARY, new MessageFormat($bold, $default, $bold))
+            ->set(LevelGroup::INFO, MessageType::SUCCESS, new MessageFormat($boldGreen, $default, $boldGreen));
     }
 }

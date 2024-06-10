@@ -38,6 +38,7 @@ final class GetSyncEntitiesTest extends SyncCommandTestCase
                 : static function ($app) use ($httpRequestCount): void {
                     static::assertSameHttpRequests($httpRequestCount, $app);
                 },
+            true,
         );
     }
 

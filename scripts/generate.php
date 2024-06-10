@@ -9,6 +9,7 @@ use Salient\Cli\CliOptionBuilder;
 use Salient\Console\ConsoleWriter;
 use Salient\Container\Container;
 use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\SyncStoreInterface;
@@ -73,7 +74,7 @@ $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
     Cache::class => [CacheStoreInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache store', '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
-    Console::class => [ConsoleWriter::class, '--api'],
+    Console::class => [ConsoleWriterInterface::class, [ConsoleWriter::class], '--desc', 'A facade for the global console writer', '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
     Event::class => [EventDispatcher::class, '--api'],
     Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],
