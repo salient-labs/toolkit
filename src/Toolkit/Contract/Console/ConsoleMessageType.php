@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Console\ConsoleWriter;
 use Salient\Core\AbstractEnumeration;
 
 /**
@@ -38,15 +37,11 @@ final class ConsoleMessageType extends AbstractEnumeration
 
     /**
      * The start of a group of console messages
-     *
-     * @see ConsoleWriter::group()
      */
     public const GROUP_START = 4;
 
     /**
      * The end of a group of console messages
-     *
-     * @see ConsoleWriter::groupEnd()
      */
     public const GROUP_END = 5;
 

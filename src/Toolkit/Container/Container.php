@@ -5,12 +5,16 @@ namespace Salient\Container;
 use Dice\Dice;
 use Dice\DiceException;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Psr\Log\LoggerInterface;
 use Salient\Cache\CacheStore;
+use Salient\Console\ConsoleLogger;
+use Salient\Console\ConsoleWriter;
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Container\Exception\ContainerServiceNotFoundException;
 use Salient\Container\Exception\ContainerUnusableArgumentsException;
 use Salient\Container\Exception\InvalidContainerBindingException;
 use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasBindings;
@@ -54,6 +58,8 @@ class Container implements ContainerInterface, FacadeAwareInterface
 
     private const DEFAULT_SERVICES = [
         CacheStoreInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
+        ConsoleWriterInterface::class => [ConsoleWriter::class, ServiceLifetime::SINGLETON],
+        LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::SINGLETON],
         SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],
     ];
 
