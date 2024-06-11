@@ -10,6 +10,89 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.25] - 2024-06-11
+
+### Added
+
+#### `Console`
+
+- Add `ConsoleWriterInterface` and adopt where appropriate
+- Add a spinner to `Console::logProgress()` output
+- Add `ConsoleLogger` to finalise PSR-3 support
+- Add `Console::getLogger()`
+
+### Changed
+
+#### `Console`
+
+- **Update message decorations and formatting**
+- Optionally suppress error count and associated formatting in `Console::summary()`
+- Update `Console::group()` API
+- Rename `CONSOLE_TARGET` environment variable to `console_target`
+- Rename `Console` methods for consistency:
+  - `getErrors()` -> `getErrorCount()`
+  - `getWarnings()` -> `getWarningCount()`
+  - `maybeClearLine()` -> `clearProgress()`
+  - `out()` -> `printOut()`
+  - `tty()` -> `printTty()`
+  - `stdout()` -> `printStdout()`
+  - `stderr()` -> `printStderr()`
+- Optionally filter targets by level and type in `Console::getTargets()`
+- Always replace existing `STDOUT`/`STDERR` targets
+
+#### `Core`
+
+- **Move `Salient\Core\Utility` namespace to `Salient\Utility`**
+- **Move `Regex` values to `Pcre` and rename `Pcre` to `Regex`**
+- Move `CopyFlag` values to `Get` and rename for clarity as needed
+- Move `EnvFlag` values to `Env` and rename for clarity as needed
+- Rename `Env` methods:
+  - `load()` -> `loadFiles()`
+  - `environment()` -> `getEnvironment()`
+  - `home()` -> `getHomeDir()`
+  - `dryRun()` -> `getDryRun()` and `setDryRun()`
+  - `debug()` -> `getDebug()` and `setDebug()`
+  - `flag()` -> `getFlag()` and `setFlag()`
+- Do not print console messages from `Env`
+- Move `AbstractUtility` and `PackageDataReceivedEvent` to `Utility` namespace
+- Move exceptions to `Utility` namespace and refactor as needed
+
+### Removed
+
+#### `Console`
+
+- Remove unused/internal `Console` methods:
+  - `deregisterAllTargets()`
+  - `maybeRegisterStdioTargets()`
+  - `registerLogTarget()`
+- Remove `$replace` parameters from `Console` methods
+
+#### `Core`
+
+- Remove `Env::getClass()`
+- Remove `Env::isLocaleUtf8()`
+- Remove `JsonEncodeFlag` and `JsonDecodeFlag` after replacing references to them with equivalent `JSON_*` values
+- Remove exceptions with the same name as their native parent:
+  - `BadMethodCallException`
+  - `InvalidArgumentException`
+  - `LogicException`
+  - `OutOfRangeException`
+  - `RuntimeException`
+  - `UnexpectedValueException`
+
+### Fixed
+
+#### `Core`
+
+- Fix `DateParser::parse()` issue where empty strings are interpreted as `'now'`
+- Fix `DateParser::parse()` issue where `$timezone` is not applied after parsing
+- Fix incorrect example in `Env` documentation
+- In `Format::value()`, fall back to `Get::type()` if encoding fails
+
+#### `sli`
+
+- In `generate` commands, detect (some) constants to fix issue where `JSON_*` constants in PHPDoc types are treated as class names
+
 ## [v0.99.24] - 2024-06-05
 
 ### Added
@@ -2748,6 +2831,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.25]: https://github.com/salient-labs/toolkit/compare/v0.99.24...v0.99.25
 [v0.99.24]: https://github.com/salient-labs/toolkit/compare/v0.99.23...v0.99.24
 [v0.99.23]: https://github.com/salient-labs/toolkit/compare/v0.99.22...v0.99.23
 [v0.99.22]: https://github.com/salient-labs/toolkit/compare/v0.99.21...v0.99.22
