@@ -627,7 +627,7 @@ final class File extends AbstractUtility
      * Read from an open stream
      *
      * @param resource $stream
-     * @param int<0,max> $length
+     * @param int<1,max> $length
      * @param Stringable|string|null $uri
      */
     public static function read($stream, int $length, $uri = null): string
