@@ -429,7 +429,9 @@ class HttpServer implements Immutable
                     $peer,
                 ), $ex);
             }
-            if ($length !== null) {
+            if ($length === 0) {
+                $body = '';
+            } elseif ($length !== null) {
                 $body = @fread($socket, $length);
                 if ($body === false) {
                     throw new HttpServerException(sprintf(

@@ -54,6 +54,7 @@
         "psr/event-dispatcher-implementation": "^1",
         "psr/http-factory-implementation": "^1",
         "psr/http-message-implementation": "^1.1 || ^2",
+        "psr/log-implementation": "^1",
         "psr/simple-cache-implementation": "^1 || ^2 || ^3"
     },
     "suggest": {
