@@ -3,50 +3,37 @@
 namespace Salient\Tests\Core;
 
 use Salient\Core\DateFormatter;
-use Salient\Core\DotNetDateParser;
 use Salient\Tests\TestCase;
+use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 
 /**
  * @covers \Salient\Core\DateFormatter
  */
 final class DateFormatterTest extends TestCase
 {
-    public function testDotNet(): void
+    /**
+     * @dataProvider formatProvider
+     */
+    public function testFormat(string $expected, string $tzExpected, DateTimeInterface $date): void
     {
-        $formatter = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, null, new DotNetDateParser());
-        $formatter2 = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, 'Australia/Sydney', new DotNetDateParser());
+        $tz = new DateTimeZone('Australia/Sydney');
+        $formatter = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED);
+        $tzFormatter = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, $tz);
+        $this->assertSame($expected, $formatter->format($date));
+        $this->assertSame($tzExpected, $tzFormatter->format($date));
+    }
 
-        $data = [
-            '/Date(1530144000000+0530)/',
-            '/Date(1603152000000)/',
-            '/Date(1668143569876+1100)/'
+    /**
+     * @return array<array{string,string,DateTimeInterface}>
+     */
+    public static function formatProvider(): array
+    {
+        return [
+            ['2018-06-28T05:30:00.000+05:30', '2018-06-28T10:00:00.000+10:00', new DateTimeImmutable('2018-06-28T05:30:00.000+05:30')],
+            ['2020-10-20T00:00:00.000+00:00', '2020-10-20T11:00:00.000+11:00', new DateTimeImmutable('2020-10-20T00:00:00.000+00:00')],
+            ['2022-11-11T16:12:49.876+11:00', '2022-11-11T16:12:49.876+11:00', new DateTimeImmutable('2022-11-11T16:12:49.876+11:00')],
         ];
-
-        $this->assertEquals(
-            [
-                '2018-06-28T05:30:00.000+05:30',
-                '2020-10-20T00:00:00.000+00:00',
-                '2022-11-11T16:12:49.876+11:00',
-            ],
-            array_map(
-                fn(string $date) =>
-                    $formatter->format($formatter->parse($date)),
-                $data
-            )
-        );
-
-        $this->assertEquals(
-            [
-                '2018-06-28T10:00:00.000+10:00',
-                '2020-10-20T11:00:00.000+11:00',
-                '2022-11-11T16:12:49.876+11:00',
-            ],
-            array_map(
-                fn(string $date) =>
-                    $formatter2->format($formatter2->parse($date)),
-                $data
-            )
-        );
     }
 }

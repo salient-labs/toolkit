@@ -347,7 +347,7 @@ EOF)
                     continue;
                 }
 
-                if (is_string($value) && $dateFormatter->parse($value)) {
+                if (is_string($value) && trim($value) !== '' && $dateFormatter->parse($value)) {
                     $properties[$key] = $this->getFqcnAlias(DateTimeInterface::class) . '|null';
                     continue;
                 }

@@ -16,9 +16,7 @@ interface DateFormatterInterface
     public function format(DateTimeInterface $date): string;
 
     /**
-     * Convert a string to a date and time, if possible
-     *
-     * Returns `null` if `$value` cannot be parsed.
+     * Convert a value to a date and time, or return null if it can't be parsed
      */
     public function parse(string $value): ?DateTimeImmutable;
 }
