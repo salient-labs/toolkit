@@ -614,7 +614,7 @@ REGEX;
         ];
 
         return Regex::replaceCallback(
-            '/^([-+]{3}|[-+@]).*/m',
+            '/^(-{3}|\+{3}|[-+@]).*/m',
             fn(array $matches) => $formats[$matches[1]]->apply($matches[0]),
             $diff,
         );
