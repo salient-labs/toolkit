@@ -2,6 +2,7 @@
 
 namespace Salient\Utility;
 
+use Salient\Core\Facade\Err;
 use LogicException;
 use RuntimeException;
 
@@ -258,7 +259,15 @@ final class Sys extends AbstractUtility
         }
         $handler = static function (int $signal): void {
             // @codeCoverageIgnoreStart
-            exit(128 + $signal);
+            $status = 128 + $signal;
+            if (
+                class_exists(Err::class)
+                && Err::isLoaded()
+                && Err::isRegistered()
+            ) {
+                Err::handleExitSignal($status);
+            }
+            exit($status);
             // @codeCoverageIgnoreEnd
         };
         pcntl_async_signals(true);
