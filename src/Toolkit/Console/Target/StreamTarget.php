@@ -234,6 +234,9 @@ final class StreamTarget extends ConsoleStreamTarget
         return $this->Path;
     }
 
+    /**
+     * @internal
+     */
     public function __destruct()
     {
         $this->close();

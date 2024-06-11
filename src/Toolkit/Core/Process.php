@@ -164,6 +164,9 @@ final class Process
         return $process;
     }
 
+    /**
+     * @internal
+     */
     public function __destruct()
     {
         if ($this->updateStatus()->isRunning()) {
