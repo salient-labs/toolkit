@@ -5,6 +5,8 @@ namespace Salient\Console\Target;
 use Salient\Console\Concept\ConsoleStreamTarget;
 use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Contract\Core\EscapeSequence;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Core\Facade\Err;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
 use Salient\Utility\Str;
@@ -66,10 +68,6 @@ final class StreamTarget extends ConsoleStreamTarget
      */
     private function applyStream($stream): void
     {
-        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
-            throw new InvalidArgumentTypeException(1, 'stream', 'resource', $stream);
-        }
-
         $meta = stream_get_meta_data($stream);
 
         $this->Stream = $stream;
@@ -79,6 +77,14 @@ final class StreamTarget extends ConsoleStreamTarget
         $this->IsTty = stream_isatty($stream);
 
         stream_set_write_buffer($stream, 0);
+    }
+
+    /**
+     * @internal
+     */
+    public function __destruct()
+    {
+        $this->close();
     }
 
     /**
@@ -114,7 +120,9 @@ final class StreamTarget extends ConsoleStreamTarget
             return;
         }
 
-        $this->maybeClearLine();
+        if ($this->IsTty && self::$HasPendingClearLine && is_resource($this->Stream)) {
+            $this->clearLine(true);
+        }
 
         if ($this->IsCloseable) {
             File::close($this->Stream, $this->Path);
@@ -176,6 +184,10 @@ final class StreamTarget extends ConsoleStreamTarget
         ?string $timestampFormat = StreamTarget::DEFAULT_TIMESTAMP_FORMAT,
         $timezone = null
     ): self {
+        if (!File::isStream($stream)) {
+            throw new InvalidArgumentTypeException(1, 'stream', 'resource (stream)', $stream);
+        }
+
         return new self($stream, $closeable, $addTimestamp, $timestampFormat, $timezone);
     }
 
@@ -205,6 +217,8 @@ final class StreamTarget extends ConsoleStreamTarget
      */
     protected function writeToTarget($level, string $message, array $context): void
     {
+        $this->assertIsValid();
+
         if ($this->AddTimestamp) {
             $now = (new DateTime('now', $this->Timezone))->format($this->TimestampFormat);
             $message = $now . str_replace("\n", "\n" . $now, $message);
@@ -214,7 +228,7 @@ final class StreamTarget extends ConsoleStreamTarget
         // and write a "clear to end of line" sequence before the next message
         if ($this->IsTty) {
             if (self::$HasPendingClearLine) {
-                $this->clearLine();
+                $this->clearLine($level < Level::WARNING);
             }
             if ($message === "\r") {
                 return;
@@ -234,11 +248,9 @@ final class StreamTarget extends ConsoleStreamTarget
         return $this->Path;
     }
 
-    public function __destruct()
-    {
-        $this->close();
-    }
-
+    /**
+     * @phpstan-assert !null $this->Stream
+     */
     protected function assertIsValid(): void
     {
         if (!$this->Stream) {
@@ -246,16 +258,19 @@ final class StreamTarget extends ConsoleStreamTarget
         }
     }
 
-    private function maybeClearLine(): void
+    /**
+     * @phpstan-assert !null $this->Stream
+     */
+    private function clearLine(bool $preserveOutputOnError = false): void
     {
-        if ($this->IsTty && self::$HasPendingClearLine && is_resource($this->Stream)) {
-            $this->clearLine();
-        }
-    }
+        $this->assertIsValid();
 
-    private function clearLine(): void
-    {
-        File::write($this->Stream, "\r" . EscapeSequence::CLEAR_LINE . EscapeSequence::WRAP_ON);
+        $data = $preserveOutputOnError
+            && Err::isLoaded()
+            && Err::isShuttingDownOnError()
+                ? EscapeSequence::WRAP_ON . "\n"
+                : "\r" . EscapeSequence::CLEAR_LINE . EscapeSequence::WRAP_ON;
+        File::write($this->Stream, $data);
         self::$HasPendingClearLine = false;
     }
 }

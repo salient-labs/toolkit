@@ -3,9 +3,9 @@
 namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Console\ConsoleFormatter;
-use Salient\Contract\Core\MessageLevel;
-use Salient\Contract\Core\MessageLevelGroup;
+use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Throwable;
 
 interface ConsoleWriterInterface
@@ -35,12 +35,12 @@ interface ConsoleWriterInterface
     /**
      * Register a target to receive console output
      *
-     * @param array<MessageLevel::*> $levels
+     * @param array<Level::*> $levels
      * @return $this
      */
     public function registerTarget(
         ConsoleTargetInterface $target,
-        array $levels = MessageLevelGroup::ALL
+        array $levels = LevelGroup::ALL
     );
 
     /**
@@ -57,7 +57,7 @@ interface ConsoleWriterInterface
     /**
      * Get a list of registered targets, optionally filtered by level and type
      *
-     * @param MessageLevel::*|null $level
+     * @param Level::*|null $level
      * @param int-mask-of<ConsoleTargetTypeFlag::*> $flags
      * @return ConsoleTargetInterface[]
      */
@@ -84,9 +84,9 @@ interface ConsoleWriterInterface
      * - the target returned by {@see getStderrTarget()} if backed by a TTY
      * - the target returned by {@see getStdoutTarget()}
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      */
-    public function getWidth(int $level = MessageLevel::INFO): ?int;
+    public function getWidth(int $level = Level::INFO): ?int;
 
     /**
      * Get an output formatter for a registered target
@@ -94,9 +94,9 @@ interface ConsoleWriterInterface
      * Returns {@see ConsoleTargetInterface::getFormatter()} from the same
      * target as {@see ConsoleWriterInterface::getWidth()}.
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      */
-    public function getFormatter(int $level = MessageLevel::INFO): ConsoleFormatter;
+    public function getFormatter(int $level = Level::INFO): Formatter;
 
     /**
      * Get a PSR-3 logger backed by the writer
@@ -122,6 +122,11 @@ interface ConsoleWriterInterface
      * Get the number of warning messages recorded by the writer so far
      */
     public function getWarningCount(): int;
+
+    /**
+     * Escape a string so it can be safely used in a console message
+     */
+    public function escape(string $string): string;
 
     /**
      * Print "‼ $msg1 $msg2" with level ERROR
@@ -249,7 +254,7 @@ interface ConsoleWriterInterface
     /**
      * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @param ConsoleMessageType::* $type
      * @return $this
      */
@@ -266,7 +271,7 @@ interface ConsoleWriterInterface
      * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
      * once per run
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @param ConsoleMessageType::* $type
      * @return $this
      */
@@ -282,7 +287,7 @@ interface ConsoleWriterInterface
     /**
      * Record a message with level $level without printing anything
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @return $this
      */
     public function count(int $level);
@@ -311,18 +316,18 @@ interface ConsoleWriterInterface
     public function groupEnd();
 
     /**
-     * Print an exception with level $level (default: ERROR) and its stack trace
-     * with level $traceLevel (default: DEBUG)
+     * Print an exception's name and message with a given level, optionally
+     * followed by its stack trace with a different level
      *
-     * @param MessageLevel::* $level
-     * @param MessageLevel::*|null $traceLevel If `null`, the exception's stack
-     * trace is not printed.
+     * @param Level::* $level
+     * @param Level::*|null $traceLevel If `null`, the exception's stack trace
+     * is not printed.
      * @return $this
      */
     public function exception(
         Throwable $exception,
-        int $level = MessageLevel::ERROR,
-        ?int $traceLevel = MessageLevel::DEBUG
+        int $level = Level::ERROR,
+        ?int $traceLevel = Level::DEBUG
     );
 
     /**
@@ -342,65 +347,65 @@ interface ConsoleWriterInterface
     /**
      * Print "$msg" to registered targets
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @param ConsoleMessageType::* $type
      * @return $this
      */
     public function print(
         string $msg,
-        int $level = MessageLevel::INFO,
+        int $level = Level::INFO,
         int $type = ConsoleMessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered STDOUT or STDERR targets
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @param ConsoleMessageType::* $type
      * @return $this
      */
     public function printOut(
         string $msg,
-        int $level = MessageLevel::INFO,
+        int $level = Level::INFO,
         int $type = ConsoleMessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered TTY targets
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @param ConsoleMessageType::* $type
      * @return $this
      */
     public function printTty(
         string $msg,
-        int $level = MessageLevel::INFO,
+        int $level = Level::INFO,
         int $type = ConsoleMessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDOUT even if no STDOUT target is registered
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @param ConsoleMessageType::* $type
      * @return $this
      */
     public function printStdout(
         string $msg,
-        int $level = MessageLevel::INFO,
+        int $level = Level::INFO,
         int $type = ConsoleMessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDERR even if no STDERR target is registered
      *
-     * @param MessageLevel::* $level
+     * @param Level::* $level
      * @param ConsoleMessageType::* $type
      * @return $this
      */
     public function printStderr(
         string $msg,
-        int $level = MessageLevel::INFO,
+        int $level = Level::INFO,
         int $type = ConsoleMessageType::UNFORMATTED
     );
 }

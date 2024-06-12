@@ -45,6 +45,7 @@ final class ErrorHandler implements FacadeAwareInterface
     private bool $IsShuttingDown = false;
     private bool $IsShuttingDownOnFatalError = false;
     private bool $IsShuttingDownOnUncaughtException = false;
+    private bool $IsShuttingDownOnExitSignal = false;
 
     /**
      * Register error, exception and shutdown handlers
@@ -96,7 +97,8 @@ final class ErrorHandler implements FacadeAwareInterface
     public function isShuttingDownOnError(): bool
     {
         return $this->IsShuttingDownOnFatalError
-            || $this->IsShuttingDownOnUncaughtException;
+            || $this->IsShuttingDownOnUncaughtException
+            || $this->IsShuttingDownOnExitSignal;
     }
 
     /**
@@ -214,16 +216,37 @@ final class ErrorHandler implements FacadeAwareInterface
      */
     public function handleException(Throwable $exception): void
     {
-        Console::exception($exception);
-
-        if (!$this->IsShuttingDown) {
-            $this->IsShuttingDown = true;
-            $this->IsShuttingDownOnUncaughtException = true;
-            $exitStatus = self::DEFAULT_EXIT_STATUS;
-            if ($exception instanceof ExceptionInterface) {
-                $exitStatus = $exception->getExitStatus() ?? $exitStatus;
-            }
-            exit($this->ExitStatus = $exitStatus);
+        if ($this->IsShuttingDown) {
+            Console::exception($exception);
+            return;
         }
+
+        $this->IsShuttingDown = true;
+        $this->IsShuttingDownOnUncaughtException = true;
+        if ($exception instanceof ExceptionInterface) {
+            $exitStatus = $exception->getExitStatus();
+        }
+        $this->ExitStatus = $exitStatus ??= self::DEFAULT_EXIT_STATUS;
+        Console::exception($exception);
+        exit($exitStatus);
+    }
+
+    /**
+     * Report the exit status of the running script before it terminates on
+     * SIGTERM, SIGINT or SIGHUP
+     */
+    public function handleExitSignal(int $exitStatus): void
+    {
+        if (!$this->IsRegistered) {
+            throw new LogicException(sprintf('%s is not registered', static::class));
+        }
+
+        if ($this->IsShuttingDown) {
+            return;
+        }
+
+        $this->IsShuttingDown = true;
+        $this->IsShuttingDownOnExitSignal = true;
+        $this->ExitStatus = $exitStatus;
     }
 }

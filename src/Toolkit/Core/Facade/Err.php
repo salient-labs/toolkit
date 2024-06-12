@@ -10,6 +10,7 @@ use Salient\Core\ErrorHandler;
  *
  * @method static ErrorHandler deregister() Deregister previously registered error and exception handlers
  * @method static int getExitStatus() Get the exit status of the running script if it is terminating
+ * @method static void handleExitSignal(int $exitStatus) Report the exit status of the running script before it terminates on SIGTERM, SIGINT or SIGHUP
  * @method static bool isRegistered() Check if error, exception and shutdown handlers are registered
  * @method static bool isShuttingDown() Check if the running script is terminating
  * @method static bool isShuttingDownOnError() Check if the running script is terminating after a fatal error or uncaught exception

@@ -52,6 +52,9 @@ class HttpStream implements HttpStreamInterface
         $this->Stream = $stream;
     }
 
+    /**
+     * @internal
+     */
     public function __destruct()
     {
         $this->close();

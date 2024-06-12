@@ -6,7 +6,7 @@ use Psr\Log\Test\LoggerInterfaceTest;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Salient\Console\Target\MockTarget;
-use Salient\Console\ConsoleFormatter;
+use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Console\ConsoleWriter;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Utility\Str;
@@ -31,7 +31,7 @@ final class LoggerTest extends LoggerInterfaceTest
                 true,
                 true,
                 null,
-                new ConsoleFormatter(null, null, fn() => null, [], []),
+                new Formatter(null, null, fn() => null, [], []),
             ))
             ->getLogger();
     }
