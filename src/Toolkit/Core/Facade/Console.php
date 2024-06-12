@@ -25,7 +25,8 @@ use Throwable;
  * @method static ConsoleWriterInterface deregisterTarget(ConsoleTargetInterface $target) Deregister and close a registered target (see {@see ConsoleWriterInterface::deregisterTarget()})
  * @method static ConsoleWriterInterface error(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "‼ $msg1 $msg2" with level ERROR
  * @method static ConsoleWriterInterface errorOnce(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "‼ $msg1 $msg2" with level ERROR once per run
- * @method static ConsoleWriterInterface exception(Throwable $exception, Level::* $level = Level::ERROR, Level::*|null $traceLevel = Level::DEBUG) Print an exception with level $level (default: ERROR) and its stack trace with level $traceLevel (default: DEBUG) (see {@see ConsoleWriterInterface::exception()})
+ * @method static string escape(string $string) Escape a string so it can be safely used in a console message
+ * @method static ConsoleWriterInterface exception(Throwable $exception, Level::* $level = Level::ERROR, Level::*|null $traceLevel = Level::DEBUG) Print an exception's name and message with a given level, optionally followed by its stack trace with a different level (see {@see ConsoleWriterInterface::exception()})
  * @method static int getErrorCount() Get the number of error messages recorded by the writer so far
  * @method static Formatter getFormatter(Level::* $level = Level::INFO) Get an output formatter for a registered target (see {@see ConsoleWriterInterface::getFormatter()})
  * @method static LoggerInterface getLogger() Get a PSR-3 logger backed by the writer

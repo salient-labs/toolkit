@@ -404,6 +404,14 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
     /**
      * @inheritDoc
      */
+    public function escape(string $string): string
+    {
+        return Formatter::escapeTags($string);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function summary(
         string $finishedText = 'Command finished',
         string $successText = 'without errors',
@@ -782,25 +790,23 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
         $i = 0;
         do {
             if ($i++) {
-                $class = Formatter::escapeTags(Get::basename(get_class($ex)));
+                $class = $this->escape(Get::basename(get_class($ex)));
                 $msg2 .= sprintf("\nCaused by __%s__: ", $class);
             }
 
             if ($ex instanceof MultipleErrorExceptionInterface
                     && !$ex->hasUnreportedErrors()) {
-                $message = Formatter::escapeTags($ex->getMessageWithoutErrors());
+                $message = $this->escape($ex->getMessageWithoutErrors());
             } else {
-                $message = Formatter::escapeTags($ex->getMessage());
+                $message = $this->escape($ex->getMessage());
             }
 
-            $file = Formatter::escapeTags($ex->getFile());
+            $file = $this->escape($ex->getFile());
             $line = $ex->getLine();
             $msg2 .= sprintf('%s ~~in %s:%d~~', $message, $file, $line);
+        } while ($ex = $ex->getPrevious());
 
-            $ex = $ex->getPrevious();
-        } while ($ex);
-
-        $class = Formatter::escapeTags(Get::basename(get_class($exception)));
+        $class = $this->escape(Get::basename(get_class($exception)));
         $this->count($level)->write(
             $level,
             sprintf('__%s__:', $class),

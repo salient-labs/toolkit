@@ -124,6 +124,11 @@ interface ConsoleWriterInterface
     public function getWarningCount(): int;
 
     /**
+     * Escape a string so it can be safely used in a console message
+     */
+    public function escape(string $string): string;
+
+    /**
      * Print "‼ $msg1 $msg2" with level ERROR
      *
      * @return $this
@@ -311,12 +316,12 @@ interface ConsoleWriterInterface
     public function groupEnd();
 
     /**
-     * Print an exception with level $level (default: ERROR) and its stack trace
-     * with level $traceLevel (default: DEBUG)
+     * Print an exception's name and message with a given level, optionally
+     * followed by its stack trace with a different level
      *
      * @param Level::* $level
-     * @param Level::*|null $traceLevel If `null`, the exception's stack
-     * trace is not printed.
+     * @param Level::*|null $traceLevel If `null`, the exception's stack trace
+     * is not printed.
      * @return $this
      */
     public function exception(

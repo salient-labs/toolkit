@@ -40,7 +40,7 @@ final class ConsoleFormatter
         MessageType::PROGRESS => '⠿ ',  // U+283F
         MessageType::GROUP_START => '▶ ',  // U+25B6
         MessageType::GROUP_END => '◀ ',  // U+25C0
-        MessageType::SUMMARY => '✔ ',  // U+2714
+        MessageType::SUMMARY => '» ',  // U+00BB
         MessageType::SUCCESS => '✔ ',  // U+2714
         MessageType::FAILURE => '✘ ',  // U+2718
     ];
