@@ -10,6 +10,38 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.26] - 2024-06-12
+
+### Added
+
+#### `Console`
+
+- Add `Console::escape()`
+
+#### `Core`
+
+- Add `ErrorHandler::handleExitSignal()` so signal handlers can report the exit status of the running script before it terminates on `SIGTERM`, `SIGINT` or `SIGHUP`
+
+### Changed
+
+#### `Console`
+
+- Preserve output from `Console::logProgress()` when exiting on error
+
+#### `Core`
+
+- In `ErrorHandler::handleException()`, set shutdown flags and resolve exit status before calling `Console::exception()` so console output targets can respond appropriately during shutdown
+
+#### `Utility`
+
+- In `Sys::handleExitSignals()`, report exit on `SIGTERM`, `SIGINT` or `SIGHUP` to `Err::handleExitSignal()`
+
+### Fixed
+
+#### `Console`
+
+- Fix `ConsoleFormatter::formatDiff()` issue where an exception is thrown when a unified diff contains a line that starts with `-++`
+
 ## [v0.99.25] - 2024-06-11
 
 ### Added
@@ -2831,6 +2863,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.26]: https://github.com/salient-labs/toolkit/compare/v0.99.25...v0.99.26
 [v0.99.25]: https://github.com/salient-labs/toolkit/compare/v0.99.24...v0.99.25
 [v0.99.24]: https://github.com/salient-labs/toolkit/compare/v0.99.23...v0.99.24
 [v0.99.23]: https://github.com/salient-labs/toolkit/compare/v0.99.22...v0.99.23
