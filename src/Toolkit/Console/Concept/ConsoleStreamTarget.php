@@ -80,7 +80,6 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
         $default = Format::getDefaultFormat();
         $bold = Format::ttyBold();
         $dim = Format::ttyDim();
-        $boldDim = Format::ttyBoldDim();
         $boldRed = Format::ttyBold(Colour::RED);
         $boldGreen = Format::ttyBold(Colour::GREEN);
         $boldYellow = Format::ttyBold(Colour::YELLOW);
