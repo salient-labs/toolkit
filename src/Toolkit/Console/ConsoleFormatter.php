@@ -26,20 +26,20 @@ final class ConsoleFormatter
     use HasImmutableProperties;
 
     public const DEFAULT_LEVEL_PREFIX_MAP = [
-        Level::EMERGENCY => '‼ ',  // U+203C
-        Level::ALERT => '‼ ',  // U+203C
-        Level::CRITICAL => '‼ ',  // U+203C
-        Level::ERROR => '‼ ',  // U+203C
-        Level::WARNING => '! ',  // U+0021
+        Level::EMERGENCY => '! ',  // U+0021
+        Level::ALERT => '! ',  // U+0021
+        Level::CRITICAL => '! ',  // U+0021
+        Level::ERROR => '! ',  // U+0021
+        Level::WARNING => '? ',  // U+003F
         Level::NOTICE => '➤ ',  // U+27A4
         Level::INFO => '- ',  // U+002D
-        Level::DEBUG => '⁞ ',  // U+205E
+        Level::DEBUG => ': ',  // U+003A
     ];
 
     public const DEFAULT_TYPE_PREFIX_MAP = [
         MessageType::PROGRESS => '⠿ ',  // U+283F
-        MessageType::GROUP_START => '▶ ',  // U+25B6
-        MessageType::GROUP_END => '◀ ',  // U+25C0
+        MessageType::GROUP_START => '» ',  // U+00BB
+        MessageType::GROUP_END => '« ',  // U+00AB
         MessageType::SUMMARY => '» ',  // U+00BB
         MessageType::SUCCESS => '✔ ',  // U+2714
         MessageType::FAILURE => '✘ ',  // U+2718
