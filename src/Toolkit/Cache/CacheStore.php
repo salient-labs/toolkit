@@ -8,8 +8,6 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use LogicException;
-use SQLite3Result;
-use SQLite3Stmt;
 
 /**
  * A PSR-16 key-value store backed by a SQLite database
@@ -51,6 +49,9 @@ SQL
         );
     }
 
+    /** @internal */
+    protected function __clone() {}
+
     /**
      * @inheritDoc
      */
@@ -68,7 +69,6 @@ SQL
             return $this->delete($key);
         }
 
-        $db = $this->db();
         $sql = <<<SQL
 INSERT INTO
   _cache_item (item_key, item_value, expires_at)
@@ -87,8 +87,7 @@ WHERE
   item_value IS NOT excluded.item_value
   OR expires_at IS NOT excluded.expires_at;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->bindValue(':item_value', serialize($value), \SQLITE3_BLOB);
         $stmt->bindValue(':expires_at', $expires, \SQLITE3_INTEGER);
@@ -110,15 +109,12 @@ SELECT
 FROM
   _cache_item $where
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
-        /** @var non-empty-array<int,int> */
+        $result = $this->execute($stmt);
+        /** @var array{int} */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
@@ -137,14 +133,11 @@ SELECT
 FROM
   _cache_item $where
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
+        $result = $this->execute($stmt);
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
@@ -222,14 +215,12 @@ SQL;
      */
     public function delete($key): bool
     {
-        $db = $this->db();
         $sql = <<<SQL
 DELETE FROM _cache_item
 WHERE
   item_key = :item_key;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
@@ -242,8 +233,7 @@ SQL;
      */
     public function clear(): bool
     {
-        $db = $this->db();
-        $db->exec(
+        $this->db()->exec(
             <<<SQL
 DELETE FROM _cache_item;
 SQL
@@ -264,9 +254,7 @@ DELETE FROM _cache_item
 WHERE
   expires_at <= DATETIME(:now, 'unixepoch');
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':now', $this->now(), \SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
@@ -319,15 +307,12 @@ SELECT
 FROM
   _cache_item $where
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
-        /** @var non-empty-array<int,int> */
+        $result = $this->execute($stmt);
+        /** @var array{int} */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
@@ -346,14 +331,11 @@ SELECT
 FROM
   _cache_item $where
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
+        $result = $this->execute($stmt);
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
             $keys[] = $row[0];
         }
