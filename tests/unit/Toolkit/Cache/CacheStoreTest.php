@@ -7,10 +7,12 @@ use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use DateInterval;
 use DateTimeImmutable;
+use LogicException;
 use stdClass;
 
 /**
  * @covers \Salient\Cache\CacheStore
+ * @covers \Salient\Core\AbstractStore
  */
 final class CacheStoreTest extends TestCase
 {
@@ -92,14 +94,52 @@ final class CacheStoreTest extends TestCase
         $this->assertSame('value2', $this->Cache->get('key2'));
 
         // "sleep" for 30 seconds
+        $current = null;
         $current = $this->Cache->asOfNow($now + 30);
         $this->assertSame('value1', $current->get('key1'));
         $this->assertSame('value2', $current->get('key2'));
 
         // "sleep" for a further 90 seconds
+        $current->close();
         $current = $this->Cache->asOfNow($now + 120);
         $this->assertNull($current->get('key1'));
         $this->assertNull($current->get('key2'));
+    }
+
+    public function testAsOfNow(): void
+    {
+        $locked = $this->Cache->asOfNow();
+        $notLocked = new CacheStore($this->File);
+        $this->assertFalse($locked->has('foo'));
+        $this->assertFalse($notLocked->has('foo'));
+        $locked->set('foo', 'bar');
+        $this->assertTrue($locked->has('foo'));
+        $this->assertFalse($notLocked->has('foo'));
+        $locked = null;
+        $this->assertTrue($notLocked->has('foo'));
+        $locked = $this->Cache->asOfNow();
+        $this->assertTrue($locked->has('foo'));
+        $locked->clear();
+        $this->assertFalse($locked->has('foo'));
+        $this->assertTrue($notLocked->has('foo'));
+        $locked->close();
+        $this->assertFalse($notLocked->has('foo'));
+    }
+
+    public function testNestedAsOfNow(): void
+    {
+        $current = $this->Cache->asOfNow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Calls to ' . CacheStore::class . '::asOfNow() cannot be nested');
+        $current->asOfNow();
+    }
+
+    public function testMultipleAsOfNow(): void
+    {
+        $current = $this->Cache->asOfNow();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(CacheStore::class . '::asOfNow() cannot be called until the instance returned previously is closed or discarded');
+        $current = $this->Cache->asOfNow();
     }
 
     public function testDestructor(): void
