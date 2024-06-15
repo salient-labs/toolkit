@@ -6,10 +6,13 @@ use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\UnloadsFacades;
+use Salient\Core\Internal\StoreState;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
 use LogicException;
 use SQLite3;
+use SQLite3Result;
+use SQLite3Stmt;
 use Throwable;
 
 /**
@@ -24,16 +27,18 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     /** @use UnloadsFacades<FacadeInterface<static>> */
     use UnloadsFacades;
 
-    private ?SQLite3 $Db = null;
-    private string $Filename;
-    private bool $IsTransactionOpen = false;
+    private ?StoreState $State = null;
     private bool $IsCheckRunning = false;
+
+    /** @internal */
+    private function __clone() {}
 
     /**
      * Open the database, creating it if necessary
      *
-     * @param string $filename Use `':memory:'` to create a temporary database,
-     * otherwise `$filename` is created with file mode `0600` if it doesn't
+     * @param string $filename Use `":memory:"` to create an in-memory database,
+     * or an empty string to create a temporary database on the filesystem.
+     * Otherwise, `$filename` is created with file mode `0600` if it doesn't
      * exist. Its parent directory is created with mode `0700` if it doesn't
      * exist.
      * @return $this
@@ -41,13 +46,14 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      */
     final protected function openDb(string $filename, ?string $query = null)
     {
-        if ($this->Db) {
+        if ($this->isOpen()) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Database already open');
             // @codeCoverageIgnoreEnd
         }
 
-        if ($filename !== ':memory:') {
+        $isTemporary = $filename === '' || $filename === ':memory:';
+        if (!$isTemporary) {
             File::create($filename, 0600, 0700);
         }
 
@@ -65,8 +71,12 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
             $db->exec($query);
         }
 
-        $this->Db = $db;
-        $this->Filename = $filename;
+        $this->State ??= new StoreState();
+        $this->State->Db = $db;
+        $this->State->Filename = $filename;
+        $this->State->IsTemporary = $isTemporary;
+        $this->State->HasTransaction = false;
+        $this->State->IsOpen = true;
 
         return $this;
     }
@@ -98,17 +108,45 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      */
     final protected function closeDb()
     {
-        if (!$this->Db) {
+        if (!$this->isOpen()) {
             // Necessary because the database may not have been opened yet
             $this->unloadFacades();
             return $this;
         }
 
-        $this->Db->close();
-        $this->Db = null;
-        unset($this->Filename);
-        $this->IsTransactionOpen = false;
+        $this->State->Db->close();
+        $this->State->IsOpen = false;
+        unset($this->State->Db);
+        unset($this->State->Filename);
+        $this->State->IsTemporary = false;
+        $this->State->HasTransaction = false;
 
+        $this->unloadFacades();
+
+        return $this;
+    }
+
+    /**
+     * Close the store without closing the database by detaching the database
+     * from the store, and unload any facades where the store is the underlying
+     * instance
+     *
+     * @return $this
+     */
+    public function detach()
+    {
+        return $this->detachDb();
+    }
+
+    /**
+     * Detach the database from the store and unload any facades where the store
+     * is the underlying instance
+     *
+     * @return $this
+     */
+    final protected function detachDb()
+    {
+        $this->State = null;
         $this->unloadFacades();
 
         return $this;
@@ -130,10 +168,24 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
 
     /**
      * Check if the database is open
+     *
+     * @phpstan-assert-if-true !null $this->State
      */
     final public function isOpen(): bool
     {
-        return (bool) $this->Db;
+        return $this->State && $this->State->IsOpen;
+    }
+
+    /**
+     * Check if the store is backed by a temporary or in-memory database
+     *
+     * @throws LogicException if the database is not open.
+     */
+    final public function isTemporary(): bool
+    {
+        $this->assertIsOpen();
+
+        return $this->State->IsTemporary;
     }
 
     /**
@@ -145,7 +197,7 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     {
         $this->assertIsOpen();
 
-        return $this->Filename;
+        return $this->State->Filename;
     }
 
     /**
@@ -199,26 +251,60 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
         $this->assertIsOpen();
 
         if ($this->IsCheckRunning) {
-            return $this->Db;
+            return $this->State->Db;
         }
 
         $this->safeCheck();
         $this->assertIsOpen();
-        return $this->Db;
+        return $this->State->Db;
+    }
+
+    /**
+     * Prepare a SQL statement for execution
+     */
+    final protected function prepare(string $query): SQLite3Stmt
+    {
+        $stmt = $this->db()->prepare($query);
+        assert($stmt !== false);
+        return $stmt;
+    }
+
+    /**
+     * Execute a prepared statement
+     */
+    final protected function execute(SQLite3Stmt $stmt): SQLite3Result
+    {
+        $result = $stmt->execute();
+        assert($result !== false);
+        return $result;
+    }
+
+    /**
+     * Check if a transaction has been started
+     */
+    final protected function hasTransaction(): bool
+    {
+        $this->assertIsOpen();
+
+        return $this->State->HasTransaction;
     }
 
     /**
      * BEGIN a transaction
      *
      * @return $this
-     * @throws LogicException if a transaction is already open.
+     * @throws LogicException if a transaction has already been started.
      */
     final protected function beginTransaction()
     {
-        $this->assertTransactionNotOpen();
+        $this->assertIsOpen();
 
-        $this->db()->exec('BEGIN');
-        $this->IsTransactionOpen = true;
+        if ($this->State->HasTransaction) {
+            throw new LogicException('Transaction already started');
+        }
+
+        $this->db()->exec('BEGIN IMMEDIATE');
+        $this->State->HasTransaction = true;
 
         return $this;
     }
@@ -227,16 +313,18 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      * COMMIT a transaction
      *
      * @return $this
-     * @throws LogicException if no transaction is open.
+     * @throws LogicException if no transaction has been started.
      */
     final protected function commitTransaction()
     {
-        if (!$this->IsTransactionOpen) {
-            throw new LogicException('No transaction open');
+        $this->assertIsOpen();
+
+        if (!$this->State->HasTransaction) {
+            throw new LogicException('No transaction started');
         }
 
         $this->db()->exec('COMMIT');
-        $this->IsTransactionOpen = false;
+        $this->State->HasTransaction = false;
 
         return $this;
     }
@@ -244,23 +332,25 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     /**
      * ROLLBACK a transaction
      *
-     * @param bool $ignoreNoTransaction If `true` and no transaction is open,
-     * return without throwing an exception. Useful in `catch` blocks where a
-     * transaction may or may not have been successfully opened.
+     * @param bool $ignoreNoTransaction If `true` and no transaction has been
+     * started, return without throwing an exception. Useful in `catch` blocks
+     * where a transaction may or may not have been started.
      * @return $this
-     * @throws LogicException if no transaction is open.
+     * @throws LogicException if no transaction has been started.
      */
     final protected function rollbackTransaction(bool $ignoreNoTransaction = false)
     {
-        if (!$this->IsTransactionOpen) {
+        $this->assertIsOpen();
+
+        if (!$this->State->HasTransaction) {
             if ($ignoreNoTransaction) {
                 return $this;
             }
-            throw new LogicException('No transaction open');
+            throw new LogicException('No transaction started');
         }
 
         $this->db()->exec('ROLLBACK');
-        $this->IsTransactionOpen = false;
+        $this->State->HasTransaction = false;
 
         return $this;
     }
@@ -271,13 +361,14 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
      * A rollback is attempted if an exception is caught, otherwise the
      * transaction is committed.
      *
-     * @return mixed The callback's return value.
-     * @throws LogicException if a transaction is already open.
+     * @template T
+     *
+     * @param callable(): T $callback
+     * @return T
+     * @throws LogicException if a transaction has already been started.
      */
     final protected function callInTransaction(callable $callback)
     {
-        $this->assertTransactionNotOpen();
-
         $this->beginTransaction();
 
         try {
@@ -307,21 +398,14 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
-     * @phpstan-assert !null $this->Db
+     * @phpstan-assert !null $this->State
      */
     final protected function assertIsOpen(): void
     {
-        if (!$this->Db) {
+        if (!$this->isOpen()) {
             // @codeCoverageIgnoreStart
             throw new LogicException('No database open');
             // @codeCoverageIgnoreEnd
-        }
-    }
-
-    private function assertTransactionNotOpen(): void
-    {
-        if ($this->IsTransactionOpen) {
-            throw new LogicException('Transaction already open');
         }
     }
 }

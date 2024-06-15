@@ -9,7 +9,6 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use LogicException;
 use SQLite3Result;
-use SQLite3Stmt;
 
 /**
  * A PSR-16 key-value store backed by a SQLite database
@@ -51,6 +50,9 @@ SQL
         );
     }
 
+    /** @internal */
+    protected function __clone() {}
+
     /**
      * @inheritDoc
      */
@@ -68,7 +70,6 @@ SQL
             return $this->delete($key);
         }
 
-        $db = $this->db();
         $sql = <<<SQL
 INSERT INTO
   _cache_item (item_key, item_value, expires_at)
@@ -87,8 +88,7 @@ WHERE
   item_value IS NOT excluded.item_value
   OR expires_at IS NOT excluded.expires_at;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->bindValue(':item_value', serialize($value), \SQLITE3_BLOB);
         $stmt->bindValue(':expires_at', $expires, \SQLITE3_INTEGER);
@@ -103,24 +103,15 @@ SQL;
      */
     public function has($key, ?int $maxAge = null): bool
     {
-        $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
 SELECT
   COUNT(*)
 FROM
-  _cache_item $where
+  _cache_item
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
-        foreach ($bind as $param) {
-            $stmt->bindValue(...$param);
-        }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
-        /** @var non-empty-array<int,int> */
+        $result = $this->queryItems($sql, $key, $maxAge);
+        /** @var array{int} */
         $row = $result->fetchArray(\SQLITE3_NUM);
-        $stmt->close();
 
         return (bool) $row[0];
     }
@@ -130,23 +121,14 @@ SQL;
      */
     public function get($key, $default = null, ?int $maxAge = null)
     {
-        $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
 SELECT
   item_value
 FROM
-  _cache_item $where
+  _cache_item
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
-        foreach ($bind as $param) {
-            $stmt->bindValue(...$param);
-        }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
+        $result = $this->queryItems($sql, $key, $maxAge);
         $row = $result->fetchArray(\SQLITE3_NUM);
-        $stmt->close();
 
         return $row === false
             ? $default
@@ -222,14 +204,12 @@ SQL;
      */
     public function delete($key): bool
     {
-        $db = $this->db();
         $sql = <<<SQL
 DELETE FROM _cache_item
 WHERE
   item_key = :item_key;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
@@ -242,8 +222,7 @@ SQL;
      */
     public function clear(): bool
     {
-        $db = $this->db();
-        $db->exec(
+        $this->db()->exec(
             <<<SQL
 DELETE FROM _cache_item;
 SQL
@@ -264,9 +243,7 @@ DELETE FROM _cache_item
 WHERE
   expires_at <= DATETIME(:now, 'unixepoch');
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':now', $this->now(), \SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
@@ -312,24 +289,15 @@ SQL;
      */
     public function getItemCount(?int $maxAge = null): int
     {
-        $where = $this->getWhere(null, $maxAge, $bind);
         $sql = <<<SQL
 SELECT
   COUNT(*)
 FROM
-  _cache_item $where
+  _cache_item
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
-        foreach ($bind as $param) {
-            $stmt->bindValue(...$param);
-        }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
-        /** @var non-empty-array<int,int> */
+        $result = $this->queryItems($sql, null, $maxAge);
+        /** @var array{int} */
         $row = $result->fetchArray(\SQLITE3_NUM);
-        $stmt->close();
 
         return $row[0];
     }
@@ -339,26 +307,16 @@ SQL;
      */
     public function getAllKeys(?int $maxAge = null): array
     {
-        $where = $this->getWhere(null, $maxAge, $bind);
         $sql = <<<SQL
 SELECT
   item_key
 FROM
-  _cache_item $where
+  _cache_item
 SQL;
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
-        foreach ($bind as $param) {
-            $stmt->bindValue(...$param);
-        }
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
+        $result = $this->queryItems($sql, null, $maxAge);
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
             $keys[] = $row[0];
         }
-        $result->finalize();
-        $stmt->close();
 
         return $keys ?? [];
     }
@@ -369,16 +327,21 @@ SQL;
     public function asOfNow(?int $now = null): CacheStoreInterface
     {
         if ($this->Now !== null) {
-            // @codeCoverageIgnoreStart
             throw new LogicException(
-                sprintf('Calls to %s cannot be nested', __METHOD__)
+                sprintf('Calls to %s() cannot be nested', __METHOD__)
             );
-            // @codeCoverageIgnoreEnd
+        }
+
+        if ($this->hasTransaction()) {
+            throw new LogicException(sprintf(
+                '%s() cannot be called until the instance returned previously is closed or discarded',
+                __METHOD__,
+            ));
         }
 
         $clone = clone $this;
         $clone->Now = $now ?? time();
-        return $clone;
+        return $clone->beginTransaction();
     }
 
     /**
@@ -386,13 +349,12 @@ SQL;
      */
     public function close()
     {
-        // Do nothing if this is an instance returned by asOfNow()
-        if ($this->Now !== null) {
-            return $this;
-        }
-
         if (!$this->isOpen()) {
             return $this->closeDb();
+        }
+
+        if ($this->Now !== null) {
+            return $this->commitTransaction()->detachDb();
         }
 
         $this->clearExpired();
@@ -423,10 +385,7 @@ SQL;
             : $this;
     }
 
-    /**
-     * @param array<string,mixed> $bind
-     */
-    private function getWhere(?string $key, ?int $maxAge, ?array &$bind): string
+    private function queryItems(string $sql, ?string $key, ?int $maxAge): SQLite3Result
     {
         $where = [];
         $bind = [];
@@ -450,9 +409,15 @@ SQL;
         }
 
         $where = implode(' AND ', $where);
-        if ($where === '') {
-            return '';
+        if ($where !== '') {
+            $sql .= " WHERE $where";
         }
-        return "WHERE $where";
+
+        $stmt = $this->prepare($sql);
+        foreach ($bind as [$param, $value, $type]) {
+            $stmt->bindValue($param, $value, $type);
+        }
+
+        return $this->execute($stmt);
     }
 }

@@ -30,8 +30,6 @@ use Salient\Utility\Str;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
-use SQLite3Result;
-use SQLite3Stmt;
 
 /**
  * Tracks the state of entities synced to and from third-party backends in a
@@ -275,7 +273,6 @@ SQL
             return $this->closeDb();
         }
 
-        $db = $this->db();
         $sql = <<<SQL
 UPDATE
   _sync_run
@@ -289,8 +286,7 @@ WHERE
   run_uuid = :run_uuid;
 SQL;
 
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':exit_status', $exitStatus, \SQLITE3_INTEGER);
         $stmt->bindValue(':run_uuid', $this->RunUuid, \SQLITE3_BLOB);
         $stmt->bindValue(':error_count', $this->ErrorCount, \SQLITE3_INTEGER);
@@ -376,7 +372,6 @@ SQL;
         }
 
         // Update `last_seen` if the provider is already in the database
-        $db = $this->db();
         $sql = <<<SQL
 INSERT INTO
   _sync_provider (provider_hash, provider_class)
@@ -386,8 +381,7 @@ UPDATE
 SET
   last_seen = CURRENT_TIMESTAMP;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':provider_hash', $hash, \SQLITE3_BLOB);
         $stmt->bindValue(':provider_class', $class, \SQLITE3_TEXT);
         $stmt->execute();
@@ -401,11 +395,9 @@ FROM
 WHERE
   provider_hash = :provider_hash;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':provider_hash', $hash, \SQLITE3_BLOB);
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
+        $result = $this->execute($stmt);
         /** @var array{int}|false */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
@@ -510,7 +502,6 @@ SQL;
         }
 
         // Update `last_seen` if the entity type is already in the database
-        $db = $this->db();
         $sql = <<<SQL
 INSERT INTO
   _sync_entity_type (entity_type_class)
@@ -520,8 +511,7 @@ UPDATE
 SET
   last_seen = CURRENT_TIMESTAMP;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
@@ -534,11 +524,9 @@ FROM
 WHERE
   entity_type_class = :entity_type_class;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
+        $result = $this->execute($stmt);
         /** @var array{int}|false */
         $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
@@ -612,7 +600,6 @@ SQL;
         }
 
         // Update `last_seen` if the namespace is already in the database
-        $db = $this->db();
         $sql = <<<SQL
 INSERT INTO
   _sync_entity_namespace (entity_namespace_prefix, base_uri, php_namespace)
@@ -628,8 +615,7 @@ SET
   php_namespace = excluded.php_namespace,
   last_seen = CURRENT_TIMESTAMP;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':entity_namespace_prefix', $prefix, \SQLITE3_TEXT);
         $stmt->bindValue(':base_uri', $uri, \SQLITE3_TEXT);
         $stmt->bindValue(':php_namespace', $namespace, \SQLITE3_TEXT);
@@ -1164,16 +1150,14 @@ VALUES (
   );
 SQL;
 
-        $db = $this->db();
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->bindValue(':run_uuid', $uuid = Get::binaryUuid(), \SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, \SQLITE3_TEXT);
         $stmt->bindValue(':run_arguments_json', Json::stringify($this->Arguments), \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
-        $id = $db->lastInsertRowID();
+        $id = $this->db()->lastInsertRowID();
         $this->RunId = $id;
         $this->RunUuid = $uuid;
         unset($this->Command, $this->Arguments);
@@ -1212,10 +1196,8 @@ FROM
 ORDER BY
   LENGTH(php_namespace) DESC;
 SQL;
-        /** @var SQLite3Stmt */
-        $stmt = $db->prepare($sql);
-        /** @var SQLite3Result */
-        $result = $stmt->execute();
+        $stmt = $this->prepare($sql);
+        $result = $this->execute($stmt);
         $this->NamespacesByPrefix = [];
         $this->NamespaceUrisByPrefix = [];
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
@@ -1240,6 +1222,4 @@ SQL;
         }
         $this->close($exitStatus);
     }
-
-    private function __clone() {}
 }
