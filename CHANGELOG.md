@@ -10,6 +10,30 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.28] - 2024-06-15
+
+### Added
+
+#### `Core`
+
+- In `AbstractStore`:
+  - Add support for temporary databases created on the filesystem
+  - Add `isTemporary()` to check if the store is backed by a temporary or in-memory database
+  - Add and adopt protected `SQLite3::prepare()` and `SQLite3Stmt::execute()` wrapper methods `prepare()` and `execute()`
+  - Improve support for cloning (e.g. by `CacheStore::asOfNow()`) by tracking state in an object shared between instances
+  - Add `detach()` and `detachDb()` methods so stores can be closed without their clones also closing
+  - Add `hasTransaction()`
+
+### Changed
+
+#### `Core`
+
+- Don't allow `AbstractStore` subclasses to be cloned unless they override `__clone()`
+
+#### `Cache`
+
+- Improve concurrency in `CacheStore` by starting a SQLite transaction when `CacheStore::asOfNow()` returns a copy of the store, and committing it when the copy goes out of scope or is explicitly closed
+
 ## [v0.99.27] - 2024-06-13
 
 ### Fixed
@@ -2875,6 +2899,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.28]: https://github.com/salient-labs/toolkit/compare/v0.99.27...v0.99.28
 [v0.99.27]: https://github.com/salient-labs/toolkit/compare/v0.99.26...v0.99.27
 [v0.99.26]: https://github.com/salient-labs/toolkit/compare/v0.99.25...v0.99.26
 [v0.99.25]: https://github.com/salient-labs/toolkit/compare/v0.99.24...v0.99.25
