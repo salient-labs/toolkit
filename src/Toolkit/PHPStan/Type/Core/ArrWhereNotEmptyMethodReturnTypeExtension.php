@@ -10,7 +10,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -43,13 +42,13 @@ class ArrWhereNotEmptyMethodReturnTypeExtension implements DynamicStaticMethodRe
         $args = $methodCall->getArgs();
 
         if ($args === []) {
-            return new ErrorType();
+            return null;
         }
 
         $type = $scope->getType($args[0]->value);
 
         if ($type->isIterable()->no()) {
-            return new ErrorType();
+            return null;
         }
 
         $empty = new UnionType([

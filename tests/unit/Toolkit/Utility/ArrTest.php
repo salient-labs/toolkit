@@ -197,6 +197,24 @@ final class ArrTest extends TestCase
                 'B',
                 'C',
             ],
+            [
+                ['a', 'a', 'd', 'd', 'b', 'b', 'c', 'c'],
+                ['a', 'a', 'd', 'd'],
+                'a',
+                'a',
+                'a',
+                'b',
+                'b',
+                'c',
+                'c',
+            ],
+            [
+                ['foo' => 'a', 'bar' => 'd', 'b', 'c'],
+                ['foo' => 'a', 'bar' => 'd'],
+                'a',
+                'b',
+                'c',
+            ],
         ];
     }
 

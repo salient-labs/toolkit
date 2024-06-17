@@ -8,7 +8,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -38,13 +37,13 @@ class ArrWhereNotNullMethodReturnTypeExtension implements DynamicStaticMethodRet
         $args = $methodCall->getArgs();
 
         if ($args === []) {
-            return new ErrorType();
+            return null;
         }
 
         $type = $scope->getType($args[0]->value);
 
         if ($type->isIterable()->no()) {
-            return new ErrorType();
+            return null;
         }
 
         $null = new NullType();
