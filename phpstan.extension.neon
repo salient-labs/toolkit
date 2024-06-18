@@ -5,21 +5,26 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: Salient\PHPStan\Type\Core\ArrWhereNotEmptyMethodReturnTypeExtension
+		class: Salient\PHPStan\Type\Core\ArrExtendReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\ArrWhereNotNullMethodReturnTypeExtension
+		class: Salient\PHPStan\Type\Core\ArrWhereNotEmptyReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\GetCoalesceMethodReturnTypeExtension
+		class: Salient\PHPStan\Type\Core\ArrWhereNotNullReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\StrCoalesceMethodReturnTypeExtension
+		class: Salient\PHPStan\Type\Core\GetCoalesceReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+
+	-
+		class: Salient\PHPStan\Type\Core\StrCoalesceReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

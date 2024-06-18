@@ -189,11 +189,10 @@ final class Arr extends AbstractUtility
      *
      * @template TKey of array-key
      * @template TValue
-     * @template T
      *
      * @param array<TKey,TValue> $array
-     * @param T ...$values
-     * @return array<TKey|int,TValue|T>
+     * @param TValue ...$values
+     * @return array<TKey|int,TValue>
      */
     public static function extend(array $array, ...$values): array
     {
