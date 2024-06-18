@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.29] - 2024-06-18
+
+### Added
+
+- PHPStan: Add `Arr::extend()` return type extension
+
 ## [v0.99.28] - 2024-06-15
 
 ### Added
@@ -2899,6 +2905,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.29]: https://github.com/salient-labs/toolkit/compare/v0.99.28...v0.99.29
 [v0.99.28]: https://github.com/salient-labs/toolkit/compare/v0.99.27...v0.99.28
 [v0.99.27]: https://github.com/salient-labs/toolkit/compare/v0.99.26...v0.99.27
 [v0.99.26]: https://github.com/salient-labs/toolkit/compare/v0.99.25...v0.99.26
