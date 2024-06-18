@@ -5,7 +5,7 @@ namespace Salient\Tests\PHPStan\Type;
 use PHPStan\Testing\TypeInferenceTestCase;
 use Salient\Tests\TestCase;
 
-abstract class MethodReturnTypeExtensionTestCase extends TypeInferenceTestCase
+abstract class ReturnTypeExtensionTestCase extends TypeInferenceTestCase
 {
     public function testAssertions(): void
     {

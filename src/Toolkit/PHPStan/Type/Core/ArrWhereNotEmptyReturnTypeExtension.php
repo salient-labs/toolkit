@@ -18,7 +18,7 @@ use PHPStan\Type\UnionType;
 use Salient\Utility\Arr;
 use Stringable;
 
-class ArrWhereNotEmptyMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+class ArrWhereNotEmptyReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
     /**
      * @codeCoverageIgnore

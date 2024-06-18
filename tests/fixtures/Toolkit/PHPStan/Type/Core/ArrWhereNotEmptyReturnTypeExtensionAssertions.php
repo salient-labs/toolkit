@@ -26,8 +26,8 @@ $i = [];
 /** @var array{foo:Stringable,bar:string,baz:int,qux?:float,quux:non-empty-string} */
 $j = [];
 
-assertType('array<bool|float|int|string|Stringable>', Arr::whereNotEmpty());  // @phpstan-ignore arguments.count, argument.templateType, argument.templateType
-assertType('array<bool|float|int|string|Stringable>', Arr::whereNotEmpty($a));  // @phpstan-ignore argument.type, argument.templateType, argument.templateType
+assertType('array<bool|float|int|string|Stringable>', Arr::whereNotEmpty());
+assertType('array<bool|float|int|string|Stringable>', Arr::whereNotEmpty($a));
 assertType('array{}', Arr::whereNotEmpty($b));
 assertType('array{}', Arr::whereNotEmpty($c));
 assertType("array{3: 0, 4: 0.0, 5: '0'}", Arr::whereNotEmpty($d));

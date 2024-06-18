@@ -16,7 +16,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use Salient\Utility\Arr;
 
-class ArrExtendMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+class ArrExtendReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
     /**
      * @codeCoverageIgnore

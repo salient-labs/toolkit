@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use Salient\Utility\Arr;
 
-class ArrWhereNotNullMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+class ArrWhereNotNullReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
     /**
      * @codeCoverageIgnore

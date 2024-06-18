@@ -26,8 +26,8 @@ $i = [];
 /** @var array{foo:Stringable|null,bar:string|null,baz:int,qux?:float,quux:string} */
 $j = [];
 
-assertType('array', Arr::whereNotNull());  // @phpstan-ignore arguments.count, argument.templateType, argument.templateType
-assertType('array', Arr::whereNotNull($a));  // @phpstan-ignore argument.type, argument.templateType, argument.templateType
+assertType('array', Arr::whereNotNull());
+assertType('array', Arr::whereNotNull($a));
 assertType('array{}', Arr::whereNotNull($b));
 assertType("array{'', false}", Arr::whereNotNull($c));
 assertType("array{0: '', 1: false, 3: 0, 4: 0.0, 5: '0'}", Arr::whereNotNull($d));

@@ -37,8 +37,8 @@ $l = [];
 /** @var list<mixed> */
 $m = [];
 
-assertType('array', Arr::extend());  // @phpstan-ignore arguments.count, argument.templateType, argument.templateType
-assertType('array', Arr::extend('foo'));  // @phpstan-ignore argument.type, argument.templateType, argument.templateType
+assertType('array', Arr::extend());
+assertType('array', Arr::extend('foo'));
 assertType("array{'a', 'a', 'd', 'd', 'b', 'b', 'c', 'c'}", Arr::extend(['a', 'a', 'd', 'd'], 'a', 'a', 'a', 'b', 'b', 'c', 'c'));
 assertType("array{foo: 'a', bar: 'd', 0: 'b', 1: 'c'}", Arr::extend(['foo' => 'a', 'bar' => 'd'], 'a', 'b', 'c'));
 assertType("array{'Reflector', 'ReflectionFunction', 'ReflectionObject', 'ReflectionMethod', 'ReflectionClass'}", Arr::extend($a, ...$b, ...$c));
