@@ -114,13 +114,13 @@ final class StrTest extends TestCase
     /**
      * @dataProvider trimNativeEolProvider
      */
-    public function testTrimNativeEol(?string $expected, ?string $value): void
+    public function testTrimNativeEol(string $expected, string $value): void
     {
         $this->assertSame($expected, Str::trimNativeEol($value));
     }
 
     /**
-     * @return array<string,array{string|null,string|null}>
+     * @return array<string,array{string,string}>
      */
     public static function trimNativeEolProvider(): array
     {
@@ -129,7 +129,6 @@ final class StrTest extends TestCase
             : "\n";
 
         return [
-            'null' => [null, null],
             'empty' => ['', ''],
             'no EOL' => ['foo', 'foo'],
             'native EOL' => ['foo', 'foo' . \PHP_EOL],
@@ -155,21 +154,17 @@ final class StrTest extends TestCase
     /**
      * @dataProvider eolToNativeProvider
      */
-    public function testEolToNative(?string $expected, ?string $string): void
+    public function testEolToNative(string $expected, string $string): void
     {
         $this->assertSame($expected, Str::eolToNative($string));
     }
 
     /**
-     * @return array<array{string|null,string|null}>
+     * @return array<array{string,string}>
      */
     public static function eolToNativeProvider(): array
     {
         return [
-            [
-                null,
-                null,
-            ],
             [
                 '',
                 '',
@@ -196,21 +191,17 @@ EOF,
     /**
      * @dataProvider eolFromNativeProvider
      */
-    public function testEolFromNative(?string $expected, ?string $string): void
+    public function testEolFromNative(string $expected, string $string): void
     {
         $this->assertSame($expected, Str::eolFromNative($string));
     }
 
     /**
-     * @return array<array{string|null,string|null}>
+     * @return array<array{string,string}>
      */
     public static function eolFromNativeProvider(): array
     {
         return [
-            [
-                null,
-                null,
-            ],
             [
                 '',
                 '',
@@ -238,27 +229,29 @@ EOF,
      * @dataProvider caseConversionProvider
      */
     public function testCaseConversion(
+        string $expectedTitle,
         string $expectedLower,
         string $expectedUpper,
         string $expectedUpperFirst,
         string $string
     ): void {
+        $this->assertSame($expectedTitle, Str::title($string));
         $this->assertSame($expectedLower, Str::lower($string));
         $this->assertSame($expectedUpper, Str::upper($string));
         $this->assertSame($expectedUpperFirst, Str::upperFirst($string));
     }
 
     /**
-     * @return array<array{string,string,string,string}>
+     * @return array<array{string,string,string,string,string}>
      */
     public static function caseConversionProvider(): array
     {
         return [
-            ['', '', '', ''],
-            ['foobar', 'FOOBAR', 'FoObAr', 'foObAr'],
-            ['foo bar', 'FOO BAR', 'FoO bAr', 'foO bAr'],
-            ['123 foo', '123 FOO', '123 foo', '123 foo'],
-            ['äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ'],
+            ['', '', '', '', ''],
+            ['Foobar', 'foobar', 'FOOBAR', 'FoObAr', 'foObAr'],
+            ['Foo bar', 'foo bar', 'FOO BAR', 'FoO bAr', 'foO bAr'],
+            ['123 foo', '123 foo', '123 FOO', '123 foo', '123 foo'],
+            ['äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ'],
         ];
     }
 
@@ -308,12 +301,23 @@ EOF,
     public static function normaliseProvider(): array
     {
         return [
-            ['HISTORY AND GEOGRAPHY', 'History & Geography'],
-            ['MATHEMATICS', '& Mathematics'],
-            ['LANGUAGES MODERN', 'Languages — Modern'],
+            ['A AND B AND C', 'a & b & c'],
+            ['A AND B AND C', '& a & b & c &'],
+            ['HISTORY ANCIENT', 'History — Ancient'],
+            ['HISTORY ANCIENT', 'History  —  Ancient'],
             ['IT', 'I.T.'],
             ['IT', 'IT. '],
             ['IT', 'it'],
+            ['IT', '🚀IT🚀'],
+            ['MATHEMATICS', ' & Mathematics'],
+            ['MATHEMATICS', '_& Mathematics'],
+            ['MATHEMATICS', '&mathematics'],
+            ['SCIENCE AND TECHNOLOGY', 'Science & Technology'],
+            ['SCIENCE AND TECHNOLOGY', 'Science_&_Technology'],
+            ['SCIENCE AND TECHNOLOGY', 'science&technology'],
+            ['SCIENCE TECHNOLOGY', 'Science && Technology'],
+            ['SCIENCE TECHNOLOGY', 'Science_&&_Technology'],
+            ['SCIENCE TECHNOLOGY', 'science&&technology'],
         ];
     }
 

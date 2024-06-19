@@ -324,7 +324,12 @@ EOF,
     ): void {
         $phpDoc = new PHPDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
-        $this->assertSame($description, Str::eolToNative($phpDoc->Description));
+        $this->assertSame(
+            $description,
+            $phpDoc->Description === null
+                ? null
+                : Str::eolToNative($phpDoc->Description)
+        );
         $this->assertCount(count($varKeys), $phpDoc->Vars);
         foreach ($varKeys as $i => $key) {
             $this->assertArrayHasKey($key, $phpDoc->Vars);
@@ -542,7 +547,7 @@ Something like this:
 ```php
 callback(string $value): string
 ```
-EOF, Str::eolToNative($phpDoc->Description));
+EOF, Str::eolToNative((string) $phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
         $this->assertNull($phpDoc->Vars[0]->getName());
         $this->assertSame('callable|null', $phpDoc->Vars[0]->getType());
