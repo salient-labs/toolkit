@@ -45,10 +45,11 @@ abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implem
 
         if ($value === null) {
             throw new InvalidArgumentException(
-                sprintf('Argument #1 ($name) is invalid: %s', $name)
+                sprintf('Invalid name: %s', $name)
             );
         }
 
+        /** @var TValue */
         return $value;
     }
 
@@ -77,6 +78,7 @@ abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implem
             );
         }
 
+        /** @var TValue[] */
         return $values ?? [];
     }
 
@@ -89,7 +91,7 @@ abstract class AbstractConvertibleEnumeration extends AbstractEnumeration implem
 
         if ($name === null) {
             throw new InvalidArgumentException(
-                sprintf('Argument #1 ($value) is invalid: %s', $value)
+                sprintf('Invalid value: %s', $value)
             );
         }
 

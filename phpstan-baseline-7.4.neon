@@ -206,26 +206,6 @@ parameters:
 			path: src/Toolkit/Container/Container.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\AbstractConvertibleEnumeration\\:\\:fromName\\(\\) should return TValue of \\(int\\|string\\) but returns int\\|string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/AbstractConvertibleEnumeration.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\AbstractConvertibleEnumeration\\:\\:fromNames\\(\\) should return array\\<TValue of \\(int\\|string\\)\\> but returns array\\<int\\<0, max\\>, int\\|string\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/AbstractConvertibleEnumeration.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\AbstractReflectiveEnumeration\\:\\:fromName\\(\\) should return TValue of \\(int\\|string\\) but returns int\\|string\\.$#"
-			count: 1
-			path: src/Toolkit/Core/AbstractReflectiveEnumeration.php
-
-		-
-			message: "#^Method Salient\\\\Core\\\\AbstractReflectiveEnumeration\\:\\:fromNames\\(\\) should return array\\<TValue of \\(int\\|string\\)\\> but returns array\\<int\\<0, max\\>, int\\|string\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/AbstractReflectiveEnumeration.php
-
-		-
 			message: "#^Property Salient\\\\Core\\\\ArrayMapper\\:\\:\\$KeyMap \\(array\\<\\(int\\|string\\)\\>\\) does not accept array\\<array\\<\\(int\\|string\\)\\>\\|int\\|string\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Core/ArrayMapper.php

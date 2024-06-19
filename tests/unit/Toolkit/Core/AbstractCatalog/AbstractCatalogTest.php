@@ -1,18 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Core\AbstractCatalog;
 
 use Salient\Contract\Core\ConvertibleEnumerationInterface;
 use Salient\Contract\Core\EnumerationInterface;
-use Salient\Tests\Core\AbstractCatalog\MyArrayEnum;
-use Salient\Tests\Core\AbstractCatalog\MyConvertibleEnum;
-use Salient\Tests\Core\AbstractCatalog\MyDictionary;
-use Salient\Tests\Core\AbstractCatalog\MyEmptyReflectiveEnum;
-use Salient\Tests\Core\AbstractCatalog\MyIntEnum;
-use Salient\Tests\Core\AbstractCatalog\MyInvalidReflectiveEnum;
-use Salient\Tests\Core\AbstractCatalog\MyReflectiveEnum;
-use Salient\Tests\Core\AbstractCatalog\MyReflectiveFloatEnum;
-use Salient\Tests\Core\AbstractCatalog\MyRepeatedValueEnum;
+use Salient\Core\AbstractConvertibleEnumeration;
+use Salient\Core\AbstractDictionary;
+use Salient\Core\AbstractEnumeration;
+use Salient\Core\AbstractReflectiveEnumeration;
 use Salient\Tests\TestCase;
 use LogicException;
 use Throwable;
@@ -152,7 +147,7 @@ final class AbstractCatalogTest extends TestCase
         $data = [
             [
                 LogicException::class,
-                'Argument #1 ($name) is invalid: QUX',
+                'Invalid name: QUX',
                 MyConvertibleEnum::class,
                 'fromName',
                 ['QUX'],
@@ -173,7 +168,7 @@ final class AbstractCatalogTest extends TestCase
             ],
             [
                 LogicException::class,
-                'Argument #1 ($value) is invalid: 3',
+                'Invalid value: 3',
                 MyConvertibleEnum::class,
                 'toName',
                 [3],
@@ -218,7 +213,7 @@ final class AbstractCatalogTest extends TestCase
     public function testInvalidEnumerationValues(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Public constants are not unique: ' . MyInvalidReflectiveEnum::class);
+        $this->expectExceptionMessage('Public constants do not have unique values: ' . MyInvalidReflectiveEnum::class);
         MyInvalidReflectiveEnum::toName(0);
     }
 
@@ -230,4 +225,108 @@ final class AbstractCatalogTest extends TestCase
             'BAZ' => 'Baz',
         ], MyDictionary::definitions());
     }
+}
+
+/**
+ * @extends AbstractEnumeration<int>
+ */
+class MyIntEnum extends AbstractEnumeration
+{
+    public const FOO = 0;
+    public const BAR = 1;
+    public const BAZ = 2;
+}
+
+/**
+ * @extends AbstractEnumeration<int>
+ */
+class MyRepeatedValueEnum extends AbstractEnumeration
+{
+    public const FOO = 0;
+    public const BAR = 1;
+    public const BAZ = 2;
+    public const QUX = 2;
+}
+
+/**
+ * @extends AbstractEnumeration<int[]>
+ */
+class MyArrayEnum extends AbstractEnumeration
+{
+    public const FOO = [0, 1, 2];
+    public const BAR = [1, 2];
+    public const BAZ = [2];
+}
+
+/**
+ * @extends AbstractConvertibleEnumeration<int>
+ */
+class MyConvertibleEnum extends AbstractConvertibleEnumeration
+{
+    public const FOO = 0;
+    public const BAR = 1;
+    public const BAZ = 2;
+
+    protected static $NameMap = [
+        self::FOO => 'FOO',
+        self::BAR => 'BAR',
+        self::BAZ => 'BAZ',
+    ];
+
+    protected static $ValueMap = [
+        'FOO' => self::FOO,
+        'BAR' => self::BAR,
+        'BAZ' => self::BAZ,
+    ];
+}
+
+/**
+ * @extends AbstractReflectiveEnumeration<int>
+ */
+class MyReflectiveEnum extends AbstractReflectiveEnumeration
+{
+    public const FOO = 0;
+    public const BAR = 1;
+    public const BAZ = 2;
+}
+
+/**
+ * @extends AbstractReflectiveEnumeration<int>
+ */
+class MyEmptyReflectiveEnum extends AbstractReflectiveEnumeration
+{
+    protected const IS_PUBLIC = false;
+}
+
+/**
+ * @extends AbstractReflectiveEnumeration<float>
+ *
+ * @phpstan-ignore generics.notSubtype
+ */
+class MyReflectiveFloatEnum extends AbstractReflectiveEnumeration
+{
+    public const FOO = 0.0;
+    public const BAR = 1.0;
+    public const BAZ = 3.14;
+}
+
+/**
+ * @extends AbstractReflectiveEnumeration<int>
+ */
+class MyInvalidReflectiveEnum extends AbstractReflectiveEnumeration
+{
+    public const FOO = 0;
+    public const BAR = 1;
+    public const BAZ = 2;
+    public const QUX = 2;
+}
+
+/**
+ * @extends AbstractDictionary<string>
+ */
+class MyDictionary extends AbstractDictionary
+{
+    public const FOO = 'Foo';
+    public const BAR = 'Bar';
+    public const BAZ = 'Baz';
 }

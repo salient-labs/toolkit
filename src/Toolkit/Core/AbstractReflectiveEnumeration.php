@@ -5,8 +5,8 @@ namespace Salient\Core;
 use Salient\Contract\Core\ConvertibleEnumerationInterface;
 use Salient\Utility\Inflect;
 use Salient\Utility\Str;
+use InvalidArgumentException;
 use LogicException;
-use ReflectionClass;
 
 /**
  * Base class for enumerations that use reflection to map constants to and from
@@ -40,22 +40,19 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
      */
     final public static function fromName(string $name)
     {
-        if (!isset(self::$ValueMaps[static::class])) {
-            // @codeCoverageIgnoreStart
-            self::loadMaps();
-            // @codeCoverageIgnoreEnd
-        }
+        self::checkMaps();
 
         $value = self::$ValueMaps[static::class][$name]
             ?? self::$ValueMaps[static::class][Str::upper($name)]
             ?? null;
 
         if ($value === null) {
-            throw new LogicException(
-                sprintf('Argument #1 ($name) is invalid: %s', $name)
+            throw new InvalidArgumentException(
+                sprintf('Invalid name: %s', $name)
             );
         }
 
+        /** @var TValue */
         return $value;
     }
 
@@ -64,11 +61,7 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
      */
     final public static function fromNames(array $names): array
     {
-        if (!isset(self::$ValueMaps[static::class])) {
-            // @codeCoverageIgnoreStart
-            self::loadMaps();
-            // @codeCoverageIgnoreEnd
-        }
+        self::checkMaps();
 
         $invalid = [];
         foreach ($names as $name) {
@@ -85,11 +78,12 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
         }
 
         if ($invalid) {
-            throw new LogicException(
+            throw new InvalidArgumentException(
                 Inflect::format($invalid, 'Invalid {{#:name}}: %s', implode(',', $invalid))
             );
         }
 
+        /** @var TValue[] */
         return $values ?? [];
     }
 
@@ -98,17 +92,13 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
      */
     final public static function toName($value): string
     {
-        if (!isset(self::$NameMaps[static::class])) {
-            // @codeCoverageIgnoreStart
-            self::loadMaps();
-            // @codeCoverageIgnoreEnd
-        }
+        self::checkMaps();
 
         $name = self::$NameMaps[static::class][$value] ?? null;
 
         if ($name === null) {
-            throw new LogicException(
-                sprintf('Argument #1 ($value) is invalid: %s', $value)
+            throw new InvalidArgumentException(
+                sprintf('Invalid value: %s', $value)
             );
         }
 
@@ -120,11 +110,7 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
      */
     final public static function toNames(array $values): array
     {
-        if (!isset(self::$NameMaps[static::class])) {
-            // @codeCoverageIgnoreStart
-            self::loadMaps();
-            // @codeCoverageIgnoreEnd
-        }
+        self::checkMaps();
 
         $invalid = [];
         foreach ($values as $value) {
@@ -139,7 +125,7 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
         }
 
         if ($invalid) {
-            throw new LogicException(
+            throw new InvalidArgumentException(
                 Inflect::format($invalid, 'Invalid {{#:value}}: %s', implode(',', $invalid))
             );
         }
@@ -152,11 +138,7 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
      */
     final public static function cases(): array
     {
-        if (!isset(self::$ValueMaps[static::class])) {
-            // @codeCoverageIgnoreStart
-            self::loadMaps();
-            // @codeCoverageIgnoreEnd
-        }
+        self::checkMaps();
 
         return self::$ValueMaps[static::class];
     }
@@ -166,29 +148,21 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
      */
     final public static function hasValue($value): bool
     {
-        if (!isset(self::$NameMaps[static::class])) {
-            // @codeCoverageIgnoreStart
-            self::loadMaps();
-            // @codeCoverageIgnoreEnd
-        }
+        self::checkMaps();
 
         return isset(self::$NameMaps[static::class][$value]);
     }
 
-    private static function loadMaps(): void
+    private static function checkMaps(): void
     {
-        $constants = (new ReflectionClass(static::class))->getReflectionConstants();
+        if (isset(self::$NameMaps[static::class])) {
+            return;
+        }
 
         $valueMap = [];
         $nameMap = [];
-        foreach ($constants as $constant) {
-            if (!$constant->isPublic()) {
-                continue;
-            }
-
-            $name = $constant->getName();
-            $value = $constant->getValue();
-
+        /** @var mixed $value */
+        foreach (self::constants() as $name => $value) {
             if (!is_int($value) && !is_string($value)) {
                 throw new LogicException(sprintf(
                     'Public constant is not of type int|string: %s::%s',
@@ -208,12 +182,10 @@ abstract class AbstractReflectiveEnumeration extends AbstractEnumeration impleme
         }
 
         if (count($valueMap) !== count($nameMap)) {
-            throw new LogicException(
-                sprintf(
-                    'Public constants are not unique: %s',
-                    static::class,
-                )
-            );
+            throw new LogicException(sprintf(
+                'Public constants do not have unique values: %s',
+                static::class,
+            ));
         }
 
         // Add UPPER_CASE names to $valueMap if not already present
