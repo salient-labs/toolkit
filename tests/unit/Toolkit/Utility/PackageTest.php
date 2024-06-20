@@ -73,10 +73,10 @@ final class PackageTest extends TestCase
         $this->assertSame('salient/toolkit', Package::name());
     }
 
-    public function testReference(): void
+    public function testRef(): void
     {
-        $this->assertSame('c44d26d4', Package::reference());
-        $this->assertSame('c44d26d440cec2096284e20478a5ff984b65fa54', Package::reference(false));
+        $this->assertSame('c44d26d4', Package::ref());
+        $this->assertSame('c44d26d440cec2096284e20478a5ff984b65fa54', Package::ref(false));
     }
 
     /**
@@ -192,7 +192,7 @@ final class PackageTest extends TestCase
         $this->assertTrue(File::same($this->getPackagePath(), Package::path()));
     }
 
-    public function testPackageReference(): void
+    public function testGetPackageRef(): void
     {
         $this->assertMatchesRegularExpression(
             '/^[0-9a-f]{9,}$/Di',
@@ -203,12 +203,12 @@ final class PackageTest extends TestCase
             $shortRef = substr($longRef, 0, 8)
         );
 
-        $this->assertSame($longRef, Package::packageReference('phpunit/phpunit', false));
-        $this->assertSame($shortRef, Package::packageReference('phpunit/phpunit'));
-        $this->assertNull(Package::packageReference('composer/composer'));
+        $this->assertSame($longRef, Package::getPackageRef('phpunit/phpunit', false));
+        $this->assertSame($shortRef, Package::getPackageRef('phpunit/phpunit'));
+        $this->assertNull(Package::getPackageRef('composer/composer'));
     }
 
-    public function testPackageVersion(): void
+    public function testGetPackageVersion(): void
     {
         // Test against firebase/php-jwt for its vX.Y.Z version numbering
         $this->assertNotNull($version = InstalledVersions::getVersion('firebase/php-jwt'));
@@ -220,40 +220,40 @@ final class PackageTest extends TestCase
             $shortRef = substr((string) InstalledVersions::getReference('firebase/php-jwt'), 0, 8)
         );
 
-        $this->assertSame($version, Package::packageVersion('firebase/php-jwt', false));
-        $this->assertSame($prettyVersion, Package::packageVersion('firebase/php-jwt'));
-        $this->assertSame("$version-$shortRef", Package::packageVersion('firebase/php-jwt', false, true));
-        $this->assertSame("$prettyVersion-$shortRef", Package::packageVersion('firebase/php-jwt', true, true));
-        $this->assertNull(Package::packageVersion('composer/composer'));
+        $this->assertSame($version, Package::getPackageVersion('firebase/php-jwt', false));
+        $this->assertSame($prettyVersion, Package::getPackageVersion('firebase/php-jwt'));
+        $this->assertSame("$version-$shortRef", Package::getPackageVersion('firebase/php-jwt', false, true));
+        $this->assertSame("$prettyVersion-$shortRef", Package::getPackageVersion('firebase/php-jwt', true, true));
+        $this->assertNull(Package::getPackageVersion('composer/composer'));
     }
 
-    public function testPackagePath(): void
+    public function testGetPackagePath(): void
     {
         // `InstalledVersions::getInstallPath()` may return a non-existent
         // location in phpstan.phar, so don't perform any filesystem tests here
         $this->assertNotNull($dir = InstalledVersions::getInstallPath('phpunit/phpunit'));
-        $this->assertSame($dir, Package::packagePath('phpunit/phpunit'));
-        $this->assertNull(Package::packagePath('composer/composer'));
+        $this->assertSame($dir, Package::getPackagePath('phpunit/phpunit'));
+        $this->assertNull(Package::getPackagePath('composer/composer'));
     }
 
     /**
-     * @dataProvider classPathProvider
+     * @dataProvider getClassPathProvider
      *
      * @param class-string $class
      */
-    public function testClassPath(?string $expected, string $class): void
+    public function testGetClassPath(?string $expected, string $class): void
     {
         if ($expected === null) {
-            $this->assertNull(Package::classPath($class));
+            $this->assertNull(Package::getClassPath($class));
         } else {
-            $this->assertTrue(File::same($expected, (string) Package::classPath($class)));
+            $this->assertTrue(File::same($expected, (string) Package::getClassPath($class)));
         }
     }
 
     /**
      * @return array<string,array{string|null,string}>
      */
-    public static function classPathProvider(): array
+    public static function getClassPathProvider(): array
     {
         return [
             __CLASS__ => [__FILE__, __CLASS__],
@@ -262,16 +262,16 @@ final class PackageTest extends TestCase
     }
 
     /**
-     * @dataProvider namespacePathProvider
+     * @dataProvider getNamespacePathProvider
      */
-    public function testNamespacePath(?string $expected, string $namespace): void
+    public function testGetNamespacePath(?string $expected, string $namespace): void
     {
         if ($expected === null) {
-            $this->assertNull(Package::namespacePath($namespace));
+            $this->assertNull(Package::getNamespacePath($namespace));
         } else {
             $this->assertSame(
                 $this->directorySeparatorToNative($expected),
-                $this->directorySeparatorToNative((string) Package::namespacePath($namespace))
+                $this->directorySeparatorToNative((string) Package::getNamespacePath($namespace))
             );
         }
     }
@@ -279,7 +279,7 @@ final class PackageTest extends TestCase
     /**
      * @return array<string,array{string|null,string}>
      */
-    public static function namespacePathProvider(): array
+    public static function getNamespacePathProvider(): array
     {
         return [
             __NAMESPACE__ =>
