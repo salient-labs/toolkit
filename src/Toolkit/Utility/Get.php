@@ -51,25 +51,6 @@ final class Get extends AbstractUtility
     public const COPY_SINGLETONS = 16;
 
     /**
-     * Throw an exception if a value is null, otherwise return it
-     *
-     * @template T
-     *
-     * @param T $value
-     * @return (T is null ? never : T)
-     * @phpstan-param T|null $value
-     * @phpstan-return ($value is null ? never : T)
-     */
-    public static function notNull($value)
-    {
-        if ($value === null) {
-            throw new InvalidArgumentException('$value cannot be null');
-        }
-
-        return $value;
-    }
-
-    /**
      * Cast a value to boolean, converting boolean strings and preserving null
      *
      * @see Test::isBoolean()

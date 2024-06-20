@@ -326,7 +326,7 @@ class Application extends Container implements ApplicationInterface
 
         Err::register();
 
-        $adodb = Package::packagePath('adodb/adodb-php');
+        $adodb = Package::getPackagePath('adodb/adodb-php');
         if ($adodb !== null) {
             Err::silencePath($adodb);
         }

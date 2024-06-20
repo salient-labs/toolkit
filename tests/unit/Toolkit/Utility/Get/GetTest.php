@@ -27,39 +27,6 @@ use Traversable;
 final class GetTest extends TestCase
 {
     /**
-     * @dataProvider notNullProvider
-     *
-     * @param mixed $value
-     */
-    public function testNotNull($value): void
-    {
-        $this->assertSame($value, Get::notNull($value));
-    }
-
-    /**
-     * @return array<array{mixed}>
-     */
-    public function notNullProvider(): array
-    {
-        return [
-            [0],
-            [1],
-            [''],
-            ['foo'],
-            [[]],
-            [['foo']],
-            [new stdClass()],
-        ];
-    }
-
-    public function testNotNullWithNull(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('$value cannot be null');
-        Get::notNull(null);
-    }
-
-    /**
      * @dataProvider booleanProvider
      *
      * @param mixed $value

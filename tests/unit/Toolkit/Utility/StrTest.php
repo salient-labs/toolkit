@@ -665,11 +665,11 @@ EOF,
         ];
     }
 
-    public function testWrap(): void
+    public function testEnclose(): void
     {
-        $this->assertEquals('**test**', Str::wrap('test', '**'));
-        $this->assertEquals('[test]', Str::wrap('test', '[', ']'));
-        $this->assertEquals('!!test?', Str::wrap('test', '!!', '?'));
+        $this->assertEquals('**test**', Str::enclose('test', '**'));
+        $this->assertEquals('[test]', Str::enclose('test', '[', ']'));
+        $this->assertEquals('!!test?', Str::enclose('test', '!!', '?'));
     }
 
     /**

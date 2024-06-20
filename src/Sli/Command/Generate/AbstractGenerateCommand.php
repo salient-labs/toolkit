@@ -968,7 +968,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             $verb = null;
         } else {
             $file = sprintf('%s.php', $this->OutputClass);
-            $dir = Package::namespacePath($this->OutputNamespace);
+            $dir = Package::getNamespacePath($this->OutputNamespace);
 
             if ($dir !== null) {
                 if (!$this->Check) {

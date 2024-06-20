@@ -147,7 +147,7 @@ final class Format extends AbstractUtility
             $format .= ' H:i:s T';
         }
 
-        return Str::wrap($date->format($format), $before, $after);
+        return Str::enclose($date->format($format), $before, $after);
     }
 
     /**
@@ -207,9 +207,9 @@ final class Format extends AbstractUtility
 
         return sprintf(
             '%s%s%s',
-            Str::wrap($from->format($fromFormat), $before, $after),
+            Str::enclose($from->format($fromFormat), $before, $after),
             $delimiter,
-            Str::wrap($to->format($toFormat), $before, $after),
+            Str::enclose($to->format($toFormat), $before, $after),
         );
     }
 
