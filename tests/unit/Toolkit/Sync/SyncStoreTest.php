@@ -9,6 +9,7 @@ use Salient\Utility\Regex;
 
 /**
  * @covers \Salient\Sync\SyncStore
+ * @covers \Salient\Core\AbstractStore
  */
 final class SyncStoreTest extends SyncTestCase
 {

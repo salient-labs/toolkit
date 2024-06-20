@@ -19,6 +19,8 @@ abstract class AbstractCatalog
     private static array $ConstantNames = [];
 
     /**
+     * @internal
+     *
      * @return array<string,TValue>
      */
     protected static function constants(): array
@@ -27,6 +29,8 @@ abstract class AbstractCatalog
     }
 
     /**
+     * @internal
+     *
      * @return array<TValue&array-key,string[]|string>
      */
     protected static function constantNames(): array

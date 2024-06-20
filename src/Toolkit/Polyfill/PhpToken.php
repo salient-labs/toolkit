@@ -66,7 +66,7 @@ class PhpToken implements Stringable
      */
     public function getTokenName(): ?string
     {
-        if ($this->id < 128) {
+        if ($this->id < 256) {
             return chr($this->id);
         }
         if (($name = token_name($this->id)) === 'UNKNOWN') {

@@ -9,8 +9,8 @@ use InvalidArgumentException;
  */
 final class Str extends AbstractUtility
 {
-    public const ALPHA = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    public const ALPHANUMERIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    public const ALPHA = self::LOWER . self::UPPER;
+    public const ALPHANUMERIC = self::ALPHA . self::NUMERIC;
     public const HEX = '0123456789abcdefABCDEF';
     public const LOWER = 'abcdefghijklmnopqrstuvwxyz';
     public const NUMERIC = '0123456789';
@@ -32,6 +32,15 @@ final class Str extends AbstractUtility
             return $string;
         }
         return $string;
+    }
+
+    /**
+     * Convert ASCII alphabetic characters in a string to lowercase, then make
+     * the first character uppercase if it is an ASCII alphabetic character
+     */
+    public static function title(string $string): string
+    {
+        return self::upperFirst(self::lower($string));
     }
 
     /**
@@ -100,26 +109,23 @@ final class Str extends AbstractUtility
     /**
      * Normalise a string for comparison
      *
-     * This method performs the following operations:
+     * The return value of this method is not covered by a backward
+     * compatibility guarantee, but transformations applied include:
      *
-     * 1. Replace ampersands (`&`) with ` and `
-     * 2. Remove full stops (`.`)
-     * 3. Replace non-alphanumeric sequences with a space (` `)
-     * 4. Trim leading and trailing spaces
-     * 5. Make letters uppercase
+     * 1. Replace ampersands (`"&"`) with `" and "`, e.g. `"Science &
+     *    Technology"` -> `"Science and Technology"`
+     * 2. Remove full stops (`"."`), e.g. `"I.T."` -> `"IT"`
+     * 3. Replace sequences of one or more non-alphanumeric characters with one
+     *    space (`"\x20"`), e.g. `"History  —  Ancient"` -> `"History Ancient"`
+     * 4. Remove leading and trailing whitespace
+     * 5. Convert ASCII alphabetic characters to uppercase
      */
     public static function normalise(string $string): string
     {
-        $replace = [
-            '/(?<=[^&])&(?=[^&])/' => ' and ',
-            '/\.++/' => '',
-            '/[^[:alnum:]]+/u' => ' ',
-        ];
-
         return self::upper(trim(Regex::replace(
-            array_keys($replace),
-            array_values($replace),
-            $string
+            ['/([[:alnum:]][^&]*+)&(?=[^&[:alnum:]]*+[[:alnum:]])/u', '/\.++/', '/[^[:alnum:]]++/u'],
+            ['$1 and ', '', ' '],
+            $string,
         )));
     }
 
@@ -161,18 +167,9 @@ final class Str extends AbstractUtility
 
     /**
      * Remove native end-of-line sequences from the end of a string
-     *
-     * @template T of string|null
-     *
-     * @param T $string
-     * @return T
      */
-    public static function trimNativeEol(?string $string): ?string
+    public static function trimNativeEol(string $string): string
     {
-        if ($string === null || $string === '') {
-            return $string;
-        }
-
         if (\PHP_EOL === "\n") {
             $s = rtrim($string, "\n");
             if ($s === $string || $s === '' || $s[-1] !== "\r") {
@@ -190,39 +187,25 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Replace newlines in a string with native end-of-line sequences
-     *
-     * @template T of string|null
-     *
-     * @param T $string
-     * @return T
+     * Replace newline characters in a string with the native end-of-line
+     * sequence
      */
-    public static function eolToNative(?string $string): ?string
+    public static function eolToNative(string $string): string
     {
-        // @phpstan-ignore-next-line
-        return $string === null
-            ? null
-            : (\PHP_EOL === "\n"
-                ? $string
-                : str_replace("\n", \PHP_EOL, $string));
+        return \PHP_EOL === "\n"
+            ? $string
+            : str_replace("\n", \PHP_EOL, $string);
     }
 
     /**
-     * Replace native end-of-line sequences in a string with newlines
-     *
-     * @template T of string|null
-     *
-     * @param T $string
-     * @return T
+     * Replace native end-of-line sequences in a string with the newline
+     * character
      */
-    public static function eolFromNative(?string $string): ?string
+    public static function eolFromNative(string $string): string
     {
-        // @phpstan-ignore-next-line
-        return $string === null
-            ? null
-            : (\PHP_EOL === "\n"
-                ? $string
-                : str_replace(\PHP_EOL, "\n", $string));
+        return \PHP_EOL === "\n"
+            ? $string
+            : str_replace(\PHP_EOL, "\n", $string);
     }
 
     /**
@@ -258,7 +241,7 @@ final class Str extends AbstractUtility
         return Regex::replaceCallback(
             '/(?<![[:alnum:]])[[:alpha:]]/u',
             fn($matches) => self::lower($matches[0]),
-            self::toPascalCase($string, $preserve)
+            self::toPascalCase($string, $preserve),
         );
     }
 
@@ -270,12 +253,7 @@ final class Str extends AbstractUtility
      */
     public static function toPascalCase(string $string, ?string $preserve = null): string
     {
-        return self::toWords(
-            $string,
-            '',
-            $preserve,
-            fn($word) => self::upperFirst(self::lower($word))
-        );
+        return self::toWords($string, '', $preserve, [self::class, 'title']);
     }
 
     /**
@@ -306,19 +284,24 @@ final class Str extends AbstractUtility
     ): string {
         $notAfterPreserve = '';
         if ($preserve !== null && $preserve !== '') {
-            $preserve = Regex::replace('/[[:alnum:]]/u', '', $preserve);
+            $preserve = Regex::replace('/[[:alnum:]]++/u', '', $preserve);
             if ($preserve !== '') {
+                $preserve = Regex::quoteCharacterClass($preserve, '/');
                 // Prevent "key=value" becoming "key= value" when preserving "="
                 // by asserting that when separating words, they must appear:
-                // - immediately after the previous word (\G)
+                // - immediately after the previous word (\G),
                 // - after an unpreserved character, or
                 // - at a word boundary (e.g. "Value" in "key=someValue")
-                $preserve = Regex::quoteCharacterClass($preserve, '/');
-                $notAfterPreserve = "(?:\G|(?<=[^[:alnum:]{$preserve}])|(?<=[[:lower:][:digit:]])(?=[[:upper:]]))";
+                if ($separator !== '') {
+                    $notAfterPreserve = '(?:\G'
+                        . "|(?<=[^[:alnum:]{$preserve}])"
+                        . '|(?<=[[:lower:][:digit:]])(?=[[:upper:]]))';
+                }
             }
         }
         $preserve = "[:alnum:]{$preserve}";
-        $word = '(?:[[:upper:]]?[[:lower:][:digit:]]+|(?:[[:upper:]](?![[:lower:]]))+[[:digit:]]*)';
+        $word = '(?:[[:upper:]]?[[:lower:][:digit:]]++'
+            . '|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)';
 
         // Insert separators before words not adjacent to a preserved character
         // to prevent "foo bar" becoming "foobar", for example
