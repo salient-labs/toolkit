@@ -10,6 +10,37 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.30] - 2024-06-20
+
+### Added
+
+#### `Utility`
+
+- Add `Str::title()`
+
+### Changed
+
+#### `Utility`
+
+- Rename `Package` methods:
+  - `reference()` -> `ref()`
+  - `packageReference()` -> `getPackageRef()`
+  - `packageVersion()` -> `getPackageVersion()`
+  - `packagePath()` -> `getPackagePath()`
+  - `classPath()` -> `getClassPath()`
+  - `namespacePath()` -> `getNamespacePath()`
+- Rename `Str` methods:
+  - Rename `wrap()` to `enclose()`
+  - Rename `wordwrap()` to `wrap()`
+- Don't accept or return `null` in `Str::trimNativeEol()`, `Str::eolToNative()`, `Str::eolFromNative()`
+- In `Str::normalise()`, only replace `"&"` with `" and "` when it is the only ampersand between two alphanumeric characters
+
+### Removed
+
+#### `Utility`
+
+- Remove `Get::notNull()`
+
 ## [v0.99.29] - 2024-06-18
 
 ### Added
@@ -2905,6 +2936,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.30]: https://github.com/salient-labs/toolkit/compare/v0.99.29...v0.99.30
 [v0.99.29]: https://github.com/salient-labs/toolkit/compare/v0.99.28...v0.99.29
 [v0.99.28]: https://github.com/salient-labs/toolkit/compare/v0.99.27...v0.99.28
 [v0.99.27]: https://github.com/salient-labs/toolkit/compare/v0.99.26...v0.99.27
