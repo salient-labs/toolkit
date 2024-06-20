@@ -544,12 +544,12 @@ REGEX;
         }
         if ($wrapToWidth !== null) {
             if (strlen($break) === 1) {
-                $string = Str::wordwrap($string, $wrapToWidth, $break);
+                $string = Str::wrap($string, $wrapToWidth, $break);
             } else {
                 if (strpos($string, "\x7f") !== false) {
                     $string = $this->insertPlaceholders($string, '/\x7f/', $replace);
                 }
-                $string = Str::wordwrap($string, $wrapToWidth, "\x7f");
+                $string = Str::wrap($string, $wrapToWidth, "\x7f");
                 $string = $this->insertPlaceholders($string, '/\x7f/', $replace, "\n", $break);
             }
         }

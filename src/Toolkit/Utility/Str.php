@@ -529,7 +529,7 @@ REGEX;
      *
      * @param array{int,int}|int $width
      */
-    public static function wordwrap(
+    public static function wrap(
         string $string,
         $width = 75,
         string $break = "\n",
@@ -605,7 +605,7 @@ REGEX;
      * @param string|null $after If `null`, `$before` is used before and after
      * the string.
      */
-    public static function wrap(string $string, string $before, ?string $after = null): string
+    public static function enclose(string $string, string $before, ?string $after = null): string
     {
         return $before . $string . ($after ?? $before);
     }
