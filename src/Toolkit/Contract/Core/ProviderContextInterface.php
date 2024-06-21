@@ -12,7 +12,6 @@ use Salient\Contract\Container\HasContainer;
  * @template TProvider of ProviderInterface
  * @template TEntity of Providable
  *
- * @extends HasContainer<ContainerInterface>
  * @extends HasProvider<TProvider>
  */
 interface ProviderContextInterface extends

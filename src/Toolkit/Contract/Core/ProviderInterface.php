@@ -11,8 +11,6 @@ use Stringable;
  * Services objects on behalf of a backend
  *
  * @template TContext of ProviderContextInterface
- *
- * @extends HasContainer<ContainerInterface>
  */
 interface ProviderInterface extends HasContainer, Nameable
 {

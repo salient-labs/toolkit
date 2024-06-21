@@ -766,16 +766,6 @@ parameters:
 			path: tests/unit/Toolkit/Cache/CacheStoreTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Container\\\\A\\:\\:getContainer\\(\\) should return T of Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Container/ContainerTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Container\\\\C\\:\\:getContainer\\(\\) should return T of Salient\\\\Contract\\\\Container\\\\ContainerInterface but returns Salient\\\\Contract\\\\Container\\\\ContainerInterface\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Container/ContainerTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$id of method Salient\\\\Container\\\\Container\\:\\:get\\(\\) expects class\\-string\\<T\\>, string given\\.$#"
 			count: 4
 			path: tests/unit/Toolkit/Container/ContainerTest.php

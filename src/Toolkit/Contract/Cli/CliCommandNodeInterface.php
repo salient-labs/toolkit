@@ -14,12 +14,15 @@ use LogicException;
  *
  * @api
  *
- * @extends HasContainer<CliApplicationInterface>
- *
  * @see CliCommand
  */
 interface CliCommandNodeInterface extends HasContainer, Nameable, Describable
 {
+    /**
+     * Get the command's service container
+     */
+    public function getContainer(): CliApplicationInterface;
+
     /**
      * Get the command name as a string of space-delimited subcommands
      *
