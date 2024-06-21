@@ -140,7 +140,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
             ?: $a->Values <=> $b->Values
             ?: $a->EntityName <=> $b->EntityName
             ?: ($a->Provider ? $a->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
-            ?: ($a->Entity ? $a->Entity->id() : null) <=> ($b->Entity ? $b->Entity->id() : null);
+            ?: ($a->Entity ? $a->Entity->getId() : null) <=> ($b->Entity ? $b->Entity->getId() : null);
     }
 
     public function getCode(): string

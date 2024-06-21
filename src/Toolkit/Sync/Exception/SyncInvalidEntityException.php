@@ -37,7 +37,7 @@ class SyncInvalidEntityException extends AbstractSyncException
 
         if ($entityOrId instanceof SyncEntityInterface) {
             $this->Entity = $entityOrId;
-            $this->EntityId = $this->Entity->id();
+            $this->EntityId = $this->Entity->getId();
         } else {
             $this->EntityId = $entityOrId;
             $this->Entity = null;

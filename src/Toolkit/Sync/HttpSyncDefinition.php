@@ -704,7 +704,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             return null;
         }
 
-        return $entity->id();
+        return $entity->getId();
     }
 
     private function checkParameterValue(string $value, string $name, string $path): string

@@ -40,9 +40,9 @@ interface ProviderContextInterface extends
      * instances for its `DirectReports` property, **and** pass itself to
      * `withParent()` as the parent (a.k.a. manager) of those `Staff`.
      *
-     * Pushing an entity that implements {@see Identifiable} onto the stack
-     * implicitly adds its unique identifier to the context as a value with name
-     * `<entity_basename>_id` if {@see Identifiable::id()} returns a value other
+     * Pushing an entity that implements {@see HasId} onto the stack implicitly
+     * adds its unique identifier to the context as a value with name
+     * `<entity_basename>_id` if {@see HasId::getId()} returns a value other
      * than `null`.
      *
      * @param TEntity $entity

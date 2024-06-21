@@ -87,7 +87,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * The unique identifier assigned to the entity by its provider
      *
-     * @see SyncEntityInterface::id()
+     * @see SyncEntityInterface::getId()
      *
      * @var int|string|null
      */
@@ -195,7 +195,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function id()
+    final public function getId()
     {
         return $this->Id;
     }
