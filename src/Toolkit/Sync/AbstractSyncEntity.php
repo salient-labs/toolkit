@@ -456,7 +456,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         if ($rules->getDateFormatter() === null) {
             $rules = $rules->withDateFormatter(
                 $this->Provider
-                    ? $this->Provider->dateFormatter()
+                    ? $this->Provider->getDateFormatter()
                     : new DateFormatter()
             );
         }

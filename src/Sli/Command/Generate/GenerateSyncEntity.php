@@ -323,7 +323,7 @@ EOF)
             ];
 
             $dateFormatter = $provider
-                ? $provider->dateFormatter()
+                ? $provider->getDateFormatter()
                 : new DateFormatter(
                     DateTimeInterface::ATOM,
                     null,

@@ -296,7 +296,7 @@ final class SyncIntrospector extends Introspector
                     $context->getContainer(),
                     $provider,
                     $context,
-                    $provider->dateFormatter(),
+                    $provider->getDateFormatter(),
                     $context->getParent(),
                 );
             };

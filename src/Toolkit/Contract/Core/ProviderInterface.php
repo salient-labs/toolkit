@@ -68,7 +68,7 @@ interface ProviderInterface extends HasContainer, HasName
      * Get a date formatter to work with the backend's date and time format
      * and/or timezone
      */
-    public function dateFormatter(): DateFormatterInterface;
+    public function getDateFormatter(): DateFormatterInterface;
 
     /**
      * Throw an exception if the backend isn't reachable

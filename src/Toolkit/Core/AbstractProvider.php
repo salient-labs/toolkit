@@ -68,13 +68,14 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @inheritDoc
      */
-    final public function dateFormatter(): DateFormatterInterface
+    final public function getDateFormatter(): DateFormatterInterface
     {
         return $this->DateFormatter ??= $this->createDateFormatter();
     }
 
     /**
-     * Check if the date formatter returned by dateFormatter() has been cached
+     * Check if the date formatter returned by getDateFormatter() has been
+     * cached
      */
     final protected function hasDateFormatter(): bool
     {
@@ -82,7 +83,7 @@ abstract class AbstractProvider implements ProviderInterface
     }
 
     /**
-     * Set or unset the date formatter returned by dateFormatter()
+     * Set or unset the date formatter returned by getDateFormatter()
      *
      * @return $this
      */

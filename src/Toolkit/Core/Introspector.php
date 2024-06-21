@@ -361,7 +361,7 @@ class Introspector
                     $context->getContainer(),
                     $provider,
                     $context,
-                    $provider->dateFormatter(),
+                    $provider->getDateFormatter(),
                     $context->getParent(),
                 );
             };
@@ -933,7 +933,7 @@ class Introspector
                 if ($dateFormatter === null) {
                     $dateFormatter =
                         $provider
-                            ? $provider->dateFormatter()
+                            ? $provider->getDateFormatter()
                             : $container->get(DateFormatter::class);
                 }
 
