@@ -465,7 +465,7 @@ final class SyncIntrospector extends Introspector
                     return $obj;
                 }
 
-                $store = $provider->store()->registerEntity($service ?? $entityType);
+                $store = $provider->getStore()->registerEntity($service ?? $entityType);
                 $providerId = $provider->getProviderId();
                 $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context->getOffline());
 

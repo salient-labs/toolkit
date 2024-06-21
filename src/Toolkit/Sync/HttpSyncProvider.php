@@ -69,7 +69,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
         if ($dateFormatter) {
             $curlerB = $curlerB->dateFormatter($dateFormatter);
         } elseif (!$curlerB->issetB('dateFormatter')) {
-            $curlerB = $curlerB->dateFormatter($this->getDateFormatter($path));
+            $curlerB = $curlerB->dateFormatter($this->createDateFormatter($path));
         }
 
         return $curlerB->build();
@@ -235,5 +235,5 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     /**
      * @inheritDoc
      */
-    abstract protected function getDateFormatter(?string $path = null): DateFormatterInterface;
+    abstract protected function createDateFormatter(?string $path = null): DateFormatterInterface;
 }

@@ -33,7 +33,7 @@ abstract class AbstractProvider implements ProviderInterface
      * The {@see DateFormatterInterface} returned will be cached for the
      * lifetime of the {@see Provider} instance.
      */
-    abstract protected function getDateFormatter(): DateFormatterInterface;
+    abstract protected function createDateFormatter(): DateFormatterInterface;
 
     /**
      * @inheritDoc
@@ -70,7 +70,7 @@ abstract class AbstractProvider implements ProviderInterface
      */
     final public function dateFormatter(): DateFormatterInterface
     {
-        return $this->DateFormatter ??= $this->getDateFormatter();
+        return $this->DateFormatter ??= $this->createDateFormatter();
     }
 
     /**

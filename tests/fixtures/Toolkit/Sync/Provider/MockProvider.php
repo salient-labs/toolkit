@@ -31,7 +31,7 @@ class MockProvider extends HttpSyncProvider implements UserProvider
         return 'http://localhost';
     }
 
-    protected function getDateFormatter(?string $path = null): DateFormatter
+    protected function createDateFormatter(?string $path = null): DateFormatter
     {
         return new DateFormatter();
     }

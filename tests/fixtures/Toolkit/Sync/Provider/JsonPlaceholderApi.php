@@ -102,7 +102,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return $user;
     }
 
-    protected function getDateFormatter(?string $path = null): DateFormatter
+    protected function createDateFormatter(?string $path = null): DateFormatter
     {
         return new DateFormatter();
     }

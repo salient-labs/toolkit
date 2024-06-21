@@ -203,7 +203,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function canonicalId()
+    final public function getCanonicalId()
     {
         return $this->CanonicalId;
     }
@@ -343,7 +343,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
             case LinkType::COMPACT:
                 return [
-                    '@id' => $this->uri($store, $compact),
+                    '@id' => $this->getUri($store, $compact),
                 ];
 
             case LinkType::FRIENDLY:
@@ -367,7 +367,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function uri(?SyncStoreInterface $store = null, bool $compact = true): string
+    final public function getUri(?SyncStoreInterface $store = null, bool $compact = true): string
     {
         return sprintf(
             '%s/%s',
@@ -437,7 +437,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     {
         /** @var class-string<self> */
         $service = $this->getService();
-        $store ??= $this->Provider ? $this->Provider->store() : null;
+        $store ??= $this->Provider ? $this->Provider->getStore() : null;
         if ($store) {
             $typeUri = $store->getEntityUri($service, $compact);
         }
@@ -783,7 +783,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         $data['Provider'] = $this->Provider === null
             ? null
-            : $this->Provider->store()->getProviderSignature($this->Provider);
+            : $this->Provider->getStore()->getProviderSignature($this->Provider);
 
         return $data;
     }

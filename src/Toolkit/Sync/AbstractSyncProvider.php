@@ -109,7 +109,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     /**
      * @inheritDoc
      */
-    final public function store(): SyncStoreInterface
+    final public function getStore(): SyncStoreInterface
     {
         return $this->Store;
     }

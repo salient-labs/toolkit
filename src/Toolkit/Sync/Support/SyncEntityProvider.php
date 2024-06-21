@@ -139,7 +139,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $this->Provider = $provider;
         $this->Definition = $provider->getDefinition($entity);
         $this->Context = $context ?? $provider->getContext($container);
-        $this->Store = $provider->store();
+        $this->Store = $provider->getStore();
     }
 
     /**

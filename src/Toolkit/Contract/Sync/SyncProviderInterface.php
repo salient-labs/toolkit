@@ -58,7 +58,7 @@ interface SyncProviderInterface extends ProviderInterface
     /**
      * Get the provider's entity store
      */
-    public function store(): SyncStoreInterface;
+    public function getStore(): SyncStoreInterface;
 
     /**
      * Use an entity-agnostic interface to the provider's implementation of sync

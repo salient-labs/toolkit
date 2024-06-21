@@ -248,7 +248,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         ) {
             throw new SyncEntityRecursionException(sprintf(
                 'Circular reference detected: %s',
-                $this->LastRecursedInto->uri($this->Provider->store()),
+                $this->LastRecursedInto->getUri($this->Provider->getStore()),
             ));
         }
     }

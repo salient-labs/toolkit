@@ -92,7 +92,7 @@ interface SyncEntityInterface extends
      *
      * @return int|string|null
      */
-    public function canonicalId();
+    public function getCanonicalId();
 
     /**
      * Get the name of the entity
@@ -160,5 +160,5 @@ interface SyncEntityInterface extends
      *
      * Inspired by OData.
      */
-    public function uri(?SyncStoreInterface $store = null, bool $compact = true): string;
+    public function getUri(?SyncStoreInterface $store = null, bool $compact = true): string;
 }
