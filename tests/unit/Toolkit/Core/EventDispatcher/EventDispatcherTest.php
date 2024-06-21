@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\EventDispatcher;
 
-use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\HasName;
 use Salient\Core\Facade\Event;
 use Salient\Core\EventDispatcher;
 use Salient\Tests\TestCase;
@@ -26,8 +26,8 @@ final class EventDispatcherTest extends TestCase
 
         $logger =
             function (object $event, array &$log): void {
-                if ($event instanceof Nameable) {
-                    $log[] = [$event->name() => get_class($event)];
+                if ($event instanceof HasName) {
+                    $log[] = [$event->getName() => get_class($event)];
                     return;
                 }
                 $log[] = get_class($event);
@@ -86,7 +86,7 @@ final class EventDispatcherTest extends TestCase
             ['onClose' => NamedLoggableEvent::class],
         ], $logNamedLoggableEvent);
 
-        // Note the absence of the `LoggableEvent&Nameable` event
+        // Note the absence of the `LoggableEvent&HasName` event
         /** @var mixed $logMultipleEvents */
         $this->assertSame(\PHP_VERSION_ID >= 80200 ? [
             MainEvent::class,
@@ -156,13 +156,13 @@ trait NamedEventTrait
         $this->Name = $name;
     }
 
-    public function name(): string
+    public function getName(): string
     {
         return $this->Name;
     }
 }
 
-class NamedEvent extends BaseEvent implements Nameable
+class NamedEvent extends BaseEvent implements HasName
 {
     use NamedEventTrait;
 }
@@ -190,7 +190,7 @@ class LoggableEvent extends BaseEvent
     }
 }
 
-class NamedLoggableEvent extends LoggableEvent implements Nameable
+class NamedLoggableEvent extends LoggableEvent implements HasName
 {
     use NamedEventTrait;
 

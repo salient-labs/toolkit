@@ -3,8 +3,8 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\HasName;
 use Salient\Contract\Core\Identifiable;
-use Salient\Contract\Core\Nameable;
 use Salient\Contract\Core\ProvidableEntityInterface;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
@@ -18,7 +18,7 @@ use JsonSerializable;
  */
 interface SyncEntityInterface extends
     Identifiable,
-    Nameable,
+    HasName,
     ProvidableEntityInterface,
     Relatable,
     JsonSerializable
@@ -97,7 +97,7 @@ interface SyncEntityInterface extends
     /**
      * Get the name of the entity
      */
-    public function name(): string;
+    public function getName(): string;
 
     /**
      * Resolve a name or entity ID to the entity ID of one matching entity

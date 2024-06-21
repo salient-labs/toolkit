@@ -6,7 +6,7 @@ use Salient\Cli\CliCommand;
 use Salient\Cli\CliHelpStyle;
 use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\Describable;
-use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\HasName;
 use LogicException;
 
 /**
@@ -16,7 +16,7 @@ use LogicException;
  *
  * @see CliCommand
  */
-interface CliCommandNodeInterface extends HasContainer, Nameable, Describable
+interface CliCommandNodeInterface extends HasContainer, HasName, Describable
 {
     /**
      * Get the command's service container
@@ -30,7 +30,7 @@ interface CliCommandNodeInterface extends HasContainer, Nameable, Describable
      * not been called, or if an empty array of subcommands was passed to
      * {@see CliCommandNodeInterface::setName()}.
      */
-    public function name(): string;
+    public function getName(): string;
 
     /**
      * Get the command name as an array of subcommands

@@ -143,7 +143,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    public function name(): string
+    public function getName(): string
     {
         return
             SyncIntrospector::get(static::class)
@@ -352,7 +352,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
-                    '@name' => $this->name(),
+                    '@name' => $this->getName(),
                     '@description' =>
                         $this instanceof Describable
                             ? $this->description()

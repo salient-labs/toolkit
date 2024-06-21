@@ -133,7 +133,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 : '/' . $this->EntityId;
 
         Console::info(
-            'Retrieving from ' . $provider->name() . ':',
+            'Retrieving from ' . $provider->getName() . ':',
             $entityUri . $entityId
         );
 

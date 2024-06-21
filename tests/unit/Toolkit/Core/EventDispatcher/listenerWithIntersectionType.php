@@ -2,6 +2,6 @@
 
 namespace Salient\Tests\Core\EventDispatcher;
 
-use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\HasName;
 
-return fn(LoggableEvent&Nameable $event) => null;
+return fn(LoggableEvent&HasName $event) => null;

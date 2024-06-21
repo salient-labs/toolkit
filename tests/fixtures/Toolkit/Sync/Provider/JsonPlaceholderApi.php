@@ -71,7 +71,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     /** @var array<string,int> */
     public array $HttpRequests = [];
 
-    public function name(): string
+    public function getName(): string
     {
         return sprintf('JSONPlaceholder { %s }', $this->getBaseUrl());
     }
@@ -95,8 +95,8 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
 
         Console::info(sprintf(
             'Connected to %s as %s',
-            $this->name(),
-            $user->name(),
+            $this->getName(),
+            $user->getName(),
         ));
 
         return $user;

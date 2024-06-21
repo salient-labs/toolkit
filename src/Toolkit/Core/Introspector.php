@@ -5,7 +5,7 @@ namespace Salient\Core;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Extensible;
-use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\HasName;
 use Salient\Contract\Core\Normalisable;
 use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\NormaliserFlag;
@@ -749,7 +749,7 @@ class Introspector
     /**
      * Get a closure that returns the name of an instance on a best-effort basis
      *
-     * Intended for use in default {@see Nameable::name()} implementations.
+     * Intended for use in default {@see HasName::getName()} implementations.
      * Instance names are returned from properties most likely to contain them.
      *
      * @return Closure(TClass): string
@@ -969,8 +969,8 @@ class Introspector
                     throw new LogicException(sprintf(
                         '%s has wrong provider (%s expected): %s',
                         get_class($obj),
-                        $provider->name(),
-                        $currentProvider->name(),
+                        $provider->getName(),
+                        $currentProvider->getName(),
                     ));
                 }
                 $obj = $obj->setContext($context);

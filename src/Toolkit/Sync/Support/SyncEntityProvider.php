@@ -86,8 +86,8 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
             throw new LogicException(sprintf(
                 '%s has different provider (%s, expected %s)',
                 get_class($context),
-                $context->getProvider()->name(),
-                $provider->name(),
+                $context->getProvider()->getName(),
+                $provider->getName(),
             ));
         }
 

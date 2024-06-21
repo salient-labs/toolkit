@@ -239,7 +239,7 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @inheritDoc
      */
-    final public function name(): string
+    final public function getName(): string
     {
         return implode(' ', $this->Name);
     }

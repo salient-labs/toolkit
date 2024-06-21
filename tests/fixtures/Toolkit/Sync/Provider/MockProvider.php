@@ -16,7 +16,7 @@ use Salient\Utility\Get;
  */
 class MockProvider extends HttpSyncProvider implements UserProvider
 {
-    public function name(): string
+    public function getName(): string
     {
         return Get::basename(__CLASS__);
     }

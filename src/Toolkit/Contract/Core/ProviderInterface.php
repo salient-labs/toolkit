@@ -12,7 +12,7 @@ use Stringable;
  *
  * @template TContext of ProviderContextInterface
  */
-interface ProviderInterface extends HasContainer, Nameable
+interface ProviderInterface extends HasContainer, HasName
 {
     /**
      * Get the name of the provider
@@ -24,7 +24,7 @@ interface ProviderInterface extends HasContainer, Nameable
      * - unique enough that duplicates are rare
      * - human-readable
      */
-    public function name(): string;
+    public function getName(): string;
 
     /**
      * Get a context for instantiation of objects on the provider's behalf
