@@ -39,7 +39,7 @@ final class SendHttpRequest extends AbstractCommand
             ??= Str::upper((string) Arr::last($this->nameParts()));
     }
 
-    public function description(): string
+    public function getDescription(): string
     {
         return sprintf(
             'Send a %s request to an HTTP sync provider endpoint',

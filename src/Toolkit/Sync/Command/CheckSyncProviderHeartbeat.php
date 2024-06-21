@@ -22,7 +22,7 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
     private int $Ttl = 0;
     private bool $FailEarly = false;
 
-    public function description(): string
+    public function getDescription(): string
     {
         return
             'Send a heartbeat request to ' . (

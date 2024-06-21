@@ -44,7 +44,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
     private array $Operations = [];
     private ?string $Plural = null;
 
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Generate a provider interface for a sync entity class';
     }

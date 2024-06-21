@@ -35,7 +35,7 @@ final class GetSyncEntities extends AbstractSyncCommand
     private bool $Stream = false;
     private bool $Csv = false;
 
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Get data from a provider';
     }

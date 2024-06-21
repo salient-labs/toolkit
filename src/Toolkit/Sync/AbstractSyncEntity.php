@@ -5,7 +5,7 @@ namespace Salient\Sync;
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\Describable;
+use Salient\Contract\Core\HasDescription;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\NormaliserFlag;
@@ -354,8 +354,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                         : $this->Id,
                     '@name' => $this->getName(),
                     '@description' =>
-                        $this instanceof Describable
-                            ? $this->description()
+                        $this instanceof HasDescription
+                            ? $this->getDescription()
                             : null,
                 ]);
 

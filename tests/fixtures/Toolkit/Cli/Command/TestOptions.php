@@ -42,7 +42,7 @@ class TestOptions extends CliCommand
     /** @var string[] */
     private array $Args;
 
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Test CliCommand options';
     }

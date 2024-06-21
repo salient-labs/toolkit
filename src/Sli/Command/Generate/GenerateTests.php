@@ -30,7 +30,7 @@ class GenerateTests extends AbstractGenerateCommand
     /** @var string[] */
     private array $Skip = [];
 
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Generate PHPUnit tests for the public methods of a class';
     }

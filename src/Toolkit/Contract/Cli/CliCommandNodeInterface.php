@@ -5,7 +5,7 @@ namespace Salient\Contract\Cli;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliHelpStyle;
 use Salient\Contract\Container\HasContainer;
-use Salient\Contract\Core\Describable;
+use Salient\Contract\Core\HasDescription;
 use Salient\Contract\Core\HasName;
 use LogicException;
 
@@ -16,7 +16,7 @@ use LogicException;
  *
  * @see CliCommand
  */
-interface CliCommandNodeInterface extends HasContainer, HasName, Describable
+interface CliCommandNodeInterface extends HasContainer, HasName, HasDescription
 {
     /**
      * Get the command's service container
@@ -42,7 +42,7 @@ interface CliCommandNodeInterface extends HasContainer, HasName, Describable
     /**
      * Get a one-line description of the command
      */
-    public function description(): string;
+    public function getDescription(): string;
 
     /**
      * Called immediately after instantiation by a CliApplicationInterface

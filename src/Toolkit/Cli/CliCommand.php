@@ -441,7 +441,7 @@ abstract class CliCommand implements CliCommandInterface
         }
 
         $name = $formatter->escapeTags($this->getNameWithProgram());
-        $summary = $formatter->escapeTags($this->description());
+        $summary = $formatter->escapeTags($this->getDescription());
         $synopsis = $this->getSynopsis($style);
 
         $description = $this->getLongDescription() ?? '';
