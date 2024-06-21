@@ -247,7 +247,7 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @inheritDoc
      */
-    final public function nameParts(): array
+    final public function getNameParts(): array
     {
         return $this->Name;
     }

@@ -37,7 +37,7 @@ interface CliCommandNodeInterface extends HasContainer, HasName, HasDescription
      *
      * @return string[]
      */
-    public function nameParts(): array;
+    public function getNameParts(): array;
 
     /**
      * Get a one-line description of the command

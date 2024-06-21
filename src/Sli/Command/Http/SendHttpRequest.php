@@ -36,7 +36,7 @@ final class SendHttpRequest extends AbstractCommand
     private function getMethod(): string
     {
         return $this->HttpMethod
-            ??= Str::upper((string) Arr::last($this->nameParts()));
+            ??= Str::upper((string) Arr::last($this->getNameParts()));
     }
 
     public function getDescription(): string
