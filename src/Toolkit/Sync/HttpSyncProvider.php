@@ -76,6 +76,82 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     }
 
     /**
+     * Get the URL of an API endpoint
+     */
+    final public function getEndpointUrl(string $path): string
+    {
+        return $this->getBaseUrl($path) . $path;
+    }
+
+    /**
+     * Get the base URL of the upstream API
+     *
+     * `$path` should be ignored unless the provider uses endpoint-specific base
+     * URLs to connect to the API. It should never be added to the return value.
+     */
+    abstract protected function getBaseUrl(?string $path): string;
+
+    /**
+     * Get HTTP headers required by the upstream API
+     */
+    protected function getHeaders(?string $path): ?HttpHeadersInterface
+    {
+        return null;
+    }
+
+    /**
+     * Get a new HttpHeaders instance
+     */
+    final protected function headers(): HttpHeaders
+    {
+        return new HttpHeaders();
+    }
+
+    /**
+     * Get a handler for paginated data from the upstream API
+     */
+    protected function getPager(?string $path): ?CurlerPagerInterface
+    {
+        return null;
+    }
+
+    /**
+     * The time, in seconds, before upstream API responses expire
+     *
+     * Return `null` to disable response caching (the default) or `0` to cache
+     * upstream responses indefinitely.
+     *
+     * Called when {@see HttpSyncProvider::getCurler()} is called with a
+     * negative `$expiry`.
+     *
+     * @return int<0,max>|null
+     */
+    protected function getExpiry(?string $path): ?int
+    {
+        return null;
+    }
+
+    /**
+     * Configure an unresolved Curler instance for upstream requests
+     *
+     * `uri()` has already been applied to {@see CurlerBuilder} instances passed
+     * to this method.
+     *
+     * Called once per {@see HttpSyncProvider::getCurler()} call.
+     *
+     * {@see HttpSyncProvider::getHeaders()} and
+     * {@see HttpSyncProvider::getPager()} are not called if
+     * {@see HttpSyncProvider::buildCurler()} sets their respective properties
+     * via the relevant {@see CurlerBuilder} methods. Values passed to
+     * {@see HttpSyncProvider::getCurler()}'s `$headers` and `$pager` arguments
+     * take precedence over all of these.
+     */
+    protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
+    {
+        return $curlerB;
+    }
+
+    /**
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
@@ -97,11 +173,22 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     }
 
     /**
-     * Get the URL of an API endpoint
+     * Surface the provider's implementation of sync operations for an entity
+     * via an HttpSyncDefinition object
+     *
+     * Return `$defB` if no sync operations are implemented for the entity.
+     *
+     * @template TEntity of SyncEntityInterface
+     * @template TProvider of HttpSyncProvider
+     *
+     * @param class-string<TEntity> $entity
+     * @param HttpSyncDefinitionBuilder<TEntity,TProvider> $defB A definition
+     * builder with `entity()` and `provider()` already applied.
+     * @return HttpSyncDefinitionBuilder<TEntity,TProvider>
      */
-    final public function getEndpointUrl(string $path): string
+    protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
     {
-        return $this->getBaseUrl($path) . $path;
+        return $defB;
     }
 
     /**
@@ -143,93 +230,6 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
             __FUNCTION__,
             HttpSyncProvider::class,
         );
-    }
-
-    /**
-     * Get a new HttpHeaders instance
-     */
-    final protected function headers(): HttpHeaders
-    {
-        return new HttpHeaders();
-    }
-
-    /**
-     * Configure an unresolved Curler instance for upstream requests
-     *
-     * `uri()` has already been applied to {@see CurlerBuilder} instances passed
-     * to this method.
-     *
-     * Called once per {@see HttpSyncProvider::getCurler()} call.
-     *
-     * {@see HttpSyncProvider::getHeaders()} and
-     * {@see HttpSyncProvider::getPager()} are not called if
-     * {@see HttpSyncProvider::buildCurler()} sets their respective properties
-     * via the relevant {@see CurlerBuilder} methods. Values passed to
-     * {@see HttpSyncProvider::getCurler()}'s `$headers` and `$pager` arguments
-     * take precedence over all of these.
-     */
-    protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
-    {
-        return $curlerB;
-    }
-
-    /**
-     * Surface the provider's implementation of sync operations for an entity
-     * via an HttpSyncDefinition object
-     *
-     * Return `$defB` if no sync operations are implemented for the entity.
-     *
-     * @template TEntity of SyncEntityInterface
-     * @template TProvider of HttpSyncProvider
-     *
-     * @param class-string<TEntity> $entity
-     * @param HttpSyncDefinitionBuilder<TEntity,TProvider> $defB A definition
-     * builder with `entity()` and `provider()` already applied.
-     * @return HttpSyncDefinitionBuilder<TEntity,TProvider>
-     */
-    protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
-    {
-        return $defB;
-    }
-
-    /**
-     * Get the base URL of the upstream API
-     *
-     * `$path` should be ignored unless the provider uses endpoint-specific base
-     * URLs to connect to the API. It should never be added to the return value.
-     */
-    abstract protected function getBaseUrl(?string $path): string;
-
-    /**
-     * Get HTTP headers required by the upstream API
-     */
-    protected function getHeaders(?string $path): ?HttpHeadersInterface
-    {
-        return null;
-    }
-
-    /**
-     * Get a handler for paginated data from the upstream API
-     */
-    protected function getPager(?string $path): ?CurlerPagerInterface
-    {
-        return null;
-    }
-
-    /**
-     * The time, in seconds, before upstream API responses expire
-     *
-     * Return `null` to disable response caching (the default) or `0` to cache
-     * upstream responses indefinitely.
-     *
-     * Called when {@see HttpSyncProvider::getCurler()} is called with a
-     * negative `$expiry`.
-     *
-     * @return int<0,max>|null
-     */
-    protected function getExpiry(?string $path): ?int
-    {
-        return null;
     }
 
     /**
