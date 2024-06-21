@@ -8,7 +8,7 @@ use ReflectionMethod;
 /**
  * @api
  */
-class MethodNotImplementedException extends \BadMethodCallException
+class MethodNotImplementedException extends \LogicException
 {
     /** @var class-string */
     protected string $Class;

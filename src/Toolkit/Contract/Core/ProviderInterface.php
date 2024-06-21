@@ -19,30 +19,22 @@ interface ProviderInterface extends HasContainer, HasName
      *
      * Appropriate values to return are:
      *
-     * - already in scope (no lookup required)
-     * - ready to use (no formatting required)
-     * - unique enough that duplicates are rare
+     * - already in scope (no lookup or transformation required)
+     * - likely to be unique
      * - human-readable
      */
     public function getName(): string;
 
     /**
-     * Get a context for instantiation of objects on the provider's behalf
-     *
-     * @return TContext
-     */
-    public function getContext(?ContainerInterface $container = null): ProviderContextInterface;
-
-    /**
-     * Get a stable list of values that, together with the name of the class,
-     * uniquely identifies the backend instance
+     * Get a stable list of values that, together with its class name, uniquely
+     * identifies the provider's backend instance
      *
      * This method must be idempotent for each backend instance the provider
      * connects to. The return value should correspond to the smallest possible
      * set of stable metadata that uniquely identifies the specific data source
      * backing the connected instance.
      *
-     * This could include:
+     * This may include:
      *
      * - an endpoint URI (if backend instances are URI-specific or can be
      *   expressed as an immutable URI)
@@ -69,6 +61,14 @@ interface ProviderInterface extends HasContainer, HasName
      * and/or timezone
      */
     public function getDateFormatter(): DateFormatterInterface;
+
+    /**
+     * Get a context within which to instantiate entities on the provider's
+     * behalf
+     *
+     * @return TContext
+     */
+    public function getContext(?ContainerInterface $container = null): ProviderContextInterface;
 
     /**
      * Throw an exception if the backend isn't reachable
