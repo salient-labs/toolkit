@@ -88,6 +88,8 @@ abstract class AbstractProvider implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @codeCoverageIgnore
      */
     public function checkHeartbeat(int $ttl = 300)
     {

@@ -73,6 +73,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
 
     /**
      * Override to return HTTP headers required by the upstream API
+     *
+     * @codeCoverageIgnore
      */
     protected function getHeaders(string $path): ?HttpHeadersInterface
     {
@@ -89,6 +91,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
 
     /**
      * Override to return a handler for paginated data from the upstream API
+     *
+     * @codeCoverageIgnore
      */
     protected function getPager(string $path): ?CurlerPagerInterface
     {
@@ -101,6 +105,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      *
      * @return int<0,max>|null - `null` (default): do not cache responses
      * - `0`: cache responses indefinitely
+     *
+     * @codeCoverageIgnore
      */
     protected function getExpiry(string $path): ?int
     {
@@ -113,6 +119,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      *
      * Values passed to {@see HttpSyncProvider::getCurler()} take precedence
      * over values applied by this method.
+     *
+     * @codeCoverageIgnore
      */
     protected function filterCurler(CurlerInterface $curler, string $path): CurlerInterface
     {
@@ -135,6 +143,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      *
      * @param class-string<TEntity> $entity
      * @return HttpSyncDefinition<TEntity,$this>
+     *
+     * @codeCoverageIgnore
      */
     protected function getHttpDefinition(string $entity): HttpSyncDefinition
     {
@@ -170,12 +180,14 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
         if (!Cache::has($key, $ttl)) {
             try {
                 $resource = $this->getHeartbeat();
+                // @codeCoverageIgnoreStart
             } catch (AbstractRequestException $ex) {
                 throw new SyncProviderBackendUnreachableException(
                     $ex->getMessage(),
                     $this,
                     $ex,
                 );
+                // @codeCoverageIgnoreEnd
             }
             Cache::set($key, $resource, $ttl);
         }
@@ -187,6 +199,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      * Get a low-cost resource from the backend to confirm reachability
      *
      * @return mixed
+     *
+     * @codeCoverageIgnore
      */
     protected function getHeartbeat()
     {
