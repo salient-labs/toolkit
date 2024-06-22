@@ -303,18 +303,6 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     }
 
     /**
-     * @template T0 of SyncEntityInterface
-     * @template T1 of HttpSyncDefinition
-     *
-     * @param Closure(T1, OP::*, SyncContextInterface, mixed...): (iterable<T0>|T0) $override
-     * @return Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
-     */
-    public function bindOverride(Closure $override): Closure
-    {
-        return parent::bindOverride($override);
-    }
-
-    /**
      * Set the path to the provider endpoint servicing the entity
      *
      * @param string[]|string|null $path

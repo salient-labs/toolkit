@@ -294,25 +294,6 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     }
 
     /**
-     * Bind a sync operation closure to the definition
-     *
-     * Apply this method to a closure if necessary to satisfy static analysis
-     * tools that it's a valid override for an operation on entities serviced
-     * via the definition.
-     *
-     * @template T0 of SyncEntityInterface
-     * @template T1 of SyncDefinitionInterface
-     *
-     * @param Closure(T1, OP::*, SyncContextInterface, mixed...): (iterable<T0>|T0) $override
-     * @return Closure(static, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
-     */
-    public function bindOverride(Closure $override): Closure
-    {
-        /** @var Closure(static, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity) $override */
-        return $override;
-    }
-
-    /**
      * @inheritDoc
      */
     final public function getSyncOperationClosure($operation): ?Closure

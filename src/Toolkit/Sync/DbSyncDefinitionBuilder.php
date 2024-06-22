@@ -25,7 +25,6 @@ use Closure;
  * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Passed to the array mapper if `$keyMap` is provided
  * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromReadList})
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
- * @method Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity) bindOverride(Closure(DbSyncDefinition, OP::*, SyncContextInterface, mixed...): (iterable<SyncEntityInterface>|SyncEntityInterface) $override) Bind a sync operation closure to the definition (see {@see DbSyncDefinition::bindOverride()})
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider
@@ -42,16 +41,6 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
     protected static function getService(): string
     {
         return DbSyncDefinition::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [
-            'bindOverride',
-        ];
     }
 
     /**

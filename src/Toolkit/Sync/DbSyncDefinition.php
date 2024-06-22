@@ -81,18 +81,6 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
         $this->Table = $table;
     }
 
-    /**
-     * @template T0 of SyncEntityInterface
-     * @template T1 of DbSyncDefinition
-     *
-     * @param Closure(T1, OP::*, SyncContextInterface, mixed...): (iterable<T0>|T0) $override
-     * @return Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
-     */
-    public function bindOverride(Closure $override): Closure
-    {
-        return parent::bindOverride($override);
-    }
-
     protected function getClosure($operation): ?Closure
     {
         // Return null if no table name has been provided

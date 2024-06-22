@@ -88,8 +88,8 @@ $facades = [
 $builders = [
     CliOption::class => [CliOptionBuilder::class, '--forward=load', '--api'],
     Curler::class => [CurlerBuilder::class, '--forward=head,get,post,put,patch,delete,getP,postP,putP,patchP,deleteP,postR,putR,patchR,deleteR'],
-    DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--forward=bindOverride'],
-    HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--forward=bindOverride'],
+    DbSyncDefinition::class => DbSyncDefinitionBuilder::class,
+    HttpSyncDefinition::class => HttpSyncDefinitionBuilder::class,
     SyncError::class => SyncErrorBuilder::class,
     SyncSerializeRules::class => [SyncSerializeRulesBuilder::class, '--no-declare=remove,replace'],
 ];
