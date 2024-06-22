@@ -63,7 +63,7 @@ use UnexpectedValueException;
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
  * @property-read HttpHeadersInterface|null $Headers HTTP headers applied to the sync operation request
  * @property-read CurlerPagerInterface|null $Pager The pagination handler for the endpoint servicing the entity
- * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
+ * @property-read int<-1,max>|null $Expiry The number of seconds before cached responses from the provider expire
  * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap An array that maps sync operations to HTTP request methods
  * @property-read (callable(CurlerInterface): CurlerInterface)|null $CurlerCallback A callback applied to the Curler instance created to perform each sync operation
  * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
@@ -158,17 +158,18 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     protected $Pager;
 
     /**
-     * The time, in seconds, before responses from the provider expire
+     * The number of seconds before cached responses from the provider expire
      *
-     * If `null` (the default), responses are not cached. If less than `0`, the
-     * return value of {@see HttpSyncProvider::getExpiry()} is used. If `0`,
-     * responses are cached indefinitely.
+     * - `null`: do not cache responses
+     * - `0`: cache responses indefinitely
+     * - `-1` (default): use the value returned by
+     *   {@see HttpSyncProvider::getExpiry()}
      *
      * May be set via {@see HttpSyncDefinition::__construct()},
      * {@see HttpSyncDefinition::withExpiry()} or
      * {@see HttpSyncDefinition::$Callback}.
      *
-     * @var int|null
+     * @var int<-1,max>|null
      */
     protected $Expiry;
 
@@ -242,6 +243,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
+     * @param int<-1,max>|null $expiry
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @param (callable(CurlerInterface): CurlerInterface)|null $curlerCallback
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
@@ -375,8 +377,10 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     }
 
     /**
-     * Set the time, in seconds, before responses from the provider expire
+     * Set the number of seconds before cached responses from the provider
+     * expire
      *
+     * @param int<-1,max>|null $expiry
      * @return $this
      *
      * @see HttpSyncDefinition::$Expiry

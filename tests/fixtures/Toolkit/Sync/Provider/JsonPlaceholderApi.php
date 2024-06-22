@@ -3,13 +3,13 @@
 namespace Salient\Tests\Sync\Provider;
 
 use Salient\Contract\Container\SingletonInterface;
+use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Facade\Console;
 use Salient\Core\DateFormatter;
-use Salient\Curler\CurlerBuilder;
-use Salient\Sync\HttpSyncDefinitionBuilder;
+use Salient\Sync\HttpSyncDefinition;
 use Salient\Sync\HttpSyncProvider;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;
 use Salient\Tests\Sync\CustomEntity\User as CustomUser;
@@ -102,18 +102,14 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return $user;
     }
 
-    protected function createDateFormatter(?string $path = null): DateFormatter
+    protected function createDateFormatter(): DateFormatter
     {
         return new DateFormatter();
     }
 
-    protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
+    protected function filterCurler(CurlerInterface $curler, string $path): CurlerInterface
     {
-        $uri = $curlerB->getB('uri');
-
-        if (!is_string($uri)) {
-            throw new LogicException('Invalid uri');
-        }
+        $uri = (string) $curler->getUri();
 
         if (!isset($this->HttpRequests[$uri])) {
             $this->HttpRequests[$uri] = 0;
@@ -121,7 +117,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
 
         $this->HttpRequests[$uri]++;
 
-        return $curlerB;
+        return $curler;
     }
 
     public function getBaseUrl(?string $path = null): string
@@ -131,46 +127,38 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return Env::get('JSON_PLACEHOLDER_BASE_URL', 'http://localhost:3001');
     }
 
-    protected function getHeaders(?string $path): ?HttpHeadersInterface
+    protected function getHeaders(string $path): ?HttpHeadersInterface
     {
         return null;
     }
 
-    protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
+    protected function getHttpDefinition(string $entity): HttpSyncDefinition
     {
+        $defB = $this
+            ->builderFor($entity)
+            ->operations([OP::READ, OP::READ_LIST]);
+
         switch ($entity) {
             case Album::class:
-                return $defB
-                    ->operations([OP::READ, OP::READ_LIST])
-                    ->path(['/users/:userId/albums', '/albums']);
+                return $defB->path(['/users/:userId/albums', '/albums'])->build();
 
             case Comment::class:
-                return $defB
-                    ->operations([OP::READ, OP::READ_LIST])
-                    ->path(['/posts/:postId/comments', '/comments']);
+                return $defB->path(['/posts/:postId/comments', '/comments'])->build();
 
             case Photo::class:
-                return $defB
-                    ->operations([OP::READ, OP::READ_LIST])
-                    ->path(['/albums/:albumId/photos', '/photos']);
+                return $defB->path(['/albums/:albumId/photos', '/photos'])->build();
 
             case Post::class:
-                return $defB
-                    ->operations([OP::READ, OP::READ_LIST])
-                    ->path(['/users/:userId/posts', '/posts']);
+                return $defB->path(['/users/:userId/posts', '/posts'])->build();
 
             case User::class:
-                return $defB
-                    ->operations([OP::READ, OP::READ_LIST])
-                    ->path('/users');
+                return $defB->path('/users')->build();
 
             case Task::class:
-                return $defB
-                    ->operations([OP::READ, OP::READ_LIST])
-                    ->path(['/users/:userId/todos', '/todos']);
+                return $defB->path(['/users/:userId/todos', '/todos'])->build();
         }
 
-        return $defB;
+        throw new LogicException(sprintf('Entity not supported: %s', $entity));
     }
 
     /**

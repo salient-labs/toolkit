@@ -10,9 +10,8 @@ use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
-use Salient\Curler\Exception\CurlErrorException;
+use Salient\Curler\Exception\AbstractRequestException;
 use Salient\Curler\Curler;
-use Salient\Curler\CurlerBuilder;
 use Salient\Http\HttpHeaders;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
 use Salient\Utility\Get;
@@ -23,15 +22,14 @@ use Salient\Utility\Get;
 abstract class HttpSyncProvider extends AbstractSyncProvider
 {
     /**
-     * Get a Curler instance bound to an API endpoint
+     * Get a Curler instance bound to an API endpoint, optionally overriding the
+     * provider's default configuration
      *
-     * If `$expiry` is an integer less than `0` (the default), it is replaced
-     * with the return value of {@see HttpSyncProvider::getExpiry()}.
-     *
-     * If set, `$headers` and `$pager` take precedence over values applied via
-     * {@see HttpSyncProvider::buildCurler()}, which, in turn, take precedence
-     * over {@see HttpSyncProvider::getHeaders()} and
-     * {@see HttpSyncProvider::getPager()}.
+     * @param int<-1,max>|null $expiry Number of seconds before cached responses
+     * expire, or:
+     * - `null`: do not cache responses
+     * - `0`: cache responses indefinitely
+     * - `-1` (default): use the value returned by {@see getExpiry()}
      */
     final public function getCurler(
         string $path,
@@ -40,39 +38,21 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
         ?CurlerPagerInterface $pager = null,
         ?DateFormatterInterface $dateFormatter = null
     ): CurlerInterface {
-        $curlerB = $this->buildCurler(
-            Curler::build()
-                ->uri($this->getEndpointUrl($path))
-        );
+        $builder = Curler::build()
+            ->uri($this->getEndpointUrl($path))
+            ->headers($headers ?? $this->getHeaders($path))
+            ->pager($pager ?? $this->getPager($path))
+            ->dateFormatter($dateFormatter ?? $this->getDateFormatter());
 
-        if ($expiry !== null && $expiry < 0) {
+        if ($expiry === -1) {
             $expiry = $this->getExpiry($path);
         }
+
         if ($expiry !== null) {
-            $curlerB = $curlerB->cacheResponses()->cacheLifetime($expiry);
-        } else {
-            $curlerB = $curlerB->cacheResponses(false);
+            $builder = $builder->cacheResponses()->cacheLifetime($expiry);
         }
 
-        if ($headers) {
-            $curlerB = $curlerB->headers($headers);
-        } elseif (!$curlerB->issetB('headers')) {
-            $curlerB = $curlerB->headers($this->getHeaders($path));
-        }
-
-        if ($pager) {
-            $curlerB = $curlerB->pager($pager);
-        } elseif (!$curlerB->issetB('pager')) {
-            $curlerB = $curlerB->pager($this->getPager($path));
-        }
-
-        if ($dateFormatter) {
-            $curlerB = $curlerB->dateFormatter($dateFormatter);
-        } elseif (!$curlerB->issetB('dateFormatter')) {
-            $curlerB = $curlerB->dateFormatter($this->createDateFormatter($path));
-        }
-
-        return $curlerB->build();
+        return $this->filterCurler($builder->build(), $path);
     }
 
     /**
@@ -87,14 +67,14 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      * Get the base URL of the upstream API
      *
      * `$path` should be ignored unless the provider uses endpoint-specific base
-     * URLs to connect to the API. It should never be added to the return value.
+     * URLs to connect to the API. It must not be added to the return value.
      */
-    abstract protected function getBaseUrl(?string $path): string;
+    abstract protected function getBaseUrl(string $path): string;
 
     /**
-     * Get HTTP headers required by the upstream API
+     * Override to return HTTP headers required by the upstream API
      */
-    protected function getHeaders(?string $path): ?HttpHeadersInterface
+    protected function getHeaders(string $path): ?HttpHeadersInterface
     {
         return null;
     }
@@ -108,87 +88,72 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     }
 
     /**
-     * Get a handler for paginated data from the upstream API
+     * Override to return a handler for paginated data from the upstream API
      */
-    protected function getPager(?string $path): ?CurlerPagerInterface
+    protected function getPager(string $path): ?CurlerPagerInterface
     {
         return null;
     }
 
     /**
-     * The time, in seconds, before upstream API responses expire
+     * Override to specify the number of seconds before cached responses from
+     * the upstream API expire
      *
-     * Return `null` to disable response caching (the default) or `0` to cache
-     * upstream responses indefinitely.
-     *
-     * Called when {@see HttpSyncProvider::getCurler()} is called with a
-     * negative `$expiry`.
-     *
-     * @return int<0,max>|null
+     * @return int<0,max>|null - `null` (default): do not cache responses
+     * - `0`: cache responses indefinitely
      */
-    protected function getExpiry(?string $path): ?int
+    protected function getExpiry(string $path): ?int
     {
         return null;
     }
 
     /**
-     * Configure an unresolved Curler instance for upstream requests
+     * Override to customise Curler instances before they are used to perform
+     * sync operations
      *
-     * `uri()` has already been applied to {@see CurlerBuilder} instances passed
-     * to this method.
-     *
-     * Called once per {@see HttpSyncProvider::getCurler()} call.
-     *
-     * {@see HttpSyncProvider::getHeaders()} and
-     * {@see HttpSyncProvider::getPager()} are not called if
-     * {@see HttpSyncProvider::buildCurler()} sets their respective properties
-     * via the relevant {@see CurlerBuilder} methods. Values passed to
-     * {@see HttpSyncProvider::getCurler()}'s `$headers` and `$pager` arguments
-     * take precedence over all of these.
+     * Values passed to {@see HttpSyncProvider::getCurler()} take precedence
+     * over values applied by this method.
      */
-    protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
+    protected function filterCurler(CurlerInterface $curler, string $path): CurlerInterface
     {
-        return $curlerB;
+        return $curler;
     }
 
     /**
-     * @template T of SyncEntityInterface
-     *
-     * @param class-string<T> $entity
-     * @return SyncDefinitionInterface<T,static>
+     * @inheritDoc
      */
     final public function getDefinition(string $entity): SyncDefinitionInterface
     {
-        /** @var SyncDefinitionInterface<T,static> */
-        $def = $this
-            ->buildHttpDefinition(
-                $entity,
-                HttpSyncDefinition::build()
-                    ->entity($entity)
-                    ->provider($this)
-            )
-            ->build();
-
-        return $def;
+        return $this->getHttpDefinition($entity);
     }
 
     /**
-     * Surface the provider's implementation of sync operations for an entity
-     * via an HttpSyncDefinition object
-     *
-     * Return `$defB` if no sync operations are implemented for the entity.
+     * Override to implement sync operations by returning an HttpSyncDefinition
+     * object for the given entity
      *
      * @template TEntity of SyncEntityInterface
-     * @template TProvider of HttpSyncProvider
      *
      * @param class-string<TEntity> $entity
-     * @param HttpSyncDefinitionBuilder<TEntity,TProvider> $defB A definition
-     * builder with `entity()` and `provider()` already applied.
-     * @return HttpSyncDefinitionBuilder<TEntity,TProvider>
+     * @return HttpSyncDefinition<TEntity,$this>
      */
-    protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
+    protected function getHttpDefinition(string $entity): HttpSyncDefinition
     {
-        return $defB;
+        return $this->builderFor($entity)->build();
+    }
+
+    /**
+     * Get a new HttpSyncDefinitionBuilder for an entity
+     *
+     * @template TEntity of SyncEntityInterface
+     *
+     * @param class-string<TEntity> $entity
+     * @return HttpSyncDefinitionBuilder<TEntity,$this>
+     */
+    final protected function builderFor(string $entity): HttpSyncDefinitionBuilder
+    {
+        return HttpSyncDefinition::build()
+            ->entity($entity)
+            ->provider($this);
     }
 
     /**
@@ -202,10 +167,10 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
             Get::hash(implode("\0", $this->getBackendIdentifier())),
         ]);
 
-        if (Cache::get($key, null, $ttl) === null) {
+        if (!Cache::has($key, $ttl)) {
             try {
                 $resource = $this->getHeartbeat();
-            } catch (CurlErrorException $ex) {
+            } catch (AbstractRequestException $ex) {
                 throw new SyncProviderBackendUnreachableException(
                     $ex->getMessage(),
                     $this,
@@ -231,9 +196,4 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
             HttpSyncProvider::class,
         );
     }
-
-    /**
-     * @inheritDoc
-     */
-    abstract protected function createDateFormatter(?string $path = null): DateFormatterInterface;
 }

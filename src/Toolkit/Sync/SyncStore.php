@@ -409,7 +409,6 @@ SQL;
         $providerId = $row[0];
         $this->Providers[$providerId] = $provider;
         $this->ProviderMap[$hash] = $providerId;
-        $provider->setProviderId($providerId);
 
         return $this;
     }

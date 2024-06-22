@@ -416,16 +416,6 @@ parameters:
 			path: src/Toolkit/Sync/AbstractSyncDefinition.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\AbstractSyncProvider\\:\\:getServices\\(\\) should return array\\<class\\-string\\> but returns array\\<string\\>\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncProvider.php
-
-		-
-			message: "#^Property Salient\\\\Sync\\\\AbstractSyncProvider\\:\\:\\$MagicMethodClosures \\(array\\<string, Closure\\>\\) does not accept non\\-empty\\-array\\<string, Closure\\|null\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncProvider.php
-
-		-
 			message: "#^Argument of an invalid type array\\<string, class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\>\\|null supplied for foreach, only iterables are supported\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Command/AbstractSyncCommand.php

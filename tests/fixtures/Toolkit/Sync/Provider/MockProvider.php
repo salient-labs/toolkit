@@ -26,12 +26,12 @@ class MockProvider extends HttpSyncProvider implements UserProvider
         return [__CLASS__];
     }
 
-    protected function getBaseUrl(?string $path): string
+    protected function getBaseUrl(string $path): string
     {
         return 'http://localhost';
     }
 
-    protected function createDateFormatter(?string $path = null): DateFormatter
+    protected function createDateFormatter(): DateFormatter
     {
         return new DateFormatter();
     }

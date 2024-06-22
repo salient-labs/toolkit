@@ -182,9 +182,9 @@ final class SyncIntrospector extends Introspector
      * Get a list of SyncProviderInterface interfaces implemented by the
      * provider
      *
-     * @return string[]|null
+     * @return array<class-string<SyncProviderInterface>>
      */
-    public function getSyncProviderInterfaces(): ?array
+    public function getSyncProviderInterfaces(): array
     {
         $this->assertIsProvider();
 
@@ -194,9 +194,9 @@ final class SyncIntrospector extends Introspector
     /**
      * Get a list of SyncEntityInterface classes serviced by the provider
      *
-     * @return string[]|null
+     * @return array<class-string<SyncEntityInterface>>
      */
-    public function getSyncProviderEntities(): ?array
+    public function getSyncProviderEntities(): array
     {
         $this->assertIsProvider();
 

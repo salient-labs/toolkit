@@ -383,8 +383,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * Useful within overrides when a fallback implementation is required.
      *
      * @param OP::* $operation
-     * @return (Closure(SyncContextInterface, mixed...): (iterable<TEntity>|TEntity))|null
-     * @phpstan-return (
+     * @return (
      *     $operation is OP::READ
      *     ? (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)
      *     : (
@@ -396,11 +395,11 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
      *     )
-     * )|null
+     * )
      *
      * @see AbstractSyncDefinition::$Overrides
      */
-    final public function getFallbackClosure($operation): ?Closure
+    final public function getFallbackClosure($operation): Closure
     {
         if ($this->WithoutOverrides === null) {
             $clone = clone $this;
@@ -408,7 +407,15 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
             $this->WithoutOverrides = $clone;
         }
 
-        return $this->WithoutOverrides->getSyncOperationClosure($operation);
+        $closure = $this->WithoutOverrides->getSyncOperationClosure($operation);
+        if ($closure === null) {
+            throw new LogicException(sprintf(
+                'SyncOperation::%s not supported on %s',
+                OP::toName($operation),
+                $this->Entity,
+            ));
+        }
+        return $closure;
     }
 
     /**

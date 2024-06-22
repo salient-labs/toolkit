@@ -28,7 +28,7 @@ use Closure;
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) A callback applied to the definition before each sync operation (see {@see HttpSyncDefinition::$Callback})
  * @method $this conformity(ListConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
  * @method $this filterPolicy(FilterPolicy::*|null $value) The action to take when filters are unclaimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
- * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
+ * @method $this expiry(int<-1,max>|null $value) The number of seconds before cached responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array<OP::*,HttpRequestMethod::*> $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
  * @method $this curlerCallback((callable(CurlerInterface): CurlerInterface)|null $value) A callback applied to the Curler instance created to perform each sync operation (see {@see HttpSyncDefinition::$CurlerCallback})
  * @method $this syncOneEntityPerRequest(bool $value = true) If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)
