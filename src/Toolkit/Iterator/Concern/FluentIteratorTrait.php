@@ -8,10 +8,14 @@ use ArrayAccess;
 /**
  * Implements FluentIteratorInterface
  *
+ * @see FluentIteratorInterface
+ *
+ * @api
+ *
  * @template TKey of array-key
  * @template TValue
  *
- * @see FluentIteratorInterface
+ * @phpstan-require-implements FluentIteratorInterface
  */
 trait FluentIteratorTrait
 {
