@@ -296,21 +296,6 @@ parameters:
 			path: src/Toolkit/Core/MetricCollector.php
 
 		-
-			message: "#^Argument of an invalid type iterable\\<TInput\\>\\|TInput supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Pipeline.php
-
-		-
-			message: "#^Parameter \\#1 \\$in of method Salient\\\\Core\\\\ArrayMapper\\:\\:map\\(\\) expects array, TInput\\|TOutput given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Pipeline.php
-
-		-
-			message: "#^Parameter \\#1 \\$payload of closure expects TInput, iterable\\<TInput\\>\\|TInput given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Pipeline.php
-
-		-
 			message: "#^Parameter \\#1 \\$where of method Salient\\\\Core\\\\SqlQuery\\:\\:buildWhere\\(\\) expects array\\<int\\|string, array\\|string\\>, array given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/SqlQuery.php
@@ -471,37 +456,7 @@ parameters:
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 
 		-
-			message: "#^Parameter \\#1 \\$closure of method Salient\\\\Contract\\\\Pipeline\\\\StreamPipelineInterface\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:collectThen\\(\\) expects Closure\\(array\\<array\\|TEntity\\>, Salient\\\\Contract\\\\Pipeline\\\\StreamPipelineInterface\\<TEntity, array, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\>, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\)\\: iterable\\<array\\>, Closure\\(mixed\\)\\: array given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/HttpSyncDefinition.php
-
-		-
-			message: "#^Parameter \\#1 \\$payload of method Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:send\\(\\) expects TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/HttpSyncDefinition.php
-
-		-
-			message: "#^Parameter \\#1 \\$payload of method Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface\\<array,TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:stream\\(\\) expects iterable\\<array\\>, array given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/HttpSyncDefinition.php
-
-		-
-			message: "#^Parameter \\#2 \\$arg of method Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:send\\(\\) expects array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\}, non\\-empty\\-array\\<int\\|string, mixed\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/HttpSyncDefinition.php
-
-		-
-			message: "#^Parameter \\#2 \\$arg of method Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:stream\\(\\) expects array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\}, non\\-empty\\-array\\<int\\|string, mixed\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/HttpSyncDefinition.php
-
-		-
-			message: "#^Parameter \\#2 \\$arg of method Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface\\<array,TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:send\\(\\) expects array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\}, non\\-empty\\-array\\<int\\|string, mixed\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/HttpSyncDefinition.php
-
-		-
-			message: "#^Parameter \\#2 \\$arg of method Salient\\\\Contract\\\\Pipeline\\\\PipelineInterface\\<array,TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:stream\\(\\) expects array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\}, non\\-empty\\-array\\<int\\|string, mixed\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$closure of method Salient\\\\Contract\\\\Pipeline\\\\StreamPipelineInterface\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,array,array\\<int, array\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|int\\|Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|string\\|\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null\\>\\>\\:\\:collectThen\\(\\) expects \\(Closure\\(array\\<array\\>, Salient\\\\Contract\\\\Pipeline\\\\StreamPipelineInterface\\<TEntity, array, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\>, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\)\\: iterable\\<array\\>\\)\\|\\(Closure\\(array\\<TEntity\\>, Salient\\\\Contract\\\\Pipeline\\\\StreamPipelineInterface\\<TEntity, array, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\>, array\\{0\\: 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, 1\\: Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, 2\\?\\: array\\<TEntity\\>\\|int\\|string\\|TEntity\\|null\\}\\)\\: iterable\\<array\\>\\), Closure\\(mixed\\)\\: array given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/HttpSyncDefinition.php
 

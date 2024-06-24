@@ -16,14 +16,14 @@ interface StreamPipelineInterface extends PayloadPipelineInterface
     /**
      * Pass results to a closure in batches
      *
-     * {@see PipelineInterface::collectThen()} can only be called once per
-     * pipeline, and only if {@see PipelineInterface::then()} is not also
+     * {@see StreamPipelineInterface::collectThen()} can only be called once per
+     * pipeline, and only if {@see BasePipelineInterface::then()} is not also
      * called.
      *
      * Values returned by the closure are returned to the caller via a
      * forward-only iterator.
      *
-     * @param Closure(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput> $closure
+     * @param (Closure(array<TInput> $results, static $pipeline, TArgument $arg): iterable<TOutput>|Closure(array<TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput>) $closure
      * @return static
      */
     public function collectThen(Closure $closure);
@@ -32,7 +32,7 @@ interface StreamPipelineInterface extends PayloadPipelineInterface
      * Pass results to a closure in batches if collectThen() hasn't already been
      * called
      *
-     * @param Closure(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput> $closure
+     * @param (Closure(array<TInput> $results, static $pipeline, TArgument $arg): iterable<TOutput>|Closure(array<TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput>) $closure
      * @return static
      */
     public function collectThenIf(Closure $closure);
@@ -40,7 +40,8 @@ interface StreamPipelineInterface extends PayloadPipelineInterface
     /**
      * Apply a filter to each result
      *
-     * {@see PipelineInterface::unless()} can only be called once per pipeline.
+     * {@see StreamPipelineInterface::unless()} can only be called once per
+     * pipeline.
      *
      * If `$filter` returns `false`, `$result` is returned to the caller,
      * otherwise it is discarded.

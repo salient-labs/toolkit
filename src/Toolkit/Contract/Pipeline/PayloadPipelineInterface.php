@@ -17,7 +17,7 @@ interface PayloadPipelineInterface extends BasePipelineInterface
      * Set the payload's array key conformity
      *
      * `$conformity` is passed to any array key mappers added to the pipeline
-     * with {@see PipelineInterface::throughKeyMap()}. It has no effect
+     * with {@see BasePipelineInterface::throughKeyMap()}. It has no effect
      * otherwise.
      *
      * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}

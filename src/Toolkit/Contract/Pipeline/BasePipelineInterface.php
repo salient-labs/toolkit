@@ -34,7 +34,7 @@ interface BasePipelineInterface extends Chainable, Immutable
     public function afterIf(Closure $closure);
 
     /**
-     * Add pipes to the pipeline
+     * Add a pipe to the pipeline
      *
      * A pipe must be one of the following:
      *
@@ -47,14 +47,14 @@ interface BasePipelineInterface extends Chainable, Immutable
      *
      * - return the value of `$next($payload)`
      * - return a value that will be discarded by
-     *   {@see PipelineInterface::unless()}, bypassing any remaining pipes and
-     *   {@see PipelineInterface::then()}, if applicable
+     *   {@see StreamPipelineInterface::unless()}, bypassing any remaining pipes
+     *   and {@see BasePipelineInterface::then()}, if applicable
      * - throw an exception
      *
-     * @param (Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>> ...$pipes
+     * @param (Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>> $pipe
      * @return static
      */
-    public function through(...$pipes);
+    public function through($pipe);
 
     /**
      * Add a simple closure to the pipeline

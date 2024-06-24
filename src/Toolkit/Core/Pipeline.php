@@ -10,7 +10,9 @@ use Salient\Contract\Pipeline\PipeInterface;
 use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Contract\Pipeline\StreamPipelineInterface;
 use Salient\Core\Concern\HasChainableMethods;
+use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Facade\App;
+use Salient\Utility\Arr;
 use Closure;
 use Generator;
 use LogicException;
@@ -32,9 +34,12 @@ final class Pipeline implements
     StreamPipelineInterface
 {
     use HasChainableMethods;
+    use HasImmutableProperties {
+        withPropertyValue as with;
+    }
 
     private bool $HasPayload = false;
-    private bool $HasStream = false;
+    private bool $HasStream;
     /** @var iterable<TInput>|TInput */
     private $Payload;
     /** @var TArgument */
@@ -51,7 +56,7 @@ final class Pipeline implements
     private array $ArrayMappers;
     /** @var (Closure(TInput $result, static $pipeline, TArgument $arg): TOutput)|(Closure(TOutput $result, static $pipeline, TArgument $arg): TOutput)|null */
     private ?Closure $Then = null;
-    /** @var (Closure(array<TInput|TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput>)|null */
+    /** @var (Closure(array<TInput> $results, static $pipeline, TArgument $arg): iterable<TOutput>)|(Closure(array<TOutput> $results, static $pipeline, TArgument $arg): iterable<TOutput>)|null */
     private ?Closure $CollectThen = null;
     /** @var array<Closure(TOutput $result, static $pipeline, TArgument $arg): mixed> */
     private array $Cc = [];
@@ -70,11 +75,9 @@ final class Pipeline implements
     /**
      * Creates a new Pipeline object
      *
-     * Syntactic sugar for `new Pipeline()`.
-     *
-     * @return static
+     * @return PipelineInterface<mixed,mixed,mixed>
      */
-    public static function create(?ContainerInterface $container = null): self
+    public static function create(?ContainerInterface $container = null): PipelineInterface
     {
         return new self($container);
     }
@@ -92,18 +95,7 @@ final class Pipeline implements
      */
     public function send($payload, $arg = null)
     {
-        if ($this->HasPayload) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Payload already set');
-            // @codeCoverageIgnoreEnd
-        }
-
-        $clone = clone $this;
-        $clone->HasPayload = true;
-        $clone->HasStream = false;
-        $clone->Payload = $payload;
-        $clone->Arg = $arg;
-        return $clone;
+        return $this->withPayload($payload, $arg, false);
     }
 
     /**
@@ -111,18 +103,31 @@ final class Pipeline implements
      */
     public function stream(iterable $payload, $arg = null)
     {
+        return $this->withPayload($payload, $arg, true);
+    }
+
+    /**
+     * @template T0
+     * @template T1
+     *
+     * @param iterable<T0>|T0 $payload
+     * @param T1 $arg
+     * @return static<TInput&T0,TOutput,TArgument&T1>
+     */
+    private function withPayload($payload, $arg, bool $stream)
+    {
         if ($this->HasPayload) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Payload already set');
             // @codeCoverageIgnoreEnd
         }
 
-        $clone = clone $this;
-        $clone->HasPayload = true;
-        $clone->HasStream = true;
-        $clone->Payload = $payload;
-        $clone->Arg = $arg;
-        return $clone;
+        /** @var static<TInput&T0,TOutput,TArgument&T1> */
+        return $this
+            ->with('HasPayload', true)
+            ->with('HasStream', $stream)
+            ->with('Payload', $payload)
+            ->with('Arg', $arg);
     }
 
     /**
@@ -130,15 +135,9 @@ final class Pipeline implements
      */
     public function withConformity($conformity)
     {
-        if (!$this->HasPayload) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('No payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasPayload();
 
-        $clone = clone $this;
-        $clone->PayloadConformity = $conformity;
-        return $clone;
+        return $this->with('PayloadConformity', $conformity);
     }
 
     /**
@@ -146,11 +145,7 @@ final class Pipeline implements
      */
     public function getConformity()
     {
-        if (!$this->HasPayload) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('No payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasPayload();
 
         return $this->PayloadConformity;
     }
@@ -166,9 +161,7 @@ final class Pipeline implements
             // @codeCoverageIgnoreEnd
         }
 
-        $clone = clone $this;
-        $clone->After = $closure;
-        return $clone;
+        return $this->with('After', $closure);
     }
 
     /**
@@ -184,11 +177,9 @@ final class Pipeline implements
     /**
      * @inheritDoc
      */
-    public function through(...$pipes)
+    public function through($pipe)
     {
-        $clone = clone $this;
-        array_push($clone->Pipes, ...$pipes);
-        return $clone;
+        return $this->with('Pipes', Arr::push($this->Pipes, $pipe));
     }
 
     /**
@@ -197,8 +188,8 @@ final class Pipeline implements
     public function throughClosure(Closure $closure)
     {
         return $this->through(
-            fn($payload, Closure $next, self $pipeline, $args) =>
-                $next($closure($payload, $pipeline, $args))
+            fn($payload, Closure $next, self $pipeline, $arg) =>
+                $next($closure($payload, $pipeline, $arg))
         );
     }
 
@@ -209,8 +200,10 @@ final class Pipeline implements
     {
         $keyMapKey = count($this->KeyMaps);
         $clone = $this->through(
-            fn($payload, Closure $next, self $pipeline) =>
-                $next($pipeline->ArrayMappers[$keyMapKey]->map($payload))
+            function ($payload, Closure $next, self $pipeline) use ($keyMapKey) {
+                /** @var mixed[] $payload */
+                return $next($pipeline->ArrayMappers[$keyMapKey]->map($payload));
+            }
         );
         $clone->KeyMaps[] = [$keyMap, $flags];
         return $clone;
@@ -225,9 +218,7 @@ final class Pipeline implements
             throw new LogicException(static::class . '::then() already applied');
         }
 
-        $clone = clone $this;
-        $clone->Then = $closure;
-        return $clone;
+        return $this->with('Then', $closure);
     }
 
     /**
@@ -245,19 +236,13 @@ final class Pipeline implements
      */
     public function collectThen(Closure $closure)
     {
-        if (!$this->HasPayload || !$this->HasStream) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Invalid payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasStream();
 
         if ($this->Then || $this->CollectThen) {
             throw new LogicException(static::class . '::then() already applied');
         }
 
-        $clone = clone $this;
-        $clone->CollectThen = $closure;
-        return $clone;
+        return $this->with('CollectThen', $closure);
     }
 
     /**
@@ -265,11 +250,7 @@ final class Pipeline implements
      */
     public function collectThenIf(Closure $closure)
     {
-        if (!$this->HasPayload || !$this->HasStream) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Invalid payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasStream();
 
         return $this->Then || $this->CollectThen
             ? $this
@@ -281,9 +262,7 @@ final class Pipeline implements
      */
     public function cc(Closure $closure)
     {
-        $clone = clone $this;
-        $clone->Cc[] = $closure;
-        return $clone;
+        return $this->with('Cc', Arr::push($this->Cc, $closure));
     }
 
     /**
@@ -291,19 +270,13 @@ final class Pipeline implements
      */
     public function unless(Closure $filter)
     {
-        if (!$this->HasPayload || !$this->HasStream) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Invalid payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasStream();
 
         if ($this->Unless) {
             throw new LogicException(static::class . '::unless() already applied');
         }
 
-        $clone = clone $this;
-        $clone->Unless = $filter;
-        return $clone;
+        return $this->with('Unless', $filter);
     }
 
     /**
@@ -311,11 +284,7 @@ final class Pipeline implements
      */
     public function unlessIf(Closure $filter)
     {
-        if (!$this->HasPayload || !$this->HasStream) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Invalid payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasStream();
 
         return $this->Unless
             ? $this
@@ -327,11 +296,7 @@ final class Pipeline implements
      */
     public function run()
     {
-        if (!$this->HasPayload || $this->HasStream) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Invalid payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasOnePayload();
 
         $result = $this->getClosure()(
             $this->After
@@ -359,11 +324,7 @@ final class Pipeline implements
      */
     public function start(): Generator
     {
-        if (!$this->HasPayload || !$this->HasStream) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Invalid payload');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasStream();
 
         $closure = $this->getClosure();
         $results = [];
@@ -456,5 +417,31 @@ final class Pipeline implements
         }
 
         return $closure;
+    }
+
+    /**
+     * @phpstan-assert iterable<TInput> $this->Payload
+     */
+    private function assertHasStream(): void
+    {
+        $this->assertHasPayload(true);
+    }
+
+    /**
+     * @phpstan-assert TInput $this->Payload
+     */
+    private function assertHasOnePayload(): void
+    {
+        $this->assertHasPayload(false);
+    }
+
+    private function assertHasPayload(?bool $stream = null): void
+    {
+        if (!$this->HasPayload) {
+            throw new LogicException('No payload');
+        }
+        if ($stream !== null && $this->HasStream !== $stream) {
+            throw new LogicException('Invalid payload');
+        }
     }
 }

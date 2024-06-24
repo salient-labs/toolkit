@@ -4,6 +4,7 @@ namespace Salient\Tests\Core;
 
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
+use Salient\Contract\Pipeline\PipelineInterface;
 use Salient\Core\Pipeline;
 use Salient\Tests\TestCase;
 use Closure;
@@ -19,13 +20,13 @@ final class PipelineTest extends TestCase
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
-        foreach ((new Pipeline())
+        /** @var PipelineInterface<int,float,null> */
+        $pipeline = Pipeline::create();
+        foreach ($pipeline
                 ->stream($in)
-                ->through(
-                    fn($payload, Closure $next) => $next($payload * 3),
-                    fn($payload, Closure $next) => $next($payload / 23),
-                    fn($payload, Closure $next) => $next(round($payload, 3))
-                )
+                ->through(fn($payload, Closure $next) => $next($payload * 3))
+                ->through(fn($payload, Closure $next) => $next($payload / 23))
+                ->through(fn($payload, Closure $next) => $next(round($payload, 3)))
                 ->start() as $_out) {
             $out[] = $_out;
         }
@@ -40,14 +41,14 @@ final class PipelineTest extends TestCase
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
-        foreach ((new Pipeline())
+        /** @var PipelineInterface<int,float,null> */
+        $pipeline = Pipeline::create();
+        foreach ($pipeline
                 ->stream($in)
                 ->after(fn($payload) => $payload * 2)
-                ->through(
-                    fn($payload, Closure $next) => $next($payload * 3),
-                    fn($payload, Closure $next) => $next($payload / 23),
-                    fn($payload, Closure $next) => $next(round($payload, 3))
-                )
+                ->through(fn($payload, Closure $next) => $next($payload * 3))
+                ->through(fn($payload, Closure $next) => $next($payload / 23))
+                ->through(fn($payload, Closure $next) => $next(round($payload, 3)))
                 ->start() as $_out) {
             $out[] = $_out;
         }
@@ -63,7 +64,7 @@ final class PipelineTest extends TestCase
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out1 = [];
         $out2 = [];
-        foreach ((new Pipeline())
+        foreach (Pipeline::create()
                 ->stream($in)
                 ->through(fn($payload, Closure $next) => $next($payload * 6))
                 ->cc(function ($result) use (&$out1) { $out1[] = round($result / 23, 3); })
@@ -86,13 +87,13 @@ final class PipelineTest extends TestCase
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
-        foreach ((new Pipeline())
+        /** @var PipelineInterface<int,float,null> */
+        $pipeline = Pipeline::create();
+        foreach ($pipeline
                 ->stream($in)
-                ->through(
-                    fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
-                    fn($payload, Closure $next) => $next($payload / 23),
-                    fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
-                )
+                ->through(fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3))
+                ->through(fn($payload, Closure $next) => $next($payload / 23))
+                ->through(fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null)
                 ->unless(fn($result) => $result === null)
                 ->start() as $_out) {
             $out[] = $_out;
