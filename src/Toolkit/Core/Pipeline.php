@@ -3,12 +3,12 @@
 namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
+use Salient\Contract\Core\Pipeline\PipeInterface;
+use Salient\Contract\Core\Pipeline\PipelineInterface;
+use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
-use Salient\Contract\Pipeline\EntityPipelineInterface;
-use Salient\Contract\Pipeline\PipeInterface;
-use Salient\Contract\Pipeline\PipelineInterface;
-use Salient\Contract\Pipeline\StreamPipelineInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Facade\App;

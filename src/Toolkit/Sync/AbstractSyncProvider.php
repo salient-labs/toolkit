@@ -5,7 +5,7 @@ namespace Salient\Sync;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
-use Salient\Contract\Pipeline\PipelineInterface;
+use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;

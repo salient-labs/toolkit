@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Pipeline;
+namespace Salient\Contract\Core\Pipeline;
 
 use Salient\Contract\Core\ListConformity;
 

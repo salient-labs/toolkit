@@ -2,6 +2,8 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Core\Pipeline\PipelineInterface;
+use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
@@ -10,8 +12,6 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestMethod;
-use Salient\Contract\Pipeline\PipelineInterface;
-use Salient\Contract\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
