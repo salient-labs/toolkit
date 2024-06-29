@@ -359,7 +359,7 @@ abstract class CliCommand implements CliCommandInterface
             $pos = strrpos($line, '{}');
             if ($pos !== false) {
                 $_line = null;
-                if ($allowed) {
+                if (!$option->IsPositional && $allowed) {
                     if ($option->ValueRequired) {
                         $prefix = '(';
                         $suffix = ')';
@@ -477,8 +477,16 @@ abstract class CliCommand implements CliCommandInterface
     private function prepareHelp(CliHelpStyle $style, string $text, string $indent = ''): string
     {
         $text = str_replace(
-            ['{{app}}', '{{program}}', '{{command}}'],
-            [$this->App->getAppName(), $this->App->getProgramName(), $this->getNameWithProgram()],
+            ['{{app}}', '{{program}}', '{{command}}', '{{subcommand}}'],
+            [
+                $this->App->getAppName(),
+                $this->App->getProgramName(),
+                $this->getNameWithProgram(),
+                Str::coalesce(
+                    Arr::last($this->getNameParts()),
+                    $this->App->getProgramName(),
+                ),
+            ],
             $text,
         );
 
