@@ -401,21 +401,6 @@ parameters:
 			path: src/Toolkit/Sync/AbstractSyncDefinition.php
 
 		-
-			message: "#^Argument of an invalid type array\\<string, class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\>\\|null supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Command/AbstractSyncCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$data of static method Salient\\\\Utility\\\\File\\:\\:writeCsv\\(\\) expects iterable\\<array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, array\\<array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<\\(int\\|string\\), Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Command/GetSyncEntities.php
-
-		-
-			message: "#^Parameter \\#5 \\$callback of static method Salient\\\\Utility\\\\File\\:\\:writeCsv\\(\\) expects \\(callable\\(array\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Iterator\\\\FluentIteratorInterface\\<int\\|string, Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\: array\\)\\|null, Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\: array\\<string, mixed\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Command/GetSyncEntities.php
-
-		-
 			message: "#^Parameter \\#6 \\$overrides of method Salient\\\\Sync\\\\AbstractSyncDefinition\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface,TProvider of Salient\\\\Sync\\\\DbSyncProvider\\>\\:\\:__construct\\(\\) expects array\\<int\\<0, 255\\>, Closure\\(Salient\\\\Contract\\\\Sync\\\\SyncDefinitionInterface\\<TEntity, TProvider\\>, 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\>, array\\<int\\<0, 255\\>, Closure\\(Salient\\\\Sync\\\\DbSyncDefinition\\<TEntity, TProvider\\>, 1\\|2\\|4\\|8\\|16\\|32\\|64\\|128, Salient\\\\Contract\\\\Sync\\\\SyncContextInterface, mixed \\.\\.\\.\\)\\: \\(iterable\\<TEntity\\>\\|TEntity\\)\\> given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/DbSyncDefinition.php

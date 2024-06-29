@@ -7,7 +7,6 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Sync\Support\SyncIntrospector;
-use Salient\Sync\SyncStore;
 use Salient\Tests\Sync\Entity\Provider\TaskProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
 use Salient\Tests\Sync\Entity\Task;
@@ -59,10 +58,7 @@ final class SyncIntrospectorTest extends TestCase
 
     private function getContainer(): ContainerInterface
     {
-        $container = (new Container())
-            ->singleton(SyncStoreInterface::class, SyncStore::class);
-
-        $container
+        ($container = new Container())
             ->get(SyncStoreInterface::class)
             ->registerNamespace(
                 'component',

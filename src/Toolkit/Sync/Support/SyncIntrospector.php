@@ -207,9 +207,9 @@ final class SyncIntrospector extends Introspector
      * Get an array that maps unambiguous lowercase entity basenames to
      * SyncEntityInterface classes serviced by the provider
      *
-     * @return array<string,class-string<SyncEntityInterface>>|null
+     * @return array<string,class-string<SyncEntityInterface>>
      */
-    public function getSyncProviderEntityBasenames(): ?array
+    public function getSyncProviderEntityBasenames(): array
     {
         $this->assertIsProvider();
 

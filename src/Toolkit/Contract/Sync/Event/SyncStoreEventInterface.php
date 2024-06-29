@@ -1,11 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Sync;
+namespace Salient\Contract\Sync\Event;
+
+use Salient\Contract\Sync\SyncStoreInterface;
 
 /**
- * Base interface for entity store events
+ * @api
  */
 interface SyncStoreEventInterface
 {
-    public function store(): SyncStoreInterface;
+    /**
+     * Get the entity store that dispatched the event
+     */
+    public function getStore(): SyncStoreInterface;
 }

@@ -14,12 +14,14 @@ use Salient\Sync\HttpSyncProvider;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;
 use Salient\Tests\Sync\CustomEntity\User as CustomUser;
 use Salient\Tests\Sync\Entity\Provider\AlbumProvider;
+use Salient\Tests\Sync\Entity\Provider\CollidesProvider;
 use Salient\Tests\Sync\Entity\Provider\CommentProvider;
 use Salient\Tests\Sync\Entity\Provider\PhotoProvider;
 use Salient\Tests\Sync\Entity\Provider\PostProvider;
 use Salient\Tests\Sync\Entity\Provider\TaskProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
 use Salient\Tests\Sync\Entity\Album;
+use Salient\Tests\Sync\Entity\Collides;
 use Salient\Tests\Sync\Entity\Comment;
 use Salient\Tests\Sync\Entity\Photo;
 use Salient\Tests\Sync\Entity\Post;
@@ -58,6 +60,11 @@ use LogicException;
  * @method User updateUser(SyncContextInterface $ctx, User $user)
  * @method User deleteUser(SyncContextInterface $ctx, User $user)
  * @method iterable<User> getUsers(SyncContextInterface $ctx)
+ * @method Collides createCollides(SyncContextInterface $ctx, Collides $collides)
+ * @method Collides getCollides(SyncContextInterface $ctx, int|string|null $id)
+ * @method Collides updateCollides(SyncContextInterface $ctx, Collides $collides)
+ * @method Collides deleteCollides(SyncContextInterface $ctx, Collides $collides)
+ * @method iterable<Collides> getCollideses(SyncContextInterface $ctx)
  */
 class JsonPlaceholderApi extends HttpSyncProvider implements
     SingletonInterface,
@@ -66,7 +73,8 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     PhotoProvider,
     PostProvider,
     TaskProvider,
-    UserProvider
+    UserProvider,
+    CollidesProvider
 {
     /** @var array<string,int> */
     public array $HttpRequests = [];

@@ -44,6 +44,7 @@
 /tests/fixtures/Toolkit/Sync/Entity/Photo.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Post.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Provider/AlbumProvider.php linguist-generated
+/tests/fixtures/Toolkit/Sync/Entity/Provider/CollidesProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Provider/CommentProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Provider/PhotoProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Provider/PostProvider.php linguist-generated
@@ -52,4 +53,5 @@
 /tests/fixtures/Toolkit/Sync/Entity/Provider/UserProvider.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Task.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/User.php linguist-generated
+/tests/fixtures/Toolkit/Sync/External/Entity/Provider/CollidesProvider.php linguist-generated
 /tools export-ignore

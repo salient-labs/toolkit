@@ -9,6 +9,7 @@
         "tests/legacy",
         "tests/unit",
         "tests/phpstan-conditional.php",
+        "tests/test-sli",
         "tools/apigen",
         ".php-cs-fixer.dist.php",
         "bootstrap.php"

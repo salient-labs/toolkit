@@ -20,6 +20,8 @@ use Salient\Utility\Json;
 /**
  * A generic sync entity retrieval command
  *
+ * @api
+ *
  * @template T of SyncEntityInterface
  */
 final class GetSyncEntities extends AbstractSyncCommand
@@ -30,37 +32,43 @@ final class GetSyncEntities extends AbstractSyncCommand
     /** @var string[] */
     private array $Filter = [];
     private bool $Shallow = false;
-    private bool $IncludeCanonical = false;
+    private bool $IncludeCanonicalId = false;
     private bool $IncludeMeta = false;
     private bool $Stream = false;
     private bool $Csv = false;
 
     public function getDescription(): string
     {
-        return 'Get data from a provider';
+        return 'Get entities from a provider';
     }
 
     protected function getOptionList(): array
     {
         return [
             CliOption::build()
-                ->long('type')
-                ->description('The entity type to request')
+                ->name('entity')
+                ->description('The entity to request')
                 ->optionType(CliOptionType::ONE_OF_POSITIONAL)
-                ->valueName('entity_type')
                 ->allowedValues(array_keys($this->Entities))
                 ->required()
                 ->bindTo($this->Entity),
             CliOption::build()
-                ->long('id')
-                ->description('The unique identifier of a particular entity')
+                ->name('entity_id')
+                ->description(<<<EOF
+The unique identifier of an entity to request
+
+If not given, a list of entities is requested.
+EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueName('entity_id')
                 ->bindTo($this->EntityId),
             CliOption::build()
                 ->long('provider')
                 ->short('p')
-                ->description('The provider to request data from')
+                ->description(<<<EOF
+The provider to request entities from
+
+If not given, the entity's default provider is used.
+EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->valueName('provider')
                 ->allowedValues(array_keys($this->EntityProviders))
@@ -69,7 +77,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ->long('filter')
                 ->short('f')
                 ->valueName('term=value')
-                ->description('Pass a filter to the provider')
+                ->description('Apply a filter to the request')
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->Filter),
@@ -81,7 +89,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ->long('include-canonical-id')
                 ->short('I')
                 ->description('Include canonical_id in the output')
-                ->bindTo($this->IncludeCanonical),
+                ->bindTo($this->IncludeCanonicalId),
             CliOption::build()
                 ->long('include-meta')
                 ->short('M')
@@ -104,38 +112,24 @@ final class GetSyncEntities extends AbstractSyncCommand
     {
         Console::registerStderrTarget();
 
+        /** @var class-string<T> */
         $entity = $this->Entities[$this->Entity];
-        $provider =
-            $this->Provider === null
-                ? array_search(
-                    $this->App->getName(SyncIntrospector::entityToProvider($entity)),
-                    $this->Providers,
-                )
-                : $this->Provider;
+
+        $provider = $this->Provider ?? array_search(
+            $this->App->getName(SyncIntrospector::entityToProvider($entity)),
+            $this->Providers,
+        );
 
         if ($provider === false) {
-            throw new CliInvalidArgumentsException('no default provider: ' . $entity);
+            throw new CliInvalidArgumentsException(
+                sprintf('no default provider: %s', $entity)
+            );
         }
-
-        $filter = Get::filter($this->Filter);
 
         /** @var SyncProviderInterface */
         $provider = $this->App->get($this->Providers[$provider]);
 
-        $entityUri = $this->Store->getEntityUri($entity);
-        if ($entityUri === null) {
-            $entityUri = '/' . str_replace('\\', '/', ltrim($entity, '\\'));
-        }
-
-        $entityId =
-            $this->EntityId === null
-                ? ''
-                : '/' . $this->EntityId;
-
-        Console::info(
-            'Retrieving from ' . $provider->getName() . ':',
-            $entityUri . $entityId
-        );
+        $filter = Get::filter($this->Filter);
 
         $context = $provider->getContext();
         if ($this->Shallow || $this->Csv) {
@@ -144,19 +138,24 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ->withHydrationPolicy(HydrationPolicy::SUPPRESS);
         }
 
-        $result = $this->EntityId !== null
-            ? $provider->with($entity, $context)->get($this->EntityId, $filter)
-            : ($this->Stream
-                ? $provider->with($entity, $context)->getList($filter)
-                : $provider->with($entity, $context)->getListA($filter));
-
         /** @var SyncSerializeRules<T> */
-        $rules = $entity::getSerializeRules();
-        if (!$this->IncludeMeta) {
-            $rules = $rules->withIncludeMeta(false);
-        }
-        if ($this->IncludeCanonical) {
-            $rules = $rules->withIncludeCanonicalId();
+        $rules = $entity::getSerializeRules()
+            ->withIncludeCanonicalId($this->IncludeCanonicalId)
+            ->withIncludeMeta($this->IncludeMeta);
+
+        Console::info(
+            sprintf('Retrieving from %s:', $provider->getName()),
+            ($this->Store->getEntityUri($entity)
+                    ?? '/' . str_replace('\\', '/', $entity))
+                . ($this->EntityId === null ? '' : '/' . $this->EntityId)
+        );
+
+        if ($this->EntityId === null) {
+            $result = $this->Stream
+                ? $provider->with($entity, $context)->getList($filter)
+                : $provider->with($entity, $context)->getListA($filter);
+        } else {
+            $result = $provider->with($entity, $context)->get($this->EntityId, $filter);
         }
 
         if ($this->Csv) {
@@ -164,8 +163,8 @@ final class GetSyncEntities extends AbstractSyncCommand
                 $result = [$result];
             }
 
-            $stdout = Console::getStdoutTarget();
-            $tty = $stdout->isTty();
+            $tty = Console::getStdoutTarget()->isTty();
+
             File::writeCsv(
                 'php://output',
                 $result,
@@ -177,24 +176,35 @@ final class GetSyncEntities extends AbstractSyncCommand
                 !$tty,
                 !$tty,
             );
-        } elseif (!is_iterable($result) || !$this->Stream) {
-            $result = (array) $result;
-            /** @var SyncEntityInterface $entity */
-            foreach ($result as &$entity) {
-                $entity = $entity->toArrayWith($rules);
-            }
-            $count = count($result);
-            if ($this->EntityId !== null) {
-                $result = array_shift($result);
-            }
-
-            echo Json::prettyPrint($result) . \PHP_EOL;
-        } else {
+        } elseif ($this->Stream && $this->EntityId === null) {
             $count = 0;
             foreach ($result as $entity) {
                 echo Json::prettyPrint($entity->toArrayWith($rules)) . \PHP_EOL;
                 $count++;
             }
+        } else {
+            if ($this->EntityId !== null) {
+                $result = [$result];
+            }
+
+            $output = [];
+            $count = 0;
+            foreach ($result as $entity) {
+                $output[] = $entity->toArrayWith($rules);
+                $count++;
+            }
+
+            if ($this->EntityId !== null) {
+                if ($output) {
+                    $output = array_shift($output);
+                } else {
+                    throw new CliInvalidArgumentsException(
+                        sprintf('entity not found: %s', $this->EntityId)
+                    );
+                }
+            }
+
+            echo Json::prettyPrint($output) . \PHP_EOL;
         }
 
         Console::summary(Inflect::format(

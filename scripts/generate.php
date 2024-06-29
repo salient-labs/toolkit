@@ -111,6 +111,8 @@ $providers = [
     Task::class => [],
     User::class => [],
     Unimplemented::class => [],
+    Salient\Tests\Sync\Entity\Collides::class => [],
+    Salient\Tests\Sync\External\Entity\Collides::class => [],
 ];
 
 $app = new CliApplication($dir);
