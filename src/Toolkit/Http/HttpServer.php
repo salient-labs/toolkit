@@ -50,6 +50,9 @@ class HttpServer implements Immutable
         $this->Timeout = $timeout;
     }
 
+    /**
+     * @internal
+     */
     public function __clone()
     {
         unset($this->Socket);
