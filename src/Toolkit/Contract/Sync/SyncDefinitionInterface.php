@@ -3,6 +3,7 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Core\Immutable;
+use Salient\Contract\Sync\SyncOperation as OP;
 use Closure;
 
 /**
@@ -15,24 +16,25 @@ use Closure;
 interface SyncDefinitionInterface extends Immutable
 {
     /**
-     * Get a closure that uses the provider to perform a sync operation on the
-     * entity
+     * Get a closure to perform a sync operation on the entity, or null if the
+     * operation is not supported
      *
-     * @param SyncOperation::* $operation
-     * @return (Closure(SyncContextInterface, mixed...): (iterable<TEntity>|TEntity))|null `null` if `$operation` is not supported, otherwise a closure with the correct signature for the sync operation.
-     * @phpstan-return (
-     *     $operation is SyncOperation::READ
+     * @template TOperation of OP::*
+     *
+     * @param TOperation $operation
+     * @return (
+     *     TOperation is OP::READ
      *     ? (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)
      *     : (
-     *         $operation is SyncOperation::READ_LIST
+     *         TOperation is OP::READ_LIST
      *         ? (Closure(SyncContextInterface, mixed...): iterable<TEntity>)
      *         : (
-     *             $operation is SyncOperation::CREATE|SyncOperation::UPDATE|SyncOperation::DELETE
+     *             TOperation is OP::CREATE|OP::UPDATE|OP::DELETE
      *             ? (Closure(SyncContextInterface, TEntity, mixed...): TEntity)
      *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
      *     )
      * )|null
      */
-    public function getSyncOperationClosure($operation): ?Closure;
+    public function getOperationClosure($operation): ?Closure;
 }

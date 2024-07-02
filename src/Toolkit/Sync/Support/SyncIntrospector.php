@@ -11,7 +11,6 @@ use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
-use Salient\Contract\Sync\SyncOperationGroup;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Sync;
@@ -53,7 +52,12 @@ final class SyncIntrospector extends Introspector
      */
     public static function isListOperation($operation): bool
     {
-        return in_array($operation, SyncOperationGroup::ALL_LIST, true);
+        return [
+            SyncOperation::CREATE_LIST => true,
+            SyncOperation::READ_LIST => true,
+            SyncOperation::UPDATE_LIST => true,
+            SyncOperation::DELETE_LIST => true,
+        ][$operation] ?? false;
     }
 
     /**
@@ -64,7 +68,10 @@ final class SyncIntrospector extends Introspector
      */
     public static function isReadOperation($operation): bool
     {
-        return in_array($operation, SyncOperationGroup::ALL_READ, true);
+        return [
+            SyncOperation::READ => true,
+            SyncOperation::READ_LIST => true,
+        ][$operation] ?? false;
     }
 
     /**
@@ -76,7 +83,14 @@ final class SyncIntrospector extends Introspector
      */
     public static function isWriteOperation($operation): bool
     {
-        return in_array($operation, SyncOperationGroup::ALL_WRITE, true);
+        return [
+            SyncOperation::CREATE => true,
+            SyncOperation::UPDATE => true,
+            SyncOperation::DELETE => true,
+            SyncOperation::CREATE_LIST => true,
+            SyncOperation::UPDATE_LIST => true,
+            SyncOperation::DELETE_LIST => true,
+        ][$operation] ?? false;
     }
 
     /**

@@ -12,6 +12,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
+use Salient\Sync\Support\SyncPipelineArgument;
 use Closure;
 use LogicException;
 
@@ -21,6 +22,8 @@ use LogicException;
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider
+ *
+ * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
  *
  * @property-read string|null $Table
  *
@@ -42,10 +45,11 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
      * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
+     * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
-     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
+     * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
@@ -60,7 +64,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
-        bool $readFromReadList = false,
+        bool $readFromList = false,
         ?int $returnEntitiesFrom = null
     ) {
         parent::__construct(
@@ -74,13 +78,16 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
             $keyMapFlags,
             $pipelineFromBackend,
             $pipelineToBackend,
-            $readFromReadList,
+            $readFromList,
             $returnEntitiesFrom
         );
 
         $this->Table = $table;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getClosure($operation): ?Closure
     {
         // Return null if no table name has been provided

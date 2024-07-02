@@ -11,20 +11,21 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\AbstractBuilder;
+use Salient\Sync\Support\SyncPipelineArgument;
 use Closure;
 
 /**
  * A fluent DbSyncDefinition factory
  *
- * @method $this operations(array<OP::*> $value) A list of supported sync operations
+ * @method $this operations(array<OP::*> $value) Supported sync operations
  * @method $this table(?string $value) Set DbSyncDefinition::$Table
- * @method $this conformity(ListConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
- * @method $this filterPolicy(FilterPolicy::*|null $value) The action to take when filters are unclaimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
- * @method $this overrides(array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $value) An array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})
- * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) An array that maps provider (backend) keys to one or more entity keys (see {@see AbstractSyncDefinition::$KeyMap})
- * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Passed to the array mapper if `$keyMap` is provided
- * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromReadList})
- * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ * @method $this conformity(ListConformity::* $value) Conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
+ * @method $this filterPolicy(FilterPolicy::*|null $value) Action to take when filters are not claimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
+ * @method $this overrides(array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $value) Array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})
+ * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) Array that maps keys to properties for entity data returned by the provider (see {@see AbstractSyncDefinition::$KeyMap})
+ * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Array mapper flags used if a key map is provided
+ * @method $this readFromList(bool $value = true) Perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromList})
+ * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider
@@ -44,7 +45,7 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
     }
 
     /**
-     * The SyncEntityInterface being serviced
+     * The entity being serviced
      *
      * @template T of SyncEntityInterface
      *
@@ -58,7 +59,7 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
     }
 
     /**
-     * The SyncProviderInterface servicing the entity
+     * The provider servicing the entity
      *
      * @template T of DbSyncProvider
      *
@@ -72,11 +73,11 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
     }
 
     /**
-     * A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
+     * Pipeline that maps provider data to a serialized entity, or `null` if mapping is not required
      *
      * @template T of SyncEntityInterface
      *
-     * @param PipelineInterface<mixed[],T,array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>|null $value
+     * @param PipelineInterface<mixed[],T,SyncPipelineArgument>|null $value
      * @return static<T,TProvider>
      */
     public function pipelineFromBackend(?PipelineInterface $value)
@@ -86,11 +87,11 @@ final class DbSyncDefinitionBuilder extends AbstractBuilder
     }
 
     /**
-     * A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
+     * Pipeline that maps a serialized entity to provider data, or `null` if mapping is not required
      *
      * @template T of SyncEntityInterface
      *
-     * @param PipelineInterface<T,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>|null $value
+     * @param PipelineInterface<T,mixed[],SyncPipelineArgument>|null $value
      * @return static<T,TProvider>
      */
     public function pipelineToBackend(?PipelineInterface $value)

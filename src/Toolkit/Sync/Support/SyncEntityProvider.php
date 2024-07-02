@@ -173,7 +173,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $closure =
             $this
                 ->Definition
-                ->getSyncOperationClosure($operation);
+                ->getOperationClosure($operation);
 
         if (!$closure) {
             throw new SyncOperationNotImplementedException(

@@ -46,5 +46,5 @@ final class FilterPolicy extends AbstractEnumeration
      * The provider returns unfiltered entities, and any that don't match the
      * unclaimed filters are removed from the result returned to the caller.
      */
-    public const FILTER_LOCALLY = 3;
+    public const FILTER = 3;
 }

@@ -52,7 +52,7 @@ return (new PhpCsFixer\Config())
         // 'phpdoc_param_order' => true,
         'phpdoc_separation' => ['groups' => [
             ['see', 'link'],
-            ['property', 'property-read'],
+            ['property', 'phpstan-property', 'property-read', 'phpstan-property-read'],
             ['requires', 'dataProvider', 'backupGlobals'],
             ['template', 'template-covariant'],
             ['extends', 'implements', 'use'],
