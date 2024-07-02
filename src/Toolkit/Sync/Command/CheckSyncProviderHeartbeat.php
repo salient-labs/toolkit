@@ -27,7 +27,7 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
     public function getDescription(): string
     {
         return 'Send a heartbeat request to ' . (
-            count($this->Providers)
+            $this->Providers
                 ? 'registered providers'
                 : 'one or more providers'
         );
@@ -40,22 +40,21 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
             ->multipleAllowed();
 
         if ($this->Providers) {
-            $builder = $builder
+            yield $builder
                 ->optionType(CliOptionType::ONE_OF_POSITIONAL)
                 ->allowedValues(array_keys($this->Providers))
                 ->addAll()
                 ->defaultValue('ALL')
                 ->bindTo($this->ProviderBasename);
         } else {
-            $builder = $builder
+            yield $builder
                 ->description('The fully-qualified name of the provider to check')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()
                 ->bindTo($this->Provider);
         }
 
-        return [
-            $builder,
+        yield from [
             CliOption::build()
                 ->long('ttl')
                 ->short('t')
@@ -75,22 +74,20 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 
     public function getLongDescription(): ?string
     {
-        $description = '';
-
         if ($this->Providers) {
-            $description .= <<<EOF
+            $description[] = <<<EOF
 If no providers are given, all providers are checked.
-
-
 EOF;
         }
 
-        return $description . <<<EOF
+        $description[] = <<<EOF
 If a heartbeat request fails, __{{subcommand}}__ continues to the next provider
 unless `-f/--fail-early` is given, in which case it exits immediately.
 
 The command exits with a non-zero status if a provider backend is unreachable.
 EOF;
+
+        return implode(\PHP_EOL . \PHP_EOL, $description);
     }
 
     protected function run(string ...$args)
@@ -114,6 +111,9 @@ EOF;
                         SyncProviderInterface::class,
                         true
                     )) {
+                        if (!$this->App->has($providerClass)) {
+                            $this->App->singleton($providerClass);
+                        }
                         return $this->App->get($providerClass);
                     }
 

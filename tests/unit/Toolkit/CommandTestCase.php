@@ -33,6 +33,9 @@ abstract class CommandTestCase extends TestCase
         ?callable $callback = null,
         bool $targetIsTty = false
     ): void {
+        $_SERVER['SCRIPT_FILENAME'] = 'app';
+        $_SERVER['argv'] = ['app', ...$args];
+
         Console::registerTarget(
             $target = new MockTarget(
                 $outputHasConsoleMessages
@@ -48,18 +51,15 @@ abstract class CommandTestCase extends TestCase
         );
 
         $basePath = File::createTempDir();
-        $app = new CliApplication($basePath);
+        $app = (new CliApplication($basePath))->command($name, $command);
 
         $this->expectOutputString($output);
 
         try {
             $app = $this->setUpApp($app);
 
-            $command = $app->get($command);
-            $command->setName($name);
-
             for ($i = 0; $i < $runs; $i++) {
-                $status = $command(...$args);
+                $status = $app->run()->getLastExitStatus();
                 $this->assertSame($exitStatus, $status, 'exit status');
             }
 
@@ -71,6 +71,8 @@ abstract class CommandTestCase extends TestCase
             }
 
             if ($callback !== null) {
+                /** @var CliCommandInterface */
+                $command = $app->getLastCommand();
                 $callback($app, $command);
             }
         } finally {

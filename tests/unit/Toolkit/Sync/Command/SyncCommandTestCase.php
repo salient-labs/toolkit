@@ -3,6 +3,7 @@
 namespace Salient\Tests\Sync\Command;
 
 use Salient\Contract\Cli\CliApplicationInterface;
+use Salient\Tests\Sync\Entity\Provider\CommentProvider;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\CommandTestCase;
 
@@ -32,7 +33,7 @@ abstract class SyncCommandTestCase extends CommandTestCase
             foreach ($this->Providers as $provider) {
                 $app = $app->provider($provider);
             }
-            $app = $app->provider(JsonPlaceholderApi::class);
+            $app = $app->provider(JsonPlaceholderApi::class, null, [CommentProvider::class]);
         }
 
         return $app

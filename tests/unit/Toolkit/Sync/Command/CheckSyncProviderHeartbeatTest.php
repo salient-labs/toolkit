@@ -2,8 +2,10 @@
 
 namespace Salient\Tests\Sync\Command;
 
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Sync\Command\CheckSyncProviderHeartbeat;
 use Salient\Tests\Sync\External\Provider\MockProvider as ExternalMockProvider;
+use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\Sync\Provider\MockProvider;
 use stdClass;
 
@@ -30,7 +32,6 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
         array $providers = [],
         bool $providerless = false
     ): void {
-        $_SERVER['SCRIPT_FILENAME'] = 'app';
         $this->Providers = $providers;
         $this->Providerless = $providerless;
         $this->assertCommandProduces(
@@ -52,7 +53,7 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
     }
 
     /**
-     * @return array<array{string,int,string[],3?:array<string,int>|null,4?:int,5?:class-string[]}>
+     * @return array<array{string,int,string[],3?:array<string,int>|null,4?:int,5?:class-string[],6?:bool}>
      */
     public static function runProvider(): array
     {
@@ -211,6 +212,39 @@ OPTIONS
 EOF,
                 0,
                 ['--help'],
+                [],
+                1,
+                [],
+                true,
+            ],
+            [
+                <<<EOF
+➤ Sending heartbeat request to 1 provider
+➤ Connected to JSONPlaceholder { http://localhost:3001 } as Leanne Graham
+- Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
+✔ 1 provider checked without errors
+
+EOF,
+                0,
+                [JsonPlaceholderApi::class],
+                [
+                    'http://localhost:3001/users/1' => 1,
+                ],
+                1,
+                [],
+                true,
+            ],
+            [
+                sprintf(<<<EOF
+Error: stdClass does not implement %s
+
+app [-f] [-t <seconds>] [--] <provider>...
+
+See 'app --help' for more information.
+
+EOF, SyncProviderInterface::class),
+                1,
+                [stdClass::class],
                 [],
                 1,
                 [],

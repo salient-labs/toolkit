@@ -4,6 +4,7 @@ namespace Salient\Tests\Sync;
 
 use Salient\Container\Container;
 use Salient\Contract\Sync\SyncStoreInterface;
+use Salient\Tests\Sync\Entity\Provider\CommentProvider;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\TestCase;
 
@@ -38,7 +39,7 @@ abstract class SyncTestCase extends TestCase
     protected function setUp(): void
     {
         $this->App = (new Container())
-            ->provider(JsonPlaceholderApi::class);
+            ->provider(JsonPlaceholderApi::class, null, [CommentProvider::class]);
 
         $this->Store = $this
             ->App

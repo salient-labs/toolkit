@@ -4,9 +4,11 @@
 use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
 use Salient\Contract\Sync\Event\SyncStoreLoadedEventInterface;
 use Salient\Core\Facade\Event;
+use Salient\Tests\Sync\Entity\Provider\CommentProvider;
 use Salient\Tests\Sync\External\Provider\MockProvider as ExternalMockProvider;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\Sync\Provider\MockProvider;
+use Salient\Utility\Env;
 
 require $_composer_autoload_path
     ?? dirname(__DIR__) . '/vendor/autoload.php';
@@ -14,10 +16,11 @@ require $_composer_autoload_path
 Event::getInstance()->listen(
     static fn(BeforeGlobalContainerSetEventInterface $event) =>
         !($container = $event->getContainer())
+        || Env::getBool('app_providerless', false)
         || $container
             ->provider(MockProvider::class)
             ->provider(ExternalMockProvider::class)
-            ->provider(JsonPlaceholderApi::class),
+            ->provider(JsonPlaceholderApi::class, null, [CommentProvider::class]),
 );
 
 Event::getInstance()->listen(
