@@ -114,6 +114,9 @@ EOF;
                         SyncProviderInterface::class,
                         true
                     )) {
+                        if (!$this->App->has($providerClass)) {
+                            $this->App->provider($providerClass);
+                        }
                         return $this->App->get($providerClass);
                     }
 
