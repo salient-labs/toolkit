@@ -12,6 +12,7 @@ final class GetSyncEntitiesTest extends SyncCommandTestCase
 {
     /**
      * @dataProvider runProvider
+     * @backupGlobals enabled
      *
      * @param string[] $args
      * @param array<string,int>|null $httpRequestCount
