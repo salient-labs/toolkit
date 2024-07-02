@@ -5,7 +5,9 @@ namespace Salient\Tests\Iterator;
 use Salient\Iterator\IterableIterator;
 use Salient\Tests\TestCase;
 use ArrayIterator;
+use Generator;
 use NoRewindIterator;
+use stdClass;
 
 /**
  * @covers \Salient\Iterator\IterableIterator
@@ -104,5 +106,28 @@ final class IterableIteratorTest extends TestCase
                 2,
             ],
         ];
+    }
+
+    public function testFromValues(): void
+    {
+        $iterator = IterableIterator::fromValues([
+            'foo' => 'bar',
+            'baz',
+        ]);
+        $this->assertSame(['bar', 'baz'], $iterator->toArray());
+
+        $iterator = IterableIterator::fromValues($this->getGenerator());
+        $this->assertSame(['bar', 'baz', 'qux', 'quux'], $iterator->toArray());
+    }
+
+    /**
+     * @return Generator<mixed,string>
+     */
+    private function getGenerator(): Generator
+    {
+        yield 'foo' => 'bar';
+        yield 'baz';
+        yield new stdClass() => 'qux';
+        yield 'quux';
     }
 }

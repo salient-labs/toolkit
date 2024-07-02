@@ -48,8 +48,8 @@ interface SyncContextInterface extends ProviderContextInterface
      *
      * - {@see SyncEntityInterface} objects are replaced with their identifiers
      * - An exception is thrown if any {@see SyncEntityInterface} objects do not
-     *   have an identifier ({@see SyncEntityInterface::id()} returns `null`) or
-     *   do not have the same provider as the context
+     *   have an identifier ({@see SyncEntityInterface::getId()} returns `null`)
+     *   or do not have the same provider as the context
      * - {@see DateTimeInterface} instances are converted to ISO-8601 strings
      * - The result is surfaced via {@see SyncContextInterface::getFilter()},
      *   {@see SyncContextInterface::claimFilter()} and their variants.

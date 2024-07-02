@@ -185,7 +185,7 @@ final class SyncEntityProviderTest extends SyncTestCase
         $this->expectExceptionMessage(sprintf(
             '%s has different provider (MockProvider, expected %s)',
             get_class($context),
-            $this->Provider->name(),
+            $this->Provider->getName(),
         ));
         $this->Provider->with(User::class, $context);
     }

@@ -5,7 +5,7 @@ namespace Salient\Sync;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
-use Salient\Contract\Pipeline\PipelineInterface;
+use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
@@ -24,7 +24,10 @@ use LogicException;
 /**
  * Base class for providers that sync entities to and from third-party backends
  */
-abstract class AbstractSyncProvider extends AbstractProvider implements SyncProviderInterface, HasServices, HasContextualBindings
+abstract class AbstractSyncProvider extends AbstractProvider implements
+    SyncProviderInterface,
+    HasServices,
+    HasContextualBindings
 {
     /**
      * Get a dependency substitution map for the provider
@@ -50,12 +53,10 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
         return [];
     }
 
-    /** @var SyncStoreInterface */
-    protected $Store;
-    /** @var int|null */
-    private $Id;
-    /** @var array<string,Closure> */
-    private $MagicMethodClosures = [];
+    protected SyncStoreInterface $Store;
+    private int $Id;
+    /** @var array<string,Closure|null> */
+    private array $MagicMethodClosures = [];
 
     /**
      * Creates a new sync provider object
@@ -66,6 +67,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     public function __construct(ContainerInterface $app, SyncStoreInterface $store)
     {
         parent::__construct($app);
+
         $this->Store = $store;
         $this->Store->registerProvider($this);
     }
@@ -79,7 +81,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
             $container = $this->App;
         }
 
-        return $container->get(SyncContext::class, [$this]);
+        return $container->get(SyncContext::class, ['provider' => $this]);
     }
 
     /**
@@ -95,21 +97,15 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      */
     public function isValidIdentifier($id, string $entity): bool
     {
-        if (
-            is_int($id)
+        return is_int($id)
             || Regex::match(Regex::delimit('^' . Regex::MONGODB_OBJECTID . '$', '/'), $id)
-            || Regex::match(Regex::delimit('^' . Regex::UUID . '$', '/'), $id)
-        ) {
-            return true;
-        }
-
-        return false;
+            || Regex::match(Regex::delimit('^' . Regex::UUID . '$', '/'), $id);
     }
 
     /**
      * @inheritDoc
      */
-    final public function store(): SyncStoreInterface
+    final public function getStore(): SyncStoreInterface
     {
         return $this->Store;
     }
@@ -117,19 +113,9 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
     /**
      * @inheritDoc
      */
-    final public function setProviderId(int $providerId)
-    {
-        $this->Id = $providerId;
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     final public function getProviderId(): int
     {
-        return $this->Id
-            ?? $this->Store->getProviderId($this);
+        return $this->Id ??= $this->Store->getProviderId($this);
     }
 
     /**
@@ -192,6 +178,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      */
     protected function pipelineFrom(string $entity): PipelineInterface
     {
+        /** @var PipelineInterface<mixed[],T,array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}> */
         return Pipeline::create($this->App);
     }
 
@@ -205,6 +192,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      */
     protected function pipelineTo(string $entity): PipelineInterface
     {
+        /** @var PipelineInterface<T,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}> */
         return Pipeline::create($this->App);
     }
 
@@ -248,10 +236,14 @@ abstract class AbstractSyncProvider extends AbstractProvider implements SyncProv
      */
     final public function __call(string $name, array $arguments)
     {
-        if (($closure = $this->MagicMethodClosures[$name = Str::lower($name)] ?? false) === false) {
+        $name = Str::lower($name);
+        if (array_key_exists($name, $this->MagicMethodClosures)) {
+            $closure = $this->MagicMethodClosures[$name];
+        } else {
             $closure = SyncIntrospector::get(static::class)->getMagicSyncOperationClosure($name, $this);
             $this->MagicMethodClosures[$name] = $closure;
         }
+
         if ($closure) {
             return $closure(...$arguments);
         }

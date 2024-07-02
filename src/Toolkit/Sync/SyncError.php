@@ -74,11 +74,11 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
     /**
      * The display name of the entity associated with the error
      *
-     * Used in messages and summaries. Default: `<Entity>->uri()`
+     * Used in messages and summaries. Default: `<Entity>->getUri()`
      *
      * @var string|null
      *
-     * @see SyncEntityInterface::uri()
+     * @see SyncEntityInterface::getUri()
      */
     protected $EntityName;
 
@@ -112,7 +112,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
     ) {
         $this->EntityName = $entityName
             ?? ($entity
-                ? $entity->uri($provider ? $provider->store() : null)
+                ? $entity->getUri($provider ? $provider->getStore() : null)
                 : null);
         $this->ErrorType = $errorType;
         $this->Message = $message;
@@ -140,7 +140,7 @@ final class SyncError implements Readable, Comparable, Immutable, Buildable
             ?: $a->Values <=> $b->Values
             ?: $a->EntityName <=> $b->EntityName
             ?: ($a->Provider ? $a->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
-            ?: ($a->Entity ? $a->Entity->id() : null) <=> ($b->Entity ? $b->Entity->id() : null);
+            ?: ($a->Entity ? $a->Entity->getId() : null) <=> ($b->Entity ? $b->Entity->getId() : null);
     }
 
     public function getCode(): string

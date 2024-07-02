@@ -5,8 +5,8 @@ namespace Salient\Contract\Cli;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliHelpStyle;
 use Salient\Contract\Container\HasContainer;
-use Salient\Contract\Core\Describable;
-use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\HasDescription;
+use Salient\Contract\Core\HasName;
 use LogicException;
 
 /**
@@ -14,12 +14,15 @@ use LogicException;
  *
  * @api
  *
- * @extends HasContainer<CliApplicationInterface>
- *
  * @see CliCommand
  */
-interface CliCommandNodeInterface extends HasContainer, Nameable, Describable
+interface CliCommandNodeInterface extends HasContainer, HasName, HasDescription
 {
+    /**
+     * Get the command's service container
+     */
+    public function getContainer(): CliApplicationInterface;
+
     /**
      * Get the command name as a string of space-delimited subcommands
      *
@@ -27,19 +30,19 @@ interface CliCommandNodeInterface extends HasContainer, Nameable, Describable
      * not been called, or if an empty array of subcommands was passed to
      * {@see CliCommandNodeInterface::setName()}.
      */
-    public function name(): string;
+    public function getName(): string;
 
     /**
      * Get the command name as an array of subcommands
      *
      * @return string[]
      */
-    public function nameParts(): array;
+    public function getNameParts(): array;
 
     /**
      * Get a one-line description of the command
      */
-    public function description(): string;
+    public function getDescription(): string;
 
     /**
      * Called immediately after instantiation by a CliApplicationInterface

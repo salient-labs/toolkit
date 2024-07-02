@@ -116,7 +116,7 @@ final class DeferredRelationship implements IteratorAggregate
         }
 
         $this
-            ->store()
+            ->getStore()
             ->registerEntity($entity)
             ->registerEntity($forEntity)
             ->deferRelationship(
@@ -249,8 +249,8 @@ final class DeferredRelationship implements IteratorAggregate
         return $this->Context;
     }
 
-    private function store(): SyncStoreInterface
+    private function getStore(): SyncStoreInterface
     {
-        return $this->Provider->store();
+        return $this->Provider->getStore();
     }
 }

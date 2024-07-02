@@ -5,7 +5,7 @@ namespace Salient\Sync;
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\Describable;
+use Salient\Contract\Core\HasDescription;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\NormaliserFlag;
@@ -87,7 +87,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * The unique identifier assigned to the entity by its provider
      *
-     * @see SyncEntityInterface::id()
+     * @see SyncEntityInterface::getId()
      *
      * @var int|string|null
      */
@@ -143,7 +143,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    public function name(): string
+    public function getName(): string
     {
         return
             SyncIntrospector::get(static::class)
@@ -195,7 +195,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function id()
+    final public function getId()
     {
         return $this->Id;
     }
@@ -203,7 +203,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function canonicalId()
+    final public function getCanonicalId()
     {
         return $this->CanonicalId;
     }
@@ -343,7 +343,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
             case LinkType::COMPACT:
                 return [
-                    '@id' => $this->uri($store, $compact),
+                    '@id' => $this->getUri($store, $compact),
                 ];
 
             case LinkType::FRIENDLY:
@@ -352,10 +352,10 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
-                    '@name' => $this->name(),
+                    '@name' => $this->getName(),
                     '@description' =>
-                        $this instanceof Describable
-                            ? $this->description()
+                        $this instanceof HasDescription
+                            ? $this->getDescription()
                             : null,
                 ]);
 
@@ -367,7 +367,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * @inheritDoc
      */
-    final public function uri(?SyncStoreInterface $store = null, bool $compact = true): string
+    final public function getUri(?SyncStoreInterface $store = null, bool $compact = true): string
     {
         return sprintf(
             '%s/%s',
@@ -437,7 +437,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     {
         /** @var class-string<self> */
         $service = $this->getService();
-        $store ??= $this->Provider ? $this->Provider->store() : null;
+        $store ??= $this->Provider ? $this->Provider->getStore() : null;
         if ($store) {
             $typeUri = $store->getEntityUri($service, $compact);
         }
@@ -456,7 +456,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         if ($rules->getDateFormatter() === null) {
             $rules = $rules->withDateFormatter(
                 $this->Provider
-                    ? $this->Provider->dateFormatter()
+                    ? $this->Provider->getDateFormatter()
                     : new DateFormatter()
             );
         }
@@ -783,7 +783,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
         $data['Provider'] = $this->Provider === null
             ? null
-            : $this->Provider->store()->getProviderSignature($this->Provider);
+            : $this->Provider->getStore()->getProviderSignature($this->Provider);
 
         return $data;
     }

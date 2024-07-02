@@ -3,6 +3,9 @@
 namespace Salient\Tests\Sync\Command;
 
 use Salient\Sync\Command\CheckSyncProviderHeartbeat;
+use Salient\Tests\Sync\External\Provider\MockProvider as ExternalMockProvider;
+use Salient\Tests\Sync\Provider\MockProvider;
+use stdClass;
 
 /**
  * @covers \Salient\Sync\Command\CheckSyncProviderHeartbeat
@@ -12,17 +15,24 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
 {
     /**
      * @dataProvider runProvider
+     * @backupGlobals enabled
      *
      * @param string[] $args
      * @param array<string,int>|null $httpRequestCount
+     * @param class-string[] $providers
      */
     public function testRun(
         string $output,
         int $exitStatus,
         array $args,
         ?array $httpRequestCount = null,
-        int $runs = 1
+        int $runs = 1,
+        array $providers = [],
+        bool $providerless = false
     ): void {
+        $_SERVER['SCRIPT_FILENAME'] = 'app';
+        $this->Providers = $providers;
+        $this->Providerless = $providerless;
         $this->assertCommandProduces(
             static::normaliseConsoleOutput($output),
             $exitStatus,
@@ -42,7 +52,7 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
     }
 
     /**
-     * @return array<array{string,int,string[],3?:array<string,int>|null,4?:int}>
+     * @return array<array{string,int,string[],3?:array<string,int>|null,4?:int,5?:class-string[]}>
      */
     public static function runProvider(): array
     {
@@ -64,6 +74,147 @@ EOF,
                     'http://localhost:3001/users/1' => 1,
                 ],
                 2,
+            ],
+            [
+                <<<EOF
+➤ Sending heartbeat request to 2 providers
+➤ Connected to JSONPlaceholder { http://localhost:3001 } as Leanne Graham
+- Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
+- Heartbeat check not supported: MockProvider [#2]
+✔ 2 providers checked without errors
+
+EOF,
+                0,
+                [],
+                [
+                    'http://localhost:3001/users/1' => 1,
+                ],
+                1,
+                [
+                    stdClass::class,
+                    MockProvider::class,
+                ],
+            ],
+            [
+                <<<EOF
+NAME
+    app - Send a heartbeat request to registered providers
+
+SYNOPSIS
+    app [-f] [-t seconds] [--] [provider...]
+
+DESCRIPTION
+    If no providers are given, all providers are checked.
+
+    If a heartbeat request fails, app continues to the next provider unless
+    -f/--fail-early is given, in which case it exits immediately.
+
+    The command exits with a non-zero status if a provider backend is
+    unreachable.
+
+OPTIONS
+    provider...
+        The provider can be:
+
+        - json-placeholder-api
+        - ALL
+
+        The default provider is: ALL
+
+    -t, --ttl seconds
+        The lifetime of a positive result, in seconds
+
+        The default seconds is: 300
+
+    -f, --fail-early
+        If a check fails, exit without checking other providers
+
+EOF,
+                0,
+                ['--help'],
+                [],
+            ],
+            [
+                <<<EOF
+NAME
+    app - Send a heartbeat request to registered providers
+
+SYNOPSIS
+    app [-f] [-t seconds] [--] [provider...]
+
+DESCRIPTION
+    If no providers are given, all providers are checked.
+
+    If a heartbeat request fails, app continues to the next provider unless
+    -f/--fail-early is given, in which case it exits immediately.
+
+    The command exits with a non-zero status if a provider backend is
+    unreachable.
+
+OPTIONS
+    provider...
+        The provider can be:
+
+        - Salient\Tests\Sync\External\Provider\MockProvider
+        - Salient\Tests\Sync\Provider\MockProvider
+        - json-placeholder-api
+        - ALL
+
+        The default provider is: ALL
+
+    -t, --ttl seconds
+        The lifetime of a positive result, in seconds
+
+        The default seconds is: 300
+
+    -f, --fail-early
+        If a check fails, exit without checking other providers
+
+EOF,
+                0,
+                ['--help'],
+                [],
+                1,
+                [
+                    stdClass::class,
+                    MockProvider::class,
+                    ExternalMockProvider::class,
+                ],
+            ],
+            [
+                <<<EOF
+NAME
+    app - Send a heartbeat request to one or more providers
+
+SYNOPSIS
+    app [-f] [-t seconds] [--] provider...
+
+DESCRIPTION
+    If a heartbeat request fails, app continues to the next provider unless
+    -f/--fail-early is given, in which case it exits immediately.
+
+    The command exits with a non-zero status if a provider backend is
+    unreachable.
+
+OPTIONS
+    provider...
+        The fully-qualified name of the provider to check
+
+    -t, --ttl seconds
+        The lifetime of a positive result, in seconds
+
+        The default seconds is: 300
+
+    -f, --fail-early
+        If a check fails, exit without checking other providers
+
+EOF,
+                0,
+                ['--help'],
+                [],
+                1,
+                [],
+                true,
             ],
         ];
     }

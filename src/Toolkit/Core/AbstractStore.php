@@ -30,7 +30,6 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     private ?StoreState $State = null;
     private bool $IsCheckRunning = false;
 
-    /** @internal */
     private function __clone() {}
 
     /**

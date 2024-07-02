@@ -1,10 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Sync;
+namespace Salient\Contract\Sync\Event;
 
-/**
- * Dispatched when an entity store is loaded
- *
- * @api
- */
+/** @api */
 interface SyncStoreLoadedEventInterface extends SyncStoreEventInterface {}

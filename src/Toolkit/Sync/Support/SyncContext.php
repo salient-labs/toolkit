@@ -165,7 +165,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         if (Arr::of($args, SyncEntityInterface::class)) {
             foreach ($args as $entity) {
                 /** @var SyncEntityInterface $entity */
-                $id = $entity->id();
+                $id = $entity->getId();
                 if ($id === null) {
                     throw new SyncInvalidFilterException(sprintf(
                         '%s has no identifier',
@@ -183,7 +183,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 $service = $entity->getService();
                 $key = self::$ServiceKeyMap[$service]
                     ??= Str::toSnakeCase(Get::basename($service));
-                $filters[$key][] = $entity->id();
+                $filters[$key][] = $entity->getId();
             }
 
             return $this->applyFilters($filters);
@@ -248,7 +248,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         ) {
             throw new SyncEntityRecursionException(sprintf(
                 'Circular reference detected: %s',
-                $this->LastRecursedInto->uri($this->Provider->store()),
+                $this->LastRecursedInto->getUri($this->Provider->getStore()),
             ));
         }
     }
@@ -480,7 +480,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     private function normaliseFilterEntity(SyncEntityInterface $entity)
     {
-        $id = $entity->id();
+        $id = $entity->getId();
 
         if ($id === null) {
             throw new InvalidArgumentException(sprintf(

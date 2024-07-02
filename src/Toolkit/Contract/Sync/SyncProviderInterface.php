@@ -19,14 +19,7 @@ interface SyncProviderInterface extends ProviderInterface
     public function getContext(?ContainerInterface $container = null): SyncContextInterface;
 
     /**
-     * Called when the provider is registered with an entity store
-     *
-     * @return $this
-     */
-    public function setProviderId(int $providerId);
-
-    /**
-     * Get the provider ID assigned to the backend instance by the entity store
+     * Get the provider ID assigned to the backend instance by its entity store
      */
     public function getProviderId(): int;
 
@@ -36,7 +29,7 @@ interface SyncProviderInterface extends ProviderInterface
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @return SyncDefinitionInterface<T,static>
+     * @return SyncDefinitionInterface<T,$this>
      */
     public function getDefinition(string $entity): SyncDefinitionInterface;
 
@@ -58,7 +51,7 @@ interface SyncProviderInterface extends ProviderInterface
     /**
      * Get the provider's entity store
      */
-    public function store(): SyncStoreInterface;
+    public function getStore(): SyncStoreInterface;
 
     /**
      * Use an entity-agnostic interface to the provider's implementation of sync

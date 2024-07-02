@@ -3,14 +3,12 @@
 namespace Salient\Contract\Container;
 
 /**
- * @template TContainer of ContainerInterface
+ * @api
  */
 interface HasContainer
 {
     /**
      * Get the object's service container
-     *
-     * @return TContainer
      */
     public function getContainer(): ContainerInterface;
 }

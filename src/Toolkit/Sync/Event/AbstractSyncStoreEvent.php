@@ -2,11 +2,11 @@
 
 namespace Salient\Sync\Event;
 
-use Salient\Contract\Sync\SyncStoreEventInterface;
+use Salient\Contract\Sync\Event\SyncStoreEventInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 
 /**
- * Base class for entity store events
+ * @internal
  */
 abstract class AbstractSyncStoreEvent extends AbstractSyncEvent implements SyncStoreEventInterface
 {
@@ -17,7 +17,10 @@ abstract class AbstractSyncStoreEvent extends AbstractSyncEvent implements SyncS
         $this->Store = $store;
     }
 
-    public function store(): SyncStoreInterface
+    /**
+     * @inheritDoc
+     */
+    public function getStore(): SyncStoreInterface
     {
         return $this->Store;
     }

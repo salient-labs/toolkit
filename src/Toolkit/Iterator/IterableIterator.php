@@ -5,6 +5,7 @@ namespace Salient\Iterator;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Iterator\Concern\FluentIteratorTrait;
 use ArrayIterator;
+use Generator;
 use IteratorIterator;
 use Traversable;
 
@@ -50,5 +51,29 @@ class IterableIterator extends IteratorIterator implements FluentIteratorInterfa
         }
 
         return new self($iterable);
+    }
+
+    /**
+     * @template T
+     *
+     * @param iterable<T> $iterable
+     * @return self<int,T>
+     */
+    public static function fromValues(iterable $iterable): self
+    {
+        return new self(self::yieldValues($iterable));
+    }
+
+    /**
+     * @template T
+     *
+     * @param iterable<T> $iterable
+     * @return Generator<int,T>
+     */
+    private static function yieldValues(iterable $iterable): Generator
+    {
+        foreach ($iterable as $value) {
+            yield $value;
+        }
     }
 }

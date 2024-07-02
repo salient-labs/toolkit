@@ -66,7 +66,7 @@ class GenerateBuilder extends AbstractGenerateCommand
      */
     private array $ToDeclare = [];
 
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Generate a builder';
     }

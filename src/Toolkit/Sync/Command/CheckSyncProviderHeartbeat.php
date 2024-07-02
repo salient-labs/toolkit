@@ -12,6 +12,8 @@ use Salient\Utility\Inflect;
 
 /**
  * A generic sync provider heartbeat check command
+ *
+ * @api
  */
 final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 {
@@ -22,45 +24,43 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
     private int $Ttl = 0;
     private bool $FailEarly = false;
 
-    public function description(): string
+    public function getDescription(): string
     {
-        return
-            'Send a heartbeat request to ' . (
-                count($this->Providers) > 1
-                    ? 'one or more providers'
-                    : 'a provider'
-            );
+        return 'Send a heartbeat request to ' . (
+            count($this->Providers)
+                ? 'registered providers'
+                : 'one or more providers'
+        );
     }
 
     protected function getOptionList(): array
     {
-        $optB = CliOption::build()
-            ->long('provider')
-            ->valueName('provider')
-            ->description('The provider to check')
+        $builder = CliOption::build()
+            ->name('provider')
             ->multipleAllowed();
 
         if ($this->Providers) {
-            $optB = $optB
+            $builder = $builder
                 ->optionType(CliOptionType::ONE_OF_POSITIONAL)
                 ->allowedValues(array_keys($this->Providers))
                 ->addAll()
                 ->defaultValue('ALL')
                 ->bindTo($this->ProviderBasename);
         } else {
-            $optB = $optB
+            $builder = $builder
+                ->description('The fully-qualified name of the provider to check')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()
                 ->bindTo($this->Provider);
         }
 
         return [
-            $optB,
+            $builder,
             CliOption::build()
                 ->long('ttl')
                 ->short('t')
                 ->valueName('seconds')
-                ->description('The time-to-live of a positive result')
+                ->description('The lifetime of a positive result, in seconds')
                 ->optionType(CliOptionType::VALUE)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->defaultValue(300)
@@ -75,22 +75,21 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 
     public function getLongDescription(): ?string
     {
-        !$this->Providers
-            || $description =
-                <<<EOF
+        $description = '';
+
+        if ($this->Providers) {
+            $description .= <<<EOF
 If no providers are given, all providers are checked.
 
 
 EOF;
+        }
 
-        return
-            ($description ?? '') . <<<EOF
-If a heartbeat request fails, __{{command}}__ continues to the next
-provider unless `-f/--fail-early` is given, in which case it exits
-immediately.
+        return $description . <<<EOF
+If a heartbeat request fails, __{{subcommand}}__ continues to the next provider
+unless `-f/--fail-early` is given, in which case it exits immediately.
 
-The command exits with a non-zero status if a provider backend is
-unreachable.
+The command exits with a non-zero status if a provider backend is unreachable.
 EOF;
     }
 
@@ -99,35 +98,33 @@ EOF;
         Console::registerStderrTarget();
 
         if ($this->Providers) {
-            $providers =
-                array_map(
-                    fn(string $providerClass) =>
-                        $this->App->get($providerClass),
-                    array_intersect_key(
-                        $this->Providers,
-                        array_flip($this->ProviderBasename)
-                    )
-                );
+            $providers = array_values(array_map(
+                fn(string $providerClass) =>
+                    $this->App->get($providerClass),
+                array_intersect_key(
+                    $this->Providers,
+                    array_flip($this->ProviderBasename),
+                ),
+            ));
         } else {
-            $providers =
-                array_map(
-                    function (string $providerClass) {
-                        if (is_a(
-                            $this->App->getName($providerClass),
-                            SyncProviderInterface::class,
-                            true
-                        )) {
-                            return $this->App->get($providerClass);
-                        }
+            $providers = array_values(array_map(
+                function (string $providerClass) {
+                    if (is_a(
+                        $this->App->getName($providerClass),
+                        SyncProviderInterface::class,
+                        true
+                    )) {
+                        return $this->App->get($providerClass);
+                    }
 
-                        throw new CliInvalidArgumentsException(sprintf(
-                            '%s does not implement %s',
-                            $providerClass,
-                            SyncProviderInterface::class
-                        ));
-                    },
-                    $this->Provider
-                );
+                    throw new CliInvalidArgumentsException(sprintf(
+                        '%s does not implement %s',
+                        $providerClass,
+                        SyncProviderInterface::class,
+                    ));
+                },
+                $this->Provider,
+            ));
         }
 
         $count = count($providers);
@@ -140,7 +137,7 @@ EOF;
         $this->Store->checkProviderHeartbeats(
             max(1, $this->Ttl),
             $this->FailEarly,
-            ...array_values($providers)
+            ...$providers,
         );
 
         Console::summary(Inflect::format(

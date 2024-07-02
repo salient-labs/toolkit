@@ -11,7 +11,7 @@ use Salient\Core\Exception\MethodNotImplementedException;
 /**
  * Base class for providers
  *
- * @implements ProviderInterface<ProviderContext<static,AbstractEntity>>
+ * @implements ProviderInterface<ProviderContext<$this,AbstractEntity>>
  */
 abstract class AbstractProvider implements ProviderInterface
 {
@@ -27,13 +27,54 @@ abstract class AbstractProvider implements ProviderInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    final public function getContainer(): ContainerInterface
+    {
+        return $this->App;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getDateFormatter(): DateFormatterInterface
+    {
+        return $this->DateFormatter ??= $this->createDateFormatter();
+    }
+
+    /**
      * Get a date formatter to work with the backend's date and time format
      * and/or timezone
      *
      * The {@see DateFormatterInterface} returned will be cached for the
      * lifetime of the {@see Provider} instance.
      */
-    abstract protected function getDateFormatter(): DateFormatterInterface;
+    abstract protected function createDateFormatter(): DateFormatterInterface;
+
+    /**
+     * Check if the date formatter returned by getDateFormatter() has been
+     * cached
+     */
+    final protected function hasDateFormatter(): bool
+    {
+        return isset($this->DateFormatter);
+    }
+
+    /**
+     * Set or unset the date formatter returned by getDateFormatter()
+     *
+     * @return $this
+     */
+    final protected function setDateFormatter(?DateFormatterInterface $formatter)
+    {
+        if ($formatter === null) {
+            unset($this->DateFormatter);
+        } else {
+            $this->DateFormatter = $formatter;
+        }
+
+        return $this;
+    }
 
     /**
      * @inheritDoc
@@ -47,6 +88,8 @@ abstract class AbstractProvider implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @codeCoverageIgnore
      */
     public function checkHeartbeat(int $ttl = 300)
     {
@@ -55,45 +98,5 @@ abstract class AbstractProvider implements ProviderInterface
             __FUNCTION__,
             ProviderInterface::class
         );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getContainer(): ContainerInterface
-    {
-        return $this->App;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function dateFormatter(): DateFormatterInterface
-    {
-        return $this->DateFormatter ??= $this->getDateFormatter();
-    }
-
-    /**
-     * Check if the date formatter returned by dateFormatter() has been cached
-     */
-    final protected function hasDateFormatter(): bool
-    {
-        return isset($this->DateFormatter);
-    }
-
-    /**
-     * Set or unset the date formatter returned by dateFormatter()
-     *
-     * @return $this
-     */
-    final protected function setDateFormatter(?DateFormatterInterface $formatter)
-    {
-        if ($formatter === null) {
-            unset($this->DateFormatter);
-        } else {
-            $this->DateFormatter = $formatter;
-        }
-
-        return $this;
     }
 }

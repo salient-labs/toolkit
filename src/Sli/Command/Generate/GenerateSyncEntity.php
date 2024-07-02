@@ -54,7 +54,7 @@ class GenerateSyncEntity extends AbstractGenerateCommand
     /** @var string[] */
     private array $SkipProperties = [];
 
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Generate a sync entity class';
     }
@@ -323,7 +323,7 @@ EOF)
             ];
 
             $dateFormatter = $provider
-                ? $provider->dateFormatter()
+                ? $provider->getDateFormatter()
                 : new DateFormatter(
                     DateTimeInterface::ATOM,
                     null,

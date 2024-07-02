@@ -82,7 +82,7 @@ final class DeferredEntity
         }
 
         $this
-            ->store()
+            ->getStore()
             ->registerEntity($entity)
             ->deferEntity(
                 $this->Provider->getProviderId(),
@@ -103,13 +103,13 @@ final class DeferredEntity
         switch ($type) {
             case LinkType::DEFAULT:
                 return [
-                    '@type' => $this->typeUri($compact),
+                    '@type' => $this->getTypeUri($compact),
                     '@id' => $this->EntityId,
                 ];
 
             case LinkType::COMPACT:
                 return [
-                    '@id' => $this->uri($compact),
+                    '@id' => $this->getUri($compact),
                 ];
         }
 
@@ -119,14 +119,14 @@ final class DeferredEntity
     /**
      * Get the deferred entity's canonical location in the form of a URI
      */
-    public function uri(bool $compact = true): string
+    public function getUri(bool $compact = true): string
     {
-        return sprintf('%s/%s', $this->typeUri($compact), $this->EntityId);
+        return sprintf('%s/%s', $this->getTypeUri($compact), $this->EntityId);
     }
 
-    private function typeUri(bool $compact): string
+    private function getTypeUri(bool $compact): string
     {
-        $uri = $this->store()->getEntityUri($this->Entity, $compact);
+        $uri = $this->getStore()->getEntityUri($this->Entity, $compact);
 
         return
             $uri === null
@@ -279,9 +279,9 @@ final class DeferredEntity
         return $this->Context;
     }
 
-    private function store(): SyncStoreInterface
+    private function getStore(): SyncStoreInterface
     {
-        return $this->Provider->store();
+        return $this->Provider->getStore();
     }
 
     /**

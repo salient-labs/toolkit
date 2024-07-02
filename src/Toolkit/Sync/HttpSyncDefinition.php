@@ -2,6 +2,9 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
+use Salient\Contract\Core\Pipeline\PipelineInterface;
+use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
@@ -10,8 +13,6 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestMethod;
-use Salient\Contract\Pipeline\PipelineInterface;
-use Salient\Contract\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
@@ -25,6 +26,8 @@ use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\Support\SyncPipelineArgument;
+use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -33,15 +36,11 @@ use LogicException;
 use UnexpectedValueException;
 
 /**
- * Provides direct access to an HttpSyncProvider's implementation of sync
- * operations for an entity
+ * Generates closures that use an HttpSyncProvider to perform sync operations on
+ * an entity
  *
- * Providers can use {@see HttpSyncDefinition} instead of hand-coded sync
- * operations to service HTTP backends declaratively.
- *
- * To service entities this way, override
- * {@see HttpSyncProvider::buildHttpDefinition()} and return an
- * {@see HttpSyncDefinitionBuilder} that describes the relevant endpoints.
+ * Override {@see HttpSyncProvider::buildHttpDefinition()} to service HTTP
+ * endpoints declaratively via {@see HttpSyncDefinition} objects.
  *
  * If more than one implementation of a sync operation is available for an
  * entity, the order of precedence is as follows:
@@ -59,15 +58,18 @@ use UnexpectedValueException;
  * @template TEntity of SyncEntityInterface
  * @template TProvider of HttpSyncProvider
  *
- * @property-read string[]|string|null $Path The path to the provider endpoint servicing the entity, e.g. "/v1/user"
+ * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
+ *
+ * @property-read string[]|string|null $Path Path or paths to the endpoint servicing the entity, e.g. "/v1/user"
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
  * @property-read HttpHeadersInterface|null $Headers HTTP headers applied to the sync operation request
- * @property-read CurlerPagerInterface|null $Pager The pagination handler for the endpoint servicing the entity
- * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
- * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap An array that maps sync operations to HTTP request methods
- * @property-read (callable(CurlerInterface): CurlerInterface)|null $CurlerCallback A callback applied to the Curler instance created to perform each sync operation
- * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
- * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before each sync operation
+ * @property-read CurlerPagerInterface|null $Pager Pagination handler for the endpoint servicing the entity
+ * @property-read int<-1,max>|null $Expiry Seconds before cached responses expire
+ * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap Array that maps sync operations to HTTP request methods
+ * @property-read (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $CurlerCallback Callback applied to the Curler instance created to perform each sync operation
+ * @property-read bool $SyncOneEntityPerRequest Perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
+ * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback Callback applied to the definition before each sync operation
+ * @property-read mixed[]|null $Args Arguments passed to each sync operation
  *
  * @extends AbstractSyncDefinition<TEntity,TProvider>
  * @implements Buildable<HttpSyncDefinitionBuilder<TEntity,TProvider>>
@@ -89,7 +91,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     ];
 
     /**
-     * The path to the provider endpoint servicing the entity, e.g. "/v1/user"
+     * Path or paths to the endpoint servicing the entity, e.g. "/v1/user"
      *
      * Relative to {@see HttpSyncProvider::getBaseUrl()}.
      *
@@ -116,7 +118,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * If multiple paths are given, each is tried in turn until a path is found
      * where every parameter can be resolved from the context.
      *
-     * Filters are not claimed until a path is fully resolved.
+     * Filters are only claimed when a path is fully resolved.
      *
      * @link https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API
      *
@@ -133,7 +135,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *
      * @var mixed[]|null
      */
-    protected $Query;
+    protected ?array $Query;
 
     /**
      * HTTP headers applied to the sync operation request
@@ -141,87 +143,67 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * May be set via {@see HttpSyncDefinition::__construct()},
      * {@see HttpSyncDefinition::withHeaders()} or
      * {@see HttpSyncDefinition::$Callback}.
-     *
-     * @var HttpHeadersInterface|null
      */
-    protected $Headers;
+    protected ?HttpHeadersInterface $Headers;
 
     /**
-     * The pagination handler for the endpoint servicing the entity
+     * Pagination handler for the endpoint servicing the entity
      *
      * May be set via {@see HttpSyncDefinition::__construct()},
      * {@see HttpSyncDefinition::withPager()} or
      * {@see HttpSyncDefinition::$Callback}.
-     *
-     * @var CurlerPagerInterface|null
      */
-    protected $Pager;
+    protected ?CurlerPagerInterface $Pager;
 
     /**
-     * The time, in seconds, before responses from the provider expire
+     * Seconds before cached responses expire
      *
-     * If `null` (the default), responses are not cached. If less than `0`, the
-     * return value of {@see HttpSyncProvider::getExpiry()} is used. If `0`,
-     * responses are cached indefinitely.
+     * - `null`: do not cache responses
+     * - `0`: cache responses indefinitely
+     * - `-1` (default): use the value returned by
+     *   {@see HttpSyncProvider::getExpiry()}
      *
      * May be set via {@see HttpSyncDefinition::__construct()},
      * {@see HttpSyncDefinition::withExpiry()} or
      * {@see HttpSyncDefinition::$Callback}.
      *
-     * @var int|null
+     * @var int<-1,max>|null
      */
-    protected $Expiry;
+    protected ?int $Expiry;
 
     /**
-     * An array that maps sync operations to HTTP request methods
+     * Array that maps sync operations to HTTP request methods
      *
      * May be set via {@see HttpSyncDefinition::__construct()},
      * {@see HttpSyncDefinition::withMethodMap()} or
      * {@see HttpSyncDefinition::$Callback}.
      *
      * The default method map is {@see HttpSyncDefinition::DEFAULT_METHOD_MAP}.
-     * It contains:
-     *
-     * ```php
-     * <?php
-     * [
-     *   OP::CREATE => HttpRequestMethod::POST,
-     *   OP::READ => HttpRequestMethod::GET,
-     *   OP::UPDATE => HttpRequestMethod::PUT,
-     *   OP::DELETE => HttpRequestMethod::DELETE,
-     *   OP::CREATE_LIST => HttpRequestMethod::POST,
-     *   OP::READ_LIST => HttpRequestMethod::GET,
-     *   OP::UPDATE_LIST => HttpRequestMethod::PUT,
-     *   OP::DELETE_LIST => HttpRequestMethod::DELETE,
-     * ]
-     * ```
      *
      * @var array<OP::*,HttpRequestMethod::*>
      */
-    protected $MethodMap;
+    protected array $MethodMap;
 
     /**
-     * A callback applied to the Curler instance created to perform each sync
+     * Callback applied to the Curler instance created to perform each sync
      * operation
      *
      * May be set via {@see HttpSyncDefinition::__construct()},
      * {@see HttpSyncDefinition::withCurlerCallback()} or
      * {@see HttpSyncDefinition::$Callback}.
      *
-     * @var (callable(CurlerInterface): CurlerInterface)|null
+     * @var (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null
      */
     protected $CurlerCallback;
 
     /**
-     * If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on
-     * one entity per HTTP request
-     *
-     * @var bool
+     * Perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity
+     * per HTTP request
      */
-    protected $SyncOneEntityPerRequest;
+    protected bool $SyncOneEntityPerRequest;
 
     /**
-     * A callback applied to the definition before each sync operation
+     * Callback applied to the definition before each sync operation
      *
      * The callback must return the {@see HttpSyncDefinition} it receives even
      * if no request- or context-specific changes are needed.
@@ -230,8 +212,12 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      */
     protected $Callback;
 
-    /** @var mixed[]|null */
-    private $Args;
+    /**
+     * Arguments passed to each sync operation
+     *
+     * @var mixed[]|null
+     */
+    protected ?array $Args;
 
     /**
      * @param class-string<TEntity> $entity
@@ -242,14 +228,17 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
+     * @param int<-1,max>|null $expiry
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
-     * @param (callable(CurlerInterface): CurlerInterface)|null $curlerCallback
+     * @param (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $curlerCallback
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
+     * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
-     * @param PipelineInterface<mixed[],TEntity,array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param PipelineInterface<TEntity,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
+     * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
+     * @param mixed[]|null $args
      */
     public function __construct(
         string $entity,
@@ -271,8 +260,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
-        bool $readFromReadList = false,
-        ?int $returnEntitiesFrom = SyncEntitySource::HTTP_WRITE
+        bool $readFromList = false,
+        ?int $returnEntitiesFrom = SyncEntitySource::PROVIDER_OUTPUT,
+        ?array $args = null
     ) {
         parent::__construct(
             $entity,
@@ -285,7 +275,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             $keyMapFlags,
             $pipelineFromBackend,
             $pipelineToBackend,
-            $readFromReadList,
+            $readFromList,
             $returnEntitiesFrom
         );
 
@@ -298,347 +288,413 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         $this->MethodMap = $methodMap;
         $this->CurlerCallback = $curlerCallback;
         $this->SyncOneEntityPerRequest = $syncOneEntityPerRequest;
+        $this->Args = $args === null ? null : array_values($args);
     }
 
     /**
-     * @template T0 of SyncEntityInterface
-     * @template T1 of HttpSyncDefinition
-     *
-     * @param Closure(T1, OP::*, SyncContextInterface, mixed...): (iterable<T0>|T0) $override
-     * @return Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)
-     */
-    public function bindOverride(Closure $override): Closure
-    {
-        return parent::bindOverride($override);
-    }
-
-    /**
-     * Set the path to the provider endpoint servicing the entity
+     * Get an instance with the given endpoint path or paths, e.g. "/v1/user"
      *
      * @param string[]|string|null $path
-     * @return $this
-     *
-     * @see HttpSyncDefinition::$Path
+     * @return static
      */
     public function withPath($path)
     {
-        $clone = clone $this;
-        $clone->Path = $path;
-
-        return $clone;
+        return $this->with('Path', $path);
     }
 
     /**
-     * Set the query parameters applied to the sync operation URL
+     * Get an instance that applies the given query parameters to the sync
+     * operation URL
      *
      * @param mixed[]|null $query
-     * @return $this
-     *
-     * @see HttpSyncDefinition::$Query
+     * @return static
      */
     public function withQuery(?array $query)
     {
-        $clone = clone $this;
-        $clone->Query = $query;
-
-        return $clone;
+        return $this->with('Query', $query);
     }
 
     /**
-     * Set the HTTP headers applied to the sync operation request
+     * Get an instance that applies the given HTTP headers to sync operation
+     * requests
      *
-     * @return $this
-     *
-     * @see HttpSyncDefinition::$Headers
+     * @return static
      */
     public function withHeaders(?HttpHeadersInterface $headers)
     {
-        $clone = clone $this;
-        $clone->Headers = $headers;
-
-        return $clone;
+        return $this->with('Headers', $headers);
     }
 
     /**
-     * Set the pagination handler for the endpoint servicing the entity
+     * Get an instance with the given pagination handler
      *
-     * @return $this
-     *
-     * @see HttpSyncDefinition::$Pager
+     * @return static
      */
     public function withPager(?CurlerPagerInterface $pager)
     {
-        $clone = clone $this;
-        $clone->Pager = $pager;
-
-        return $clone;
+        return $this->with('Pager', $pager);
     }
 
     /**
-     * Set the time, in seconds, before responses from the provider expire
+     * Get an instance where cached responses expire after the given number of
+     * seconds
      *
-     * @return $this
-     *
-     * @see HttpSyncDefinition::$Expiry
+     * @param int<-1,max>|null $expiry - `null`: do not cache responses
+     * - `0`: cache responses indefinitely
+     * - `-1` (default): use the value returned by
+     *   {@see HttpSyncProvider::getExpiry()}
+     * @return static
      */
     public function withExpiry(?int $expiry)
     {
-        $clone = clone $this;
-        $clone->Expiry = $expiry;
-
-        return $clone;
+        return $this->with('Expiry', $expiry);
     }
 
     /**
-     * Replace the array that maps sync operations to HTTP request methods
+     * Get an instance that maps sync operations to the given HTTP request
+     * methods
      *
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
-     * @return $this
+     * @return static
      */
     public function withMethodMap(array $methodMap)
     {
-        $clone = clone $this;
-        $clone->MethodMap = $methodMap;
-
-        return $clone;
+        return $this->with('MethodMap', $methodMap);
     }
 
     /**
-     * Set the callback applied to the Curler instance created to perform each
-     * sync operation
+     * Get an instance that applies the given callback to the Curler instance
+     * created for each sync operation
      *
-     * @param (callable(CurlerInterface): CurlerInterface)|null $callback
-     * @return $this
+     * @param (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $callback
+     * @return static
      */
     public function withCurlerCallback(?callable $callback)
     {
-        $clone = clone $this;
-        $clone->CurlerCallback = $callback;
-
-        return $clone;
+        return $this->with('CurlerCallback', $callback);
     }
 
     /**
-     * Replace the arguments passed to the operation
+     * Get an instance that replaces the arguments passed to each sync operation
      *
-     * @param mixed ...$args
-     * @return $this
+     * @param mixed[]|null $args
+     * @return static
      */
-    public function withArgs(...$args)
+    public function withArgs(?array $args)
     {
-        $clone = clone $this;
-        $clone->Args = $args;
-
-        return $clone;
+        return $this->with('Args', $args === null ? null : array_values($args));
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getClosure($operation): ?Closure
     {
         // Return null if no endpoint path has been provided
-        if ($this->Callback === null
-                && ($this->Path === null || $this->Path === [])) {
+        if (
+            ($this->Path === null || $this->Path === [])
+            && $this->Callback === null
+        ) {
             return null;
         }
-
-        $httpClosure =
-            SyncIntrospector::isWriteOperation($operation) && Env::getDryRun()
-                ? fn(CurlerInterface $curler, ?array $query, $payload = null) =>
-                    is_array($payload) ? $payload : []
-                : fn(CurlerInterface $curler, ?array $query, $payload = null) =>
-                    $this->getHttpOperationClosure($operation)($curler, $query, $payload);
-        $httpRunner =
-            fn(SyncContextInterface $ctx, ...$args) =>
-                $this->runHttpOperation($httpClosure, $operation, $ctx, ...$args);
 
         switch ($operation) {
             case OP::CREATE:
             case OP::UPDATE:
             case OP::DELETE:
-                return
-                    fn(SyncContextInterface $ctx, SyncEntityInterface $entity, ...$args): SyncEntityInterface =>
-                        $this
-                            ->getPipelineToBackend()
-                            ->send($entity, [$operation, $ctx, $entity, ...$args])
-                            ->then(fn($data) => $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $entity, $operation))
-                            ->runInto($this->getRoundTripPipeline($operation))
-                            ->withConformity($this->Conformity)
-                            ->run();
+                return function (
+                    SyncContextInterface $ctx,
+                    SyncEntityInterface $entity,
+                    ...$args
+                ) use ($operation): SyncEntityInterface {
+                    $arg = new SyncPipelineArgument($operation, $ctx, $args, null, $entity);
+                    /** @var PipelineInterface<mixed[],TEntity,SyncPipelineArgument> */
+                    $roundTrip = $this->getRoundTripPipeline($operation);
+                    /** @var EntityPipelineInterface<TEntity,mixed[],SyncPipelineArgument> */
+                    $toBackend = $this
+                        ->getPipelineToBackend()
+                        ->send($entity, $arg);
+                    /** @var TEntity $entity */
+                    return $toBackend
+                        ->then(fn($data) => $this->getRoundTripPayload(
+                            $this->runHttpOperation($operation, $ctx, $data, ...$args),
+                            $entity,
+                            $operation,
+                        ))
+                        ->runInto($roundTrip)
+                        ->withConformity($this->Conformity)
+                        ->run();
+                };
 
             case OP::READ:
-                return
-                    fn(SyncContextInterface $ctx, $id, ...$args): SyncEntityInterface =>
-                        $this
-                            ->getPipelineFromBackend()
-                            ->send(($httpRunner)($ctx, $id, ...$args), [$operation, $ctx, $id, ...$args])
-                            ->withConformity($this->Conformity)
-                            ->run();
+                return function (
+                    SyncContextInterface $ctx,
+                    $id,
+                    ...$args
+                ) use ($operation): SyncEntityInterface {
+                    $arg = new SyncPipelineArgument($operation, $ctx, $args, $id);
+                    return $this
+                        ->getPipelineFromBackend()
+                        ->send(
+                            $this->runHttpOperation($operation, $ctx, $id, ...$args),
+                            $arg,
+                        )
+                        ->withConformity($this->Conformity)
+                        ->run();
+                };
 
             case OP::CREATE_LIST:
             case OP::UPDATE_LIST:
             case OP::DELETE_LIST:
-                return
-                    function (SyncContextInterface $ctx, iterable $entities, ...$args) use ($operation, $httpRunner): iterable {
-                        $entity = null;
-                        if ($this->SyncOneEntityPerRequest) {
-                            $payload = &$entity;
-                            $after = function (SyncEntityInterface $e) use (&$entity) { return $entity = $e; };
-                        } else {
-                            $payload = [];
-                            $after = function (SyncEntityInterface $e) use (&$entity, &$payload) { return $payload[] = $entity = $e; };
-                        }
-                        $then = function ($data) use ($operation, $httpRunner, $ctx, $args, &$payload) {
-                            return $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $payload, $operation);
-                        };
+                return function (
+                    SyncContextInterface $ctx,
+                    iterable $entities,
+                    ...$args
+                ) use ($operation): iterable {
+                    /** @var TEntity */
+                    $entity = null;
+                    $arg = new SyncPipelineArgument($operation, $ctx, $args, null, $entity);
+                    /** @var PipelineInterface<mixed[],TEntity,SyncPipelineArgument> */
+                    $roundTrip = $this->getRoundTripPipeline($operation);
+                    /** @var StreamPipelineInterface<TEntity,mixed[],SyncPipelineArgument> */
+                    $toBackend = $this
+                        ->getPipelineToBackend()
+                        ->stream($entities, $arg);
 
-                        return $this
-                            ->getPipelineToBackend()
-                            ->stream($entities, [$operation, $ctx, &$entity, ...$args])
+                    if ($this->SyncOneEntityPerRequest) {
+                        $payload = &$entity;
+                        /** @var Closure(TEntity): TEntity */
+                        $after = function ($currentPayload) use (&$entity) {
+                            return $entity = $currentPayload;
+                        };
+                        /** @var Closure(mixed[]): mixed[] */
+                        $then = function ($data) use ($operation, $ctx, $args, &$payload) {
+                            /** @var TEntity $payload */
+                            return $this->getRoundTripPayload(
+                                $this->runHttpOperation($operation, $ctx, $data, ...$args),
+                                $payload,
+                                $operation,
+                            );
+                        };
+                        $toBackend = $toBackend
                             ->after($after)
-                            ->if(
-                                $this->SyncOneEntityPerRequest,
-                                fn(StreamPipelineInterface $p) => $p->then($then),
-                                fn(StreamPipelineInterface $p) => $p->collectThen($then)
-                            )
-                            ->startInto($this->getRoundTripPipeline($operation))
-                            ->withConformity($this->Conformity)
-                            ->unlessIf(fn($entity) => $entity === null)
-                            ->start();
-                    };
+                            ->then($then);
+                    } else {
+                        $payload = [];
+                        /** @var Closure(TEntity): TEntity */
+                        $after = function ($currentPayload) use (&$entity, &$payload) {
+                            return $payload[] = $entity = $currentPayload;
+                        };
+                        /** @var Closure(array<mixed[]>): array<mixed[]> */
+                        $then = function ($data) use ($operation, $ctx, $args, &$payload) {
+                            /** @var TEntity[] $payload */
+                            return $this->getRoundTripPayload(
+                                $this->runHttpOperation($operation, $ctx, $data, ...$args),
+                                $payload,
+                                $operation,
+                            );
+                        };
+                        $toBackend = $toBackend
+                            ->after($after)
+                            ->collectThen($then);
+                    }
+
+                    return $toBackend
+                        ->startInto($roundTrip)
+                        ->withConformity($this->Conformity)
+                        ->unlessIf(fn($entity) => $entity === null)
+                        ->start();
+                };
 
             case OP::READ_LIST:
-                return
-                    fn(SyncContextInterface $ctx, ...$args): iterable =>
-                        $this
-                            ->getPipelineFromBackend()
-                            ->stream(($httpRunner)($ctx, ...$args), [$operation, $ctx, ...$args])
-                            ->withConformity($this->Conformity)
-                            ->unlessIf(fn($entity) => $entity === null)
-                            ->start();
+                return function (
+                    SyncContextInterface $ctx,
+                    ...$args
+                ) use ($operation): iterable {
+                    /** @var iterable<mixed[]>) */
+                    $payload = $this->runHttpOperation($operation, $ctx, ...$args);
+                    $arg = new SyncPipelineArgument($operation, $ctx, $args);
+                    return $this
+                        ->getPipelineFromBackend()
+                        ->stream($payload, $arg)
+                        ->withConformity($this->Conformity)
+                        ->unlessIf(fn($entity) => $entity === null)
+                        ->start();
+                };
         }
 
-        throw new LogicException("Invalid SyncOperation: $operation");
+        // @codeCoverageIgnoreStart
+        throw new LogicException(sprintf(
+            'Invalid SyncOperation: %d',
+            $operation,
+        ));
+        // @codeCoverageIgnoreEnd
     }
 
     /**
      * Get a closure to perform a sync operation via HTTP
      *
      * @param OP::* $operation
-     * @return Closure(CurlerInterface, mixed[]|null, mixed[]|null=): mixed[]
+     * @return Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[])
      */
     private function getHttpOperationClosure($operation): Closure
     {
-        // Pagination with operations other than READ_LIST via GET or POST is
-        // too risky to implement here, but providers can add their own support
-        // for pagination with other operations and/or HTTP methods
-        switch ([$operation, $this->MethodMap[$operation] ?? null]) {
-            case [OP::READ_LIST, HttpRequestMethod::GET]:
-                return fn(CurlerInterface $curler, ?array $query) => $curler->getPager() ? $curler->getP($query) : $curler->get($query);
-
-            case [OP::READ_LIST, HttpRequestMethod::POST]:
-                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->getPager() ? $curler->postP($payload, $query) : $curler->post($payload, $query);
-
-            case [$operation, HttpRequestMethod::GET]:
-                return fn(CurlerInterface $curler, ?array $query) => $curler->get($query);
-
-            case [$operation, HttpRequestMethod::POST]:
-                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->post($payload, $query);
-
-            case [$operation, HttpRequestMethod::PUT]:
-                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->put($payload, $query);
-
-            case [$operation, HttpRequestMethod::PATCH]:
-                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->patch($payload, $query);
-
-            case [$operation, HttpRequestMethod::DELETE]:
-                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) => $curler->delete($payload, $query);
+        // In dry-run mode, return a no-op closure for write operations
+        if (
+            SyncIntrospector::isWriteOperation($operation)
+            && Env::getDryRun()
+        ) {
+            /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
+            return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
+                $payload ?? [];
         }
 
-        throw new LogicException("Invalid SyncOperation or method map: $operation");
+        // Pagination with operations other than READ_LIST via GET or POST can't
+        // be safely implemented here, but providers can support pagination with
+        // other operations and/or HTTP methods via overrides
+        switch ([$operation, $this->MethodMap[$operation] ?? null]) {
+            case [OP::READ_LIST, HttpRequestMethod::GET]:
+                /** @var Closure(CurlerInterface, mixed[]|null): iterable<mixed[]> */
+                return fn(CurlerInterface $curler, ?array $query) =>
+                    $curler->getPager()
+                        ? $curler->getP($query)
+                        : $curler->get($query);
+
+            case [OP::READ_LIST, HttpRequestMethod::POST]:
+                /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): iterable<mixed[]> */
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
+                    $curler->getPager()
+                        ? $curler->postP($payload, $query)
+                        : $curler->post($payload, $query);
+
+            case [$operation, HttpRequestMethod::GET]:
+                /** @var Closure(CurlerInterface, mixed[]|null): (iterable<mixed[]>|mixed[]) */
+                return fn(CurlerInterface $curler, ?array $query) =>
+                    $curler->get($query);
+
+            case [$operation, HttpRequestMethod::POST]:
+                /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
+                    $curler->post($payload, $query);
+
+            case [$operation, HttpRequestMethod::PUT]:
+                /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
+                    $curler->put($payload, $query);
+
+            case [$operation, HttpRequestMethod::PATCH]:
+                /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
+                    $curler->patch($payload, $query);
+
+            case [$operation, HttpRequestMethod::DELETE]:
+                /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
+                return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
+                    $curler->delete($payload, $query);
+        }
+
+        // @codeCoverageIgnoreStart
+        throw new LogicException(sprintf(
+            'Invalid SyncOperation or method map: %d',
+            $operation,
+        ));
+        // @codeCoverageIgnoreEnd
     }
 
     /**
-     * Run a sync operation closure prepared earlier
+     * Use an HTTP operation closure to perform a sync operation
      *
-     * @param (Closure(CurlerInterface, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
      * @param OP::* $operation
      * @param mixed ...$args
-     * @return mixed[]
+     * @return iterable<mixed[]>|mixed[]
      */
-    private function runHttpOperation(Closure $httpClosure, $operation, SyncContextInterface $ctx, ...$args)
+    private function runHttpOperation($operation, SyncContextInterface $ctx, ...$args)
     {
-        $def =
+        return (
             $this->Callback === null
                 ? $this
-                : ($this->Callback)($this, $operation, $ctx, ...$args);
+                : ($this->Callback)($this, $operation, $ctx, ...$args)
+        )->doRunHttpOperation($operation, $ctx, ...$args);
+    }
 
-        if ($def->Path === null || $def->Path === []) {
+    /**
+     * @param OP::* $operation
+     * @param mixed ...$args
+     * @return iterable<mixed[]>|mixed[]
+     */
+    private function doRunHttpOperation($operation, SyncContextInterface $ctx, ...$args)
+    {
+        if ($this->Path === null || $this->Path === []) {
             throw new LogicException('Path required');
         }
 
-        if ($def->Args !== null) {
-            $args = $def->Args;
+        if ($this->Args !== null) {
+            $args = $this->Args;
         }
 
         $id = $this->getIdFromArgs($operation, $args);
 
-        $paths = (array) $def->Path;
+        $paths = (array) $this->Path;
         while ($paths) {
             $claim = [];
             $idApplied = false;
             $path = array_shift($paths);
-            try {
-                $path = Regex::replaceCallback(
-                    '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
-                    function (array $match) use (
-                        $operation,
-                        $ctx,
-                        $id,
-                        &$claim,
-                        &$idApplied,
-                        $path
-                    ): string {
-                        $name = $match['name'];
-                        if ($id !== null
-                                && Str::toSnakeCase($name) === 'id') {
-                            $idApplied = true;
-                            return $this->checkParameterValue(
-                                (string) $id, $name, $path
-                            );
-                        }
-
-                        $value = $ctx->getFilter($name);
-                        if ($value === null) {
-                            $value = $ctx->getValue($name);
-                        } else {
-                            $claim[$name] = true;
-                        }
-
-                        if ($value === null) {
-                            throw new SyncInvalidContextException(
-                                sprintf("Unable to resolve '%s' in path '%s'", $name, $path),
-                                $ctx,
-                                $this->Provider,
-                                $this->Entity,
-                                $operation,
-                            );
-                        }
-
-                        return $this->checkParameterValue(
-                            (string) $value, $name, $path
-                        );
-                    },
-                    $path
-                );
+            // Use this path if it doesn't have any named parameters
+            if (!Regex::matchAll(
+                '/:(?<name>[[:alpha:]_][[:alnum:]_]*+)/',
+                $path,
+                $matches,
+                \PREG_SET_ORDER
+            )) {
                 break;
-            } catch (SyncInvalidContextException $ex) {
-                if (!$paths) {
-                    throw $ex;
+            }
+            /** @var string[] */
+            $matches = Arr::unique(Arr::pluck($matches, 'name'));
+            foreach ($matches as $name) {
+                if (
+                    $id !== null
+                    && Str::toSnakeCase($name) === 'id'
+                ) {
+                    $idApplied = true;
+                    $path = $this->applyParameterValue((string) $id, $name, $path);
+                    continue;
+                }
+
+                $value = $ctx->getFilter($name);
+                $isFilter = true;
+                if ($value === null) {
+                    $value = $ctx->getValue($name);
+                    $isFilter = false;
+                }
+
+                if ($value === null) {
+                    if ($paths) {
+                        continue 2;
+                    }
+                    throw new SyncInvalidContextException(
+                        sprintf("Unable to resolve '%s' in path '%s'", $name, $path)
+                    );
+                }
+
+                if (is_array($value)) {
+                    if ($paths) {
+                        continue 2;
+                    }
+                    throw new SyncInvalidContextException(
+                        sprintf("Cannot apply array to '%s' in path '%s'", $name, $path)
+                    );
+                }
+
+                $path = $this->applyParameterValue((string) $value, $name, $path);
+                if ($isFilter) {
+                    $claim[] = $name;
                 }
             }
+            break;
         }
 
         if ($claim) {
-            foreach (array_keys($claim) as $name) {
+            foreach ($claim as $name) {
                 $ctx->claimFilter($name);
             }
         }
@@ -646,32 +702,45 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         // If an operation is being performed on a sync entity with a known ID
         // that hasn't been applied to the path, and no callback has been
         // provided, add the conventional '/:id' to the endpoint
-        if ($id !== null
-                && !$idApplied
-                && $this->Callback === null
-                && strpos($path, '?') === false) {
-            $path .= '/' . $this->checkParameterValue(
+        if (
+            $id !== null
+            && !$idApplied
+            && $this->Callback === null
+            && strpos($path, '?') === false
+        ) {
+            $path .= '/' . $this->filterParameterValue(
                 (string) $id, 'id', "$path/:id"
             );
         }
 
-        $curler = $this->Provider->getCurler($path, $def->Expiry, $def->Headers, $def->Pager);
+        $curler = $this->Provider->getCurler($path, $this->Expiry, $this->Headers, $this->Pager);
 
-        if ($def->CurlerCallback) {
-            $curler = ($def->CurlerCallback)($curler);
+        if ($this->CurlerCallback) {
+            $curler = ($this->CurlerCallback)($curler, $this, $operation, $ctx, ...$args);
         }
 
-        $def->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
+        $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
         if ($returnEmpty) {
             return $empty;
         }
 
+        $httpClosure = $this->getHttpOperationClosure($operation);
+        $payload = $args[0] ?? null;
+        if ($payload !== null && (
+            !is_array($payload)
+            || SyncIntrospector::isReadOperation($operation)
+        )) {
+            $payload = null;
+        }
+
         try {
-            return $httpClosure->call($def, $curler, $def->Query, $args[0] ?? null);
+            return $httpClosure($curler, $this->Query, $payload);
         } catch (HttpErrorException $ex) {
-            if ($operation === OP::READ
-                    && $id !== null
-                    && $ex->isNotFoundError()) {
+            if (
+                $operation === OP::READ
+                && $id !== null
+                && $ex->isNotFoundError()
+            ) {
                 throw new SyncEntityNotFoundException(
                     $this->Provider,
                     $this->Entity,
@@ -695,7 +764,13 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         }
 
         if ($operation === OP::READ) {
-            return $args[0] ?? null;
+            $id = $args[0] ?? null;
+
+            if ($id === null || is_int($id) || is_string($id)) {
+                return $id;
+            }
+
+            return null;
         }
 
         $entity = $args[0] ?? null;
@@ -704,10 +779,16 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             return null;
         }
 
-        return $entity->id();
+        return $entity->getId();
     }
 
-    private function checkParameterValue(string $value, string $name, string $path): string
+    private function applyParameterValue(string $value, string $name, string $path): string
+    {
+        $value = $this->filterParameterValue($value, $name, $path);
+        return Regex::replace("/:{$name}(?![[:alnum:]_])/", $value, $path);
+    }
+
+    private function filterParameterValue(string $value, string $name, string $path): string
     {
         if (strpos($value, '/') !== false) {
             throw new UnexpectedValueException(
@@ -720,47 +801,58 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     /**
      * Get a payload for the round trip pipeline
      *
-     * @param mixed[] $response
-     * @param TEntity[]|TEntity $requestPayload
+     * @template TPayload of TEntity[]|TEntity
+     *
+     * @param iterable<mixed[]>|mixed[] $response
+     * @param TPayload $requestPayload
      * @param OP::* $operation
-     * @return mixed[]
+     * @return (TPayload is TEntity[] ? iterable<mixed[]> : mixed[])
      */
     private function getRoundTripPayload($response, $requestPayload, $operation)
     {
         switch ($this->ReturnEntitiesFrom) {
-            case SyncEntitySource::HTTP_WRITE:
+            case SyncEntitySource::PROVIDER_OUTPUT:
+                /** @var iterable<mixed[]>|mixed[] */
                 return Env::getDryRun()
                     ? $requestPayload
                     : $response;
 
-            case SyncEntitySource::SYNC_OPERATION:
+            case SyncEntitySource::OPERATION_INPUT:
+                /** @var iterable<mixed[]>|mixed[] */
                 return $requestPayload;
 
             default:
+                // @codeCoverageIgnoreStart
                 throw new SyncInvalidEntitySourceException(
                     $this->Provider, $this->Entity, $operation, $this->ReturnEntitiesFrom
                 );
+                // @codeCoverageIgnoreEnd
         }
     }
 
     /**
      * @param OP::* $operation
-     * @return PipelineInterface<mixed[],TEntity,array{0:OP::*,1:SyncContextInterface,2?:int|string|TEntity|TEntity[]|null,...}>
+     * @return PipelineInterface<mixed[],TEntity,SyncPipelineArgument>
      */
     private function getRoundTripPipeline($operation): PipelineInterface
     {
         switch ($this->ReturnEntitiesFrom) {
-            case SyncEntitySource::SYNC_OPERATION:
-                return new Pipeline();
+            case SyncEntitySource::PROVIDER_OUTPUT:
+                /** @var PipelineInterface<mixed[],TEntity,SyncPipelineArgument> */
+                return Env::getDryRun()
+                    ? Pipeline::create()
+                    : $this->getPipelineFromBackend();
 
-            case SyncEntitySource::HTTP_READ:
-            case SyncEntitySource::HTTP_WRITE:
-                return $this->getPipelineFromBackend();
+            case SyncEntitySource::OPERATION_INPUT:
+                /** @var PipelineInterface<mixed[],TEntity,SyncPipelineArgument> */
+                return Pipeline::create();
 
             default:
+                // @codeCoverageIgnoreStart
                 throw new SyncInvalidEntitySourceException(
                     $this->Provider, $this->Entity, $operation, $this->ReturnEntitiesFrom
                 );
+                // @codeCoverageIgnoreEnd
         }
     }
 
@@ -780,6 +872,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             'CurlerCallback',
             'SyncOneEntityPerRequest',
             'Callback',
+            'Args',
         ];
     }
 }

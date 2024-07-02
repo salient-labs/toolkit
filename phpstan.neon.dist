@@ -13,6 +13,7 @@ parameters:
 		- tests/fixtures
 		- tests/unit
 		- tests/phpstan-conditional.php
+		- tests/test-sli
 		- bootstrap.php
 	stubFiles:
 		- stubs/ADOConnection.stub

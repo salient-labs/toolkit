@@ -5,10 +5,10 @@ namespace Salient\Contract\Core;
 /**
  * @api
  */
-interface Describable
+interface HasDescription
 {
     /**
      * Get a description of the object
      */
-    public function description(): string;
+    public function getDescription(): string;
 }

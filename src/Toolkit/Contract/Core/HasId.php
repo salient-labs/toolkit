@@ -2,12 +2,15 @@
 
 namespace Salient\Contract\Core;
 
-interface Identifiable
+/**
+ * @api
+ */
+interface HasId
 {
     /**
      * Get the object's unique identifier
      *
      * @return int|string|null
      */
-    public function id();
+    public function getId();
 }

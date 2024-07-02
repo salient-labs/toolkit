@@ -409,7 +409,6 @@ SQL;
         $providerId = $row[0];
         $this->Providers[$providerId] = $provider;
         $this->ProviderMap[$hash] = $providerId;
-        $provider->setProviderId($providerId);
 
         return $this;
     }
@@ -1045,7 +1044,7 @@ SQL;
         /** @var SyncProviderInterface $provider */
         foreach ($providers as $provider) {
             $id = $provider->getProviderId();
-            $name = sprintf('%s [#%d]', $provider->name(), $id);
+            $name = sprintf('%s [#%d]', $provider->getName(), $id);
             Console::logProgress('Checking', $name);
             try {
                 $provider->checkHeartbeat($ttl);

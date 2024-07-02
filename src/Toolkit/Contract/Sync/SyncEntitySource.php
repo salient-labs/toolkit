@@ -12,17 +12,12 @@ use Salient\Core\AbstractReflectiveEnumeration;
 final class SyncEntitySource extends AbstractReflectiveEnumeration
 {
     /**
-     * An HTTP GET response
+     * Output from a successful CREATE, UPDATE or DELETE operation
      */
-    public const HTTP_READ = 0;
+    public const PROVIDER_OUTPUT = 0;
 
     /**
-     * An HTTP POST, PUT, PATCH or DELETE response
+     * Input to a successful CREATE, UPDATE or DELETE operation
      */
-    public const HTTP_WRITE = 1;
-
-    /**
-     * The input to a CREATE, UPDATE or DELETE operation
-     */
-    public const SYNC_OPERATION = 2;
+    public const OPERATION_INPUT = 1;
 }

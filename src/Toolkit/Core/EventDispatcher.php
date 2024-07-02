@@ -5,7 +5,7 @@ namespace Salient\Core;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
-use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\HasName;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 use LogicException;
@@ -130,8 +130,8 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
             class_implements($event),
         );
 
-        if ($event instanceof Nameable) {
-            $eventName = $event->name();
+        if ($event instanceof HasName) {
+            $eventName = $event->getName();
             // If the event returns a name we already have, do nothing
             if (!is_a($event, $eventName)) {
                 $events[] = $eventName;

@@ -3,7 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\Identifiable;
+use Salient\Contract\Core\HasId;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
@@ -83,8 +83,8 @@ class ProviderContext implements ProviderContextInterface
         $clone = $this->clone();
         $clone->Stack[] = $entity;
 
-        if ($entity instanceof Identifiable) {
-            $id = $entity->id();
+        if ($entity instanceof HasId) {
+            $id = $entity->getId();
             if ($id !== null) {
                 $name = Get::basename(get_class($entity));
                 return $clone->withValue("{$name}_id", $id);

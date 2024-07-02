@@ -8,6 +8,10 @@ use Salient\Tests\CommandTestCase;
 
 abstract class SyncCommandTestCase extends CommandTestCase
 {
+    /** @var class-string[] */
+    protected array $Providers = [];
+    protected bool $Providerless = false;
+
     /**
      * @param array<string,int> $requests
      */
@@ -24,9 +28,21 @@ abstract class SyncCommandTestCase extends CommandTestCase
 
     protected function setUpApp(CliApplicationInterface $app): CliApplicationInterface
     {
+        if (!$this->Providerless) {
+            foreach ($this->Providers as $provider) {
+                $app = $app->provider($provider);
+            }
+            $app = $app->provider(JsonPlaceholderApi::class);
+        }
+
         return $app
             ->startCache()
-            ->startSync(static::class, [])
-            ->provider(JsonPlaceholderApi::class);
+            ->startSync(static::class, []);
+    }
+
+    protected function setUp(): void
+    {
+        $this->Providers = [];
+        $this->Providerless = false;
     }
 }

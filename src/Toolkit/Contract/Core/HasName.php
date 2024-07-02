@@ -2,10 +2,13 @@
 
 namespace Salient\Contract\Core;
 
-interface Nameable
+/**
+ * @api
+ */
+interface HasName
 {
     /**
      * Get the name of the object
      */
-    public function name(): string;
+    public function getName(): string;
 }

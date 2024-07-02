@@ -1,0 +1,32 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
+use Salient\Contract\Sync\Event\SyncStoreLoadedEventInterface;
+use Salient\Core\Facade\Event;
+use Salient\Tests\Sync\External\Provider\MockProvider as ExternalMockProvider;
+use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
+use Salient\Tests\Sync\Provider\MockProvider;
+
+require $_composer_autoload_path
+    ?? dirname(__DIR__) . '/vendor/autoload.php';
+
+Event::getInstance()->listen(
+    static fn(BeforeGlobalContainerSetEventInterface $event) =>
+        !($container = $event->getContainer())
+        || $container
+            ->provider(MockProvider::class)
+            ->provider(ExternalMockProvider::class)
+            ->provider(JsonPlaceholderApi::class),
+);
+
+Event::getInstance()->listen(
+    static fn(SyncStoreLoadedEventInterface $event) =>
+        $event->getStore()->registerNamespace(
+            'salient-tests',
+            'https://salient-labs.github.io/toolkit/tests/entity',
+            'Salient\Tests\Sync\Entity',
+        ),
+);
+
+require dirname(__DIR__) . '/bin/sli';

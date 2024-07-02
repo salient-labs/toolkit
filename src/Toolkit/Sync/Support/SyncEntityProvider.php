@@ -86,8 +86,8 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
             throw new LogicException(sprintf(
                 '%s has different provider (%s, expected %s)',
                 get_class($context),
-                $context->getProvider()->name(),
-                $provider->name(),
+                $context->getProvider()->getName(),
+                $provider->getName(),
             ));
         }
 
@@ -139,7 +139,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $this->Provider = $provider;
         $this->Definition = $provider->getDefinition($entity);
         $this->Context = $context ?? $provider->getContext($container);
-        $this->Store = $provider->store();
+        $this->Store = $provider->getStore();
     }
 
     /**
@@ -173,7 +173,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $closure =
             $this
                 ->Definition
-                ->getSyncOperationClosure($operation);
+                ->getOperationClosure($operation);
 
         if (!$closure) {
             throw new SyncOperationNotImplementedException(

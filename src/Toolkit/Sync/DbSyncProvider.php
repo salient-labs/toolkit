@@ -58,24 +58,40 @@ abstract class DbSyncProvider extends AbstractSyncProvider
     }
 
     /**
-     * @template T of SyncEntityInterface
-     *
-     * @param class-string<T> $entity
-     * @return SyncDefinitionInterface<T,static>
+     * @inheritDoc
      */
     final public function getDefinition(string $entity): SyncDefinitionInterface
     {
-        /** @var SyncDefinitionInterface<T,static> */
-        $def = $this
-            ->buildDbDefinition(
-                $entity,
-                DbSyncDefinition::build()
-                    ->entity($entity)
-                    ->provider($this)
-            )
-            ->build();
+        return $this->getDbDefinition($entity);
+    }
 
-        return $def;
+    /**
+     * Override to implement sync operations by returning a DbSyncDefinition
+     * object for the given entity
+     *
+     * @template TEntity of SyncEntityInterface
+     *
+     * @param class-string<TEntity> $entity
+     * @return DbSyncDefinition<TEntity,$this>
+     */
+    protected function getDbDefinition(string $entity): DbSyncDefinition
+    {
+        return $this->builderFor($entity)->build();
+    }
+
+    /**
+     * Get a new DbSyncDefinitionBuilder for an entity
+     *
+     * @template TEntity of SyncEntityInterface
+     *
+     * @param class-string<TEntity> $entity
+     * @return DbSyncDefinitionBuilder<TEntity,$this>
+     */
+    final protected function builderFor(string $entity): DbSyncDefinitionBuilder
+    {
+        return DbSyncDefinition::build()
+            ->entity($entity)
+            ->provider($this);
     }
 
     /**
@@ -148,26 +164,5 @@ abstract class DbSyncProvider extends AbstractSyncProvider
         }
 
         return $row;
-    }
-
-    /**
-     * Surface the provider's implementation of sync operations for an entity
-     * via a DbSyncDefinition object
-     *
-     * Return `$defB` if no sync operations are implemented for the entity.
-     *
-     * @template TEntity of SyncEntityInterface
-     * @template TProvider of DbSyncProvider
-     *
-     * @param class-string<TEntity> $entity
-     * @param DbSyncDefinitionBuilder<TEntity,TProvider> $defB A definition
-     * builder with `entity()` and `provider()` already applied.
-     * @return DbSyncDefinitionBuilder<TEntity,TProvider>
-     */
-    protected function buildDbDefinition(
-        string $entity,
-        DbSyncDefinitionBuilder $defB
-    ): DbSyncDefinitionBuilder {
-        return $defB;
     }
 }

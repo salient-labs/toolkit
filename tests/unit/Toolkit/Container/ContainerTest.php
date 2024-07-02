@@ -419,11 +419,6 @@ class TestServiceImplA implements HasServices, HasContextualBindings, ITestServi
 
 class TestServiceImplB extends TestServiceImplA implements SingletonInterface {}
 
-/**
- * @template T of ContainerInterface
- *
- * @implements HasContainer<T>
- */
 class A implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
 {
     use TestTrait;
@@ -436,39 +431,20 @@ class A implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
     }
 }
 
-/**
- * @template T of ContainerInterface
- *
- * @extends A<T>
- */
 class B extends A {}
 
-/**
- * @template T of ContainerInterface
- *
- * @implements HasContainer<T>
- */
 class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
 {
     use TestTrait;
 
-    /** @var A<T> */
     public A $a;
 
-    /**
-     * @param A<T> $a
-     */
     public function __construct(A $a)
     {
         $this->a = $a;
     }
 }
 
-/**
- * @template T of ContainerInterface
- *
- * @extends C<T>
- */
 class D extends C {}
 
 /**

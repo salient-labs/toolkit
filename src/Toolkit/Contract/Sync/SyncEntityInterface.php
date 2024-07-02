@@ -3,8 +3,8 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\Identifiable;
-use Salient\Contract\Core\Nameable;
+use Salient\Contract\Core\HasId;
+use Salient\Contract\Core\HasName;
 use Salient\Contract\Core\ProvidableEntityInterface;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
@@ -17,8 +17,8 @@ use JsonSerializable;
  * @extends ProvidableEntityInterface<SyncProviderInterface,SyncContextInterface>
  */
 interface SyncEntityInterface extends
-    Identifiable,
-    Nameable,
+    HasId,
+    HasName,
     ProvidableEntityInterface,
     Relatable,
     JsonSerializable
@@ -78,7 +78,7 @@ interface SyncEntityInterface extends
     /**
      * Get the unique identifier assigned to the entity by its provider
      */
-    public function id();
+    public function getId();
 
     /**
      * Get the unique identifier assigned to the entity by its canonical backend
@@ -92,12 +92,12 @@ interface SyncEntityInterface extends
      *
      * @return int|string|null
      */
-    public function canonicalId();
+    public function getCanonicalId();
 
     /**
      * Get the name of the entity
      */
-    public function name(): string;
+    public function getName(): string;
 
     /**
      * Resolve a name or entity ID to the entity ID of one matching entity
@@ -160,5 +160,5 @@ interface SyncEntityInterface extends
      *
      * Inspired by OData.
      */
-    public function uri(?SyncStoreInterface $store = null, bool $compact = true): string;
+    public function getUri(?SyncStoreInterface $store = null, bool $compact = true): string;
 }

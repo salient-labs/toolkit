@@ -22,6 +22,26 @@ final class Arr extends AbstractUtility
     public const SORT_FLAG_CASE = \SORT_FLAG_CASE;
 
     /**
+     * Get values from a list of arrays using dot notation
+     *
+     * @param iterable<mixed[]> $array
+     * @return ($keyKey is null ? list<mixed> : mixed[])
+     */
+    public static function pluck(iterable $array, string $valueKey, ?string $keyKey = null): array
+    {
+        foreach ($array as $array) {
+            $value = self::get($valueKey, $array);
+            if ($keyKey === null) {
+                $plucked[] = $value;
+                continue;
+            }
+            $key = self::get($keyKey, $array);
+            $plucked[$key] = $value;
+        }
+        return $plucked ?? [];
+    }
+
+    /**
      * Get a value from nested arrays using dot notation
      *
      * @param mixed[] $array

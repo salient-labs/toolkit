@@ -46,7 +46,7 @@ final class GenerateFacade extends AbstractGenerateCommand
     /** @var string[] */
     private array $SkipMethods = [];
 
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Generate a facade';
     }

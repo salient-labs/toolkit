@@ -237,7 +237,7 @@ class CliApplication extends Application implements CliApplicationInterface
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {
-                $synopses[] = '__' . $childName . '__ - ' . Formatter::escapeTags($command->description());
+                $synopses[] = '__' . $childName . '__ - ' . Formatter::escapeTags($command->getDescription());
             } elseif (is_array($childNode)) {
                 $synopses[] = '__' . $childName . '__';
             }

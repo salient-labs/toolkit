@@ -27,6 +27,23 @@ final class ArrTest extends TestCase
         71,
     ];
 
+    public function testPluck(): void
+    {
+        $data = [
+            ['foo' => 'bar', 'baz' => 'qux'],
+            ['foo' => 'quux', 'baz' => 'quuux'],
+        ];
+        $this->assertSame(['bar', 'quux'], Arr::pluck($data, 'foo'));
+        $this->assertSame(['bar' => 'qux', 'quux' => 'quuux'], Arr::pluck($data, 'baz', 'foo'));
+
+        $data = [
+            ['foo' => ['bar' => ['baz' => 'value1', 'quux' => 'key1']]],
+            ['foo' => ['bar' => ['baz' => ['value2'], 'quux' => 'key2']]],
+        ];
+        $this->assertSame(['value1', ['value2']], Arr::pluck($data, 'foo.bar.baz'));
+        $this->assertSame(['key1' => 'value1', 'key2' => ['value2']], Arr::pluck($data, 'foo.bar.baz', 'foo.bar.quux'));
+    }
+
     /**
      * @dataProvider getProvider
      *

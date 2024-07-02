@@ -36,10 +36,10 @@ final class SendHttpRequest extends AbstractCommand
     private function getMethod(): string
     {
         return $this->HttpMethod
-            ??= Str::upper((string) Arr::last($this->nameParts()));
+            ??= Str::upper((string) Arr::last($this->getNameParts()));
     }
 
-    public function description(): string
+    public function getDescription(): string
     {
         return sprintf(
             'Send a %s request to an HTTP sync provider endpoint',
