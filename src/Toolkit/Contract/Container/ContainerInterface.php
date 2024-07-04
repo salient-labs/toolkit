@@ -258,9 +258,10 @@ interface ContainerInterface extends
      * Register a service provider with the container, optionally specifying
      * which of its services to bind or ignore
      *
-     * Unlike {@see bind()} and {@see singleton()}, {@see provider()} loads the
-     * given class to check its interfaces and calls static methods like
-     * {@see HasContextualBindings::getContextualBindings()}.
+     * For performance reasons, classes bound to the container with
+     * {@see bind()} or {@see singleton()} are not loaded until they are
+     * resolved. Classes registered with {@see provider()} are loaded
+     * immediately, but are not instantiated until they are resolved.
      *
      * @param class-string $id
      * @param class-string[]|null $services Services to bind, or `null` to
