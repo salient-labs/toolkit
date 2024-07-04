@@ -72,6 +72,14 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /**
      * @inheritDoc
      */
+    public function getEol(): string
+    {
+        return "\n";
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function close(): void
     {
         if (!$this->Stream) {
