@@ -49,7 +49,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
         return 'Generate a provider interface for a sync entity class';
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         return [
             CliOption::build()

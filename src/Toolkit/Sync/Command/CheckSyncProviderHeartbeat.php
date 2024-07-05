@@ -33,7 +33,7 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
         );
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         $builder = CliOption::build()
             ->name('provider')

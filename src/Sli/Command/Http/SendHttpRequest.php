@@ -47,7 +47,7 @@ final class SendHttpRequest extends AbstractCommand
         );
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         $options = [
             CliOption::build()

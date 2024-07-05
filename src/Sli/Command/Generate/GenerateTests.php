@@ -35,7 +35,7 @@ class GenerateTests extends AbstractGenerateCommand
         return 'Generate PHPUnit tests for the public methods of a class';
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         return [
             CliOption::build()

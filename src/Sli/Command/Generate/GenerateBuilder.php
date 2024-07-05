@@ -71,7 +71,7 @@ class GenerateBuilder extends AbstractGenerateCommand
         return 'Generate a builder';
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         return [
             CliOption::build()
