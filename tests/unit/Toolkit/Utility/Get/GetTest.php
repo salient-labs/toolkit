@@ -241,7 +241,7 @@ final class GetTest extends TestCase
      * @param mixed[]|string $expected
      * @param string[] $values
      */
-    public function testFilter($expected, array $values, bool $discardInvalid = true): void
+    public function testFilter($expected, array $values, bool $discardInvalid = false): void
     {
         $this->maybeExpectException($expected);
         $this->assertSame($expected, Get::filter($values, $discardInvalid));
@@ -274,6 +274,7 @@ final class GetTest extends TestCase
                     '3',
                     '=value5',
                 ],
+                true,
             ],
             [
                 [
@@ -290,16 +291,15 @@ final class GetTest extends TestCase
                     'key4',
                     '=value5',
                 ],
+                true,
             ],
             [
                 InvalidArgumentException::class . ",Invalid key-value pair: '=value'",
                 ['=value'],
-                false,
             ],
             [
                 InvalidArgumentException::class . ",Invalid key-value pairs: '=value', ''",
                 ['=value', ''],
-                false,
             ],
             [
                 [
