@@ -113,9 +113,9 @@ trait HasUnderlyingService
                     $serviceList = Arr::extend([$name], $value);
                     return;
                 }
-                if (Arr::isListOfString($value)) {
+                if (Arr::ofString($value)) {
                     $serviceName = $name;
-                    $serviceList = Arr::extend([$name], ...$value);
+                    $serviceList = Arr::extend([$name], ...array_values($value));
                     return;
                 }
             }

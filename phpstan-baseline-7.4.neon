@@ -356,11 +356,6 @@ parameters:
 			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
 
 		-
-			message: "#^Parameter \\#1 \\$scopes of method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:resolveScopes\\(\\) expects array\\<string\\>\\|string\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
 			message: "#^Parameter \\#1 \\$token of method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:accessTokenHasScopes\\(\\) expects Salient\\\\Http\\\\OAuth2\\\\AccessToken, Salient\\\\Http\\\\OAuth2\\\\AccessToken\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Http/OAuth2/OAuth2Client.php

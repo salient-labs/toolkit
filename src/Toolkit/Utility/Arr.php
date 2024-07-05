@@ -29,20 +29,20 @@ final class Arr extends AbstractUtility
      */
     public static function pluck(iterable $array, string $valueKey, ?string $keyKey = null): array
     {
-        foreach ($array as $array) {
-            $value = self::get($valueKey, $array);
+        foreach ($array as $item) {
+            $value = self::get($valueKey, $item);
             if ($keyKey === null) {
                 $plucked[] = $value;
                 continue;
             }
-            $key = self::get($keyKey, $array);
+            $key = self::get($keyKey, $item);
             $plucked[$key] = $value;
         }
         return $plucked ?? [];
     }
 
     /**
-     * Get a value from nested arrays using dot notation
+     * Get a value from an array using dot notation
      *
      * @param mixed[] $array
      * @param mixed $default
@@ -69,7 +69,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Check if a value exists in nested arrays using dot notation
+     * Check if a value exists in an array using dot notation
      *
      * @param mixed[] $array
      */
@@ -195,7 +195,7 @@ final class Arr extends AbstractUtility
      *
      * @param array<TKey,TValue> $array
      * @param TValue ...$values
-     * @return array<TKey,TValue>
+     * @return array<TKey|int,TValue>
      */
     public static function push(array $array, ...$values): array
     {
@@ -450,17 +450,6 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Check if a value is a list of integers or a list of strings
-     *
-     * @param mixed $value
-     * @phpstan-assert-if-true list<int>|list<string> $value
-     */
-    public static function isListOfArrayKey($value, bool $orEmpty = false): bool
-    {
-        return self::isListOfInt($value, $orEmpty) || self::isListOfString($value);
-    }
-
-    /**
      * Check if a value is an array of integers
      *
      * @param mixed $value
@@ -468,18 +457,7 @@ final class Arr extends AbstractUtility
      */
     public static function ofInt($value, bool $orEmpty = false): bool
     {
-        return self::doIsArrayOf('is_int', $value, $orEmpty, false);
-    }
-
-    /**
-     * Check if a value is a list of integers
-     *
-     * @param mixed $value
-     * @phpstan-assert-if-true list<int> $value
-     */
-    public static function isListOfInt($value, bool $orEmpty = false): bool
-    {
-        return self::doIsArrayOf('is_int', $value, $orEmpty, true);
+        return self::doIsArrayOf('is_int', $value, $orEmpty);
     }
 
     /**
@@ -490,18 +468,7 @@ final class Arr extends AbstractUtility
      */
     public static function ofString($value, bool $orEmpty = false): bool
     {
-        return self::doIsArrayOf('is_string', $value, $orEmpty, false);
-    }
-
-    /**
-     * Check if a value is a list of strings
-     *
-     * @param mixed $value
-     * @phpstan-assert-if-true list<string> $value
-     */
-    public static function isListOfString($value, bool $orEmpty = false): bool
-    {
-        return self::doIsArrayOf('is_string', $value, $orEmpty, true);
+        return self::doIsArrayOf('is_string', $value, $orEmpty);
     }
 
     /**
@@ -515,21 +482,7 @@ final class Arr extends AbstractUtility
      */
     public static function of($value, string $class, bool $orEmpty = false): bool
     {
-        return self::doIsArrayOf('is_a', $value, $orEmpty, false, $class);
-    }
-
-    /**
-     * Check if a value is a list of instances of a given class
-     *
-     * @template T of object
-     *
-     * @param mixed $value
-     * @param class-string<T> $class
-     * @phpstan-assert-if-true list<T> $value
-     */
-    public static function isListOf($value, string $class, bool $orEmpty = false): bool
-    {
-        return self::doIsArrayOf('is_a', $value, $orEmpty, true, $class);
+        return self::doIsArrayOf('is_a', $value, $orEmpty, $class);
     }
 
     /**
@@ -537,7 +490,7 @@ final class Arr extends AbstractUtility
      * @param mixed $value
      * @param mixed ...$args
      */
-    private static function doIsArrayOf(string $func, $value, bool $orEmpty, bool $requireList, ...$args): bool
+    private static function doIsArrayOf(string $func, $value, bool $orEmpty, ...$args): bool
     {
         if (!is_array($value)) {
             return false;
@@ -545,12 +498,8 @@ final class Arr extends AbstractUtility
         if ($value === []) {
             return $orEmpty;
         }
-        $i = 0;
-        foreach ($value as $key => $value) {
-            if ($requireList && $i++ !== $key) {
-                return false;
-            }
-            if (!$func($value, ...$args)) {
+        foreach ($value as $item) {
+            if (!$func($item, ...$args)) {
                 return false;
             }
         }
@@ -800,7 +749,7 @@ final class Arr extends AbstractUtility
      * @param TKey $key
      * @throws OutOfRangeException if `$key` is not found in `$array`.
      */
-    public static function keyOffset(array $array, $key): int
+    public static function offsetOfKey(array $array, $key): int
     {
         $offset = array_flip(array_keys($array))[$key] ?? null;
         if ($offset === null) {
@@ -1011,7 +960,7 @@ final class Arr extends AbstractUtility
      * @param T $value
      * @return (T is null ? array{} : (T is list ? T : array{T}))
      */
-    public static function listWrap($value): array
+    public static function wrapList($value): array
     {
         if ($value === null) {
             return [];

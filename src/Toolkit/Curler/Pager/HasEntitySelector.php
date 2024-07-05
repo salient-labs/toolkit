@@ -18,7 +18,7 @@ trait HasEntitySelector
         $this->EntitySelector = $entitySelector instanceof Closure
             ? $entitySelector
             : ($entitySelector === null
-                ? fn($data) => Arr::listWrap($data)
-                : fn($data) => Arr::listWrap(Arr::get((string) $entitySelector, $data)));
+                ? fn($data) => Arr::wrapList($data)
+                : fn($data) => Arr::wrapList(Arr::get((string) $entitySelector, $data)));
     }
 }
