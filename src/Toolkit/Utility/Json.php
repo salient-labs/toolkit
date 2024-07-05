@@ -36,11 +36,12 @@ final class Json extends AbstractUtility
      * @param mixed $value
      * @param int-mask-of<\JSON_FORCE_OBJECT|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_NUMERIC_CHECK|\JSON_PRESERVE_ZERO_FRACTION|\JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE> $flags
      */
-    public static function prettyPrint($value, int $flags = 0): string
+    public static function prettyPrint($value, int $flags = 0, string $eol = \PHP_EOL): string
     {
-        return Str::eolToNative(
-            json_encode($value, self::ENCODE_FLAGS | \JSON_PRETTY_PRINT | $flags)
-        );
+        $json = json_encode($value, self::ENCODE_FLAGS | \JSON_PRETTY_PRINT | $flags);
+        return $eol === "\n"
+            ? $json
+            : str_replace("\n", $eol, $json);
     }
 
     /**

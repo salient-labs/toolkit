@@ -10,19 +10,24 @@ namespace Salient\Contract\Console;
 interface ConsoleTargetStreamInterface extends ConsoleTargetInterface
 {
     /**
-     * True if the target writes to STDOUT
+     * Check if the target writes to STDOUT
      */
     public function isStdout(): bool;
 
     /**
-     * True if the target writes to STDERR
+     * Check if the target writes to STDERR
      */
     public function isStderr(): bool;
 
     /**
-     * True if the target writes to a TTY
+     * Check if the target writes to a TTY
      */
     public function isTty(): bool;
+
+    /**
+     * Get the target's end-of-line sequence
+     */
+    public function getEol(): string;
 
     /**
      * Close and reopen the underlying PHP stream if possible

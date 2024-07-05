@@ -59,7 +59,7 @@ class GenerateSyncEntity extends AbstractGenerateCommand
         return 'Generate a sync entity class';
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         return [
             CliOption::build()

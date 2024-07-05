@@ -51,7 +51,7 @@ final class GenerateFacade extends AbstractGenerateCommand
         return 'Generate a facade';
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         return [
             CliOption::build()

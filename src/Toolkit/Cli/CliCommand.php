@@ -75,9 +75,9 @@ abstract class CliCommand implements CliCommandInterface
      *
      * @api
      *
-     * @return array<CliOption|CliOptionBuilder>
+     * @return iterable<CliOption|CliOptionBuilder>
      */
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         return [];
     }

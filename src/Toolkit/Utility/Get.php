@@ -151,7 +151,7 @@ final class Get extends AbstractUtility
      * @param string[] $values
      * @return mixed[]
      */
-    public static function filter(array $values, bool $discardInvalid = true): array
+    public static function filter(array $values, bool $discardInvalid = false): array
     {
         $valid = Regex::grep('/^[^ .=]++/', $values);
         if (!$discardInvalid && $valid !== $values) {

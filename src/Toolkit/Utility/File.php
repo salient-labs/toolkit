@@ -1100,8 +1100,8 @@ final class File extends AbstractUtility
      * of data.
      * @param int|float|string|bool|null $nullValue Replace `null` values before
      * writing data.
-     * @param (callable(TValue): mixed[])|null $callback Apply a callback to
-     * each entry before it is written.
+     * @param (callable(TValue, int $index): mixed[])|null $callback Apply a
+     * callback to each entry before it is written.
      * @param int|null $count Receives the number of entries written.
      * @param-out int $count
      * @param Stringable|string|null $uri
@@ -1139,7 +1139,7 @@ final class File extends AbstractUtility
         $count = 0;
         foreach ($data as $entry) {
             if ($callback) {
-                $entry = $callback($entry);
+                $entry = $callback($entry, $count);
             }
 
             /** @var (int|float|string|bool|mixed[]|object|null)[] $entry */

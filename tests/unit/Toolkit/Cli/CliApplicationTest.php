@@ -65,11 +65,11 @@ final class CliApplicationTest extends TestCase
 
     public function testGetLastCommand(): void
     {
-        $_SERVER['argv'] = ['app.php', '--help'];
+        $_SERVER['argv'] = ['app', '--help'];
         $this->App->command(['options', 'test'], TestOptions::class);
         $this->assertNull($this->App->getLastCommand());
         $this->assertNull($this->App->run()->getLastCommand());
-        $_SERVER['argv'] = ['app.php', 'options', 'test'];
+        $_SERVER['argv'] = ['app', 'options', 'test'];
         $command = $this->App->run()->getLastCommand();
         $this->assertInstanceOf(TestOptions::class, $command);
         /** @var TestOptions $command */
@@ -92,7 +92,7 @@ final class CliApplicationTest extends TestCase
         ?array $env = null,
         ?Closure $callback = null
     ): void {
-        $_SERVER['argv'] = ['app.php', ...$args];
+        $_SERVER['argv'] = ['app', ...$args];
         if ($env !== null) {
             foreach ($env as $name => $value) {
                 $_ENV[$name] = $value;
@@ -464,7 +464,7 @@ EOF],
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Does not implement ' . CliCommandInterface::class . ': ' . stdClass::class);
-        $_SERVER['argv'] = ['app.php'];
+        $_SERVER['argv'] = ['app'];
         // @phpstan-ignore-next-line
         $this->App->oneCommand(stdClass::class)->run();
     }

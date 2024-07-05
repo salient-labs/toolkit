@@ -47,7 +47,7 @@ class TestOptions extends CliCommand
         return 'Test CliCommand options';
     }
 
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         $required = Arr::toIndex(
             Str::split(',', Env::get('required', ''))
