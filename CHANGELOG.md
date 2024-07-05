@@ -10,6 +10,101 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.31] - 2024-07-05
+
+### Added
+
+#### `Cli`
+
+- Add `{{subcommand}}` to help message substitutions
+
+#### `Console`
+
+- Add `getEol()` to `ConsoleTargetStreamInterface`
+
+#### `Iterator`
+
+- Add `IterableIterator::fromValues()` to iterate over values while discarding keys
+
+#### `Sync`
+
+- Add `SyncPipelineArgument` and use it to unify pipeline signatures
+- In `GetSyncEntities` command:
+  - Add `--field` option
+  - Allow entity and provider to be given as fully-qualified names when no providers that service entities are registered
+
+#### `Utility`
+
+- Add `Arr::pluck()`
+- Add `$index` parameter to `File::writeCsv()` callback
+- Add optional `$eol` parameter to `Json::prettyPrint()`
+
+### Changed
+
+#### `Cli`
+
+- Rename `nameParts()` -> `getNameParts()` for consistency
+- Widen `getOptionList()` return type to `iterable`
+
+#### `Container`
+
+- Remove template from `HasContainer` interface
+
+#### `Core`
+
+- Rename `Nameable` -> `HasName`, `name()` -> `getName()`
+- Rename `Describable` -> `HasDescription`, `description()` -> `getDescription()`
+- Rename `Identifiable` -> `HasId`, `id()` -> `getId()`
+- Rename `dateFormatter()` -> `getDateFormatter()`
+- Move `Pipeline` interfaces to `Core` namespace
+- Only allow pipeline method `through()` to add one pipe at a time
+
+#### `Sync`
+
+- Rename methods for consistency:
+  - `AbstractProvider::getDateFormatter()` -> `createDateFormatter()`
+  - `SyncProviderInterface::store()` -> `getStore()`
+  - `SyncStoreEventInterface::store()` -> `getStore()`
+  - `SyncEntityInterface::canonicalId()` -> `getCanonicalId()`
+  - `SyncEntityInterface::uri()` -> `getUri()`
+  - `DeferredEntity::uri()` -> `getUri()`
+- In `HttpSyncProvider`:
+  - Replace `buildCurler()` with `filterCurler()`
+  - Replace `buildHttpDefinition()` with `getHttpDefinition()` and `builderFor()`
+  - Remove nullability from most `$path` parameters
+  - Don't override `createDateFormatter()`
+- Replace `DbSyncProvider::buildDbDefinition()` with `getDbDefinition()` and `builderFor()`
+- In definition interfaces and classes:
+  - Rename `getSyncOperationClosure()` -> `getOperationClosure()`
+  - Rename `withReadFromReadList()` -> `withReadFromList()`
+  - Refactor `HttpSyncDefinition` for clarity and to improve type safety
+  - Throw an exception instead of returning `null` from `getFallbackClosure()` when the given operation is not supported
+- Move event interfaces to their own namespace
+
+### Removed
+
+#### `Sync`
+
+- Remove `bindOverride()` from definition classes
+- Remove `SyncProviderInterface::setProviderId()`
+- Remove `SyncOperationGroup`
+
+### Fixed
+
+#### `Cli`
+
+- Fix issue where help for positional `ONE_OF` options may not include option name
+
+#### `Sync`
+
+- Fix issue where some `HttpSyncDefinition` changes applied via callback are ignored
+
+### Security
+
+#### `Utility`
+
+- Change default value of `Get::filter()` parameter `$discardInvalid` so invalid key-value pairs trigger an exception by default
+
 ## [v0.99.30] - 2024-06-20
 
 ### Added
@@ -2936,6 +3031,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.31]: https://github.com/salient-labs/toolkit/compare/v0.99.30...v0.99.31
 [v0.99.30]: https://github.com/salient-labs/toolkit/compare/v0.99.29...v0.99.30
 [v0.99.29]: https://github.com/salient-labs/toolkit/compare/v0.99.28...v0.99.29
 [v0.99.28]: https://github.com/salient-labs/toolkit/compare/v0.99.27...v0.99.28
