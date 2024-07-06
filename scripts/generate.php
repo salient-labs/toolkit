@@ -115,6 +115,15 @@ $providers = [
     Salient\Tests\Sync\External\Entity\Collides::class => [],
 ];
 
+$data = [
+    'unicode/ucd/ReadMe.txt' =>
+        'https://www.unicode.org/Public/UCD/latest/ucd/ReadMe.txt',
+    'unicode/ucd/DerivedCoreProperties.txt' =>
+        'https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt',
+    'unicode/ucd/extracted/DerivedGeneralCategory.txt' =>
+        'https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt',
+];
+
 $app = new CliApplication($dir);
 $generateFacade = new GenerateFacade($app);
 $generateBuilder = new GenerateBuilder($app);
@@ -203,6 +212,22 @@ foreach ($entities as $class => $entityArgs) {
 foreach ($providers as $class => $providerArgs) {
     $status |= $generateProvider(...[...$args, ...$providerArgs, $class]);
     generated($generateProvider);
+}
+
+foreach ($data as $file => $uri) {
+    $file = "{$dir}/tests/data/{$file}";
+    if (!in_array('--check', $args)) {
+        Console::log('Downloading', $uri);
+        $content = File::getContents($uri);
+        if (!file_exists($file) || File::getContents($file) !== $content) {
+            Console::info('Replacing', $file);
+            File::createDir(dirname($file));
+            File::writeContents($file, $content);
+        } else {
+            Console::log('Nothing to do:', $file);
+        }
+    }
+    generated($file);
 }
 
 foreach (File::find()
