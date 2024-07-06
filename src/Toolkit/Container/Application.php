@@ -609,7 +609,7 @@ class Application extends Container implements ApplicationInterface
     {
         [$endTime, $peakMemory, $userTime, $systemTime] = [
             hrtime(true),
-            Sys::getPeakMemoryUsage(),
+            memory_get_peak_usage(),
             ...Sys::getCpuUsage(),
         ];
 

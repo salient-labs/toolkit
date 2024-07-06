@@ -22,22 +22,6 @@ final class Sys extends AbstractUtility
     }
 
     /**
-     * Get the current memory usage of the script, in bytes
-     */
-    public static function getMemoryUsage(): int
-    {
-        return memory_get_usage();
-    }
-
-    /**
-     * Get the peak memory usage of the script, in bytes
-     */
-    public static function getPeakMemoryUsage(): int
-    {
-        return memory_get_peak_usage();
-    }
-
-    /**
      * Get the current memory usage of the script as a percentage of the
      * memory_limit
      */
@@ -257,6 +241,7 @@ final class Sys extends AbstractUtility
         if (!function_exists('pcntl_async_signals')) {
             return false;
         }
+
         $handler = static function (int $signal): void {
             // @codeCoverageIgnoreStart
             $status = 128 + $signal;
@@ -270,7 +255,9 @@ final class Sys extends AbstractUtility
             exit($status);
             // @codeCoverageIgnoreEnd
         };
+
         pcntl_async_signals(true);
+
         return pcntl_signal(\SIGTERM, $handler)
             && pcntl_signal(\SIGINT, $handler)
             && pcntl_signal(\SIGHUP, $handler);
