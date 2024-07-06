@@ -26,9 +26,9 @@ final class InflectTest extends TestCase
         ...$values
     ): void {
         if ($withSingularZero) {
-            $this->assertSame($expected0, Inflect::formatWithSingularZero(0, $format, ...$values));
-            $this->assertSame($expected1, Inflect::formatWithSingularZero(1, $format, ...$values));
-            $this->assertSame($expected71, Inflect::formatWithSingularZero(71, $format, ...$values));
+            $this->assertSame($expected0, Inflect::formatWithZeroAsOne(0, $format, ...$values));
+            $this->assertSame($expected1, Inflect::formatWithZeroAsOne(1, $format, ...$values));
+            $this->assertSame($expected71, Inflect::formatWithZeroAsOne(71, $format, ...$values));
             return;
         }
         $this->assertSame($expected0, Inflect::format(0, $format, ...$values));

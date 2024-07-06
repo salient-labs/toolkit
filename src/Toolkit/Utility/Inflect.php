@@ -133,7 +133,7 @@ final class Inflect extends AbstractUtility
      * @param mixed ...$values Passed to {@see sprintf()} with the inflected
      * string if given.
      */
-    public static function formatWithSingularZero($count, string $format, ...$values): string
+    public static function formatWithZeroAsOne($count, string $format, ...$values): string
     {
         return self::doFormat(Get::count($count), $format, [], true, ...$values);
     }
@@ -187,7 +187,7 @@ final class Inflect extends AbstractUtility
                 if ($word === '') {
                     return $singular ? '' : (string) $plural;
                 }
-                $word ??= (string) $word;
+                $word ??= '';
                 $word = Get::value($replace[Str::lower($word)]
                     ?? ($singular
                         ? $word

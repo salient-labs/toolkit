@@ -19,6 +19,8 @@ use UnitEnum;
 
 /**
  * Get values from other values
+ *
+ * @api
  */
 final class Get extends AbstractUtility
 {

@@ -8,6 +8,8 @@ use Composer\InstalledVersions as Installed;
 /**
  * Dispatched when package data is received from the Composer runtime API
  *
+ * @api
+ *
  * @template TData
  */
 final class PackageDataReceivedEvent
@@ -40,8 +42,6 @@ final class PackageDataReceivedEvent
     /**
      * True if the given Composer runtime API method was called
      *
-     * @api
-     *
      * @param class-string<Installed|Loader> $class
      */
     public function isMethod(string $class, string $method): bool
@@ -54,8 +54,6 @@ final class PackageDataReceivedEvent
      * Get arguments passed to the Composer runtime API when the method was
      * called
      *
-     * @api
-     *
      * @return mixed[]
      */
     public function getArguments(): array
@@ -66,8 +64,6 @@ final class PackageDataReceivedEvent
     /**
      * Get data received from the Composer runtime API
      *
-     * @api
-     *
      * @return TData
      */
     public function getData()
@@ -77,8 +73,6 @@ final class PackageDataReceivedEvent
 
     /**
      * Replace data received from the Composer runtime API
-     *
-     * @api
      *
      * @param TData $data
      */

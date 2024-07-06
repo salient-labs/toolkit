@@ -3,9 +3,7 @@
 namespace Salient\Utility;
 
 /**
- * Base class for utility classes
- *
- * @api
+ * @internal
  */
 abstract class AbstractUtility
 {
