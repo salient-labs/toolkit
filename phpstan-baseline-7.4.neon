@@ -36,7 +36,7 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$method of static method Salient\\\\Utility\\\\Reflect\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$method of static method Salient\\\\PHPDoc\\\\PHPDocUtility\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 

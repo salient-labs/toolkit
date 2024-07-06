@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Utility\Reflect;
 
+use Salient\PHPDoc\PHPDocUtility;
 use Salient\Tests\TestCase;
 use Salient\Utility\Reflect;
 use Generator;
@@ -15,6 +16,7 @@ use ReflectionProperty;
 
 /**
  * @covers \Salient\Utility\Reflect
+ * @covers \Salient\PHPDoc\PHPDocUtility
  */
 final class ReflectTest extends TestCase
 {
@@ -268,7 +270,7 @@ final class ReflectTest extends TestCase
      */
     public function testGetAllClassDocComments(ReflectionClass $class, array $expected): void
     {
-        $comments = Reflect::getAllClassDocComments($class);
+        $comments = PHPDocUtility::getAllClassDocComments($class);
         $this->assertSame($expected, $comments);
     }
 
@@ -306,12 +308,12 @@ final class ReflectTest extends TestCase
         ?array $expectedClassDocComments = null
     ): void {
         if ($expectedClassDocComments === null) {
-            $comments = Reflect::getAllMethodDocComments($method, $fromClass);
+            $comments = PHPDocUtility::getAllMethodDocComments($method, $fromClass);
             $this->assertSame($expected, $comments, 'comments');
             return;
         }
 
-        $comments = Reflect::getAllMethodDocComments($method, $fromClass, $classDocComments);
+        $comments = PHPDocUtility::getAllMethodDocComments($method, $fromClass, $classDocComments);
         $this->assertSame($expected, $comments, 'comments');
         $this->assertSame($expectedClassDocComments, $classDocComments, 'classDocComments');
     }
@@ -445,12 +447,12 @@ final class ReflectTest extends TestCase
         ?array $expectedClassDocComments = null
     ): void {
         if ($expectedClassDocComments === null) {
-            $comments = Reflect::getAllPropertyDocComments($property);
+            $comments = PHPDocUtility::getAllPropertyDocComments($property);
             $this->assertSame($expected, $comments);
             return;
         }
 
-        $comments = Reflect::getAllPropertyDocComments($property, $classDocComments);
+        $comments = PHPDocUtility::getAllPropertyDocComments($property, $classDocComments);
         $this->assertSame($expected, $comments);
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
@@ -503,7 +505,7 @@ final class ReflectTest extends TestCase
         $method = new ReflectionMethod($class, $method);
         $types = [];
         foreach ($method->getParameters() as $param) {
-            $types[] = Reflect::getTypeDeclaration(
+            $types[] = PHPDocUtility::getTypeDeclaration(
                 $param->getType(),
                 '\\',
                 fn($name) => $name === MyClass::class ? 'MyClass' : null,
@@ -607,7 +609,7 @@ final class ReflectTest extends TestCase
         $method = new ReflectionMethod($class, $method);
         $params = [];
         foreach ($method->getParameters() as $param) {
-            $params[] = Reflect::getParameterDeclaration(
+            $params[] = PHPDocUtility::getParameterDeclaration(
                 $param,
                 '',
                 fn($name) => $name === MyClass::class ? 'MyClass' : null,
