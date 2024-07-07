@@ -208,67 +208,110 @@ final class PHPDocUtility extends AbstractUtility
     }
 
     /**
-     * Convert a ReflectionType to a PHP type declaration
+     * @param array<class-string,string|null>|null $classDocComments
+     * @return array<class-string,string>
+     */
+    private static function doGetAllPropertyDocComments(
+        ReflectionProperty $property,
+        string $name,
+        ?array &$classDocComments
+    ): array {
+        $comments = [];
+        do {
+            $comment = $property->getDocComment();
+            $declaring = $property->getDeclaringClass();
+            if ($comment !== false) {
+                $class = $declaring->getName();
+                $comments[$class] = Str::setEol($comment);
+                if ($classDocComments !== null) {
+                    $comment = $declaring->getDocComment();
+                    $classDocComments[$class] =
+                        $comment === false
+                            ? null
+                            : Str::setEol($comment);
+                }
+            }
+            foreach ($declaring->getTraits() as $trait) {
+                if (!$trait->hasProperty($name)) {
+                    continue;
+                }
+                $comments = array_merge(
+                    $comments,
+                    self::doGetAllPropertyDocComments(
+                        $trait->getProperty($name),
+                        $name,
+                        $classDocComments
+                    )
+                );
+            }
+            $parent = $declaring->getParentClass();
+            if (!$parent || !$parent->hasProperty($name)) {
+                return $comments;
+            }
+            $property = $parent->getProperty($name);
+        } while (true);
+    }
+
+    /**
+     * Convert a ReflectionParameter to a PHPDoc tag
+     *
+     * Returns `null` if:
+     * - `$force` is not set,
+     * - `$documentation` is empty or `null`, and
+     * - there is no difference between PHPDoc and native data types
      *
      * @param (callable(class-string): (string|null))|null $callback Applied to
      * qualified class names if given. Must return `null` or an unqualified
      * alias.
+     * @param string|null $type If set, ignore the parameter's declared type and
+     * use `$type` instead.
      */
-    public static function getTypeDeclaration(
-        ?ReflectionType $type,
+    public static function getParameterPHPDoc(
+        ReflectionParameter $parameter,
         string $classPrefix = '\\',
         ?callable $callback = null,
-        bool $phpDoc = false
-    ): string {
-        if ($type === null) {
-            return '';
+        ?string $type = null,
+        ?string $name = null,
+        ?string $documentation = null,
+        bool $force = false
+    ): ?string {
+        // Always call getTypeDeclaration so $typeNameCallback is always called,
+        // otherwise callback-dependent actions are not taken when $type is set
+        $param = self::getTypeDeclaration(
+            $parameter->getType(),
+            $classPrefix,
+            $callback,
+            true,
+        );
+
+        if ($type !== null) {
+            $param = $type;
         }
 
-        $glue = '|';
-        if ($type instanceof ReflectionUnionType) {
-            $types = [];
-            foreach ($type->getTypes() as $type) {
-                if (!$type instanceof ReflectionIntersectionType) {
-                    $types[] = $type;
-                    continue;
-                }
-                $type = self::getTypeDeclaration(
-                    $type,
+        $param
+            .= ($param === '' ? '' : ' ')
+            . ($parameter->isVariadic() ? '...' : '')
+            . '$' . ($name === null ? $parameter->getName() : $name);
+
+        if (!$force && $documentation === null) {
+            $native = Regex::replace(
+                ['/ = .*/', '/&(?=(\.\.\.)?\$)/'],
+                '',
+                self::getParameterDeclaration(
+                    $parameter,
                     $classPrefix,
                     $callback,
-                    $phpDoc,
-                );
-                $types[] = "($type)";
+                    null,
+                    $name
+                )
+            );
+            if ($native === $param) {
+                return null;
             }
-        } elseif ($type instanceof ReflectionIntersectionType) {
-            $glue = '&';
-            $types = $type->getTypes();
-        } else {
-            $types = $phpDoc ? Reflect::normaliseType($type) : [$type];
         }
 
-        $parts = [];
-        /** @var array<ReflectionNamedType|string> $types */
-        foreach ($types as $type) {
-            if (is_string($type)) {
-                $parts[] = $type;
-                continue;
-            }
-            $name = $type->getName();
-            if ($callback !== null && !$type->isBuiltin()) {
-                /** @var class-string $name */
-                $alias = $callback($name);
-            } else {
-                $alias = null;
-            }
-
-            $parts[] =
-                ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
-                . ($alias === null && !$type->isBuiltin() ? $classPrefix : '')
-                . ($alias ?? $name);
-        }
-
-        return implode($glue, $parts);
+        return "@param $param"
+            . ($documentation === null ? '' : " $documentation");
     }
 
     /**
@@ -345,88 +388,67 @@ final class PHPDocUtility extends AbstractUtility
     }
 
     /**
-     * Convert a ReflectionParameter to a PHPDoc tag
-     *
-     * Returns `null` if:
-     * - `$force` is not set,
-     * - `$documentation` is empty or `null`, and
-     * - there is no difference between PHPDoc and native data types
+     * Convert a ReflectionType to a PHP type declaration
      *
      * @param (callable(class-string): (string|null))|null $callback Applied to
      * qualified class names if given. Must return `null` or an unqualified
      * alias.
-     * @param string|null $type If set, ignore the parameter's declared type and
-     * use `$type` instead.
      */
-    public static function getParameterPHPDoc(
-        ReflectionParameter $parameter,
+    public static function getTypeDeclaration(
+        ?ReflectionType $type,
         string $classPrefix = '\\',
         ?callable $callback = null,
-        ?string $type = null,
-        ?string $name = null,
-        ?string $documentation = null,
-        bool $force = false
-    ): ?string {
-        // Always call getTypeDeclaration so $typeNameCallback is always called,
-        // otherwise callback-dependent actions are not taken when $type is set
-        $param = self::getTypeDeclaration(
-            $parameter->getType(),
-            $classPrefix,
-            $callback,
-            true,
-        );
-
-        if ($type !== null) {
-            $param = $type;
+        bool $phpDoc = false
+    ): string {
+        if ($type === null) {
+            return '';
         }
 
-        $param
-            .= ($param === '' ? '' : ' ')
-            . ($parameter->isVariadic() ? '...' : '')
-            . '$' . ($name === null ? $parameter->getName() : $name);
-
-        if (!$force && $documentation === null) {
-            $native = Regex::replace(
-                ['/ = .*/', '/&(?=(\.\.\.)?\$)/'],
-                '',
-                self::getParameterDeclaration(
-                    $parameter,
+        $glue = '|';
+        if ($type instanceof ReflectionUnionType) {
+            $types = [];
+            foreach ($type->getTypes() as $type) {
+                if (!$type instanceof ReflectionIntersectionType) {
+                    $types[] = $type;
+                    continue;
+                }
+                $type = self::getTypeDeclaration(
+                    $type,
                     $classPrefix,
                     $callback,
-                    null,
-                    $name
-                )
-            );
-            if ($native === $param) {
-                return null;
+                    $phpDoc,
+                );
+                $types[] = "($type)";
             }
+        } elseif ($type instanceof ReflectionIntersectionType) {
+            $glue = '&';
+            $types = $type->getTypes();
+        } else {
+            $types = $phpDoc ? Reflect::normaliseType($type) : [$type];
         }
 
-        return "@param $param"
-            . ($documentation === null ? '' : " $documentation");
-    }
+        $parts = [];
+        /** @var array<ReflectionNamedType|string> $types */
+        foreach ($types as $type) {
+            if (is_string($type)) {
+                $parts[] = $type;
+                continue;
+            }
+            $name = $type->getName();
+            if ($callback !== null && !$type->isBuiltin()) {
+                /** @var class-string $name */
+                $alias = $callback($name);
+            } else {
+                $alias = null;
+            }
 
-    /**
-     * @param ReflectionClass<object> $class
-     */
-    private static function isMethodInClass(
-        ReflectionMethod $method,
-        ReflectionClass $class
-    ): bool {
-        $file = $method->getFileName();
-        if ($file === false || $file !== $class->getFileName()) {
-            return false;
+            $parts[] =
+                ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
+                . ($alias === null && !$type->isBuiltin() ? $classPrefix : '')
+                . ($alias ?? $name);
         }
 
-        [$line, $start, $end] = [
-            $method->getStartLine(),
-            $class->getStartLine(),
-            $class->getEndLine(),
-        ];
-
-        return
-            ($line && $start && $end)
-            && Test::isBetween($line, $start, $end);
+        return implode($glue, $parts);
     }
 
     /**
@@ -457,47 +479,25 @@ final class PHPDocUtility extends AbstractUtility
     }
 
     /**
-     * @param array<class-string,string|null>|null $classDocComments
-     * @return array<class-string,string>
+     * @param ReflectionClass<object> $class
      */
-    private static function doGetAllPropertyDocComments(
-        ReflectionProperty $property,
-        string $name,
-        ?array &$classDocComments
-    ): array {
-        $comments = [];
-        do {
-            $comment = $property->getDocComment();
-            $declaring = $property->getDeclaringClass();
-            if ($comment !== false) {
-                $class = $declaring->getName();
-                $comments[$class] = Str::setEol($comment);
-                if ($classDocComments !== null) {
-                    $comment = $declaring->getDocComment();
-                    $classDocComments[$class] =
-                        $comment === false
-                            ? null
-                            : Str::setEol($comment);
-                }
-            }
-            foreach ($declaring->getTraits() as $trait) {
-                if (!$trait->hasProperty($name)) {
-                    continue;
-                }
-                $comments = array_merge(
-                    $comments,
-                    self::doGetAllPropertyDocComments(
-                        $trait->getProperty($name),
-                        $name,
-                        $classDocComments
-                    )
-                );
-            }
-            $parent = $declaring->getParentClass();
-            if (!$parent || !$parent->hasProperty($name)) {
-                return $comments;
-            }
-            $property = $parent->getProperty($name);
-        } while (true);
+    private static function isMethodInClass(
+        ReflectionMethod $method,
+        ReflectionClass $class
+    ): bool {
+        $file = $method->getFileName();
+        if ($file === false || $file !== $class->getFileName()) {
+            return false;
+        }
+
+        [$line, $start, $end] = [
+            $method->getStartLine(),
+            $class->getStartLine(),
+            $class->getEndLine(),
+        ];
+
+        return
+            ($line && $start && $end)
+            && Test::isBetween($line, $start, $end);
     }
 }

@@ -43,51 +43,6 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get a list of types accepted by the given parameter of a function or
-     * callable
-     *
-     * @param ReflectionFunctionAbstract|callable $function
-     * @return ($skipBuiltins is true ? array<class-string[]|class-string> : array<string[]|string>)
-     * @throws InvalidArgumentException if `$function` has no parameter at the
-     * given position.
-     */
-    public static function getAcceptedTypes(
-        $function,
-        bool $skipBuiltins = false,
-        int $param = 0
-    ): array {
-        if (!$function instanceof ReflectionFunctionAbstract) {
-            if (!$function instanceof Closure) {
-                $function = Closure::fromCallable($function);
-            }
-            $function = new ReflectionFunction($function);
-        }
-
-        $params = $function->getParameters();
-        if (!isset($params[$param])) {
-            throw new InvalidArgumentException(sprintf(
-                '$function has no parameter at position %d',
-                $param,
-            ));
-        }
-
-        $types = self::normaliseType($params[$param]->getType());
-        foreach ($types as $type) {
-            $intersection = [];
-            foreach (Arr::wrap($type) as $type) {
-                if ($skipBuiltins && $type->isBuiltin()) {
-                    continue 2;
-                }
-                $intersection[] = $type->getName();
-            }
-            $union[] = Arr::unwrap($intersection);
-        }
-
-        /** @var array<class-string[]|class-string> */
-        return $union ?? [];
-    }
-
-    /**
      * Follow parents of a class to the root class
      *
      * @param ReflectionClass<object> $class
@@ -136,6 +91,51 @@ final class Reflect extends AbstractUtility
         } while ($class = $class->getParentClass());
 
         return $properties ?? [];
+    }
+
+    /**
+     * Get a list of types accepted by the given parameter of a function or
+     * callable
+     *
+     * @param ReflectionFunctionAbstract|callable $function
+     * @return ($skipBuiltins is true ? array<class-string[]|class-string> : array<string[]|string>)
+     * @throws InvalidArgumentException if `$function` has no parameter at the
+     * given position.
+     */
+    public static function getAcceptedTypes(
+        $function,
+        bool $skipBuiltins = false,
+        int $param = 0
+    ): array {
+        if (!$function instanceof ReflectionFunctionAbstract) {
+            if (!$function instanceof Closure) {
+                $function = Closure::fromCallable($function);
+            }
+            $function = new ReflectionFunction($function);
+        }
+
+        $params = $function->getParameters();
+        if (!isset($params[$param])) {
+            throw new InvalidArgumentException(sprintf(
+                '$function has no parameter at position %d',
+                $param,
+            ));
+        }
+
+        $types = self::normaliseType($params[$param]->getType());
+        foreach ($types as $type) {
+            $intersection = [];
+            foreach (Arr::wrap($type) as $type) {
+                if ($skipBuiltins && $type->isBuiltin()) {
+                    continue 2;
+                }
+                $intersection[] = $type->getName();
+            }
+            $union[] = Arr::unwrap($intersection);
+        }
+
+        /** @var array<class-string[]|class-string> */
+        return $union ?? [];
     }
 
     /**
