@@ -7,8 +7,13 @@ use Countable;
 
 return [
     [
+        [MyClass::class, [Countable::class, ArrayAccess::class], 'string'],
+        fn(string|MyClass|(Countable&ArrayAccess) $dnf) => null,
+    ],
+    [
         [MyClass::class, [Countable::class, ArrayAccess::class]],
         fn(string|MyClass|(Countable&ArrayAccess) $dnf) => null,
+        true,
     ],
     [
         [[MyClass::class, Countable::class], [MyClass::class, ArrayAccess::class]],

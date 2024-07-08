@@ -501,8 +501,8 @@ EOF],
             $this->assertArrayHasKey($appParam->name, $params, $message);
             $param = $params[$appParam->name];
             $this->assertSame(
-                Arr::unwrap(Reflect::getAllTypeNames($appParam->getType())),
-                Arr::unwrap(Reflect::getAllTypeNames($param->getType())),
+                Arr::unwrap(Reflect::getTypeNames($appParam->getType())),
+                Arr::unwrap(Reflect::getTypeNames($param->getType())),
                 $message,
             );
             $this->assertSame($appParam->allowsNull(), $param->allowsNull(), $message);

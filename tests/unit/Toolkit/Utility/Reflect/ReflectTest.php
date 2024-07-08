@@ -8,6 +8,7 @@ use Generator;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionClassConstant;
+use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -55,24 +56,28 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @dataProvider getCallableParamClassNamesProvider
+     * @dataProvider getAcceptedTypesProvider
      *
-     * @param array<class-string[]|class-string>|string $expected
+     * @param array<string[]|string>|string $expected
+     * @param ReflectionFunctionAbstract|callable $function
      */
-    public function testGetCallableParamClassNames($expected, callable $callback): void
-    {
+    public function testGetAcceptedTypes(
+        $expected,
+        $function,
+        bool $discardBuiltin = false
+    ): void {
         $this->maybeExpectException($expected);
-        $this->assertSame($expected, Reflect::getCallableParamClassNames($callback));
+        $this->assertSame($expected, Reflect::getAcceptedTypes($function, $discardBuiltin));
     }
 
     /**
-     * @return Generator<array{array<class-string[]|class-string>|string,callable}>
+     * @return Generator<array{array<string[]|string>|string,ReflectionFunctionAbstract|callable,2?:bool}>
      */
-    public static function getCallableParamClassNamesProvider(): Generator
+    public static function getAcceptedTypesProvider(): Generator
     {
         yield from [
             [
-                InvalidArgumentException::class . ',$callback has no parameter at position 0',
+                InvalidArgumentException::class . ',$function has no parameter at position 0',
                 fn() => null,
             ],
             [
@@ -80,28 +85,42 @@ final class ReflectTest extends TestCase
                 fn($mixed) => null,
             ],
             [
-                [],
+                ['int', 'null'],
                 fn(?int $nullableInt) => null,
             ],
             [
                 [],
+                fn(?int $nullableInt) => null,
+                true,
+            ],
+            [
+                ['string'],
                 fn(string $string) => null,
+            ],
+            [
+                [],
+                fn(string $string) => null,
+                true,
             ],
             [
                 [MyBaseClass::class],
                 fn(MyBaseClass $class) => null,
+                true,
             ],
             [
                 [MyClass::class],
                 fn(?MyClass $nullableClass) => null,
+                true,
             ],
             [
                 [MyClass::class],
                 fn(?MyClass &$nullableClassByRef) => null,
+                true,
             ],
             [
                 [MyClass::class],
                 fn(?MyClass $nullableAndOptionalClass = null) => null,
+                true,
             ],
             [
                 [ReflectionClass::class],
@@ -119,12 +138,12 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @dataProvider getAllTypesProvider
+     * @dataProvider getTypesProvider
      *
      * @param array<array<string[]|string>> $normalisedExpected
      * @param array<string[]> $allTypesExpected
      */
-    public function testGetAllTypes(
+    public function testGetTypes(
         array $normalisedExpected,
         array $allTypesExpected,
         string $class,
@@ -144,8 +163,8 @@ final class ReflectTest extends TestCase
                 $types[] = $type->getName();
             }
             $normalised[] = $types;
-            $allTypes[] = Reflect::getNames(Reflect::getAllTypes($param->getType()));
-            $allTypeNames[] = Reflect::getAllTypeNames($param->getType());
+            $allTypes[] = Reflect::getNames(Reflect::getTypes($param->getType()));
+            $allTypeNames[] = Reflect::getTypeNames($param->getType());
         }
 
         $this->assertSame($normalisedExpected, $normalised);
@@ -156,7 +175,7 @@ final class ReflectTest extends TestCase
     /**
      * @return Generator<string,array{array<array<string[]|string>>,array<string[]>,string,string}>
      */
-    public static function getAllTypesProvider(): Generator
+    public static function getTypesProvider(): Generator
     {
         $types = [
             [],

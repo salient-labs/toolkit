@@ -43,31 +43,39 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get a list of classes accepted by a callback parameter
+     * Get a list of types accepted by the given parameter of a function or
+     * callable
      *
-     * @return array<class-string[]|class-string>
-     * @throws InvalidArgumentException if the callback has no parameter at the
+     * @param ReflectionFunctionAbstract|callable $function
+     * @return ($skipBuiltins is true ? array<class-string[]|class-string> : array<string[]|string>)
+     * @throws InvalidArgumentException if `$function` has no parameter at the
      * given position.
      */
-    public static function getCallableParamClassNames(callable $callback, int $param = 0): array
-    {
-        if (!$callback instanceof Closure) {
-            $callback = Closure::fromCallable($callback);
+    public static function getAcceptedTypes(
+        $function,
+        bool $skipBuiltins = false,
+        int $param = 0
+    ): array {
+        if (!$function instanceof ReflectionFunctionAbstract) {
+            if (!$function instanceof Closure) {
+                $function = Closure::fromCallable($function);
+            }
+            $function = new ReflectionFunction($function);
         }
 
-        $params = (new ReflectionFunction($callback))->getParameters();
+        $params = $function->getParameters();
         if (!isset($params[$param])) {
             throw new InvalidArgumentException(sprintf(
-                '$callback has no parameter at position %d',
+                '$function has no parameter at position %d',
                 $param,
             ));
         }
 
-        $param = $params[$param];
-        foreach (self::normaliseType($param->getType()) as $type) {
+        $types = self::normaliseType($params[$param]->getType());
+        foreach ($types as $type) {
             $intersection = [];
             foreach (Arr::wrap($type) as $type) {
-                if ($type->isBuiltin()) {
+                if ($skipBuiltins && $type->isBuiltin()) {
                     continue 2;
                 }
                 $intersection[] = $type->getName();
@@ -109,7 +117,7 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get the properties of a class, including private ancestor properties
+     * Get the properties of a class, including private parent properties
      *
      * @param ReflectionClass<object> $class
      * @return ReflectionProperty[]
@@ -150,7 +158,7 @@ final class Reflect extends AbstractUtility
      *
      * - a {@see ReflectionNamedType} instance, or
      * - a list of {@see ReflectionNamedType} instances that represent an
-     *   intersection type.
+     *   intersection type
      *
      * @return array<ReflectionNamedType[]|ReflectionNamedType>
      */
@@ -168,9 +176,9 @@ final class Reflect extends AbstractUtility
      *
      * @return ReflectionNamedType[]
      */
-    public static function getAllTypes(?ReflectionType $type): array
+    public static function getTypes(?ReflectionType $type): array
     {
-        return self::doGetAllTypes($type, false);
+        return self::doGetTypes($type, false);
     }
 
     /**
@@ -178,15 +186,15 @@ final class Reflect extends AbstractUtility
      *
      * @return string[]
      */
-    public static function getAllTypeNames(?ReflectionType $type): array
+    public static function getTypeNames(?ReflectionType $type): array
     {
-        return self::doGetAllTypes($type, true);
+        return self::doGetTypes($type, true);
     }
 
     /**
      * @return ($names is true ? string[] : ReflectionNamedType[])
      */
-    private static function doGetAllTypes(?ReflectionType $type, bool $names): array
+    private static function doGetTypes(?ReflectionType $type, bool $names): array
     {
         if ($type === null) {
             return [];
@@ -206,7 +214,7 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get an array of doc comments for a ReflectionClass and any ancestors
+     * Get an array of doc comments for a class and its parents
      *
      * Returns an empty array if no doc comments are found for the class or any
      * inherited classes or interfaces.
@@ -237,8 +245,8 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get an array of doc comments for a ReflectionMethod from its declaring
-     * class and any ancestors that declare the same method
+     * Get an array of doc comments for a method from its declaring class and
+     * its parents
      *
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes, interfaces or traits.
@@ -246,11 +254,11 @@ final class Reflect extends AbstractUtility
      * @template T of ReflectionClass|null
      *
      * @param T $fromClass If given, entries are returned for `$fromClass` and
-     * every ancestor with `$method`, including any without doc comments or
+     * every parent with `$method`, including any without doc comments or
      * where `$method` is not declared.
      * @param array<class-string,string|null>|null $classDocComments If given,
-     * receives the doc comment of the declaring class of each entry in the
-     * return value, or `null` if the declaring class has no doc comment.
+     * receives the doc comment of the declaring class for each entry in the
+     * return value.
      * @return (T is null ? array<class-string,string> : array<class-string,string|null>)
      */
     public static function getAllMethodDocComments(
@@ -365,17 +373,15 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get an array of doc comments for a ReflectionProperty from its declaring
-     * class and any ancestors that declare the same property
+     * Get an array of doc comments for a property from its declaring class and
+     * its parents
      *
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes or traits.
      *
-     * @param array<class-string,string|null>|null $classDocComments If
-     * provided, `$classDocComments` is populated with one of the following for
-     * each doc comment in the return value:
-     * - the doc comment of the declaring class, or
-     * - `null` if the declaring class has no doc comment
+     * @param array<class-string,string|null>|null $classDocComments If given,
+     * receives the doc comment of the declaring class for each entry in the
+     * return value.
      * @return array<class-string,string>
      */
     public static function getAllPropertyDocComments(
@@ -429,8 +435,7 @@ final class Reflect extends AbstractUtility
             $glue = '&';
             $types = $type->getTypes();
         } else {
-            /** @var ReflectionNamedType $type */
-            $types = $phpDoc ? self::maybeExpandNull($type) : [$type];
+            $types = $phpDoc ? Reflect::normaliseType($type) : [$type];
         }
 
         $parts = [];
@@ -593,12 +598,9 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Check if a method's declaration appears between the first and last line
-     * of a class/trait/interface
-     *
      * @param ReflectionClass<object> $class
      */
-    public static function isMethodInClass(
+    private static function isMethodInClass(
         ReflectionMethod $method,
         ReflectionClass $class
     ): bool {
@@ -642,14 +644,14 @@ final class Reflect extends AbstractUtility
         }
 
         /** @var ReflectionNamedType $type */
-        return self::maybeExpandNull($type);
+        return self::expandNullableType($type);
     }
 
     /**
      * @param ReflectionNamedType $type
      * @return array<ReflectionNamedType>
      */
-    private static function maybeExpandNull(ReflectionType $type): array
+    private static function expandNullableType(ReflectionType $type): array
     {
         if ($type->allowsNull() && (
             !$type->isBuiltin()
@@ -684,8 +686,8 @@ final class Reflect extends AbstractUtility
                     ? -1
                     : ($b->isSubclassOf($a)
                         ? 1
-                        : self::getBaseClass($a)->getName()
-                            <=> self::getBaseClass($b)->getName())
+                        : Reflect::getBaseClass($a)->getName()
+                            <=> Reflect::getBaseClass($b)->getName())
         );
 
         return $interfaces;
