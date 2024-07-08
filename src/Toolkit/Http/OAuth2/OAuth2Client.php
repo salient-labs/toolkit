@@ -18,7 +18,6 @@ use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Json;
 use Salient\Utility\Str;
-use InvalidArgumentException;
 use LogicException;
 use Throwable;
 
@@ -234,7 +233,7 @@ abstract class OAuth2Client
         CacheStoreInterface $cache = null
     ): AccessToken {
         if (isset($options['scope'])) {
-            $scopes = $this->resolveScopes($options['scope']);
+            $scopes = $this->filterScope($options['scope']);
 
             // If an unexpired access or refresh token is available, extend the
             // scope of the most recently issued access token
@@ -416,7 +415,7 @@ abstract class OAuth2Client
         // - The 'scope' sent with the authorization request
         // - The expired token (grant type 'refresh_token' only)
         // - The provider's default scopes
-        $scopes = $this->resolveScopes($_values['scope']
+        $scopes = $this->filterScope($_values['scope']
             ?? $claims['scope']
             ?? $options['scope']
             ?? $scope);
@@ -621,23 +620,23 @@ abstract class OAuth2Client
     }
 
     /**
-     * @param string[]|string|null $scopes
+     * @param mixed $scope
      * @return string[]
      */
-    private function resolveScopes($scopes): array
+    private function filterScope($scope): array
     {
-        if ($scopes === null) {
+        if ($scope === null) {
             return [];
         }
-        if (is_string($scopes)) {
-            return Arr::trim(explode(' ', $scopes));
+        if (is_string($scope)) {
+            return Arr::trim(explode(' ', $scope));
         }
-        if (!Arr::isListOfString($scopes, true)) {
-            throw new InvalidArgumentException(sprintf(
-                'Argument #1 ($scopes) must be of type string[]|string|null, %s given',
-                Get::type($scopes),
+        if (!Arr::ofString($scope, true)) {
+            throw new LogicException(sprintf(
+                "'scope' must be of type string[]|string|null, %s given",
+                Get::type($scope),
             ));
         }
-        return $scopes;
+        return array_values($scope);
     }
 }

@@ -36,6 +36,9 @@
 /tests/data/entity/posts.json linguist-generated
 /tests/data/entity/todos.json linguist-generated
 /tests/data/entity/users.json linguist-generated
+/tests/data/unicode/ucd/DerivedCoreProperties.txt linguist-generated
+/tests/data/unicode/ucd/ReadMe.txt linguist-generated
+/tests/data/unicode/ucd/extracted/DerivedGeneralCategory.txt linguist-generated
 /tests/fixtures/Toolkit/Core/AbstractFacade/MyBrokenFacade.php linguist-generated
 /tests/fixtures/Toolkit/Core/AbstractFacade/MyClassFacade.php linguist-generated
 /tests/fixtures/Toolkit/Core/AbstractFacade/MyInterfaceFacade.php linguist-generated

@@ -3,24 +3,25 @@
 namespace Salient\Utility\Exception;
 
 use Salient\Utility\Get;
-use InvalidArgumentException;
 
 /**
  * @api
  */
-class InvalidArgumentTypeException extends InvalidArgumentException
+class InvalidArgumentTypeException extends \InvalidArgumentException
 {
     /**
-     * @param int $position The argument number (1-based).
-     * @param string $name The name of the argument.
-     * @param string $type The expected type.
-     * @param mixed $value The value given.
+     * @api
+     *
+     * @param int<1,max> $number Argument number (1-based).
+     * @param string $name Argument name (leading `'$'` removed if present).
+     * @param string $type Expected type, e.g. `'string[]|null'`.
+     * @param mixed $value Value given.
      */
-    public function __construct(int $position, string $name, string $type, $value)
+    public function __construct(int $number, string $name, string $type, $value)
     {
         parent::__construct(sprintf(
             'Argument #%d ($%s) must be of type %s, %s given',
-            $position,
+            $number,
             ltrim($name, '$'),
             $type,
             Get::type($value),

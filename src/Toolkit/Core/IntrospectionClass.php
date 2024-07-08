@@ -619,7 +619,7 @@ class IntrospectionClass
                 if (!$property->hasType()) {
                     continue;
                 }
-                foreach (Reflect::getAllTypeNames($property->getType()) as $type) {
+                foreach (Reflect::getTypeNames($property->getType()) as $type) {
                     if (is_a($type, DateTimeInterface::class, true)) {
                         $nativeDates[] = $property->getName();
                         continue 2;

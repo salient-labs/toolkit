@@ -36,7 +36,7 @@ parameters:
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$method of static method Salient\\\\Utility\\\\Reflect\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$method of static method Salient\\\\PHPDoc\\\\PHPDocUtility\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
 			count: 1
 			path: src/Sli/Command/Generate/GenerateBuilder.php
 
@@ -352,11 +352,6 @@ parameters:
 
 		-
 			message: "#^Method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:getTokenAlgorithm\\(\\) should return string\\|null but returns mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Parameter \\#1 \\$scopes of method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:resolveScopes\\(\\) expects array\\<string\\>\\|string\\|null, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
 

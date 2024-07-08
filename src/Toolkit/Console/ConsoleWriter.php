@@ -31,7 +31,6 @@ use Salient\Utility\Format;
 use Salient\Utility\Get;
 use Salient\Utility\Inflect;
 use Salient\Utility\Str;
-use Salient\Utility\Sys;
 use Throwable;
 
 /**
@@ -423,7 +422,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             $usage = sprintf(
                 'in %.3fs (%s memory used)',
                 microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
-                Format::bytes(Sys::getPeakMemoryUsage()),
+                Format::bytes(memory_get_peak_usage()),
             );
         }
 

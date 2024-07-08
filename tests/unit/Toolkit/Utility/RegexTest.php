@@ -4,7 +4,9 @@ namespace Salient\Tests\Utility;
 
 use Salient\Tests\TestCase;
 use Salient\Utility\Exception\PcreErrorException;
+use Salient\Utility\File;
 use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Stringable;
 
 /**
@@ -241,5 +243,73 @@ final class RegexTest extends TestCase
                 'a-z0-9',
             ],
         ];
+    }
+
+    public function testInvisibleChar(): void
+    {
+        $dir = self::getPackagePath() . '/tests/data/unicode/ucd';
+        $data = [
+            "$dir/DerivedCoreProperties.txt" => 'Default_Ignorable_Code_Point',
+            "$dir/extracted/DerivedGeneralCategory.txt" => 'Zs',
+        ];
+
+        $codepoints = [];
+        foreach ($data as $file => $property) {
+            $stream = File::open($file, 'r');
+            while (($line = File::readLine($stream, $file)) !== '') {
+                $row = trim(explode('#', $line, 2)[0]);
+                if ($row === '') {
+                    continue;
+                }
+                $fields = Str::split(';', $row, null, false);
+                if (($fields[1] ?? null) !== $property || !Regex::match(
+                    '/^([0-9a-f]{4,6})(?:\.\.([0-9a-f]{4,6}))?$/Di',
+                    $fields[0],
+                    $match,
+                )) {
+                    continue;
+                }
+                $start = (int) hexdec($match[1]);
+                $end = (int) hexdec($match[2] ?? $match[1]);
+                $range = range($start, $end);
+                $codepoints += array_combine($range, $range);
+            }
+            File::close($stream, $file);
+        }
+        unset($codepoints[0x20]);
+        ksort($codepoints, \SORT_NUMERIC);
+
+        $this->assertNotEmpty($codepoints);
+
+        $current = null;
+        $ranges = [];
+        foreach ($codepoints as $codepoint) {
+            if ($current && $codepoint - $current[1] === 1) {
+                $current[1] = $codepoint;
+                continue;
+            }
+            if ($current) {
+                $ranges[] = $current;
+            }
+            $current = [$codepoint, $codepoint];
+        }
+        $ranges[] = $current;
+
+        $regex = '';
+        foreach ($ranges as [$start, $end]) {
+            switch ($end - $start) {
+                case 0:
+                    $regex .= sprintf('\x{%04X}', $start);
+                    break;
+                case 1:
+                    $regex .= sprintf('\x{%04X}\x{%04X}', $start, $end);
+                    break;
+                default:
+                    $regex .= sprintf('\x{%04X}-\x{%04X}', $start, $end);
+                    break;
+            }
+        }
+
+        $this->assertSame("[$regex]", Regex::INVISIBLE_CHAR);
     }
 }

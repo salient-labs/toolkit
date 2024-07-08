@@ -6,6 +6,8 @@ use InvalidArgumentException;
 
 /**
  * Work with strings
+ *
+ * @api
  */
 final class Str extends AbstractUtility
 {

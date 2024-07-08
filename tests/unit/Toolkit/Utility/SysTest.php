@@ -23,12 +23,6 @@ final class SysTest extends TestCase
         $this->assertSame(512 * 2 ** 20, Sys::getMemoryLimit());
     }
 
-    public function testGetMemoryUsage(): void
-    {
-        $this->assertGreaterThan(0, $current = Sys::getMemoryUsage());
-        $this->assertGreaterThanOrEqual($current, Sys::getPeakMemoryUsage());
-    }
-
     /**
      * @runInSeparateProcess
      */

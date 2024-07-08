@@ -7,42 +7,18 @@ use Stringable;
 
 /**
  * Wrappers for PHP's regular expression functions
+ *
+ * @api
  */
 final class Regex extends AbstractUtility
 {
     /**
-     * Zero or more backslash pairs with no preceding backslash
-     */
-    public const BEFORE_UNESCAPED = <<<'REGEX'
-(?<!\\)(?:\\\\)*
-REGEX;
-
-    /**
-     * Characters with the Unicode "Default_Ignorable_Code_Point" property or in
-     * the "Space_Separator" category
+     * Characters with the "Default_Ignorable_Code_Point" property or in the
+     * "Space_Separator" category
      *
      * @link https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=[[:Default_Ignorable_Code_Point=Yes:][:General_Category=Space_Separator:]-[\u0020]]
      */
-    public const INVISIBLE_CHAR = '['
-        . '\x{00A0}'  // NO-BREAK SPACE
-        . '\x{00AD}'  // SOFT HYPHEN
-        . '\x{034F}'  // COMBINING GRAPHEME JOINER
-        . '\x{061C}'  // Arabic letter mark
-        . '\x{115F}\x{1160}'  // Hangul fillers
-        . '\x{1680}'  // Ogham space mark
-        . '\x{17B4}\x{17B5}'  // Khmer inherent vowels
-        . '\x{180B}-\x{180F}'  // Mongolian format controls
-        . '\x{2000}-\x{200F}\x{202A}-\x{202F}\x{205F}-\x{206F}'  // General punctuation (spaces, format characters and invisible operators)
-        . '\x{3000}'  // CJK ideographic space
-        . '\x{3164}'  // Hangul filler
-        . '\x{FE00}-\x{FE0F}'  // Variation selectors
-        . '\x{FEFF}'  // Arabic zero width no-break space
-        . '\x{FFA0}'  // Halfwidth Hangul filler
-        . '\x{FFF0}-\x{FFF8}'  // <reserved>
-        . '\x{1BCA0}-\x{1BCA3}'  // Shorthand format controls
-        . '\x{1D173}-\x{1D17A}'  // Musical symbols (beams and slurs)
-        . '\x{E0000}-\x{E0FFF}'  // <reserved>, tags and variation selectors
-        . ']';
+    public const INVISIBLE_CHAR = '[\x{00A0}\x{00AD}\x{034F}\x{061C}\x{115F}\x{1160}\x{1680}\x{17B4}\x{17B5}\x{180B}-\x{180F}\x{2000}-\x{200F}\x{202A}-\x{202F}\x{205F}-\x{206F}\x{3000}\x{3164}\x{FE00}-\x{FE0F}\x{FEFF}\x{FFA0}\x{FFF0}-\x{FFF8}\x{1BCA0}-\x{1BCA3}\x{1D173}-\x{1D17A}\x{E0000}-\x{E0FFF}]';
 
     /**
      * A boolean string, e.g. "yes", "Y", "On", "TRUE", "enabled"
@@ -61,14 +37,14 @@ REGEX;
     public const INTEGER_STRING = '\s*+[+-]?[0-9]+\s*+';
 
     /**
-     * An [RFC4122]-compliant version 4 UUID
-     */
-    public const UUID = '(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
-
-    /**
      * A token in an [RFC7230]-compliant HTTP message
      */
     public const HTTP_TOKEN = '(?i)[-0-9a-z!#$%&\'*+.^_`|~]++';
+
+    /**
+     * An [RFC4122]-compliant version 4 UUID
+     */
+    public const UUID = '(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
 
     /**
      * A 12-byte MongoDB ObjectId
@@ -76,7 +52,7 @@ REGEX;
     public const MONGODB_OBJECTID = '(?i)[0-9a-f]{24}';
 
     /**
-     * A valid PHP identifier, e.g. for variable names and classes
+     * A valid PHP identifier
      *
      * @link https://www.php.net/manual/en/language.variables.basics.php
      * @link https://www.php.net/manual/en/language.oop5.basic.php
@@ -107,9 +83,6 @@ REGEX;
 
     /**
      * A PHP DNF type, e.g. "A|(B&C)|D|E"
-     *
-     * PHP 8.0 union types are also matched. Reject {@see Regex::PHP_UNION_TYPE}
-     * matches if this is not desirable.
      *
      * @link https://wiki.php.net/rfc/dnf_types
      */
