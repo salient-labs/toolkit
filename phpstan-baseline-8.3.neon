@@ -16,131 +16,6 @@ parameters:
 			path: scripts/generate.php
 
 		-
-			message: "#^Cannot call method getDeclaringClass\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 2
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Cannot call method getFileName\\(\\) on ReflectionClass\\|null\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Cannot call method getFileName\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Cannot call method getName\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#1 \\$method of static method Salient\\\\PHPDoc\\\\PHPDocUtility\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\Tag\\\\AbstractTag\\|string, Salient\\\\PHPDoc\\\\Tag\\\\ReturnTag\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:expandAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
-			count: 7
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
-			count: 3
-			path: src/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\Tag\\\\AbstractTag\\|string, Salient\\\\PHPDoc\\\\Tag\\\\ReturnTag\\|null given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateFacade.php
-
-		-
-			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Cannot access offset 'data'\\|'Items'\\|'Result' on mixed\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(string\\)\\: \\(''\\|class\\-string\\) given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Salient\\\\Sli\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$Entity \\(array\\|null\\) does not accept mixed\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(array\\)\\: array\\<0\\|1\\|2\\|3\\|4\\|5\\|6\\|7, 'create'\\|'create\\-list'\\|'delete'\\|'delete\\-list'\\|'get'\\|'get\\-list'\\|'update'\\|'update\\-list'\\> given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateSyncProvider.php
-
-		-
-			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: src/Sli/Command/Generate/GenerateTests.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:delete\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:patch\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:postP\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:put\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(string\\)\\: \\(''\\|class\\-string\\) given\\.$#"
-			count: 1
-			path: src/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Property Salient\\\\Sli\\\\Command\\\\Http\\\\SendHttpRequest\\:\\:\\$HttpMethod \\('CONNECT'\\|'DELETE'\\|'GET'\\|'HEAD'\\|'OPTIONS'\\|'PATCH'\\|'POST'\\|'PUT'\\|'TRACE'\\) does not accept string\\.$#"
-			count: 1
-			path: src/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Method Salient\\\\Sli\\\\TokenExtractor\\:\\:getUseMap\\(\\) should return array\\<string, class\\-string\\> but returns array\\<string\\>\\.$#"
-			count: 1
-			path: src/Sli/TokenExtractor.php
-
-		-
 			message: "#^Parameter \\#2 \\$openTag of class Salient\\\\Console\\\\Support\\\\ConsoleTagAttributes constructor expects string, array\\<int, int\\|string\\>\\|string given\\.$#"
 			count: 1
 			path: src/Toolkit/Console/ConsoleFormatter.php
@@ -379,6 +254,131 @@ parameters:
 			message: "#^Parameter \\#1 \\$string1 of function strcasecmp expects string, int\\|string given\\.$#"
 			count: 2
 			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
+
+		-
+			message: "#^Cannot call method getDeclaringClass\\(\\) on ReflectionMethod\\|null\\.$#"
+			count: 2
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Cannot call method getFileName\\(\\) on ReflectionClass\\|null\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Cannot call method getFileName\\(\\) on ReflectionMethod\\|null\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Cannot call method getName\\(\\) on ReflectionMethod\\|null\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Parameter \\#1 \\$method of static method Salient\\\\PHPDoc\\\\PHPDocUtility\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\Tag\\\\AbstractTag\\|string, Salient\\\\PHPDoc\\\\Tag\\\\ReturnTag\\|null given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:expandAlias\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
+			count: 7
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Parameter \\#4 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
+			count: 3
+			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Parameter \\#1 \\$type of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getPHPDocTypeAlias\\(\\) expects Salient\\\\PHPDoc\\\\Tag\\\\AbstractTag\\|string, Salient\\\\PHPDoc\\\\Tag\\\\ReturnTag\\|null given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateFacade.php
+
+		-
+			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Cannot access offset 'data'\\|'Items'\\|'Result' on mixed\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(string\\)\\: \\(''\\|class\\-string\\) given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Salient\\\\Sli\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$Entity \\(array\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(array\\)\\: array\\<0\\|1\\|2\\|3\\|4\\|5\\|6\\|7, 'create'\\|'create\\-list'\\|'delete'\\|'delete\\-list'\\|'get'\\|'get\\-list'\\|'update'\\|'update\\-list'\\> given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateSyncProvider.php
+
+		-
+			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Generate/GenerateTests.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:delete\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:patch\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:postP\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:put\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(string\\)\\: \\(''\\|class\\-string\\) given\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
+
+		-
+			message: "#^Property Salient\\\\Sli\\\\Command\\\\Http\\\\SendHttpRequest\\:\\:\\$HttpMethod \\('CONNECT'\\|'DELETE'\\|'GET'\\|'HEAD'\\|'OPTIONS'\\|'PATCH'\\|'POST'\\|'PUT'\\|'TRACE'\\) does not accept string\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
+
+		-
+			message: "#^Method Salient\\\\Sli\\\\TokenExtractor\\:\\:getUseMap\\(\\) should return array\\<string, class\\-string\\> but returns array\\<string\\>\\.$#"
+			count: 1
+			path: src/Toolkit/Sli/TokenExtractor.php
 
 		-
 			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"

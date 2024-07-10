@@ -45,8 +45,21 @@ remote_ref=$(git rev-parse --verify "origin/$release_branch")
 
 {
     split Cache cache
+    split Cli cli
+    split Collection collections
+    split Console console
+    split Container container
     split Contract contracts
     split Core core
+    split Curler curler
+    split Db db
+    split Http http
+    split Iterator iterators
+    split PHPDoc phpdoc
+    split PHPStan phpstan
+    split Polyfill polyfills
+    split Sli sli
+    split Sync sync
     split Utility utils
 
     exit

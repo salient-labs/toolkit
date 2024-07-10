@@ -67,7 +67,6 @@ $dir = dirname(__DIR__);
 /** @var ClassLoader */
 $loader = require "$dir/vendor/autoload.php";
 
-$loader->addPsr4('Salient\\Sli\\', "$dir/src/Sli/");
 $loader->addPsr4('Salient\\Tests\\', ["$dir/tests/unit/Toolkit/", "$dir/tests/fixtures/Toolkit/"]);
 
 $facades = [

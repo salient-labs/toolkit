@@ -16,8 +16,6 @@ use Salient\Sync\Command\GetSyncEntities;
 $loader = require $_composer_autoload_path
     ?? dirname(__DIR__) . '/vendor/autoload.php';
 
-$loader->addPsr4('Salient\\Sli\\', dirname(__DIR__) . '/src/Sli/');
-
 (new CliApplication())
     ->command(['generate', 'builder'], GenerateBuilder::class)
     ->command(['generate', 'facade'], GenerateFacade::class)
