@@ -76,7 +76,6 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Salient\\Sli\\": "src/Sli/",
             "Salient\\Tests\\": [
                 "tests/unit/Toolkit/",
                 "tests/fixtures/Toolkit/",
