@@ -17,8 +17,16 @@ function run() {
 
 function split() {
     local ref
-    ref=$(run git subtree split -P "$local_prefix$1" -b "$2") &&
+    ref=$(do_split "$local_prefix$1" "$2") &&
         run git push "$remote_prefix$2.git" "$ref:refs/heads/$release_branch"
+}
+
+function do_split() {
+    if ((has_splitsh_lite)); then
+        run splitsh-lite -prefix "$1" -target "heads/$2"
+    else
+        run git subtree split -P "$1" -b "$2"
+    fi
 }
 
 [[ ${BASH_SOURCE[0]} -ef scripts/split.sh ]] ||
@@ -27,6 +35,11 @@ function split() {
 release_branch=main
 local_prefix=src/Toolkit/
 remote_prefix=git@github.com:salient-labs/toolkit-
+has_splitsh_lite=0
+
+if type -P splitsh-lite >/dev/null; then
+    has_splitsh_lite=1
+fi
 
 dirty=$(git status --porcelain)
 [[ -z $dirty ]] ||
