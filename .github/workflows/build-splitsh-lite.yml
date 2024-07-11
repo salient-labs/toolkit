@@ -1,0 +1,41 @@
+name: Build splitsh-lite
+
+on:
+  workflow_dispatch:
+    inputs:
+      splitsh-lite-version:
+        description: splitsh/lite ref to build
+        type: string
+        required: true
+        default: v2.0.0
+
+jobs:
+  build:
+    name: Build splitsh-lite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install libgit2
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgit2-dev
+
+      - name: Checkout splitsh-lite
+        uses: actions/checkout@v4
+        with:
+          repository: splitsh/lite
+          ref: ${{ inputs.splitsh-lite-version }}
+          path: splitsh-lite
+
+      - name: Build splitsh-lite
+        run: |
+          sed -Ei 's/v34/v31/g' go.mod splitter/*.go
+          go mod tidy
+          go build -o splitsh-lite
+        working-directory: splitsh-lite
+
+      - name: Upload splitsh-lite artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: splitsh-lite
+          path: splitsh-lite/splitsh-lite
