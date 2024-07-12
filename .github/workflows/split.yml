@@ -1,0 +1,38 @@
+name: Split
+
+on:
+  push:
+    branches:
+      - main
+
+    tags:
+      - "v[0-9]*"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  split:
+    name: Update read-only subtree split repositories
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install libgit2
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgit2-dev
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SPLIT_COMMITTER_TOKEN }}
+
+      - name: Install splitsh-lite
+        run: |
+          install -Dm755 -v tools/splitsh-lite /usr/local/bin/splitsh-lite
+
+      - name: Run split.sh
+        run: scripts/split.sh ${{ github.ref_name }}
