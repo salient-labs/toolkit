@@ -44,8 +44,22 @@
     },
     "replace": {
         "salient/cache": "self.version",
+        "salient/cli": "self.version",
+        "salient/collections": "self.version",
+        "salient/console": "self.version",
+        "salient/container": "self.version",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/curler": "self.version",
+        "salient/db": "self.version",
+        "salient/http": "self.version",
+        "salient/iterators": "self.version",
+        "salient/phpdoc": "self.version",
+        "salient/phpstan": "self.version",
+        "salient/polyfills": "self.version",
+        "salient/sli": "self.version",
+        "salient/sync": "self.version",
+        "salient/utils": "self.version"
     },
     "conflict": {
         "lkrms/util": "*"
