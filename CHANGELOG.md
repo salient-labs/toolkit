@@ -10,6 +10,29 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.32] - 2024-07-20
+
+### Changed
+
+#### `Utility`
+
+- Rename `Arr::keyOffset()` -> `offsetOfKey()` for consistency
+- Rename `Arr::listWrap()` -> `wrapList()` for consistency
+- Rename `Inflect::formatWithSingularZero()` -> `formatWithZeroAsOne()`
+- Rename `Reflect::getCallableParamClassNames()` -> `getAcceptedTypes()` and add optional `$skipBuiltins` parameter
+- Rename `Reflect::getAllTypes()` -> `getTypes()`
+- Rename `Reflect::getAllTypeNames()` -> `getTypeNames()`
+- Move PHPDoc-related methods from `Reflect` to `PHPDocUtility`
+
+### Removed
+
+#### `Utility`
+
+- Remove `Arr::isListOf*()` methods
+- Remove `Reflect::isMethodInClass()` from public API
+- Remove `Regex::BEFORE_UNESCAPED`
+- Remove `Sys::getMemoryUsage()`, `Sys::getPeakMemoryUsage()`
+
 ## [v0.99.31] - 2024-07-05
 
 ### Added
@@ -3031,6 +3054,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.32]: https://github.com/salient-labs/toolkit/compare/v0.99.31...v0.99.32
 [v0.99.31]: https://github.com/salient-labs/toolkit/compare/v0.99.30...v0.99.31
 [v0.99.30]: https://github.com/salient-labs/toolkit/compare/v0.99.29...v0.99.30
 [v0.99.29]: https://github.com/salient-labs/toolkit/compare/v0.99.28...v0.99.29
