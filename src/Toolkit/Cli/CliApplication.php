@@ -494,7 +494,7 @@ class CliApplication extends Application implements CliApplicationInterface
 
         $usage = $this->getHelp($name, $node, $style);
         if ($usage !== null) {
-            $usage = $formatter->formatTags($usage);
+            $usage = $formatter->format($usage);
             $usage = Str::eolToNative($usage);
         }
         printf('%s%s', str_replace('\ ', "\u{00A0}", (string) $usage), \PHP_EOL);

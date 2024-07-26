@@ -143,7 +143,7 @@ final class CliHelpStyle
 
     public function prepareHelp(string $text, string $indent = ''): string
     {
-        $text = $this->Formatter->formatTags(
+        $text = $this->Formatter->format(
             $text,
             true,
             $this->Width === null
@@ -189,7 +189,7 @@ final class CliHelpStyle
         if ($this->HasMarkup) {
             return $string;
         }
-        return $this->Formatter->escapeTags($string);
+        return Formatter::escapeTags($string);
     }
 
     public static function getConsoleWidth(): ?int

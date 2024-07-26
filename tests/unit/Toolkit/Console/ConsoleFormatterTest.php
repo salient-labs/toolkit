@@ -39,7 +39,7 @@ final class ConsoleFormatterTest extends TestCase
             : $factory::getFormatter();
         $this->assertSame(
             Str::eolFromNative($expected),
-            $formatter->formatTags(
+            $formatter->format(
                 $string,
                 $unwrap,
                 $wrapToWidth,

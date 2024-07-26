@@ -2,6 +2,7 @@
 
 namespace Salient\Console\Support;
 
+use Salient\Contract\Console\ConsoleMessageAttributesInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasImmutableProperties;
@@ -9,7 +10,7 @@ use Salient\Core\Concern\HasImmutableProperties;
 /**
  * Message attributes
  */
-final class ConsoleMessageAttributes
+final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterface
 {
     use HasImmutableProperties;
 

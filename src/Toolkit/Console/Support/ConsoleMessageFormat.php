@@ -2,13 +2,14 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Console\Contract\ConsoleFormatInterface as Format;
-use Salient\Console\Support\ConsoleMessageAttributes as MessageAttributes;
+use Salient\Contract\Console\ConsoleFormatInterface as Format;
+use Salient\Contract\Console\ConsoleMessageAttributesInterface as MessageAttributes;
+use Salient\Contract\Console\ConsoleMessageFormatInterface;
 
 /**
  * Applies formats to the components of a console message
  */
-final class ConsoleMessageFormat
+final class ConsoleMessageFormat implements ConsoleMessageFormatInterface
 {
     private Format $Msg1Format;
     private Format $Msg2Format;
@@ -26,10 +27,14 @@ final class ConsoleMessageFormat
     }
 
     /**
-     * Format a message before it is written to the target
+     * @inheritDoc
      */
-    public function apply(string $msg1, ?string $msg2, string $prefix, MessageAttributes $attributes): string
-    {
+    public function apply(
+        string $msg1,
+        ?string $msg2,
+        string $prefix,
+        MessageAttributes $attributes
+    ): string {
         return
             ($prefix !== '' ? $this->PrefixFormat->apply($prefix, $attributes->withIsPrefix()) : '')
             . ($msg1 !== '' ? $this->Msg1Format->apply($msg1, $attributes->withIsMsg1()) : '')
@@ -41,11 +46,10 @@ final class ConsoleMessageFormat
      */
     public static function getDefaultMessageFormat(): self
     {
-        return self::$DefaultMessageFormat
-            ??= new self(
-                ConsoleFormat::getDefaultFormat(),
-                ConsoleFormat::getDefaultFormat(),
-                ConsoleFormat::getDefaultFormat(),
-            );
+        return self::$DefaultMessageFormat ??= new self(
+            ConsoleFormat::getDefaultFormat(),
+            ConsoleFormat::getDefaultFormat(),
+            ConsoleFormat::getDefaultFormat(),
+        );
     }
 }

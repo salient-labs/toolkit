@@ -4,6 +4,7 @@ namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
+use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
@@ -309,7 +310,7 @@ abstract class CliCommand implements CliCommandInterface
                 ) {
                     foreach ($option->AllowedValues ?: [true, false] as $optionValue) {
                         $optionValue = $option->normaliseValueForHelp($optionValue);
-                        $allowed[] = $em . $formatter->escapeTags($optionValue) . $em;
+                        $allowed[] = $em . Formatter::escapeTags($optionValue) . $em;
                     }
                     if (!$option->AllowedValues) {
                         $booleanValue = true;
@@ -376,8 +377,8 @@ abstract class CliCommand implements CliCommandInterface
                     if (
                         $booleanValue
                         || mb_strlen($formatter->getWrapAfterApply()
-                            ? $formatter->formatTags($indent . $_line)
-                            : $formatter->removeTags($indent . $_line)) <= ($width ?: 76)
+                            ? $formatter->format($indent . $_line)
+                            : Formatter::removeTags($indent . $_line)) <= ($width ?: 76)
                     ) {
                         $allowed = null;
                     } else {
@@ -423,7 +424,7 @@ abstract class CliCommand implements CliCommandInterface
                         continue;
                     }
                     $value = $option->normaliseValueForHelp($value);
-                    $default[] = $em . $formatter->escapeTags($value) . $em;
+                    $default[] = $em . Formatter::escapeTags($value) . $em;
                 }
                 $default = implode(Str::coalesce($option->Delimiter, ' '), $default);
                 if ($default !== '') {
@@ -440,8 +441,8 @@ abstract class CliCommand implements CliCommandInterface
                 . ($lines ? $descriptionPrefix . ltrim(implode("\n\n", $lines)) : '');
         }
 
-        $name = $formatter->escapeTags($this->getNameWithProgram());
-        $summary = $formatter->escapeTags($this->getDescription());
+        $name = Formatter::escapeTags($this->getNameWithProgram());
+        $summary = Formatter::escapeTags($this->getDescription());
         $synopsis = $this->getSynopsis($style);
 
         $description = $this->getLongDescription() ?? '';
@@ -514,7 +515,7 @@ abstract class CliCommand implements CliCommandInterface
         $synopsis = Arr::implode(' ', [$name, $full]);
 
         if ($width !== null) {
-            $wrapped = $formatter->formatTags(
+            $wrapped = $formatter->format(
                 $synopsis,
                 false,
                 [$width, $width - 4],
@@ -524,7 +525,7 @@ abstract class CliCommand implements CliCommandInterface
 
             if (!$style->CollapseSynopsis || !$count) {
                 if ($softNewline !== '') {
-                    $wrapped = $style->Formatter->formatTags(
+                    $wrapped = $style->Formatter->format(
                         $wrapped,
                         false,
                         $width,
@@ -538,7 +539,7 @@ abstract class CliCommand implements CliCommandInterface
             $synopsis = Arr::implode(' ', [$name, $collapsed]);
         }
 
-        $synopsis = $formatter->formatTags(
+        $synopsis = $formatter->format(
             $synopsis,
             false,
             $width !== null ? [$width, $width - 4] : null,
@@ -547,7 +548,7 @@ abstract class CliCommand implements CliCommandInterface
         $synopsis = $prefix . str_replace("\n", $newline, $synopsis);
 
         if ($width !== null && $softNewline !== '') {
-            $synopsis = $style->Formatter->formatTags(
+            $synopsis = $style->Formatter->format(
                 $synopsis,
                 false,
                 $width,
