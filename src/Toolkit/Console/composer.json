@@ -15,8 +15,16 @@
     },
     "require": {
         "php": ">=7.4",
+        "psr/log": "^1",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/utils": "self.version"
+    },
+    "provide": {
+        "psr/log-implementation": "^1"
+    },
+    "suggest": {
+        "analog/analog": "Required by AnalogTarget"
     },
     "autoload": {
         "psr-4": {

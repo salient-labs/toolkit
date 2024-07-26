@@ -15,8 +15,19 @@
     },
     "require": {
         "php": ">=7.4",
+        "lkrms/dice": "^4.1.10",
+        "psr/container": "^2",
+        "salient/console": "self.version",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/utility": "self.version"
+    },
+    "provide": {
+        "psr/container-implementation": "^2"
+    },
+    "suggest": {
+        "salient/cache": "Required by Application::startCache()",
+        "salient/sync": "Required by Application::startSync()"
     },
     "autoload": {
         "psr-4": {
