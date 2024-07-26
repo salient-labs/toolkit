@@ -4,9 +4,11 @@ namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
+use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
+use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionVisibility;
@@ -263,20 +265,21 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @inheritDoc
      */
-    final public function getHelp(?CliHelpStyle $style = null): array
+    final public function getHelp(?CliHelpStyleInterface $style = null): array
     {
         $style ??= new CliHelpStyle();
 
-        $b = $style->Bold;
-        $em = $style->Italic;
-        $esc = $style->Escape;
-        $indent = $style->OptionIndent;
-        $optionPrefix = $style->OptionPrefix;
-        $descriptionPrefix = $style->OptionDescriptionPrefix;
-        $visibility = $style->Visibility;
+        $b = $style->getBold();
+        $em = $style->getItalic();
+        $esc = $style->getEscape();
+        $indent = $style->getOptionIndent();
+        $optionPrefix = $style->getOptionPrefix();
+        $descriptionPrefix = $style->getOptionDescriptionPrefix();
+        /** @var int&CliOptionVisibility::* */
+        $visibility = $style->getVisibility();
         $width = $style->getWidth();
 
-        $formatter = $style->Formatter;
+        $formatter = $style->getFormatter();
 
         $options = [];
         foreach ($this->_getOptions() as $option) {
@@ -309,7 +312,7 @@ abstract class CliCommand implements CliCommandInterface
                 ) {
                     foreach ($option->AllowedValues ?: [true, false] as $optionValue) {
                         $optionValue = $option->normaliseValueForHelp($optionValue);
-                        $allowed[] = $em . $formatter->escapeTags($optionValue) . $em;
+                        $allowed[] = $em . Formatter::escapeTags($optionValue) . $em;
                     }
                     if (!$option->AllowedValues) {
                         $booleanValue = true;
@@ -376,8 +379,8 @@ abstract class CliCommand implements CliCommandInterface
                     if (
                         $booleanValue
                         || mb_strlen($formatter->getWrapAfterApply()
-                            ? $formatter->formatTags($indent . $_line)
-                            : $formatter->removeTags($indent . $_line)) <= ($width ?: 76)
+                            ? $formatter->format($indent . $_line)
+                            : Formatter::removeTags($indent . $_line)) <= ($width ?: 76)
                     ) {
                         $allowed = null;
                     } else {
@@ -423,7 +426,7 @@ abstract class CliCommand implements CliCommandInterface
                         continue;
                     }
                     $value = $option->normaliseValueForHelp($value);
-                    $default[] = $em . $formatter->escapeTags($value) . $em;
+                    $default[] = $em . Formatter::escapeTags($value) . $em;
                 }
                 $default = implode(Str::coalesce($option->Delimiter, ' '), $default);
                 if ($default !== '') {
@@ -440,8 +443,8 @@ abstract class CliCommand implements CliCommandInterface
                 . ($lines ? $descriptionPrefix . ltrim(implode("\n\n", $lines)) : '');
         }
 
-        $name = $formatter->escapeTags($this->getNameWithProgram());
-        $summary = $formatter->escapeTags($this->getDescription());
+        $name = Formatter::escapeTags($this->getNameWithProgram());
+        $summary = Formatter::escapeTags($this->getDescription());
         $synopsis = $this->getSynopsis($style);
 
         $description = $this->getLongDescription() ?? '';
@@ -474,7 +477,7 @@ abstract class CliCommand implements CliCommandInterface
         return $help;
     }
 
-    private function prepareHelp(CliHelpStyle $style, string $text, string $indent = ''): string
+    private function prepareHelp(CliHelpStyleInterface $style, string $text, string $indent = ''): string
     {
         $text = str_replace(
             ['{{app}}', '{{program}}', '{{command}}', '{{subcommand}}'],
@@ -496,25 +499,25 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @inheritDoc
      */
-    final public function getSynopsis(?CliHelpStyle $style = null): string
+    final public function getSynopsis(?CliHelpStyleInterface $style = null): string
     {
         $style ??= new CliHelpStyle();
 
-        $b = $style->Bold;
-        $prefix = $style->SynopsisPrefix;
-        $newline = $style->SynopsisNewline;
-        $softNewline = $style->SynopsisSoftNewline;
+        $b = $style->getBold();
+        $prefix = $style->getSynopsisPrefix();
+        $newline = $style->getSynopsisNewline();
+        $softNewline = $style->getSynopsisSoftNewline();
         $width = $style->getWidth();
 
         // Synopsis newlines are hard line breaks, so wrap without markup
-        $formatter = $style->Formatter->withWrapAfterApply(false);
+        $formatter = $style->getFormatter()->withWrapAfterApply(false);
 
         $name = $b . $this->getNameWithProgram() . $b;
         $full = $this->getOptionsSynopsis($style, $collapsed);
         $synopsis = Arr::implode(' ', [$name, $full]);
 
         if ($width !== null) {
-            $wrapped = $formatter->formatTags(
+            $wrapped = $formatter->format(
                 $synopsis,
                 false,
                 [$width, $width - 4],
@@ -522,9 +525,9 @@ abstract class CliCommand implements CliCommandInterface
             );
             $wrapped = $prefix . str_replace("\n", $newline, $wrapped, $count);
 
-            if (!$style->CollapseSynopsis || !$count) {
+            if (!$style->getCollapseSynopsis() || !$count) {
                 if ($softNewline !== '') {
-                    $wrapped = $style->Formatter->formatTags(
+                    $wrapped = $style->getFormatter()->format(
                         $wrapped,
                         false,
                         $width,
@@ -538,7 +541,7 @@ abstract class CliCommand implements CliCommandInterface
             $synopsis = Arr::implode(' ', [$name, $collapsed]);
         }
 
-        $synopsis = $formatter->formatTags(
+        $synopsis = $formatter->format(
             $synopsis,
             false,
             $width !== null ? [$width, $width - 4] : null,
@@ -547,7 +550,7 @@ abstract class CliCommand implements CliCommandInterface
         $synopsis = $prefix . str_replace("\n", $newline, $synopsis);
 
         if ($width !== null && $softNewline !== '') {
-            $synopsis = $style->Formatter->formatTags(
+            $synopsis = $style->getFormatter()->format(
                 $synopsis,
                 false,
                 $width,
@@ -559,11 +562,12 @@ abstract class CliCommand implements CliCommandInterface
         return $synopsis;
     }
 
-    private function getOptionsSynopsis(CliHelpStyle $style, ?string &$collapsed = null): string
+    private function getOptionsSynopsis(CliHelpStyleInterface $style, ?string &$collapsed = null): string
     {
-        $b = $style->Bold;
-        $esc = $style->Escape;
-        $visibility = $style->Visibility;
+        $b = $style->getBold();
+        $esc = $style->getEscape();
+        /** @var int&CliOptionVisibility::* */
+        $visibility = $style->getVisibility();
 
         // Produce this:
         //

@@ -2,12 +2,12 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Console\Contract\ConsoleFormatInterface;
 use Salient\Console\Contract\ConsoleFormatterFactory;
 use Salient\Console\Contract\ConsoleTagFormatFactory;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleFormatInterface;
 use Salient\Contract\Console\ConsoleTag as Tag;
 
 /**

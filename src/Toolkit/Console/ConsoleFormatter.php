@@ -2,13 +2,14 @@
 
 namespace Salient\Console;
 
-use Salient\Console\Contract\ConsoleFormatInterface as Format;
 use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 use Salient\Console\Support\ConsoleMessageAttributes as MessageAttributes;
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
+use Salient\Contract\Console\ConsoleFormatInterface as Format;
+use Salient\Contract\Console\ConsoleFormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Core\MessageLevel as Level;
@@ -21,7 +22,7 @@ use UnexpectedValueException;
 /**
  * Formats messages for a console output target
  */
-final class ConsoleFormatter
+final class ConsoleFormatter implements ConsoleFormatterInterface
 {
     use HasImmutableProperties;
 
@@ -148,6 +149,8 @@ REGEX;
     private array $LevelPrefixMap;
     /** @var array<MessageType::*,string> */
     private array $TypePrefixMap;
+    /** @var array{int<0,max>,float} */
+    private array $SpinnerState;
 
     /**
      * @param (callable(): (int|null))|null $widthCallback
@@ -169,7 +172,17 @@ REGEX;
     }
 
     /**
-     * @return static
+     * @inheritDoc
+     */
+    public function withSpinnerState(?array &$state)
+    {
+        $clone = clone $this;
+        $clone->SpinnerState = $state ??= [0, 0.0];
+        return $clone;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function withUnescape(bool $value = true)
     {
@@ -177,7 +190,7 @@ REGEX;
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
     public function withWrapAfterApply(bool $value = true)
     {
@@ -185,9 +198,7 @@ REGEX;
     }
 
     /**
-     * Get the format assigned to a tag
-     *
-     * @param Tag::* $tag
+     * @inheritDoc
      */
     public function getTagFormat($tag): Format
     {
@@ -195,10 +206,7 @@ REGEX;
     }
 
     /**
-     * Get the format assigned to a message level and type
-     *
-     * @param Level::* $level
-     * @param MessageType::* $type
+     * @inheritDoc
      */
     public function getMessageFormat($level, $type = MessageType::STANDARD): MessageFormat
     {
@@ -206,7 +214,7 @@ REGEX;
     }
 
     /**
-     * True if text should be unescaped for the target
+     * @inheritDoc
      */
     public function getUnescape(): bool
     {
@@ -214,7 +222,7 @@ REGEX;
     }
 
     /**
-     * True if text should be wrapped after formatting
+     * @inheritDoc
      */
     public function getWrapAfterApply(): bool
     {
@@ -222,28 +230,23 @@ REGEX;
     }
 
     /**
-     * Get the prefix assigned to a message level and type
-     *
-     * @param Level::* $level
-     * @param MessageType::* $type
-     * @param array{int<0,max>,float}|null $spinnerState
+     * @inheritDoc
      */
     public function getMessagePrefix(
         $level,
-        $type = MessageType::STANDARD,
-        ?array &$spinnerState = null
+        $type = MessageType::STANDARD
     ): string {
         if ($type === MessageType::UNFORMATTED || $type === MessageType::UNDECORATED) {
             return '';
         }
-        if ($type === MessageType::PROGRESS && $spinnerState !== null) {
+        if ($type === MessageType::PROGRESS && isset($this->SpinnerState)) {
             $frames = count(self::SPINNER);
-            $prefix = self::SPINNER[$spinnerState[0] % $frames] . ' ';
+            $prefix = self::SPINNER[$this->SpinnerState[0] % $frames] . ' ';
             $now = (float) (hrtime(true) / 1000);
-            if ($now - $spinnerState[1] >= 80000) {
-                $spinnerState[0]++;
-                $spinnerState[0] %= $frames;
-                $spinnerState[1] = $now;
+            if ($now - $this->SpinnerState[1] >= 80000) {
+                $this->SpinnerState[0]++;
+                $this->SpinnerState[0] %= $frames;
+                $this->SpinnerState[1] = $now;
             }
         }
         return $prefix
@@ -253,36 +256,9 @@ REGEX;
     }
 
     /**
-     * Format a string
-     *
-     * Applies target-defined formats to text that may contain Markdown-like
-     * inline formatting tags. Paragraphs outside preformatted blocks are
-     * optionally wrapped to a given width, and backslash-escaped punctuation
-     * characters and line breaks are preserved.
-     *
-     * Escaped line breaks may have a leading space, so the following are
-     * equivalent:
-     *
-     * ```
-     * Text with a \
-     * hard line break.
-     *
-     * Text with a\
-     * hard line break.
-     * ```
-     *
-     * @param array{int,int}|int|null $wrapToWidth If `null` (the default), text
-     * is not wrapped.
-     *
-     * If `$wrapToWidth` is an `array`, the first line of text is wrapped to the
-     * first value, and text in subsequent lines is wrapped to the second value.
-     *
-     * Widths less than or equal to `0` are added to the width reported by the
-     * target, and text is wrapped to the result.
-     * @param bool $unformat If `true`, formatting tags are reapplied after text
-     * is unwrapped and/or wrapped.
+     * @inheritDoc
      */
-    public function formatTags(
+    public function format(
         string $string,
         bool $unwrap = false,
         $wrapToWidth = null,
@@ -570,18 +546,13 @@ REGEX;
     }
 
     /**
-     * Format a message
-     *
-     * @param Level::* $level
-     * @param MessageType::* $type
-     * @param array{int<0,max>,float}|null $spinnerState
+     * @inheritDoc
      */
     public function formatMessage(
         string $msg1,
         ?string $msg2 = null,
         $level = Level::INFO,
-        $type = MessageType::STANDARD,
-        ?array &$spinnerState = null
+        $type = MessageType::STANDARD
     ): string {
         $attributes = new MessageAttributes($level, $type);
 
@@ -592,7 +563,7 @@ REGEX;
                 ->apply($msg1, $msg2, '', $attributes);
         }
 
-        $prefix = $this->getMessagePrefix($level, $type, $spinnerState);
+        $prefix = $this->getMessagePrefix($level, $type);
 
         return $this
             ->MessageFormats
@@ -601,7 +572,7 @@ REGEX;
     }
 
     /**
-     * Format a unified diff
+     * @inheritDoc
      */
     public function formatDiff(string $diff): string
     {
@@ -650,7 +621,7 @@ REGEX;
      */
     public static function removeTags(string $string): string
     {
-        return self::getDefaultFormatter()->formatTags($string);
+        return self::getDefaultFormatter()->format($string);
     }
 
     private static function getDefaultFormatter(): self

@@ -7,8 +7,10 @@ use Salient\Console\Support\ConsoleManPageFormat as ManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Cli\CliHelpSectionName;
+use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionVisibility;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Regex;
@@ -19,56 +21,30 @@ use LogicException;
  *
  * @api
  */
-final class CliHelpStyle
+final class CliHelpStyle implements CliHelpStyleInterface
 {
     use HasImmutableProperties;
 
-    /**
-     * @readonly
-     * @var CliHelpTarget::*
-     */
-    public int $Target;
+    private ?int $Width;
+    private FormatterInterface $Formatter;
+    private string $Bold = '';
+    private string $Italic = '';
+    private string $Escape = '\\';
+    private string $SynopsisPrefix = '';
+    private string $SynopsisNewline = "\n    ";
+    private string $SynopsisSoftNewline = '';
+    private bool $CollapseSynopsis = false;
+    private string $OptionIndent = '    ';
+    private string $OptionPrefix = '';
+    private string $OptionDescriptionPrefix = "\n    ";
+    /** @var int&CliOptionVisibility::* */
+    private int $Visibility = CliOptionVisibility::HELP;
 
-    /** @readonly */
-    public ?int $Width;
-    /** @readonly */
-    public Formatter $Formatter;
-    /** @readonly */
-    public bool $HasMarkup = false;
-    /** @readonly */
-    public string $Bold = '';
-    /** @readonly */
-    public string $Italic = '';
-    /** @readonly */
-    public string $Escape = '\\';
-    /** @readonly */
-    public string $SynopsisPrefix = '';
-    /** @readonly */
-    public string $SynopsisNewline = "\n    ";
+    // --
 
-    /**
-     * If not empty, soft-wrap the final form of the synopsis
-     *
-     * @readonly
-     */
-    public string $SynopsisSoftNewline = '';
-
-    /**
-     * If true and the synopsis breaks over multiple lines, collapse
-     * non-mandatory options to "[options]"
-     *
-     * @readonly
-     */
-    public bool $CollapseSynopsis = false;
-
-    /** @readonly */
-    public string $OptionIndent = '    ';
-    /** @readonly */
-    public string $OptionPrefix = '';
-    /** @readonly */
-    public string $OptionDescriptionPrefix = "\n    ";
-    /** @readonly */
-    public int $Visibility = CliOptionVisibility::HELP;
+    /** @var CliHelpTarget::* */
+    private int $Target;
+    private bool $HasMarkup = false;
     private int $Margin = 0;
 
     /**
@@ -77,13 +53,13 @@ final class CliHelpStyle
     public function __construct(
         int $target = CliHelpTarget::PLAIN,
         ?int $width = null,
-        ?Formatter $formatter = null
+        ?FormatterInterface $formatter = null
     ) {
         $this->Target = $target;
         $this->Width = $width;
 
         if ($target === CliHelpTarget::PLAIN) {
-            $this->Formatter = $formatter ?: LoopbackFormat::getFormatter();
+            $this->Formatter = $formatter ?? LoopbackFormat::getFormatter();
             return;
         }
 
@@ -95,7 +71,7 @@ final class CliHelpStyle
                 $this->Bold = '__';
                 $this->Width ??= self::getConsoleWidth();
                 $this->Margin = 4;
-                $this->Formatter = $formatter ?: Console::getFormatter();
+                $this->Formatter = $formatter ?? Console::getFormatter();
                 break;
 
             case CliHelpTarget::MARKDOWN:
@@ -106,7 +82,7 @@ final class CliHelpStyle
                 $this->OptionPrefix = '- ';
                 $this->OptionDescriptionPrefix = "\n\n  ";
                 $this->Visibility = CliOptionVisibility::MARKDOWN;
-                $this->Formatter = $formatter ?: MarkdownFormat::getFormatter();
+                $this->Formatter = $formatter ?? MarkdownFormat::getFormatter();
                 break;
 
             case CliHelpTarget::MAN_PAGE:
@@ -118,7 +94,7 @@ final class CliHelpStyle
                 // https://pandoc.org/MANUAL.html#definition-lists
                 $this->OptionDescriptionPrefix = "\n\n:   ";
                 $this->Visibility = CliOptionVisibility::MAN_PAGE;
-                $this->Formatter = $formatter ?: ManPageFormat::getFormatter();
+                $this->Formatter = $formatter ?? ManPageFormat::getFormatter();
                 break;
 
             default:
@@ -127,13 +103,16 @@ final class CliHelpStyle
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
-    public function withCollapseSynopsis(bool $value = true)
+    public function getFormatter(): FormatterInterface
     {
-        return $this->withPropertyValue('CollapseSynopsis', $value);
+        return $this->Formatter;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getWidth(): ?int
     {
         return $this->Width === null
@@ -141,9 +120,105 @@ final class CliHelpStyle
             : $this->Width - $this->Margin;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function getBold(): string
+    {
+        return $this->Bold;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getItalic(): string
+    {
+        return $this->Italic;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEscape(): string
+    {
+        return $this->Escape;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSynopsisPrefix(): string
+    {
+        return $this->SynopsisPrefix;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSynopsisNewline(): string
+    {
+        return $this->SynopsisNewline;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSynopsisSoftNewline(): string
+    {
+        return $this->SynopsisSoftNewline;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCollapseSynopsis(): bool
+    {
+        return $this->CollapseSynopsis;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOptionIndent(): string
+    {
+        return $this->OptionIndent;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOptionPrefix(): string
+    {
+        return $this->OptionPrefix;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOptionDescriptionPrefix(): string
+    {
+        return $this->OptionDescriptionPrefix;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVisibility(): int
+    {
+        return $this->Visibility;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withCollapseSynopsis(bool $value = true)
+    {
+        return $this->withPropertyValue('CollapseSynopsis', $value);
+    }
+
     public function prepareHelp(string $text, string $indent = ''): string
     {
-        $text = $this->Formatter->formatTags(
+        $text = $this->Formatter->format(
             $text,
             true,
             $this->Width === null
@@ -189,7 +264,7 @@ final class CliHelpStyle
         if ($this->HasMarkup) {
             return $string;
         }
-        return $this->Formatter->escapeTags($string);
+        return Formatter::escapeTags($string);
     }
 
     public static function getConsoleWidth(): ?int

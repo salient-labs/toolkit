@@ -940,7 +940,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             $indent = mb_strlen($formatter->getMessagePrefix($level, $type));
             $indent = max(0, strpos($msg1, "\n") !== false ? $indent : $indent - 4);
 
-            $_msg1 = $msg1 === '' ? '' : $formatter->formatTags($msg1);
+            $_msg1 = $msg1 === '' ? '' : $formatter->format($msg1);
 
             if ($margin + $indent > 0 && strpos($msg1, "\n") !== false) {
                 $_msg1 = str_replace("\n", "\n" . str_repeat(' ', $margin + $indent), $_msg1);
@@ -948,13 +948,17 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
 
             $_msg2 = null;
             if ($msg2 !== null && $msg2 !== '') {
-                $_msg2 = $msg2HasTags ? $formatter->formatTags($msg2) : $msg2;
+                $_msg2 = $msg2HasTags ? $formatter->format($msg2) : $msg2;
                 $_msg2 = strpos($msg2, "\n") !== false
                     ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))
                     : ($_msg1 !== '' ? ' ' : '') . $_msg2;
             }
 
-            $message = $formatter->formatMessage($_msg1, $_msg2, $level, $type, $this->State->SpinnerState);
+            if ($type === MessageType::PROGRESS) {
+                $formatter = $formatter->withSpinnerState($this->State->SpinnerState);
+            }
+
+            $message = $formatter->formatMessage($_msg1, $_msg2, $level, $type);
             $target->write($level, str_repeat(' ', $margin) . $message, $context ?? []);
         }
 

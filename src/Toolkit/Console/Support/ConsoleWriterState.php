@@ -37,6 +37,6 @@ final class ConsoleWriterState
     /** @var string[] */
     public array $LastWritten = [];
     /** @var array{int<0,max>,float} */
-    public array $SpinnerState = [0, 0.0];
+    public array $SpinnerState;
     public LoggerInterface $Logger;
 }

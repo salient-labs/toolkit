@@ -3,11 +3,12 @@
 namespace Salient\Console\Support;
 
 use Salient\Contract\Console\ConsoleTag as Tag;
+use Salient\Contract\Console\ConsoleTagAttributesInterface;
 
 /**
  * Tag attributes
  */
-final class ConsoleTagAttributes
+final class ConsoleTagAttributes implements ConsoleTagAttributesInterface
 {
     /**
      * Tag identifier
