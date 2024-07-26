@@ -3,7 +3,7 @@
 namespace Salient\Contract\Cli;
 
 use Salient\Cli\CliCommand;
-use Salient\Cli\CliHelpStyle;
+use Salient\Contract\Cli\CliHelpStyleInterface as CliHelpStyle;
 use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\HasDescription;
 use Salient\Contract\Core\HasName;
