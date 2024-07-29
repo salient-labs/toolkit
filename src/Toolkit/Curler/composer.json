@@ -15,8 +15,15 @@
     },
     "require": {
         "php": ">=7.4",
+        "psr/http-client": "^1",
+        "psr/http-message": "^1.1 || ^2",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/http": "self.version",
+        "salient/utils": "self.version"
+    },
+    "provide": {
+        "psr/http-client-implementation": "^1"
     },
     "autoload": {
         "psr-4": {

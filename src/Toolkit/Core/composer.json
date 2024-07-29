@@ -16,7 +16,9 @@
     "require": {
         "php": ">=7.4",
         "psr/event-dispatcher": "^1",
+        "salient/container": "self.version",
         "salient/contracts": "self.version",
+        "salient/iterators": "self.version",
         "salient/utils": "self.version"
     },
     "provide": {

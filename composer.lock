@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f8821eeb60fea4f1800cc9aa085233f9",
+    "content-hash": "ef3d5df9b15fb6cb4e187b8d44d31b43",
     "packages": [
         {
             "name": "lkrms/dice",

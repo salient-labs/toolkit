@@ -15,8 +15,21 @@
     },
     "require": {
         "php": ">=7.4",
+        "psr/http-factory": "^1",
+        "psr/http-message": "^1.1 || ^2",
+        "salient/collections": "self.version",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/utils": "self.version"
+    },
+    "provide": {
+        "psr/http-factory-implementation": "^1",
+        "psr/http-message-implementation": "^1.1 || ^2"
+    },
+    "suggest": {
+        "firebase/php-jwt": "Required by OAuth2Client",
+        "league/oauth2-client": "Required by OAuth2Client",
+        "salient/curler": "Required by OAuth2Client"
     },
     "autoload": {
         "psr-4": {
