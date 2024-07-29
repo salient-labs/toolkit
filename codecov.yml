@@ -1,0 +1,73 @@
+component_management:
+  individual_components:
+    - component_id: cache
+      name: Cache
+      paths:
+        - "src/Toolkit/Cache/**"
+    - component_id: cli
+      name: Cli
+      paths:
+        - "src/Toolkit/Cli/**"
+    - component_id: collections
+      name: Collections
+      paths:
+        - "src/Toolkit/Collection/**"
+    - component_id: console
+      name: Console
+      paths:
+        - "src/Toolkit/Console/**"
+    - component_id: container
+      name: Container
+      paths:
+        - "src/Toolkit/Container/**"
+    - component_id: contracts
+      name: Contracts
+      paths:
+        - "src/Toolkit/Contract/**"
+    - component_id: core
+      name: Core
+      paths:
+        - "src/Toolkit/Core/**"
+    - component_id: curler
+      name: Curler
+      paths:
+        - "src/Toolkit/Curler/**"
+    - component_id: db
+      name: Db
+      paths:
+        - "src/Toolkit/Db/**"
+    - component_id: http
+      name: Http
+      paths:
+        - "src/Toolkit/Http/**"
+    - component_id: iterators
+      name: Iterators
+      paths:
+        - "src/Toolkit/Iterator/**"
+    - component_id: phpdoc
+      name: PHPDoc
+      paths:
+        - "src/Toolkit/PHPDoc/**"
+    - component_id: phpstan
+      name: PHPStan
+      paths:
+        - "src/Toolkit/PHPStan/**"
+    - component_id: polyfills
+      name: Polyfills
+      paths:
+        - "src/Toolkit/Polyfill/**"
+    - component_id: sli
+      name: Sli
+      paths:
+        - "src/Toolkit/Sli/**"
+    - component_id: sync
+      name: Sync
+      paths:
+        - "src/Toolkit/Sync/**"
+    - component_id: utils
+      name: Utils
+      paths:
+        - "src/Toolkit/Utility/**"
+
+comment:
+  layout: "condensed_header, condensed_files, condensed_footer, components"
