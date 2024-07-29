@@ -204,6 +204,7 @@ final class FormData
             } else {
                 /** @var object|mixed[]|string|null $value */
                 foreach ($data as $key => $value) {
+                    /** @phpstan-var string */
                     $_key = sprintf($format, $key);
                     /** @var mixed[] $query */
                     if ($_key === '') {

@@ -47,7 +47,7 @@ final class SyncEntityProviderTest extends SyncTestCase
 
         $flattened = [];
         foreach ($posts as $post) {
-            if ($post->Id % 9) {
+            if (is_int($post->Id) && $post->Id % 9) {
                 continue;
             }
             $user = $userProvider->get($post->User->Id);
