@@ -105,7 +105,7 @@
         ]
     },
     "bin": [
-        "bin/sli"
+        "src/Toolkit/Sli/sli"
     ],
     "config": {
         "allow-plugins": {

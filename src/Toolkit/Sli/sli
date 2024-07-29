@@ -14,7 +14,7 @@ use Salient\Sync\Command\GetSyncEntities;
 
 /** @var ClassLoader */
 $loader = require $_composer_autoload_path
-    ?? dirname(__DIR__) . '/vendor/autoload.php';
+    ?? dirname(__DIR__, 3) . '/vendor/autoload.php';
 
 (new CliApplication())
     ->command(['generate', 'builder'], GenerateBuilder::class)

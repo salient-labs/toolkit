@@ -32,4 +32,4 @@ Event::getInstance()->listen(
         ),
 );
 
-require dirname(__DIR__) . '/bin/sli';
+require dirname(__DIR__) . '/src/Toolkit/Sli/sli';

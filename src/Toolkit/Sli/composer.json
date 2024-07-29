@@ -32,5 +32,8 @@
     },
     "config": {
         "sort-packages": true
-    }
+    },
+    "bin": [
+        "sli"
+    ]
 }
