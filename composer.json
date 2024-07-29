@@ -82,7 +82,7 @@
             "Salient\\": "src/Toolkit/"
         },
         "classmap": [
-            "stubs/"
+            "src/Toolkit/Polyfill/stubs/"
         ],
         "files": [
             "bootstrap.php"
@@ -96,6 +96,9 @@
                 "tests/3rdparty/Toolkit/"
             ]
         },
+        "classmap": [
+            "stubs/"
+        ],
         "files": [
             "tests/bootstrap.php"
         ]

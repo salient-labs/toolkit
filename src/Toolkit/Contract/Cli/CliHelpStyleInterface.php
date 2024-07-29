@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Contract\Console\ConsoleFormatterInterface;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Core\Immutable;
 
 /**
@@ -15,7 +15,7 @@ interface CliHelpStyleInterface extends Immutable
     /**
      * Get output formatter
      */
-    public function getFormatter(): ConsoleFormatterInterface;
+    public function getFormatter(): FormatterInterface;
 
     /**
      * Get output width in columns after subtracting any margin widths

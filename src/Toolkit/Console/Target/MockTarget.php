@@ -4,6 +4,7 @@ namespace Salient\Console\Target;
 
 use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Utility\File;
@@ -19,7 +20,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     private ?int $Width;
     /** @var resource|null */
     private $Stream;
-    private Formatter $Formatter;
+    private FormatterInterface $Formatter;
     /** @var array<array{Level::*,string,2?:array<string,mixed>}> */
     private array $Messages = [];
     private bool $IsValid = true;
@@ -34,7 +35,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
         bool $isStderr = true,
         bool $isTty = true,
         ?int $width = 80,
-        ?Formatter $formatter = null
+        ?FormatterInterface $formatter = null
     ) {
         $this->IsStdout = $isStdout;
         $this->IsStderr = $isStderr;
@@ -42,7 +43,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
         $this->Width = $width;
         $this->Stream = $stream;
         $this->Formatter = $formatter
-            ?: new Formatter(null, null, fn(): ?int => $this->getWidth());
+            ?? new Formatter(null, null, fn(): ?int => $this->getWidth());
     }
 
     /**
@@ -112,7 +113,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /**
      * @inheritDoc
      */
-    public function getFormatter(): Formatter
+    public function getFormatter(): FormatterInterface
     {
         $this->assertIsValid();
 

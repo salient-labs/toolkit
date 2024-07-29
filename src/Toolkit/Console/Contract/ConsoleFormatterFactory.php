@@ -2,12 +2,12 @@
 
 namespace Salient\Console\Contract;
 
-use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 
 interface ConsoleFormatterFactory
 {
     /**
      * Get a console output formatter
      */
-    public static function getFormatter(): Formatter;
+    public static function getFormatter(): FormatterInterface;
 }

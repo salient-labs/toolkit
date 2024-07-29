@@ -3,8 +3,8 @@
 namespace Salient\Core\Facade;
 
 use Psr\Log\LoggerInterface;
-use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Console\ConsoleWriter;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType;
 use Salient\Contract\Console\ConsoleTargetInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
@@ -28,7 +28,7 @@ use Throwable;
  * @method static string escape(string $string) Escape a string so it can be safely used in a console message
  * @method static ConsoleWriterInterface exception(Throwable $exception, Level::* $level = Level::ERROR, Level::*|null $traceLevel = Level::DEBUG) Print an exception's name and message with a given level, optionally followed by its stack trace with a different level (see {@see ConsoleWriterInterface::exception()})
  * @method static int getErrorCount() Get the number of error messages recorded by the writer so far
- * @method static Formatter getFormatter(Level::* $level = Level::INFO) Get an output formatter for a registered target (see {@see ConsoleWriterInterface::getFormatter()})
+ * @method static FormatterInterface getFormatter(Level::* $level = Level::INFO) Get an output formatter for a registered target (see {@see ConsoleWriterInterface::getFormatter()})
  * @method static LoggerInterface getLogger() Get a PSR-3 logger backed by the writer
  * @method static ConsoleTargetStreamInterface getStderrTarget() Get a target for STDERR, creating an unregistered one if necessary
  * @method static ConsoleTargetStreamInterface getStdoutTarget() Get a target for STDOUT, creating an unregistered one if necessary

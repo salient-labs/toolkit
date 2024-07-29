@@ -21,7 +21,10 @@
     "autoload": {
         "psr-4": {
             "Salient\\Polyfill\\": ""
-        }
+        },
+        "classmap": [
+            "stubs/"
+        ]
     },
     "config": {
         "sort-packages": true
