@@ -10,6 +10,28 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.33] - 2024-07-29
+
+### Added
+
+#### `Cli`
+
+- Add `CliHelpStyleInterface`
+
+#### `Console`
+
+- Add `ConsoleFormatterInterface`
+- Add `ConsoleMessageFormatInterface`
+- Add `ConsoleMessageAttributesInterface`
+- Add `ConsoleTagAttributesInterface`
+
+### Changed
+
+#### `Console`
+
+- Rename `ConsoleFormatter::formatTags()` -> `format()`
+- Move `ConsoleFormatInterface` to `Contract`
+
 ## [v0.99.32] - 2024-07-20
 
 ### Changed
@@ -3054,6 +3076,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.33]: https://github.com/salient-labs/toolkit/compare/v0.99.32...v0.99.33
 [v0.99.32]: https://github.com/salient-labs/toolkit/compare/v0.99.31...v0.99.32
 [v0.99.31]: https://github.com/salient-labs/toolkit/compare/v0.99.30...v0.99.31
 [v0.99.30]: https://github.com/salient-labs/toolkit/compare/v0.99.29...v0.99.30
