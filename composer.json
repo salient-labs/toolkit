@@ -66,6 +66,7 @@
     },
     "provide": {
         "psr/event-dispatcher-implementation": "^1",
+        "psr/http-client-implementation": "^1",
         "psr/http-factory-implementation": "^1",
         "psr/http-message-implementation": "^1.1 || ^2",
         "psr/log-implementation": "^1",
@@ -104,7 +105,7 @@
         ]
     },
     "bin": [
-        "bin/sli"
+        "src/Toolkit/Sli/sli"
     ],
     "config": {
         "allow-plugins": {

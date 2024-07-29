@@ -16,7 +16,7 @@
     "require": {
         "php": ">=7.4",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/utils": "self.version"
     },
     "autoload": {
         "psr-4": {

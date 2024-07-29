@@ -15,8 +15,15 @@
     },
     "require": {
         "php": ">=7.4",
+        "salient/cli": "self.version",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/phpdoc": "self.version",
+        "salient/sync": "self.version",
+        "salient/utils": "self.version"
+    },
+    "suggest": {
+        "sebastian/diff": "Required to show changes to generated files"
     },
     "autoload": {
         "psr-4": {
@@ -25,5 +32,8 @@
     },
     "config": {
         "sort-packages": true
-    }
+    },
+    "bin": [
+        "sli"
+    ]
 }

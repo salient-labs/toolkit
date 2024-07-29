@@ -15,8 +15,8 @@
     },
     "require": {
         "php": ">=7.4",
-        "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "phpstan/phpstan": "^1.11",
+        "salient/utils": "self.version"
     },
     "autoload": {
         "psr-4": {

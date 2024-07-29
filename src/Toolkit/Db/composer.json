@@ -15,8 +15,10 @@
     },
     "require": {
         "php": ">=7.4",
+        "adodb/adodb-php": "^5.22",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/utils": "self.version"
     },
     "autoload": {
         "psr-4": {

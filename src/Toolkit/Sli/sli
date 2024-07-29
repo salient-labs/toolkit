@@ -1,0 +1,35 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+use Composer\Autoload\ClassLoader;
+use Salient\Cli\CliApplication;
+use Salient\Sli\Command\Generate\GenerateBuilder;
+use Salient\Sli\Command\Generate\GenerateFacade;
+use Salient\Sli\Command\Generate\GenerateSyncEntity;
+use Salient\Sli\Command\Generate\GenerateSyncProvider;
+use Salient\Sli\Command\Generate\GenerateTests;
+use Salient\Sli\Command\Http\SendHttpRequest;
+use Salient\Sync\Command\CheckSyncProviderHeartbeat;
+use Salient\Sync\Command\GetSyncEntities;
+
+/** @var ClassLoader */
+$loader = require $_composer_autoload_path
+    ?? dirname(__DIR__, 3) . '/vendor/autoload.php';
+
+(new CliApplication())
+    ->command(['generate', 'builder'], GenerateBuilder::class)
+    ->command(['generate', 'facade'], GenerateFacade::class)
+    ->command(['generate', 'tests'], GenerateTests::class)
+    ->command(['generate', 'sync', 'entity'], GenerateSyncEntity::class)
+    ->command(['generate', 'sync', 'provider'], GenerateSyncProvider::class)
+    ->command(['sync', 'provider', 'check-heartbeat'], CheckSyncProviderHeartbeat::class)
+    ->command(['sync', 'entity', 'get'], GetSyncEntities::class)
+    ->command(['http', 'get'], SendHttpRequest::class)
+    ->command(['http', 'head'], SendHttpRequest::class)
+    ->command(['http', 'post'], SendHttpRequest::class)
+    ->command(['http', 'put'], SendHttpRequest::class)
+    ->command(['http', 'delete'], SendHttpRequest::class)
+    ->command(['http', 'patch'], SendHttpRequest::class)
+    ->resumeCache()
+    ->logOutput()
+    ->runAndExit();

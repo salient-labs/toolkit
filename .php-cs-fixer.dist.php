@@ -10,8 +10,8 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/scripts',
     ])
     ->append([
-        __DIR__ . '/bin/sli',
         __DIR__ . '/bootstrap.php',
+        __DIR__ . '/src/Toolkit/Sli/sli',
         __DIR__ . '/tests/phpstan-conditional.php',
         __DIR__ . '/tests/test-sli',
         __DIR__ . '/stubs/ADOConnection.stub',

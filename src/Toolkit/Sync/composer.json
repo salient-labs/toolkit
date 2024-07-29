@@ -15,8 +15,18 @@
     },
     "require": {
         "php": ">=7.4",
+        "salient/collections": "self.version",
+        "salient/console": "self.version",
+        "salient/container": "self.version",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/iterators": "self.version"
+    },
+    "suggest": {
+        "salient/cli": "Required by commands in Salient\\Sync\\Command",
+        "salient/curler": "Required by HttpSyncProvider",
+        "salient/db": "Required by DbSyncProvider",
+        "salient/http": "Required by HttpSyncProvider"
     },
     "autoload": {
         "psr-4": {

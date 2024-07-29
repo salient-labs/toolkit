@@ -1,6 +1,5 @@
 {
     "src": [
-        "bin/sli",
         "scripts",
         "src",
         "stubs",
@@ -14,7 +13,7 @@
         ".php-cs-fixer.dist.php",
         "bootstrap.php"
     ],
-    "includeIfPhp": "/\\.stub$/",
+    "includeIfPhp": "/(\\/sli|\\.stub)$/",
     "enable": [
         "preserve-one-line",
         "strict-lists"

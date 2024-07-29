@@ -5,9 +5,9 @@ includes:
 parameters:
 	level: 9
 	paths:
-		- bin/sli
 		- scripts
 		- src
+		- src/Toolkit/Sli/sli
 		- stubs
 		- tests/3rdparty
 		- tests/fixtures
