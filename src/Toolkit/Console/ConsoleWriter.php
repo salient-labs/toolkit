@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Salient\Console\Support\ConsoleWriterState;
 use Salient\Console\Target\StreamTarget;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTargetInterface;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
@@ -341,7 +342,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
     /**
      * @inheritDoc
      */
-    public function getFormatter(int $level = Level::INFO): Formatter
+    public function getFormatter(int $level = Level::INFO): FormatterInterface
     {
         return $this->maybeGetTtyTarget($level)->getFormatter();
     }

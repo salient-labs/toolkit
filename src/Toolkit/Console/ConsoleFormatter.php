@@ -9,7 +9,7 @@ use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\ConsoleFormatInterface as Format;
-use Salient\Contract\Console\ConsoleFormatterInterface;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Core\MessageLevel as Level;
@@ -22,7 +22,7 @@ use UnexpectedValueException;
 /**
  * Formats messages for a console output target
  */
-final class ConsoleFormatter implements ConsoleFormatterInterface
+final class ConsoleFormatter implements FormatterInterface
 {
     use HasImmutableProperties;
 

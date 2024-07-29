@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 
 /**
@@ -15,7 +15,7 @@ interface ConsoleTargetInterface
     /**
      * Get an output formatter for the target
      */
-    public function getFormatter(): Formatter;
+    public function getFormatter(): FormatterInterface;
 
     /**
      * Get the width of the target in columns

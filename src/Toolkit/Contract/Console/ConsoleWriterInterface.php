@@ -3,7 +3,7 @@
 namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Throwable;
@@ -96,7 +96,7 @@ interface ConsoleWriterInterface
      *
      * @param Level::* $level
      */
-    public function getFormatter(int $level = Level::INFO): Formatter;
+    public function getFormatter(int $level = Level::INFO): FormatterInterface;
 
     /**
      * Get a PSR-3 logger backed by the writer
