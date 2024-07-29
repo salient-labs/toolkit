@@ -26,15 +26,17 @@ final class DeferredRelationshipTest extends SyncTestCase
             ->withHydrationPolicy(HydrationPolicy::LAZY);
 
         $user = $provider->with(User::class, $context)->get(1);
-        $this->assertInstanceOf(DeferredRelationship::class, $user->Posts);
+        $posts = $user->Posts;
+        $this->assertInstanceOf(DeferredRelationship::class, $posts);
 
-        foreach ($user->Posts as $post) {
+        $post = null;
+        foreach ($posts as $post) {
             break;
         }
         $this->assertIsArray($user->Posts);
         $this->assertCount(10, $user->Posts);
         $this->assertContainsOnlyInstancesOf(Post::class, $user->Posts);
-        // @phpstan-ignore-next-line
+        $this->assertNotNull($post);
         $this->assertSame($post, $user->Posts[0]);
         $this->assertSame($user, $user->Posts[0]->User);
         $this->assertSame('sunt aut facere repellat provident occaecati excepturi optio reprehenderit', $post->Title);
