@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractDictionary;
-
 /**
  * @api
- *
- * @extends AbstractDictionary<string>
  */
-final class MimeType extends AbstractDictionary
+interface MimeType
 {
     public const BINARY = 'application/octet-stream';
     public const FORM = 'application/x-www-form-urlencoded';

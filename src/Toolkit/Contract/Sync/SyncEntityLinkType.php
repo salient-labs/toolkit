@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Serialized sync entity relationship data formats, inspired by JSON-LD
- *
- * @extends AbstractEnumeration<int>
  */
-final class SyncEntityLinkType extends AbstractEnumeration
+interface SyncEntityLinkType
 {
     /**
      * "@type" and "@id"

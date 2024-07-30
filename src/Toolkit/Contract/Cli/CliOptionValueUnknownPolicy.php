@@ -2,17 +2,13 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Unknown value policy for command line options of type ONE_OF, ONE_OF_OPTIONAL
  * and ONE_OF_POSITIONAL
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class CliOptionValueUnknownPolicy extends AbstractEnumeration
+interface CliOptionValueUnknownPolicy
 {
     /**
      * Throw an exception if an unknown value is given

@@ -2,17 +2,14 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractEnumeration;
 use Salient\Core\ArrayMapper;
 
 /**
  * ArrayMapper flags
  *
  * @see ArrayMapper
- *
- * @extends AbstractEnumeration<int>
  */
-final class ArrayMapperFlag extends AbstractEnumeration
+interface ArrayMapperFlag
 {
     /**
      * Remove null values from the output array

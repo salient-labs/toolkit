@@ -3,16 +3,13 @@
 namespace Salient\Contract\Console;
 
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Core\AbstractDictionary;
 
 /**
  * Groups of console message types
  *
  * @api
- *
- * @extends AbstractDictionary<list<MessageType::*>>
  */
-final class ConsoleMessageTypeGroup extends AbstractDictionary
+interface ConsoleMessageTypeGroup
 {
     /**
      * @var list<MessageType::*>

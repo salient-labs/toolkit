@@ -4,6 +4,7 @@ namespace Salient\Sync\Exception;
 
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation;
+use Salient\Utility\Reflect;
 
 /**
  * Thrown when the non-mandatory arguments passed to a sync operation do not
@@ -26,7 +27,7 @@ class SyncInvalidFilterSignatureException extends SyncInvalidFilterException
 
         parent::__construct(sprintf(
             'Invalid filter signature for SyncOperation::%s',
-            SyncOperation::toName($operation),
+            Reflect::getConstantName(SyncOperation::class, $operation),
         ));
     }
 }

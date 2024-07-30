@@ -2,17 +2,13 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Normaliser flags
  *
  * @see Normalisable::normalise()
  * @see NormaliserFactory::getNormaliser()
- *
- * @extends AbstractEnumeration<int>
  */
-final class NormaliserFlag extends AbstractEnumeration
+interface NormaliserFlag
 {
     /**
      * Normalise names by applying every available transformation

@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Policies for hydration of sync entities and relationships
- *
- * @extends AbstractEnumeration<int>
  */
-final class HydrationPolicy extends AbstractEnumeration
+interface HydrationPolicy
 {
     /**
      * Do not perform hydration

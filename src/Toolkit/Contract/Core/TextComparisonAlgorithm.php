@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractEnumeration;
 use Salient\Utility\Str;
 
 /**
@@ -11,10 +10,8 @@ use Salient\Utility\Str;
  * Text comparison algorithms take two strings and calculate a value between `0`
  * and `1`, where `0` indicates the strings could not be more similar, and `1`
  * indicates they could not be more different.
- *
- * @extends AbstractEnumeration<int>
  */
-final class TextComparisonAlgorithm extends AbstractEnumeration
+interface TextComparisonAlgorithm
 {
     /**
      * Uncertainty is 0 if values are identical, otherwise 1

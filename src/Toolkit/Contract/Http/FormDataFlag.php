@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Http;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Form data flags
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class FormDataFlag extends AbstractEnumeration
+interface FormDataFlag
 {
     public const PRESERVE_LIST_KEYS = 1;
     public const PRESERVE_NUMERIC_KEYS = 2;

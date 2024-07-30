@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Entity relationship cardinalities
- *
- * @extends AbstractEnumeration<int>
  */
-final class Cardinality extends AbstractEnumeration
+interface Cardinality
 {
     public const ONE_TO_ONE = 0;
     public const ONE_TO_MANY = 1;

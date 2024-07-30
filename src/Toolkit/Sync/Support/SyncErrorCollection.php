@@ -11,6 +11,7 @@ use Salient\Core\Facade\Console;
 use Salient\Sync\SyncError;
 use Salient\Utility\Arr;
 use Salient\Utility\Inflect;
+use Salient\Utility\Reflect;
 use JsonSerializable;
 
 /**
@@ -48,10 +49,10 @@ final class SyncErrorCollection extends AbstractTypedCollection implements JsonS
 
             $summary[$key] ??= [
                 'code' => $code,
-                'title' => ErrorType::toName($error->ErrorType),
+                'title' => Reflect::getConstantName(ErrorType::class, $error->ErrorType),
                 'detail' => $message,
                 'meta' => [
-                    'level' => Level::toName($error->Level),
+                    'level' => Reflect::getConstantName(Level::class, $error->Level),
                     'count' => 0,
                     'seen' => 0,
                 ],

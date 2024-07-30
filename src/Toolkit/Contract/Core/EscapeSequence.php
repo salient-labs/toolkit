@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractDictionary;
-
 /**
  * ANSI escape sequences for formatting terminal output
- *
- * @extends AbstractDictionary<string>
  */
-final class EscapeSequence extends AbstractDictionary
+interface EscapeSequence
 {
     public const BLACK = "\e[30m";
     public const RED = "\e[31m";

@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Http;
 
-use Salient\Core\AbstractDictionary;
-
 /**
  * @api
- *
- * @extends AbstractDictionary<list<HttpHeader::*>>
  */
-final class HttpHeaderGroup extends AbstractDictionary
+interface HttpHeaderGroup
 {
     /**
      * @var list<HttpHeader::*>

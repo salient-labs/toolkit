@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractReflectiveEnumeration;
-
 /**
  * Sync entity data sources
- *
- * @extends AbstractReflectiveEnumeration<int>
  */
-final class SyncEntitySource extends AbstractReflectiveEnumeration
+interface SyncEntitySource
 {
     /**
      * Output from a successful CREATE, UPDATE or DELETE operation

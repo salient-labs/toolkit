@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Command line option visibility flags
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class CliOptionVisibility extends AbstractEnumeration
+interface CliOptionVisibility
 {
     /**
      * Don't include the option in any help output

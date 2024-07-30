@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Console output target type flags
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class ConsoleTargetTypeFlag extends AbstractEnumeration
+interface ConsoleTargetTypeFlag
 {
     public const STREAM = 1;
     public const STDIO = 2;

@@ -3,16 +3,13 @@
 namespace Salient\Contract\Core;
 
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\AbstractDictionary;
 
 /**
  * Groups of message levels
  *
  * @api
- *
- * @extends AbstractDictionary<list<Level::*>>
  */
-final class MessageLevelGroup extends AbstractDictionary
+interface MessageLevelGroup
 {
     /**
      * @var list<Level::*>

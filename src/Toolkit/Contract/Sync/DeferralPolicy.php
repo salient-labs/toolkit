@@ -2,16 +2,13 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractEnumeration;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 
 /**
  * Policies for deferral of sync entities and relationships
- *
- * @extends AbstractEnumeration<int>
  */
-final class DeferralPolicy extends AbstractEnumeration
+interface DeferralPolicy
 {
     /**
      * Do not resolve deferred entities or relationships

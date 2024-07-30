@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Core\AbstractConvertibleEnumeration;
 use Salient\Utility\Test;
 use DateTimeImmutable;
 
@@ -10,10 +9,8 @@ use DateTimeImmutable;
  * Command line option value types
  *
  * @api
- *
- * @extends AbstractConvertibleEnumeration<int>
  */
-final class CliOptionValueType extends AbstractConvertibleEnumeration
+interface CliOptionValueType
 {
     /**
      * A boolean value
@@ -67,28 +64,4 @@ final class CliOptionValueType extends AbstractConvertibleEnumeration
      * Path to an existing file, or a dash ('-') for standard input or output
      */
     public const FILE_OR_DASH = 8;
-
-    protected static $NameMap = [
-        self::BOOLEAN => 'BOOLEAN',
-        self::INTEGER => 'INTEGER',
-        self::STRING => 'STRING',
-        self::DATE => 'DATE',
-        self::PATH => 'PATH',
-        self::FILE => 'FILE',
-        self::DIRECTORY => 'DIRECTORY',
-        self::PATH_OR_DASH => 'PATH_OR_DASH',
-        self::FILE_OR_DASH => 'FILE_OR_DASH',
-    ];
-
-    protected static $ValueMap = [
-        'BOOLEAN' => self::BOOLEAN,
-        'INTEGER' => self::INTEGER,
-        'STRING' => self::STRING,
-        'DATE' => self::DATE,
-        'PATH' => self::PATH,
-        'FILE' => self::FILE,
-        'DIRECTORY' => self::DIRECTORY,
-        'PATH_OR_DASH' => self::PATH_OR_DASH,
-        'FILE_OR_DASH' => self::FILE_OR_DASH,
-    ];
 }
