@@ -28,6 +28,11 @@ use ReflectionZendExtension;
  */
 final class Reflect extends AbstractUtility
 {
+    /** @var array<class-string,array<string,mixed>> */
+    private static array $Constants = [];
+    /** @var array<class-string,array<int|string,string[]|string>> */
+    private static array $ConstantsByValue = [];
+
     /**
      * Get a list of names from a list of reflectors
      *
@@ -257,5 +262,144 @@ final class Reflect extends AbstractUtility
         }
 
         return [$type];
+    }
+
+    /**
+     * Get the public constants of a class or interface, indexed by name
+     *
+     * @param ReflectionClass<object>|class-string $class
+     * @return array<string,mixed>
+     */
+    public static function getConstants($class): array
+    {
+        return self::$Constants[self::getClassName($class)]
+            ??= self::doGetConstants($class);
+    }
+
+    /**
+     * @param ReflectionClass<object>|class-string $class
+     * @return array<string,mixed>
+     */
+    private static function doGetConstants($class): array
+    {
+        $class = self::getClass($class);
+        foreach ($class->getReflectionConstants() as $constant) {
+            if ($constant->isPublic()) {
+                $constants[$constant->getName()] = $constant->getValue();
+            }
+        }
+
+        return $constants ?? [];
+    }
+
+    /**
+     * Get the public constants of a class or interface, indexed by value
+     *
+     * If the value of a constant is not an integer or string, it is ignored.
+     * For any values used by multiple constants, an array is returned.
+     *
+     * @param ReflectionClass<object>|class-string $class
+     * @return array<int|string,string[]|string>
+     */
+    public static function getConstantsByValue($class): array
+    {
+        return self::$ConstantsByValue[self::getClassName($class)]
+            ??= self::doGetConstantsByValue($class);
+    }
+
+    /**
+     * @param ReflectionClass<object>|class-string $class
+     * @return array<int|string,string[]|string>
+     */
+    private static function doGetConstantsByValue($class): array
+    {
+        foreach (self::getConstants($class) as $name => $value) {
+            if (!is_int($value) && !is_string($value)) {
+                continue;
+            }
+            if (!isset($constants[$value])) {
+                $constants[$value] = $name;
+                continue;
+            }
+            if (!is_array($constants[$value])) {
+                $constants[$value] = (array) $constants[$value];
+            }
+            $constants[$value][] = $name;
+        }
+
+        return $constants ?? [];
+    }
+
+    /**
+     * Check if a class or interface has a public constant with the given value
+     *
+     * @param ReflectionClass<object>|class-string $class
+     * @param mixed $value
+     */
+    public static function hasConstantWithValue($class, $value): bool
+    {
+        return in_array($value, self::getConstants($class), true);
+    }
+
+    /**
+     * Get the name of a public constant with the given value from a class or
+     * interface
+     *
+     * @param ReflectionClass<object>|class-string $class
+     * @param mixed $value
+     * @throws InvalidArgumentException if `$value` is invalid or matches
+     * multiple constants.
+     */
+    public static function getConstantName($class, $value): string
+    {
+        foreach (self::getConstants($class) as $name => $_value) {
+            if ($_value === $value) {
+                $names[] = $name;
+            }
+        }
+
+        if (!isset($names)) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid value: %s',
+                Format::value($value),
+            ));
+        }
+
+        if (count($names) > 1) {
+            throw new InvalidArgumentException(sprintf(
+                'Value matches multiple constants: %s',
+                Format::value($value),
+            ));
+        }
+
+        return $names[0];
+    }
+
+    /**
+     * @template T of object
+     *
+     * @param ReflectionClass<T>|class-string<T> $class
+     * @return ReflectionClass<T>
+     */
+    private static function getClass($class): ReflectionClass
+    {
+        if ($class instanceof ReflectionClass) {
+            return $class;
+        }
+        return new ReflectionClass($class);
+    }
+
+    /**
+     * @template T of object
+     *
+     * @param ReflectionClass<T>|class-string<T> $class
+     * @return class-string<T>
+     */
+    private static function getClassName($class): string
+    {
+        if ($class instanceof ReflectionClass) {
+            return $class->getName();
+        }
+        return $class;
     }
 }
