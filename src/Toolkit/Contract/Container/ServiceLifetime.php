@@ -1,18 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Container;
-
-use Salient\Contract\Container\SingletonInterface;
-use Salient\Core\AbstractEnumeration;
+namespace Salient\Contract\Container;
 
 /**
  * Service lifetimes relative to the container
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class ServiceLifetime extends AbstractEnumeration
+interface ServiceLifetime
 {
     /**
      * A new instance of the class is always created

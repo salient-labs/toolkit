@@ -2,11 +2,12 @@
 
 namespace Salient\Container\Exception;
 
-use Psr\Container\NotFoundExceptionInterface;
+use Salient\Contract\Container\ServiceNotFoundExceptionInterface;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when a container cannot resolve a service
  *
  * @api
  */
-class ContainerServiceNotFoundException extends AbstractContainerException implements NotFoundExceptionInterface {}
+class ServiceNotFoundException extends AbstractException implements ServiceNotFoundExceptionInterface {}

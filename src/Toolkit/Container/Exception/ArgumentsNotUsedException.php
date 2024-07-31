@@ -2,8 +2,11 @@
 
 namespace Salient\Container\Exception;
 
+use Salient\Contract\Container\ArgumentsNotUsedExceptionInterface;
+use Salient\Core\AbstractException;
+
 /**
  * Thrown when a container cannot pass arguments to a service, e.g. because it
  * resolves to a shared instance
  */
-class ContainerUnusableArgumentsException extends AbstractContainerException {}
+class ArgumentsNotUsedException extends AbstractException implements ArgumentsNotUsedExceptionInterface {}

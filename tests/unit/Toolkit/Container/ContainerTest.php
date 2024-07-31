@@ -3,10 +3,8 @@
 namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
-use Salient\Container\Exception\ContainerServiceNotFoundException;
 use Salient\Container\Application;
 use Salient\Container\Container;
-use Salient\Container\ServiceLifetime;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
@@ -15,6 +13,8 @@ use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
+use Salient\Contract\Container\ServiceLifetime;
+use Salient\Contract\Container\ServiceNotFoundExceptionInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Core\Facade\App;
@@ -47,7 +47,7 @@ final class ContainerTest extends TestCase
         $this->assertFalse($container->has($id));
 
         if (interface_exists($id)) {
-            $this->expectException(ContainerServiceNotFoundException::class);
+            $this->expectException(ServiceNotFoundExceptionInterface::class);
             $container->get($id);
         }
     }
@@ -162,7 +162,7 @@ final class ContainerTest extends TestCase
         $this->assertInstanceOf(B::class, $o3);
 
         // Without `$ts2`, the container throws an exception
-        $this->expectException(ContainerServiceNotFoundException::class);
+        $this->expectException(ServiceNotFoundExceptionInterface::class);
         $container->get(A::class);
     }
 

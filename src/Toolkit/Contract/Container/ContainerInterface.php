@@ -3,8 +3,6 @@
 namespace Salient\Contract\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
-use Salient\Container\Exception\ContainerUnusableArgumentsException;
-use Salient\Container\ServiceLifetime;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Unloadable;
 
@@ -82,8 +80,8 @@ interface ContainerInterface extends
      * @param class-string<T> $id
      * @param mixed[] $args
      * @return T&object
-     * @throws ContainerUnusableArgumentsException if `$args` are given and
-     * `$id` resolves to a shared instance.
+     * @throws ArgumentsNotUsedExceptionInterface if `$args` are given and `$id`
+     * resolves to a shared instance.
      */
     public function get(string $id, array $args = []): object;
 
@@ -100,8 +98,8 @@ interface ContainerInterface extends
      * @param class-string<TService> $service
      * @param mixed[] $args
      * @return T&TService&object
-     * @throws ContainerUnusableArgumentsException if `$args` are given and
-     * `$id` resolves to a shared instance.
+     * @throws ArgumentsNotUsedExceptionInterface if `$args` are given and `$id`
+     * resolves to a shared instance.
      */
     public function getAs(string $id, string $service, array $args = []): object;
 
