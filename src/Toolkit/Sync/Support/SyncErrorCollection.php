@@ -5,78 +5,85 @@ namespace Salient\Sync\Support;
 use Salient\Collection\AbstractTypedCollection;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Sync\SyncErrorCollectionInterface;
+use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncErrorType as ErrorType;
 use Salient\Core\Facade\Console;
-use Salient\Sync\SyncError;
 use Salient\Utility\Arr;
 use Salient\Utility\Inflect;
 use Salient\Utility\Reflect;
-use JsonSerializable;
 
 /**
- * A collection of SyncError objects
- *
- * @extends AbstractTypedCollection<int,SyncError>
+ * @extends AbstractTypedCollection<int,SyncErrorInterface>
  */
-final class SyncErrorCollection extends AbstractTypedCollection implements JsonSerializable
+final class SyncErrorCollection extends AbstractTypedCollection implements SyncErrorCollectionInterface
 {
     private int $ErrorCount = 0;
     private int $WarningCount = 0;
 
+    /**
+     * @inheritDoc
+     */
     public function getErrorCount(): int
     {
         return $this->ErrorCount;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getWarningCount(): int
     {
         return $this->WarningCount;
     }
 
     /**
-     * Get a JSON:API-compatible representation of errors in the collection
-     * after grouping them by level, type and message
-     *
-     * @return array<array{code:string,title:string,detail:string,meta:array{level:string,count:int,seen:int,values:list<mixed[]|object|int|float|string|bool|null>}}>
+     * @inheritDoc
      */
     public function getSummary(): array
     {
-        foreach ($this as $error) {
+        foreach ($this->Items as $error) {
             $code = $error->getCode();
-            $message = $error->Message;
-            $key = "$code.$message";
+            $format = $error->getFormat();
+            $key = "$code.$format";
 
             $summary[$key] ??= [
                 'code' => $code,
-                'title' => Reflect::getConstantName(ErrorType::class, $error->ErrorType),
-                'detail' => $message,
+                'title' => Reflect::getConstantName(ErrorType::class, $error->getType()),
+                'detail' => $format,
                 'meta' => [
-                    'level' => Reflect::getConstantName(Level::class, $error->Level),
+                    'level' => Reflect::getConstantName(Level::class, $error->getLevel()),
                     'count' => 0,
                     'seen' => 0,
                 ],
             ];
 
             /** @var mixed[]|object|int|float|string|bool|null */
-            $values = Arr::unwrap($error->Values);
+            $values = Arr::unwrap($error->getValues());
             $summary[$key]['meta']['values'][] = $values;
             $summary[$key]['meta']['count']++;
-            $summary[$key]['meta']['seen'] += $error->Count;
+            $summary[$key]['meta']['seen'] += $error->getCount();
         }
 
         return array_values(Arr::sortByKey($summary ?? []));
     }
 
     /**
-     * Get a human-readable representation of errors in the collection after
-     * grouping them by level, type and message
+     * @inheritDoc
      */
-    public function getSummaryText(bool $withMarkup = false): string
+    public function getSummaryText(): string
+    {
+        return $this->doGetSummaryText(false);
+    }
+
+    private function doGetSummaryText(bool $withMarkup): string
     {
         $format = $withMarkup
             ? "~~{~~_%d_~~}~~ ___%s___ ~~[~~__%s__~~]~~ ~~(~~_'%s'_~~)~~:\n  %s"
             : "{%d} %s [%s] ('%s'):\n  %s";
+
         foreach ($this->getSummary() as $error) {
             $values = Arr::toScalars($error['meta']['values']);
 
@@ -100,30 +107,24 @@ final class SyncErrorCollection extends AbstractTypedCollection implements JsonS
     }
 
     /**
-     * Write errors in the collection to the console after grouping them by
-     * level, type and message
-     *
-     * Output is written to the console with level:
-     * - NOTICE if no errors have been recorded
-     * - ERROR if one or more recorded errors have level ERROR or higher
-     * - WARNING if all recorded errors have level WARNING or lower
-     *
-     * @return $this
+     * @inheritDoc
      */
-    public function reportErrors(string $successText = 'No sync errors recorded')
-    {
+    public function reportErrors(
+        ?ConsoleWriterInterface $writer = null,
+        string $successText = 'No sync errors recorded'
+    ): void {
+        $writer ??= Console::getInstance();
+
         if (!$this->ErrorCount && !$this->WarningCount) {
-            Console::info($successText);
-            return $this;
+            $writer->info($successText);
+            return;
         }
 
         $level = $this->ErrorCount
             ? Level::ERROR
             : Level::WARNING;
 
-        // Print a message with level ERROR or WARNING as appropriate without
-        // Console recording an additional error or warning
-        Console::message(
+        $writer->message(
             $level,
             Inflect::format(
                 $this->ErrorCount,
@@ -134,19 +135,18 @@ final class SyncErrorCollection extends AbstractTypedCollection implements JsonS
             ),
             null,
             MessageType::STANDARD,
-            null,
-            false,
         );
 
-        Console::print(
-            $this->getSummaryText(true),
+        $writer->print(
+            $this->doGetSummaryText(true),
             $level,
             MessageType::UNFORMATTED,
         );
-
-        return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function __toString(): string
     {
         return $this->getSummaryText();
@@ -160,12 +160,15 @@ final class SyncErrorCollection extends AbstractTypedCollection implements JsonS
         return $this->getSummary();
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function handleItemsReplaced(): void
     {
         $errors = 0;
         $warnings = 0;
         foreach ($this->Items as $error) {
-            switch ($error->Level) {
+            switch ($error->getLevel()) {
                 case Level::EMERGENCY:
                 case Level::ALERT:
                 case Level::CRITICAL:

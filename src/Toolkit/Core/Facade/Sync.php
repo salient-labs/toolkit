@@ -4,13 +4,13 @@ namespace Salient\Core\Facade;
 
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncErrorCollectionInterface;
+use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractFacade;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
-use Salient\Sync\Support\SyncErrorCollection;
-use Salient\Sync\SyncError;
 use Salient\Sync\SyncStore;
 
 /**
@@ -26,13 +26,13 @@ use Salient\Sync\SyncStore;
  * @method static int getEntityId(class-string<SyncEntityInterface> $entity) Get the entity ID of a registered sync entity type
  * @method static string|null getEntityPrefix(class-string<SyncEntityInterface> $entity) Get the prefix of a sync entity's namespace, or null if it is not in a registered namespace
  * @method static string|null getEntityUri(class-string<SyncEntityInterface> $entity, bool $compact = true) Get the canonical URI of a sync entity, or null if it is not in a registered namespace
- * @method static SyncErrorCollection getErrors() Get sync operation errors recorded so far
+ * @method static SyncErrorCollectionInterface getErrors() Get sync operation errors recorded so far
  * @method static SyncProviderInterface|null getProvider(string $signature) Get a sync provider if it is registered with the entity store
  * @method static int getProviderId(SyncProviderInterface $provider) Get the provider ID of a registered sync provider
  * @method static string getProviderSignature(SyncProviderInterface $provider) Get a stable value that uniquely identifies a sync provider with the entity store
  * @method static int getRunId() Get the run ID of the current run
  * @method static string getRunUuid() Get the UUID of the current run in hexadecimal form
- * @method static SyncStoreInterface recordError(SyncError $error, bool $deduplicate = false) Register a non-fatal sync operation error with the entity store
+ * @method static SyncStoreInterface recordError(SyncErrorInterface $error, bool $deduplicate = false) Register a non-fatal sync operation error with the entity store
  * @method static SyncStoreInterface registerEntity(class-string<SyncEntityInterface> $entity) Register a sync entity type with the entity store if it is not already registered (see {@see SyncStoreInterface::registerEntity()})
  * @method static SyncStoreInterface registerNamespace(string $prefix, string $uri, string $namespace, SyncClassResolverInterface|null $resolver = null) Register a namespace for sync entities and their provider interfaces (see {@see SyncStoreInterface::registerNamespace()})
  * @method static SyncStoreInterface registerProvider(SyncProviderInterface $provider) Register a sync provider with the entity store

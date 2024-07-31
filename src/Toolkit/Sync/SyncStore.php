@@ -7,6 +7,8 @@ use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncErrorCollectionInterface;
+use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
@@ -125,10 +127,6 @@ final class SyncStore extends AbstractStore implements SyncStoreInterface
 
     /** @var SyncErrorCollection */
     private $Errors;
-    /** @var int */
-    private $ErrorCount = 0;
-    /** @var int */
-    private $WarningCount = 0;
 
     /**
      * Prefix => true
@@ -289,8 +287,8 @@ SQL;
         $stmt = $this->prepare($sql);
         $stmt->bindValue(':exit_status', $exitStatus, \SQLITE3_INTEGER);
         $stmt->bindValue(':run_uuid', $this->RunUuid, \SQLITE3_BLOB);
-        $stmt->bindValue(':error_count', $this->ErrorCount, \SQLITE3_INTEGER);
-        $stmt->bindValue(':warning_count', $this->WarningCount, \SQLITE3_INTEGER);
+        $stmt->bindValue(':error_count', $this->Errors->getErrorCount(), \SQLITE3_INTEGER);
+        $stmt->bindValue(':warning_count', $this->Errors->getWarningCount(), \SQLITE3_INTEGER);
         $stmt->bindValue(':errors_json', Json::stringify($this->Errors), \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
@@ -1065,6 +1063,7 @@ SQL;
                             'exception' => get_class($ex),
                             'message' => $ex->getMessage()
                         ]])
+                        ->build()
                 );
             }
             if ($failEarly && $failed) {
@@ -1080,46 +1079,27 @@ SQL;
     }
 
     /**
-     * @param SyncError|SyncErrorBuilder $error
+     * @inheritDoc
      */
-    public function recordError($error, bool $deduplicate = false)
+    public function recordError(SyncErrorInterface $error, bool $deduplicate = false)
     {
-        if ($error instanceof SyncErrorBuilder) {
-            $error = $error->build();
-        }
-
-        $seen = $deduplicate
-            ? $this->Errors->firstOf($error)
-            : false;
-
-        if ($seen) {
-            $seen->count();
-            Console::count($error->Level);
-            return $this;
+        if ($deduplicate) {
+            $key = $this->Errors->keyOf($error);
+            if ($key !== null) {
+                $this->Errors[$key] = $this->Errors[$key]->count();
+                return $this;
+            }
         }
 
         $this->Errors[] = $error;
 
-        switch ($error->Level) {
-            case Level::EMERGENCY:
-            case Level::ALERT:
-            case Level::CRITICAL:
-            case Level::ERROR:
-                $this->ErrorCount++;
-                break;
-            case Level::WARNING:
-                $this->WarningCount++;
-                break;
-        }
-
-        Console::count($error->Level);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function getErrors(): SyncErrorCollection
+    public function getErrors(): SyncErrorCollectionInterface
     {
         return clone $this->Errors;
     }

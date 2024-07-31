@@ -4,8 +4,6 @@ namespace Salient\Contract\Sync;
 
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
-use Salient\Sync\Support\SyncErrorCollection;
-use Salient\Sync\SyncError;
 use InvalidArgumentException;
 use LogicException;
 
@@ -291,10 +289,10 @@ interface SyncStoreInterface
      *
      * @return $this
      */
-    public function recordError(SyncError $error, bool $deduplicate = false);
+    public function recordError(SyncErrorInterface $error, bool $deduplicate = false);
 
     /**
      * Get sync operation errors recorded so far
      */
-    public function getErrors(): SyncErrorCollection;
+    public function getErrors(): SyncErrorCollectionInterface;
 }
