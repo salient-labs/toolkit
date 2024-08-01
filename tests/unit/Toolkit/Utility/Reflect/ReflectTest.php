@@ -13,6 +13,7 @@ use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
+use Throwable;
 
 /**
  * @covers \Salient\Utility\Reflect
@@ -687,6 +688,172 @@ final class ReflectTest extends TestCase
             ];
         }
     }
+
+    /**
+     * @dataProvider getConstantsProvider
+     *
+     * @param array<string,mixed> $expected
+     * @param ReflectionClass<object>|class-string $class
+     */
+    public function testGetConstants(array $expected, $class): void
+    {
+        $this->assertSame($expected, Reflect::getConstants($class));
+    }
+
+    /**
+     * @return array<array{array<string,mixed>,ReflectionClass<object>|class-string}>
+     */
+    public static function getConstantsProvider(): array
+    {
+        return [
+            [
+                [
+                    'FOO' => 0,
+                    'BAR' => 1,
+                    'BAZ' => 2,
+                ],
+                MyEnum::class,
+            ],
+            [
+                [
+                    'FOO' => 0,
+                    'BAR' => 1,
+                    'BAZ' => 2,
+                ],
+                new ReflectionClass(MyEnum::class),
+            ],
+            [
+                [
+                    'FOO' => 'Foo',
+                    'BAR' => 'Bar',
+                    'BAZ' => 'Baz',
+                    'QUX' => 'Baz',
+                ],
+                MyDict::class,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getConstantsByValueProvider
+     *
+     * @param array<int|string,string[]|string> $expected
+     * @param ReflectionClass<object>|class-string $class
+     */
+    public function testGetConstantsByValue(array $expected, $class): void
+    {
+        $this->assertSame($expected, Reflect::getConstantsByValue($class));
+    }
+
+    /**
+     * @return array<array{array<int|string,string[]|string>,ReflectionClass<object>|class-string}>
+     */
+    public static function getConstantsByValueProvider(): array
+    {
+        return [
+            [
+                [
+                    'FOO',
+                    'BAR',
+                    'BAZ',
+                ],
+                MyEnum::class,
+            ],
+            [
+                [
+                    'FOO',
+                    'BAR',
+                    'BAZ',
+                ],
+                new ReflectionClass(MyEnum::class),
+            ],
+            [
+                [
+                    'Foo' => 'FOO',
+                    'Bar' => 'BAR',
+                    'Baz' => ['BAZ', 'QUX'],
+                ],
+                MyDict::class,
+            ],
+        ];
+    }
+
+    public function testHasConstantWithValue(): void
+    {
+        $this->assertTrue(Reflect::hasConstantWithValue(MyEnum::class, 0));
+        $this->assertFalse(Reflect::hasConstantWithValue(MyEnum::class, '0'));
+        $this->assertFalse(Reflect::hasConstantWithValue(new ReflectionClass(MyEnum::class), 3));
+        $this->assertTrue(Reflect::hasConstantWithValue(MyDict::class, 'Foo'));
+        $this->assertTrue(Reflect::hasConstantWithValue(MyDict::class, 'Baz'));
+        $this->assertFalse(Reflect::hasConstantWithValue(MyDict::class, 'Qux'));
+        $this->assertFalse(Reflect::hasConstantWithValue(MyDict::class, 0));
+    }
+
+    /**
+     * @dataProvider getConstantNameProvider
+     *
+     * @param array{class-string<Throwable>,string}|string $expected
+     * @param ReflectionClass<object>|class-string $class
+     * @param mixed $value
+     */
+    public function testGetConstantName($expected, $class, $value): void
+    {
+        if (is_array($expected)) {
+            $this->expectException($expected[0]);
+            $this->expectExceptionMessage($expected[1]);
+            Reflect::getConstantName($class, $value);
+            return;
+        }
+        $this->assertSame($expected, Reflect::getConstantName($class, $value));
+    }
+
+    /**
+     * @return array<array{array{class-string<Throwable>,string}|string,ReflectionClass<object>|class-string,mixed}>
+     */
+    public static function getConstantNameProvider(): array
+    {
+        return [
+            [
+                'FOO',
+                MyEnum::class,
+                0,
+            ],
+            [
+                'FOO',
+                new ReflectionClass(MyEnum::class),
+                0,
+            ],
+            [
+                'BAR',
+                MyDict::class,
+                'Bar',
+            ],
+            [
+                [
+                    InvalidArgumentException::class,
+                    'Value matches multiple constants: Baz',
+                ],
+                MyDict::class,
+                'Baz',
+            ],
+            [
+                [
+                    InvalidArgumentException::class,
+                    'Invalid value: 0',
+                ],
+                MyDict::class,
+                0,
+            ],
+            [
+                [
+                    InvalidArgumentException::class,
+                    'Invalid value: {"foo":"bar"}',
+                ],
+                MyDict::class,
+                ['foo' => 'bar'],
+            ],
+        ];
+    }
 }
 
 /**
@@ -923,4 +1090,19 @@ class MySubclass extends MyUndocumentedClass implements MyOtherInterface
      * @return mixed
      */
     public function MyDocumentedMethod() {}
+}
+
+class MyEnum
+{
+    public const FOO = 0;
+    public const BAR = 1;
+    public const BAZ = 2;
+}
+
+interface MyDict
+{
+    public const FOO = 'Foo';
+    public const BAR = 'Bar';
+    public const BAZ = 'Baz';
+    public const QUX = 'Baz';
 }

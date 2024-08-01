@@ -11,13 +11,13 @@ use Salient\Core\AbstractBuilder;
 /**
  * A fluent SyncError factory
  *
- * @method $this errorType(SyncErrorType::* $value) Set SyncError::$ErrorType
- * @method $this message(string $value) An sprintf() format string that explains the error (see {@see SyncError::$Message})
- * @method $this values(list<mixed[]|object|int|float|string|bool|null> $value) Values passed to sprintf() with the message format string (see {@see SyncError::$Values})
- * @method $this level(Level::* $value) Set SyncError::$Level
- * @method $this entity(?SyncEntityInterface $value) The entity associated with the error
- * @method $this entityName(?string $value) The display name of the entity associated with the error (see {@see SyncError::$EntityName})
- * @method $this provider(?SyncProviderInterface $value) The sync provider associated with the error
+ * @method $this errorType(SyncErrorType::* $value) Error type
+ * @method $this message(string $value) `sprintf()` format string that explains the error
+ * @method $this values(list<mixed[]|object|int|float|string|bool|null>|null $value) Values applied to the message format string. Default: `[$entityName]`
+ * @method $this level(Level::* $value) Error severity/message level
+ * @method $this entity(SyncEntityInterface|null $value) Entity associated with the error
+ * @method $this entityName(string|null $value) Display name of the entity associated with the error. Default: `$entity->getUri()`
+ * @method $this provider(SyncProviderInterface|null $value) Sync provider associated with the error. Default: `$entity->getProvider()`
  *
  * @extends AbstractBuilder<SyncError>
  *

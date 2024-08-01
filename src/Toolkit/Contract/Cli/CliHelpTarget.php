@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Help message targets
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class CliHelpTarget extends AbstractEnumeration
+interface CliHelpTarget
 {
     /**
      * Help is written to the console with minimal formatting

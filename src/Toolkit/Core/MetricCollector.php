@@ -3,6 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\Metric;
+use Salient\Utility\Reflect;
 use LogicException;
 
 /**
@@ -260,7 +261,7 @@ final class MetricCollector
         if ($this->Metrics[$group][$name] !== $metric) {
             throw new LogicException(sprintf(
                 'Not a Metric::%s: %s (group=%s)',
-                Metric::toName($metric),
+                Reflect::getConstantName(Metric::class, $metric),
                 $name,
                 $group,
             ));

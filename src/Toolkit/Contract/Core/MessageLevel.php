@@ -2,18 +2,14 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractConvertibleEnumeration;
-
 /**
  * Message levels
  *
  * Levels have the same value as their syslog / journalctl counterparts.
  *
  * @api
- *
- * @extends AbstractConvertibleEnumeration<int>
  */
-final class MessageLevel extends AbstractConvertibleEnumeration
+interface MessageLevel
 {
     public const EMERGENCY = 0;
     public const ALERT = 1;
@@ -23,26 +19,4 @@ final class MessageLevel extends AbstractConvertibleEnumeration
     public const NOTICE = 5;
     public const INFO = 6;
     public const DEBUG = 7;
-
-    protected static $NameMap = [
-        self::EMERGENCY => 'EMERGENCY',
-        self::ALERT => 'ALERT',
-        self::CRITICAL => 'CRITICAL',
-        self::ERROR => 'ERROR',
-        self::WARNING => 'WARNING',
-        self::NOTICE => 'NOTICE',
-        self::INFO => 'INFO',
-        self::DEBUG => 'DEBUG',
-    ];
-
-    protected static $ValueMap = [
-        'EMERGENCY' => self::EMERGENCY,
-        'ALERT' => self::ALERT,
-        'CRITICAL' => self::CRITICAL,
-        'ERROR' => self::ERROR,
-        'WARNING' => self::WARNING,
-        'NOTICE' => self::NOTICE,
-        'INFO' => self::INFO,
-        'DEBUG' => self::DEBUG,
-    ];
 }

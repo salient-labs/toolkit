@@ -2,15 +2,12 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractEnumeration;
-use Salient\Sync\Exception\SyncFilterPolicyViolationException;
+use Salient\Contract\Sync\Exception\FilterPolicyViolationExceptionInterface;
 
 /**
  * Policies for unclaimed sync operation filters
- *
- * @extends AbstractEnumeration<int>
  */
-final class FilterPolicy extends AbstractEnumeration
+interface FilterPolicy
 {
     /**
      * Ignore unclaimed filters
@@ -23,8 +20,8 @@ final class FilterPolicy extends AbstractEnumeration
     /**
      * Throw an exception if there are unclaimed filters
      *
-     * A {@see SyncFilterPolicyViolationException} is thrown and the request is
-     * not passed to the provider.
+     * A {@see FilterPolicyViolationExceptionInterface} is thrown and the
+     * request is not passed to the provider.
      *
      * This is the default policy.
      */

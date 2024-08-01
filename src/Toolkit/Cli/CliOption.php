@@ -22,6 +22,7 @@ use Salient\Utility\Env;
 use Salient\Utility\Format;
 use Salient\Utility\Get;
 use Salient\Utility\Inflect;
+use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
@@ -1137,7 +1138,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
     private function getValueTypeName(): string
     {
-        return CliOptionValueType::toName($this->ValueType);
+        return Reflect::getConstantName(CliOptionValueType::class, $this->ValueType);
     }
 
     /**

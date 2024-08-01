@@ -3,8 +3,8 @@
 namespace Salient\Core\Facade;
 
 use Salient\Container\Container;
-use Salient\Container\ServiceLifetime;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Core\Chainable;
 use Salient\Core\AbstractFacade;
 

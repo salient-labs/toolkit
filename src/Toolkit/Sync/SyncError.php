@@ -3,148 +3,169 @@
 namespace Salient\Sync;
 
 use Salient\Contract\Core\Buildable;
-use Salient\Contract\Core\Comparable;
-use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\Readable;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Utility\Arr;
 
 /**
  * An error that occurred during a sync operation
  *
- * @property-read SyncErrorType::* $ErrorType
- * @property-read string $Message An sprintf() format string that explains the error
- * @property-read list<mixed[]|object|int|float|string|bool|null> $Values Values passed to sprintf() with the message format string
- * @property-read Level::* $Level
- * @property-read SyncEntityInterface|null $Entity The entity associated with the error
- * @property-read string|null $EntityName The display name of the entity associated with the error
- * @property-read SyncProviderInterface|null $Provider The sync provider associated with the error
- * @property-read int $Count How many times the error has been reported
- *
  * @implements Buildable<SyncErrorBuilder>
  */
-final class SyncError implements Readable, Comparable, Immutable, Buildable
+final class SyncError implements SyncErrorInterface, Buildable
 {
-    use ReadsProtectedProperties;
     /** @use HasBuilder<SyncErrorBuilder> */
     use HasBuilder;
+    use HasImmutableProperties;
 
     /** @var SyncErrorType::* */
-    protected $ErrorType;
-
-    /**
-     * An sprintf() format string that explains the error
-     *
-     * Example: `"Contact not returned by provider: %s"`
-     *
-     * Values for {@see sprintf()} specifiers are taken from the
-     * {@see SyncError::$Values} array, which contains
-     * {@see SyncError::$EntityName} by default.
-     *
-     * @var string
-     */
-    protected $Message;
-
-    /**
-     * Values passed to sprintf() with the message format string
-     *
-     * Default: `[ "<EntityName>" ]`
-     *
-     * @var mixed[]
-     *
-     * @see SyncError::$Message
-     * @see SyncError::$EntityName
-     */
-    protected $Values;
-
+    private int $ErrorType;
+    private string $Message;
+    /** @var list<mixed[]|object|int|float|string|bool|null> */
+    private array $Values;
     /** @var Level::* */
-    protected $Level;
+    private int $Level;
+    private ?SyncEntityInterface $Entity;
+    private ?string $EntityName;
+    private ?SyncProviderInterface $Provider;
+    private int $Count = 1;
 
     /**
-     * The entity associated with the error
-     *
-     * @var SyncEntityInterface|null
-     */
-    protected $Entity;
-
-    /**
-     * The display name of the entity associated with the error
-     *
-     * Used in messages and summaries. Default: `<Entity>->getUri()`
-     *
-     * @var string|null
-     *
-     * @see SyncEntityInterface::getUri()
-     */
-    protected $EntityName;
-
-    /**
-     * The sync provider associated with the error
-     *
-     * @var SyncProviderInterface|null
-     */
-    protected $Provider;
-
-    /**
-     * How many times the error has been reported
-     *
-     * @var int
-     */
-    protected $Count = 1;
-
-    /**
-     * @param SyncErrorType::* $errorType
-     * @param list<mixed[]|object|int|float|string|bool|null> $values
-     * @param Level::* $level
+     * @param SyncErrorType::* $errorType Error type.
+     * @param string $message `sprintf()` format string that explains the error.
+     * @param list<mixed[]|object|int|float|string|bool|null>|null $values Values applied to the message format string. Default: `[$entityName]`
+     * @param Level::* $level Error severity/message level.
+     * @param SyncEntityInterface|null $entity Entity associated with the error.
+     * @param string|null $entityName Display name of the entity associated with the error. Default: `$entity->getUri()`
+     * @param SyncProviderInterface|null $provider Sync provider associated with the error. Default: `$entity->getProvider()`
      */
     public function __construct(
         int $errorType,
         string $message,
-        array $values = [],
+        ?array $values = null,
         int $level = Level::ERROR,
         ?SyncEntityInterface $entity = null,
         ?string $entityName = null,
         ?SyncProviderInterface $provider = null
     ) {
-        $this->EntityName = $entityName
-            ?? ($entity
-                ? $entity->getUri($provider ? $provider->getStore() : null)
-                : null);
+        $provider ??= ($entity ? $entity->getProvider() : null);
+        $entityName ??= ($entity
+            ? $entity->getUri($provider ? $provider->getStore() : null)
+            : null);
+
         $this->ErrorType = $errorType;
         $this->Message = $message;
-        $this->Values = $values ?: [$this->EntityName];
+        $this->Values = $values ?? [$entityName];
         $this->Level = $level;
         $this->Entity = $entity;
-        $this->Provider = $provider ?? ($entity ? $entity->getProvider() : null);
+        $this->EntityName = $entityName;
+        $this->Provider = $provider;
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
-    public function count()
+    public function getType(): int
     {
-        $this->Count++;
-
-        return $this;
+        return $this->ErrorType;
     }
 
-    public static function compare($a, $b): int
+    /**
+     * @inheritDoc
+     */
+    public function getLevel(): int
     {
-        return $a->Level <=> $b->Level
-            ?: $a->ErrorType <=> $b->ErrorType
-            ?: $a->Message <=> $b->Message
-            ?: $a->Values <=> $b->Values
-            ?: $a->EntityName <=> $b->EntityName
-            ?: ($a->Provider ? $a->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
-            ?: ($a->Entity ? $a->Entity->getId() : null) <=> ($b->Entity ? $b->Entity->getId() : null);
+        return $this->Level;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCode(): string
     {
         return sprintf('%02d-%04d', $this->Level, $this->ErrorType);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMessage(): string
+    {
+        return sprintf($this->Message, ...Arr::toScalars($this->Values));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFormat(): string
+    {
+        return $this->Message;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getValues(): array
+    {
+        return $this->Values;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getProvider(): ?SyncProviderInterface
+    {
+        return $this->Provider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEntity(): ?SyncEntityInterface
+    {
+        return $this->Entity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEntityName(): ?string
+    {
+        return $this->EntityName;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCount(): int
+    {
+        return $this->Count;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count()
+    {
+        return $this->withPropertyValue('Count', $this->Count + 1);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function compare($a, $b): int
+    {
+        return $a->ErrorType <=> $b->ErrorType
+            ?: $a->Level <=> $b->Level
+            ?: $a->Message <=> $b->Message
+            ?: $a->Values <=> $b->Values
+            ?: $a->Provider <=> $b->Provider
+            ?: $a->Entity <=> $b->Entity
+            ?: $a->EntityName <=> $b->EntityName;
     }
 }

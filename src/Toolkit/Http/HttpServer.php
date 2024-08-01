@@ -341,7 +341,7 @@ class HttpServer implements Immutable
 
                     if (
                         count($startLine) !== 3
-                        || !HttpRequestMethod::hasValue($startLine[0])
+                        || !Http::isRequestMethod($startLine[0])
                         || !Regex::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
                     ) {
                         throw new HttpServerException(sprintf(

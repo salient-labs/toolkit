@@ -10,9 +10,9 @@ use Salient\Cache\CacheStore;
 use Salient\Console\ConsoleLogger;
 use Salient\Console\ConsoleWriter;
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
-use Salient\Container\Exception\ContainerServiceNotFoundException;
-use Salient\Container\Exception\ContainerUnusableArgumentsException;
-use Salient\Container\Exception\InvalidContainerBindingException;
+use Salient\Container\Exception\ArgumentsNotUsedException;
+use Salient\Container\Exception\InvalidServiceException;
+use Salient\Container\Exception\ServiceNotFoundException;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
@@ -21,6 +21,7 @@ use Salient\Contract\Container\HasBindings;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
+use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
@@ -196,7 +197,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     {
         $hasInstance = $this->Dice->hasShared($id);
         if ($hasInstance && $args) {
-            throw new ContainerUnusableArgumentsException(sprintf(
+            throw new ArgumentsNotUsedException(sprintf(
                 'Cannot apply arguments to shared instance: %s',
                 $id,
             ));
@@ -237,7 +238,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
                         $this->bindDefaultService($failed);
                         continue;
                     }
-                    throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
+                    throw new ServiceNotFoundException($ex->getMessage(), $ex);
                 }
             } while (true);
         } finally {
@@ -542,7 +543,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
             $bind = array_intersect($bind, $services);
             if (count($bind) < count($services)) {
                 // @codeCoverageIgnoreStart
-                throw new InvalidContainerBindingException(sprintf(
+                throw new InvalidServiceException(sprintf(
                     '%s does not implement: %s',
                     $id,
                     implode(', ', array_diff($services, $bind)),

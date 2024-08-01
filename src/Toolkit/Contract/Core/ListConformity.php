@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Array key conformity levels
- *
- * @extends AbstractEnumeration<int>
  */
-final class ListConformity extends AbstractEnumeration
+interface ListConformity
 {
     /**
      * Arrays may have different keys in different orders

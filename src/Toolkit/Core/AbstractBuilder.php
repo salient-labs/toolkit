@@ -4,8 +4,7 @@ namespace Salient\Core;
 
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\Chainable;
-use Salient\Contract\Core\Immutable;
+use Salient\Contract\Core\BuilderInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use InvalidArgumentException;
@@ -16,8 +15,10 @@ use InvalidArgumentException;
  * @api
  *
  * @template TClass of object
+ *
+ * @implements BuilderInterface<TClass>
  */
-abstract class AbstractBuilder implements Chainable, Immutable
+abstract class AbstractBuilder implements BuilderInterface
 {
     use HasChainableMethods;
     use RequiresContainer;
@@ -62,9 +63,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
-     * Creates a new builder
-     *
-     * @return static
+     * @inheritDoc
      */
     final public static function create(?ContainerInterface $container = null)
     {
@@ -72,10 +71,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
-     * Get an instance from an optionally terminated builder
-     *
-     * @param static|TClass $object
-     * @return TClass
+     * @inheritDoc
      */
     final public static function resolve($object)
     {
@@ -104,9 +100,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
-     * Get a value applied to the builder
-     *
-     * @return mixed|null
+     * @inheritDoc
      */
     final public function getB(string $name)
     {
@@ -114,7 +108,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
-     * Check if a value has been applied to the builder
+     * @inheritDoc
      */
     final public function issetB(string $name): bool
     {
@@ -122,9 +116,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
-     * Remove a value applied to the builder
-     *
-     * @return static
+     * @inheritDoc
      */
     final public function unsetB(string $name)
     {
@@ -138,9 +130,7 @@ abstract class AbstractBuilder implements Chainable, Immutable
     }
 
     /**
-     * Get a new instance of the service class
-     *
-     * @return TClass
+     * @inheritDoc
      */
     final public function build()
     {

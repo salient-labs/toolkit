@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractReflectiveEnumeration;
-
 /**
  * Sync error types
- *
- * @extends AbstractReflectiveEnumeration<int>
  */
-final class SyncErrorType extends AbstractReflectiveEnumeration
+interface SyncErrorType
 {
     /**
      * No entities matching the criteria were returned by the provider

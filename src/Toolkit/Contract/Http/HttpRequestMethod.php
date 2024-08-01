@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Http;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * @api
- *
- * @extends AbstractEnumeration<string>
  */
-final class HttpRequestMethod extends AbstractEnumeration
+interface HttpRequestMethod
 {
     public const GET = 'GET';
     public const HEAD = 'HEAD';

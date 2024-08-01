@@ -5,6 +5,7 @@ namespace Salient\Sync\Support;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
+use Salient\Utility\Reflect;
 use InvalidArgumentException;
 
 /**
@@ -72,7 +73,7 @@ final class SyncPipelineArgument
                 if ($entity === null) {
                     throw new InvalidArgumentException(sprintf(
                         '$entity required for SyncOperation::%s',
-                        SyncOperation::toName($operation),
+                        Reflect::getConstantName(SyncOperation::class, $operation),
                     ));
                 }
                 $this->Entity = $entity;

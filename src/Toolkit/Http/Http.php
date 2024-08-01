@@ -3,9 +3,11 @@
 namespace Salient\Http;
 
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
 use Salient\Utility\Package;
+use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use DateTimeImmutable;
@@ -38,6 +40,14 @@ final class Http extends AbstractUtility
     private const ALIAS_TYPE = [
         'text/xml' => MimeType::XML,
     ];
+
+    /**
+     * Check if a string is a valid HTTP request method
+     */
+    public static function isRequestMethod(string $method): bool
+    {
+        return Reflect::hasConstantWithValue(HttpRequestMethod::class, $method);
+    }
 
     /**
      * Check if a media type is a match for the given MIME type

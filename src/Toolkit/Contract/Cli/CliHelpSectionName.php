@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Core\AbstractDictionary;
-
 /**
  * Section names commonly used in help messages
  *
  * @api
- *
- * @extends AbstractDictionary<string>
  */
-final class CliHelpSectionName extends AbstractDictionary
+interface CliHelpSectionName
 {
     public const NAME = 'NAME';
     public const SYNOPSIS = 'SYNOPSIS';

@@ -3,16 +3,11 @@
 namespace Salient\Contract\Core;
 
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Core\Concern\HasBuilder;
-use Salient\Core\AbstractBuilder;
 
 /**
  * @api
  *
- * @template TBuilder of AbstractBuilder
- *
- * @see AbstractBuilder
- * @see HasBuilder
+ * @template TBuilder of BuilderInterface
  */
 interface Buildable
 {
@@ -21,7 +16,7 @@ interface Buildable
      *
      * @return TBuilder
      */
-    public static function build(?ContainerInterface $container = null): AbstractBuilder;
+    public static function build(?ContainerInterface $container = null): BuilderInterface;
 
     /**
      * Get an instance of the class from an optionally terminated builder

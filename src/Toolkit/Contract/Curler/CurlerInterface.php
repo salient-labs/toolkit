@@ -16,7 +16,6 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
-use Salient\Core\Facade\Cache;
 use Closure;
 use Stringable;
 
@@ -474,8 +473,8 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get an instance with the given cache store
      *
-     * If no `$store` is given, cookies and responses are cached in the
-     * {@see Cache} facade's underlying store as needed.
+     * If no `$store` is given, cookies and responses are cached in the default
+     * cache store as needed.
      *
      * @return static
      */

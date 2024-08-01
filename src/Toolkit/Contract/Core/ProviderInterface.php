@@ -4,7 +4,6 @@ namespace Salient\Contract\Core;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
-use Salient\Core\Exception\MethodNotImplementedException;
 use Stringable;
 
 /**
@@ -77,8 +76,8 @@ interface ProviderInterface extends HasContainer, HasName
      * must never be cached.
      *
      * @return $this
-     * @throws MethodNotImplementedException if heartbeat monitoring isn't
-     * supported.
+     * @throws MethodNotImplementedExceptionInterface if heartbeat monitoring
+     * isn't supported.
      */
     public function checkHeartbeat(int $ttl = 300);
 }

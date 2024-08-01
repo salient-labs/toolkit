@@ -4,9 +4,13 @@ namespace Salient\Sync;
 
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\DeferralPolicy;
+use Salient\Contract\Sync\DeferredEntityInterface;
+use Salient\Contract\Sync\DeferredRelationshipInterface;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncErrorCollectionInterface;
+use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
@@ -19,8 +23,6 @@ use Salient\Sync\Event\SyncStoreLoadedEvent;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
 use Salient\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Salient\Sync\Exception\SyncStoreException;
-use Salient\Sync\Support\DeferredEntity;
-use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncErrorCollection;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -111,7 +113,7 @@ final class SyncStore extends AbstractStore implements SyncStoreInterface
     /**
      * Provider ID => entity type ID => entity ID => [ deferred entity ]
      *
-     * @var array<int,array<int,array<int|string,array<DeferredEntity<SyncEntityInterface>>>>>
+     * @var array<int,array<int,array<int|string,array<DeferredEntityInterface<SyncEntityInterface>>>>>
      */
     private $DeferredEntities = [];
 
@@ -119,16 +121,12 @@ final class SyncStore extends AbstractStore implements SyncStoreInterface
      * Provider ID => entity type ID => requesting entity type ID => requesting
      * entity property => requesting entity ID => [ deferred relationship ]
      *
-     * @var array<int,array<int,array<int,array<string,array<int|string,DeferredRelationship<SyncEntityInterface>[]>>>>>
+     * @var array<int,array<int,array<int,array<string,array<int|string,DeferredRelationshipInterface<SyncEntityInterface>[]>>>>>
      */
     private $DeferredRelationships = [];
 
     /** @var SyncErrorCollection */
     private $Errors;
-    /** @var int */
-    private $ErrorCount = 0;
-    /** @var int */
-    private $WarningCount = 0;
 
     /**
      * Prefix => true
@@ -289,8 +287,8 @@ SQL;
         $stmt = $this->prepare($sql);
         $stmt->bindValue(':exit_status', $exitStatus, \SQLITE3_INTEGER);
         $stmt->bindValue(':run_uuid', $this->RunUuid, \SQLITE3_BLOB);
-        $stmt->bindValue(':error_count', $this->ErrorCount, \SQLITE3_INTEGER);
-        $stmt->bindValue(':warning_count', $this->WarningCount, \SQLITE3_INTEGER);
+        $stmt->bindValue(':error_count', $this->Errors->getErrorCount(), \SQLITE3_INTEGER);
+        $stmt->bindValue(':warning_count', $this->Errors->getWarningCount(), \SQLITE3_INTEGER);
         $stmt->bindValue(':errors_json', Json::stringify($this->Errors), \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
@@ -765,13 +763,13 @@ SQL;
      * @template TEntity of SyncEntityInterface
      *
      * @param class-string<TEntity> $entityType
-     * @param DeferredEntity<TEntity> $entity
+     * @param DeferredEntityInterface<TEntity> $entity
      */
     public function deferEntity(
         int $providerId,
         string $entityType,
         $entityId,
-        DeferredEntity $entity
+        DeferredEntityInterface $entity
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         /** @var TEntity|null */
@@ -800,8 +798,8 @@ SQL;
 
         // In `RESOLVE_EARLY` mode, deferred entities are added to
         // `$this->DeferredEntities` for the benefit of `$this->setEntity()`,
-        // which only calls `DeferredEntity::replace()` method on registered
-        // instances
+        // which only calls `DeferredEntityInterface::replace()` method on
+        // registered instances
         if ($policy === DeferralPolicy::RESOLVE_EARLY) {
             $entity->resolve();
             return $this;
@@ -819,7 +817,7 @@ SQL;
         string $forEntityType,
         string $forEntityProperty,
         $forEntityId,
-        DeferredRelationship $relationship
+        DeferredRelationshipInterface $relationship
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         $forEntityTypeId = $this->EntityTypeMap[$forEntityType];
@@ -950,7 +948,7 @@ SQL;
                     $entities = $_entities;
                 }
 
-                /** @var array<int|string,non-empty-array<DeferredEntity<SyncEntityInterface>>> $entities */
+                /** @var array<int|string,non-empty-array<DeferredEntityInterface<SyncEntityInterface>>> $entities */
                 foreach ($entities as $entityId => $deferred) {
                     $deferredEntity = reset($deferred);
                     $resolved[] = $deferredEntity->resolve();
@@ -1065,6 +1063,7 @@ SQL;
                             'exception' => get_class($ex),
                             'message' => $ex->getMessage()
                         ]])
+                        ->build()
                 );
             }
             if ($failEarly && $failed) {
@@ -1080,46 +1079,27 @@ SQL;
     }
 
     /**
-     * @param SyncError|SyncErrorBuilder $error
+     * @inheritDoc
      */
-    public function recordError($error, bool $deduplicate = false)
+    public function recordError(SyncErrorInterface $error, bool $deduplicate = false)
     {
-        if ($error instanceof SyncErrorBuilder) {
-            $error = $error->build();
-        }
-
-        $seen = $deduplicate
-            ? $this->Errors->firstOf($error)
-            : false;
-
-        if ($seen) {
-            $seen->count();
-            Console::count($error->Level);
-            return $this;
+        if ($deduplicate) {
+            $key = $this->Errors->keyOf($error);
+            if ($key !== null) {
+                $this->Errors[$key] = $this->Errors[$key]->count();
+                return $this;
+            }
         }
 
         $this->Errors[] = $error;
 
-        switch ($error->Level) {
-            case Level::EMERGENCY:
-            case Level::ALERT:
-            case Level::CRITICAL:
-            case Level::ERROR:
-                $this->ErrorCount++;
-                break;
-            case Level::WARNING:
-                $this->WarningCount++;
-                break;
-        }
-
-        Console::count($error->Level);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function getErrors(): SyncErrorCollection
+    public function getErrors(): SyncErrorCollectionInterface
     {
         return clone $this->Errors;
     }

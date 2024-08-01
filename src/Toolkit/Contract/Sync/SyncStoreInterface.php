@@ -2,10 +2,6 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Sync\Support\DeferredEntity;
-use Salient\Sync\Support\DeferredRelationship;
-use Salient\Sync\Support\SyncErrorCollection;
-use Salient\Sync\SyncError;
 use InvalidArgumentException;
 use LogicException;
 
@@ -178,14 +174,14 @@ interface SyncStoreInterface
      *
      * @param class-string<TEntity> $entityType
      * @param int|string $entityId
-     * @param DeferredEntity<TEntity> $entity
+     * @param DeferredEntityInterface<TEntity> $entity
      * @return $this
      */
     public function deferEntity(
         int $providerId,
         string $entityType,
         $entityId,
-        DeferredEntity $entity
+        DeferredEntityInterface $entity
     );
 
     /**
@@ -196,7 +192,7 @@ interface SyncStoreInterface
      * @param class-string<TEntity> $entityType
      * @param class-string<SyncEntityInterface> $forEntityType
      * @param int|string $forEntityId
-     * @param DeferredRelationship<TEntity> $relationship
+     * @param DeferredRelationshipInterface<TEntity> $relationship
      * @return $this
      */
     public function deferRelationship(
@@ -205,7 +201,7 @@ interface SyncStoreInterface
         string $forEntityType,
         string $forEntityProperty,
         $forEntityId,
-        DeferredRelationship $relationship
+        DeferredRelationshipInterface $relationship
     );
 
     /**
@@ -291,10 +287,10 @@ interface SyncStoreInterface
      *
      * @return $this
      */
-    public function recordError(SyncError $error, bool $deduplicate = false);
+    public function recordError(SyncErrorInterface $error, bool $deduplicate = false);
 
     /**
      * Get sync operation errors recorded so far
      */
-    public function getErrors(): SyncErrorCollection;
+    public function getErrors(): SyncErrorCollectionInterface;
 }

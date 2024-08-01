@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Console message types
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class ConsoleMessageType extends AbstractEnumeration
+interface ConsoleMessageType
 {
     /**
      * A message that should be recorded with a prefix and level-based

@@ -3,6 +3,7 @@
 namespace Salient\Tests\Utility;
 
 use Salient\Contract\Core\Jsonable;
+use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Format;
 use Salient\Utility\Json;
@@ -15,7 +16,7 @@ use Stringable;
 /**
  * @covers \Salient\Utility\Format
  */
-final class FormatTest extends \Salient\Tests\TestCase
+final class FormatTest extends TestCase
 {
     /**
      * @dataProvider listProvider

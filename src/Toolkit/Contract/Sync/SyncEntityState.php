@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Sync entity states
- *
- * @extends AbstractEnumeration<int>
  */
-final class SyncEntityState extends AbstractEnumeration
+interface SyncEntityState
 {
     /**
      * The entity is being serialized

@@ -3,10 +3,9 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Core\ProviderContextInterface;
-use Salient\Sync\Exception\SyncEntityRecursionException;
-use Salient\Sync\Exception\SyncInvalidFilterException;
-use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
-use Salient\Sync\AbstractSyncProvider;
+use Salient\Contract\Sync\Exception\InvalidFilterExceptionInterface;
+use Salient\Contract\Sync\Exception\InvalidFilterSignatureExceptionInterface;
+use Salient\Contract\Sync\Exception\SyncEntityRecursionExceptionInterface;
 use DateTimeInterface;
 
 /**
@@ -64,7 +63,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * @param mixed ...$args Sync operation arguments, not including the
      * {@see SyncContextInterface} argument.
      * @return static
-     * @throws SyncInvalidFilterSignatureException
+     * @throws InvalidFilterSignatureExceptionInterface
      */
     public function withFilter($operation, ...$args);
 
@@ -144,17 +143,13 @@ interface SyncContextInterface extends ProviderContextInterface
     /**
      * Throw an exception if recursion is detected
      *
-     * @throws SyncEntityRecursionException if
+     * @throws SyncEntityRecursionExceptionInterface if
      * {@see SyncContextInterface::pushWithRecursionCheck()} detected recursion.
      */
     public function maybeThrowRecursionException(): void;
 
     /**
      * Run the unclaimed filter policy callback
-     *
-     * {@see AbstractSyncProvider::run()} calls this method on your behalf and
-     * is recommended for providers where sync operations are performed by
-     * declared methods.
      *
      * Example:
      *
@@ -216,7 +211,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * Same as {@see SyncContextInterface::getFilter()}, but an exception is
      * thrown if the value is not an integer.
      *
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function getFilterInt(string $key, bool $orValue = true): ?int;
 
@@ -227,7 +222,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * Same as {@see SyncContextInterface::getFilter()}, but an exception is
      * thrown if the value is not a string.
      *
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function getFilterString(string $key, bool $orValue = true): ?string;
 
@@ -239,7 +234,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not an integer or string.
      *
      * @return int|string|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function getFilterArrayKey(string $key, bool $orValue = true);
 
@@ -251,7 +246,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not a list of integers.
      *
      * @return int[]|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function getFilterIntList(string $key, bool $orValue = true): ?array;
 
@@ -263,7 +258,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not a list of strings.
      *
      * @return string[]|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function getFilterStringList(string $key, bool $orValue = true): ?array;
 
@@ -275,7 +270,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not a list of integers and strings.
      *
      * @return (int|string)[]|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function getFilterArrayKeyList(string $key, bool $orValue = true): ?array;
 
@@ -308,7 +303,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
      * thrown if the value is not an integer.
      *
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function claimFilterInt(string $key, bool $orValue = true): ?int;
 
@@ -319,7 +314,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * Same as {@see SyncContextInterface::claimFilter()}, but an exception is
      * thrown if the value is not a string.
      *
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function claimFilterString(string $key, bool $orValue = true): ?string;
 
@@ -331,7 +326,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not an integer or string.
      *
      * @return int|string|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function claimFilterArrayKey(string $key, bool $orValue = true);
 
@@ -343,7 +338,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not a list of integers.
      *
      * @return int[]|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function claimFilterIntList(string $key, bool $orValue = true): ?array;
 
@@ -355,7 +350,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not a list of strings.
      *
      * @return string[]|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function claimFilterStringList(string $key, bool $orValue = true): ?array;
 
@@ -367,7 +362,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * thrown if the value is not a list of integers and strings.
      *
      * @return (int|string)[]|null
-     * @throws SyncInvalidFilterException
+     * @throws InvalidFilterExceptionInterface
      */
     public function claimFilterArrayKeyList(string $key, bool $orValue = true): ?array;
 

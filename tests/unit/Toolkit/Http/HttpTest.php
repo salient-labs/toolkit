@@ -14,6 +14,36 @@ use InvalidArgumentException;
 final class HttpTest extends TestCase
 {
     /**
+     * @dataProvider isRequestMethodProvider
+     */
+    public function testIsRequestMethod(bool $expected, string $method): void
+    {
+        $this->assertSame($expected, Http::isRequestMethod($method));
+    }
+
+    /**
+     * @return array<array{bool,string}>
+     */
+    public static function isRequestMethodProvider(): array
+    {
+        return [
+            [true, 'GET'],
+            [true, 'HEAD'],
+            [true, 'POST'],
+            [true, 'PUT'],
+            [true, 'PATCH'],
+            [true, 'DELETE'],
+            [true, 'CONNECT'],
+            [true, 'OPTIONS'],
+            [true, 'TRACE'],
+            [false, ''],
+            [false, 'GET '],
+            [false, 'PROPFIND'],
+            [false, 'get'],
+        ];
+    }
+
+    /**
      * @dataProvider mediaTypeIsProvider
      */
     public function testMediaTypeIs(bool $expected, string $type, string $mimeType): void

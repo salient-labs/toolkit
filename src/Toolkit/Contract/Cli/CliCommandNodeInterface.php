@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Cli\CliCommand;
 use Salient\Contract\Cli\CliHelpStyleInterface as CliHelpStyle;
 use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\HasDescription;
@@ -13,8 +12,6 @@ use LogicException;
  * A node in a CLI command tree
  *
  * @api
- *
- * @see CliCommand
  */
 interface CliCommandNodeInterface extends HasContainer, HasName, HasDescription
 {

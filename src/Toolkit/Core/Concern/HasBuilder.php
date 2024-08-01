@@ -4,7 +4,7 @@ namespace Salient\Core\Concern;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Buildable;
-use Salient\Core\AbstractBuilder;
+use Salient\Contract\Core\BuilderInterface;
 
 /**
  * Implements Buildable
@@ -13,7 +13,7 @@ use Salient\Core\AbstractBuilder;
  *
  * @api
  *
- * @template TBuilder of AbstractBuilder
+ * @template TBuilder of BuilderInterface
  *
  * @phpstan-require-implements Buildable<TBuilder>
  */
@@ -33,7 +33,7 @@ trait HasBuilder
     /**
      * @inheritDoc
      */
-    final public static function build(?ContainerInterface $container = null): AbstractBuilder
+    final public static function build(?ContainerInterface $container = null): BuilderInterface
     {
         return static::getBuilder()::create($container);
     }

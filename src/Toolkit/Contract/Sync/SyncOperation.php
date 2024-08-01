@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Core\AbstractConvertibleEnumeration;
-
 /**
  * Sync operation types
- *
- * @extends AbstractConvertibleEnumeration<int>
  */
-final class SyncOperation extends AbstractConvertibleEnumeration
+interface SyncOperation
 {
     /**
      * Add an entity to the backend
@@ -84,26 +80,4 @@ final class SyncOperation extends AbstractConvertibleEnumeration
      * - `DELETE FROM <entity_name> WHERE ...`
      */
     public const DELETE_LIST = 128;
-
-    protected static $NameMap = [
-        self::CREATE => 'CREATE',
-        self::READ => 'READ',
-        self::UPDATE => 'UPDATE',
-        self::DELETE => 'DELETE',
-        self::CREATE_LIST => 'CREATE_LIST',
-        self::READ_LIST => 'READ_LIST',
-        self::UPDATE_LIST => 'UPDATE_LIST',
-        self::DELETE_LIST => 'DELETE_LIST',
-    ];
-
-    protected static $ValueMap = [
-        'CREATE' => self::CREATE,
-        'READ' => self::READ,
-        'UPDATE' => self::UPDATE,
-        'DELETE' => self::DELETE,
-        'CREATE_LIST' => self::CREATE_LIST,
-        'READ_LIST' => self::READ_LIST,
-        'UPDATE_LIST' => self::UPDATE_LIST,
-        'DELETE_LIST' => self::DELETE_LIST,
-    ];
 }

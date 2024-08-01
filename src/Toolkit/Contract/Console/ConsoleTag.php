@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Console output formatting tags
- *
- * @extends AbstractEnumeration<int>
  */
-final class ConsoleTag extends AbstractEnumeration
+interface ConsoleTag
 {
     /**
      * Heading

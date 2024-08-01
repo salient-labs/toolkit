@@ -12,6 +12,7 @@ use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
+use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Regex;
@@ -88,7 +89,13 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     }
 
     /**
-     * @inheritDoc
+     * Run the unclaimed filter policy callback
+     *
+     * {@see AbstractSyncProvider::run()} calls this method on your behalf and
+     * is recommended for providers where sync operations are performed by
+     * declared methods.
+     *
+     * {@inheritDoc}
      */
     public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void
     {

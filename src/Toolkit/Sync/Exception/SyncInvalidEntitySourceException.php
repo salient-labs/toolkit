@@ -6,6 +6,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Utility\Reflect;
 
 /**
  * Thrown when an invalid data source is provided for the return value of a sync
@@ -23,8 +24,8 @@ class SyncInvalidEntitySourceException extends AbstractSyncException
         parent::__construct(sprintf(
             "%s gave unsupported SyncEntitySource '%s' for SyncOperation::%s on %s",
             get_class($provider),
-            $source === null ? '' : SyncEntitySource::toName($source),
-            SyncOperation::toName($operation),
+            $source === null ? '' : Reflect::getConstantName(SyncEntitySource::class, $source),
+            Reflect::getConstantName(SyncOperation::class, $operation),
             $entity
         ));
     }

@@ -24,6 +24,7 @@ use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
+use Salient\Utility\Reflect;
 use Closure;
 use LogicException;
 
@@ -252,7 +253,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         $this->ReturnEntitiesFrom = $returnEntitiesFrom;
 
         /** @var list<int&OP::*> */
-        $allOps = array_values(OP::cases());
+        $allOps = array_values(Reflect::getConstants(OP::class));
 
         // Expand $overrides into an entry per operation
         foreach ($overrides as $ops => $override) {
@@ -263,7 +264,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
                 if (array_key_exists($op, $this->Overrides)) {
                     throw new LogicException(sprintf(
                         'Too many overrides for SyncOperation::%s on %s: %s',
-                        OP::toName($op),
+                        Reflect::getConstantName(OP::class, $op),
                         $entity,
                         get_class($provider),
                     ));
@@ -476,7 +477,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         if ($closure === null) {
             throw new LogicException(sprintf(
                 'SyncOperation::%s not supported on %s',
-                OP::toName($operation),
+                Reflect::getConstantName(OP::class, $operation),
                 $this->Entity,
             ));
         }

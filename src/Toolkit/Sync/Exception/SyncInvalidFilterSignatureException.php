@@ -2,8 +2,10 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\InvalidFilterSignatureExceptionInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation;
+use Salient\Utility\Reflect;
 
 /**
  * Thrown when the non-mandatory arguments passed to a sync operation do not
@@ -11,7 +13,7 @@ use Salient\Contract\Sync\SyncOperation;
  *
  * See {@see SyncContextInterface::withFilter()} for valid signatures.
  */
-class SyncInvalidFilterSignatureException extends SyncInvalidFilterException
+class SyncInvalidFilterSignatureException extends SyncInvalidFilterException implements InvalidFilterSignatureExceptionInterface
 {
     /** @var mixed[] */
     protected $Args;
@@ -26,7 +28,7 @@ class SyncInvalidFilterSignatureException extends SyncInvalidFilterException
 
         parent::__construct(sprintf(
             'Invalid filter signature for SyncOperation::%s',
-            SyncOperation::toName($operation),
+            Reflect::getConstantName(SyncOperation::class, $operation),
         ));
     }
 }

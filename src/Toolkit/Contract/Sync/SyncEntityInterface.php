@@ -7,8 +7,8 @@ use Salient\Contract\Core\HasId;
 use Salient\Contract\Core\HasName;
 use Salient\Contract\Core\ProvidableEntityInterface;
 use Salient\Contract\Core\Relatable;
+use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
-use Salient\Sync\Exception\SyncEntityNotFoundException;
 use JsonSerializable;
 
 /**
@@ -109,7 +109,7 @@ interface SyncEntityInterface extends
      *   provider (see {@see SyncProviderInterface::isValidIdentifier()}), or
      * - the entity ID of the entity to which `$nameOrId` resolves
      *
-     * A {@see SyncEntityNotFoundException} is thrown if:
+     * A {@see SyncEntityNotFoundExceptionInterface} is thrown if:
      *
      * - there are no matching entities, or
      * - there are multiple matching entities

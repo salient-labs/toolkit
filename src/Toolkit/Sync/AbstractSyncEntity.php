@@ -16,6 +16,8 @@ use Salient\Contract\Core\TextComparisonAlgorithm as Algorithm;
 use Salient\Contract\Core\TextComparisonFlag as Flag;
 use Salient\Contract\Core\Writable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
+use Salient\Contract\Sync\DeferredEntityInterface;
+use Salient\Contract\Sync\DeferredRelationshipInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
@@ -35,8 +37,6 @@ use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\Support\DeferredEntity;
-use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -335,7 +335,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         switch ($type) {
             case LinkType::DEFAULT:
                 return [
-                    '@type' => $this->typeUri($store, $compact),
+                    '@type' => $this->getTypeUri($store, $compact),
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
@@ -348,7 +348,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
 
             case LinkType::FRIENDLY:
                 return Arr::whereNotEmpty([
-                    '@type' => $this->typeUri($store, $compact),
+                    '@type' => $this->getTypeUri($store, $compact),
                     '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
@@ -371,7 +371,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     {
         return sprintf(
             '%s/%s',
-            $this->typeUri($store, $compact),
+            $this->getTypeUri($store, $compact),
             $this->Id === null
                 ? spl_object_id($this)
                 : $this->Id
@@ -433,7 +433,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         return array_keys($expanded);
     }
 
-    private function typeUri(?SyncStoreInterface $store, bool $compact): string
+    private function getTypeUri(?SyncStoreInterface $store, bool $compact): string
     {
         /** @var class-string<self> */
         $service = $this->getService();
@@ -468,7 +468,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     }
 
     /**
-     * @param AbstractSyncEntity|DeferredEntity<AbstractSyncEntity>|DeferredRelationship<AbstractSyncEntity>|DateTimeInterface|mixed[] $node
+     * @param AbstractSyncEntity|DeferredEntityInterface<AbstractSyncEntity>|DeferredRelationshipInterface<AbstractSyncEntity>|DateTimeInterface|mixed[] $node
      * @param string[] $path
      * @param SyncSerializeRulesInterface<self> $rules
      * @param array<int,true> $parents
@@ -494,13 +494,13 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         }
 
         // Now is not the time to resolve deferred entities
-        if ($node instanceof DeferredEntity) {
+        if ($node instanceof DeferredEntityInterface) {
             $node = $node->toLink(LinkType::DEFAULT);
             return;
         }
 
         /** @todo Serialize deferred relationships */
-        if ($node instanceof DeferredRelationship) {
+        if ($node instanceof DeferredRelationshipInterface) {
             $node = null;
             return;
         }

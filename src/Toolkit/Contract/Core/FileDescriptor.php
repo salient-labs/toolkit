@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * File descriptors
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class FileDescriptor extends AbstractEnumeration
+interface FileDescriptor
 {
     public const IN = 0;
     public const OUT = 1;

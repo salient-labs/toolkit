@@ -3,6 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\EnumerationInterface;
+use Salient\Utility\Reflect;
 
 /**
  * Base class for enumerations
@@ -29,12 +30,6 @@ abstract class AbstractEnumeration extends AbstractCatalog implements Enumeratio
      */
     public static function hasValue($value): bool
     {
-        if (
-            (is_int($value) || is_string($value))
-            && isset(self::constantNames()[$value])
-        ) {
-            return true;
-        }
-        return in_array($value, self::constants(), true);
+        return Reflect::hasConstantWithValue(static::class, $value);
     }
 }

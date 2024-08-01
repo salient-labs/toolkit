@@ -2,14 +2,10 @@
 
 namespace Salient\Contract\Http;
 
-use Salient\Core\AbstractDictionary;
-
 /**
  * @api
- *
- * @extends AbstractDictionary<string>
  */
-final class HttpHeader extends AbstractDictionary
+interface HttpHeader
 {
     public const ACCEPT = 'Accept';
     public const ACCEPT_ENCODING = 'Accept-Encoding';

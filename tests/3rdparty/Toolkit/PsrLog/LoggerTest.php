@@ -9,6 +9,7 @@ use Salient\Console\Target\MockTarget;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Console\ConsoleWriter;
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 
 /**
@@ -42,7 +43,7 @@ final class LoggerTest extends LoggerInterfaceTest
     public function getLogs(): array
     {
         foreach ($this->Target->getMessages() as [$level, $message]) {
-            $logs[] = sprintf('%s %s', Str::lower(Level::toName($level)), $message);
+            $logs[] = sprintf('%s %s', Str::lower(Reflect::getConstantName(Level::class, $level)), $message);
         }
         return $logs ?? [];
     }

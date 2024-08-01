@@ -2,13 +2,15 @@
 
 namespace Salient\Core\Exception;
 
+use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
 use Salient\Utility\Reflect;
+use LogicException;
 use ReflectionMethod;
 
 /**
  * @api
  */
-class MethodNotImplementedException extends \LogicException
+class MethodNotImplementedException extends LogicException implements MethodNotImplementedExceptionInterface
 {
     /** @var class-string */
     protected string $Class;
@@ -39,20 +41,23 @@ class MethodNotImplementedException extends \LogicException
     }
 
     /**
-     * @return class-string
+     * @inheritDoc
      */
     public function getClass(): string
     {
         return $this->Class;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMethod(): string
     {
         return $this->Method;
     }
 
     /**
-     * @return class-string
+     * @inheritDoc
      */
     public function getPrototypeClass(): string
     {

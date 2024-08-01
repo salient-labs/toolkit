@@ -2,16 +2,12 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Command line option types
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class CliOptionType extends AbstractEnumeration
+interface CliOptionType
 {
     /**
      * Enable a setting

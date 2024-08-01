@@ -3,11 +3,12 @@
 namespace Salient\Utility\Exception;
 
 use Salient\Utility\Get;
+use InvalidArgumentException;
 
 /**
  * @api
  */
-class InvalidArgumentTypeException extends \InvalidArgumentException
+class InvalidArgumentTypeException extends InvalidArgumentException
 {
     /**
      * @api

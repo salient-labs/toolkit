@@ -2,6 +2,7 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\FilterPolicyViolationExceptionInterface;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
@@ -12,7 +13,7 @@ use Salient\Utility\Json;
  *
  * @see FilterPolicy
  */
-class SyncFilterPolicyViolationException extends AbstractSyncException
+class SyncFilterPolicyViolationException extends AbstractSyncException implements FilterPolicyViolationExceptionInterface
 {
     /** @var array<string,mixed> */
     protected array $Unclaimed;

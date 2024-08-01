@@ -2,14 +2,9 @@
 
 namespace Salient\Contract\Container;
 
-use Salient\Cache\CacheStore;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Facade\Profile;
-use Salient\Sync\SyncStore;
-use Salient\Utility\Env;
-use Salient\Utility\Package;
 use LogicException;
 
 /**
@@ -29,11 +24,9 @@ interface ApplicationInterface extends ContainerInterface
      *
      * This method should return `true` if:
      *
-     * - {@see Env::environment()} returns `"production"`
+     * - the name of the current environment is `"production"`
      * - a Phar archive is currently executing, or
      * - the application was installed with `composer --no-dev`
-     *
-     * @see Package::hasDevPackages()
      */
     public function isProduction(): bool;
 
@@ -81,8 +74,8 @@ interface ApplicationInterface extends ContainerInterface
      * Messages with levels between {@see Level::EMERGENCY} and
      * {@see Level::INFO} are written to `<name>.log`.
      *
-     * If `$debug` is `true`, or `$debug` is `null` and {@see Env::debug()}
-     * returns `true`, messages with levels between {@see Level::EMERGENCY} and
+     * If `$debug` is `true`, or `$debug` is `null` and debug mode is enabled in
+     * the environment, messages with levels between {@see Level::EMERGENCY} and
      * {@see Level::DEBUG} are simultaneously written to `<name>.debug.log`.
      *
      * @param string|null $name If `null`, the name returned by
@@ -94,8 +87,6 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Start a SQLite-backed cache store in the application's cache directory
      * and make it the Cache facade's underlying instance
-     *
-     * @see CacheStore
      *
      * @return $this
      */
@@ -119,8 +110,6 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Start a SQLite-backed entity store in the application's data directory
      * and make it the Sync facade's underlying instance
-     *
-     * @see SyncStore
      *
      * @param mixed[] $arguments
      * @return $this
@@ -181,9 +170,6 @@ interface ApplicationInterface extends ContainerInterface
      * Print a summary of the application's runtime performance metrics and
      * system resource usage when it terminates
      *
-     * Use {@see Profile::startTimer()}, {@see Profile::stopTimer()} and
-     * {@see Profile::count()} to collect performance metrics.
-     *
      * @param Level::* $level
      * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
      * reported, otherwise only metrics in the given groups are reported.
@@ -213,10 +199,6 @@ interface ApplicationInterface extends ContainerInterface
      * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
      * reported, otherwise only metrics in the given groups are reported.
      * @return $this
-     *
-     * @see Profile::startTimer()
-     * @see Profile::stopTimer()
-     * @see Profile::count()
      */
     public function reportMetrics(
         int $level = Level::INFO,

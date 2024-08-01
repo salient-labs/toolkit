@@ -5,6 +5,7 @@ namespace Salient\Sync\Exception;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Utility\Reflect;
 
 /**
  * Thrown when an unimplemented sync operation is attempted
@@ -20,7 +21,7 @@ class SyncOperationNotImplementedException extends AbstractSyncException
         parent::__construct(sprintf(
             '%s has not implemented SyncOperation::%s for %s',
             get_class($provider),
-            SyncOperation::toName($operation),
+            Reflect::getConstantName(SyncOperation::class, $operation),
             $entity
         ));
     }
