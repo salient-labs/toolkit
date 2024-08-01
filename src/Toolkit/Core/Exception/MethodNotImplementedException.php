@@ -3,12 +3,13 @@
 namespace Salient\Core\Exception;
 
 use Salient\Utility\Reflect;
+use LogicException;
 use ReflectionMethod;
 
 /**
  * @api
  */
-class MethodNotImplementedException extends \LogicException
+class MethodNotImplementedException extends LogicException
 {
     /** @var class-string */
     protected string $Class;

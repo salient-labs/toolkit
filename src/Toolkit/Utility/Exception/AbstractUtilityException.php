@@ -2,12 +2,13 @@
 
 namespace Salient\Utility\Exception;
 
+use RuntimeException;
 use Throwable;
 
 /**
  * @internal
  */
-abstract class AbstractUtilityException extends \RuntimeException
+abstract class AbstractUtilityException extends RuntimeException
 {
     /**
      * @codeCoverageIgnore
