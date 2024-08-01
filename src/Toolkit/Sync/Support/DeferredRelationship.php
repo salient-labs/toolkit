@@ -2,13 +2,14 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Contract\Sync\DeferredRelationshipInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Utility\Get;
 use ArrayIterator;
-use IteratorAggregate;
+use Closure;
 use LogicException;
 use Traversable;
 
@@ -17,67 +18,28 @@ use Traversable;
  *
  * @template TEntity of SyncEntityInterface
  *
- * @implements IteratorAggregate<array-key,TEntity>
+ * @implements DeferredRelationshipInterface<TEntity>
  */
-final class DeferredRelationship implements IteratorAggregate
+final class DeferredRelationship implements DeferredRelationshipInterface
 {
-    /**
-     * The provider servicing the entity
-     *
-     * @var SyncProviderInterface
-     */
-    private $Provider;
-
-    /**
-     * The context within which the provider is servicing the entity
-     *
-     * @var SyncContextInterface|null
-     */
-    private $Context;
-
-    /**
-     * The entity to instantiate
-     *
-     * @var class-string<TEntity>
-     */
-    private $Entity;
-
-    /**
-     * The entity for which the relationship is deferred
-     *
-     * @var class-string<SyncEntityInterface>
-     */
-    private $ForEntity;
-
-    /**
-     * The entity property for which the relationship is deferred
-     *
-     * @var string
-     * @phpstan-ignore-next-line
-     */
-    private $ForEntityProperty;
-
-    /**
-     * The identifier of the entity for which the relationship is deferred
-     *
-     * @var int|string
-     */
+    private SyncProviderInterface $Provider;
+    private ?SyncContextInterface $Context;
+    /** @var class-string<TEntity> */
+    private string $Entity;
+    /** @var class-string<SyncEntityInterface> */
+    private string $ForEntity;
+    /** @phpstan-ignore property.onlyWritten */
+    private string $ForEntityProperty;
+    /** @var int|string */
     private $ForEntityId;
-
-    /**
-     * Overrides the default filter passed to the provider when requesting
-     * entities
-     *
-     * @var array<string,mixed>|null
-     */
-    private $Filter;
-
-    /** @var array<TEntity>|DeferredRelationship<TEntity>|null */
-    private $Replace;
-    /** @var (callable(TEntity[]): void)|null */
-    private $Callback;
-    /** @var array<TEntity>|null */
-    private $Resolved;
+    /** @var array<string,mixed>|null */
+    private ?array $Filter;
+    /** @var TEntity[]|static|null */
+    private $Replace = null;
+    /** @var (Closure(TEntity[]): void)|null */
+    private ?Closure $Callback = null;
+    /** @var TEntity[]|null */
+    private ?array $Resolved = null;
 
     /**
      * Creates a new DeferredRelationship object
@@ -86,8 +48,8 @@ final class DeferredRelationship implements IteratorAggregate
      * @param class-string<SyncEntityInterface> $forEntity
      * @param int|string $forEntityId
      * @param array<string,mixed>|null $filter
-     * @param array<TEntity>|DeferredRelationship<TEntity>|null $replace
-     * @param (callable(TEntity[]): void)|null $callback
+     * @param TEntity[]|static|null $replace
+     * @param (Closure(TEntity[]): void)|null $callback
      */
     private function __construct(
         SyncProviderInterface $provider,
@@ -98,7 +60,7 @@ final class DeferredRelationship implements IteratorAggregate
         $forEntityId,
         ?array $filter,
         &$replace,
-        ?callable $callback = null
+        ?Closure $callback = null
     ) {
         $this->Provider = $provider;
         $this->Context = $context;
@@ -138,10 +100,7 @@ final class DeferredRelationship implements IteratorAggregate
     }
 
     /**
-     * Resolve the deferred relationship with entities retrieved from the
-     * provider or the local entity store
-     *
-     * @return TEntity[]
+     * @inheritDoc
      */
     public function resolve(): array
     {
@@ -149,32 +108,28 @@ final class DeferredRelationship implements IteratorAggregate
             return $this->Resolved;
         }
 
-        $entities =
-            $this
-                ->Provider
-                ->with($this->Entity, $this->Context)
-                ->getListA(
-                    $this->Filter !== null
-                        ? $this->Filter
-                        : [
-                            Get::basename($this->ForEntity) =>
-                                $this->ForEntityId,
-                        ],
-                );
+        $entities = $this
+            ->Provider
+            ->with($this->Entity, $this->Context)
+            ->getListA(
+                $this->Filter ?? [
+                    Get::basename($this->ForEntity) => $this->ForEntityId,
+                ],
+            );
 
         $this->apply($entities);
         return $entities;
     }
 
     /**
-     * Use a list of entities to resolve the deferred relationship
-     *
-     * @param TEntity[] $entities
+     * @inheritDoc
      */
     public function replace(array $entities): void
     {
         if ($this->Resolved !== null) {
+            // @codeCoverageIgnoreStart
             throw new LogicException('Relationship already resolved');
+            // @codeCoverageIgnoreEnd
         }
 
         $this->apply($entities);
@@ -197,25 +152,7 @@ final class DeferredRelationship implements IteratorAggregate
     }
 
     /**
-     * Defer retrieval of a sync entity relationship
-     *
-     * @param SyncProviderInterface $provider The provider servicing the entity.
-     * @param SyncContextInterface|null $context The context within which the provider
-     * is servicing the entity.
-     * @param class-string<TEntity> $entity The entity to instantiate.
-     * @param class-string<SyncEntityInterface> $forEntity The entity for which the
-     * relationship is deferred.
-     * @param string $forEntityProperty The entity property for which the
-     * relationship is deferred.
-     * @param int|string $forEntityId The identifier of the entity for which the
-     * relationship is deferred.
-     * @param array<string,mixed>|null $filter Overrides the default filter
-     * passed to the provider when requesting entities.
-     * @param array<TEntity>|DeferredRelationship<TEntity>|null $replace Refers
-     * to the variable or property to replace when the relationship is resolved.
-     * Do not assign anything else to it after calling this method.
-     * @param (callable(TEntity[]): void)|null $callback If given, `$replace` is
-     * ignored and the resolved relationship is passed to the callback.
+     * @inheritDoc
      */
     public static function defer(
         SyncProviderInterface $provider,
@@ -226,7 +163,7 @@ final class DeferredRelationship implements IteratorAggregate
         $forEntityId,
         ?array $filter = null,
         &$replace = null,
-        ?callable $callback = null
+        ?Closure $callback = null
     ): void {
         new self(
             $provider,
@@ -242,7 +179,7 @@ final class DeferredRelationship implements IteratorAggregate
     }
 
     /**
-     * Get the context within which the provider is servicing the entity
+     * @inheritDoc
      */
     public function getContext(): ?SyncContextInterface
     {

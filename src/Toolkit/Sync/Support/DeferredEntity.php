@@ -2,11 +2,13 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
+use Closure;
 use LogicException;
 
 /**
@@ -15,51 +17,31 @@ use LogicException;
  * @template TEntity of SyncEntityInterface
  *
  * @mixin TEntity
+ *
+ * @implements DeferredEntityInterface<TEntity>
  */
-final class DeferredEntity
+final class DeferredEntity implements DeferredEntityInterface
 {
-    /**
-     * The provider servicing the entity
-     *
-     * @var SyncProviderInterface
-     */
-    private $Provider;
-
-    /**
-     * The context within which the provider is servicing the entity
-     *
-     * @var SyncContextInterface|null
-     */
-    private $Context;
-
-    /**
-     * The entity to instantiate
-     *
-     * @var class-string<TEntity>
-     */
-    private $Entity;
-
-    /**
-     * The identifier of the deferred entity
-     *
-     * @var int|string
-     */
+    private SyncProviderInterface $Provider;
+    private ?SyncContextInterface $Context;
+    /** @var class-string<TEntity> */
+    private string $Entity;
+    /** @var int|string */
     private $EntityId;
-
-    /** @var TEntity|DeferredEntity<TEntity>|null */
-    private $Replace;
-    /** @var (callable(TEntity): void)|null */
-    private $Callback;
+    /** @var TEntity|static|null */
+    private $Replace = null;
+    /** @var (Closure(TEntity): void)|null */
+    private ?Closure $Callback = null;
     /** @var TEntity|null */
-    private $Resolved;
+    private ?SyncEntityInterface $Resolved = null;
 
     /**
      * Creates a new DeferredEntity object
      *
      * @param class-string<TEntity> $entity
      * @param int|string $entityId
-     * @param TEntity|DeferredEntity<TEntity>|null $replace
-     * @param (callable(TEntity): void)|null $callback
+     * @param TEntity|static|null $replace
+     * @param (Closure(TEntity): void)|null $callback
      */
     private function __construct(
         SyncProviderInterface $provider,
@@ -67,7 +49,7 @@ final class DeferredEntity
         string $entity,
         $entityId,
         &$replace,
-        ?callable $callback = null
+        ?Closure $callback = null
     ) {
         $this->Provider = $provider;
         $this->Context = $context;
@@ -93,15 +75,13 @@ final class DeferredEntity
     }
 
     /**
-     * Get the deferred entity's canonical location in the form of an array
-     *
-     * @param LinkType::* $type
-     * @return array<string,int|string>
+     * @inheritDoc
      */
     public function toLink(int $type = LinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
             case LinkType::DEFAULT:
+            case LinkType::FRIENDLY:
                 return [
                     '@type' => $this->getTypeUri($compact),
                     '@id' => $this->EntityId,
@@ -111,13 +91,14 @@ final class DeferredEntity
                 return [
                     '@id' => $this->getUri($compact),
                 ];
-        }
 
-        throw new LogicException("Invalid link type: $type");
+            default:
+                throw new LogicException("Invalid link type: $type");
+        }
     }
 
     /**
-     * Get the deferred entity's canonical location in the form of a URI
+     * @inheritDoc
      */
     public function getUri(bool $compact = true): string
     {
@@ -126,18 +107,14 @@ final class DeferredEntity
 
     private function getTypeUri(bool $compact): string
     {
-        $uri = $this->getStore()->getEntityUri($this->Entity, $compact);
+        $typeUri = $this->getStore()->getEntityUri($this->Entity, $compact);
 
-        return
-            $uri === null
-                ? '/' . str_replace('\\', '/', ltrim($this->Entity, '\\'))
-                : $uri;
+        return $typeUri
+            ?? '/' . str_replace('\\', '/', ltrim($this->Entity, '\\'));
     }
 
     /**
-     * Resolve the deferred entity from the provider or the local entity store
-     *
-     * @return TEntity
+     * @inheritDoc
      */
     public function resolve(): SyncEntityInterface
     {
@@ -145,20 +122,14 @@ final class DeferredEntity
             return $this->Resolved;
         }
 
-        $entity =
-            $this
-                ->Provider
-                ->with($this->Entity, $this->Context)
-                ->get($this->EntityId);
-
-        $this->Resolved = $entity;
-        return $entity;
+        return $this
+            ->Provider
+            ->with($this->Entity, $this->Context)
+            ->get($this->EntityId);
     }
 
     /**
-     * Resolve the deferred entity with an instance
-     *
-     * @param TEntity $entity
+     * @inheritDoc
      */
     public function replace(SyncEntityInterface $entity): void
     {
@@ -169,14 +140,7 @@ final class DeferredEntity
         }
 
         $this->Resolved = $entity;
-        $this->apply($entity);
-    }
 
-    /**
-     * @param TEntity $entity
-     */
-    private function apply(SyncEntityInterface $entity): void
-    {
         if ($this->Callback) {
             ($this->Callback)($entity);
             return;
@@ -187,18 +151,7 @@ final class DeferredEntity
     }
 
     /**
-     * Defer retrieval of a sync entity
-     *
-     * @param SyncProviderInterface $provider The provider servicing the entity.
-     * @param SyncContextInterface|null $context The context within which the provider
-     * is servicing the entity.
-     * @param class-string<TEntity> $entity The entity to instantiate.
-     * @param int|string $entityId The identifier of the deferred entity.
-     * @param TEntity|DeferredEntity<TEntity>|null $replace Refers to the
-     * variable or property to replace when the entity is resolved. Do not
-     * assign anything else to it after calling this method.
-     * @param (callable(TEntity): void)|null $callback If given, `$replace` is
-     * ignored and the resolved entity is passed to the callback.
+     * @inheritDoc
      */
     public static function defer(
         SyncProviderInterface $provider,
@@ -206,7 +159,7 @@ final class DeferredEntity
         string $entity,
         $entityId,
         &$replace = null,
-        ?callable $callback = null
+        ?Closure $callback = null
     ): void {
         new self(
             $provider,
@@ -219,19 +172,7 @@ final class DeferredEntity
     }
 
     /**
-     * Defer retrieval of a list of sync entities
-     *
-     * @param SyncProviderInterface $provider The provider servicing the entity.
-     * @param SyncContextInterface|null $context The context within which the provider
-     * is servicing the entity.
-     * @param class-string<TEntity> $entity The entity to instantiate.
-     * @param array<int|string> $entityIds A list of deferred entity
-     * identifiers.
-     * @param array<TEntity|DeferredEntity<TEntity>>|null $replace Refers to the
-     * variable or property to replace when the entities are resolved. Do not
-     * assign anything else to it after calling this method.
-     * @param (callable(TEntity): void)|null $callback If given, `$replace` is
-     * ignored and the resolved entities are passed to the callback.
+     * @inheritDoc
      */
     public static function deferList(
         SyncProviderInterface $provider,
@@ -239,40 +180,39 @@ final class DeferredEntity
         string $entity,
         array $entityIds,
         &$replace = null,
-        ?callable $callback = null
+        ?Closure $callback = null
     ): void {
         if ($callback) {
-            unset($replace);
             foreach ($entityIds as $entityId) {
                 new self(
                     $provider,
                     $context,
                     $entity,
                     $entityId,
-                    $replace,
+                    $null,
                     $callback,
                 );
             }
             return;
         }
 
-        $i = -1;
         $list = [];
+        $i = 0;
         foreach ($entityIds as $entityId) {
-            $list[++$i] = null;
             new self(
                 $provider,
                 $context,
                 $entity,
                 $entityId,
-                $list[$i],
+                // @phpstan-ignore offsetAccess.notFound
+                $list[$i++],
             );
         }
         $replace = $list;
     }
 
     /**
-     * Get the context within which the provider is servicing the entity
+     * @inheritDoc
      */
     public function getContext(): ?SyncContextInterface
     {

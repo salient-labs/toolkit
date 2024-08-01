@@ -2,6 +2,8 @@
 
 namespace Salient\Core\Facade;
 
+use Salient\Contract\Sync\DeferredEntityInterface;
+use Salient\Contract\Sync\DeferredRelationshipInterface;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
@@ -9,16 +11,14 @@ use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractFacade;
-use Salient\Sync\Support\DeferredEntity;
-use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\SyncStore;
 
 /**
  * A facade for the global sync entity store
  *
  * @method static SyncStoreInterface checkProviderHeartbeats(int $ttl = 300, bool $failEarly = true, SyncProviderInterface ...$providers) Throw an exception if a sync provider's backend is unreachable (see {@see SyncStoreInterface::checkProviderHeartbeats()})
- * @method static SyncStoreInterface deferEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, DeferredEntity<SyncEntityInterface> $entity) Register a deferred entity with the entity store (see {@see SyncStoreInterface::deferEntity()})
- * @method static SyncStoreInterface deferRelationship(int $providerId, class-string<SyncEntityInterface> $entityType, class-string<SyncEntityInterface> $forEntityType, string $forEntityProperty, int|string $forEntityId, DeferredRelationship<SyncEntityInterface> $relationship) Register a deferred relationship with the entity store
+ * @method static SyncStoreInterface deferEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, DeferredEntityInterface<SyncEntityInterface> $entity) Register a deferred entity with the entity store (see {@see SyncStoreInterface::deferEntity()})
+ * @method static SyncStoreInterface deferRelationship(int $providerId, class-string<SyncEntityInterface> $entityType, class-string<SyncEntityInterface> $forEntityType, string $forEntityProperty, int|string $forEntityId, DeferredRelationshipInterface<SyncEntityInterface> $relationship) Register a deferred relationship with the entity store
  * @method static string getBinaryRunUuid() Get the UUID of the current run in raw binary form
  * @method static SyncClassResolverInterface|null getClassResolver(class-string<SyncEntityInterface|SyncProviderInterface> $class) Get a class resolver for a sync entity or provider interface, or null if it is not in a namespace with a registered resolver
  * @method static int getDeferralCheckpoint() Get a checkpoint to delineate between deferred entities and relationships that have already been registered, and any subsequent deferrals (see {@see SyncStoreInterface::getDeferralCheckpoint()})
