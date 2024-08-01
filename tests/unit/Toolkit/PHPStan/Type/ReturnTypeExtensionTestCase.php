@@ -24,6 +24,6 @@ abstract class ReturnTypeExtensionTestCase extends TypeInferenceTestCase
      */
     public static function getAdditionalConfigFiles(): array
     {
-        return [TestCase::getPackagePath() . '/phpstan.extension.neon'];
+        return [TestCase::getPackagePath() . '/src/Toolkit/PHPStan/phpstan.extension.neon'];
     }
 }
