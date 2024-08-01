@@ -2,12 +2,8 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Core\ArrayMapper;
-
 /**
- * ArrayMapper flags
- *
- * @see ArrayMapper
+ * Array mapper flags
  */
 interface ArrayMapperFlag
 {

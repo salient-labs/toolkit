@@ -2,8 +2,6 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Utility\Str;
-
 /**
  * Text comparison algorithms
  *
@@ -41,16 +39,12 @@ interface TextComparisonAlgorithm
     public const SIMILAR_TEXT = 8;
 
     /**
-     * Uncertainty is derived from ngramSimilarity()
-     *
-     * @see Str::ngramSimilarity()
+     * Uncertainty is derived from shared ngrams relative to the longest string
      */
     public const NGRAM_SIMILARITY = 16;
 
     /**
-     * Uncertainty is derived from ngramIntersection()
-     *
-     * @see Str::ngramIntersection()
+     * Uncertainty is derived from shared ngrams relative to the shortest string
      */
     public const NGRAM_INTERSECTION = 32;
 }

@@ -6,7 +6,6 @@ use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Exception\SyncInvalidFilterException;
 use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
-use Salient\Sync\AbstractSyncProvider;
 use DateTimeInterface;
 
 /**
@@ -151,10 +150,6 @@ interface SyncContextInterface extends ProviderContextInterface
 
     /**
      * Run the unclaimed filter policy callback
-     *
-     * {@see AbstractSyncProvider::run()} calls this method on your behalf and
-     * is recommended for providers where sync operations are performed by
-     * declared methods.
      *
      * Example:
      *

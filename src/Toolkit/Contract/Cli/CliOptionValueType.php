@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Utility\Test;
 use DateTimeImmutable;
 
 /**
@@ -15,7 +14,7 @@ interface CliOptionValueType
     /**
      * A boolean value
      *
-     * Boolean strings recognised by {@see Test::isBoolean()} are accepted.
+     * Boolean strings are accepted.
      */
     public const BOOLEAN = 0;
 
