@@ -2,7 +2,9 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\SyncEntityRecursionExceptionInterface;
+
 /**
  * Thrown when entity hydration triggers infinite recursion
  */
-class SyncEntityRecursionException extends AbstractSyncException {}
+class SyncEntityRecursionException extends AbstractSyncException implements SyncEntityRecursionExceptionInterface {}

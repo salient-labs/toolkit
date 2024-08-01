@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Sync\Exception\SyncFilterPolicyViolationException;
+use Salient\Contract\Sync\Exception\FilterPolicyViolationExceptionInterface;
 
 /**
  * Policies for unclaimed sync operation filters
@@ -20,8 +20,8 @@ interface FilterPolicy
     /**
      * Throw an exception if there are unclaimed filters
      *
-     * A {@see SyncFilterPolicyViolationException} is thrown and the request is
-     * not passed to the provider.
+     * A {@see FilterPolicyViolationExceptionInterface} is thrown and the
+     * request is not passed to the provider.
      *
      * This is the default policy.
      */

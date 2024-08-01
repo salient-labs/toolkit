@@ -2,6 +2,7 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\InvalidFilterSignatureExceptionInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Utility\Reflect;
@@ -12,7 +13,7 @@ use Salient\Utility\Reflect;
  *
  * See {@see SyncContextInterface::withFilter()} for valid signatures.
  */
-class SyncInvalidFilterSignatureException extends SyncInvalidFilterException
+class SyncInvalidFilterSignatureException extends SyncInvalidFilterException implements InvalidFilterSignatureExceptionInterface
 {
     /** @var mixed[] */
     protected $Args;

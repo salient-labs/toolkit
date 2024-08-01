@@ -2,6 +2,7 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Utility\Format;
@@ -10,7 +11,7 @@ use Throwable;
 /**
  * Thrown when an entity doesn't exist in a backend
  */
-class SyncEntityNotFoundException extends AbstractSyncException
+class SyncEntityNotFoundException extends AbstractSyncException implements SyncEntityNotFoundExceptionInterface
 {
     /**
      * @param class-string<SyncEntityInterface> $entity
