@@ -86,7 +86,7 @@
             "src/Toolkit/Polyfill/stubs/"
         ],
         "files": [
-            "bootstrap.php"
+            "src/Toolkit/Db/bootstrap.php"
         ]
     },
     "autoload-dev": {

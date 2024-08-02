@@ -12,9 +12,9 @@ parameters:
 		- tests/3rdparty
 		- tests/fixtures
 		- tests/unit
+		- tests/bootstrap.php
 		- tests/phpstan-conditional.php
 		- tests/test-sli
-		- bootstrap.php
 	stubFiles:
 		- stubs/ADOConnection.stub
 		- stubs/ADORecordSet.stub

@@ -15,7 +15,7 @@
     },
     "require": {
         "php": ">=7.4",
-        "adodb/adodb-php": "^5.22",
+        "adodb/adodb-php": "^5",
         "salient/contracts": "self.version",
         "salient/core": "self.version",
         "salient/utils": "self.version"
@@ -23,7 +23,10 @@
     "autoload": {
         "psr-4": {
             "Salient\\Db\\": ""
-        }
+        },
+        "files": [
+            "bootstrap.php"
+        ]
     },
     "config": {
         "sort-packages": true

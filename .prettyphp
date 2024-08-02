@@ -7,11 +7,11 @@
         "tests/fixtures",
         "tests/legacy",
         "tests/unit",
+        "tests/bootstrap.php",
         "tests/phpstan-conditional.php",
         "tests/test-sli",
         "tools/apigen",
-        ".php-cs-fixer.dist.php",
-        "bootstrap.php"
+        ".php-cs-fixer.dist.php"
     ],
     "includeIfPhp": "/(\\/sli|\\.stub)$/",
     "enable": [

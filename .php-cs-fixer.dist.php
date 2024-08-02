@@ -8,14 +8,16 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/tests/fixtures',
         __DIR__ . '/tests/3rdparty',
         __DIR__ . '/scripts',
+        __DIR__ . '/tools/apigen/src',
     ])
     ->append([
-        __DIR__ . '/bootstrap.php',
         __DIR__ . '/src/Toolkit/Sli/sli',
+        __DIR__ . '/tests/bootstrap.php',
         __DIR__ . '/tests/phpstan-conditional.php',
         __DIR__ . '/tests/test-sli',
         __DIR__ . '/stubs/ADOConnection.stub',
         __DIR__ . '/stubs/ADORecordSet.stub',
+        __DIR__ . '/.php-cs-fixer.dist.php',
     ])
     ->notPath('Utility/Reflect/MyClassWithDnfTypes.php');
 
