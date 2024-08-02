@@ -8,11 +8,15 @@ use Salient\Contract\Core\Chainable;
  * Implements Chainable
  *
  * @see Chainable
+ *
+ * @api
+ *
+ * @phpstan-require-implements Chainable
  */
 trait HasChainableMethods
 {
     /**
-     * @param callable($this): static $callback
+     * @param callable(static): static $callback
      * @return static
      */
     public function apply(callable $callback)
@@ -21,9 +25,9 @@ trait HasChainableMethods
     }
 
     /**
-     * @param (callable($this): bool)|bool $condition
-     * @param (callable($this): static)|null $then
-     * @param (callable($this): static)|null $else
+     * @param (callable(static): bool)|bool $condition
+     * @param (callable(static): static)|null $then
+     * @param (callable(static): static)|null $else
      * @return static
      */
     public function if($condition, ?callable $then = null, ?callable $else = null)
@@ -35,5 +39,22 @@ trait HasChainableMethods
             return $else === null ? $this : $else($this);
         }
         return $then === null ? $this : $then($this);
+    }
+
+    /**
+     * @template TKey
+     * @template TValue
+     *
+     * @param iterable<TKey,TValue> $list
+     * @param callable(static, TValue, TKey): static $callback
+     * @return static
+     */
+    public function withEach(iterable $list, callable $callback)
+    {
+        $instance = $this;
+        foreach ($list as $key => $value) {
+            $instance = $callback($instance, $value, $key);
+        }
+        return $instance;
     }
 }

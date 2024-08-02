@@ -11,8 +11,8 @@ interface Chainable
      * Move to the next method in the chain after applying a callback to the
      * object
      *
-     * @param callable($this): $this $callback
-     * @return $this
+     * @param callable(static): static $callback
+     * @return static
      */
     public function apply(callable $callback);
 
@@ -20,12 +20,25 @@ interface Chainable
      * Move to the next method in the chain after applying a conditional
      * callback to the object
      *
-     * @param (callable($this): bool)|bool $condition
-     * @param (callable($this): $this)|null $then Called if `$condition`
+     * @param (callable(static): bool)|bool $condition
+     * @param (callable(static): static)|null $then Called if `$condition`
      * resolves to `true`.
-     * @param (callable($this): $this)|null $else Called if `$condition`
+     * @param (callable(static): static)|null $else Called if `$condition`
      * resolves to `false`.
-     * @return $this
+     * @return static
      */
     public function if($condition, ?callable $then = null, ?callable $else = null);
+
+    /**
+     * Move to the next method in the chain after applying a callback to the
+     * object with each item in a list
+     *
+     * @template TKey
+     * @template TValue
+     *
+     * @param iterable<TKey,TValue> $list
+     * @param callable(static, TValue, TKey): static $callback
+     * @return static
+     */
+    public function withEach(iterable $list, callable $callback);
 }
