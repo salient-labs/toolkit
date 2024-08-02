@@ -7,15 +7,25 @@ on:
 
   pull_request:
 
-  workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  check-ci-runs:
+    name: Check previous runs
+    if: ${{ github.event_name != 'workflow_call' }}
+    uses: ./.github/workflows/check-ci-runs.yml
+    with:
+      ci_workflow: CI
+
   check:
     name: Check generated files and formatting
+    needs:
+      - check-ci-runs
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
     runs-on: ubuntu-latest
 
     steps:
@@ -54,8 +64,11 @@ jobs:
 
   phpstan:
     name: PHPStan
+    needs:
+      - check
+      - check-ci-runs
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
     runs-on: ubuntu-latest
-    needs: check
 
     strategy:
       fail-fast: false
@@ -101,7 +114,10 @@ jobs:
 
   unit-tests:
     name: PHPUnit tests
-    needs: check
+    needs:
+      - check
+      - check-ci-runs
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
 
     strategy:
       fail-fast: false
