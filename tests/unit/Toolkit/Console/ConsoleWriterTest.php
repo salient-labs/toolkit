@@ -37,10 +37,8 @@ final class ConsoleWriterTest extends TestCase
         $state = $this->getState();
         for ($i = 0; $i < 11; $i++) {
             if (isset($state->SpinnerState)) {
-                $state->SpinnerState = [
-                    $state->SpinnerState[0] + 1,
-                    (float) (hrtime(true) / 1000),
-                ];
+                // @phpstan-ignore assign.propertyType
+                $state->SpinnerState[1] = (float) (hrtime(true) / 1000) - 80000;
             }
             Console::logProgress('Complete:', sprintf('%d%%', ($i + 1) * 100 / 11));
         }

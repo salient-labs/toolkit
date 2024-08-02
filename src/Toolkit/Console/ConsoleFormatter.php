@@ -176,8 +176,11 @@ REGEX;
      */
     public function withSpinnerState(?array &$state)
     {
+        if ($state === null) {
+            $state = [0, 0.0];
+        }
         $clone = clone $this;
-        $clone->SpinnerState = $state ??= [0, 0.0];
+        $clone->SpinnerState = &$state;
         return $clone;
     }
 
