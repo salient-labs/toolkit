@@ -3,10 +3,10 @@
 $finder = (new PhpCsFixer\Finder())
     ->in([
         __DIR__ . '/src',
-        __DIR__ . '/stubs',
         __DIR__ . '/tests/unit',
         __DIR__ . '/tests/fixtures',
         __DIR__ . '/tests/3rdparty',
+        __DIR__ . '/tests/stubs',
         __DIR__ . '/scripts',
         __DIR__ . '/tools/apigen/src',
     ])
@@ -15,8 +15,8 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/tests/bootstrap.php',
         __DIR__ . '/tests/phpstan-conditional.php',
         __DIR__ . '/tests/test-sli',
-        __DIR__ . '/stubs/ADOConnection.stub',
-        __DIR__ . '/stubs/ADORecordSet.stub',
+        __DIR__ . '/tests/stubs/ADOConnection.stub',
+        __DIR__ . '/tests/stubs/ADORecordSet.stub',
         __DIR__ . '/.php-cs-fixer.dist.php',
     ])
     ->notPath('Utility/Reflect/MyClassWithDnfTypes.php');

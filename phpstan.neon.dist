@@ -8,16 +8,16 @@ parameters:
 		- scripts
 		- src
 		- src/Toolkit/Sli/sli
-		- stubs
 		- tests/3rdparty
 		- tests/fixtures
+		- tests/stubs
 		- tests/unit
 		- tests/bootstrap.php
 		- tests/phpstan-conditional.php
 		- tests/test-sli
 	stubFiles:
-		- stubs/ADOConnection.stub
-		- stubs/ADORecordSet.stub
+		- tests/stubs/ADOConnection.stub
+		- tests/stubs/ADORecordSet.stub
 	universalObjectCratesClasses:
 		- Salient\Contract\Core\Extensible
 	ignoreErrors:
