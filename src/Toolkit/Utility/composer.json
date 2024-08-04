@@ -23,7 +23,10 @@
     "autoload": {
         "psr-4": {
             "Salient\\Utility\\": ""
-        }
+        },
+        "classmap": [
+            "stubs/"
+        ]
     },
     "config": {
         "sort-packages": true

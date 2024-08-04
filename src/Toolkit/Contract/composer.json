@@ -25,7 +25,10 @@
     "autoload": {
         "psr-4": {
             "Salient\\Contract\\": ""
-        }
+        },
+        "classmap": [
+            "stubs/"
+        ]
     },
     "config": {
         "sort-packages": true

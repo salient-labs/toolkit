@@ -28,7 +28,6 @@
 /src/Toolkit/Sync/HttpSyncDefinitionBuilder.php linguist-generated
 /src/Toolkit/Sync/SyncErrorBuilder.php linguist-generated
 /src/Toolkit/Sync/SyncSerializeRulesBuilder.php linguist-generated
-/stubs export-ignore
 /tests export-ignore
 /tests/data/entity/albums.json linguist-generated
 /tests/data/entity/comments.json linguist-generated

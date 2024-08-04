@@ -19,8 +19,13 @@
       cacheDirectory="build/cache/coverage"
       pathCoverage="false">
     <include>
-      <directory suffix=".php">src/Toolkit</directory>
+      <directory>src/Toolkit</directory>
     </include>
+    <exclude>
+      <directory>src/Toolkit/Contract/stubs</directory>
+      <directory>src/Toolkit/Polyfill/stubs</directory>
+      <directory>src/Toolkit/Utility/stubs</directory>
+    </exclude>
     <report>
       <html outputDirectory="build/coverage" />
     </report>

@@ -2,7 +2,6 @@
 bin/**
 scripts/**
 src/**
-stubs/**
 tests/**
 tools/**
 .ci-pathspec
