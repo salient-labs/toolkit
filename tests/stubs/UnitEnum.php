@@ -1,10 +1,6 @@
 <?php
 
-if (\PHP_VERSION_ID < 80100) {
-    if (interface_exists('UnitEnum', false)) {
-        return;
-    }
-
+if (\PHP_VERSION_ID < 80100 && !interface_exists('UnitEnum', false)) {
     interface UnitEnum
     {
         /** @return static[] */

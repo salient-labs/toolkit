@@ -1,9 +1,5 @@
 <?php
 
-if (\PHP_VERSION_ID < 80300) {
-    if (class_exists('DateMalformedIntervalStringException', false)) {
-        return;
-    }
-
+if (\PHP_VERSION_ID < 80300 && !class_exists('DateMalformedIntervalStringException', false)) {
     class DateMalformedIntervalStringException extends DateException {}
 }
