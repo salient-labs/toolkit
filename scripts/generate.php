@@ -145,6 +145,12 @@ $args = [
     ...array_slice($_SERVER['argv'], 1),
 ];
 
+$online = array_search('--online', $args);
+if ($online !== false) {
+    unset($args[$online]);
+    $online = true;
+}
+
 /**
  * @param AbstractGenerateCommand|string $commandOrFile
  */
@@ -219,10 +225,18 @@ foreach ($providers as $class => $providerArgs) {
 
 foreach ($data as $file => $uri) {
     $file = "{$dir}/tests/data/{$file}";
-    if (!in_array('--check', $args)) {
+    $exists = file_exists($file);
+    if ($exists && !$online) {
+        Console::log('Skipping', $file);
+    } elseif (!$exists && in_array('--check', $args)) {
+        Console::info('Would create', $file);
+        Console::count(Level::ERROR);
+        $status |= 1;
+        continue;
+    } elseif (!in_array('--check', $args)) {
         Console::log('Downloading', $uri);
         $content = File::getContents($uri);
-        if (!file_exists($file) || File::getContents($file) !== $content) {
+        if (!$exists || File::getContents($file) !== $content) {
             Console::info('Replacing', $file);
             File::createDir(dirname($file));
             File::writeContents($file, $content);
