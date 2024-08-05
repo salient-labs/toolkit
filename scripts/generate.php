@@ -134,7 +134,9 @@ foreach ($class->getReflectionConstants() as $constant) {
     if (!$constant->isPublic()) {
         continue;
     }
-    Env::unset($constant->getValue());
+    /** @var string */
+    $value = $constant->getValue();
+    Env::unset($value);
 }
 
 $args = [
@@ -170,8 +172,10 @@ foreach ($facades as $facade => $class) {
     if (is_array($class)) {
         $facadeArgs = $class;
         $class = array_shift($facadeArgs);
-        if (is_array(reset($facadeArgs))) {
-            $aliases = array_shift($facadeArgs);
+        $first = reset($facadeArgs);
+        if (is_array($first)) {
+            $aliases = $first;
+            array_shift($facadeArgs);
         }
     }
     $status |= $generateFacade(...[...$args, ...$facadeArgs, $class, ...$aliases, $facade]);
@@ -239,7 +243,7 @@ foreach (File::find()
 $file = "$dir/.gitattributes";
 $attributes = Regex::grep(
     '/(^#| linguist-generated$)/',
-    Arr::trim(file($file)),
+    Arr::trim(File::getLines($file)),
     \PREG_GREP_INVERT
 );
 // @phpstan-ignore-next-line

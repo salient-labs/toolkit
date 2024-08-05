@@ -692,7 +692,7 @@ final class UriTest extends TestCase
                 // or the entire path if it doesn't have any "/" characters
                 implode('/', Arr::pop(explode('/', $uri->getPath()))),
                 $reference->getPath(),
-            ]);
+            ], '');
         }
         $this->assertSame($this->removeDotSegments($path), $target->getPath());
     }

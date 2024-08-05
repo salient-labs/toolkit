@@ -514,7 +514,7 @@ abstract class CliCommand implements CliCommandInterface
 
         $name = $b . $this->getNameWithProgram() . $b;
         $full = $this->getOptionsSynopsis($style, $collapsed);
-        $synopsis = Arr::implode(' ', [$name, $full]);
+        $synopsis = Arr::implode(' ', [$name, $full], '');
 
         if ($width !== null) {
             $wrapped = $formatter->format(
@@ -538,7 +538,7 @@ abstract class CliCommand implements CliCommandInterface
                 return $wrapped;
             }
 
-            $synopsis = Arr::implode(' ', [$name, $collapsed]);
+            $synopsis = Arr::implode(' ', [$name, $collapsed], '');
         }
 
         $synopsis = $formatter->format(
@@ -664,14 +664,14 @@ abstract class CliCommand implements CliCommandInterface
             $optionalCount === 1 ? $esc . '[' . $style->maybeEscapeTags('<option>') . ']' : '',
             $required ? implode(' ', $required) : '',
             $positional ? $esc . '[' . $b . '--' . $b . '] ' . implode(' ', $positional) : '',
-        ]);
+        ], '');
 
         return Arr::implode(' ', [
             $shortFlag ? $esc . '[' . $b . '-' . implode('', $shortFlag) . $b . ']' : '',
             $optional ? implode(' ', $optional) : '',
             $required ? implode(' ', $required) : '',
             $positional ? $esc . '[' . $b . '--' . $b . '] ' . implode(' ', $positional) : '',
-        ]);
+        ], '');
     }
 
     /**

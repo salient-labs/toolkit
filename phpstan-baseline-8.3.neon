@@ -1,21 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Only iterables can be unpacked, array\\<int, string\\>\\|string given\\.$#"
-			count: 1
-			path: scripts/generate.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Utility\\\\Arr\\:\\:trim\\(\\) expects iterable\\<int, string\\>, array\\<int, string\\>\\|false given\\.$#"
-			count: 1
-			path: scripts/generate.php
-
-		-
-			message: "#^Parameter \\#1 \\$name of static method Salient\\\\Utility\\\\Env\\:\\:unset\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: scripts/generate.php
-
-		-
 			message: "#^Parameter \\#2 \\$openTag of class Salient\\\\Console\\\\Support\\\\ConsoleTagAttributes constructor expects string, array\\<int, int\\|string\\>\\|string given\\.$#"
 			count: 1
 			path: src/Toolkit/Console/ConsoleFormatter.php
@@ -84,11 +69,6 @@ parameters:
 			message: "#^Property Salient\\\\Core\\\\ArrayMapper\\:\\:\\$KeyMap \\(array\\<\\(int\\|string\\)\\>\\) does not accept array\\<array\\<\\(int\\|string\\)\\>\\|int\\|string\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Core/ArrayMapper.php
-
-		-
-			message: "#^Parameter \\#1 \\$key of static method Salient\\\\Utility\\\\Arr\\:\\:get\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/ConfigurationManager.php
 
 		-
 			message: "#^Parameter \\#1 \\$callback of static method Closure\\:\\:fromCallable\\(\\) expects callable\\(\\)\\: mixed, array\\{class\\-string\\<TClass of object\\>, 'normalise'\\} given\\.$#"

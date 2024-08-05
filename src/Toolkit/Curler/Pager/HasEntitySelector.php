@@ -19,6 +19,6 @@ trait HasEntitySelector
             ? $entitySelector
             : ($entitySelector === null
                 ? fn($data) => Arr::wrapList($data)
-                : fn($data) => Arr::wrapList(Arr::get((string) $entitySelector, $data)));
+                : fn($data) => Arr::wrapList(Arr::get($data, (string) $entitySelector)));
     }
 }

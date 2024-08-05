@@ -8,8 +8,6 @@ use OutOfRangeException;
 use Stringable;
 
 /**
- * Work with arrays
- *
  * @api
  */
 final class Arr extends AbstractUtility
@@ -30,12 +28,12 @@ final class Arr extends AbstractUtility
     public static function pluck(iterable $array, string $valueKey, ?string $keyKey = null): array
     {
         foreach ($array as $item) {
-            $value = self::get($valueKey, $item);
+            $value = self::get($item, $valueKey);
             if ($keyKey === null) {
                 $plucked[] = $value;
                 continue;
             }
-            $key = self::get($keyKey, $item);
+            $key = self::get($item, $keyKey);
             $plucked[$key] = $value;
         }
         return $plucked ?? [];
@@ -50,7 +48,7 @@ final class Arr extends AbstractUtility
      * @throws OutOfRangeException if `$key` is not found in `$array` and no
      * `$default` is given.
      */
-    public static function get(string $key, array $array, $default = null)
+    public static function get(array $array, string $key, $default = null)
     {
         foreach (explode('.', $key) as $part) {
             if (is_array($array) && array_key_exists($part, $array)) {
@@ -73,7 +71,7 @@ final class Arr extends AbstractUtility
      *
      * @param mixed[] $array
      */
-    public static function has(string $key, array $array): bool
+    public static function has(array $array, string $key): bool
     {
         foreach (explode('.', $key) as $part) {
             if (!is_array($array) || !array_key_exists($part, $array)) {
@@ -89,7 +87,7 @@ final class Arr extends AbstractUtility
      *
      * @template TValue
      *
-     * @param array<array-key,TValue> $array
+     * @param TValue[] $array
      * @return ($array is non-empty-array ? TValue : null)
      */
     public static function first(array $array)
@@ -105,7 +103,7 @@ final class Arr extends AbstractUtility
      *
      * @template TValue
      *
-     * @param array<array-key,TValue> $array
+     * @param TValue[] $array
      * @return ($array is non-empty-array ? TValue : null)
      */
     public static function last(array $array)
@@ -122,12 +120,12 @@ final class Arr extends AbstractUtility
      * @template TKey of array-key
      * @template TValue
      *
-     * @param TValue $value
      * @param array<TKey,TValue> $array
+     * @param TValue $value
      * @return TKey
      * @throws OutOfRangeException if `$value` is not found in `$array`.
      */
-    public static function keyOf($value, array $array)
+    public static function keyOf(array $array, $value)
     {
         $key = array_search($value, $array, true);
         if ($key === false) {
@@ -162,7 +160,7 @@ final class Arr extends AbstractUtility
      *
      * @param array<TKey,TValue> $array
      * @param TValue ...$values
-     * @return array<TKey,TValue>
+     * @return array<TKey|int,TValue>
      */
     public static function unshift(array $array, ...$values): array
     {
@@ -474,7 +472,7 @@ final class Arr extends AbstractUtility
     /**
      * Check if a value is an array of instances of a given class
      *
-     * @template T of object
+     * @template T
      *
      * @param mixed $value
      * @param class-string<T> $class
@@ -495,7 +493,7 @@ final class Arr extends AbstractUtility
         if (!is_array($value)) {
             return false;
         }
-        if ($value === []) {
+        if (!$value) {
             return $orEmpty;
         }
         foreach ($value as $item) {
@@ -509,17 +507,14 @@ final class Arr extends AbstractUtility
     /**
      * Check if arrays have the same values after sorting for comparison
      *
-     * Returns `false` if fewer than two arrays are given.
-     *
+     * @param mixed[] $array1
+     * @param mixed[] $array2
      * @param mixed[] ...$arrays
      */
-    public static function sameValues(array ...$arrays): bool
+    public static function sameValues(array $array1, array $array2, array ...$arrays): bool
     {
-        if (count($arrays) < 2) {
-            return false;
-        }
         $last = null;
-        foreach ($arrays as $array) {
+        foreach ([$array1, $array2, ...$arrays] as $array) {
             usort($array, fn($a, $b) => gettype($a) <=> gettype($b) ?: $a <=> $b);
             if ($last !== null && $last !== $array) {
                 return false;
@@ -532,17 +527,14 @@ final class Arr extends AbstractUtility
     /**
      * Check if arrays are the same after sorting by key
      *
-     * Returns `false` if fewer than two arrays are given.
-     *
+     * @param mixed[] $array1
+     * @param mixed[] $array2
      * @param mixed[] ...$arrays
      */
-    public static function same(array ...$arrays): bool
+    public static function same(array $array1, array $array2, array ...$arrays): bool
     {
-        if (count($arrays) < 2) {
-            return false;
-        }
         $last = null;
-        foreach ($arrays as $array) {
+        foreach ([$array1, $array2, ...$arrays] as $array) {
             ksort($array, \SORT_STRING);
             if ($last !== null && $last !== $array) {
                 return false;
@@ -594,16 +586,16 @@ final class Arr extends AbstractUtility
 
     /**
      * Implode values that remain in an array of strings and Stringables after
-     * removing empty strings
+     * trimming characters from each value and removing empty strings
      *
      * @param iterable<int|float|string|bool|Stringable|null> $array
-     * @param string|null $characters Characters to trim from each value, `null`
-     * to trim whitespace, or an empty string (the default) to trim nothing.
+     * @param string|null $characters Characters to trim, `null` (the default)
+     * to trim whitespace, or an empty string to trim nothing.
      */
     public static function implode(
         string $separator,
         iterable $array,
-        ?string $characters = ''
+        ?string $characters = null
     ): string {
         foreach ($array as $value) {
             $value = (string) $value;
@@ -625,9 +617,8 @@ final class Arr extends AbstractUtility
      * before removing empty strings
      *
      * @template TKey of array-key
-     * @template TValue of int|float|string|bool|Stringable|null
      *
-     * @param iterable<TKey,TValue> $array
+     * @param iterable<TKey,int|float|string|bool|Stringable|null> $array
      * @param string|null $characters Characters to trim, `null` (the default)
      * to trim whitespace, or an empty string to trim nothing.
      * @return ($removeEmpty is false ? array<TKey,string> : list<string>)
@@ -715,7 +706,7 @@ final class Arr extends AbstractUtility
      *
      * @template TKey of array-key
      * @template TValue of int|float|string|bool
-     * @template TNull of TValue|null
+     * @template TNull of int|float|string|bool|null
      *
      * @param iterable<TKey,TValue|mixed[]|object|null> $array
      * @param TNull $null
@@ -738,6 +729,37 @@ final class Arr extends AbstractUtility
             $scalars[$key] = $value;
         }
         return $scalars ?? [];
+    }
+
+    /**
+     * Cast values in an array to strings
+     *
+     * Scalar values and objects that implement {@see Stringable} are cast to a
+     * string. `null` values are replaced with `$null`. Other non-scalar values
+     * are JSON-encoded.
+     *
+     * @template TKey of array-key
+     * @template TNull of string|null
+     *
+     * @param iterable<TKey,mixed[]|object|int|float|string|bool|null> $array
+     * @param TNull $null
+     * @return array<TKey,TNull|string>
+     */
+    public static function toStrings(iterable $array, ?string $null = null): array
+    {
+        foreach ($array as $key => $value) {
+            if ($value === null) {
+                $value = $null;
+            } elseif (is_scalar($value) || Test::isStringable($value)) {
+                $value = (string) $value;
+            } elseif ($value instanceof Jsonable) {
+                $value = $value->toJson(Json::ENCODE_FLAGS);
+            } else {
+                $value = Json::stringify($value);
+            }
+            $strings[$key] = $value;
+        }
+        return $strings ?? [];
     }
 
     /**
@@ -849,7 +871,7 @@ final class Arr extends AbstractUtility
      * @template TKey of array-key
      * @template TValue
      *
-     * @param iterable<array-key,TKey> $array
+     * @param iterable<TKey> $array
      * @param TValue $value
      * @return ($value is true ? array<TKey,true> : array<TKey,TValue>)
      */
@@ -867,9 +889,9 @@ final class Arr extends AbstractUtility
     /**
      * Index an array by an identifier unique to each value
      *
-     * @template TValue of ArrayAccess|array|object
+     * @template TValue of ArrayAccess|mixed[]|object
      *
-     * @param iterable<array-key,TValue> $array
+     * @param iterable<TValue> $array
      * @param array-key $key
      * @return TValue[]
      */
@@ -897,15 +919,15 @@ final class Arr extends AbstractUtility
      * @template TValue
      * @template T
      *
-     * @param callable(T, TValue, TKey): T $callback
      * @param iterable<TKey,TValue> $array
+     * @param callable(T, TValue, TKey): T $callback
      * @param T $value
      * @return T
      */
-    public static function with(callable $callback, iterable $array, $value)
+    public static function with(iterable $array, callable $callback, $value)
     {
-        foreach ($array as $key => $arrayValue) {
-            $value = $callback($value, $arrayValue, $key);
+        foreach ($array as $arrKey => $arrValue) {
+            $value = $callback($value, $arrValue, $arrKey);
         }
         return $value;
     }
@@ -914,13 +936,13 @@ final class Arr extends AbstractUtility
      * Flatten a multi-dimensional array
      *
      * @param iterable<mixed> $array
-     * @param int $limit The maximum number of dimensions to flatten. Default:
-     * `-1` (no limit)
+     * @param int $limit The maximum number of dimensions to flatten, or `-1`
+     * for no limit.
      * @return mixed[]
      */
     public static function flatten(iterable $array, int $limit = -1): array
     {
-        $flattened = [];
+        /** @todo Reimplement without recursion, similar to `unwrap()` */
         foreach ($array as $value) {
             if (!is_iterable($value) || !$limit) {
                 $flattened[] = $value;
@@ -933,7 +955,7 @@ final class Arr extends AbstractUtility
                 $flattened[] = $value;
             }
         }
-        return $flattened;
+        return $flattened ?? [];
     }
 
     /**
@@ -972,8 +994,8 @@ final class Arr extends AbstractUtility
      * Remove arrays wrapped around a value
      *
      * @param mixed $value
-     * @param int $limit The maximum number of arrays to remove. Default: `-1`
-     * (no limit)
+     * @param int $limit The maximum number of arrays to remove, or `-1` for no
+     * limit.
      * @return mixed
      */
     public static function unwrap($value, int $limit = -1)

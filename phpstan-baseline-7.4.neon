@@ -1,21 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Only iterables can be unpacked, array\\<int, string\\>\\|string given\\.$#"
-			count: 1
-			path: scripts/generate.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of static method Salient\\\\Utility\\\\Arr\\:\\:trim\\(\\) expects iterable\\<int, string\\>, array\\<int, string\\>\\|false given\\.$#"
-			count: 1
-			path: scripts/generate.php
-
-		-
-			message: "#^Parameter \\#1 \\$name of static method Salient\\\\Utility\\\\Env\\:\\:unset\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: scripts/generate.php
-
-		-
 			message: "#^Parameter \\#2 \\$pieces of function implode expects array, array\\<int, string\\>\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Cli/CliCommand.php
@@ -84,11 +69,6 @@ parameters:
 			message: "#^Property Salient\\\\Core\\\\ArrayMapper\\:\\:\\$KeyMap \\(array\\<\\(int\\|string\\)\\>\\) does not accept array\\<array\\<\\(int\\|string\\)\\>\\|int\\|string\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Core/ArrayMapper.php
-
-		-
-			message: "#^Parameter \\#1 \\$key of static method Salient\\\\Utility\\\\Arr\\:\\:get\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/ConfigurationManager.php
 
 		-
 			message: "#^Argument of an invalid type array\\<string, array\\<int, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Relatable\\>\\>\\>\\|false supplied for foreach, only iterables are supported\\.$#"

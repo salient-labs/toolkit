@@ -438,7 +438,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
         ) {
             return $this->write(
                 Level::INFO,
-                Arr::implode(' ', [$msg1, $successText, $usage ?? null]),
+                Arr::implode(' ', [$msg1, $successText, $usage ?? null], ''),
                 null,
                 $withStandardMessageType
                     ? MessageType::SUMMARY
@@ -457,7 +457,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             $withoutErrorCount || $withStandardMessageType
                 ? Level::INFO
                 : ($errors ? Level::ERROR : Level::WARNING),
-            Arr::implode(' ', [$msg1, $msg2 ?? null, $usage ?? null]),
+            Arr::implode(' ', [$msg1, $msg2 ?? null, $usage ?? null], ''),
             null,
             $withoutErrorCount || $withStandardMessageType
                 ? MessageType::SUMMARY

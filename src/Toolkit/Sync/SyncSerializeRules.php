@@ -320,7 +320,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         int $ruleType
     ): array {
         $key = '.' . implode('.', $path);
-        $cacheKey = Arr::implode("\0", [$class, $untilClass, $key]);
+        $cacheKey = Arr::implode("\0", [$class, $untilClass, $key], '');
 
         if (isset($this->CompileCache[$ruleType][$cacheKey])) {
             return $this->CompileCache[$ruleType][$cacheKey];

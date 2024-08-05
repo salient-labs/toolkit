@@ -668,7 +668,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             $this->PHPDoc ?? '',
             $this->ApiTag ? '@api' : '',
             '@generated',
-        ], null);
+        ]);
 
         $lines =
             $phpDoc === ''
