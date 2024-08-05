@@ -115,5 +115,9 @@ final class DateTest extends TestCase
 
         $now = new DateTimeImmutable();
         $this->assertSame($now, Date::maybeSetTimezone($now));
+
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $this->assertNotSame($now, Date::maybeSetTimezone($now));
+        $this->assertSame($now, Date::maybeSetTimezone($now, new DateTimeZone('UTC')));
     }
 }
