@@ -40,7 +40,7 @@ final class PackageDataReceivedEvent
     }
 
     /**
-     * True if the given Composer runtime API method was called
+     * Check if the given Composer runtime API method was called
      *
      * @param class-string<Installed|Loader> $class
      */
