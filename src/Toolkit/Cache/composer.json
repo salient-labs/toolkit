@@ -19,7 +19,7 @@
         "salient/core": "self.version"
     },
     "provide": {
-        "psr/simple-cache-implementation": "^1 || ^2 || ^3"
+        "psr/simple-cache-implementation": "^1 || ^2"
     },
     "autoload": {
         "psr-4": {
