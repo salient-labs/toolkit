@@ -31,7 +31,7 @@ class UriTest extends UriIntegrationTest
     /**
      * @return array<array{PsrUriInterface,string}>
      */
-    public function getPaths(): array
+    public static function getPaths(): array
     {
         /** @var array<array{PsrUriInterface,string}> */
         $data = parent::getPaths();

@@ -8,7 +8,6 @@ use Salient\Contract\Container\HasServices;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractProvider;
@@ -16,6 +15,7 @@ use Salient\Core\Pipeline;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Closure;
@@ -174,11 +174,11 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @return PipelineInterface<mixed[],T,array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>
+     * @return PipelineInterface<mixed[],T,SyncPipelineArgument>
      */
     protected function pipelineFrom(string $entity): PipelineInterface
     {
-        /** @var PipelineInterface<mixed[],T,array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}> */
+        /** @var PipelineInterface<mixed[],T,SyncPipelineArgument> */
         return Pipeline::create($this->App);
     }
 
@@ -188,11 +188,11 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      * @template T of SyncEntityInterface
      *
      * @param class-string<T> $entity
-     * @return PipelineInterface<T,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}>
+     * @return PipelineInterface<T,mixed[],SyncPipelineArgument>
      */
     protected function pipelineTo(string $entity): PipelineInterface
     {
-        /** @var PipelineInterface<T,mixed[],array{0:OP::*,1:SyncContextInterface,2?:int|string|T|T[]|null,...}> */
+        /** @var PipelineInterface<T,mixed[],SyncPipelineArgument> */
         return Pipeline::create($this->App);
     }
 
