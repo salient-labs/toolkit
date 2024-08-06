@@ -76,7 +76,7 @@ final class Sys extends AbstractUtility
             return $filename;
         }
 
-        $filename = File::relativeToParent($filename, $parentDir);
+        $filename = File::getRelativePath($filename, $parentDir);
         if ($filename === null) {
             throw new LogicException(sprintf(
                 "'%s' is not in '%s'",
@@ -109,6 +109,26 @@ final class Sys extends AbstractUtility
         }
 
         return $basename;
+    }
+
+    /**
+     * Get the directory PHP uses for temporary file storage by default
+     *
+     * @throws RuntimeException if the path returned by
+     * {@see sys_get_temp_dir()} is not a writable directory.
+     */
+    public static function getTempDir(): string
+    {
+        $tempDir = sys_get_temp_dir();
+        $dir = @realpath($tempDir);
+        if ($dir === false || !is_dir($dir) || !is_writable($dir)) {
+            // @codeCoverageIgnoreStart
+            throw new RuntimeException(
+                sprintf('Not a writable directory: %s', $tempDir),
+            );
+            // @codeCoverageIgnoreEnd
+        }
+        return $dir;
     }
 
     /**

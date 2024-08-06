@@ -23,7 +23,7 @@ use Stringable;
 final class File extends AbstractUtility
 {
     /**
-     * Check if a path is absolute
+     * Check if a path is absolute without accessing the filesystem
      *
      * Returns `true` if `$path` starts with `/`, `\\`, `<letter>:\`,
      * `<letter>:/` or a URI scheme with two or more characters.
@@ -34,14 +34,6 @@ final class File extends AbstractUtility
             '@^(?:/|\\\\\\\\|[a-z]:[/\\\\]|[a-z][-a-z0-9+.]+:)@i',
             $path,
         );
-    }
-
-    /**
-     * Check if a path is a "phar://" URI
-     */
-    public static function isPharUri(string $path): bool
-    {
-        return Str::lower(substr($path, 0, 7)) === 'phar://';
     }
 
     /**
@@ -86,12 +78,12 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Sanitise a path to a directory
+     * Sanitise a path to a directory without accessing the filesystem
      *
      * Returns `"."` if `$directory` is an empty string, otherwise removes
      * trailing directory separators.
      */
-    public static function sanitiseDir(string $directory): string
+    public static function getCleanDir(string $directory): string
     {
         return $directory === ''
             ? '.'
@@ -106,8 +98,18 @@ final class File extends AbstractUtility
      */
     public static function chdir(string $directory): void
     {
-        $result = @chdir($directory);
-        self::maybeThrow($result, 'Error changing directory to: %s', $directory);
+        self::check(@chdir($directory), 'chdir', $directory);
+    }
+
+    /**
+     * Create a directory
+     */
+    public static function mkdir(
+        string $directory,
+        int $permissions = 0777,
+        bool $recursive = false
+    ): void {
+        self::check(@mkdir($directory, $permissions, $recursive), 'mkdir', $directory);
     }
 
     /**
@@ -115,8 +117,20 @@ final class File extends AbstractUtility
      */
     public static function chmod(string $filename, int $permissions): void
     {
-        $result = @chmod($filename, $permissions);
-        self::maybeThrow($result, 'Error changing permissions: %s', $filename);
+        self::check(@chmod($filename, $permissions), 'chmod', $filename);
+    }
+
+    /**
+     * Set file access and modification times
+     */
+    public static function touch(
+        string $filename,
+        ?int $mtime = null,
+        ?int $atime = null
+    ): void {
+        $mtime ??= time();
+        $atime ??= $mtime;
+        self::check(@touch($filename, $mtime, $atime), 'touch', $filename);
     }
 
     /**
@@ -125,7 +139,7 @@ final class File extends AbstractUtility
      * Returns `null` if the leftmost segment of `$path` doesn't exist, or if
      * the closest parent that exists is not a directory.
      */
-    public static function closestExisting(string $path): ?string
+    public static function getClosestPath(string $path): ?string
     {
         $pathIsParent = false;
         while (!file_exists($path)) {
@@ -161,8 +175,8 @@ final class File extends AbstractUtility
             return;
         }
         self::createDir(dirname($filename), $dirPermissions);
-        $result = @touch($filename) && @chmod($filename, $permissions);
-        self::maybeThrow($result, 'Error creating file: %s', $filename);
+        self::touch($filename);
+        self::chmod($filename, $permissions);
     }
 
     /**
@@ -178,11 +192,11 @@ final class File extends AbstractUtility
             return;
         }
         $parent = dirname($directory);
-        $result =
-            (is_dir($parent) || @mkdir($parent, 0777, true))
-            && @mkdir($directory, $permissions)
-            && @chmod($directory, $permissions);
-        self::maybeThrow($result, 'Error creating directory: %s', $directory);
+        if (!is_dir($parent)) {
+            self::mkdir($parent, 0777, true);
+        }
+        self::mkdir($directory, $permissions);
+        self::chmod($directory, $permissions);
     }
 
     /**
@@ -192,12 +206,14 @@ final class File extends AbstractUtility
         ?string $directory = null,
         ?string $prefix = null
     ): string {
-        $directory ??= self::getTempDir();
+        $directory = $directory === null
+            ? Sys::getTempDir()
+            : self::getCleanDir($directory);
         $prefix ??= Sys::getProgramBasename();
         do {
             $dir = sprintf(
                 '%s/%s%s.tmp',
-                Str::coalesce($directory, '.'),
+                $directory,
                 $prefix,
                 Get::randomText(8),
             );
@@ -219,8 +235,7 @@ final class File extends AbstractUtility
                 sprintf('Not a file: %s', $filename),
             );
         }
-        $result = @unlink($filename);
-        self::maybeThrow($result, 'Error deleting file: %s', $filename);
+        self::check(@unlink($filename), 'unlink', $filename);
     }
 
     /**
@@ -236,8 +251,7 @@ final class File extends AbstractUtility
                 sprintf('Not a directory: %s', $directory),
             );
         }
-        $result = @rmdir($directory);
-        self::maybeThrow($result, 'Error deleting directory: %s', $directory);
+        self::check(@rmdir($directory), 'rmdir', $directory);
     }
 
     /**
@@ -273,36 +287,7 @@ final class File extends AbstractUtility
             // @codeCoverageIgnoreEnd
         }
         error_clear_last();
-        $dir = @getcwd();
-        return self::maybeThrow($dir, 'Error getting current working directory');
-    }
-
-    /**
-     * Generate a filename unique to the current user and the path of the
-     * running script
-     *
-     * If `$dir` is not given, a filename in {@see sys_get_temp_dir()} is
-     * returned.
-     *
-     * No changes are made to the filesystem.
-     */
-    public static function getStablePath(
-        string $suffix = '',
-        ?string $dir = null
-    ): string {
-        $path = Sys::getProgramName();
-        $program = basename($path);
-        $path = self::realpath($path);
-        $hash = Get::hash($path);
-        $user = Sys::getUserId();
-
-        if ($dir === null) {
-            $dir = self::getTempDir();
-        } else {
-            $dir = self::sanitiseDir($dir);
-        }
-
-        return sprintf('%s/%s-%s-%s%s', $dir, $program, $hash, $user, $suffix);
+        return self::check(@getcwd(), 'getcwd');
     }
 
     /**
@@ -311,7 +296,7 @@ final class File extends AbstractUtility
      */
     public static function isCreatable(string $path): bool
     {
-        $path = self::closestExisting($path);
+        $path = self::getClosestPath($path);
         return $path !== null && is_writable($path);
     }
 
@@ -358,17 +343,19 @@ final class File extends AbstractUtility
         }
 
         foreach ($files->dirsLast() as $file) {
+            $filename = (string) $file;
             if ($windows && !$file->isWritable()) {
-                self::chmod((string) $file, $file->isDir() ? 0700 : 0600);
+                self::chmod($filename, $file->isDir() ? 0700 : 0600);
             }
-            $result = $file->isDir()
-                ? @rmdir((string) $file)
-                : @unlink((string) $file);
-            self::maybeThrow($result, 'Error pruning directory: %s', $directory);
+            if ($file->isDir()) {
+                self::check(@rmdir($filename), 'rmdir', $filename);
+            } else {
+                self::check(@unlink($filename), 'unlink', $filename);
+            }
         }
 
         if ($delete) {
-            self::deleteDir($directory);
+            self::check(@rmdir($directory), 'rmdir', $directory);
         }
     }
 
@@ -379,38 +366,36 @@ final class File extends AbstractUtility
      */
     public static function realpath(string $path): string
     {
-        if (self::isPharUri($path) && file_exists($path)) {
+        if (Str::lower(substr($path, 0, 7)) === 'phar://' && file_exists($path)) {
             return self::resolvePath($path, true);
         }
-        $_path = $path;
         error_clear_last();
-        $path = @realpath($path);
-        return self::maybeThrow($path, 'Error resolving path: %s', $_path);
+        return self::check(@realpath($path), 'realpath', $path);
     }
 
     /**
      * Get a path relative to a parent directory
      *
-     * Returns `$fallback` if `$filename` does not belong to `$parentDir`.
+     * Returns `$default` if `$path` does not belong to `$parentDirectory`.
      *
-     * An exception is thrown if `$filename` or `$parentDir` do not exist.
+     * An exception is thrown if `$path` or `$parentDirectory` do not exist.
      *
      * @template T of string|null
      *
-     * @param T $fallback
+     * @param T $default
      * @return string|T
      */
-    public static function relativeToParent(
-        string $filename,
-        string $parentDir,
-        ?string $fallback = null
+    public static function getRelativePath(
+        string $path,
+        string $parentDirectory,
+        ?string $default = null
     ): ?string {
-        $path = self::realpath($filename);
-        $basePath = self::realpath($parentDir);
+        $path = self::realpath($path);
+        $basePath = self::realpath($parentDirectory);
         if (strpos($path, $basePath) === 0) {
             return substr($path, strlen($basePath) + 1);
         }
-        return $fallback;
+        return $default;
     }
 
     /**
@@ -445,8 +430,7 @@ final class File extends AbstractUtility
      */
     public static function size(string $filename): int
     {
-        $size = @filesize($filename);
-        return self::maybeThrow($size, 'Error getting file size: %s', $filename);
+        return self::check(@filesize($filename), 'filesize', $filename);
     }
 
     /**
@@ -456,9 +440,8 @@ final class File extends AbstractUtility
      */
     public static function type(string $filename): string
     {
-        $type = @filetype($filename);
         /** @var ("fifo"|"char"|"dir"|"block"|"link"|"file"|"socket"|"unknown") */
-        return self::maybeThrow($type, 'Error getting file type: %s', $filename);
+        return self::check(@filetype($filename), 'filetype', $filename);
     }
 
     /**
@@ -469,8 +452,7 @@ final class File extends AbstractUtility
      */
     public static function writeContents(string $filename, $data, int $flags = 0): int
     {
-        $result = @file_put_contents($filename, $data, $flags);
-        return self::maybeThrow($result, 'Error writing file: %s', $filename);
+        return self::check(@file_put_contents($filename, $data, $flags), 'file_put_contents', $filename);
     }
 
     /**
@@ -490,7 +472,7 @@ final class File extends AbstractUtility
         }
         throw new FilesystemErrorException(sprintf(
             'Error reading from %s',
-            self::getFriendlyStreamUri($uri, $stream),
+            self::getStreamName($uri, $stream),
         ));
     }
 
@@ -502,9 +484,8 @@ final class File extends AbstractUtility
      */
     public static function close($stream, $uri = null): void
     {
-        $uri = self::getFriendlyStreamUri($uri, $stream);
-        $result = @fclose($stream);
-        self::maybeThrow($result, 'Error closing stream: %s', $uri);
+        $uri = self::getStreamName($uri, $stream);
+        self::check(@fclose($stream), 'fclose', $uri);
     }
 
     /**
@@ -516,7 +497,7 @@ final class File extends AbstractUtility
     {
         $result = @pclose($pipe);
         if ($result === -1) {
-            self::maybeThrow(false, 'Error closing pipe to process: %s', $command);
+            self::check(false, 'pclose', $command ?? '<pipe>');
         }
         return $result;
     }
@@ -586,8 +567,7 @@ final class File extends AbstractUtility
      */
     public static function open(string $filename, string $mode)
     {
-        $stream = @fopen($filename, $mode);
-        return self::maybeThrow($stream, 'Error opening stream: %s', $filename);
+        return self::check(@fopen($filename, $mode), 'fopen', $filename);
     }
 
     /**
@@ -619,8 +599,7 @@ final class File extends AbstractUtility
      */
     public static function openPipe(string $command, string $mode)
     {
-        $pipe = @popen($command, $mode);
-        return self::maybeThrow($pipe, 'Error opening pipe to process: %s', $command);
+        return self::check(@popen($command, $mode), 'popen', $command);
     }
 
     /**
@@ -632,8 +611,7 @@ final class File extends AbstractUtility
      */
     public static function read($stream, int $length, $uri = null): string
     {
-        $data = @fread($stream, $length);
-        return self::maybeThrow($data, 'Error reading from stream: %s', $uri, $stream);
+        return self::check(@fread($stream, $length), 'fread', $uri, $stream);
     }
 
     /**
@@ -674,7 +652,7 @@ final class File extends AbstractUtility
         throw new UnreadDataException(Inflect::format(
             $length - $dataLength,
             'Error reading from stream: expected {{#}} more {{#:byte}} from %s',
-            self::getFriendlyStreamUri($uri, $stream),
+            self::getStreamName($uri, $stream),
         ));
     }
 
@@ -702,8 +680,7 @@ final class File extends AbstractUtility
      */
     public static function rewind($stream, $uri = null): void
     {
-        $result = rewind($stream);
-        self::maybeThrow($result, 'Error rewinding file position indicator for stream: %s', $uri, $stream);
+        self::check(rewind($stream), 'rewind', $uri, $stream);
     }
 
     /**
@@ -728,9 +705,8 @@ final class File extends AbstractUtility
      */
     public static function seek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
     {
-        $result = @fseek($stream, $offset, $whence);
-        if ($result === -1) {
-            self::maybeThrow(false, 'Error setting file position indicator for stream: %s', $uri, $stream);
+        if (@fseek($stream, $offset, $whence) === -1) {
+            self::check(false, 'fseek', $uri, $stream);
         }
     }
 
@@ -758,8 +734,7 @@ final class File extends AbstractUtility
      */
     public static function tell($stream, $uri = null): int
     {
-        $result = @ftell($stream);
-        return self::maybeThrow($result, 'Error getting file position indicator for stream: %s', $uri, $stream);
+        return self::check(@ftell($stream), 'ftell', $uri, $stream);
     }
 
     /**
@@ -772,8 +747,7 @@ final class File extends AbstractUtility
     public static function truncate($stream, int $size = 0, $uri = null): void
     {
         self::seek($stream, 0, \SEEK_SET, $uri);
-        $result = @ftruncate($stream, $size);
-        self::maybeThrow($result, 'Error truncating stream: %s', $uri, $stream);
+        self::check(@ftruncate($stream, $size), 'ftruncate', $uri, $stream);
     }
 
     /**
@@ -792,7 +766,7 @@ final class File extends AbstractUtility
             throw new UnwrittenDataException(Inflect::format(
                 $unwritten,
                 'Error writing to stream: {{#}} {{#:byte}} not written to %s',
-                self::getFriendlyStreamUri($uri, $stream),
+                self::getStreamName($uri, $stream),
             ));
         }
         return $result;
@@ -856,7 +830,7 @@ final class File extends AbstractUtility
             $expected = min($length, strlen($data));
         }
         $result = @fwrite($stream, $data, $length);
-        self::maybeThrow($result, 'Error writing to stream: %s', $uri, $stream);
+        self::check($result, 'fwrite', $uri, $stream);
         assert($result <= $expected);
         $unwritten = $expected - $result;
         return $result;
@@ -920,21 +894,20 @@ final class File extends AbstractUtility
         if ($fromIsResource && $toIsResource) {
             self::assertResourceIsStream($from);
             self::assertResourceIsStream($to);
-            $result = @stream_copy_to_stream($from, $to);
-            self::maybeThrow(
-                $result,
-                'Error copying stream %s to %s',
-                $fromUri,
-                $from,
-                self::getFriendlyStreamUri($toUri, $to),
+            self::check(
+                @stream_copy_to_stream($from, $to),
+                'stream_copy_to_stream',
+                null,
+                null,
+                self::getStreamName($fromUri, $from),
+                self::getStreamName($toUri, $to)
             );
             return;
         }
 
         $from = (string) $from;
         $to = (string) $to;
-        $result = @copy($from, $to);
-        self::maybeThrow($result, 'Error copying %s to %s', $from, null, $to);
+        self::check(@copy($from, $to), 'copy', null, null, $from, $to);
     }
 
     /**
@@ -947,13 +920,11 @@ final class File extends AbstractUtility
     {
         if (is_resource($resource)) {
             self::assertResourceIsStream($resource);
-            $result = @stream_get_contents($resource, -1, $offset ?? -1);
-            return self::maybeThrow($result, 'Error reading stream: %s', $uri, $resource);
+            return self::check(@stream_get_contents($resource, -1, $offset ?? -1), 'stream_get_contents', $uri, $resource);
         }
         self::assertResourceIsStringable($resource);
         $resource = (string) $resource;
-        $result = @file_get_contents($resource, false, null, $offset ?? 0);
-        return self::maybeThrow($result, 'Error reading file: %s', $resource);
+        return self::check(@file_get_contents($resource, false, null, $offset ?? 0), 'file_get_contents', $resource);
     }
 
     /**
@@ -962,9 +933,10 @@ final class File extends AbstractUtility
      * @todo Detect file encoding
      *
      * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
      * @return list<array{null}|list<string>>
      */
-    public static function getCsv($resource): array
+    public static function getCsv($resource, $uri = null): array
     {
         $handle = self::maybeOpen($resource, 'rb', $close, $uri);
         while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
@@ -1035,8 +1007,7 @@ final class File extends AbstractUtility
         }
         self::assertResourceIsStringable($resource);
         $resource = (string) $resource;
-        $result = @file($resource);
-        return self::maybeThrow($result, 'Error reading file: %s', $resource);
+        return self::check(@file($resource), 'file', $resource);
     }
 
     /**
@@ -1077,13 +1048,11 @@ final class File extends AbstractUtility
     {
         if (is_resource($resource)) {
             self::assertResourceIsStream($resource);
-            $result = @fstat($resource);
-            return self::maybeThrow($result, 'Error getting status of stream: %s', $uri, $resource);
+            return self::check(@fstat($resource), 'fstat', $uri, $resource);
         }
         self::assertResourceIsStringable($resource);
         $resource = (string) $resource;
-        $result = @stat($resource);
-        return self::maybeThrow($result, 'Error getting file status: %s', $resource);
+        return self::check(@stat($resource), 'stat', $resource);
     }
 
     /**
@@ -1128,8 +1097,7 @@ final class File extends AbstractUtility
                 );
                 // @codeCoverageIgnoreEnd
             }
-            $filter = @stream_filter_append($handle, 'convert.iconv.UTF-8.UTF-16LE', \STREAM_FILTER_WRITE);
-            self::maybeThrow($filter, 'Error applying UTF-16LE filter to stream: %s', $uri, $handle);
+            $filter = self::check(@stream_filter_append($handle, 'convert.iconv.UTF-8.UTF-16LE', \STREAM_FILTER_WRITE), 'stream_filter_append', $uri, $handle);
         }
 
         if ($bom) {
@@ -1156,21 +1124,8 @@ final class File extends AbstractUtility
         if ($close) {
             self::close($handle, $uri);
         } elseif ($utf16le) {
-            $result = @stream_filter_remove($filter);
-            self::maybeThrow($result, 'Error removing UTF-16LE filter from stream: %s', $uri, $handle);
+            self::check(@stream_filter_remove($filter), 'stream_filter_remove', $uri, $handle);
         }
-    }
-
-    private static function getTempDir(): string
-    {
-        $tempDir = sys_get_temp_dir();
-        $tmp = @realpath($tempDir);
-        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-            throw new FilesystemErrorException(
-                sprintf('Not a writable directory: %s', $tempDir),
-            );
-        }
-        return $tmp;
     }
 
     /**
@@ -1203,35 +1158,44 @@ final class File extends AbstractUtility
      * @param T $result
      * @param Stringable|string|null $uri
      * @param resource|null $stream
-     * @param string|int|float ...$args
      * @return (T is false ? never : T)
      * @phpstan-param T|false $result
      * @phpstan-return ($result is false ? never : T)
      */
-    private static function maybeThrow(
+    private static function check(
         $result,
-        string $message,
+        string $function,
         $uri = null,
         $stream = null,
-        ...$args
+        string ...$args
     ) {
-        if ($result === false) {
-            $error = error_get_last();
-            if ($error) {
-                throw new FilesystemErrorException($error['message']);
-            }
-            throw new FilesystemErrorException(
-                sprintf($message, self::getFriendlyStreamUri($uri, $stream), ...$args)
-            );
+        if ($result !== false) {
+            return $result;
         }
-        return $result;
+        $error = error_get_last();
+        if ($error) {
+            throw new FilesystemErrorException($error['message']);
+        }
+        if (func_num_args() < 3) {
+            throw new FilesystemErrorException(sprintf(
+                'Error calling %s()',
+                $function,
+            ));
+        }
+        throw new FilesystemErrorException(sprintf(
+            'Error calling %s() with %s',
+            $function,
+            $args
+                ? implode(', ', $args)
+                : self::getStreamName($uri, $stream),
+        ));
     }
 
     /**
      * @param Stringable|string|null $uri
      * @param resource|null $stream
      */
-    private static function getFriendlyStreamUri($uri, $stream): string
+    private static function getStreamName($uri, $stream): string
     {
         if ($uri !== null) {
             return (string) $uri;

@@ -160,7 +160,7 @@ function generated($commandOrFile): void
         throw new LogicException('No file generated');
     }
 
-    $generated[] = '/' . File::relativeToParent($file, Package::path());
+    $generated[] = '/' . File::getRelativePath($file, Package::path());
 }
 
 $status = 0;

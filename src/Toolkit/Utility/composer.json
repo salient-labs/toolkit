@@ -18,7 +18,7 @@
         "composer-runtime-api": "^2.2"
     },
     "suggest": {
-        "salient/iterators": "Required by File::find()"
+        "salient/iterators": "Required by File::find() and File::pruneDir()"
     },
     "autoload": {
         "psr-4": {

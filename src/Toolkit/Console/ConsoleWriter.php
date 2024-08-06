@@ -32,6 +32,7 @@ use Salient\Utility\Format;
 use Salient\Utility\Get;
 use Salient\Utility\Inflect;
 use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use Throwable;
 
 /**
@@ -923,7 +924,13 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
         bool $msg2HasTags = false
     ) {
         if (!$this->State->Targets) {
-            $logTarget = StreamTarget::fromPath(File::getStablePath('.log'));
+            $logTarget = StreamTarget::fromPath(sprintf(
+                '%s/%s-%s-%s.log',
+                Sys::getTempDir(),
+                Sys::getProgramBasename(),
+                Get::hash(File::realpath(Sys::getProgramName())),
+                Sys::getUserId(),
+            ));
             $this->registerTarget($logTarget, LevelGroup::ALL);
             $this->maybeRegisterStdioTargets();
         }

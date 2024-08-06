@@ -18,17 +18,17 @@ use Stringable;
 final class FileTest extends TestCase
 {
     /**
-     * @dataProvider sanitiseDirProvider
+     * @dataProvider getCleanDirProvider
      */
-    public function testSanitiseDir(string $expected, string $directory): void
+    public function testGetCleanDir(string $expected, string $directory): void
     {
-        $this->assertSame($expected, File::sanitiseDir($directory));
+        $this->assertSame($expected, File::getCleanDir($directory));
     }
 
     /**
      * @return array<array{string,string}>
      */
-    public static function sanitiseDirProvider(): array
+    public static function getCleanDirProvider(): array
     {
         return [
             ['.', ''],
@@ -84,7 +84,7 @@ final class FileTest extends TestCase
             File::chdir("$dir/not_searchable/dir");
             File::chmod("$dir/not_searchable", 0600);
             $this->expectException(FilesystemErrorException::class);
-            $this->expectExceptionMessage('Error getting current working directory');
+            $this->expectExceptionMessage('Error calling getcwd()');
             File::getcwd();
         } finally {
             File::pruneDir($dir, true, true);
@@ -204,32 +204,12 @@ final class FileTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider isPharUriProvider
-     */
-    public function testIsPharUri(bool $expected, string $path): void
-    {
-        $this->assertSame($expected, File::isPharUri($path));
-    }
-
-    /**
-     * @return array<array{bool,string}>
-     */
-    public static function isPharUriProvider(): array
-    {
-        return [
-            [true, 'phar:///usr/local/Cellar/composer/2.6.5/bin/composer/bin/composer'],
-            [true, 'PHAR:///usr/local/Cellar/composer/2.6.5/bin/composer/bin/composer'],
-            [false, '/usr/local/Cellar/composer/2.6.5/bin/composer'],
-        ];
-    }
-
     public function testRealpath(): void
     {
         $dir = self::getFixturesPath(__CLASS__);
         $this->assertSame(realpath("$dir/exists"), File::realpath("$dir/exists"));
         $this->expectException(FilesystemErrorException::class);
-        $this->expectExceptionMessage("Error resolving path: $dir/does_not_exist");
+        $this->expectExceptionMessage("Error calling realpath() with $dir/does_not_exist");
         File::realpath("$dir/does_not_exist");
     }
 
@@ -397,13 +377,13 @@ final class FileTest extends TestCase
         ];
     }
 
-    public function testExisting(): void
+    public function testGetClosestPath(): void
     {
         $dir = self::getFixturesPath(__CLASS__);
-        $this->assertSame("$dir/exists", File::closestExisting("$dir/exists"));
-        $this->assertSame("$dir/dir", File::closestExisting("$dir/dir/does_not_exist"));
-        $this->assertNull(File::closestExisting("$dir/dir/file/does_not_exist"));
-        $this->assertSame("$dir", File::closestExisting("$dir/not_a_dir/does_not_exist"));
+        $this->assertSame("$dir/exists", File::getClosestPath("$dir/exists"));
+        $this->assertSame("$dir/dir", File::getClosestPath("$dir/dir/does_not_exist"));
+        $this->assertNull(File::getClosestPath("$dir/dir/file/does_not_exist"));
+        $this->assertSame("$dir", File::getClosestPath("$dir/not_a_dir/does_not_exist"));
     }
 
     /**
@@ -458,11 +438,11 @@ final class FileTest extends TestCase
     }
 
     /**
-     * @dataProvider relativeToParentProvider
+     * @dataProvider getRelativePathProvider
      *
      * @param string|int|null $expected
      */
-    public function testRelativeToParent(
+    public function testGetRelativePath(
         $expected,
         string $filename,
         string $parentDir,
@@ -471,13 +451,13 @@ final class FileTest extends TestCase
         if ($expected === -1) {
             $this->expectException(FilesystemErrorException::class);
         }
-        $this->assertSame($expected, File::relativeToParent($filename, $parentDir, $fallback));
+        $this->assertSame($expected, File::getRelativePath($filename, $parentDir, $fallback));
     }
 
     /**
      * @return array<array{string|int|null,string,string,3?:string|null}>
      */
-    public static function relativeToParentProvider(): array
+    public static function getRelativePathProvider(): array
     {
         $dir = self::getFixturesPath(__CLASS__);
 
@@ -514,15 +494,6 @@ final class FileTest extends TestCase
                 self::getPackagePath(),
             ],
         ];
-    }
-
-    public function testGetStablePath(): void
-    {
-        $path = File::getStablePath();
-        $dir = dirname($path);
-        $this->assertTrue(File::isAbsolute($path));
-        $this->assertDirectoryExists($dir);
-        $this->assertIsWritable($dir);
     }
 
     public function testSame(): void
