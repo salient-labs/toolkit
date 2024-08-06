@@ -1454,7 +1454,7 @@ class Curler implements CurlerInterface, Buildable
 
     private function filterCookiesCacheKey(?string $cacheKey): string
     {
-        return Arr::implode(':', [self::class, 'cookies', $cacheKey]);
+        return Arr::implode(':', [self::class, 'cookies', $cacheKey], '');
     }
 
     private function getCache(): CacheStoreInterface

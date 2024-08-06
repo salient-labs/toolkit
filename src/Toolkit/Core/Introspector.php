@@ -811,7 +811,7 @@ class Introspector
                         return Arr::implode(' ', [
                             $first($instance),
                             $last($instance),
-                        ]);
+                        ], '');
                     };
             }
         }

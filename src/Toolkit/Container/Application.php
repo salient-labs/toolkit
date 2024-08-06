@@ -138,7 +138,7 @@ class Application extends Container implements ApplicationInterface
             }
 
             return $this->checkPath(
-                Arr::implode('/', [$path, $app, $windowsChild]),
+                Arr::implode('/', [$path, $app, $windowsChild], ''),
                 $name,
                 $create,
                 $save,
@@ -166,7 +166,7 @@ class Application extends Container implements ApplicationInterface
         }
 
         return $this->checkPath(
-            Arr::implode('/', [$path, $app, $child]),
+            Arr::implode('/', [$path, $app, $child], ''),
             $name,
             $create,
             $save,

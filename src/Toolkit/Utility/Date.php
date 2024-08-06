@@ -9,8 +9,6 @@ use DateTimeZone;
 use InvalidArgumentException;
 
 /**
- * Work with dates and times
- *
  * @api
  */
 final class Date extends AbstractUtility
@@ -71,25 +69,21 @@ final class Date extends AbstractUtility
     }
 
     /**
-     * Set the timezone of a DateTimeInterface if it doesn't already have one
+     * Set the timezone of a date and time if not already set
      *
      * @param DateTimeZone|string|null $timezone If `null`, the timezone
      * returned by {@see date_default_timezone_get()} is used.
      */
     public static function maybeSetTimezone(DateTimeInterface $datetime, $timezone = null): DateTimeImmutable
     {
-        if (
-            $datetime->getTimezone()->getName() !== 'UTC'
-            || ($timezone === null && date_default_timezone_get() === 'UTC')
-        ) {
-            return self::immutable($datetime);
+        $datetime = self::immutable($datetime);
+        $tz = $datetime->getTimezone()->getName();
+        if ($tz === 'UTC' && ($timezone !== null || date_default_timezone_get() !== 'UTC')) {
+            $timezone = self::timezone($timezone);
+            if ($tz !== $timezone->getName()) {
+                return $datetime->setTimezone($timezone);
+            }
         }
-
-        $timezone = self::timezone($timezone);
-        if ($datetime->getTimezone()->getName() === $timezone->getName()) {
-            return self::immutable($datetime);
-        }
-
-        return self::immutable($datetime)->setTimezone($timezone);
+        return $datetime;
     }
 }

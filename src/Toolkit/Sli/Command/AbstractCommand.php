@@ -142,7 +142,7 @@ abstract class AbstractCommand extends CliCommand
             $file = 'php://stdin';
         } else {
             try {
-                $path = File::relativeToParent($file, $this->App->getBasePath(), $file);
+                $path = File::getRelativePath($file, $this->App->getBasePath(), $file);
             } catch (FilesystemErrorException $ex) {
                 throw new CliInvalidArgumentsException(sprintf(
                     'file not found: %s',

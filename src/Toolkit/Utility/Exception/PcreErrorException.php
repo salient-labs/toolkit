@@ -20,7 +20,7 @@ class PcreErrorException extends AbstractUtilityException
     protected int $PcreError;
     protected string $PcreErrorMessage;
     protected string $Function;
-    /** @var array<string,callable(array<array-key,string|null>):string>|string[]|string */
+    /** @var array<string,callable(array<string|null>): string>|string[]|string */
     protected $Pattern;
     /** @var string[]|string */
     protected $Subject;
@@ -28,7 +28,7 @@ class PcreErrorException extends AbstractUtilityException
     private static array $ErrorNameMap;
 
     /**
-     * @param array<string,callable(array<array-key,string|null>):string>|string[]|string $pattern
+     * @param array<string,callable(array<string|null>): string>|string[]|string $pattern
      * @param string[]|string $subject
      */
     public function __construct(?int $error, string $function, $pattern, $subject)
@@ -87,7 +87,7 @@ class PcreErrorException extends AbstractUtilityException
     /**
      * Get the pattern passed to the PCRE function
      *
-     * @return array<string,callable(array<array-key,string|null>):string>|string[]|string
+     * @return array<string,callable(array<string|null>): string>|string[]|string
      */
     public function getPattern()
     {

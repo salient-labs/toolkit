@@ -42,6 +42,8 @@ use RuntimeException;
  * thrown. If the variable is not present in the environment, `$default` is
  * returned if given, otherwise an {@see InvalidEnvironmentException} is thrown.
  *
+ * @todo Add support for variable expansion
+ *
  * @api
  */
 final class Env extends AbstractUtility

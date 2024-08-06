@@ -31,7 +31,7 @@ $i = 0;
 foreach ($files as $file) {
     $i++;
     $file = (string) $file;
-    $relative = File::relativeToParent($file, dirname(__DIR__));
+    $relative = File::getRelativePath($file, dirname(__DIR__));
     Console::logProgress(sprintf('Checking %d of %d:', $i, $count), $relative);
 
     $input = @file($file);

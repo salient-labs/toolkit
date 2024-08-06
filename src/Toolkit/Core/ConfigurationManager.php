@@ -70,7 +70,7 @@ final class ConfigurationManager implements ArrayAccess
      */
     public function has(string $key): bool
     {
-        return Arr::has($key, $this->Items);
+        return Arr::has($this->Items, $key);
     }
 
     /**
@@ -84,9 +84,9 @@ final class ConfigurationManager implements ArrayAccess
     public function get(string $key, $default = null)
     {
         if (func_num_args() > 1) {
-            return Arr::get($key, $this->Items, $default);
+            return Arr::get($this->Items, $key, $default);
         }
-        return Arr::get($key, $this->Items);
+        return Arr::get($this->Items, $key);
     }
 
     /**
@@ -102,11 +102,12 @@ final class ConfigurationManager implements ArrayAccess
     {
         foreach ($keys as $key => $default) {
             if (is_int($key)) {
+                /** @var string */
                 $key = $default;
-                $values[$key] = Arr::get($key, $this->Items);
+                $values[$key] = Arr::get($this->Items, $key);
                 continue;
             }
-            $values[$key] = Arr::get($key, $this->Items, $default);
+            $values[$key] = Arr::get($this->Items, $key, $default);
         }
         return $values ?? [];
     }
@@ -128,7 +129,7 @@ final class ConfigurationManager implements ArrayAccess
      */
     public function offsetExists($offset): bool
     {
-        return Arr::get($offset, $this->Items, null) !== null;
+        return Arr::get($this->Items, $offset, null) !== null;
     }
 
     /**
@@ -140,6 +141,6 @@ final class ConfigurationManager implements ArrayAccess
     #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
-        return Arr::get($offset, $this->Items);
+        return Arr::get($this->Items, $offset);
     }
 }

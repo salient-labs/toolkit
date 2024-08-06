@@ -668,7 +668,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             $this->PHPDoc ?? '',
             $this->ApiTag ? '@api' : '',
             '@generated',
-        ], null);
+        ]);
 
         $lines =
             $phpDoc === ''
@@ -987,7 +987,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 }
                 if ($this->Check || !$this->ReplaceIfExists) {
                     if (class_exists(Differ::class)) {
-                        $relative = File::relativeToParent($file, Package::path(), $file);
+                        $relative = File::getRelativePath($file, Package::path(), $file);
                         $formatter = Console::getStdoutTarget()->getFormatter();
                         $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
                             'fromFile' => "a/$relative",

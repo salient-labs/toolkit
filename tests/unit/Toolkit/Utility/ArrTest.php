@@ -51,61 +51,61 @@ final class ArrTest extends TestCase
      * @param array<array-key,mixed> $array
      * @param mixed $default
      */
-    public function testGet($expected, string $key, array $array, $default = null): void
+    public function testGet($expected, array $array, string $key, $default = null): void
     {
-        $this->assertSame($expected, Arr::get($key, $array, $default));
+        $this->assertSame($expected, Arr::get($array, $key, $default));
     }
 
     /**
-     * @return array<array{mixed,string,array<array-key,mixed>,3?:mixed}>
+     * @return array<array{mixed,array<array-key,mixed>,string,3?:mixed}>
      */
     public static function getProvider(): array
     {
         return [
             [
                 'bar',
-                'foo',
                 ['foo' => 'bar'],
+                'foo',
             ],
             [
                 'qux',
+                ['foo' => ['bar' => 'qux']],
                 'foo.bar',
-                ['foo' => ['bar' => 'qux']],
             ],
             [
                 null,
+                ['foo' => ['bar' => 'qux']],
                 'baz',
-                ['foo' => ['bar' => 'qux']],
                 null,
             ],
             [
                 null,
+                ['foo' => ['bar' => 'qux']],
                 'foo.baz',
-                ['foo' => ['bar' => 'qux']],
                 null,
             ],
             [
                 null,
+                ['foo' => ['bar' => 'qux']],
                 'foo.bar.baz',
-                ['foo' => ['bar' => 'qux']],
                 null,
             ],
             [
                 null,
+                ['foo' => ['bar' => 'qux']],
                 'foo.bar.baz.qux',
-                ['foo' => ['bar' => 'qux']],
                 null,
             ],
             [
                 'default',
+                ['foo' => ['bar' => 'qux']],
                 'baz',
-                ['foo' => ['bar' => 'qux']],
                 'default',
             ],
             [
                 null,
-                'foo.bar',
                 ['foo' => ['bar' => null]],
+                'foo.bar',
                 'default',
             ],
         ];
@@ -116,61 +116,61 @@ final class ArrTest extends TestCase
      *
      * @param array<array-key,mixed> $array
      */
-    public function testHas(bool $expected, string $key, array $array): void
+    public function testHas(bool $expected, array $array, string $key): void
     {
-        $this->assertSame($expected, Arr::has($key, $array));
+        $this->assertSame($expected, Arr::has($array, $key));
     }
 
     /**
-     * @return array<array{bool,string,array<array-key,mixed>}>
+     * @return array<array{bool,array<array-key,mixed>,string}>
      */
     public static function hasProvider(): array
     {
         return [
             [
                 true,
-                'foo',
                 ['foo' => 'bar'],
+                'foo',
             ],
             [
                 true,
+                ['foo' => ['bar' => 'baz']],
                 'foo.bar',
-                ['foo' => ['bar' => 'baz']],
             ],
             [
                 false,
+                ['foo' => ['bar' => 'baz']],
                 'baz',
-                ['foo' => ['bar' => 'baz']],
             ],
             [
                 false,
+                ['foo' => ['bar' => 'baz']],
                 'baz.qux',
-                ['foo' => ['bar' => 'baz']],
             ],
             [
                 true,
-                'foo.bar.baz',
                 ['foo' => ['bar' => ['baz' => 'qux']]],
-            ],
-            [
-                false,
-                'foo.bar.baz.qux',
-                ['foo' => ['bar' => ['baz' => 'qux']]],
-            ],
-            [
-                false,
                 'foo.bar.baz',
-                ['foo' => ['bar' => null]],
             ],
             [
                 false,
+                ['foo' => ['bar' => ['baz' => 'qux']]],
                 'foo.bar.baz.qux',
+            ],
+            [
+                false,
                 ['foo' => ['bar' => null]],
+                'foo.bar.baz',
+            ],
+            [
+                false,
+                ['foo' => ['bar' => null]],
+                'foo.bar.baz.qux',
             ],
             [
                 true,
-                'foo.bar.baz',
                 ['foo' => ['bar' => ['baz' => null]]],
+                'foo.bar.baz',
             ],
         ];
     }
@@ -179,7 +179,7 @@ final class ArrTest extends TestCase
     {
         $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Array key not found: foo.bar');
-        Arr::get('foo.bar', []);
+        Arr::get([], 'foo.bar');
     }
 
     /**
@@ -369,13 +369,13 @@ final class ArrTest extends TestCase
      *
      * @param iterable<int|float|string|bool|Stringable|null> $array
      */
-    public function testImplode(string $expected, string $separator, iterable $array, ?string $characters = ''): void
+    public function testImplode(string $expected, string $separator, iterable $array, ?string $characters = null): void
     {
         $this->assertSame($expected, Arr::implode($separator, $array, $characters));
     }
 
     /**
-     * @return array<array{string,string,iterable<int|float|string|bool|Stringable|null>}>
+     * @return array<array{string,string,iterable<int|float|string|bool|Stringable|null>,3?:string|null}>
      */
     public static function implodeProvider(): iterable
     {
@@ -384,11 +384,13 @@ final class ArrTest extends TestCase
                 '0,a, ,-1,0,1,3.14,1',
                 ',',
                 ['0', '', 'a', ' ', -1, 0, 1, false, 3.14, null, true],
+                '',
             ],
             [
                 '0 a   -1 0 1 3.14 1',
                 ' ',
                 ['0', '', 'a', ' ', -1, 0, 1, false, 3.14, null, true],
+                '',
             ],
             [
                 '',
@@ -404,36 +406,32 @@ final class ArrTest extends TestCase
                 '',
                 ',',
                 [],
-                null,
             ],
             [
                 '',
                 ',',
                 [''],
-                null,
             ],
             [
                 '',
                 ',',
                 [' '],
-                null,
             ],
             [
                 '',
                 ',',
                 [' ', "\t"],
-                null,
             ],
             [
                 " ,\t",
                 ',',
                 [' ', "\t"],
+                '',
             ],
             [
                 '0,1,1,a,b,c',
                 ',',
                 [null, 0, 1, true, false, ' ', 'a ', ' b ', ' c'],
-                null,
             ],
             [
                 '0,1,1, ,a,b,c',
@@ -507,20 +505,20 @@ final class ArrTest extends TestCase
      * @template TValue
      *
      * @param TKey|null $expected
-     * @param TValue $value
      * @param array<TKey,TValue> $array
+     * @param TValue $value
      */
-    public function testKeyOf($expected, $value, array $array): void
+    public function testKeyOf($expected, array $array, $value): void
     {
         if ($expected === null) {
             $this->expectException(OutOfRangeException::class);
             $this->expectExceptionMessage('Value not found in array');
         }
-        $this->assertSame($expected, Arr::keyOf($value, $array));
+        $this->assertSame($expected, Arr::keyOf($array, $value));
     }
 
     /**
-     * @return array<array{array-key|null,mixed,mixed[]}>
+     * @return array<array{array-key|null,mixed[],mixed}>
      */
     public static function keyOfProvider(): array
     {
@@ -541,43 +539,43 @@ final class ArrTest extends TestCase
         return [
             [
                 'foo',
-                null,
                 $falsey,
+                null,
             ],
             [
                 'bar',
-                false,
                 $falsey,
+                false,
             ],
             [
                 'qux',
-                0,
                 $falsey,
+                0,
             ],
             [
                 0,
-                '',
                 $falsey,
+                '',
             ],
             [
                 'foo',
-                $a,
                 $objects,
+                $a,
             ],
             [
                 'bar',
-                $b,
                 $objects,
+                $b,
             ],
             [
                 0,
-                $a,
                 [$a],
+                $a,
             ],
             [
                 null,
-                $a,
                 [],
+                $a,
             ],
         ];
     }
@@ -1045,13 +1043,6 @@ final class ArrTest extends TestCase
     public static function sameProvider1(): array
     {
         return [
-            [
-                false,
-            ],
-            [
-                false,
-                [],
-            ],
             [
                 true,
                 [],
@@ -2224,17 +2215,17 @@ final class ArrTest extends TestCase
      * @template T
      *
      * @param mixed $expected
-     * @param callable(T, TValue, TKey): T $callback
      * @param iterable<TKey,TValue> $array
+     * @param callable(T, TValue, TKey): T $callback
      * @param T $value
      */
-    public function testWith($expected, callable $callback, iterable $array, $value): void
+    public function testWith($expected, iterable $array, callable $callback, $value): void
     {
-        $this->assertSame($expected, Arr::with($callback, $array, $value));
+        $this->assertSame($expected, Arr::with($array, $callback, $value));
     }
 
     /**
-     * @return array<array{mixed,callable,iterable<mixed>,mixed}>
+     * @return array<array{mixed,iterable<mixed>,callable,mixed}>
      */
     public static function withProvider(): array
     {
@@ -2243,20 +2234,20 @@ final class ArrTest extends TestCase
         return [
             [
                 15,
-                fn($carry, $value) => $carry += $value,
                 $a,
+                fn($carry, $value) => $carry += $value,
                 0,
             ],
             [
                 1200,
-                fn($carry, $value) => $carry *= $value,
                 $a,
+                fn($carry, $value) => $carry *= $value,
                 10,
             ],
             [
                 null,
-                fn($carry, $value) => $carry += $value,
                 [],
+                fn($carry, $value) => $carry += $value,
                 null,
             ],
         ];

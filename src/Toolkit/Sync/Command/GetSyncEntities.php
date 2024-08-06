@@ -346,13 +346,13 @@ EOF)
             return $entity;
         }
         foreach ($this->Fields as $field => $name) {
-            if ($check && !Arr::has($field, $entity)) {
+            if ($check && !Arr::has($entity, $field)) {
                 throw new CliInvalidArgumentsException(sprintf(
                     'Invalid field: %s',
                     $field,
                 ));
             }
-            $result[$name] = Arr::get($field, $entity, null);
+            $result[$name] = Arr::get($entity, $field, null);
         }
         return $result;
     }

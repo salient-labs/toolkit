@@ -28,7 +28,7 @@ final class LinkPager implements CurlerPagerInterface
      * @param (Closure(mixed): list<mixed>)|array-key|null $entitySelector Entities
      * are returned from:
      * - `$entitySelector($data)` if `$entitySelector` is a closure
-     * - `Arr::get($entitySelector, $data)` if `$entitySelector` is a string or
+     * - `Arr::get($data, $entitySelector)` if `$entitySelector` is a string or
      *   integer, or
      * - `$data` if `$entitySelector` is `null`
      */

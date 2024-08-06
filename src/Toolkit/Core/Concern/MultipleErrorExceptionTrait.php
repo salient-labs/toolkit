@@ -40,7 +40,8 @@ trait MultipleErrorExceptionTrait
             default:
                 $message = Arr::implode(
                     $separator ?? ":\n",
-                    [$message, $append ?? rtrim(Format::list($errors))]
+                    [$message, $append ?? rtrim(Format::list($errors))],
+                    ''
                 );
                 break;
         }

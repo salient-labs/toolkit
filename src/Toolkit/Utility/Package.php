@@ -205,7 +205,7 @@ final class Package extends AbstractUtility
                 }
                 $dir = File::realpath($dir);
                 $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
-                $path = Arr::implode('/', [$dir, $subdir]);
+                $path = Arr::implode('/', [$dir, $subdir], '');
                 if (is_dir($path)) {
                     return $path;
                 }

@@ -161,7 +161,7 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
         return Arr::implode(' ', [
             sprintf('HTTP/%s %d', $this->ProtocolVersion, $this->StatusCode),
             $this->ReasonPhrase,
-        ], null);
+        ]);
     }
 
     private function filterStatusCode(int $code): int

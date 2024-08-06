@@ -3,14 +3,12 @@
 namespace Salient\Utility;
 
 /**
- * Get information about the running script
- *
  * @api
  */
 final class Debug extends AbstractUtility
 {
     /**
-     * Use debug_backtrace() to get a description of the (caller's) caller
+     * Get a description of the (caller's) caller from debug_backtrace()
      *
      * Returns an associative array with zero or more of the following values.
      * Separators are added as needed to allow concatenation to a caller string.
@@ -27,7 +25,7 @@ final class Debug extends AbstractUtility
      *
      * ```
      * <?php
-     * $caller1 = [
+     * [
      *     'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
      *     'class' => 'GetCallerClass',
      *     '->',
@@ -36,7 +34,7 @@ final class Debug extends AbstractUtility
      *     'line' => 23,
      * ];
      *
-     * $caller2 = [
+     * [
      *     'file' => '/path/to/tests/fixtures/Toolkit/Utility/Debug/GetCallerFile1.php',
      *     '::',
      *     'function' => '{closure}',
@@ -45,8 +43,7 @@ final class Debug extends AbstractUtility
      * ];
      * ```
      *
-     * To get a description of an earlier frame in the call stack, set `$depth`
-     * to `1` or higher.
+     * For an earlier frame in the call stack, set `$depth` to `1` or higher.
      *
      * @return array{namespace?:string,class?:string,file?:string,0?:string,function?:string,1?:string,line?:int}
      */
@@ -72,8 +69,8 @@ final class Debug extends AbstractUtility
                 $namespace = Get::namespace($frame['function']);
                 $class = '';
             }
-            // NB: `function` and `class` are both namespaced in frames that
-            // represent closures in namespaced classes
+            // NB: `function` and `class` are both namespaced for closures in
+            // namespaced classes
             $function = Get::basename($frame['function']);
             if ($namespace !== '') {
                 $namespace .= '\\';

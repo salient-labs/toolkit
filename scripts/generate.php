@@ -134,7 +134,9 @@ foreach ($class->getReflectionConstants() as $constant) {
     if (!$constant->isPublic()) {
         continue;
     }
-    Env::unset($constant->getValue());
+    /** @var string */
+    $value = $constant->getValue();
+    Env::unset($value);
 }
 
 $args = [
@@ -142,6 +144,12 @@ $args = [
     '--force',
     ...array_slice($_SERVER['argv'], 1),
 ];
+
+$online = array_search('--online', $args);
+if ($online !== false) {
+    unset($args[$online]);
+    $online = true;
+}
 
 /**
  * @param AbstractGenerateCommand|string $commandOrFile
@@ -158,7 +166,7 @@ function generated($commandOrFile): void
         throw new LogicException('No file generated');
     }
 
-    $generated[] = '/' . File::relativeToParent($file, Package::path());
+    $generated[] = '/' . File::getRelativePath($file, Package::path());
 }
 
 $status = 0;
@@ -170,8 +178,10 @@ foreach ($facades as $facade => $class) {
     if (is_array($class)) {
         $facadeArgs = $class;
         $class = array_shift($facadeArgs);
-        if (is_array(reset($facadeArgs))) {
-            $aliases = array_shift($facadeArgs);
+        $first = reset($facadeArgs);
+        if (is_array($first)) {
+            $aliases = $first;
+            array_shift($facadeArgs);
         }
     }
     $status |= $generateFacade(...[...$args, ...$facadeArgs, $class, ...$aliases, $facade]);
@@ -215,10 +225,18 @@ foreach ($providers as $class => $providerArgs) {
 
 foreach ($data as $file => $uri) {
     $file = "{$dir}/tests/data/{$file}";
-    if (!in_array('--check', $args)) {
+    $exists = file_exists($file);
+    if ($exists && !$online) {
+        Console::log('Skipping', $file);
+    } elseif (!$exists && in_array('--check', $args)) {
+        Console::info('Would create', $file);
+        Console::count(Level::ERROR);
+        $status |= 1;
+        continue;
+    } elseif (!in_array('--check', $args)) {
         Console::log('Downloading', $uri);
         $content = File::getContents($uri);
-        if (!file_exists($file) || File::getContents($file) !== $content) {
+        if (!$exists || File::getContents($file) !== $content) {
             Console::info('Replacing', $file);
             File::createDir(dirname($file));
             File::writeContents($file, $content);
@@ -239,7 +257,7 @@ foreach (File::find()
 $file = "$dir/.gitattributes";
 $attributes = Regex::grep(
     '/(^#| linguist-generated$)/',
-    Arr::trim(file($file)),
+    Arr::trim(File::getLines($file)),
     \PREG_GREP_INVERT
 );
 // @phpstan-ignore-next-line

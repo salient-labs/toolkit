@@ -32,6 +32,7 @@ use Salient\Utility\Format;
 use Salient\Utility\Get;
 use Salient\Utility\Inflect;
 use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use Throwable;
 
 /**
@@ -438,7 +439,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
         ) {
             return $this->write(
                 Level::INFO,
-                Arr::implode(' ', [$msg1, $successText, $usage ?? null]),
+                Arr::implode(' ', [$msg1, $successText, $usage ?? null], ''),
                 null,
                 $withStandardMessageType
                     ? MessageType::SUMMARY
@@ -457,7 +458,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             $withoutErrorCount || $withStandardMessageType
                 ? Level::INFO
                 : ($errors ? Level::ERROR : Level::WARNING),
-            Arr::implode(' ', [$msg1, $msg2 ?? null, $usage ?? null]),
+            Arr::implode(' ', [$msg1, $msg2 ?? null, $usage ?? null], ''),
             null,
             $withoutErrorCount || $withStandardMessageType
                 ? MessageType::SUMMARY
@@ -923,7 +924,13 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
         bool $msg2HasTags = false
     ) {
         if (!$this->State->Targets) {
-            $logTarget = StreamTarget::fromPath(File::getStablePath('.log'));
+            $logTarget = StreamTarget::fromPath(sprintf(
+                '%s/%s-%s-%s.log',
+                Sys::getTempDir(),
+                Sys::getProgramBasename(),
+                Get::hash(File::realpath(Sys::getProgramName())),
+                Sys::getUserId(),
+            ));
             $this->registerTarget($logTarget, LevelGroup::ALL);
             $this->maybeRegisterStdioTargets();
         }
