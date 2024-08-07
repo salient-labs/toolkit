@@ -230,6 +230,7 @@ EOF)
         $oneToMany = [];
         $parent = [];
         $children = [];
+        $dates = [];
 
         $tentativeOneToOne = [];
         $tentativeOneToMany = [];
@@ -349,6 +350,7 @@ EOF)
 
                 if (is_string($value) && trim($value) !== '' && $dateFormatter->parse($value)) {
                     $properties[$key] = $this->getFqcnAlias(DateTimeInterface::class) . '|null';
+                    $dates[] = $key;
                     continue;
                 }
 
@@ -505,6 +507,15 @@ EOF;
             $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getRelationships',
                 '[' . \PHP_EOL . implode(\PHP_EOL, $this->indent($lines)) . \PHP_EOL . ']',
+                '@internal',
+                'array',
+            ));
+        }
+
+        if ($dates) {
+            $blocks[] = implode(\PHP_EOL, $this->generateGetter(
+                'getDateProperties',
+                $this->code($dates),
                 '@internal',
                 'array',
             ));
