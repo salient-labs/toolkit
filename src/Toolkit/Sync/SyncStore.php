@@ -264,11 +264,12 @@ SQL
     /**
      * Terminate the current run and close the database
      */
-    public function close(int $exitStatus = 0)
+    public function close(int $exitStatus = 0): void
     {
         // Don't start a run now
         if (!$this->isOpen() || $this->RunId === null) {
-            return $this->closeDb();
+            $this->closeDb();
+            return;
         }
 
         $sql = <<<SQL
@@ -293,7 +294,7 @@ SQL;
         $stmt->execute();
         $stmt->close();
 
-        return $this->closeDb();
+        $this->closeDb();
     }
 
     /**

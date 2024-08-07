@@ -91,26 +91,22 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     /**
      * Close the database and unload any facades where the store is the
      * underlying instance
-     *
-     * @return $this
      */
-    public function close()
+    public function close(): void
     {
-        return $this->closeDb();
+        $this->closeDb();
     }
 
     /**
      * If the database is open, close it, and unload any facades where the store
      * is the underlying instance
-     *
-     * @return $this
      */
-    final protected function closeDb()
+    final protected function closeDb(): void
     {
         if (!$this->isOpen()) {
             // Necessary because the database may not have been opened yet
             $this->unloadFacades();
-            return $this;
+            return;
         }
 
         $this->State->Db->close();
@@ -121,34 +117,26 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
         $this->State->HasTransaction = false;
 
         $this->unloadFacades();
-
-        return $this;
     }
 
     /**
      * Close the store without closing the database by detaching the database
      * from the store, and unload any facades where the store is the underlying
      * instance
-     *
-     * @return $this
      */
-    public function detach()
+    public function detach(): void
     {
-        return $this->detachDb();
+        $this->detachDb();
     }
 
     /**
      * Detach the database from the store and unload any facades where the store
      * is the underlying instance
-     *
-     * @return $this
      */
-    final protected function detachDb()
+    final protected function detachDb(): void
     {
         $this->State = null;
         $this->unloadFacades();
-
-        return $this;
     }
 
     /**

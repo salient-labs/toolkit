@@ -166,41 +166,6 @@ parameters:
 			path: src/Toolkit/Http/HttpStream.php
 
 		-
-			message: "#^Cannot access property \\$Scopes on Salient\\\\Http\\\\OAuth2\\\\AccessToken\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:getAccessToken\\(\\) should return Salient\\\\Http\\\\OAuth2\\\\AccessToken but returns Salient\\\\Http\\\\OAuth2\\\\AccessToken\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:getIdToken\\(\\) should return array\\<string, mixed\\>\\|null but returns mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:getTokenAlgorithm\\(\\) should return string\\|null but returns mixed\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Parameter \\#1 \\$token of method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:accessTokenHasScopes\\(\\) expects Salient\\\\Http\\\\OAuth2\\\\AccessToken, Salient\\\\Http\\\\OAuth2\\\\AccessToken\\|null given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Parameter \\#3 \\$expires of class Salient\\\\Http\\\\OAuth2\\\\AccessToken constructor expects DateTimeInterface\\|int\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
-			message: "#^Parameter \\#3 \\$scope of method Salient\\\\Http\\\\OAuth2\\\\OAuth2Client\\:\\:requestAccessToken\\(\\) expects array\\<string\\>\\|string\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Http/OAuth2/OAuth2Client.php
-
-		-
 			message: "#^Cannot access an offset on array\\|object\\.$#"
 			count: 1
 			path: src/Toolkit/Iterator/Graph.php

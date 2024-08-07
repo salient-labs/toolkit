@@ -6,7 +6,6 @@ use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
-use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpServerRequestInterface;
 use Salient\Core\Facade\Cache;
@@ -165,19 +164,18 @@ abstract class OAuth2Client
      */
     final public function getAccessToken(?array $scopes = null): AccessToken
     {
-        $cache = Cache::asOfNow();
-        if ($cache->has($this->TokenKey)) {
-            $token = $cache->getInstanceOf($this->TokenKey, AccessToken::class);
+        $token = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class);
+        if ($token) {
             if ($this->accessTokenHasScopes($token, $scopes)) {
                 return $token;
             }
 
             Console::debug('Cached token has missing scopes; re-authorizing');
-            return $this->authorize(['scope' => $scopes], $cache);
+            return $this->authorize(['scope' => $scopes]);
         }
 
         try {
-            $token = $this->refreshAccessToken($cache);
+            $token = $this->refreshAccessToken();
             if ($token) {
                 if ($this->accessTokenHasScopes($token, $scopes)) {
                     return $token;
@@ -191,7 +189,7 @@ abstract class OAuth2Client
             );
         }
 
-        return $this->authorize($scopes ? ['scope' => $scopes] : [], $cache);
+        return $this->authorize($scopes ? ['scope' => $scopes] : []);
     }
 
     /**
@@ -211,16 +209,15 @@ abstract class OAuth2Client
      * If an unexpired refresh token is available, use it to get a new access
      * token from the provider if possible
      */
-    final protected function refreshAccessToken(CacheStoreInterface $cache): ?AccessToken
+    final protected function refreshAccessToken(): ?AccessToken
     {
-        if (!$cache->has("{$this->TokenKey}:refresh")) {
-            return null;
-        }
-
-        return $this->requestAccessToken(
-            OAuth2GrantType::REFRESH_TOKEN,
-            ['refresh_token' => $cache->getString("{$this->TokenKey}:refresh")]
-        );
+        $refreshToken = Cache::getString("{$this->TokenKey}:refresh");
+        return $refreshToken === null
+            ? null
+            : $this->requestAccessToken(
+                OAuth2GrantType::REFRESH_TOKEN,
+                ['refresh_token' => $refreshToken]
+            );
     }
 
     /**
@@ -228,18 +225,14 @@ abstract class OAuth2Client
      *
      * @param array<string,mixed> $options
      */
-    final protected function authorize(
-        array $options = [],
-        CacheStoreInterface $cache = null
-    ): AccessToken {
+    final protected function authorize(array $options = []): AccessToken
+    {
         if (isset($options['scope'])) {
             $scopes = $this->filterScope($options['scope']);
 
             // If an unexpired access or refresh token is available, extend the
             // scope of the most recently issued access token
-            if (!$cache) {
-                $cache = Cache::asOfNow();
-            }
+            $cache = Cache::asOfNow();
             if (
                 $cache->has($this->TokenKey)
                 || $cache->has("{$this->TokenKey}:refresh")
@@ -249,6 +242,7 @@ abstract class OAuth2Client
                     $scopes = Arr::extend($lastToken->Scopes, ...$scopes);
                 }
             }
+            $cache->close();
 
             // Always include the provider's default scopes
             $options['scope'] = Arr::extend($this->getDefaultScopes(), ...$scopes);
@@ -377,7 +371,7 @@ abstract class OAuth2Client
      *
      * @param string&OAuth2GrantType::* $grantType
      * @param array<string,mixed> $options
-     * @param string[]|string|null $scope
+     * @param mixed $scope
      */
     private function requestAccessToken(
         string $grantType,
@@ -404,6 +398,7 @@ abstract class OAuth2Client
         // `authentication_event_id` as an access token claim
         $expires = $_token->getExpires();
         if ($expires === null) {
+            /** @var int|null */
             $expires = $claims['exp'] ?? null;
         }
 
@@ -421,9 +416,8 @@ abstract class OAuth2Client
             ?? $scope);
 
         if (!$scopes && $grantType === OAuth2GrantType::REFRESH_TOKEN) {
-            $cache = Cache::asOfNow();
-            if ($cache->has($this->TokenKey, 0)) {
-                $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class, null, 0);
+            $lastToken = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class, null, 0);
+            if ($lastToken) {
                 $scopes = $lastToken->Scopes;
             }
         }
@@ -545,6 +539,7 @@ abstract class OAuth2Client
         }
 
         $header = Json::parseObjectAsArray($header);
+        /** @var string|null */
         return $header['alg'] ?? null;
     }
 
@@ -576,23 +571,25 @@ abstract class OAuth2Client
     final public function getIdToken(): ?array
     {
         // Don't [re-]authorize for an ID token that won't be issued
+        $cache = Cache::asOfNow();
         if (
-            Cache::has($this->TokenKey, 0)
-            && !Cache::has("{$this->TokenKey}:id", 0)
+            $cache->has($this->TokenKey, 0)
+            && !$cache->has("{$this->TokenKey}:id", 0)
         ) {
             return null;
         }
 
         // Don't return stale identity information
-        $cache = Cache::asOfNow();
-        if (!$cache->has($this->TokenKey)) {
-            $this->getAccessToken();
-            $cache = Cache::asOfNow();
+        if ($cache->has($this->TokenKey)) {
+            /** @var array<string,mixed>|null */
+            return $cache->getArray("{$this->TokenKey}:id");
         }
 
-        return $cache->has("{$this->TokenKey}:id")
-            ? $cache->get("{$this->TokenKey}:id")
-            : null;
+        $cache->close();
+        $this->getAccessToken();
+
+        /** @var array<string,mixed>|null */
+        return Cache::getArray("{$this->TokenKey}:id");
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Salient\Contract\Cache;
 use Psr\SimpleCache\CacheInterface;
 use DateInterval;
 use DateTimeInterface;
+use LogicException;
 
 /**
  * @api
@@ -166,11 +167,24 @@ interface CacheStoreInterface extends CacheInterface
      *
      * Returns an instance where items expire relative to the time of the call
      * to {@see asOfNow()}, allowing clients to mitigate race conditions like
-     * items expiring between calls to {@see has()} and {@see get()}.
+     * items expiring or being replaced between subsequent calls.
+     *
+     * Only one copy of the store can be open at a time. Copies are closed via
+     * {@see close()} or by going out of scope.
      *
      * @param int|null $now If given, items expire relative to this Unix
      * timestamp instead of the time {@see asOfNow()} is called.
      * @return static
+     * @throws LogicException if the store is a copy, or if another copy of the
+     * store is open.
      */
     public function asOfNow(?int $now = null): CacheStoreInterface;
+
+    /**
+     * Close the store and any underlying resources
+     *
+     * If the store is an instance returned by {@see asOfNow()}, the original
+     * instance remains open after any locks held by the copy are released.
+     */
+    public function close(): void;
 }

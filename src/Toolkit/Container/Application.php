@@ -481,7 +481,6 @@ class Application extends Container implements ApplicationInterface
             return $this;
         }
 
-        /** @var CacheStore $cache */
         $cache->close();
 
         return $this;

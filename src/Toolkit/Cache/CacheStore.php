@@ -347,19 +347,20 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function close()
+    public function close(): void
     {
         if (!$this->isOpen()) {
-            return $this->closeDb();
+            $this->closeDb();
+            return;
         }
 
         if ($this->Now !== null) {
-            return $this->commitTransaction()->detachDb();
+            $this->commitTransaction()->detachDb();
+            return;
         }
 
         $this->clearExpired();
-
-        return $this->closeDb();
+        $this->closeDb();
     }
 
     /**
