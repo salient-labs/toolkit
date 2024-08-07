@@ -101,7 +101,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     {
         $user = $this->with(User::class)->doNotHydrate()->get(1);
 
-        Console::info(sprintf(
+        Console::message(sprintf(
             'Connected to %s as %s',
             $this->getName(),
             $user->getName(),

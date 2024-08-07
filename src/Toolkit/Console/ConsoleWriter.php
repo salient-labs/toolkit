@@ -527,10 +527,10 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
      * @inheritDoc
      */
     public function message(
-        int $level,
         string $msg1,
         ?string $msg2 = null,
-        int $type = MessageType::STANDARD,
+        int $level = Level::INFO,
+        int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
     ) {
@@ -545,10 +545,10 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
      * @inheritDoc
      */
     public function messageOnce(
-        int $level,
         string $msg1,
         ?string $msg2 = null,
-        int $type = MessageType::STANDARD,
+        int $level = Level::INFO,
+        int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
     ) {
