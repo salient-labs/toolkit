@@ -13,6 +13,7 @@ use DateTimeInterface;
  *
  * @method static CacheStoreInterface asOfNow(int|null $now = null) Get a copy of the store where items do not expire over time (see {@see CacheStoreInterface::asOfNow()})
  * @method static true clear() Delete all items (see {@see CacheStoreInterface::clear()})
+ * @method static void close() Close the store and any underlying resources (see {@see CacheStoreInterface::close()})
  * @method static true delete(string $key) Delete an item stored under a given key (see {@see CacheStoreInterface::delete()})
  * @method static true deleteMultiple(iterable<string> $keys) Delete items stored under the given keys (see {@see CacheStoreInterface::deleteMultiple()})
  * @method static mixed get(string $key, mixed $default = null, int|null $maxAge = null) Retrieve an item stored under a given key (see {@see CacheStoreInterface::get()})
