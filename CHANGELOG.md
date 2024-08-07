@@ -10,6 +10,20 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.39] - 2024-08-07
+
+### Added
+
+#### `Cache`
+
+- Add and implement `CacheStoreInterface::close()`
+
+### Fixed
+
+#### `Http`
+
+- Fix cache handling bugs in `OAuth2Client`
+
 ## [v0.99.38] - 2024-08-06
 
 ### Fixed
@@ -3191,6 +3205,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.39]: https://github.com/salient-labs/toolkit/compare/v0.99.38...v0.99.39
 [v0.99.38]: https://github.com/salient-labs/toolkit/compare/v0.99.37...v0.99.38
 [v0.99.37]: https://github.com/salient-labs/toolkit/compare/v0.99.36...v0.99.37
 [v0.99.36]: https://github.com/salient-labs/toolkit/compare/v0.99.35...v0.99.36
