@@ -10,6 +10,26 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.40] - 2024-08-07
+
+### Added
+
+#### `Sli`
+
+- Add `getDateProperties()` when generated sync entities have date properties
+
+### Changed
+
+#### `Console`
+
+- Review order of `Console::message()` and `Console::messageOnce()` parameters for consistency
+
+### Removed
+
+#### `Core`
+
+- Remove unused method `ProviderContextAwareInterface::requireContext()`
+
 ## [v0.99.39] - 2024-08-07
 
 ### Added
@@ -3205,6 +3225,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.40]: https://github.com/salient-labs/toolkit/compare/v0.99.39...v0.99.40
 [v0.99.39]: https://github.com/salient-labs/toolkit/compare/v0.99.38...v0.99.39
 [v0.99.38]: https://github.com/salient-labs/toolkit/compare/v0.99.37...v0.99.38
 [v0.99.37]: https://github.com/salient-labs/toolkit/compare/v0.99.36...v0.99.37
