@@ -50,12 +50,12 @@ target, e.g. by calling [registerTarget()][registerTarget], before any other
 <!-- prettier-ignore -->
 | `Console` method | `ConsoleLevel`  | Message prefix | Default output target     |
 | ---------------- | --------------- | -------------- | ------------------------- |
-| `error[Once]()`  | `ERROR` = `3`   | ` ‼  `         | `STDERR`                  |
-| `warn[Once]()`   | `WARNING` = `4` | ` !  `         | `STDERR`                  |
+| `error[Once]()`  | `ERROR` = `3`   | ` !  `         | `STDERR`                  |
+| `warn[Once]()`   | `WARNING` = `4` | ` ?  `         | `STDERR`                  |
 | `info[Once]()`   | `NOTICE` = `5`  | ` ➤  `         | `STDOUT`                  |
 | `log[Once]()`    | `INFO` = `6`    | ` -  `         | `STDOUT`                  |
-| `debug[Once]()`  | `DEBUG` = `7`   | ` ⁞  `         | `STDOUT` (if `DEBUG` set) |
-| `group()`[^2]    | `NOTICE` = `5`  | ` ▶  `         | `STDOUT`                  |
+| `debug[Once]()`  | `DEBUG` = `7`   | ` :  `         | `STDOUT` (if `DEBUG` set) |
+| `group()`[^2]    | `NOTICE` = `5`  | ` »  `         | `STDOUT`                  |
 | `logProgress()`  | `INFO` = `6`    | ` ⠿  `         | `STDOUT`                  |
 
 [^1]: Actually a facade for [ConsoleWriter][ConsoleWriter].

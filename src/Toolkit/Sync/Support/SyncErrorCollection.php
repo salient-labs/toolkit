@@ -125,7 +125,6 @@ final class SyncErrorCollection extends AbstractTypedCollection implements SyncE
             : Level::WARNING;
 
         $writer->message(
-            $level,
             Inflect::format(
                 $this->ErrorCount,
                 '{{#}} sync {{#:error}}%s recorded:',
@@ -134,6 +133,7 @@ final class SyncErrorCollection extends AbstractTypedCollection implements SyncE
                     : ''
             ),
             null,
+            $level,
             MessageType::STANDARD,
         );
 

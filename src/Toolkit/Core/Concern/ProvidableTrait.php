@@ -89,18 +89,6 @@ trait ProvidableTrait
     }
 
     /**
-     * @return TContext
-     */
-    final public function requireContext(): ProviderContextInterface
-    {
-        if (!$this->Context) {
-            throw new LogicException('Context required');
-        }
-
-        return $this->Context;
-    }
-
-    /**
      * Create an instance of the class from an array on behalf of a provider
      *
      * The constructor (if any) is invoked with values from `$data`. If `$data`

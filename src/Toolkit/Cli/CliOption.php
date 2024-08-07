@@ -970,7 +970,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
                     throw new CliUnknownValueException($message);
                 }
 
-                Console::message(Level::WARNING, '__Warning:__', $message, MessageType::UNFORMATTED);
+                Console::message('__Warning:__', $message, Level::WARNING, MessageType::UNFORMATTED);
                 $value = array_intersect($value, $this->AllowedValues);
             }
         }

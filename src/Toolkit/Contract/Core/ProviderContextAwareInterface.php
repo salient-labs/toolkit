@@ -23,12 +23,4 @@ interface ProviderContextAwareInterface
      * @return TContext|null
      */
     public function getContext(): ?ProviderContextInterface;
-
-    /**
-     * Get the object's current provider context, or throw an exception if no
-     * provider context has been set
-     *
-     * @return TContext
-     */
-    public function requireContext(): ProviderContextInterface;
 }

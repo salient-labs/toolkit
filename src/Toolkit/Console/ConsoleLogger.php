@@ -5,7 +5,7 @@ namespace Salient\Console;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Salient\Contract\Console\ConsoleMessageType;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Utility\Format;
@@ -125,10 +125,10 @@ final class ConsoleLogger implements LoggerInterface
         }
 
         $this->Writer->message(
-            self::LOG_LEVEL_MAP[$level],
             (string) $message,
             null,
-            ConsoleMessageType::STANDARD,
+            self::LOG_LEVEL_MAP[$level],
+            MessageType::STANDARD,
             $exception ?? null,
         );
     }

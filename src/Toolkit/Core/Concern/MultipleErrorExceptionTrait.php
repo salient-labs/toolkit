@@ -68,7 +68,7 @@ trait MultipleErrorExceptionTrait
     public function reportErrors()
     {
         foreach ($this->Errors as $error) {
-            Console::message(Level::ERROR, '__Error:__', $error, MessageType::UNFORMATTED);
+            Console::message('__Error:__', $error, Level::ERROR, MessageType::UNFORMATTED);
         }
         $this->HasUnreportedErrors = false;
         return $this;

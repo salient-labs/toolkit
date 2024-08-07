@@ -4,6 +4,7 @@ namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Throwable;
@@ -129,7 +130,7 @@ interface ConsoleWriterInterface
     public function escape(string $string): string;
 
     /**
-     * Print "‼ $msg1 $msg2" with level ERROR
+     * Print "! $msg1 $msg2" with level ERROR
      *
      * @return $this
      */
@@ -141,7 +142,7 @@ interface ConsoleWriterInterface
     );
 
     /**
-     * Print "‼ $msg1 $msg2" with level ERROR once per run
+     * Print "! $msg1 $msg2" with level ERROR once per run
      *
      * @return $this
      */
@@ -153,7 +154,7 @@ interface ConsoleWriterInterface
     );
 
     /**
-     * Print "! $msg1 $msg2" with level WARNING
+     * Print "? $msg1 $msg2" with level WARNING
      *
      * @return $this
      */
@@ -165,7 +166,7 @@ interface ConsoleWriterInterface
     );
 
     /**
-     * Print "! $msg1 $msg2" with level WARNING once per run
+     * Print "? $msg1 $msg2" with level WARNING once per run
      *
      * @return $this
      */
@@ -205,7 +206,7 @@ interface ConsoleWriterInterface
     public function logOnce(string $msg1, ?string $msg2 = null);
 
     /**
-     * Print "⁞ <caller> $msg1 $msg2" with level DEBUG
+     * Print ": <caller> $msg1 $msg2" with level DEBUG
      *
      * @param int $depth To print your caller's name instead of your own, set
      * `$depth` to 1.
@@ -219,7 +220,7 @@ interface ConsoleWriterInterface
     );
 
     /**
-     * Print "⁞ <caller> $msg1 $msg2" with level DEBUG once per run
+     * Print ": <caller> $msg1 $msg2" with level DEBUG once per run
      *
      * @param int $depth To print your caller's name instead of your own, set
      * `$depth` to 1.
@@ -255,14 +256,14 @@ interface ConsoleWriterInterface
      * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
      *
      * @param Level::* $level
-     * @param ConsoleMessageType::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function message(
-        int $level,
         string $msg1,
         ?string $msg2 = null,
-        int $type = ConsoleMessageType::STANDARD,
+        int $level = Level::INFO,
+        int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
     );
@@ -272,14 +273,14 @@ interface ConsoleWriterInterface
      * once per run
      *
      * @param Level::* $level
-     * @param ConsoleMessageType::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function messageOnce(
-        int $level,
         string $msg1,
         ?string $msg2 = null,
-        int $type = ConsoleMessageType::STANDARD,
+        int $level = Level::INFO,
+        int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
     );
@@ -293,10 +294,10 @@ interface ConsoleWriterInterface
     public function count(int $level);
 
     /**
-     * Increase the indentation level of messages and print "▶ $msg1 $msg2" with
+     * Increase the indentation level of messages and print "» $msg1 $msg2" with
      * level NOTICE
      *
-     * If `$endMsg1` is not `null`, `"◀ $endMsg1 $endMsg2"` is printed with
+     * If `$endMsg1` is not `null`, `"« $endMsg1 $endMsg2"` is printed with
      * level `NOTICE` when {@see groupEnd()} is called to close the group.
      *
      * @return $this
@@ -348,64 +349,64 @@ interface ConsoleWriterInterface
      * Print "$msg" to registered targets
      *
      * @param Level::* $level
-     * @param ConsoleMessageType::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function print(
         string $msg,
         int $level = Level::INFO,
-        int $type = ConsoleMessageType::UNFORMATTED
+        int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered STDOUT or STDERR targets
      *
      * @param Level::* $level
-     * @param ConsoleMessageType::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function printOut(
         string $msg,
         int $level = Level::INFO,
-        int $type = ConsoleMessageType::UNFORMATTED
+        int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered TTY targets
      *
      * @param Level::* $level
-     * @param ConsoleMessageType::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function printTty(
         string $msg,
         int $level = Level::INFO,
-        int $type = ConsoleMessageType::UNFORMATTED
+        int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDOUT even if no STDOUT target is registered
      *
      * @param Level::* $level
-     * @param ConsoleMessageType::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function printStdout(
         string $msg,
         int $level = Level::INFO,
-        int $type = ConsoleMessageType::UNFORMATTED
+        int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDERR even if no STDERR target is registered
      *
      * @param Level::* $level
-     * @param ConsoleMessageType::* $type
+     * @param MessageType::* $type
      * @return $this
      */
     public function printStderr(
         string $msg,
         int $level = Level::INFO,
-        int $type = ConsoleMessageType::UNFORMATTED
+        int $type = MessageType::UNFORMATTED
     );
 }
