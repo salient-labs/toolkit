@@ -212,16 +212,16 @@
         },
         {
             "name": "latte/latte",
-            "version": "v3.0.17",
+            "version": "v3.0.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/latte.git",
-                "reference": "7218197c219d1842d4e100211f96851ebc25efad"
+                "reference": "fca0a3eddd70213201b3b3abec0cb8dde7bbc259"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/latte/zipball/7218197c219d1842d4e100211f96851ebc25efad",
-                "reference": "7218197c219d1842d4e100211f96851ebc25efad",
+                "url": "https://api.github.com/repos/nette/latte/zipball/fca0a3eddd70213201b3b3abec0cb8dde7bbc259",
+                "reference": "fca0a3eddd70213201b3b3abec0cb8dde7bbc259",
                 "shasum": ""
             },
             "require": {
@@ -292,9 +292,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/latte/issues",
-                "source": "https://github.com/nette/latte/tree/v3.0.17"
+                "source": "https://github.com/nette/latte/tree/v3.0.18"
             },
-            "time": "2024-07-09T10:59:20+00:00"
+            "time": "2024-08-06T07:58:55+00:00"
         },
         {
             "name": "league/commonmark",
@@ -877,20 +877,20 @@
         },
         {
             "name": "nette/utils",
-            "version": "v4.0.4",
+            "version": "v4.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/utils.git",
-                "reference": "d3ad0aa3b9f934602cb3e3902ebccf10be34d218"
+                "reference": "736c567e257dbe0fcf6ce81b4d6dbe05c6899f96"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/utils/zipball/d3ad0aa3b9f934602cb3e3902ebccf10be34d218",
-                "reference": "d3ad0aa3b9f934602cb3e3902ebccf10be34d218",
+                "url": "https://api.github.com/repos/nette/utils/zipball/736c567e257dbe0fcf6ce81b4d6dbe05c6899f96",
+                "reference": "736c567e257dbe0fcf6ce81b4d6dbe05c6899f96",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0 <8.4"
+                "php": "8.0 - 8.4"
             },
             "conflict": {
                 "nette/finder": "<3",
@@ -957,9 +957,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/utils/issues",
-                "source": "https://github.com/nette/utils/tree/v4.0.4"
+                "source": "https://github.com/nette/utils/tree/v4.0.5"
             },
-            "time": "2024-01-17T16:50:36+00:00"
+            "time": "2024-08-07T15:39:19+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -1019,16 +1019,16 @@
         },
         {
             "name": "phpstan/php-8-stubs",
-            "version": "0.3.92",
+            "version": "0.3.93",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/php-8-stubs.git",
-                "reference": "ea97d209467f438fafcac44115188702337d4c6d"
+                "reference": "dc766a0c5247a56a0f45d44db1e8422b48fea0a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/ea97d209467f438fafcac44115188702337d4c6d",
-                "reference": "ea97d209467f438fafcac44115188702337d4c6d",
+                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/dc766a0c5247a56a0f45d44db1e8422b48fea0a3",
+                "reference": "dc766a0c5247a56a0f45d44db1e8422b48fea0a3",
                 "shasum": ""
             },
             "type": "library",
@@ -1045,9 +1045,9 @@
             "description": "PHP stubs extracted from php-src",
             "support": {
                 "issues": "https://github.com/phpstan/php-8-stubs/issues",
-                "source": "https://github.com/phpstan/php-8-stubs/tree/0.3.92"
+                "source": "https://github.com/phpstan/php-8-stubs/tree/0.3.93"
             },
-            "time": "2024-07-26T00:16:47+00:00"
+            "time": "2024-08-05T00:18:00+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
