@@ -2,5 +2,7 @@
 
 namespace Salient\Utility\Exception;
 
-/** @api */
+/**
+ * @api
+ */
 class FilesystemErrorException extends AbstractUtilityException {}

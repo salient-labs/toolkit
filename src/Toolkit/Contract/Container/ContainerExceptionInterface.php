@@ -4,5 +4,7 @@ namespace Salient\Contract\Container;
 
 use Psr\Container\ContainerExceptionInterface as PsrContainerExceptionInterface;
 
-/** @api */
+/**
+ * @api
+ */
 interface ContainerExceptionInterface extends PsrContainerExceptionInterface {}

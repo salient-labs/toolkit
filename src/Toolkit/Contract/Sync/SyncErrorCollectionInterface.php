@@ -52,6 +52,8 @@ interface SyncErrorCollectionInterface extends CollectionInterface, Stringable
         string $successText = 'No sync errors recorded'
     ): void;
 
-    /** @return array<array{code:string,title:string,detail:string,meta:array{level:string,count:int,seen:int,values:list<mixed[]|object|int|float|string|bool|null>}}> */
+    /**
+     * @return array<array{code:string,title:string,detail:string,meta:array{level:string,count:int,seen:int,values:list<mixed[]|object|int|float|string|bool|null>}}>
+     */
     public function jsonSerialize(): array;
 }

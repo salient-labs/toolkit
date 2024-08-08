@@ -2,5 +2,7 @@
 
 namespace Salient\Core\Exception;
 
-/** @api */
+/**
+ * @api
+ */
 class ProcessTimedOutException extends ProcessException {}

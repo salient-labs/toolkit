@@ -2,5 +2,7 @@
 
 namespace Salient\Contract\Sync\Exception;
 
-/** @api */
+/**
+ * @api
+ */
 interface SyncEntityNotFoundExceptionInterface extends SyncExceptionInterface {}

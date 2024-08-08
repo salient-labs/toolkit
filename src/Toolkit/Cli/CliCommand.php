@@ -27,8 +27,11 @@ use Throwable;
  */
 abstract class CliCommand implements CliCommandInterface
 {
-    /** @api */
+    /**
+     * @api
+     */
     protected CliApplicationInterface $App;
+
     /** @var string[] */
     private array $Name = [];
     /** @var array<string,CliOption>|null */

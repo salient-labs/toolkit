@@ -4,5 +4,7 @@ namespace Salient\Sync\Event;
 
 use Salient\Contract\Sync\Event\SyncStoreLoadedEventInterface;
 
-/** @internal */
+/**
+ * @internal
+ */
 class SyncStoreLoadedEvent extends AbstractSyncStoreEvent implements SyncStoreLoadedEventInterface {}

@@ -2,5 +2,7 @@
 
 namespace Salient\Contract\Container;
 
-/** @api */
+/**
+ * @api
+ */
 interface InvalidServiceExceptionInterface extends ContainerExceptionInterface {}

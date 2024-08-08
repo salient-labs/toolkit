@@ -17,7 +17,9 @@ interface HttpHeadersInterface extends
     Immutable,
     Stringable
 {
-    /** @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items */
+    /**
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
+     */
     public function __construct($items = []);
 
     /**

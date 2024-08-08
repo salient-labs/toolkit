@@ -4,5 +4,7 @@ namespace Salient\Core\Exception;
 
 use Salient\Core\AbstractException;
 
-/** @api */
+/**
+ * @api
+ */
 class InvalidConfigurationException extends AbstractException {}

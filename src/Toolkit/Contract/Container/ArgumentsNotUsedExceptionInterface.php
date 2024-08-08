@@ -2,5 +2,7 @@
 
 namespace Salient\Contract\Container;
 
-/** @api */
+/**
+ * @api
+ */
 interface ArgumentsNotUsedExceptionInterface extends ContainerExceptionInterface {}

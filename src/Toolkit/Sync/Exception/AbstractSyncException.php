@@ -5,5 +5,7 @@ namespace Salient\Sync\Exception;
 use Salient\Contract\Sync\Exception\SyncExceptionInterface;
 use Salient\Core\AbstractException;
 
-/** @internal */
+/**
+ * @internal
+ */
 abstract class AbstractSyncException extends AbstractException implements SyncExceptionInterface {}

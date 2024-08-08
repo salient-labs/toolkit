@@ -2,5 +2,7 @@
 
 namespace Salient\Contract\Sync\Event;
 
-/** @api */
+/**
+ * @api
+ */
 interface SyncStoreLoadedEventInterface extends SyncStoreEventInterface {}

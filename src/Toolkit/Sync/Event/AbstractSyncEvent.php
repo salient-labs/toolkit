@@ -2,5 +2,7 @@
 
 namespace Salient\Sync\Event;
 
-/** @internal */
+/**
+ * @internal
+ */
 abstract class AbstractSyncEvent {}

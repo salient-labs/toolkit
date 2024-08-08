@@ -4,5 +4,7 @@ namespace Salient\Contract\Http;
 
 use Psr\Http\Message\ServerRequestInterface;
 
-/** @api */
+/**
+ * @api
+ */
 interface HttpServerRequestInterface extends HttpRequestInterface, ServerRequestInterface {}

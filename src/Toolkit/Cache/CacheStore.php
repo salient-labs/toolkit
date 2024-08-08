@@ -50,7 +50,9 @@ SQL
         );
     }
 
-    /** @internal */
+    /**
+     * @internal
+     */
     protected function __clone() {}
 
     /**

@@ -4,5 +4,7 @@ namespace Salient\Contract\Container;
 
 use Psr\Container\NotFoundExceptionInterface;
 
-/** @api */
+/**
+ * @api
+ */
 interface ServiceNotFoundExceptionInterface extends ContainerExceptionInterface, NotFoundExceptionInterface {}

@@ -55,7 +55,9 @@ interface CollectionInterface extends
      */
     public const FIND_KEY = 8;
 
-    /** @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items */
+    /**
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
+     */
     public function __construct($items = []);
 
     /**

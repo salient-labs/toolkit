@@ -78,7 +78,9 @@ abstract class ADOConnection
      */
     public function GetOne($sql, $inputarr = false) {}
 
-    /** @return mixed */
+    /**
+     * @return mixed
+     */
     public function Close() {}
 
     /**

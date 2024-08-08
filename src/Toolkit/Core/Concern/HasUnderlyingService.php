@@ -20,7 +20,9 @@ trait HasUnderlyingService
     /** @var array<class-string<static>,true> */
     private static array $LoadedServices = [];
 
-    /** @return class-string<TService>|array<class-string<TService>,class-string<TService>|array<class-string<TService>>> */
+    /**
+     * @return class-string<TService>|array<class-string<TService>,class-string<TService>|array<class-string<TService>>>
+     */
     abstract protected static function getService();
 
     /**
