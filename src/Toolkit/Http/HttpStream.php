@@ -301,6 +301,7 @@ class HttpStream implements HttpStreamInterface
     {
         $this->assertIsSeekable();
 
+        /** @disregard P1006 */
         File::seek($this->Stream, $offset, $whence, $this->Uri);
     }
 

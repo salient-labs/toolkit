@@ -775,6 +775,7 @@ final class SyncIntrospector extends Introspector
                         }
 
                         /** @var SyncEntityInterface&Treeable $entity */
+                        /** @disregard P1008 */
                         DeferredEntity::deferList(
                             $provider,
                             $context->pushWithRecursionCheck($entity),
@@ -823,6 +824,7 @@ final class SyncIntrospector extends Introspector
                     }
 
                     /** @var SyncEntityInterface&Treeable $entity */
+                    /** @disregard P1008 */
                     DeferredEntity::defer(
                         $provider,
                         $context->pushWithRecursionCheck($entity),
@@ -920,6 +922,7 @@ final class SyncIntrospector extends Introspector
                 }
 
                 /** @var SyncEntityInterface&Treeable $entity */
+                /** @disregard P1008 */
                 DeferredRelationship::defer(
                     $provider,
                     $context->pushWithRecursionCheck($entity),

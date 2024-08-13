@@ -705,6 +705,7 @@ final class File extends AbstractUtility
      */
     public static function seek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
     {
+        /** @disregard P1006 */
         if (@fseek($stream, $offset, $whence) === -1) {
             self::check(false, 'fseek', $uri, $stream);
         }
@@ -720,6 +721,7 @@ final class File extends AbstractUtility
     public static function maybeSeek($stream, int $offset, int $whence = \SEEK_SET, $uri = null): void
     {
         if (self::isSeekableStream($stream)) {
+            /** @disregard P1006 */
             self::seek($stream, $offset, $whence, $uri);
         }
     }

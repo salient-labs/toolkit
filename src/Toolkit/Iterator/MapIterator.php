@@ -37,6 +37,7 @@ class MapIterator extends IteratorIterator
 
     /**
      * @return TOutput
+     * @disregard P1038
      */
     #[ReturnTypeWillChange]
     public function current()

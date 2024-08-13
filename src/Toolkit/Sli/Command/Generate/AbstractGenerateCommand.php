@@ -459,6 +459,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 if ($t === 'min' || $t === 'max') {
                     // - before: `'array < int < 1, max > >'`
                     // - after: `['array', '<', 'int', '<', '1']`
+                    /** @disregard P1006 */
                     $before = substr($subject, 0, $match[0][1]);
                     $before = Regex::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
                     $before = Arr::trim($before);

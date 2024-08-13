@@ -102,6 +102,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         // Bind interfaces that extend Psr\Container\ContainerInterface
         foreach ($class->getInterfaces() as $name => $interface) {
             if ($interface->implementsInterface(PsrContainerInterface::class)) {
+                /** @disregard P1006 */
                 $this->instance($name, $this);
             }
         }

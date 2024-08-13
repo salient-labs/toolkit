@@ -538,6 +538,7 @@ class Application extends Container implements ApplicationInterface
             ));
         }
 
+        /** @disregard P1006 */
         Sync::load(new SyncStore(
             $syncDb,
             $command === null

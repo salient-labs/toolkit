@@ -184,6 +184,7 @@ final class DeferredEntity implements DeferredEntityInterface
     ): void {
         if ($callback) {
             foreach ($entityIds as $entityId) {
+                /** @disregard P1008 */
                 new self(
                     $provider,
                     $context,

@@ -520,6 +520,7 @@ class Introspector
 
             $property = $this->_Class->Properties[$normalisedKey] ?? null;
             if ($property !== null) {
+                /** @disregard P1006 */
                 if ($this->_Class->propertyActionIsAllowed(
                     $normalisedKey, IntrospectionClass::ACTION_SET
                 )) {
