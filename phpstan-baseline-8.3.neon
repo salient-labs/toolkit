@@ -71,31 +71,6 @@ parameters:
 			path: src/Toolkit/Core/ArrayMapper.php
 
 		-
-			message: "#^Cannot access an offset on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Graph.php
-
-		-
-			message: "#^Cannot access offset \\(int\\|string\\) on array\\|object\\.$#"
-			count: 4
-			path: src/Toolkit/Core/Graph.php
-
-		-
-			message: "#^Cannot access offset int\\|string on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Graph.php
-
-		-
-			message: "#^Parameter \\#1 \\$object_or_class of function property_exists expects object\\|string, array\\|object given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Graph.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of function array_key_exists expects array, array\\|object given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Graph.php
-
-		-
 			message: "#^Parameter \\#1 \\$callback of static method Closure\\:\\:fromCallable\\(\\) expects callable\\(\\)\\: mixed, array\\{class\\-string\\<TClass of object\\>, 'normalise'\\} given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
@@ -529,51 +504,6 @@ parameters:
 			message: "#^Parameter \\#2 \\$conformity of static method Salient\\\\Contract\\\\Core\\\\Constructible\\:\\:constructList\\(\\) expects 0\\|1\\|2, 0\\|1\\|2\\|null given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
-
-		-
-			message: "#^Cannot access an offset on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access an offset on bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 3
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'a' on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'b' on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'qux' on array\\|bool\\|float\\|int\\|object\\|string\\.$#"
-			count: 4
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'qux' on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 4
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 0 on bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 1 on bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 3 on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/GraphTest.php
 
 		-
 			message: "#^Cannot access offset 0 on array\\{float, int\\}\\|float\\|int\\.$#"

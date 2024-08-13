@@ -4,7 +4,7 @@ namespace Salient\Tests\Core;
 
 use Salient\Core\Graph;
 use Salient\Tests\TestCase;
-use LogicException;
+use OutOfRangeException;
 use stdClass;
 
 /**
@@ -14,72 +14,98 @@ final class GraphTest extends TestCase
 {
     public function testWithObject(): void
     {
-        $graph = new stdClass();
-        $normaliser = new Graph($graph, stdClass::class);
+        $value = new stdClass();
+        $graph = new Graph($value);
 
-        $normaliser['foo'] = 'bar';
-        $this->assertSame('bar', $graph->foo);
+        $graph['foo'] = 'bar';
+        /** @disregard P1006 */
+        $this->assertSame('bar', $value->foo);
 
-        $normaliser['q']['qux']['quux'] = 'foobar';
-        $this->assertSame('foobar', $graph->q->qux->quux);
+        $graph['q'] = new stdClass();
+        $this->assertInstanceOf(Graph::class, $graph['q']);
+        $graph['q']['qux'] = new stdClass();
+        $this->assertInstanceOf(Graph::class, $graph['q']['qux']);
+        $graph['q']['qux']['quux'] = 'foobar';
+        /** @disregard P1006 */
+        $this->assertSame('foobar', $value->q->qux->quux);
 
-        unset($normaliser['q']['qux']);
-        $this->assertFalse(isset($normaliser['q']['qux']['quux']));
-        $this->assertFalse(isset($normaliser['q']['qux']));
+        unset($graph['q']['qux']);
+        $this->assertFalse(isset($graph['q']['qux']['quux']));
+        $this->assertFalse(isset($graph['q']['qux']));
 
-        $normaliser['arr'] = ['alpha', 'bravo', 'charlie'];
-        $normaliser['arr'][3] = 'delta';
-        $this->assertFalse(is_array($normaliser['arr']));
-        $this->assertTrue(is_array($graph->arr));
-        $this->assertSame(['alpha', 'bravo', 'charlie', 'delta'], $graph->arr);
+        $graph['arr'] = ['alpha', 'bravo', 'charlie'];
+        $this->assertInstanceOf(Graph::class, $graph['arr']);
+        $graph['arr'][] = 'delta';
+        /** @disregard P1006 */
+        $this->assertTrue(is_array($value->arr));
+        /** @disregard P1006 */
+        $this->assertSame(['alpha', 'bravo', 'charlie', 'delta'], $value->arr);
 
-        $normaliser['obj']['a'] = 'alpha';
-        $normaliser['obj']['b'] = 'bravo';
-        $this->assertFalse(is_array($normaliser['obj']));
-        $this->assertFalse(is_array($graph->obj));
-        $this->assertSame(['a' => 'alpha', 'b' => 'bravo'], (array) $graph->obj);
+        $graph['obj'] = new stdClass();
+        $this->assertInstanceOf(Graph::class, $graph['obj']);
+        $graph['obj']['a'] = 'alpha';
+        $graph['obj']['b'] = 'bravo';
+        $graph['obj'][0] = 'charlie';
+        $graph['obj'][1] = 'delta';
+        /** @disregard P1006 */
+        $this->assertFalse(is_array($value->obj));
+        /** @disregard P1006 */
+        $this->assertSame(['a' => 'alpha', 'b' => 'bravo', 'charlie', 'delta'], (array) $value->obj);
 
-        $normaliser['obj'][0] = 'charlie';
-        $normaliser['obj'][1] = 'delta';
-        $this->assertFalse(is_array($normaliser['obj']));
-        $this->assertFalse(is_array($graph->obj));
-        $this->assertSame(['a' => 'alpha', 'b' => 'bravo', 'charlie', 'delta'], (array) $graph->obj);
-
-        $this->expectException(LogicException::class);
-        $normaliser['obj'][] = 'echo';
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Offset not found: bar');
+        // @phpstan-ignore offsetAccess.nonOffsetAccessible
+        $graph['bar'][] = 'foo';
     }
 
     public function testWithArray(): void
     {
-        $graph = [];
-        $normaliser = new Graph($graph);
+        $value = [];
+        $graph = new Graph($value);
 
-        $normaliser['foo'] = 'bar';
-        $this->assertSame('bar', $graph['foo']);
+        $graph['foo'] = 'bar';
+        $this->assertSame('bar', $value['foo']);
 
-        $normaliser['q']['qux']['quux'] = 'foobar';
-        $this->assertSame('foobar', $graph['q']['qux']['quux']);
+        $graph['q'] = [];
+        $this->assertInstanceOf(Graph::class, $graph['q']);
+        $graph['q']['qux'] = [];
+        $this->assertInstanceOf(Graph::class, $graph['q']['qux']);
+        $graph['q']['qux']['quux'] = 'foobar';
+        $this->assertSame('foobar', $value['q']['qux']['quux']);
 
-        unset($normaliser['q']['qux']);
-        $this->assertFalse(isset($normaliser['q']['qux']['quux']));
-        $this->assertFalse(isset($normaliser['q']['qux']));
+        unset($graph['q']['qux']);
+        $this->assertFalse(isset($graph['q']['qux']['quux']));
+        $this->assertFalse(isset($graph['q']['qux']));
 
-        $normaliser['arr'] = ['alpha', 'bravo', 'charlie'];
-        $normaliser['arr'][] = 'delta';
-        $this->assertFalse(is_array($normaliser['arr']));
-        $this->assertTrue(is_array($graph['arr']));
-        $this->assertSame(['alpha', 'bravo', 'charlie', 'delta'], $graph['arr']);
+        $graph['arr'] = ['alpha', 'bravo', 'charlie'];
+        $this->assertInstanceOf(Graph::class, $graph['arr']);
+        $graph['arr'][] = 'delta';
+        $this->assertFalse(is_array($graph['arr']));
+        $this->assertTrue(is_array($value['arr']));
+        $this->assertSame(['alpha', 'bravo', 'charlie', 'delta'], $value['arr']);
 
-        $normaliser['obj']['a'] = 'alpha';
-        $normaliser['obj']['b'] = 'bravo';
-        $this->assertFalse(is_array($normaliser['obj']));
-        $this->assertTrue(is_array($graph['obj']));
-        $this->assertSame(['a' => 'alpha', 'b' => 'bravo'], $graph['obj']);
+        $graph['obj'] = [];
+        $this->assertInstanceOf(Graph::class, $graph['obj']);
+        $graph['obj']['a'] = 'alpha';
+        $graph['obj']['b'] = 'bravo';
+        $graph['obj'][0] = 'charlie';
+        $graph['obj'][1] = 'delta';
+        $this->assertTrue(is_array($value['obj']));
+        $this->assertSame(['a' => 'alpha', 'b' => 'bravo', 'charlie', 'delta'], $value['obj']);
 
-        $normaliser['obj'][] = 'charlie';
-        $normaliser['obj'][] = 'delta';
-        $this->assertFalse(is_array($normaliser['obj']));
-        $this->assertTrue(is_array($graph['obj']));
-        $this->assertSame(['a' => 'alpha', 'b' => 'bravo', 'charlie', 'delta'], $graph['obj']);
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Offset not found: bar');
+        // @phpstan-ignore offsetAccess.nonOffsetAccessible
+        $graph['bar'][] = 'foo';
+    }
+
+    public function testOffsetSet(): void
+    {
+        $value = new stdClass();
+        $graph = new Graph($value);
+
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid offset');
+        $graph[] = 'foo';
     }
 }
