@@ -2,11 +2,15 @@
 
 namespace Salient\Tests\Http;
 
+use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Http\FormDataFlag;
 use Salient\Http\Http;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * @covers \Salient\Http\Http
@@ -245,5 +249,63 @@ final class HttpTest extends TestCase
         $this->assertSame('colon:delimited', Http::unquoteString('"colon:delimited"'));
         $this->assertSame('escap\ed', Http::unquoteString('"escap\\\\ed"'));
         $this->assertSame('double "quotes"', Http::unquoteString('"double \"quotes\""'));
+    }
+
+    /**
+     * @dataProvider applyToQueryProvider
+     *
+     * @param PsrUriInterface|Stringable|string $uri
+     * @param mixed[] $data
+     * @param int-mask-of<FormDataFlag::*> $flags
+     */
+    public function testApplyToQuery(
+        string $expected,
+        $uri,
+        array $data,
+        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null
+    ): void {
+        $this->assertSame(
+            $expected,
+            (string) Http::applyToQuery($uri, $data, $flags, $dateFormatter),
+        );
+    }
+
+    /**
+     * @return array<array{string,PsrUriInterface|Stringable|string,mixed[],3?:int,4?:DateFormatterInterface|null}>
+     */
+    public static function applyToQueryProvider(): array
+    {
+        return [
+            [
+                'http://example.com/?foo=bar&baz=qux',
+                'http://example.com/?foo=bar',
+                ['baz' => 'qux'],
+            ],
+            [
+                'http://example.com/?foo=BAR&baz=qux',
+                'http://example.com/?foo=bar',
+                ['foo' => 'BAR', 'baz' => 'qux'],
+            ],
+            [
+                // http://example.com/?foo[]=pi&foo[]=3.14&foo[]=1
+                'http://example.com/?foo%5B%5D=pi&foo%5B%5D=3.14&foo%5B%5D=1',
+                'http://example.com/?foo=bar',
+                ['foo' => ['pi', 3.14, true]],
+            ],
+            [
+                // http://example.com/?foo[]=-1&foo[]=0&foo[]=qux
+                'http://example.com/?foo%5B%5D=-1&foo%5B%5D=0&foo%5B%5D=qux',
+                // http://example.com/?foo[]=bar&foo[]=baz&foo[]=qux
+                'http://example.com/?foo%5B%5D=bar&foo%5B%5D=baz&foo%5B%5D=qux',
+                ['foo' => [-1, 0]],
+            ],
+            [
+                'http://example.com/?foo=BAR',
+                // http://example.com/?foo[]=bar&foo[]=baz&foo[]=qux
+                'http://example.com/?foo%5B%5D=bar&foo%5B%5D=baz&foo%5B%5D=qux',
+                ['foo' => 'BAR'],
+            ],
+        ];
     }
 }

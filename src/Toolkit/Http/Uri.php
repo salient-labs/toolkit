@@ -219,7 +219,7 @@ REGEX;
      */
     public static function resolveReference($reference, $baseUri): string
     {
-        return (string) static::from($baseUri)->follow(static::from($reference));
+        return (string) static::from($baseUri)->follow($reference);
     }
 
     /**
