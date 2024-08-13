@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Iterator;
+namespace Salient\Tests\Core;
 
-use Salient\Iterator\Graph;
+use Salient\Core\Graph;
 use Salient\Tests\TestCase;
 use LogicException;
 use stdClass;
 
 /**
- * @covers \Salient\Iterator\Graph
+ * @covers \Salient\Core\Graph
  */
 final class GraphTest extends TestCase
 {
