@@ -10,6 +10,30 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.41] - 2024-08-14
+
+### Added
+
+#### `Http`
+
+- Add `Http::applyToQuery()` for simple manipulation of query strings in URIs
+
+### Changed
+
+#### `Core`
+
+- Move `Graph` from `Iterator` to `Core` and refactor
+  - Allow `Graph` to be extended
+  - Rename `Graph::inner()` to `getValue()`
+  - Don't create missing properties or array keys on `Graph::offsetGet()` unless enabled via new constructor parameters
+  - Add and implement `GraphInterface`
+
+### Removed
+
+#### `Core`
+
+- Remove `Graph::with()` and `Graph::from()`
+
 ## [v0.99.40] - 2024-08-07
 
 ### Added
@@ -3225,6 +3249,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.41]: https://github.com/salient-labs/toolkit/compare/v0.99.40...v0.99.41
 [v0.99.40]: https://github.com/salient-labs/toolkit/compare/v0.99.39...v0.99.40
 [v0.99.39]: https://github.com/salient-labs/toolkit/compare/v0.99.38...v0.99.39
 [v0.99.38]: https://github.com/salient-labs/toolkit/compare/v0.99.37...v0.99.38
