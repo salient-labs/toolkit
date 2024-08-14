@@ -303,6 +303,7 @@ class CliApplication extends Application implements CliApplicationInterface
     {
         $this->LastExitStatus = 0;
 
+        /** @disregard P1006 */
         $args = array_slice($_SERVER['argv'], 1);
 
         $lastNode = null;

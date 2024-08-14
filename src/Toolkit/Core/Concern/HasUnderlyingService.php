@@ -84,8 +84,11 @@ trait HasUnderlyingService
             return;
         }
 
+        /** @disregard P1008 */
         self::doLoadServiceList($serviceName, $serviceList);
+        /** @disregard P1008 */
         self::$ServiceNames[static::class] = $serviceName;
+        /** @disregard P1008 */
         self::$ServiceLists[static::class] = $serviceList;
         self::$LoadedServices[static::class] = true;
     }

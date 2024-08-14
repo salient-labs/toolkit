@@ -2,7 +2,10 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
@@ -14,6 +17,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * @api
@@ -188,5 +192,32 @@ final class Http extends AbstractUtility
         return $count
             ? Regex::replace('/\\\\(.)/', '$1', $string)
             : $string;
+    }
+
+    /**
+     * Apply values to the query string of a URI
+     *
+     * @template TUri of PsrUriInterface|Stringable|string
+     *
+     * @param TUri $uri
+     * @param mixed[] $data
+     * @param int-mask-of<FormDataFlag::*> $flags
+     * @return (TUri is PsrUriInterface ? TUri : Uri)
+     */
+    public static function applyToQuery(
+        $uri,
+        array $data,
+        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null
+    ): PsrUriInterface {
+        if (!$uri instanceof PsrUriInterface) {
+            $uri = new Uri((string) $uri);
+        }
+        /** @todo Replace with `parse_str()` alternative */
+        parse_str($uri->getQuery(), $query);
+        return $uri->withQuery(
+            (new FormData(array_replace_recursive($query, $data)))
+                ->getQuery($flags, $dateFormatter)
+        );
     }
 }

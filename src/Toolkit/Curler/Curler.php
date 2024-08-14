@@ -501,6 +501,7 @@ class Curler implements CurlerInterface, Buildable
     {
         $request = $this->createRequest($method, $query, $data);
         $request = $request->withHeader(HttpHeader::CONTENT_TYPE, $mediaType);
+        /** @disregard P1006 */
         $this->doSendRequest($request);
         return $this->getLastResponseBody();
     }

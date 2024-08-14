@@ -146,6 +146,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
             $this->SyncProviderInterfaces[] = $name;
 
             // Add the entities they service to SyncProviderEntities
+            /** @disregard P1006 */
             foreach (SyncIntrospector::providerToEntity($name) as $entity) {
                 if (!is_a($entity, SyncEntityInterface::class, true)) {
                     continue;

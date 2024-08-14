@@ -191,31 +191,6 @@ parameters:
 			path: src/Toolkit/Core/SqlQuery.php
 
 		-
-			message: "#^Cannot access an offset on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/Graph.php
-
-		-
-			message: "#^Cannot access offset \\(int\\|string\\) on array\\|object\\.$#"
-			count: 4
-			path: src/Toolkit/Iterator/Graph.php
-
-		-
-			message: "#^Cannot access offset int\\|string on array\\|object\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/Graph.php
-
-		-
-			message: "#^Parameter \\#1 \\$object_or_class of function property_exists expects object\\|string, array\\|object given\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/Graph.php
-
-		-
-			message: "#^Parameter \\#2 \\$search of function array_key_exists expects array, array\\|object given\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/Graph.php
-
-		-
 			message: "#^Method Salient\\\\Iterator\\\\RecursiveFilesystemIterator\\:\\:getIterator\\(\\) should return Traversable\\<string, SplFileInfo\\> but returns CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|FilesystemIterator\\|RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
@@ -599,51 +574,6 @@ parameters:
 			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and array\\{'accept', array\\{'\\*/\\*'\\}\\} will always evaluate to false\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
-
-		-
-			message: "#^Cannot access an offset on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access an offset on bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 3
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'a' on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'b' on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 2
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'qux' on array\\|bool\\|float\\|int\\|object\\|string\\.$#"
-			count: 4
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 'qux' on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 4
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 0 on bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 1 on bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
-
-		-
-			message: "#^Cannot access offset 3 on array\\|bool\\|float\\|int\\|object\\|string\\|null\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Iterator/GraphTest.php
 
 		-
 			message: "#^Cannot call method getDepth\\(\\) on RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<string, SplFileInfo, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\|null\\.$#"

@@ -57,6 +57,7 @@ class GraphIterator implements Iterator
 
     /**
      * @return mixed|false
+     * @disregard P1038
      */
     #[ReturnTypeWillChange]
     public function current()
@@ -76,6 +77,7 @@ class GraphIterator implements Iterator
 
     /**
      * @return array-key|null
+     * @disregard P1038
      */
     #[ReturnTypeWillChange]
     public function key()

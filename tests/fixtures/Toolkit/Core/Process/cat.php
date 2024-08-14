@@ -26,6 +26,7 @@ switch ($action) {
     case 'timeout':
     default:
         $stream ??= \STDERR;
+        /** @disregard P1006 */
         foreach (array_slice($_SERVER['argv'], 1) as $i => $arg) {
             fprintf($stream, '- %d: %s' . \PHP_EOL, $i + 1, $arg);
         }

@@ -59,7 +59,7 @@ return (new PhpCsFixer\Config())
             ['template', 'template-covariant'],
             ['extends', 'implements', 'use'],
             ['phpstan-require-extends', 'phpstan-require-implements'],
-            ['readonly', 'var', 'phpstan-var', 'param', 'param-out', 'phpstan-param', 'return', 'phpstan-return', 'throws', 'phpstan-assert*', 'phpstan-ignore-next-line'],
+            ['readonly', 'var', 'phpstan-var', 'param', 'param-out', 'phpstan-param', 'return', 'phpstan-return', 'throws', 'phpstan-assert*', 'phpstan-ignore*', 'disregard'],
             ['phpstan-*'],
         ]],
         'phpdoc_tag_casing' => true,

@@ -137,6 +137,7 @@ final class ConfigurationManager implements ArrayAccess
      *
      * @param string $offset
      * @return mixed
+     * @disregard P1038
      */
     #[ReturnTypeWillChange]
     public function offsetGet($offset)
