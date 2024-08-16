@@ -7,7 +7,7 @@ use LogicException;
 use RuntimeException;
 
 /**
- * Get information about the runtime environment
+ * Work with the runtime environment
  *
  * @api
  */

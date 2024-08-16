@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use Traversable;
 
 /**
- * Inflect English words
+ * Convert English words to different forms
  *
  * @api
  */

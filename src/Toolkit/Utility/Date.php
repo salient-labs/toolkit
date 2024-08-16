@@ -9,6 +9,8 @@ use DateTimeZone;
 use InvalidArgumentException;
 
 /**
+ * Work with date and time values, timezones and intervals
+ *
  * @api
  */
 final class Date extends AbstractUtility

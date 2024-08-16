@@ -8,6 +8,8 @@ use OutOfRangeException;
 use Stringable;
 
 /**
+ * Work with arrays and iterables
+ *
  * @api
  */
 final class Arr extends AbstractUtility

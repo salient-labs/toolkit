@@ -6,7 +6,8 @@ use Salient\Utility\Exception\PcreErrorException;
 use Stringable;
 
 /**
- * Wrappers for PHP's regular expression functions
+ * Wrappers for PHP's regular expression functions that throw exceptions on
+ * failure
  *
  * @api
  */

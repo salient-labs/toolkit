@@ -3,7 +3,7 @@
 namespace Salient\Utility;
 
 /**
- * Wrappers for json_encode() and json_decode()
+ * Wrappers for json_encode() and json_decode() that throw exceptions on failure
  *
  * @api
  */

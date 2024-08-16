@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use JsonException;
 
 /**
- * Format data for humans
+ * Make data human-readable
  *
  * @api
  */

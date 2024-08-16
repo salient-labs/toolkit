@@ -3,6 +3,8 @@
 namespace Salient\Utility;
 
 /**
+ * Get information about the call stack
+ *
  * @api
  */
 final class Debug extends AbstractUtility
