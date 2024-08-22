@@ -53,6 +53,7 @@ class TestOptions extends CliCommand
             Str::split(',', Env::get('required', ''))
         );
         $positional = Env::getBool('positional', false);
+        $extra = Env::getBool('extra', false);
 
         return [
             // CliOption::build()
@@ -157,6 +158,16 @@ class TestOptions extends CliCommand
                 ->defaultValue('/./')
                 ->inSchema()
                 ->bindTo($this->OptionalValue),
+            ...($extra
+                ? [
+                    CliOption::build()
+                        ->long('extra-flag'),
+                    CliOption::build()
+                        ->long('extra-value')
+                        ->valueName('EXTRA_VALUE')
+                        ->optionType(CliOptionType::VALUE),
+                ]
+                : []),
             ...($positional
                 ? [
                     CliOption::build()

@@ -463,6 +463,9 @@ class CliApplication extends Application implements CliApplicationInterface
     {
         $collapseSynopsis = null;
 
+        // Make empty values `null`
+        $args = Arr::trim($args, null, false, true);
+
         switch ($target) {
             case CliHelpTarget::MARKDOWN:
                 $formats = ConsoleMarkdownFormat::getTagFormats();

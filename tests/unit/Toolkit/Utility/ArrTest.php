@@ -1790,16 +1790,16 @@ final class ArrTest extends TestCase
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|Stringable|null
      *
-     * @param array<TKey,string>|list<string> $expected
+     * @param array<TKey,string|null>|list<string> $expected
      * @param iterable<TKey,TValue> $array
      */
-    public function testTrim(array $expected, iterable $array, ?string $characters = null, bool $removeEmpty = true): void
+    public function testTrim(array $expected, iterable $array, ?string $characters = null, bool $removeEmpty = true, bool $nullEmpty = false): void
     {
-        $this->assertSame($expected, Arr::trim($array, $characters, $removeEmpty));
+        $this->assertSame($expected, Arr::trim($array, $characters, $removeEmpty, $nullEmpty));
     }
 
     /**
-     * @return array<array{mixed[],mixed[],2?:string|null,3?:bool}>
+     * @return array<array{mixed[],mixed[],2?:string|null,3?:bool,4?:bool}>
      */
     public static function trimProvider(): array
     {
@@ -1828,18 +1828,25 @@ final class ArrTest extends TestCase
             ],
             [
                 ['0', '1', '1', 'a', 'b', 'c'],
-                [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c'],
+                [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c', 'd' => ' '],
             ],
             [
                 ['0', '1', '1', ' ', 'a', 'b', 'c'],
-                [null, 0, 1, true, false, ' ', '/', 'a' => 'a/', 'b' => '/b/', 'c' => '/c'],
+                [null, 0, 1, true, false, ' ', '/', 'a' => 'a/', 'b' => '/b/', 'c' => '/c', 'd' => '/'],
                 '/',
             ],
             [
-                ['', '0', '1', '1', '', '', 'a' => 'a', 'b' => 'b', 'c' => 'c'],
-                [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c'],
+                ['', '0', '1', '1', '', '', 'a' => 'a', 'b' => 'b', 'c' => 'c', 'd' => ''],
+                [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c', 'd' => ' '],
                 null,
                 false,
+            ],
+            [
+                [null, '0', '1', '1', null, null, 'a' => 'a', 'b' => 'b', 'c' => 'c', 'd' => null],
+                [null, 0, 1, true, false, ' ', 'a' => 'a ', 'b' => ' b ', 'c' => ' c', 'd' => ' '],
+                null,
+                false,
+                true,
             ],
         ];
     }

@@ -616,19 +616,20 @@ final class Arr extends AbstractUtility
 
     /**
      * Trim characters from each value in an array of strings and Stringables
-     * before removing empty strings
+     * before removing or optionally replacing empty strings
      *
      * @template TKey of array-key
      *
      * @param iterable<TKey,int|float|string|bool|Stringable|null> $array
      * @param string|null $characters Characters to trim, `null` (the default)
      * to trim whitespace, or an empty string to trim nothing.
-     * @return ($removeEmpty is false ? array<TKey,string> : list<string>)
+     * @return ($removeEmpty is false ? ($nullEmpty is true ? array<TKey,string|null> : array<TKey,string>) : list<string>)
      */
     public static function trim(
         iterable $array,
         ?string $characters = null,
-        bool $removeEmpty = true
+        bool $removeEmpty = true,
+        bool $nullEmpty = false
     ): array {
         foreach ($array as $key => $value) {
             $value = (string) $value;
@@ -643,7 +644,9 @@ final class Arr extends AbstractUtility
                 }
                 continue;
             }
-            $trimmed[$key] = $value;
+            $trimmed[$key] = $nullEmpty && $value === ''
+                ? null
+                : $value;
         }
         return $trimmed ?? [];
     }

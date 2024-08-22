@@ -457,6 +457,216 @@ See 'app --help' for more information.
 EOF],
                 ],
             ],
+            'markdown (positional, extra)' => [
+                <<<'EOF'
+## NAME
+
+app - Test CliCommand options
+
+## SYNOPSIS
+
+**`app`** \[**`-fF`**] \[**`--nullable`**] \[**`-v`** *<u>entity</u>*]
+\[**`-V`** *<u>value</u>*,...] \[**`-s`** *<u>date</u>*]
+\[**`-r`**\[*<u>pattern</u>*]] \
+    \[**`--extra-flag`**] \[**`--extra-value`** *<u>EXTRA-VALUE</u>*]
+\[**`--`**] *<u>INPUT-FILE</u>* *<u>endpoint-uri</u>* \
+    \[*<u>key</u>*=*<u>VALUE</u>*...]
+
+## OPTIONS
+
+- **`-f`**, **`--flag`**
+
+  Flag
+
+- **`-F`**, **`--flags`**
+
+  Flag with multipleAllowed()
+
+- **`--nullable`**
+
+  Flag with nullable() and no short form
+
+- **`-v`**, **`--value`** *<u>entity</u>*
+
+  Value with defaultValue() and valueName *<u>entity</u>*
+
+  The default entity is: `foo`
+
+- **`-V`**, **`--values`** *<u>value</u>*,...
+
+  Value with multipleAllowed(), unique() and nullable()
+
+- **`-s`**, **`--start`** *<u>date</u>*
+
+  Value with conditional required(), valueType DATE and valueName *<u>date</u>*
+
+- **`-r`**, **`--filter-regex`**\[=*<u>pattern</u>*]
+
+  VALUE_OPTIONAL with valueName *<u>pattern</u>* and a default value
+
+  The default pattern is: `/./`
+
+- **`--extra-flag`**
+
+- **`--extra-value`** *<u>EXTRA-VALUE</u>*
+
+- *<u>INPUT-FILE</u>*
+
+  required() VALUE_POSITIONAL with valueType FILE and valueName "INPUT_FILE"
+
+- *<u>endpoint-uri</u>*
+
+  required() VALUE_POSITIONAL with valueName "endpoint_uri"
+
+- *<u>key</u>*=*<u>VALUE</u>*...
+
+  VALUE_POSITIONAL with multipleAllowed() and valueName "\<key>=\<VALUE>"
+
+EOF,
+                0,
+                ['_md'],
+                null,
+                ['positional' => '1', 'extra' => '1'],
+            ],
+            'markdown (positional, extra, collapsed synopsis)' => [
+                <<<'EOF'
+## NAME
+
+app - Test CliCommand options
+
+## SYNOPSIS
+
+**`app`** \[*<u>options</u>*] \[**`--`**] *<u>INPUT-FILE</u>*
+*<u>endpoint-uri</u>* \[*<u>key</u>*=*<u>VALUE</u>*...]
+
+## OPTIONS
+
+- **`-f`**, **`--flag`**
+
+  Flag
+
+- **`-F`**, **`--flags`**
+
+  Flag with multipleAllowed()
+
+- **`--nullable`**
+
+  Flag with nullable() and no short form
+
+- **`-v`**, **`--value`** *<u>entity</u>*
+
+  Value with defaultValue() and valueName *<u>entity</u>*
+
+  The default entity is: `foo`
+
+- **`-V`**, **`--values`** *<u>value</u>*,...
+
+  Value with multipleAllowed(), unique() and nullable()
+
+- **`-s`**, **`--start`** *<u>date</u>*
+
+  Value with conditional required(), valueType DATE and valueName *<u>date</u>*
+
+- **`-r`**, **`--filter-regex`**\[=*<u>pattern</u>*]
+
+  VALUE_OPTIONAL with valueName *<u>pattern</u>* and a default value
+
+  The default pattern is: `/./`
+
+- **`--extra-flag`**
+
+- **`--extra-value`** *<u>EXTRA-VALUE</u>*
+
+- *<u>INPUT-FILE</u>*
+
+  required() VALUE_POSITIONAL with valueType FILE and valueName "INPUT_FILE"
+
+- *<u>endpoint-uri</u>*
+
+  required() VALUE_POSITIONAL with valueName "endpoint_uri"
+
+- *<u>key</u>*=*<u>VALUE</u>*...
+
+  VALUE_POSITIONAL with multipleAllowed() and valueName "\<key>=\<VALUE>"
+
+EOF,
+                0,
+                ['_md', '1'],
+                null,
+                ['positional' => '1', 'extra' => '1'],
+            ],
+            'man page (positional, extra)' => [
+                <<<'EOF'
+% APP(1) v1.0.0 | app Documentation
+
+# NAME
+
+app - Test CliCommand options
+
+# SYNOPSIS
+
+| **`app`** \[**`-fF`**] \[**`--nullable`**] \[**`-v`** *entity*]
+  \[**`-V`** *value*,...] \[**`-s`** *date*] \[**`-r`**\[*pattern*]]
+|     \[**`--extra-flag`**] \[**`--extra-value`** *EXTRA-VALUE*] \[**`--`**]
+  *INPUT-FILE* *endpoint-uri*
+|     \[*key*=*VALUE*...]
+
+# OPTIONS
+
+**`-f`**, **`--flag`**
+
+:   Flag
+
+**`-F`**, **`--flags`**
+
+:   Flag with multipleAllowed()
+
+**`--nullable`**
+
+:   Flag with nullable() and no short form
+
+**`-v`**, **`--value`** *entity*
+
+:   Value with defaultValue() and valueName *entity*
+
+    The default entity is: foo
+
+**`-V`**, **`--values`** *value*,...
+
+:   Value with multipleAllowed(), unique() and nullable()
+
+**`-s`**, **`--start`** *date*
+
+:   Value with conditional required(), valueType DATE and valueName *date*
+
+**`-r`**, **`--filter-regex`**\[=*pattern*]
+
+:   VALUE_OPTIONAL with valueName *pattern* and a default value
+
+    The default pattern is: /./
+
+**`--extra-flag`**
+
+**`--extra-value`** *EXTRA-VALUE*
+
+*INPUT-FILE*
+
+:   required() VALUE_POSITIONAL with valueType FILE and valueName "INPUT_FILE"
+
+*endpoint-uri*
+
+:   required() VALUE_POSITIONAL with valueName "endpoint_uri"
+
+*key*=*VALUE*...
+
+:   VALUE_POSITIONAL with multipleAllowed() and valueName "\<key>=\<VALUE>"
+
+EOF,
+                0,
+                ['_man', '', 'v1.0.0'],
+                null,
+                ['positional' => '1', 'extra' => '1'],
+            ],
         ];
     }
 
