@@ -522,14 +522,17 @@ REGEX;
                     : max(0, $wrapToWidth + $width);
         }
         if ($wrapToWidth !== null) {
-            if (strlen($break) === 1) {
-                $string = Str::wrap($string, $wrapToWidth, $break);
+            if ($break === "\n") {
+                $string = Str::wrap($string, $wrapToWidth);
             } else {
-                if (strpos($string, "\x7f") !== false) {
-                    $string = $this->insertPlaceholders($string, '/\x7f/', $replace);
+                // Only replace new line breaks with `$break`
+                $wrapped = Str::wrap($string, $wrapToWidth);
+                $length = strlen($wrapped);
+                for ($i = 0; $i < $length; $i++) {
+                    if ($wrapped[$i] === "\n" && $string[$i] !== "\n") {
+                        $replace[] = [$i, 1, $break];
+                    }
                 }
-                $string = Str::wrap($string, $wrapToWidth, "\x7f");
-                $string = $this->insertPlaceholders($string, '/\x7f/', $replace, "\n", $break);
             }
         }
 
@@ -686,38 +689,6 @@ REGEX;
         return $formats->apply(
             $text,
             new TagAttributes($tagId, $tag, $depth, (bool) $count)
-        );
-    }
-
-    /**
-     * @param array<array{int,int,string}> $replace
-     */
-    private function insertPlaceholders(
-        string $string,
-        string $pattern,
-        array &$replace,
-        string $placeholder = 'x',
-        ?string $replacement = null
-    ): string {
-        return Regex::replaceCallback(
-            $pattern,
-            function (array $match) use (
-                $placeholder,
-                $replacement,
-                &$replace
-            ): string {
-                $replacement ??= $match[0][0];
-                $replace[] = [
-                    $match[0][1],
-                    strlen($placeholder),
-                    $replacement,
-                ];
-                return $placeholder;
-            },
-            $string,
-            -1,
-            $count,
-            \PREG_OFFSET_CAPTURE
         );
     }
 }
