@@ -10,6 +10,30 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.42] - 2024-08-22
+
+### Added
+
+#### `Utility`
+
+- Add optional `$nullEmpty` parameter to `Arr::trim()` so empty strings can be replaced with `null` instead of being removed
+
+### Changed
+
+#### `Cli`
+
+- Fall back to defaults when `_man` or `_md` commands receive empty arguments
+
+### Fixed
+
+#### `Cli`
+
+- Fix issue where long synopses cause Markdown usage information with man page extensions to be generated with unwanted line breaks
+
+#### `Console`
+
+- Fix inconsistent newline handling in `ConsoleFormatter`
+
 ## [v0.99.41] - 2024-08-14
 
 ### Added
@@ -3249,6 +3273,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.42]: https://github.com/salient-labs/toolkit/compare/v0.99.41...v0.99.42
 [v0.99.41]: https://github.com/salient-labs/toolkit/compare/v0.99.40...v0.99.41
 [v0.99.40]: https://github.com/salient-labs/toolkit/compare/v0.99.39...v0.99.40
 [v0.99.39]: https://github.com/salient-labs/toolkit/compare/v0.99.38...v0.99.39
