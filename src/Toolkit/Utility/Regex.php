@@ -213,7 +213,7 @@ REGEX;
         $replacement,
         $subject,
         int $limit = -1,
-        int &$count = null
+        ?int &$count = null
     ) {
         $result = preg_replace($pattern, $replacement, $subject, $limit, $count);
         if ($result === null) {
@@ -250,7 +250,7 @@ REGEX;
         callable $callback,
         $subject,
         int $limit = -1,
-        int &$count = null,
+        ?int &$count = null,
         int $flags = 0
     ) {
         $result = preg_replace_callback($pattern, $callback, $subject, $limit, $count, $flags);
@@ -286,7 +286,7 @@ REGEX;
         array $pattern,
         $subject,
         int $limit = -1,
-        int &$count = null,
+        ?int &$count = null,
         int $flags = 0
     ) {
         $result = preg_replace_callback_array($pattern, $subject, $limit, $count, $flags);

@@ -18,8 +18,7 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/tests/stubs/ADOConnection.stub',
         __DIR__ . '/tests/stubs/ADORecordSet.stub',
         __DIR__ . '/.php-cs-fixer.dist.php',
-    ])
-    ->notPath('Utility/Reflect/MyClassWithDnfTypes.php');
+    ]);
 
 return (new PhpCsFixer\Config())
     ->setRules([
@@ -29,6 +28,7 @@ return (new PhpCsFixer\Config())
         'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
         'no_unneeded_import_alias' => true,
         'no_unused_imports' => true,
+        'nullable_type_declaration_for_default_null_value' => true,
         'phpdoc_no_useless_inheritdoc' => true,
         'phpdoc_order' => ['order' => [
             'todo',

@@ -233,6 +233,7 @@ final class ReflectTest extends TestCase
                 ['Salient\Tests\Utility\Reflect\MyBaseClass'],
                 ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
                 ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
+                ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess'],
                 ['Salient\Tests\Utility\Reflect\MyClass', 'null'],
                 ['string'],
                 ['Salient\Tests\Utility\Reflect\MyClass', 'string'],
@@ -243,16 +244,15 @@ final class ReflectTest extends TestCase
                 ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
                 ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'array'],
                 ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
-                ['Salient\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'null'],
                 ['string'],
             ];
             $types = $allTypes;
             $types[4] = [['Countable', 'ArrayAccess']];
-            $types[14] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string'];
-            $types[15] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
-            $types[16] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'array'];
-            $types[17] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
-            $types[18] = [['Salient\Tests\Utility\Reflect\MyClass', 'Countable'], ['Salient\Tests\Utility\Reflect\MyClass', 'ArrayAccess'], 'null'];
+            $types[8] = [['Salient\Tests\Utility\Reflect\MyClass', 'Countable'], ['Salient\Tests\Utility\Reflect\MyClass', 'ArrayAccess']];
+            $types[15] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string'];
+            $types[16] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
+            $types[17] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'array'];
+            $types[18] = ['Salient\Tests\Utility\Reflect\MyClass', ['Countable', 'ArrayAccess'], 'string', 'null'];
 
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 $types,
@@ -581,6 +581,7 @@ final class ReflectTest extends TestCase
                     '\Salient\Tests\Utility\Reflect\MyBaseClass',
                     '?MyClass',
                     '?MyClass',
+                    '(MyClass&\Countable)|(MyClass&\ArrayAccess)',
                     '?MyClass',
                     'string',
                     'MyClass|string',
@@ -591,7 +592,6 @@ final class ReflectTest extends TestCase
                     'MyClass|(\Countable&\ArrayAccess)|string|null',
                     'MyClass|(\Countable&\ArrayAccess)|array',
                     'MyClass|(\Countable&\ArrayAccess)|string|null',
-                    '(MyClass&\Countable)|(MyClass&\ArrayAccess)|null',
                     'string',
                 ],
                 MyClassWithDnfTypes::class,
@@ -670,6 +670,7 @@ final class ReflectTest extends TestCase
                     'Salient\Tests\Utility\Reflect\MyBaseClass $class',
                     '?MyClass $nullableClass',
                     '?MyClass &$nullableClassByRef',
+                    '(MyClass&Countable)|(MyClass&ArrayAccess) &$dnfByRef',
                     '?MyClass $nullableAndOptionalClass = null',
                     'string $optionalString = MyClass::MY_CONSTANT',
                     'MyClass|string $union = SELF::MY_CONSTANT',
@@ -680,7 +681,6 @@ final class ReflectTest extends TestCase
                     "MyClass|(Countable&ArrayAccess)|string|null \$nullableDnf = 'literal'",
                     "MyClass|(Countable&ArrayAccess)|array \$optionalArrayDnf = ['key'=>'value']",
                     'MyClass|(Countable&ArrayAccess)|string|null &$nullableDnfByRef = null',
-                    '(MyClass&Countable)|(MyClass&ArrayAccess)|null &$dnfByRef = null',
                     'string &...$variadicByRef',
                 ],
                 MyClassWithDnfTypes::class,
@@ -1036,7 +1036,7 @@ class MyClass extends MyBaseClass implements MyInterface
     /**
      * @param int|string $id
      */
-    public function __construct($id, ?int $altId, string $name, ?MyClass $parent, MyClass $altParent = null)
+    public function __construct($id, ?int $altId, string $name, ?MyClass $parent, ?MyClass $altParent = null)
     {
         $this->Id = $id;
         $this->AltId = $altId;
