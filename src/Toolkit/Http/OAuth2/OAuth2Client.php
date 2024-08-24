@@ -482,7 +482,7 @@ abstract class OAuth2Client
      *
      * @return array<string,mixed>
      */
-    private function getValidJsonWebToken(string $token, bool $required = false, bool $refreshKeys = false, string $alg = null): ?array
+    private function getValidJsonWebToken(string $token, bool $required = false, bool $refreshKeys = false, ?string $alg = null): ?array
     {
         $jwks = $this->getJsonWebKeySet($refreshKeys);
         if ($jwks === null) {

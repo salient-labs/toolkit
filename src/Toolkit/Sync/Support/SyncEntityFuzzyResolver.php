@@ -121,7 +121,7 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
     /**
      * @inheritDoc
      */
-    public function getByName(string $name, float &$uncertainty = null): ?SyncEntityInterface
+    public function getByName(string $name, ?float &$uncertainty = null): ?SyncEntityInterface
     {
         if ($this->Entities === null) {
             $this->loadEntities();
