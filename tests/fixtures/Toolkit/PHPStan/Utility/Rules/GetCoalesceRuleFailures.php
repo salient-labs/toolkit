@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Rules\Core;
+namespace Salient\Tests\PHPStan\Utility\Rules;
 
 use Salient\Utility\Get;
 

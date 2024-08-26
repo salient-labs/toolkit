@@ -947,20 +947,23 @@ final class Arr extends AbstractUtility
      */
     public static function flatten(iterable $array, int $limit = -1): array
     {
-        /** @todo Reimplement without recursion, similar to `unwrap()` */
-        foreach ($array as $value) {
-            if (!is_iterable($value) || !$limit) {
-                $flattened[] = $value;
-                continue;
+        do {
+            $flattened = [];
+            $fromIterable = false;
+            foreach ($array as $value) {
+                if (!is_iterable($value) || !$limit) {
+                    $flattened[] = $value;
+                    continue;
+                }
+                $fromIterable = true;
+                foreach ($value as $value) {
+                    $flattened[] = $value;
+                }
             }
-            if ($limit - 1) {
-                $value = self::flatten($value, $limit - 1);
-            }
-            foreach ($value as $value) {
-                $flattened[] = $value;
-            }
-        }
-        return $flattened ?? [];
+            $limit--;
+        } while ($fromIterable && $limit && ($array = $flattened));
+
+        return $flattened;
     }
 
     /**

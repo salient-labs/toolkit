@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPStan\Type\Core;
+namespace Salient\PHPStan\Utility\Type;
 
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Type\Core;
+namespace Salient\Tests\PHPStan\Utility\Type;
 
 use Salient\Utility\Arr;
 use Stringable;
