@@ -1,35 +1,35 @@
 services:
 	-
-		class: Salient\PHPStan\Rules\Core\GetCoalesceRule
+		class: Salient\PHPStan\Utility\Rules\GetCoalesceRule
 		tags:
 			- phpstan.rules.rule
 
 	-
-		class: Salient\PHPStan\Type\Core\ArrExtendReturnTypeExtension
+		class: Salient\PHPStan\Utility\Type\ArrExtendReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\ArrFlattenReturnTypeExtension
+		class: Salient\PHPStan\Utility\Type\ArrFlattenReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\ArrWhereNotEmptyReturnTypeExtension
+		class: Salient\PHPStan\Utility\Type\ArrWhereNotEmptyReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\ArrWhereNotNullReturnTypeExtension
+		class: Salient\PHPStan\Utility\Type\ArrWhereNotNullReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\GetCoalesceReturnTypeExtension
+		class: Salient\PHPStan\Utility\Type\GetCoalesceReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Type\Core\StrCoalesceReturnTypeExtension
+		class: Salient\PHPStan\Utility\Type\StrCoalesceReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

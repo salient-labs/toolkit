@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Rules\Core;
+namespace Salient\Tests\PHPStan\Utility\Rules;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use Salient\Container\Container;
-use Salient\PHPStan\Rules\Core\GetCoalesceRule;
+use Salient\PHPStan\Utility\Rules\GetCoalesceRule;
 use Salient\Tests\TestCase;
 
 /**
- * @covers \Salient\PHPStan\Rules\Core\GetCoalesceRule
+ * @covers \Salient\PHPStan\Utility\Rules\GetCoalesceRule
  *
  * @extends RuleTestCase<GetCoalesceRule>
  */
