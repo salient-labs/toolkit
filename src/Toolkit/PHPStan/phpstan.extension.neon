@@ -10,6 +10,11 @@ services:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
+		class: Salient\PHPStan\Type\Core\ArrFlattenReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+
+	-
 		class: Salient\PHPStan\Type\Core\ArrWhereNotEmptyReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

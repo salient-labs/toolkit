@@ -30,6 +30,7 @@ parameters:
 			identifier: arguments.count
 			paths:
 				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrExtendReturnTypeExtensionAssertions.php
+				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrFlattenReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrWhereNotNullReturnTypeExtensionAssertions.php
 		-
@@ -44,5 +45,6 @@ parameters:
 			identifier: argument.type
 			paths:
 				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrExtendReturnTypeExtensionAssertions.php
+				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrFlattenReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Type/Core/ArrWhereNotNullReturnTypeExtensionAssertions.php
