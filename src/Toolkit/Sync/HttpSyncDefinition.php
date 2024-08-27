@@ -660,7 +660,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                     continue;
                 }
 
-                $value = $ctx->getFilter($name);
+                $value = $ctx->getFilter($name, false);
                 $isFilter = true;
                 if ($value === null) {
                     $value = $ctx->getValue($name);
@@ -725,13 +725,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         }
 
         $httpClosure = $this->getHttpOperationClosure($operation);
-        $payload = $args[0] ?? null;
-        if ($payload !== null && (
-            !is_array($payload)
-            || SyncIntrospector::isReadOperation($operation)
-        )) {
-            $payload = null;
-        }
+        $payload = isset($args[0]) && is_array($args[0])
+            ? $args[0]
+            : null;
 
         try {
             return $httpClosure($curler, $this->Query, $payload);
