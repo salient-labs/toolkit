@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Db;
 
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
@@ -13,6 +13,7 @@ use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Sync\Support\SyncPipelineArgument;
+use Salient\Sync\AbstractSyncDefinition;
 use Closure;
 use LogicException;
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Db;
 
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
@@ -11,6 +11,7 @@ use Salient\Core\SqlQuery;
 use Salient\Db\DbConnector;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Str;

@@ -4,7 +4,7 @@ namespace Salient\Tests\Sync\Provider;
 
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Core\DateFormatter;
-use Salient\Sync\HttpSyncProvider;
+use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\External\Entity\Provider\CollidesProvider;

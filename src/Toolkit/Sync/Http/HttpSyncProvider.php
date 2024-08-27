@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Http;
 
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Curler\CurlerInterface;
@@ -14,6 +14,7 @@ use Salient\Curler\Exception\AbstractRequestException;
 use Salient\Curler\Curler;
 use Salient\Http\HttpHeaders;
 use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Get;
 
 /**

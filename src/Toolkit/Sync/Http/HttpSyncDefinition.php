@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Http;
 
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
@@ -27,6 +27,7 @@ use Salient\Sync\Exception\SyncInvalidEntitySourceException;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
+use Salient\Sync\AbstractSyncDefinition;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\Regex;

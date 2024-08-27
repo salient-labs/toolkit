@@ -8,7 +8,7 @@ use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Sli\Command\AbstractCommand;
 use Salient\Sli\EnvVar;
-use Salient\Sync\HttpSyncProvider;
+use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Json;

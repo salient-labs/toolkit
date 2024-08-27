@@ -24,8 +24,8 @@
 /src/Toolkit/Core/Facade/Profile.php linguist-generated
 /src/Toolkit/Core/Facade/Sync.php linguist-generated
 /src/Toolkit/Curler/CurlerBuilder.php linguist-generated
-/src/Toolkit/Sync/DbSyncDefinitionBuilder.php linguist-generated
-/src/Toolkit/Sync/HttpSyncDefinitionBuilder.php linguist-generated
+/src/Toolkit/Sync/Db/DbSyncDefinitionBuilder.php linguist-generated
+/src/Toolkit/Sync/Http/HttpSyncDefinitionBuilder.php linguist-generated
 /src/Toolkit/Sync/SyncErrorBuilder.php linguist-generated
 /src/Toolkit/Sync/SyncSerializeRulesBuilder.php linguist-generated
 /tests export-ignore
