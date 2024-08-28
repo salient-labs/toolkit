@@ -10,6 +10,46 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.45] - 2024-08-28
+
+### Added
+
+#### `Sync`
+
+- Add and implement new exception interfaces:
+  - `HeartbeatCheckFailedExceptionInterface`
+  - `SyncOperationNotImplementedExceptionInterface`
+  - `UnreachableBackendExceptionInterface`
+
+#### `Utility`
+
+- Add `$trim` arguments to `Format::list()` and `Format::array()`
+
+### Changed
+
+#### `Sync`
+
+- Move `Http`- and `Db`-specific classes to their own namespaces
+- Rename exception classes for consistency:
+  - `SyncFilterPolicyViolationException` -> `FilterPolicyViolationException`
+  - `SyncInvalidFilterException` -> `InvalidFilterException`
+  - `SyncInvalidFilterSignatureException` -> `InvalidFilterSignatureException`
+  - `SyncProviderBackendUnreachableException` -> `UnreachableBackendException`
+  - `SyncProviderHeartbeatCheckFailedException` -> `HeartbeatCheckFailedException`
+
+### Removed
+
+#### `Sync`
+
+- Remove unused `SyncInvalidRequestException`
+
+### Fixed
+
+#### `Sync`
+
+- Fix issue where `HttpSyncDefinition` fails to pass payloads applied via `withArgs()` to `READ` or `READ_LIST` operations regardless of the HTTP method they resolve to
+- Fix `HttpSyncDefinition` issue where context values are claimed as if they are filters
+
 ## [v0.99.44] - 2024-08-26
 
 ### Added
@@ -3285,6 +3325,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.45]: https://github.com/salient-labs/toolkit/compare/v0.99.44...v0.99.45
 [v0.99.44]: https://github.com/salient-labs/toolkit/compare/v0.99.43...v0.99.44
 [v0.99.43]: https://github.com/salient-labs/toolkit/compare/v0.99.42...v0.99.43
 [v0.99.42]: https://github.com/salient-labs/toolkit/compare/v0.99.41...v0.99.42
