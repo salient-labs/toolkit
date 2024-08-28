@@ -2,10 +2,10 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Contract\Sync\Exception\FilterPolicyViolationExceptionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
-use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 
 /**
  * Resolves a name to an entity
@@ -40,7 +40,7 @@ final class SyncEntityResolver implements SyncEntityResolverInterface
                     ->getList(...$args)
                     ->nextWithValue($this->NameProperty, $name);
                 break;
-            } catch (SyncFilterPolicyViolationException $ex) {
+            } catch (FilterPolicyViolationExceptionInterface $ex) {
                 $match = null;
                 continue;
             }

@@ -118,11 +118,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     protected function filterCurler(CurlerInterface $curler, string $path): CurlerInterface
     {
         $uri = (string) $curler->getUri();
-
-        if (!isset($this->HttpRequests[$uri])) {
-            $this->HttpRequests[$uri] = 0;
-        }
-
+        $this->HttpRequests[$uri] ??= 0;
         $this->HttpRequests[$uri]++;
 
         return $curler;
@@ -159,11 +155,11 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
             case Post::class:
                 return $defB->path(['/users/:userId/posts', '/posts'])->build();
 
-            case User::class:
-                return $defB->path('/users')->build();
-
             case Task::class:
                 return $defB->path(['/users/:userId/todos', '/todos'])->build();
+
+            case User::class:
+                return $defB->path('/users')->build();
         }
 
         throw new LogicException(sprintf('Entity not supported: %s', $entity));

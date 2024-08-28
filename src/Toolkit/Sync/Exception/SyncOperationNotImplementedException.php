@@ -2,15 +2,16 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\SyncOperationNotImplementedExceptionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Utility\Reflect;
 
 /**
- * Thrown when an unimplemented sync operation is attempted
+ * @api
  */
-class SyncOperationNotImplementedException extends AbstractSyncException
+class SyncOperationNotImplementedException extends AbstractSyncException implements SyncOperationNotImplementedExceptionInterface
 {
     /**
      * @param class-string<SyncEntityInterface> $entity
@@ -20,9 +21,9 @@ class SyncOperationNotImplementedException extends AbstractSyncException
     {
         parent::__construct(sprintf(
             '%s has not implemented SyncOperation::%s for %s',
-            get_class($provider),
+            $this->getProviderName($provider),
             Reflect::getConstantName(SyncOperation::class, $operation),
-            $entity
+            $entity,
         ));
     }
 }

@@ -3,17 +3,14 @@
 namespace Salient\Sync\Exception;
 
 use Salient\Contract\Sync\Exception\FilterPolicyViolationExceptionInterface;
-use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Utility\Json;
+use Salient\Utility\Format;
 
 /**
- * Thrown when there are unclaimed sync operation filters
- *
- * @see FilterPolicy
+ * @internal
  */
-class SyncFilterPolicyViolationException extends AbstractSyncException implements FilterPolicyViolationExceptionInterface
+class FilterPolicyViolationException extends AbstractSyncException implements FilterPolicyViolationExceptionInterface
 {
     /** @var array<string,mixed> */
     protected array $Unclaimed;
@@ -28,16 +25,19 @@ class SyncFilterPolicyViolationException extends AbstractSyncException implement
 
         parent::__construct(sprintf(
             '%s did not claim values from %s filter: %s',
-            get_class($provider),
+            $this->getProviderName($provider),
             $entity,
             implode(', ', array_keys($unclaimed)),
         ));
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMetadata(): array
     {
         return [
-            'Unclaimed' => Json::prettyPrint($this->Unclaimed),
+            'Unclaimed' => Format::array($this->Unclaimed),
         ];
     }
 }

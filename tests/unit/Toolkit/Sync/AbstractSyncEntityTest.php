@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Sync;
 
+use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\SyncSerializeRules as SerializeRules;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
@@ -44,7 +44,7 @@ final class AbstractSyncEntityTest extends SyncTestCase
         ?string $nameProperty = null
     ): void {
         if ($expected === false) {
-            $this->expectException(SyncEntityNotFoundException::class);
+            $this->expectException(SyncEntityNotFoundExceptionInterface::class);
         }
 
         $uncertainty = -1.0;

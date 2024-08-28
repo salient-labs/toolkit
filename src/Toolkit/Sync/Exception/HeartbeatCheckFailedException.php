@@ -2,28 +2,39 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\HeartbeatCheckFailedExceptionInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Sync\SyncStore;
+use Salient\Utility\Format;
+use Salient\Utility\Inflect;
 
 /**
- * Thrown when an entity store's provider heartbeat check fails
- *
- * @see SyncStore::checkProviderHeartbeats()
+ * @internal
  */
-class SyncProviderHeartbeatCheckFailedException extends AbstractSyncException
+class HeartbeatCheckFailedException extends AbstractSyncException implements HeartbeatCheckFailedExceptionInterface
 {
     /** @var SyncProviderInterface[] */
-    protected $Providers;
+    protected array $Providers;
 
-    public function __construct(SyncProviderInterface ...$provider)
+    public function __construct(SyncProviderInterface ...$providers)
     {
-        $this->Providers = $provider;
+        $this->Providers = $providers;
 
-        $count = count($provider);
-        parent::__construct(
-            $count === 1
-                ? 'Provider backend unreachable'
-                : sprintf('%d provider backends unreachable', $count)
-        );
+        parent::__construct(Inflect::format(
+            $providers,
+            '{{#}} sync {{#:provider}} {{#:is}} unreachable',
+        ));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMetadata(): array
+    {
+        return [
+            'Providers' => Format::list(array_map(
+                fn($provider) => $this->getProviderName($provider),
+                $this->Providers,
+            )),
+        ];
     }
 }

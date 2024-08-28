@@ -4,4 +4,7 @@ namespace Salient\Sync\Exception;
 
 use Salient\Contract\Sync\Exception\InvalidFilterExceptionInterface;
 
-class SyncInvalidFilterException extends AbstractSyncException implements InvalidFilterExceptionInterface {}
+/**
+ * @internal
+ */
+class InvalidFilterException extends AbstractSyncException implements InvalidFilterExceptionInterface {}

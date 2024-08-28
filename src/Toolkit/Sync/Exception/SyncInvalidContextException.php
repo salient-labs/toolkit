@@ -3,7 +3,6 @@
 namespace Salient\Sync\Exception;
 
 /**
- * Thrown when a sync operation is unable to resolve its own parameters from the
- * context object it receives
+ * @internal
  */
 class SyncInvalidContextException extends AbstractSyncException {}

@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Sync\Support;
 
+use Salient\Contract\Sync\Exception\InvalidFilterExceptionInterface;
+use Salient\Contract\Sync\Exception\InvalidFilterSignatureExceptionInterface;
 use Salient\Contract\Sync\SyncOperation;
-use Salient\Sync\Exception\SyncInvalidFilterException;
-use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
@@ -75,7 +75,7 @@ final class SyncContextTest extends SyncTestCase
 
         $exception = sprintf(
             '%s,%s',
-            SyncInvalidFilterSignatureException::class,
+            InvalidFilterSignatureExceptionInterface::class,
             'Invalid filter signature for SyncOperation::READ_LIST',
         );
 
@@ -149,7 +149,7 @@ final class SyncContextTest extends SyncTestCase
             'invalid entity' => [
                 sprintf(
                     '%s,%s has no identifier',
-                    SyncInvalidFilterException::class,
+                    InvalidFilterExceptionInterface::class,
                     User::class,
                 ),
                 new User(),
@@ -240,7 +240,7 @@ final class SyncContextTest extends SyncTestCase
         }
 
         if ($invalidMethod !== null) {
-            $this->expectException(SyncInvalidFilterException::class);
+            $this->expectException(InvalidFilterExceptionInterface::class);
             $this->expectExceptionMessageMatches('/Invalid (filter|context) value/');
             $context->$invalidMethod($key);
         }
@@ -403,7 +403,7 @@ final class SyncContextTest extends SyncTestCase
             if ($method !== null) {
                 $context = $context->withFilter(SyncOperation::READ_LIST, ...$args);
             }
-            $this->expectException(SyncInvalidFilterException::class);
+            $this->expectException(InvalidFilterExceptionInterface::class);
             $this->expectExceptionMessageMatches('/Invalid (filter|context) value/');
             $context->$invalidMethod($key);
         }

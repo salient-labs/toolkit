@@ -221,6 +221,8 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     protected ?array $Args;
 
     /**
+     * @internal
+     *
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations

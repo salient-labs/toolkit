@@ -20,8 +20,8 @@ use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
+use Salient\Sync\Exception\FilterPolicyViolationException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\Exception\SyncFilterPolicyViolationException;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Utility\Reflect;
@@ -587,7 +587,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
         switch ($this->FilterPolicy) {
             case FilterPolicy::THROW_EXCEPTION:
-                throw new SyncFilterPolicyViolationException($this->Provider, $this->Entity, $filter);
+                throw new FilterPolicyViolationException($this->Provider, $this->Entity, $filter);
 
             case FilterPolicy::RETURN_EMPTY:
                 $returnEmpty = true;

@@ -10,7 +10,7 @@ use Salient\Core\Facade\Cache;
 use Salient\Core\SqlQuery;
 use Salient\Db\DbConnector;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\Exception\UnreachableBackendException;
 use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -136,9 +136,9 @@ abstract class DbSyncProvider extends AbstractSyncProvider
             try {
                 $this->dbConnector()->getConnection(5);
             } catch (ADODB_Exception $ex) {
-                throw new SyncProviderBackendUnreachableException(
-                    $ex->getMessage(),
+                throw new UnreachableBackendException(
                     $this,
+                    $ex->getMessage(),
                     $ex,
                 );
             }

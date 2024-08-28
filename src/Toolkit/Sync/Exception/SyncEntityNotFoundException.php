@@ -9,32 +9,29 @@ use Salient\Utility\Format;
 use Throwable;
 
 /**
- * Thrown when an entity doesn't exist in a backend
+ * @api
  */
 class SyncEntityNotFoundException extends AbstractSyncException implements SyncEntityNotFoundExceptionInterface
 {
     /**
      * @param class-string<SyncEntityInterface> $entity
-     * @param int|string|array<string,mixed> $id
+     * @param int|string|array<string,mixed> $idOrFilter
      */
     public function __construct(
         SyncProviderInterface $provider,
         string $entity,
-        $id,
+        $idOrFilter,
         ?Throwable $previous = null
     ) {
-        if (!is_array($id)) {
-            $id = ['ID' => $id];
-        }
-        $id = substr(Format::array($id, "%s '%s', "), 0, -2);
-        parent::__construct(
-            sprintf(
-                '%s could not find %s with %s',
-                get_class($provider),
-                $entity,
-                $id,
-            ),
-            $previous,
-        );
+        $idOrFilter = is_array($idOrFilter)
+            ? $idOrFilter
+            : ['id' => $idOrFilter];
+
+        parent::__construct(sprintf(
+            '%s does not have %s with %s',
+            $this->getProviderName($provider),
+            $entity,
+            Format::array($idOrFilter, '%s = {%s}, ', 0, ', '),
+        ), $previous);
     }
 }

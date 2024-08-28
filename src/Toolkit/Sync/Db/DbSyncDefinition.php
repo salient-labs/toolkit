@@ -18,8 +18,8 @@ use Closure;
 use LogicException;
 
 /**
- * Provides direct access to a DbSyncProvider's implementation of sync
- * operations for an entity
+ * Generates closures that use a DbSyncProvider to perform sync operations on an
+ * entity
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider
@@ -40,6 +40,8 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
     protected $Table;
 
     /**
+     * @internal
+     *
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations

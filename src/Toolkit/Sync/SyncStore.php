@@ -3,6 +3,8 @@
 namespace Salient\Sync;
 
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\DeferredRelationshipInterface;
@@ -14,14 +16,12 @@ use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Event;
 use Salient\Core\AbstractStore;
 use Salient\Sync\Event\SyncStoreLoadedEvent;
-use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
-use Salient\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
+use Salient\Sync\Exception\HeartbeatCheckFailedException;
 use Salient\Sync\Exception\SyncStoreException;
 use Salient\Sync\Support\SyncErrorCollection;
 use Salient\Utility\Arr;
@@ -1048,11 +1048,11 @@ SQL;
             try {
                 $provider->checkHeartbeat($ttl);
                 Console::log('Heartbeat OK:', $name);
-            } catch (MethodNotImplementedException $ex) {
+            } catch (MethodNotImplementedExceptionInterface $ex) {
                 Console::log('Heartbeat check not supported:', $name);
-            } catch (SyncProviderBackendUnreachableException $ex) {
+            } catch (UnreachableBackendExceptionInterface $ex) {
                 Console::exception($ex, Level::DEBUG, null);
-                Console::log('No heartbeat:', $name);
+                Console::log('Heartbeat check failed:', $name);
                 $failed[] = $provider;
                 $this->recordError(
                     SyncError::build()
@@ -1073,7 +1073,7 @@ SQL;
         }
 
         if ($failed) {
-            throw new SyncProviderHeartbeatCheckFailedException(...$failed);
+            throw new HeartbeatCheckFailedException(...$failed);
         }
 
         return $this;

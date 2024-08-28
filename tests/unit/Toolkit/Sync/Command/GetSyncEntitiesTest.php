@@ -269,14 +269,14 @@ EOF,
             [
                 sprintf(<<<EOF
 ➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/-1
-Error: entity not found: -1 (%s could not find %s with ID '-1')
+Error: entity not found: -1 (JSONPlaceholder { http://localhost:3001 } [#1] does not have %s with id = {-1})
 
 app [-IMsc] [-p <provider>] [-f <term=value>,...] [--shallow]
     [-F (<field>|<field>=<title>),...] [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.
 
-EOF, JsonPlaceholderApi::class, User::class),
+EOF, User::class),
                 1,
                 ['--', 'user', '-1'],
                 [

@@ -5,12 +5,12 @@ namespace Salient\Sync\Command;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;
-use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncSerializeRules;
 use Salient\Utility\Arr;
@@ -267,7 +267,7 @@ EOF)
         } else {
             try {
                 $result = $provider->with($entity, $context)->get($this->EntityId, $filter);
-            } catch (SyncEntityNotFoundException $ex) {
+            } catch (SyncEntityNotFoundExceptionInterface $ex) {
                 throw new CliInvalidArgumentsException(
                     sprintf(
                         'entity not found: %s (%s)',

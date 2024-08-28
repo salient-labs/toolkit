@@ -2,25 +2,39 @@
 
 namespace Salient\Sync\Exception;
 
+use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Throwable;
 
 /**
- * Thrown by a sync provider when it can't establish a connection with its
- * backend
+ * @api
  */
-class SyncProviderBackendUnreachableException extends AbstractSyncException
+class UnreachableBackendException extends AbstractSyncException implements UnreachableBackendExceptionInterface
 {
-    /** @var SyncProviderInterface|null */
-    protected $Provider;
+    protected SyncProviderInterface $Provider;
 
     public function __construct(
+        SyncProviderInterface $provider,
         string $message = '',
-        ?SyncProviderInterface $provider = null,
         ?Throwable $previous = null
     ) {
         $this->Provider = $provider;
 
         parent::__construct($message, $previous);
+    }
+
+    public function getProvider(): SyncProviderInterface
+    {
+        return $this->Provider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMetadata(): array
+    {
+        return [
+            'Provider' => $this->getProviderName($this->Provider),
+        ];
     }
 }
