@@ -24,14 +24,12 @@ use Throwable;
 
 /**
  * Base class for runnable CLI commands
+ *
+ * @api
  */
 abstract class CliCommand implements CliCommandInterface
 {
-    /**
-     * @api
-     */
     protected CliApplicationInterface $App;
-
     /** @var string[] */
     private array $Name = [];
     /** @var array<string,CliOption>|null */
@@ -68,8 +66,6 @@ abstract class CliCommand implements CliCommandInterface
      * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
      * 3. `0`, indicating success
      *
-     * @api
-     *
      * @param string ...$args Non-option arguments passed to the command.
      * @return int|void
      */
@@ -77,8 +73,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * Override to return a list of options for the command
-     *
-     * @api
      *
      * @return iterable<CliOption|CliOptionBuilder>
      */
@@ -89,8 +83,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * Override to return a detailed description of the command
-     *
-     * @api
      */
     protected function getLongDescription(): ?string
     {
@@ -103,8 +95,6 @@ abstract class CliCommand implements CliCommandInterface
      * `"NAME"`, `"SYNOPSIS"`, `"OPTIONS"` and `"DESCRIPTION"` sections are
      * generated automatically and must not be returned by this method.
      *
-     * @api
-     *
      * @return array<CliHelpSectionName::*|string,string> An array that maps
      * section names to content.
      */
@@ -115,8 +105,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * Override to modify the command's JSON Schema before it is returned
-     *
-     * @api
      *
      * @param array{'$schema':string,type:string,required:string[],properties:array<string,mixed>} $schema
      * @return array{'$schema':string,type:string,required:string[],properties:array<string,mixed>,...}
@@ -129,8 +117,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Override to modify schema option values before they are returned
      *
-     * @api
-     *
      * @param mixed[] $values
      * @return mixed[]
      */
@@ -141,8 +127,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * Override to modify schema option values before they are normalised
-     *
-     * @api
      *
      * @param array<array<string|int|bool>|string|int|bool|null> $values
      * @return array<array<string|int|bool>|string|int|bool|null>
@@ -155,8 +139,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Override to modify schema option values before they are applied to the
      * command
-     *
-     * @api
      *
      * {@see filterNormaliseSchemaValues()} is always applied to `$values`
      * before {@see filterApplySchemaValues()}.
@@ -680,8 +662,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Get the command name, including the name used to run the script, as a
      * string of space-delimited subcommands
-     *
-     * @api
      */
     final protected function getNameWithProgram(): string
     {
@@ -737,8 +717,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Normalise an array of option values, apply them to the command, and
      * return them to the caller
-     *
-     * @api
      *
      * @param array<array<string|int|bool>|string|int|bool|null> $values
      * @param bool $normalise `false` if `$values` have already been normalised.
@@ -806,8 +784,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Normalise an array of option values
      *
-     * @api
-     *
      * @param array<array<string|int|bool>|string|int|bool|null> $values
      * @param bool $expand If `true` and an option has an optional value, expand
      * `null` or `true` to the default value of the option.
@@ -866,8 +842,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Get an array that maps option names to values
      *
-     * @api
-     *
      * @param bool $export If `true`, only options given on the command line are
      * returned.
      * @param bool $schema If `true`, an array that maps schema option names to
@@ -917,8 +891,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Get an array that maps option names to default values
      *
-     * @api
-     *
      * @param bool $schema If `true`, an array that maps schema option names to
      * default values is returned.
      * @return array<array<string|int|bool>|string|int|bool|null>
@@ -944,8 +916,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Get the value of a given option
      *
-     * @api
-     *
      * @return mixed
      */
     final protected function getOptionValue(string $name)
@@ -958,8 +928,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * True if an option was given on the command line
-     *
-     * @api
      */
     final protected function optionHasArgument(string $name): bool
     {
@@ -971,8 +939,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * Get the given option
-     *
-     * @api
      */
     final protected function getOption(string $name): CliOption
     {
@@ -982,8 +948,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * True if the command has a given option
-     *
-     * @api
      */
     final protected function hasOption(string $name): bool
     {
@@ -1242,8 +1206,6 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Get the command's options
      *
-     * @api
-     *
      * @return list<CliOption>
      */
     final protected function getOptions(): array
@@ -1383,8 +1345,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * True if the command is currently running
-     *
-     * @api
      */
     final protected function isRunning(): bool
     {
@@ -1393,8 +1353,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * Set the command's return value / exit status
-     *
-     * @api
      *
      * @return $this
      *
@@ -1409,8 +1367,6 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * Get the current return value / exit status
-     *
-     * @api
      *
      * @see CliCommand::setExitStatus()
      * @see CliCommand::run()

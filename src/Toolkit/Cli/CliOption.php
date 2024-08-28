@@ -685,8 +685,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     /**
      * Get the option's names
      *
-     * @api
-     *
      * @return string[]
      */
     public function getNames(): array
@@ -780,8 +778,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     /**
      * Get the first paragraph of the option's description, unwrapping any line
      * breaks
-     *
-     * @api
      */
     public function getSummary(bool $withFullStop = true): ?string
     {
