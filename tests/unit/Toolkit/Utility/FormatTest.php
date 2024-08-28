@@ -27,13 +27,14 @@ final class FormatTest extends TestCase
         string $expected,
         ?array $list,
         string $format = "- %s\n",
-        int $indent = 2
+        int $indent = 2,
+        ?string $trim = null
     ): void {
-        $this->assertSame($expected, Format::list($list, $format, $indent));
+        $this->assertSame($expected, Format::list($list, $format, $indent, $trim));
     }
 
     /**
-     * @return array<array{string,mixed[]|null,2?:string,3?:int}>
+     * @return array<array{string,mixed[]|null,2?:string,3?:int,4?:string|null}>
      */
     public static function listProvider(): array
     {
@@ -74,15 +75,44 @@ final class FormatTest extends TestCase
                     ' -> b',
                     '    c',
                     ' -> d',
+                    '    ',
                     '',
                 ]),
                 [
                     'a',
                     "b\nc",
-                    'd',
+                    "d\n",
                 ],
                 " -> %s\n",
                 4,
+            ],
+            [
+                implode("\n", [
+                    '- two',
+                    '  lines',
+                ]),
+                [
+                    "two\nlines\n",
+                ],
+                "- %s\n",
+                2,
+                " \n",
+            ],
+            [
+                implode("\n", [
+                    ' -> a',
+                    ' -> b',
+                    '    c',
+                    ' -> d',
+                ]),
+                [
+                    'a',
+                    "b\nc",
+                    "d\n",
+                ],
+                " -> %s\n",
+                4,
+                " \n",
             ],
         ];
     }
@@ -96,13 +126,14 @@ final class FormatTest extends TestCase
         string $expected,
         ?array $array,
         string $format = "%s: %s\n",
-        int $indent = 4
+        int $indent = 4,
+        ?string $trim = null
     ): void {
-        $this->assertSame($expected, Format::array($array, $format, $indent));
+        $this->assertSame($expected, Format::array($array, $format, $indent, $trim));
     }
 
     /**
-     * @return array<array{string,mixed[]|null,2?:string,3?:int}>
+     * @return array<array{string,mixed[]|null,2?:string,3?:int,4?:string|null}>
      */
     public static function arrayProvider(): array
     {
@@ -145,11 +176,37 @@ final class FormatTest extends TestCase
                     'c',
                     '3. d',
                     '',
+                    '',
                 ]),
-                [1 => 'a', "b\nc", 'd'],
+                [1 => 'a', "b\nc", "d\n"],
                 "%d. %s\n",
                 0,
-            ]
+            ],
+            [
+                implode("\n", [
+                    'split: ',
+                    '    two',
+                    '    lines',
+                ]),
+                [
+                    'split' => "two\nlines\n",
+                ],
+                "%s: %s\n",
+                4,
+                " \n",
+            ],
+            [
+                implode("\n", [
+                    '1. a',
+                    '2. b',
+                    'c',
+                    '3. d',
+                ]),
+                [1 => 'a', "b\nc", "d\n"],
+                "%d. %s\n",
+                0,
+                "\n",
+            ],
         ];
     }
 
