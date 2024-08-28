@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Http;
 
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
@@ -27,6 +27,7 @@ use Salient\Sync\Exception\SyncInvalidEntitySourceException;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
+use Salient\Sync\AbstractSyncDefinition;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\Regex;
@@ -220,6 +221,8 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     protected ?array $Args;
 
     /**
+     * @internal
+     *
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations
@@ -660,7 +663,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                     continue;
                 }
 
-                $value = $ctx->getFilter($name);
+                $value = $ctx->getFilter($name, false);
                 $isFilter = true;
                 if ($value === null) {
                     $value = $ctx->getValue($name);
@@ -725,13 +728,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         }
 
         $httpClosure = $this->getHttpOperationClosure($operation);
-        $payload = $args[0] ?? null;
-        if ($payload !== null && (
-            !is_array($payload)
-            || SyncIntrospector::isReadOperation($operation)
-        )) {
-            $payload = null;
-        }
+        $payload = isset($args[0]) && is_array($args[0])
+            ? $args[0]
+            : null;
 
         try {
             return $httpClosure($curler, $this->Query, $payload);

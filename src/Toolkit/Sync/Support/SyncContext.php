@@ -9,9 +9,9 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\ProviderContext;
+use Salient\Sync\Exception\InvalidFilterException;
+use Salient\Sync\Exception\InvalidFilterSignatureException;
 use Salient\Sync\Exception\SyncEntityRecursionException;
-use Salient\Sync\Exception\SyncInvalidFilterException;
-use Salient\Sync\Exception\SyncInvalidFilterSignatureException;
 use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -130,7 +130,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                     || ($key = trim($key)) === ''
                     || Test::isNumericKey($key)
                 ) {
-                    throw new SyncInvalidFilterSignatureException($operation, ...$args);
+                    throw new InvalidFilterSignatureException($operation, ...$args);
                 }
 
                 $normalised = false;
@@ -174,14 +174,14 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 /** @var SyncEntityInterface $entity */
                 $id = $entity->getId();
                 if ($id === null) {
-                    throw new SyncInvalidFilterException(sprintf(
+                    throw new InvalidFilterException(sprintf(
                         '%s has no identifier',
                         get_class($entity),
                     ));
                 }
 
                 if ($entity->getProvider() !== $this->Provider) {
-                    throw new SyncInvalidFilterException(sprintf(
+                    throw new InvalidFilterException(sprintf(
                         '%s does not have same provider',
                         get_class($entity),
                     ));
@@ -196,7 +196,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             return $this->applyFilters($filters);
         }
 
-        throw new SyncInvalidFilterSignatureException($operation, ...$args);
+        throw new InvalidFilterSignatureException($operation, ...$args);
     }
 
     /**
@@ -627,7 +627,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             }
         }
 
-        throw new SyncInvalidFilterException(sprintf('Invalid %s value', $scope));
+        throw new InvalidFilterException(sprintf('Invalid %s value', $scope));
     }
 
     /**

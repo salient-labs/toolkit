@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Db;
 
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
@@ -10,7 +10,8 @@ use Salient\Core\Facade\Cache;
 use Salient\Core\SqlQuery;
 use Salient\Db\DbConnector;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\Exception\UnreachableBackendException;
+use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Str;
@@ -135,9 +136,9 @@ abstract class DbSyncProvider extends AbstractSyncProvider
             try {
                 $this->dbConnector()->getConnection(5);
             } catch (ADODB_Exception $ex) {
-                throw new SyncProviderBackendUnreachableException(
-                    $ex->getMessage(),
+                throw new UnreachableBackendException(
                     $this,
+                    $ex->getMessage(),
                     $ex,
                 );
             }

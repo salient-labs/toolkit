@@ -9,8 +9,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Utility\Reflect;
 
 /**
- * Thrown when an invalid data source is provided for the return value of a sync
- * operation
+ * @internal
  */
 class SyncInvalidEntitySourceException extends AbstractSyncException
 {
@@ -23,10 +22,10 @@ class SyncInvalidEntitySourceException extends AbstractSyncException
     {
         parent::__construct(sprintf(
             "%s gave unsupported SyncEntitySource '%s' for SyncOperation::%s on %s",
-            get_class($provider),
+            $this->getProviderName($provider),
             $source === null ? '' : Reflect::getConstantName(SyncEntitySource::class, $source),
             Reflect::getConstantName(SyncOperation::class, $operation),
-            $entity
+            $entity,
         ));
     }
 }

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Db;
 
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
@@ -13,12 +13,13 @@ use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Sync\Support\SyncPipelineArgument;
+use Salient\Sync\AbstractSyncDefinition;
 use Closure;
 use LogicException;
 
 /**
- * Provides direct access to a DbSyncProvider's implementation of sync
- * operations for an entity
+ * Generates closures that use a DbSyncProvider to perform sync operations on an
+ * entity
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider
@@ -39,6 +40,8 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
     protected $Table;
 
     /**
+     * @internal
+     *
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations

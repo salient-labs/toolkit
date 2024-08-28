@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sync;
+namespace Salient\Sync\Http;
 
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Curler\CurlerInterface;
@@ -13,7 +13,8 @@ use Salient\Core\Facade\Cache;
 use Salient\Curler\Exception\AbstractRequestException;
 use Salient\Curler\Curler;
 use Salient\Http\HttpHeaders;
-use Salient\Sync\Exception\SyncProviderBackendUnreachableException;
+use Salient\Sync\Exception\UnreachableBackendException;
+use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Get;
 
 /**
@@ -182,9 +183,9 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
                 $resource = $this->getHeartbeat();
                 // @codeCoverageIgnoreStart
             } catch (AbstractRequestException $ex) {
-                throw new SyncProviderBackendUnreachableException(
-                    $ex->getMessage(),
+                throw new UnreachableBackendException(
                     $this,
+                    $ex->getMessage(),
                     $ex,
                 );
                 // @codeCoverageIgnoreEnd

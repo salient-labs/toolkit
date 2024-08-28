@@ -2,6 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Sync\Exception\HeartbeatCheckFailedExceptionInterface;
+use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use InvalidArgumentException;
 use LogicException;
 
@@ -81,10 +85,14 @@ interface SyncStoreInterface
      * If no providers are given, every provider registered with the entity
      * store is checked.
      *
-     * The same provider may be given multiple times, but it will only be
-     * checked once.
+     * If the same provider is given multiple times, it is only checked once.
+     *
+     * {@see MethodNotImplementedExceptionInterface} exceptions thrown by
+     * {@see ProviderInterface::checkHeartbeat()} are caught and ignored.
      *
      * @return $this
+     * @throws HeartbeatCheckFailedExceptionInterface if one or more providers
+     * throw an {@see UnreachableBackendExceptionInterface} exception.
      */
     public function checkProviderHeartbeats(
         int $ttl = 300,

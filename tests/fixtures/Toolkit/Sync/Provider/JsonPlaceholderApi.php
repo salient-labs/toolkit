@@ -9,8 +9,8 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Facade\Console;
 use Salient\Core\DateFormatter;
-use Salient\Sync\HttpSyncDefinition;
-use Salient\Sync\HttpSyncProvider;
+use Salient\Sync\Http\HttpSyncDefinition;
+use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;
 use Salient\Tests\Sync\CustomEntity\User as CustomUser;
 use Salient\Tests\Sync\Entity\Provider\AlbumProvider;
@@ -118,11 +118,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     protected function filterCurler(CurlerInterface $curler, string $path): CurlerInterface
     {
         $uri = (string) $curler->getUri();
-
-        if (!isset($this->HttpRequests[$uri])) {
-            $this->HttpRequests[$uri] = 0;
-        }
-
+        $this->HttpRequests[$uri] ??= 0;
         $this->HttpRequests[$uri]++;
 
         return $curler;
@@ -159,11 +155,11 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
             case Post::class:
                 return $defB->path(['/users/:userId/posts', '/posts'])->build();
 
-            case User::class:
-                return $defB->path('/users')->build();
-
             case Task::class:
                 return $defB->path(['/users/:userId/todos', '/todos'])->build();
+
+            case User::class:
+                return $defB->path('/users')->build();
         }
 
         throw new LogicException(sprintf('Entity not supported: %s', $entity));
