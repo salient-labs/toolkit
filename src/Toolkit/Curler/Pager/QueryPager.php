@@ -101,7 +101,7 @@ final class QueryPager implements CurlerPagerInterface
             $key = $this->PageKey ?? $this->CurrentPageKey;
             if ($key !== null) {
                 $this->CurrentQuery[$key]++;
-                $nextRequest = $request->withUri($curler->getUriWithQuery($this->CurrentQuery));
+                $nextRequest = $request->withUri($curler->replaceQuery($request->getUri(), $this->CurrentQuery));
             }
         }
 

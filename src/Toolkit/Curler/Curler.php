@@ -34,7 +34,6 @@ use Salient\Curler\Exception\NetworkException;
 use Salient\Curler\Exception\RequestException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Exception\StreamEncapsulationException;
-use Salient\Http\FormData;
 use Salient\Http\HasHttpHeaders;
 use Salient\Http\Http;
 use Salient\Http\HttpHeaders;
@@ -244,22 +243,6 @@ class Curler implements CurlerInterface, Buildable
     public function getUri(): UriInterface
     {
         return $this->Uri;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getUriWithQuery($query): UriInterface
-    {
-        if ($query === null || $query === [] || $query === '') {
-            return $this->Uri;
-        }
-
-        return $this->Uri->withQuery(
-            is_array($query)
-                ? (new FormData($query))->getQuery($this->FormDataFlags, $this->DateFormatter)
-                : $query
-        );
     }
 
     /**
@@ -614,6 +597,14 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
+    public function getFormDataFlags(): int
+    {
+        return $this->FormDataFlags;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getPager(): ?CurlerPagerInterface
     {
         return $this->Pager;
@@ -713,6 +704,19 @@ class Curler implements CurlerInterface, Buildable
     public function throwsHttpErrors(): bool
     {
         return $this->ThrowHttpErrors;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function replaceQuery($uri, array $query): PsrUriInterface
+    {
+        return Http::replaceQuery(
+            $uri,
+            $query,
+            $this->FormDataFlags,
+            $this->DateFormatter,
+        );
     }
 
     // --
@@ -1340,7 +1344,10 @@ class Curler implements CurlerInterface, Buildable
      */
     private function createRequest(string $method, ?array $query, $data): HttpRequest
     {
-        $uri = $this->getUriWithQuery($query);
+        $uri = $this->Uri;
+        if ($query) {
+            $uri = $this->replaceQuery($uri, $query);
+        }
         $headers = $this->getHttpHeaders();
         $request = new HttpRequest($method, $uri, null, $headers);
         if ($data !== false) {

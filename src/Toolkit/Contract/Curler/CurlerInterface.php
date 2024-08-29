@@ -27,13 +27,6 @@ interface CurlerInterface extends ClientInterface
     public function getUri(): UriInterface;
 
     /**
-     * Apply the given query string to a copy of the endpoint's URI
-     *
-     * @param mixed[]|string|null $query
-     */
-    public function getUriWithQuery($query): UriInterface;
-
-    /**
      * Get an instance with the given endpoint URI
      *
      * An exception is thrown if the endpoint URI has a query or fragment.
@@ -410,6 +403,13 @@ interface CurlerInterface extends ClientInterface
     public function withDateFormatter(?DateFormatterInterface $formatter);
 
     /**
+     * Get form data flags applied to the instance
+     *
+     * @return int-mask-of<FormDataFlag::*>
+     */
+    public function getFormDataFlags(): int;
+
+    /**
      * Get an instance with the given form data flags
      *
      * Form data flags are used to encode data for query strings and message
@@ -662,4 +662,16 @@ interface CurlerInterface extends ClientInterface
      * @return static
      */
     public function withThrowHttpErrors(bool $throw = true);
+
+    /**
+     * Use the form data flags and date formatter applied to the instance to
+     * replace the query string of a URI
+     *
+     * @template TUri of PsrUriInterface|Stringable|string
+     *
+     * @param TUri $uri
+     * @param mixed[] $query
+     * @return (TUri is PsrUriInterface ? TUri : PsrUriInterface)
+     */
+    public function replaceQuery($uri, array $query): PsrUriInterface;
 }

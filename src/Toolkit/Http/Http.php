@@ -195,7 +195,7 @@ final class Http extends AbstractUtility
     }
 
     /**
-     * Apply values to the query string of a URI
+     * Merge values into the query string of a URI
      *
      * @template TUri of PsrUriInterface|Stringable|string
      *
@@ -204,7 +204,7 @@ final class Http extends AbstractUtility
      * @param int-mask-of<FormDataFlag::*> $flags
      * @return (TUri is PsrUriInterface ? TUri : Uri)
      */
-    public static function applyToQuery(
+    public static function mergeQuery(
         $uri,
         array $data,
         int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
@@ -218,6 +218,30 @@ final class Http extends AbstractUtility
         return $uri->withQuery(
             (new FormData(array_replace_recursive($query, $data)))
                 ->getQuery($flags, $dateFormatter)
+        );
+    }
+
+    /**
+     * Replace the query string of a URI with the given values
+     *
+     * @template TUri of PsrUriInterface|Stringable|string
+     *
+     * @param TUri $uri
+     * @param mixed[] $data
+     * @param int-mask-of<FormDataFlag::*> $flags
+     * @return (TUri is PsrUriInterface ? TUri : Uri)
+     */
+    public static function replaceQuery(
+        $uri,
+        array $data,
+        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null
+    ): PsrUriInterface {
+        if (!$uri instanceof PsrUriInterface) {
+            $uri = new Uri((string) $uri);
+        }
+        return $uri->withQuery(
+            (new FormData($data))->getQuery($flags, $dateFormatter)
         );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Curler;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\MimeType;
@@ -194,6 +195,7 @@ EOF,
         $output = [];
         $m = Str::lower($method) . 'P';
 
+        /** @var CurlerPagerInterface&MockObject */
         $pager = $this->createMock(CurlerPagerInterface::class);
         $pager
             ->expects($this->once())
@@ -216,7 +218,7 @@ EOF,
                             ? null
                             : $request
                                 ->withMethod(Method::GET)
-                                ->withUri($curler->getUriWithQuery('page=2'))
+                                ->withUri($curler->replaceQuery($request->getUri(), ['page' => 2]))
                                 ->withBody(HttpStream::fromString(''))
                                 ->withoutHeader(Header::CONTENT_TYPE)
                     );
