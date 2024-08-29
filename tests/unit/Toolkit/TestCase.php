@@ -97,7 +97,7 @@ abstract class TestCase extends PHPUnitTestCase
         return dirname(__DIR__, 2)
             . '/fixtures/'
             . Regex::replace([
-                '/^Salient\\\\(?|Tests\\\\(.+)Test$|(.+))/',
+                '/^Salient\\\\Tests\\\\(?|(.+)Test$|(.+)\\\\.+)/',
                 '/\\\\/',
             ], [
                 'Toolkit/$1',
