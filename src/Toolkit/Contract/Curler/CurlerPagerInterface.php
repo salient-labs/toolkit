@@ -4,6 +4,9 @@ namespace Salient\Contract\Curler;
 
 use Psr\Http\Message\RequestInterface;
 
+/**
+ * @api
+ */
 interface CurlerPagerInterface
 {
     /**
