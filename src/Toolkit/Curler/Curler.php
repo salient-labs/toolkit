@@ -28,13 +28,16 @@ use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Event;
+use Salient\Curler\Event\CurlRequestEvent;
+use Salient\Curler\Event\CurlResponseEvent;
+use Salient\Curler\Event\ResponseCacheHitEvent;
 use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\Exception\HttpErrorException;
 use Salient\Curler\Exception\NetworkException;
 use Salient\Curler\Exception\RequestException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Exception\StreamEncapsulationException;
-use Salient\Http\FormData;
 use Salient\Http\HasHttpHeaders;
 use Salient\Http\Http;
 use Salient\Http\HttpHeaders;
@@ -59,7 +62,7 @@ use Stringable;
 use Throwable;
 
 /**
- * An HTTP client optimised for RESTful APIs
+ * A PSR-18 HTTP client optimised for exchanging data with RESTful API endpoints
  *
  * @implements Buildable<CurlerBuilder>
  * @use HasBuilder<CurlerBuilder>
@@ -244,22 +247,6 @@ class Curler implements CurlerInterface, Buildable
     public function getUri(): UriInterface
     {
         return $this->Uri;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getUriWithQuery($query): UriInterface
-    {
-        if ($query === null || $query === [] || $query === '') {
-            return $this->Uri;
-        }
-
-        return $this->Uri->withQuery(
-            is_array($query)
-                ? (new FormData($query))->getQuery($this->FormDataFlags, $this->DateFormatter)
-                : $query
-        );
     }
 
     /**
@@ -614,6 +601,14 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
+    public function getFormDataFlags(): int
+    {
+        return $this->FormDataFlags;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getPager(): ?CurlerPagerInterface
     {
         return $this->Pager;
@@ -713,6 +708,19 @@ class Curler implements CurlerInterface, Buildable
     public function throwsHttpErrors(): bool
     {
         return $this->ThrowHttpErrors;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function replaceQuery($uri, array $query): PsrUriInterface
+    {
+        return Http::replaceQuery(
+            $uri,
+            $query,
+            $this->FormDataFlags,
+            $this->DateFormatter,
+        );
     }
 
     // --
@@ -1206,13 +1214,15 @@ class Curler implements CurlerInterface, Buildable
                 && ($last = $this->getCache()->getArray($cacheKey)) !== null
             ) {
                 /** @var array{code:int,body:string,headers:HttpHeadersInterface,reason:string|null,version:string}|array{int,string,HttpHeadersInterface,string} $last */
-                return $this->LastResponse = new HttpResponse(
+                $response = new HttpResponse(
                     $last['code'] ?? $last[0] ?? 200,
                     $last['body'] ?? $last[3] ?? null,
                     $last['headers'] ?? $last[2] ?? null,
                     $last['reason'] ?? $last[1] ?? null,
                     $last['version'] ?? '1.1',
                 );
+                Event::dispatch(new ResponseCacheHitEvent($this, $request, $response));
+                return $this->LastResponse = $response;
             }
         }
 
@@ -1260,6 +1270,7 @@ class Curler implements CurlerInterface, Buildable
 
         $attempts = 0;
         do {
+            Event::dispatch(new CurlRequestEvent($this, self::$Handle, $request));
             $result = curl_exec(self::$Handle);
             if ($result === false) {
                 throw new CurlErrorException(curl_errno(self::$Handle), $request, $this->getCurlInfo());
@@ -1281,6 +1292,8 @@ class Curler implements CurlerInterface, Buildable
             /** @var HttpHeaders $headers */
             $code = (int) $split[1];
             $reason = $split[2] ?? null;
+            $response = new HttpResponse($code, $body, $headers, $reason, $version);
+            Event::dispatch(new CurlResponseEvent($this, self::$Handle, $request, $response));
 
             if (
                 !$this->RetryAfterTooManyRequests
@@ -1305,7 +1318,6 @@ class Curler implements CurlerInterface, Buildable
             );
         }
 
-        $response = new HttpResponse($code, $body, $headers, $reason, $version);
         $this->LastResponse = $response;
 
         if ($this->ThrowHttpErrors && $code >= 400) {
@@ -1340,7 +1352,10 @@ class Curler implements CurlerInterface, Buildable
      */
     private function createRequest(string $method, ?array $query, $data): HttpRequest
     {
-        $uri = $this->getUriWithQuery($query);
+        $uri = $this->Uri;
+        if ($query) {
+            $uri = $this->replaceQuery($uri, $query);
+        }
         $headers = $this->getHttpHeaders();
         $request = new HttpRequest($method, $uri, null, $headers);
         if ($data !== false) {

@@ -58,7 +58,7 @@ final class LinkPager implements CurlerPagerInterface
 
         $query[$this->PageSizeKey] = $this->PageSize;
 
-        return $request->withUri($curler->getUriWithQuery($query));
+        return $request->withUri($curler->replaceQuery($request->getUri(), $query));
     }
 
     /**

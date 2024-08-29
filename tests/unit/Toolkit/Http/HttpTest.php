@@ -252,13 +252,13 @@ final class HttpTest extends TestCase
     }
 
     /**
-     * @dataProvider applyToQueryProvider
+     * @dataProvider mergeQueryProvider
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $data
      * @param int-mask-of<FormDataFlag::*> $flags
      */
-    public function testApplyToQuery(
+    public function testMergeQuery(
         string $expected,
         $uri,
         array $data,
@@ -267,14 +267,14 @@ final class HttpTest extends TestCase
     ): void {
         $this->assertSame(
             $expected,
-            (string) Http::applyToQuery($uri, $data, $flags, $dateFormatter),
+            (string) Http::mergeQuery($uri, $data, $flags, $dateFormatter),
         );
     }
 
     /**
      * @return array<array{string,PsrUriInterface|Stringable|string,mixed[],3?:int,4?:DateFormatterInterface|null}>
      */
-    public static function applyToQueryProvider(): array
+    public static function mergeQueryProvider(): array
     {
         return [
             [
@@ -296,6 +296,64 @@ final class HttpTest extends TestCase
             [
                 // http://example.com/?foo[]=-1&foo[]=0&foo[]=qux
                 'http://example.com/?foo%5B%5D=-1&foo%5B%5D=0&foo%5B%5D=qux',
+                // http://example.com/?foo[]=bar&foo[]=baz&foo[]=qux
+                'http://example.com/?foo%5B%5D=bar&foo%5B%5D=baz&foo%5B%5D=qux',
+                ['foo' => [-1, 0]],
+            ],
+            [
+                'http://example.com/?foo=BAR',
+                // http://example.com/?foo[]=bar&foo[]=baz&foo[]=qux
+                'http://example.com/?foo%5B%5D=bar&foo%5B%5D=baz&foo%5B%5D=qux',
+                ['foo' => 'BAR'],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider replaceQueryProvider
+     *
+     * @param PsrUriInterface|Stringable|string $uri
+     * @param mixed[] $data
+     * @param int-mask-of<FormDataFlag::*> $flags
+     */
+    public function testReplaceQuery(
+        string $expected,
+        $uri,
+        array $data,
+        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null
+    ): void {
+        $this->assertSame(
+            $expected,
+            (string) Http::replaceQuery($uri, $data, $flags, $dateFormatter),
+        );
+    }
+
+    /**
+     * @return array<array{string,PsrUriInterface|Stringable|string,mixed[],3?:int,4?:DateFormatterInterface|null}>
+     */
+    public static function replaceQueryProvider(): array
+    {
+        return [
+            [
+                'http://example.com/?baz=qux',
+                'http://example.com/?foo=bar',
+                ['baz' => 'qux'],
+            ],
+            [
+                'http://example.com/?foo=BAR&baz=qux',
+                'http://example.com/?foo=bar',
+                ['foo' => 'BAR', 'baz' => 'qux'],
+            ],
+            [
+                // http://example.com/?foo[]=pi&foo[]=3.14&foo[]=1
+                'http://example.com/?foo%5B%5D=pi&foo%5B%5D=3.14&foo%5B%5D=1',
+                'http://example.com/?baz=qux',
+                ['foo' => ['pi', 3.14, true]],
+            ],
+            [
+                // http://example.com/?foo[]=-1&foo[]=0
+                'http://example.com/?foo%5B%5D=-1&foo%5B%5D=0',
                 // http://example.com/?foo[]=bar&foo[]=baz&foo[]=qux
                 'http://example.com/?foo%5B%5D=bar&foo%5B%5D=baz&foo%5B%5D=qux',
                 ['foo' => [-1, 0]],

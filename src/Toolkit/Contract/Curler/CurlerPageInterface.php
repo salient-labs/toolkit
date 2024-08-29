@@ -5,6 +5,9 @@ namespace Salient\Contract\Curler;
 use Psr\Http\Message\RequestInterface;
 use OutOfRangeException;
 
+/**
+ * @api
+ */
 interface CurlerPageInterface
 {
     /**
