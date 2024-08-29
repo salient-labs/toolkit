@@ -8,6 +8,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Curler\Event\CurlRequestEventInterface;
+use Salient\Contract\Curler\Event\CurlResponseEventInterface;
+use Salient\Contract\Curler\Event\ResponseCacheHitEventInterface;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeader;
@@ -19,6 +22,18 @@ use Salient\Contract\Http\UriInterface;
 use Closure;
 use Stringable;
 
+/**
+ * A client for HTTP endpoints
+ *
+ * Dispatches:
+ *
+ * - {@see CurlRequestEventInterface} for requests sent to the endpoint
+ * - {@see CurlResponseEventInterface} for responses received from the endpoint
+ * - {@see ResponseCacheHitEventInterface} for responses returned from the
+ *   response cache
+ *
+ * @api
+ */
 interface CurlerInterface extends ClientInterface
 {
     /**
