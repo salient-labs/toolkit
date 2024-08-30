@@ -18,6 +18,7 @@ trait ExceptionTrait
         ?int $exitStatus = null
     ) {
         $this->ExitStatus = $exitStatus;
+
         parent::__construct($message, 0, $previous);
     }
 

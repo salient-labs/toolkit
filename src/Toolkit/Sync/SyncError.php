@@ -36,6 +36,8 @@ final class SyncError implements SyncErrorInterface, Buildable
     private int $Count = 1;
 
     /**
+     * @internal
+     *
      * @param SyncErrorType::* $errorType Error type.
      * @param string $message `sprintf()` format string that explains the error.
      * @param list<mixed[]|object|int|float|string|bool|null>|null $values Values applied to the message format string. Default: `[$entityName]`

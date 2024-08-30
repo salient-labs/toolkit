@@ -19,9 +19,9 @@ abstract class AbstractCurlEvent extends AbstractCurlerEvent implements CurlEven
      */
     public function __construct(CurlerInterface $curler, $curlHandle)
     {
-        parent::__construct($curler);
-
         $this->CurlHandle = $curlHandle;
+
+        parent::__construct($curler);
     }
 
     public function getCurlHandle()

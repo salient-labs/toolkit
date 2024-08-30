@@ -121,7 +121,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     private SyncIntrospector $Introspector;
 
     /**
-     * Creates a new SyncSerializeRules object
+     * @internal
      *
      * @param class-string<TEntity> $entity Entity to which the rules apply (required)
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to serialize date and time values
