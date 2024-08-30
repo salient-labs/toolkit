@@ -908,15 +908,18 @@ final class ArrTest extends TestCase
     /**
      * @dataProvider popProvider
      *
-     * @param mixed[] $expected
-     * @param mixed $popped
-     * @param mixed[] $array
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $expected
+     * @param TValue|null $expectedPopped
+     * @param array<TKey,TValue> $array
      */
-    public function testPop(array $expected, $popped, array $array): void
+    public function testPop(array $expected, $expectedPopped, array $array): void
     {
-        // @phpstan-ignore-next-line
-        $this->assertSame($expected, Arr::pop($array, $actualShifted));
-        $this->assertSame($popped, $actualShifted);
+        $popped = null;
+        $this->assertSame($expected, Arr::pop($array, $popped));
+        $this->assertSame($expectedPopped, $popped);
     }
 
     /**
@@ -1189,15 +1192,18 @@ final class ArrTest extends TestCase
     /**
      * @dataProvider shiftProvider
      *
-     * @param mixed[] $expected
-     * @param mixed $shifted
-     * @param mixed[] $array
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $expected
+     * @param TValue|null $expectedShifted
+     * @param array<TKey,TValue> $array
      */
-    public function testShift(array $expected, $shifted, array $array): void
+    public function testShift(array $expected, $expectedShifted, array $array): void
     {
-        // @phpstan-ignore-next-line
-        $this->assertSame($expected, Arr::shift($array, $actualShifted));
-        $this->assertSame($shifted, $actualShifted);
+        $shifted = null;
+        $this->assertSame($expected, Arr::shift($array, $shifted));
+        $this->assertSame($expectedShifted, $shifted);
     }
 
     /**
@@ -1358,21 +1364,22 @@ final class ArrTest extends TestCase
      * @dataProvider spliceProvider
      *
      * @param mixed[]|string $expected
-     * @param mixed[]|null $replaced
+     * @param mixed[]|null $expectedReplaced
      * @param mixed[] $array
      * @param mixed[] $replacement
      */
     public function testSplice(
         $expected,
-        $replaced,
+        $expectedReplaced,
         array $array,
         int $offset,
         ?int $length = null,
         $replacement = []
     ): void {
+        $replaced = null;
         $this->maybeExpectException($expected);
-        $this->assertSame($expected, Arr::splice($array, $offset, $length, $replacement, $actualReplaced));
-        $this->assertSame($replaced, $actualReplaced);
+        $this->assertSame($expected, Arr::splice($array, $offset, $length, $replacement, $replaced));
+        $this->assertSame($expectedReplaced, $replaced);
     }
 
     /**
@@ -1489,22 +1496,23 @@ final class ArrTest extends TestCase
      * @dataProvider spliceByKeyProvider
      *
      * @param mixed[]|string $expected
-     * @param mixed[]|null $replaced
+     * @param mixed[]|null $expectedReplaced
      * @param mixed[] $array
      * @param array-key $key
      * @param mixed[] $replacement
      */
     public function testSpliceByKey(
         $expected,
-        $replaced,
+        $expectedReplaced,
         array $array,
         $key,
         ?int $length = null,
         array $replacement = []
     ): void {
+        $replaced = null;
         $this->maybeExpectException($expected);
-        $this->assertSame($expected, Arr::spliceByKey($array, $key, $length, $replacement, $actualReplaced));
-        $this->assertSame($replaced, $actualReplaced);
+        $this->assertSame($expected, Arr::spliceByKey($array, $key, $length, $replacement, $replaced));
+        $this->assertSame($expectedReplaced, $replaced);
     }
 
     /**
@@ -1778,6 +1786,57 @@ final class ArrTest extends TestCase
             ],
             [
                 ['NULL', 0, false, '', '[null,"a",1]'],
+                [null, 0, false, '', [null, 'a', 1]],
+                'NULL',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider toStringsProvider
+     *
+     * @template TKey of array-key
+     * @template TNull of string|null
+     *
+     * @param array<TKey,TNull|string> $expected
+     * @param iterable<TKey,mixed[]|object|int|float|string|bool|null> $array
+     * @param TNull $null
+     */
+    public function testToStrings(array $expected, iterable $array, ?string $null = null): void
+    {
+        $this->assertSame($expected, Arr::toStrings($array, $null));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],2?:string|null}>
+     */
+    public static function toStringsProvider(): array
+    {
+        $a = new class {
+            public function __toString()
+            {
+                return Stringable::class;
+            }
+        };
+
+        $b = new class implements Jsonable {
+            public function toJson(int $flags = 0): string
+            {
+                return Json::stringify([Jsonable::class => true], $flags);
+            }
+        };
+
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [null, '0', '3.14', '1', '', '', 'a', '[1,2,3]', '{"foo":"bar"}', Stringable::class, '{"Salient\\\\Contract\\\\Core\\\\Jsonable":true}'],
+                [null, 0, 3.14, true, false, '', 'a', [1, 2, 3], ['foo' => 'bar'], $a, $b],
+            ],
+            [
+                ['NULL', '0', '', '', '[null,"a",1]'],
                 [null, 0, false, '', [null, 'a', 1]],
                 'NULL',
             ],

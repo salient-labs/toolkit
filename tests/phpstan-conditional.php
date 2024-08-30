@@ -15,12 +15,12 @@ if (\PHP_VERSION_ID < 80000) {
         'parameters' => [
             'excludePaths' => [
                 'analyseAndScan' => [
-                    'tests/fixtures/Toolkit/Utility/Reflect/MyClassWithDnfTypes.php',
-                    'tests/fixtures/Toolkit/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
+                    'tests/fixtures/Toolkit/Reflection/callbacksWithDnfTypes.php',
+                    'tests/fixtures/Toolkit/Reflection/callbacksWithUnionsAndIntersections.php',
+                    'tests/fixtures/Toolkit/Reflection/MyClassWithDnfTypes.php',
+                    'tests/fixtures/Toolkit/Reflection/MyClassWithUnionsAndIntersections.php',
                     'tests/unit/Toolkit/Core/EventDispatcher/listenerWithDnfType.php',
                     'tests/unit/Toolkit/Core/EventDispatcher/listenerWithIntersectionType.php',
-                    'tests/unit/Toolkit/Utility/Reflect/callbacksWithDnfTypes.php',
-                    'tests/unit/Toolkit/Utility/Reflect/callbacksWithUnionsAndIntersections.php',
                 ],
             ],
             'ignoreErrors' => [

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Utility\Reflect;
+namespace Salient\Tests\Reflection;
 
 use ArrayAccess;
 use Countable;
