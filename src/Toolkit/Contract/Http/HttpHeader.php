@@ -16,6 +16,7 @@ interface HttpHeader
     public const DATE = 'Date';
     public const HOST = 'Host';
     public const LINK = 'Link';
+    public const LOCATION = 'Location';
     public const ODATA_VERSION = 'OData-Version';
     public const PREFER = 'Prefer';
     public const PROXY_AUTHORIZATION = 'Proxy-Authorization';

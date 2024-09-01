@@ -6,6 +6,7 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Arr;
@@ -151,6 +152,31 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
         return $this
             ->with('StatusCode', $this->filterStatusCode($code))
             ->with('ReasonPhrase', $this->filterReasonPhrase($code, $reasonPhrase));
+    }
+
+    /**
+     * @return array{status:int,statusText:string,httpVersion:string,cookies:array<array{name:string,value:string,path?:string,domain?:string,expires?:string,httpOnly?:bool,secure?:bool}>,headers:array<array{name:string,value:string}>,content:array{size:int,mimeType:string,text:string},redirectURL:string,headersSize:int,bodySize:int}
+     */
+    public function jsonSerialize(): array
+    {
+        $response = parent::jsonSerialize();
+
+        $mediaType = $this->Headers->getHeaderValues(HttpHeader::CONTENT_TYPE);
+        $location = $this->Headers->getHeaderValues(HttpHeader::LOCATION);
+
+        return [
+            'status' => $this->StatusCode,
+            'statusText' => (string) $this->ReasonPhrase,
+            'httpVersion' => $response['httpVersion'],
+            'cookies' => $response['cookies'],
+            'headers' => $response['headers'],
+            'content' => [
+                'size' => $response['bodySize'],
+                'mimeType' => count($mediaType) === 1 ? $mediaType[0] : '',
+                'text' => (string) $this->Body,
+            ],
+            'redirectURL' => count($location) === 1 ? $location[0] : '',
+        ] + $response;
     }
 
     /**
