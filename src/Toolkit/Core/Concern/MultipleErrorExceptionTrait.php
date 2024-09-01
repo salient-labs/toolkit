@@ -88,7 +88,9 @@ trait MultipleErrorExceptionTrait
     public function getMetadata(): array
     {
         return [
-            'Errors' => $this->Errors ? Format::list($this->Errors) : "<none>\n",
+            'Errors' => $this->Errors
+                ? Format::list($this->Errors)
+                : '<none>',
         ];
     }
 }
