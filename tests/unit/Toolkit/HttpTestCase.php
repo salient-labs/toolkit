@@ -6,6 +6,7 @@ use Salient\Contract\Core\FileDescriptor;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Process;
+use Salient\Curler\Curler;
 use Salient\Http\HttpHeaders;
 use Salient\Utility\File;
 use Salient\Utility\Str;
@@ -123,6 +124,11 @@ abstract class HttpTestCase extends TestCase
             $process->getOutput(),
             $process->getOutput(FileDescriptor::ERR),
         ));
+    }
+
+    protected static function getCurler(string $endpoint = ''): Curler
+    {
+        return new Curler(self::HTTP_SERVER_URI . $endpoint);
     }
 
     /**

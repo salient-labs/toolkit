@@ -6,6 +6,9 @@ use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Throwable;
 
+/**
+ * @internal
+ */
 abstract class AbstractResponseException extends AbstractRequestException
 {
     protected HttpResponseInterface $Response;

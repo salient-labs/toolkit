@@ -8,6 +8,9 @@ use Salient\Http\HttpRequest;
 use Salient\Utility\Format;
 use Throwable;
 
+/**
+ * @internal
+ */
 abstract class AbstractRequestException extends AbstractException
 {
     protected RequestInterface $Request;

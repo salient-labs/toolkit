@@ -405,9 +405,4 @@ EOF,
         }
         return $this->startHttpServer(...($responses ?? []));
     }
-
-    private static function getCurler(string $endpoint = ''): Curler
-    {
-        return (new Curler(self::HTTP_SERVER_URI . $endpoint));
-    }
 }

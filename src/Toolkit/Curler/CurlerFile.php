@@ -2,12 +2,8 @@
 
 namespace Salient\Curler;
 
-use Psr\Http\Message\StreamInterface;
 use Salient\Http\HttpMultipartStreamPart;
-use Salient\Http\HttpStream;
 use Salient\Utility\File;
-use Salient\Utility\Str;
-use CURLFile;
 use InvalidArgumentException;
 
 /**
@@ -17,8 +13,6 @@ use InvalidArgumentException;
  */
 final class CurlerFile extends HttpMultipartStreamPart
 {
-    private string $Path;
-
     /**
      * Creates a new CurlerFile object
      *
@@ -40,31 +34,12 @@ final class CurlerFile extends HttpMultipartStreamPart
             ));
         }
 
-        $this->Path = $filename;
-        $this->Name = $name;
-        $this->Filename = $uploadFilename ?? basename($filename);
-        $this->FallbackFilename = $this->filterFallbackFilename(
-            Str::coalesce($fallbackFilename, null),
-            $this->Filename
+        parent::__construct(
+            File::open($filename, 'r'),
+            $name,
+            $uploadFilename ?? basename($filename),
+            self::getFileMediaType($filename, $mediaType),
+            $fallbackFilename,
         );
-        $this->MediaType = self::getFileMediaType($filename, $mediaType);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getContent(): StreamInterface
-    {
-        return $this->Content ??= new HttpStream(File::open($this->Path, 'r'));
-    }
-
-    /**
-     * @internal
-     */
-    public function getCurlFile(): CURLFile
-    {
-        assert($this->Filename !== null);
-        assert($this->MediaType !== null);
-        return new CURLFile($this->Path, $this->MediaType, $this->Filename);
     }
 }
