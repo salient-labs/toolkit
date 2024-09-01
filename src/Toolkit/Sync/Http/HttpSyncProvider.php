@@ -3,6 +3,7 @@
 namespace Salient\Sync\Http;
 
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Curler\Exception\RequestExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -10,7 +11,6 @@ use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
-use Salient\Curler\Exception\AbstractRequestException;
 use Salient\Curler\Curler;
 use Salient\Http\HttpHeaders;
 use Salient\Sync\Exception\UnreachableBackendException;
@@ -182,7 +182,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
             try {
                 $resource = $this->getHeartbeat();
                 // @codeCoverageIgnoreStart
-            } catch (AbstractRequestException $ex) {
+            } catch (RequestExceptionInterface $ex) {
                 throw new UnreachableBackendException(
                     $this,
                     $ex->getMessage(),

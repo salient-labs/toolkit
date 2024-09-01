@@ -33,21 +33,11 @@ abstract class AbstractRequestException extends AbstractException
     }
 
     /**
-     * Get the request that triggered the exception
+     * @inheritDoc
      */
     public function getRequest(): RequestInterface
     {
         return $this->Request;
-    }
-
-    /**
-     * Get data provided by the handler that raised the exception
-     *
-     * @return array<string,mixed>
-     */
-    public function getData(): array
-    {
-        return $this->Data;
     }
 
     /**
@@ -56,12 +46,10 @@ abstract class AbstractRequestException extends AbstractException
     public function getMetadata(): array
     {
         return [
-            'Request' =>
-                (string) HttpRequest::fromPsr7($this->Request),
-            'Data' =>
-                $this->Data
-                    ? Format::array($this->Data)
-                    : '<no data>',
+            'Request' => (string) HttpRequest::fromPsr7($this->Request),
+            'Data' => $this->Data
+                ? Format::array($this->Data)
+                : '<none>',
         ];
     }
 }

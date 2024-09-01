@@ -2,9 +2,12 @@
 
 namespace Salient\Curler\Exception;
 
-use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Client\NetworkExceptionInterface as PsrNetworkExceptionInterface;
+use Salient\Contract\Curler\Exception\RequestExceptionInterface;
 
 /**
  * @internal
  */
-class NetworkException extends AbstractRequestException implements NetworkExceptionInterface {}
+class NetworkException extends AbstractRequestException implements
+    RequestExceptionInterface,
+    PsrNetworkExceptionInterface {}

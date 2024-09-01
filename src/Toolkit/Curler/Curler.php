@@ -11,6 +11,7 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
@@ -1037,7 +1038,7 @@ class Curler implements CurlerInterface, Buildable
             }
         } catch (ClientExceptionInterface $ex) {
             throw $ex;
-        } catch (CurlErrorException $ex) {
+        } catch (CurlErrorExceptionInterface $ex) {
             throw $ex->isNetworkError()
                 ? new NetworkException($ex->getMessage(), $this->LastRequest ?? $request, [], $ex)
                 : new RequestException($ex->getMessage(), $this->LastRequest ?? $request, [], $ex);
