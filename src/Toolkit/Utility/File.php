@@ -380,10 +380,10 @@ final class File extends AbstractUtility
      *
      * An exception is thrown if `$path` or `$parentDirectory` do not exist.
      *
-     * @template T of string|null
+     * @template TDefault of string|null
      *
-     * @param T $default
-     * @return string|T
+     * @param TDefault $default
+     * @return string|TDefault
      */
     public static function getRelativePath(
         string $path,
@@ -573,17 +573,22 @@ final class File extends AbstractUtility
     /**
      * Open a resource if it is not already open
      *
-     * @param Stringable|string|resource $resource
-     * @param Stringable|string|null $uri
+     * @template TResource of Stringable|string|resource
+     * @template TUri of Stringable|string|null
+     *
+     * @param TResource $resource
+     * @param TUri $uri
      * @param-out bool $close
-     * @param-out Stringable|string|null $uri
+     * @param-out (TUri is null ? string|null : (TResource is resource ? TUri : string)) $uri
      * @return resource
      */
     public static function maybeOpen($resource, string $mode, ?bool &$close, &$uri)
     {
         $close = false;
         if (is_resource($resource)) {
+            /** @phpstan-var resource $resource */
             self::assertResourceIsStream($resource);
+            $uri ??= self::getStreamUri($resource);
             return $resource;
         }
         self::assertResourceIsStringable($resource);
