@@ -6,14 +6,14 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
+use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Core\Process;
-use Salient\Curler\Exception\CurlErrorException;
-use Salient\Curler\Exception\HttpErrorException;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerFile;
 use Salient\Curler\CurlerPage;
@@ -379,14 +379,14 @@ EOF,
 
     public function testCurlError(): void
     {
-        $this->expectException(CurlErrorException::class);
+        $this->expectException(CurlErrorExceptionInterface::class);
         (new Curler('//localhost'))->get();
     }
 
     public function testHttpError(): void
     {
         $this->startHttpServer(new HttpResponse(404));
-        $this->expectException(HttpErrorException::class);
+        $this->expectException(HttpErrorExceptionInterface::class);
         $this->expectExceptionMessage('HTTP error 404');
         $this->getCurler()->get();
     }
@@ -404,10 +404,5 @@ EOF,
             );
         }
         return $this->startHttpServer(...($responses ?? []));
-    }
-
-    private static function getCurler(string $endpoint = ''): Curler
-    {
-        return (new Curler(self::HTTP_SERVER_URI . $endpoint));
     }
 }

@@ -11,6 +11,7 @@ use Salient\Core\Facade\Config;
 use Salient\Tests\TestCase;
 use Salient\Utility\Env;
 use Salient\Utility\File;
+use Salient\Utility\Regex;
 
 /**
  * @covers \Salient\Container\Application
@@ -52,7 +53,7 @@ final class ApplicationTest extends TestCase
                 '<?php return %s;' . \PHP_EOL,
                 var_export($data, true),
             );
-            File::writeContents("{$configDir}/{$name}.php", $data);
+            File::writeContents($configDir . "/$name.php", $data);
         }
 
         $app = new Application($basePath, null, Env::APPLY_ALL, null);
@@ -63,7 +64,6 @@ final class ApplicationTest extends TestCase
 
         $app->unload();
         Config::unload();
-
         File::pruneDir($basePath, true);
     }
 
@@ -73,10 +73,11 @@ final class ApplicationTest extends TestCase
     public function testPaths(): void
     {
         // realpath provides cross-platform normalisation here
-        $basePath = realpath(File::createTempDir()) ?: '';
+        $basePath = File::createTempDir();
+        $this->assertIsString($basePath = realpath($basePath));
         $homeDir = Env::getHomeDir();
         $this->assertNotNull($homeDir);
-        $homeDir = realpath($homeDir) ?: '';
+        $this->assertIsString($homeDir = realpath($homeDir));
         $this->assertDirectoryExists($basePath);
         $this->assertDirectoryExists($homeDir);
 
@@ -84,8 +85,8 @@ final class ApplicationTest extends TestCase
         $app = new Application($basePath);
         $this->assertSame($basePath, $app->getBasePath());
         $this->assertSame($basePath . '/var/cache', $cachePath = $app->getCachePath());
-        $this->assertSame($basePath . '/config', $configPath = $app->getConfigPath());
-        $this->assertSame($basePath . '/var/lib', $dataPath = $app->getDataPath());
+        $this->assertSame($basePath . '/var/lib/config', $configPath = $app->getConfigPath());
+        $this->assertSame($basePath . '/var/lib/data', $dataPath = $app->getDataPath());
         $this->assertSame($basePath . '/var/log', $logPath = $app->getLogPath());
         $this->assertSame($basePath . '/var/tmp', $tempPath = $app->getTempPath());
         $this->assertDirectoryExists($cachePath);
@@ -93,17 +94,37 @@ final class ApplicationTest extends TestCase
         $this->assertDirectoryExists($dataPath);
         $this->assertDirectoryExists($logPath);
         $this->assertDirectoryExists($tempPath);
-        $app->unload();
 
         $_ENV['app_env'] = 'production';
         $app = new Application($basePath);
         $this->assertSame($basePath, $app->getBasePath());
-        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getCachePath(false));
-        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getConfigPath(false));
-        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getDataPath(false));
-        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getLogPath(false));
-        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getTempPath(false));
+        $this->assertStringStartsWith($homeDir . \DIRECTORY_SEPARATOR, $app->getCachePath(false));
+        $this->assertStringStartsWith($homeDir . \DIRECTORY_SEPARATOR, $app->getConfigPath(false));
+        $this->assertStringStartsWith($homeDir . \DIRECTORY_SEPARATOR, $app->getDataPath(false));
+        $this->assertStringStartsWith($homeDir . \DIRECTORY_SEPARATOR, $app->getLogPath(false));
+        $this->assertStringStartsWith($homeDir . \DIRECTORY_SEPARATOR, $app->getTempPath(false));
+
         $app->unload();
+        File::pruneDir($basePath, true);
+    }
+
+    /**
+     * @backupGlobals enabled
+     */
+    public function testExportHar(): void
+    {
+        $basePath = File::createTempDir();
+
+        $_ENV['app_env'] = 'test';
+        $app = new Application($basePath);
+        $app->exportHar(null, 'app', 'v1.0.0', $uuid, $file);
+        $app->unload();
+        $this->assertTrue(File::same($file, $basePath . '/var/log/' . basename($file)));
+        $this->assertMatchesRegularExpression('/^' . Regex::UUID . '$/D', $uuid);
+        $this->assertSame(
+            '{"log":{"version":"1.2","creator":{"name":"app","version":"v1.0.0"},"pages":[],"entries":[]}}',
+            File::getContents($file),
+        );
 
         File::pruneDir($basePath, true);
     }

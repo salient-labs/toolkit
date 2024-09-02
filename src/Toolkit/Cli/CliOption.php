@@ -301,7 +301,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     private bool $IsLoaded = false;
 
     /**
-     * Creates a new CliOption object
+     * @internal
      *
      * @param string|null $name The name of the option (ignored if not
      * positional; must start with a letter, number or underscore, followed by

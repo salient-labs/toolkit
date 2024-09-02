@@ -60,7 +60,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     private const DEFAULT_SERVICES = [
         CacheStoreInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
         ConsoleWriterInterface::class => [ConsoleWriter::class, ServiceLifetime::SINGLETON],
-        LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::SINGLETON],
+        LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::INHERIT],
         SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],
     ];
 
@@ -100,9 +100,9 @@ class Container implements ContainerInterface, FacadeAwareInterface
         $class = new ReflectionClass(static::class);
 
         // Bind interfaces that extend Psr\Container\ContainerInterface
+        /** @var class-string $name */
         foreach ($class->getInterfaces() as $name => $interface) {
             if ($interface->implementsInterface(PsrContainerInterface::class)) {
-                /** @disregard P1006 */
                 $this->instance($name, $this);
             }
         }
@@ -122,6 +122,9 @@ class Container implements ContainerInterface, FacadeAwareInterface
         );
     }
 
+    /**
+     * @param class-string $name
+     */
     private function callback(object $instance, string $name): object
     {
         if ($instance instanceof ContainerAwareInterface) {
@@ -149,7 +152,9 @@ class Container implements ContainerInterface, FacadeAwareInterface
     final public static function getGlobalContainer(): ContainerInterface
     {
         if (self::$GlobalContainer === null) {
-            self::setGlobalContainer(new static());
+            $container = new static();
+            self::setGlobalContainer($container);
+            return $container;
         }
 
         return self::$GlobalContainer;
@@ -315,7 +320,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @return static
      */
-    final public function inContextOf(string $id): self
+    final public function inContextOf(string $id): ContainerInterface
     {
         $clone = clone $this;
 
@@ -393,7 +398,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         ?string $class,
         array $args,
         array $rule = []
-    ): self {
+    ): ContainerInterface {
         if ($class !== null) {
             $rule['instanceOf'] = $class;
         }
@@ -414,7 +419,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         string $id,
         ?string $class = null,
         array $args = []
-    ): self {
+    ): ContainerInterface {
         return $this->_bind($id, $class, $args);
     }
 
@@ -425,7 +430,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         string $id,
         ?string $class = null,
         array $args = []
-    ): self {
+    ): ContainerInterface {
         if ($this->has($id)) {
             return $this;
         }
@@ -440,7 +445,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         string $id,
         ?string $class = null,
         array $args = []
-    ): self {
+    ): ContainerInterface {
         return $this->_bind($id, $class, $args, ['shared' => true]);
     }
 
@@ -451,7 +456,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         string $id,
         ?string $class = null,
         array $args = []
-    ): self {
+    ): ContainerInterface {
         if ($this->has($id)) {
             return $this;
         }
@@ -475,7 +480,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         ?array $services = null,
         array $exceptServices = [],
         int $lifetime = ServiceLifetime::INHERIT
-    ): self {
+    ): ContainerInterface {
         $this->applyService($id, $services, $exceptServices, $lifetime);
         $this->Providers[$id] = true;
         return $this;
@@ -572,7 +577,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @return $this
      */
-    final public function addContextualBinding($context, string $dependency, $value): self
+    final public function addContextualBinding($context, string $dependency, $value): ContainerInterface
     {
         if (is_array($context)) {
             foreach ($context as $_context) {
@@ -615,7 +620,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @return $this
      */
-    final public function instance(string $id, $instance): self
+    final public function instance(string $id, $instance): ContainerInterface
     {
         $this->Dice = $this->Dice->addShared($id, $instance);
 
@@ -628,7 +633,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     final public function providers(
         array $serviceMap,
         int $lifetime = ServiceLifetime::INHERIT
-    ): self {
+    ): ContainerInterface {
         $idMap = [];
         foreach ($serviceMap as $id => $class) {
             if (!class_exists($class)) {
@@ -670,7 +675,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @return $this
      */
-    final public function unbind(string $id): self
+    final public function unbind(string $id): ContainerInterface
     {
         $this->Dice = $this->Dice->removeRule($id);
 
@@ -680,7 +685,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @return $this
      */
-    final public function unbindInstance(string $id): self
+    final public function removeInstance(string $id): ContainerInterface
     {
         if (!$this->Dice->hasShared($id)) {
             return $this;

@@ -37,7 +37,7 @@ final class MetricCollectorTest extends TestCase
             ]
         ];
         $this->assertSame($all, $collector->getCounters());
-        $this->assertSame($all, $collector->getCounters('*'));
+        $this->assertSame([], $collector->getCounters('*'));
         $this->assertSame($all, $collector->getCounters(['*']));
         $this->assertSame($all['type'], $collector->getCounters('type'));
         $this->assertSame(['type' => $all['type']], $collector->getCounters(['type']));

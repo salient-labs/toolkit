@@ -121,11 +121,17 @@ final class HttpRequestTest extends TestCase
         ], $r->getHeaders());
         $this->assertSame($headers, $r->getHttpHeaders()->getHeaders());
         $this->assertSame([
+            'method' => 'GET',
+            'url' => 'https://example.com/',
             'httpVersion' => 'HTTP/1.1',
+            'cookies' => [],
             'headers' => [
                 ['name' => 'User-Agent', 'value' => self::USER_AGENT],
                 ['name' => 'Host', 'value' => 'example.com'],
             ],
+            'queryString' => [],
+            'headersSize' => strlen(self::USER_AGENT) + 51,
+            'bodySize' => 0,
         ], $r->jsonSerialize());
 
         $h = ['Foo' => ['a', 'b', 'c']];

@@ -23,6 +23,9 @@ class Option implements Buildable
     protected $ValueType;
     protected $Description;
 
+    /**
+     * @internal
+     */
     public function __construct(
         $long = null,
         $short = null,

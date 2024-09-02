@@ -16,6 +16,7 @@ use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Facade\Sync;
+use Salient\Curler\CurlerHttpArchiveRecorder;
 use Salient\Sync\SyncStore;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\InvalidEnvironmentException;
@@ -23,216 +24,71 @@ use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\File;
 use Salient\Utility\Format;
+use Salient\Utility\Get;
 use Salient\Utility\Inflect;
 use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Sys;
+use DateTimeImmutable;
+use DateTimeZone;
 use LogicException;
 use Phar;
+use RuntimeException;
 
 /**
  * A service container for applications
  */
 class Application extends Container implements ApplicationInterface
 {
-    private const DIR_CONFIG = 'CONFIG';
-    private const DIR_DATA = 'DATA';
-    private const DIR_STATE = 'STATE';
+    private const PATH_CACHE = 0;
+    private const PATH_CONFIG = 1;
+    private const PATH_DATA = 2;
+    private const PATH_LOG = 3;
+    private const PATH_TEMP = 4;
+    private const PARENT_CONFIG = 0;
+    private const PARENT_DATA = 1;
+    private const PARENT_STATE = 2;
+
+    /**
+     * [ Index => [ name, parent, child, Windows child, source child ], ... ]
+     */
+    private const PATHS = [
+        self::PATH_CACHE => ['cache', self::PARENT_STATE, 'cache', 'cache', 'var/cache'],
+        self::PATH_CONFIG => ['config', self::PARENT_CONFIG, null, 'config', 'var/lib/config'],
+        self::PATH_DATA => ['data', self::PARENT_DATA, null, 'data', 'var/lib/data'],
+        self::PATH_LOG => ['log', self::PARENT_STATE, 'log', 'log', 'var/log'],
+        self::PATH_TEMP => ['temp', self::PARENT_STATE, 'tmp', 'tmp', 'var/tmp'],
+    ];
 
     private string $AppName;
     private string $BasePath;
     private string $WorkingDirectory;
     private bool $RunningFromSource;
 
-    // @phpstan-ignore-next-line
-    private ?string $CachePath;
+    /**
+     * @var array<self::PATH_*,string|null>
+     */
+    private array $Paths = [
+        self::PATH_CACHE => null,
+        self::PATH_CONFIG => null,
+        self::PATH_DATA => null,
+        self::PATH_LOG => null,
+        self::PATH_TEMP => null,
+    ];
 
-    // @phpstan-ignore-next-line
-    private ?string $ConfigPath;
+    private bool $OutputLogIsRegistered = false;
+    private ?CurlerHttpArchiveRecorder $HarRecorder = null;
 
-    // @phpstan-ignore-next-line
-    private ?string $DataPath;
+    // --
 
-    // @phpstan-ignore-next-line
-    private ?string $LogPath;
-
-    // @phpstan-ignore-next-line
-    private ?string $TempPath;
-    /** @var StreamTarget[] */
-    private array $LogTargets = [];
-    /** @var StreamTarget[] */
-    private array $DebugLogTargets = [];
-    /** @var int|float|null */
-    private static $StartTime;
     /** @var Level::* */
     private static int $ShutdownReportLevel;
+    private static bool $ShutdownReportResourceUsage;
+    private static bool $ShutdownReportRunningTimers;
     /** @var string[]|string|null */
     private static $ShutdownReportMetricGroups;
-    private static bool $ShutdownReportResourceUsage;
+    private static ?int $ShutdownReportMetricLimit;
     private static bool $ShutdownReportIsRegistered = false;
-
-    /**
-     * Get a platform- and environment-aware writable directory that satisfies
-     * the given criteria
-     *
-     * @param string $name The internal name of the directory, e.g. `"cache"`.
-     * Used to check for environment-supplied values (e.g. `"app_cache_path"`)
-     * and in user feedback.
-     * @param Application::DIR_* $parent Either `"CONFIG"`, `"DATA"`, or
-     * `"STATE"`. Used in production to determine which top-level directory in
-     * `$HOME` or the user's profile is appropriate for the directory.
-     * @param string|null $child Provided if the directory should be created
-     * below the main directory created for the application in `$parent` (e.g.
-     * `"tmp"` might resolve to `"$HOME/.cache/<app_name>/tmp"`).
-     * @param string $sourceChild A path relative to the application's base
-     * path. Used when running from source in a non-production environment.
-     * @param string $windowsChild On Windows, the value of `$child` is ignored
-     * and `$windowsChild` is used for the same purpose.
-     */
-    private function getPath(
-        string $name,
-        string $parent,
-        ?string $child,
-        string $sourceChild,
-        string $windowsChild,
-        bool $create,
-        ?string &$save
-    ): string {
-        $name = "app_{$name}_path";
-
-        $path = Env::get($name, null);
-        if ($path !== null) {
-            if (trim($path) === '') {
-                throw new InvalidEnvironmentException(
-                    sprintf('%s disabled in this environment', $name)
-                );
-            }
-            if (!File::isAbsolute($path)) {
-                $path = "{$this->BasePath}/$path";
-            }
-            return $this->checkPath($path, $name, $create, $save);
-        }
-
-        // If running from source, return `"{$this->BasePath}/$sourceChild"` if
-        // it resolves to a writable directory
-        if (!$this->isProduction()) {
-            $path = "{$this->BasePath}/$sourceChild";
-            if (File::isCreatable($path)) {
-                return $this->checkPath($path, $name, $create, $save);
-            }
-        }
-
-        $app = $this->getAppName();
-
-        if (Sys::isWindows()) {
-            switch ($parent) {
-                case self::DIR_CONFIG:
-                case self::DIR_DATA:
-                    $path = Env::get('APPDATA');
-                    break;
-
-                case self::DIR_STATE:
-                default:
-                    $path = Env::get('LOCALAPPDATA');
-                    break;
-            }
-
-            return $this->checkPath(
-                Arr::implode('/', [$path, $app, $windowsChild], ''),
-                $name,
-                $create,
-                $save,
-            );
-        }
-
-        $home = Env::getHomeDir();
-        if ($home === null || !is_dir($home)) {
-            throw new InvalidEnvironmentException('Home directory not found');
-        }
-
-        switch ($parent) {
-            case self::DIR_CONFIG:
-                $path = Env::get('XDG_CONFIG_HOME', "{$home}/.config");
-                break;
-
-            case self::DIR_DATA:
-                $path = Env::get('XDG_DATA_HOME', "{$home}/.local/share");
-                break;
-
-            case self::DIR_STATE:
-            default:
-                $path = Env::get('XDG_CACHE_HOME', "{$home}/.cache");
-                break;
-        }
-
-        return $this->checkPath(
-            Arr::implode('/', [$path, $app, $child], ''),
-            $name,
-            $create,
-            $save,
-        );
-    }
-
-    private function checkPath(string $path, string $name, bool $create, ?string &$save): string
-    {
-        if (!File::isAbsolute($path)) {
-            throw new InvalidEnvironmentException(
-                sprintf('Absolute path required: %s', $name)
-            );
-        }
-
-        if ($create) {
-            File::createDir($path);
-            $save = $path;
-        }
-
-        return $path;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getCachePath(bool $create = true): string
-    {
-        return $this->CachePath
-            ?? ($this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache', $create, $this->CachePath));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getConfigPath(bool $create = true): string
-    {
-        return $this->ConfigPath
-            ?? ($this->getPath('config', self::DIR_CONFIG, null, 'config', 'config', $create, $this->ConfigPath));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getDataPath(bool $create = true): string
-    {
-        return $this->DataPath
-            ?? ($this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data', $create, $this->DataPath));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getLogPath(bool $create = true): string
-    {
-        return $this->LogPath
-            ?? ($this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log', $create, $this->LogPath));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getTempPath(bool $create = true): string
-    {
-        return $this->TempPath
-            ?? ($this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp', $create, $this->TempPath));
-    }
 
     /**
      * Creates a new Application object
@@ -246,7 +102,8 @@ class Application extends Container implements ApplicationInterface
      * numbers.
      *
      * If `$configDir` exists and is a directory, it is passed to
-     * {@see Config::loadDirectory()} after `.env` files are loaded and applied.
+     * {@see Config::loadDirectory()} after `.env` files are loaded and values
+     * are applied from the environment to the running script.
      *
      * @api
      *
@@ -261,57 +118,51 @@ class Application extends Container implements ApplicationInterface
         int $envFlags = Env::APPLY_ALL,
         ?string $configDir = 'config'
     ) {
-        if (!isset(self::$StartTime)) {
-            self::$StartTime = hrtime(true);
-        }
-
         parent::__construct();
 
         static::setGlobalContainer($this);
 
-        $this->AppName = $appName
-            ?? Regex::replace(
-                // Match `git describe --long` and similar formats
-                '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/i',
-                '',
-                Sys::getProgramBasename('.php', '.phar')
-            );
+        $this->AppName = $appName ?? Regex::replace(
+            '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/i',
+            '',
+            Sys::getProgramBasename('.php', '.phar'),
+        );
 
-        $explicitBasePath = true;
-        $defaultBasePath = false;
         if ($basePath === null) {
             $explicitBasePath = false;
             $basePath = Env::get('app_base_path', null);
             if ($basePath === null) {
-                $defaultBasePath = true;
                 $basePath = Package::path();
+                $defaultBasePath = true;
+            } else {
+                $defaultBasePath = false;
             }
+        } else {
+            $explicitBasePath = true;
+            $defaultBasePath = false;
         }
 
         if (!is_dir($basePath)) {
             $exception = $explicitBasePath || $defaultBasePath
                 ? FilesystemErrorException::class
                 : InvalidEnvironmentException::class;
-            throw new $exception(sprintf('Invalid basePath: %s', $basePath));
+            throw new $exception(sprintf('Invalid base path: %s', $basePath));
         }
 
-        $basePath = File::realpath($basePath);
-
-        $this->BasePath = $basePath;
+        $this->BasePath = File::realpath($basePath);
 
         $this->WorkingDirectory = File::getcwd();
 
-        $this->RunningFromSource =
-            !extension_loaded('Phar')
+        $this->RunningFromSource = !extension_loaded('Phar')
             || Phar::running() === '';
 
         if ($this->RunningFromSource) {
             $files = [];
             $env = Env::getEnvironment();
             if ($env !== null) {
-                $files[] = "{$this->BasePath}/.env.{$env}";
+                $files[] = $this->BasePath . '/.env.' . $env;
             }
-            $files[] = "{$this->BasePath}/.env";
+            $files[] = $this->BasePath . '/.env';
             foreach ($files as $file) {
                 if (is_file($file)) {
                     Env::loadFiles($file);
@@ -320,7 +171,9 @@ class Application extends Container implements ApplicationInterface
             }
         }
 
-        Env::apply($envFlags);
+        if ($envFlags) {
+            Env::apply($envFlags);
+        }
 
         Console::registerStdioTargets();
 
@@ -331,9 +184,9 @@ class Application extends Container implements ApplicationInterface
             Err::silencePath($adodb);
         }
 
-        if ($configDir !== null && $configDir !== '') {
+        if ($configDir !== null) {
             if (!File::isAbsolute($configDir)) {
-                $configDir = "{$this->BasePath}/{$configDir}";
+                $configDir = $this->BasePath . '/' . $configDir;
             }
             if (is_dir($configDir)) {
                 Config::loadDirectory($configDir);
@@ -346,8 +199,35 @@ class Application extends Container implements ApplicationInterface
      */
     public function unload(): void
     {
-        $this->stopSync()->stopCache();
+        $this->stopCache();
+        $this->stopSync();
+        if ($this->HarRecorder) {
+            $this->HarRecorder->close();
+            $this->HarRecorder = null;
+        }
         parent::unload();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getAppName(): string
+    {
+        return $this->AppName;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isProduction(): bool
+    {
+        $env = Env::getEnvironment();
+
+        return $env === 'production'
+            || ($env === null && (
+                !$this->RunningFromSource
+                || !Package::hasDevPackages()
+            ));
     }
 
     /**
@@ -361,85 +241,181 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getWorkingDirectory(): string
+    final public function getCachePath(bool $create = true): string
     {
-        return $this->WorkingDirectory;
+        return $this->getPath(self::PATH_CACHE, $create);
     }
 
     /**
      * @inheritDoc
      */
-    final public function restoreWorkingDirectory()
+    final public function getConfigPath(bool $create = true): string
     {
-        if (File::getcwd() !== $this->WorkingDirectory) {
-            File::chdir($this->WorkingDirectory);
+        return $this->getPath(self::PATH_CONFIG, $create);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getDataPath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_DATA, $create);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getLogPath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_LOG, $create);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getTempPath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_TEMP, $create);
+    }
+
+    /**
+     * @param self::PATH_* $index
+     */
+    private function getPath(int $index, bool $create): string
+    {
+        if ($this->Paths[$index] !== null) {
+            return $this->Paths[$index];
         }
 
-        return $this;
-    }
+        [$name, $parent, $child, $winChild, $srcChild] = self::PATHS[$index];
+        $varName = sprintf('app_%s_path', $name);
 
-    /**
-     * @inheritDoc
-     */
-    final public function setWorkingDirectory(?string $directory = null)
-    {
-        $this->WorkingDirectory = $directory ?? File::getcwd();
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function registerShutdownReport(
-        int $level = Level::INFO,
-        $groups = null,
-        bool $resourceUsage = true
-    ) {
-        self::$ShutdownReportLevel = $level;
-        self::$ShutdownReportMetricGroups = $groups;
-        self::$ShutdownReportResourceUsage = $resourceUsage;
-
-        if (self::$ShutdownReportIsRegistered) {
-            return $this;
-        }
-
-        register_shutdown_function(
-            static function () {
-                /** @var int&Level::* */
-                $level = self::$ShutdownReportLevel;
-                self::doReportMetrics($level, true, self::$ShutdownReportMetricGroups, 10);
-                if (self::$ShutdownReportResourceUsage) {
-                    self::doReportResourceUsage($level);
-                }
+        $path = Env::get($varName, null);
+        if ($path !== null) {
+            if (trim($path) === '') {
+                throw new InvalidEnvironmentException(sprintf(
+                    'Directory disabled (empty %s in environment)',
+                    $varName,
+                ));
             }
+            if (!File::isAbsolute($path)) {
+                $path = $this->BasePath . '/' . $path;
+            }
+        } elseif (
+            !$this->isProduction()
+            && File::isCreatable($this->BasePath . '/' . $srcChild)
+        ) {
+            $path = $this->BasePath . '/' . $srcChild;
+        } elseif (Sys::isWindows()) {
+            switch ($parent) {
+                case self::PARENT_CONFIG:
+                case self::PARENT_DATA:
+                    $path = Env::get('APPDATA');
+                    break;
+
+                case self::PARENT_STATE:
+                    $path = Env::get('LOCALAPPDATA');
+                    break;
+            }
+
+            $path = Arr::implode('/', [$path, $this->AppName, $winChild], '');
+        } else {
+            $home = Env::getHomeDir();
+            if ($home === null || !is_dir($home)) {
+                throw new InvalidEnvironmentException('Home directory not found');
+            }
+
+            switch ($parent) {
+                case self::PARENT_CONFIG:
+                    $path = Env::get('XDG_CONFIG_HOME', $home . '/.config');
+                    break;
+
+                case self::PARENT_DATA:
+                    $path = Env::get('XDG_DATA_HOME', $home . '/.local/share');
+                    break;
+
+                case self::PARENT_STATE:
+                    $path = Env::get('XDG_CACHE_HOME', $home . '/.cache');
+                    break;
+            }
+
+            $path = Arr::implode('/', [$path, $this->AppName, $child], '');
+        }
+
+        if (!File::isAbsolute($path)) {
+            // @codeCoverageIgnoreStart
+            throw new RuntimeException(sprintf(
+                'Absolute path to %s directory required',
+                $name,
+            ));
+            // @codeCoverageIgnoreEnd
+        }
+
+        if ($create) {
+            File::createDir($path);
+            $this->Paths[$index] = $path;
+        }
+
+        return $path;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function logOutput(?string $name = null, ?bool $debug = null)
+    {
+        if ($this->OutputLogIsRegistered) {
+            throw new LogicException('Output log already registered');
+        }
+
+        $name ??= $this->AppName;
+        $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
+        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
+
+        if ($debug || ($debug === null && Env::getDebug())) {
+            $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
+            Console::registerTarget($target, LevelGroup::ALL);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function exportHar(
+        ?string $name = null,
+        ?string $creatorName = null,
+        ?string $creatorVersion = null,
+        ?string &$uuid = null,
+        ?string &$filename = null
+    ) {
+        if ($this->HarRecorder) {
+            throw new LogicException('HAR recorder already started');
+        }
+
+        $filename = sprintf(
+            '%s/%s-%s-%s.har',
+            $this->getLogPath(),
+            $name ?? $this->AppName,
+            (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d'),
+            $uuid ??= Get::uuid(),
         );
 
-        self::$ShutdownReportIsRegistered = true;
+        if (file_exists($filename)) {
+            throw new RuntimeException(sprintf('File already exists: %s', $filename));
+        }
+
+        File::create($filename, 0600);
+
+        $this->HarRecorder = new CurlerHttpArchiveRecorder(
+            $filename,
+            $creatorName,
+            $creatorVersion,
+        );
+        $this->HarRecorder->start();
 
         return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isProduction(): bool
-    {
-        $env = Env::getEnvironment();
-
-        return
-            $env === 'production'
-            || ($env === null
-                && (!$this->RunningFromSource
-                    || !Package::hasDevPackages()));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getAppName(): string
-    {
-        return $this->AppName;
     }
 
     /**
@@ -475,14 +451,11 @@ class Application extends Container implements ApplicationInterface
     final public function stopCache()
     {
         if (
-            !Cache::isLoaded()
-            || !$this->checkCache($cache = Cache::getInstance())
+            Cache::isLoaded()
+            && $this->checkCache($cache = Cache::getInstance())
         ) {
-            return $this;
+            $cache->close();
         }
-
-        $cache->close();
-
         return $this;
     }
 
@@ -492,29 +465,9 @@ class Application extends Container implements ApplicationInterface
             && File::same($this->getCacheDb(false), $cache->getFilename());
     }
 
-    /**
-     * @inheritDoc
-     */
-    final public function logOutput(?string $name = null, ?bool $debug = null)
+    private function getCacheDb(bool $create = true): string
     {
-        $name = $name === null
-            ? $this->getAppName()
-            : basename($name, '.log');
-
-        if (!isset($this->LogTargets[$name])) {
-            $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
-            Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
-            $this->LogTargets[$name] = $target;
-        }
-
-        if (($debug || ($debug === null && Env::getDebug()))
-                && !isset($this->DebugLogTargets[$name])) {
-            $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, LevelGroup::ALL);
-            $this->DebugLogTargets[$name] = $target;
-        }
-
-        return $this;
+        return $this->getCachePath($create) . '/cache.db';
     }
 
     /**
@@ -541,14 +494,12 @@ class Application extends Container implements ApplicationInterface
         /** @disregard P1006 */
         Sync::load(new SyncStore(
             $syncDb,
-            $command === null
-                ? Sys::getProgramName($this->BasePath)
-                : $command,
-            ($arguments === null
-                ? (\PHP_SAPI == 'cli'
+            $command ?? Sys::getProgramName($this->BasePath),
+            $arguments ?? ($command === null
+                ? (\PHP_SAPI === 'cli'
                     ? array_slice($_SERVER['argv'], 1)
                     : ['_GET' => $_GET, '_POST' => $_POST])
-                : $arguments)
+                : [])
         ));
 
         return $this;
@@ -557,7 +508,27 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function syncNamespace(
+    final public function stopSync()
+    {
+        if (
+            Sync::isLoaded()
+            && ($store = Sync::getInstance()) instanceof SyncStore
+            && File::same($this->getSyncDb(false), $store->getFilename())
+        ) {
+            $store->close();
+        }
+        return $this;
+    }
+
+    private function getSyncDb(bool $create = true): string
+    {
+        return $this->getDataPath($create) . '/sync.db';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function registerSyncNamespace(
         string $prefix,
         string $uri,
         string $namespace,
@@ -574,21 +545,66 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function stopSync()
+    final public function getWorkingDirectory(): string
     {
-        if (!Sync::isLoaded()) {
+        return $this->WorkingDirectory;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function restoreWorkingDirectory()
+    {
+        if (File::getcwd() !== $this->WorkingDirectory) {
+            File::chdir($this->WorkingDirectory);
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function setWorkingDirectory(?string $directory = null)
+    {
+        $this->WorkingDirectory = $directory ?? File::getcwd();
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function registerShutdownReport(
+        int $level = Level::INFO,
+        bool $includeResourceUsage = true,
+        bool $includeRunningTimers = true,
+        $groups = null,
+        ?int $limit = 10
+    ) {
+        self::$ShutdownReportLevel = $level;
+        self::$ShutdownReportResourceUsage = $includeResourceUsage;
+        self::$ShutdownReportRunningTimers = $includeRunningTimers;
+        self::$ShutdownReportMetricGroups = $groups;
+        self::$ShutdownReportMetricLimit = $limit;
+
+        if (self::$ShutdownReportIsRegistered) {
             return $this;
         }
 
-        $store = Sync::getInstance();
-        if (
-            !$store instanceof SyncStore
-            || !File::same($this->getSyncDb(false), $store->getFilename())
-        ) {
-            return $this;
-        }
+        register_shutdown_function(
+            static function () {
+                self::doReportMetrics(
+                    self::$ShutdownReportLevel,
+                    self::$ShutdownReportRunningTimers,
+                    self::$ShutdownReportMetricGroups,
+                    self::$ShutdownReportMetricLimit,
+                );
+                if (self::$ShutdownReportResourceUsage) {
+                    self::doReportResourceUsage(self::$ShutdownReportLevel);
+                }
+            }
+        );
 
-        $store->close();
+        self::$ShutdownReportIsRegistered = true;
 
         return $this;
     }
@@ -607,19 +623,19 @@ class Application extends Container implements ApplicationInterface
      */
     private static function doReportResourceUsage(int $level): void
     {
-        [$endTime, $peakMemory, $userTime, $systemTime] = [
-            hrtime(true),
+        [$peakMemory, $elapsedTime, $userTime, $systemTime] = [
             memory_get_peak_usage(),
+            microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
             ...Sys::getCpuUsage(),
         ];
 
         Console::print(
             "\n" . sprintf(
                 'CPU time: **%.3fs** elapsed, **%.3fs** user, **%.3fs** system; memory: **%s** peak',
-                ($endTime - self::$StartTime) / 1000000000,
+                $elapsedTime,
                 $userTime / 1000000,
                 $systemTime / 1000000,
-                Format::bytes($peakMemory)
+                Format::bytes($peakMemory),
             ),
             $level,
             MessageType::UNFORMATTED,
@@ -649,7 +665,7 @@ class Application extends Container implements ApplicationInterface
         $groups,
         ?int $limit
     ): void {
-        $groupCounters = Profile::getCounters($groups);
+        $groupCounters = Profile::getInstance()->getCounters((array) $groups);
         foreach ($groupCounters as $group => $counters) {
             // Sort by counter value, in descending order
             uasort($counters, fn(int $a, int $b) => $b <=> $a);
@@ -676,11 +692,7 @@ class Application extends Container implements ApplicationInterface
             $valueWidth = strlen((string) $maxValue);
             $format = "  %{$valueWidth}d ***%s***";
             foreach ($counters as $name => $value) {
-                $lines[] = sprintf(
-                    $format,
-                    $value,
-                    $name,
-                );
+                $lines[] = sprintf($format, $value, $name);
             }
 
             if ($hidden = $count - count($counters)) {
@@ -691,7 +703,7 @@ class Application extends Container implements ApplicationInterface
             $report[] = implode("\n", $lines);
         }
 
-        $groupTimers = Profile::getTimers($includeRunningTimers, $groups);
+        $groupTimers = Profile::getInstance()->getTimers($includeRunningTimers, (array) $groups);
         foreach ($groupTimers as $group => $timers) {
             // Sort by milliseconds elapsed, in descending order
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);
@@ -720,12 +732,7 @@ class Application extends Container implements ApplicationInterface
             $runsWidth = strlen((string) $maxRuns) + 2;
             $format = "  %{$timeWidth}.3fms ~~{~~%{$runsWidth}s~~}~~ ***%s***";
             foreach ($timers as $name => [$time, $runs]) {
-                $lines[] = sprintf(
-                    $format,
-                    $time,
-                    sprintf('*%d*', $runs),
-                    $name,
-                );
+                $lines[] = sprintf($format, $time, sprintf('*%d*', $runs), $name);
             }
 
             if ($hidden = $count - count($timers)) {
@@ -743,15 +750,5 @@ class Application extends Container implements ApplicationInterface
                 MessageType::UNFORMATTED,
             );
         }
-    }
-
-    private function getCacheDb(bool $create = true): string
-    {
-        return $this->getCachePath($create) . '/cache.db';
-    }
-
-    private function getSyncDb(bool $create = true): string
-    {
-        return $this->getDataPath($create) . '/sync.db';
     }
 }

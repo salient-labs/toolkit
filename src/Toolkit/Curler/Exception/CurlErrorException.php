@@ -3,8 +3,12 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
+use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
 
-class CurlErrorException extends AbstractRequestException
+/**
+ * @internal
+ */
+class CurlErrorException extends AbstractRequestException implements CurlErrorExceptionInterface
 {
     protected int $CurlError;
 
@@ -26,7 +30,7 @@ class CurlErrorException extends AbstractRequestException
     }
 
     /**
-     * Get the error code reported by cURL
+     * @inheritDoc
      */
     public function getCurlError(): int
     {
@@ -34,7 +38,7 @@ class CurlErrorException extends AbstractRequestException
     }
 
     /**
-     * Check if the exception was caused by a network error
+     * @inheritDoc
      */
     public function isNetworkError(): bool
     {

@@ -17,10 +17,10 @@ class ResponseCacheHitEvent extends AbstractCurlerEvent implements ResponseCache
 
     public function __construct(CurlerInterface $curler, RequestInterface $request, HttpResponseInterface $response)
     {
-        parent::__construct($curler);
-
         $this->Request = $request;
         $this->Response = $response;
+
+        parent::__construct($curler);
     }
 
     public function getRequest(): RequestInterface

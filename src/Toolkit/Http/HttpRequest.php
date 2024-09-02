@@ -7,8 +7,10 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
+use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestInterface;
+use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
@@ -161,6 +163,49 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
     }
 
     /**
+     * @return array{method:string,url:string,httpVersion:string,cookies:array<array{name:string,value:string,path?:string,domain?:string,expires?:string,httpOnly?:bool,secure?:bool}>,headers:array<array{name:string,value:string}>,queryString:array<array{name:string,value:string}>,postData?:array{mimeType:string,params:array{},text:string},headersSize:int,bodySize:int}
+     */
+    public function jsonSerialize(): array
+    {
+        $request = parent::jsonSerialize();
+
+        if (
+            $request['bodySize'] === -1
+            || $request['bodySize'] > 0
+            || ([
+                Method::POST => true,
+                Method::PUT => true,
+                Method::PATCH => true,
+                Method::DELETE => true,
+            ][$this->Method] ?? false)
+        ) {
+            $mediaType = $this->Headers->getHeaderValues(HttpHeader::CONTENT_TYPE);
+            $mediaType = count($mediaType) === 1 ? $mediaType[0] : '';
+            $body = (string) $this->Body;
+            $postData = [
+                'postData' => [
+                    'mimeType' => $mediaType,
+                    'params' => Http::mediaTypeIs($mediaType, MimeType::FORM)
+                        ? $this->splitQuery($body)
+                        : [],
+                    'text' => $body,
+                ],
+            ];
+        } else {
+            $postData = [];
+        }
+
+        return [
+            'method' => $this->Method,
+            'url' => (string) $this->Uri,
+            'httpVersion' => $request['httpVersion'],
+            'cookies' => $request['cookies'],
+            'headers' => $request['headers'],
+            'queryString' => $this->splitQuery($this->Uri->getQuery()),
+        ] + $postData + $request;
+    }
+
+    /**
      * @inheritDoc
      */
     protected function getStartLine(): string
@@ -250,5 +295,23 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
         // `Salient\Http\Uri`, which surfaces empty and undefined queries via
         // `Uri::toParts()` as `""` and `null` respectively
         return Uri::from($uri);
+    }
+
+    /**
+     * @return array<array{name:string,value:string}>
+     */
+    private function splitQuery(string $query): array
+    {
+        if ($query === '') {
+            return [];
+        }
+        foreach (explode('&', $query) as $param) {
+            $param = explode('=', $param, 2);
+            $params[] = [
+                'name' => $param[0],
+                'value' => $param[1] ?? '',
+            ];
+        }
+        return $params;
     }
 }

@@ -3,11 +3,15 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
+use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Utility\Arr;
 use Throwable;
 
-class HttpErrorException extends AbstractResponseException
+/**
+ * @internal
+ */
+class HttpErrorException extends AbstractResponseException implements HttpErrorExceptionInterface
 {
     protected int $StatusCode;
 
@@ -35,7 +39,7 @@ class HttpErrorException extends AbstractResponseException
     }
 
     /**
-     * Get the exception's underlying HTTP status code
+     * @inheritDoc
      */
     public function getStatusCode(): int
     {
@@ -43,8 +47,7 @@ class HttpErrorException extends AbstractResponseException
     }
 
     /**
-     * Check if the exception's underlying HTTP status code is 404 (Not Found)
-     * or 410 (Gone)
+     * @inheritDoc
      */
     public function isNotFoundError(): bool
     {

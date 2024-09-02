@@ -21,10 +21,10 @@ class CurlResponseEvent extends AbstractCurlEvent implements CurlResponseEventIn
      */
     public function __construct(CurlerInterface $curler, $curlHandle, RequestInterface $request, HttpResponseInterface $response)
     {
-        parent::__construct($curler, $curlHandle);
-
         $this->Request = $request;
         $this->Response = $response;
+
+        parent::__construct($curler, $curlHandle);
     }
 
     public function getRequest(): RequestInterface

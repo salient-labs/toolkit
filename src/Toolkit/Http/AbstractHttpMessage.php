@@ -174,13 +174,16 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
     }
 
     /**
-     * @return array{httpVersion:string,headers:array<array{name:string,value:string}>,...}
+     * @return array{httpVersion:string,cookies:array<array{name:string,value:string,path?:string,domain?:string,expires?:string,httpOnly?:bool,secure?:bool}>,headers:array<array{name:string,value:string}>,headersSize:int,bodySize:int}
      */
     public function jsonSerialize(): array
     {
         return [
             'httpVersion' => sprintf('HTTP/%s', $this->ProtocolVersion),
+            'cookies' => [],
             'headers' => $this->Headers->jsonSerialize(),
+            'headersSize' => strlen($this->getHttpPayload(true)),
+            'bodySize' => $this->Body->getSize() ?? -1,
         ];
     }
 }

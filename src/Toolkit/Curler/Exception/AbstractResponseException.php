@@ -6,6 +6,9 @@ use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Throwable;
 
+/**
+ * @internal
+ */
 abstract class AbstractResponseException extends AbstractRequestException
 {
     protected HttpResponseInterface $Response;
@@ -26,7 +29,7 @@ abstract class AbstractResponseException extends AbstractRequestException
     }
 
     /**
-     * Get the response that triggered the exception
+     * @inheritDoc
      */
     public function getResponse(): HttpResponseInterface
     {
@@ -39,8 +42,7 @@ abstract class AbstractResponseException extends AbstractRequestException
     public function getMetadata(): array
     {
         return [
-            'Response' =>
-                (string) $this->Response,
+            'Response' => (string) $this->Response,
         ] + parent::getMetadata();
     }
 }

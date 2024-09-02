@@ -120,6 +120,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
     public function __construct(string $class)
     {
         parent::__construct($class);
+
         $class = $this->Reflector;
         $this->IsSyncEntity = $class->implementsInterface(SyncEntityInterface::class);
         $this->IsSyncProvider = $class->implementsInterface(SyncProviderInterface::class);

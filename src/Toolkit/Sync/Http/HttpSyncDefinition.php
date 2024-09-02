@@ -9,6 +9,7 @@ use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -20,7 +21,6 @@ use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Pipeline;
-use Salient\Curler\Exception\HttpErrorException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;
@@ -734,7 +734,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
 
         try {
             return $httpClosure($curler, $this->Query, $payload);
-        } catch (HttpErrorException $ex) {
+        } catch (HttpErrorExceptionInterface $ex) {
             if (
                 $operation === OP::READ
                 && $id !== null
