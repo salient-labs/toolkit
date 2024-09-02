@@ -8,6 +8,9 @@ use Salient\Curler\CurlerHttpArchiveRecorder;
 use Salient\Tests\HttpTestCase;
 use Salient\Utility\File;
 
+/**
+ * @covers \Salient\Curler\CurlerHttpArchiveRecorder
+ */
 final class CurlerHttpArchiveRecorderTest extends HttpTestCase
 {
     private vfsStreamDirectory $Root;

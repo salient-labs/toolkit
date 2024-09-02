@@ -9,6 +9,9 @@ use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
 use InvalidArgumentException;
 
+/**
+ * @covers \Salient\Sync\Support\SyncPipelineArgument
+ */
 final class SyncPipelineArgumentTest extends SyncTestCase
 {
     /**

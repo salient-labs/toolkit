@@ -3,20 +3,25 @@
 namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Psr\Log\LoggerInterface;
 use Salient\Container\Application;
 use Salient\Container\Container;
+use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Container\ApplicationInterface;
+use Salient\Contract\Container\ArgumentsNotUsedExceptionInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasBindings;
 use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
+use Salient\Contract\Container\InvalidServiceExceptionInterface;
 use Salient\Contract\Container\ServiceAwareInterface;
 use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\ServiceNotFoundExceptionInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Chainable;
+use Salient\Contract\Core\Unloadable;
 use Salient\Core\Facade\App;
 use Salient\Tests\TestCase;
 use LogicException;
@@ -55,12 +60,13 @@ final class ContainerTest extends TestCase
     }
 
     /**
-     * @return array<array{string}>
+     * @return array<array{class-string}>
      */
     public static function onlyBindsContainerProvider(): array
     {
         return [
             [Chainable::class],
+            [Unloadable::class],
             [ApplicationInterface::class],
             [Application::class],
         ];
@@ -70,30 +76,37 @@ final class ContainerTest extends TestCase
     {
         $container = new Container();
         $this->assertFalse($container->hasSingleton(stdClass::class));
+        $this->assertFalse($container->hasInstance(stdClass::class));
+
         $container->bind(stdClass::class);
         $this->assertFalse($container->hasSingleton(stdClass::class));
+        $this->assertFalse($container->hasInstance(stdClass::class));
 
-        $container = new Container();
         $container->instance(stdClass::class, new stdClass());
         $this->assertTrue($container->hasSingleton(stdClass::class));
-        $container->removeInstance(stdClass::class);
-        $this->assertFalse($container->hasInstance(stdClass::class));
-        $this->assertFalse($container->hasSingleton(stdClass::class));
+        $this->assertTrue($container->hasInstance(stdClass::class));
 
-        $container = new Container();
+        $container->removeInstance(stdClass::class);
+        $this->assertFalse($container->hasSingleton(stdClass::class));
+        $this->assertFalse($container->hasInstance(stdClass::class));
+
         $container->singleton(stdClass::class);
         $this->assertTrue($container->hasSingleton(stdClass::class));
-        $container->get(stdClass::class);
-        $this->assertTrue($container->hasInstance(stdClass::class));
-        $container->removeInstance(stdClass::class);
         $this->assertFalse($container->hasInstance(stdClass::class));
+
+        $container->get(stdClass::class);
         $this->assertTrue($container->hasSingleton(stdClass::class));
+        $this->assertTrue($container->hasInstance(stdClass::class));
+
+        $container->removeInstance(stdClass::class);
+        $this->assertTrue($container->hasSingleton(stdClass::class));
+        $this->assertFalse($container->hasInstance(stdClass::class));
     }
 
     public function testUnload(): void
     {
         $container = new Container();
-        $container->instance(stdClass::class, new stdClass());
+        $container->bind(stdClass::class);
         $this->assertTrue($container->has(stdClass::class));
         $container->unload();
         $this->assertFalse($container->has(stdClass::class));
@@ -101,40 +114,145 @@ final class ContainerTest extends TestCase
 
     public function testUnloadWithFacade(): void
     {
+        $this->assertFalse(App::isLoaded());
         $container = App::getInstance();
-        $container->instance(stdClass::class, new stdClass());
         $this->assertTrue(App::isLoaded());
-        $this->assertTrue($container->has(stdClass::class));
         $container->unload();
         $this->assertFalse(App::isLoaded());
-        $this->assertFalse($container->has(stdClass::class));
     }
 
-    public function testServiceTransient(): void
+    public function testGlobalContainer(): void
     {
-        $container = (new Container())->provider(TestServiceImplA::class, null, [], ServiceLifetime::TRANSIENT);
-        $this->_testServiceTransient($container);
+        $this->assertFalse(Container::hasGlobalContainer());
+        $container = Container::getGlobalContainer();
+        $this->assertTrue(Container::hasGlobalContainer());
+        $this->assertSame($container, Container::getGlobalContainer());
+        Container::setGlobalContainer(null);
+        $this->assertFalse(Container::hasGlobalContainer());
+        Container::setGlobalContainer($container = new Container());
+        Container::setGlobalContainer($container);
+        $this->assertTrue(Container::hasGlobalContainer());
+        $this->assertSame($container, Container::getGlobalContainer());
+        $container->unload();
+        $this->assertFalse(Container::hasGlobalContainer());
     }
 
-    public function testServiceSingleton(): void
+    public function testGetWithUnusableArguments(): void
     {
-        $container = (new Container())->provider(TestServiceImplA::class, null, [], ServiceLifetime::SINGLETON);
-        $this->_testServiceSingleton($container);
+        $container = (new Container())->singleton(stdClass::class);
+        $container->get(stdClass::class);
+        $this->expectException(ArgumentsNotUsedExceptionInterface::class);
+        $this->expectExceptionMessage('Cannot apply arguments to shared instance: stdClass');
+        $container->get(stdClass::class, ['foo' => 'bar']);
     }
 
-    public function testServiceInherit(): void
+    public function testServiceAwareInterface(): void
     {
-        $container = (new Container())->provider(TestServiceImplA::class);
-        $this->_testServiceTransient($container);
+        $container = (new Container())
+            ->provider(ProviderB::class)
+            ->singleton(A::class, B::class);
+        $a1 = $container->get(A::class);
+        $a2 = $container->get(A::class);
+        $b1 = $container->get(B::class);
+        $b2 = $container->get(B::class);
+        $this->assertInstanceOf(B::class, $a1);
+        $this->assertSame($a1, $a2);
+        $this->assertNotSame($a2, $b1);
+        $this->assertNotSame($b1, $b2);
+        $this->assertSame(2, $a1->getSetServiceCount());
+        $this->assertSame(1, $b1->getSetServiceCount());
+    }
 
-        $container = (new Container())->provider(TestServiceImplB::class);
-        $this->_testServiceSingleton($container, TestServiceImplB::class);
+    public function testDefaultServices(): void
+    {
+        $container = new Container();
+        $this->assertInstanceOf(
+            ConsoleWriterInterface::class,
+            $container->get(ConsoleWriterInterface::class),
+        );
+        $this->assertInstanceOf(
+            LoggerInterface::class,
+            $container->get(E::class)->Logger,
+        );
+    }
+
+    public function testProvider(): void
+    {
+        $container = (new Container())->provider(ProviderA::class);
+        $this->doTestTransient(
+            $container,
+            ProviderA::class,
+            Service1::class,
+            Service2::class,
+        );
+
+        $container = (new Container())->provider(ProviderB::class);
+        $this->assertFalse($container->has(Service3::class));
+        $container->singleton(Service3::class, ProviderB::class);
+        $this->assertTrue($container->has(Service3::class));
+        $this->doTestSingleton(
+            $container,
+            ProviderB::class,
+            Service1::class,
+            Service2::class,
+            Service3::class,
+        );
+
+        $container = (new Container())->provider(ProviderB::class, [Service1::class]);
+        $this->doTestSingleton(
+            $container,
+            ProviderB::class,
+            Service1::class,
+        );
+        $this->assertFalse($container->has(Service2::class));
+
+        $container = (new Container())->provider(ProviderB::class, null, [Service1::class]);
+        $this->doTestSingleton(
+            $container,
+            ProviderB::class,
+            Service2::class,
+        );
+        $this->assertFalse($container->has(Service1::class));
+
+        $this->expectException(InvalidServiceExceptionInterface::class);
+        $this->expectExceptionMessage(sprintf(
+            '%s does not implement: %s',
+            ProviderB::class,
+            Service3::class,
+        ));
+        (new Container())->provider(ProviderB::class, [Service3::class]);
+    }
+
+    public function testProviderWithTransient(): void
+    {
+        foreach ([ProviderA::class, ProviderB::class] as $id) {
+            $this->doTestTransient(
+                (new Container())
+                    ->provider($id, null, [], ServiceLifetime::TRANSIENT),
+                $id,
+                Service1::class,
+                Service2::class,
+            );
+        }
+    }
+
+    public function testProviderWithSingleton(): void
+    {
+        foreach ([ProviderA::class, ProviderB::class] as $id) {
+            $this->doTestSingleton(
+                (new Container())
+                    ->provider($id, null, [], ServiceLifetime::SINGLETON),
+                $id,
+                Service1::class,
+                Service2::class,
+            );
+        }
     }
 
     public function testServiceBindings(): void
     {
-        $container = (new Container())->provider(TestServiceImplB::class);
-        $ts1 = $container->get(ITestService1::class);
+        $container = (new Container())->provider(ProviderB::class);
+        $ts1 = $container->get(Service1::class);
         $o1 = $container->get(A::class);
 
         $container2 = $container->inContextOf(get_class($ts1));
@@ -148,18 +266,17 @@ final class ContainerTest extends TestCase
         $this->assertNotInstanceOf(B::class, $o1);
         $this->assertInstanceOf(B::class, $o2);
 
-        $this->assertSame($ts1, $o1->TestService);
-        $this->assertSame($o1->TestService, $o2->TestService);
+        $this->assertSame($ts1, $o1->TestService1);
+        $this->assertSame($o1->TestService1, $o2->TestService1);
         $this->assertSame($container, $o1->getContainer());
         $this->assertSame($container2, $o2->getContainer());
         $this->assertSame(A::class, $o1->getService());
         $this->assertSame(A::class, $o2->getService());
 
-        // `TestServiceImplB` is only bound to itself, so the container can't
-        // inject `ITestService1` into `A::__construct()` unless it's passed as
-        // a parameter
-        $container = (new Container())->inContextOf(TestServiceImplB::class);
-        $ts2 = $container->get(TestServiceImplB::class);
+        // `ProviderB` is only bound to itself, so the container can't inject
+        // `Service1` into `A::__construct()` unless it's passed as a parameter
+        $container = (new Container())->inContextOf(ProviderB::class);
+        $ts2 = $container->get(ProviderB::class);
         $o3 = $container->get(A::class, [$ts2]);
         $this->assertInstanceOf(B::class, $o3);
 
@@ -170,7 +287,7 @@ final class ContainerTest extends TestCase
 
     public function testGetAs(): void
     {
-        $container = (new Container())->provider(TestServiceImplB::class);
+        $container = (new Container())->provider(ProviderB::class);
 
         $o1 = $container->get(C::class);
         $this->assertInstanceOf(C::class, $o1);
@@ -193,7 +310,7 @@ final class ContainerTest extends TestCase
         $this->assertInstanceOf(B::class, $o4);
         $this->assertSame(A::class, $o4->getService());
 
-        $ts1 = $container->get(ITestService1::class);
+        $ts1 = $container->get(Service1::class);
         $container2 = $container->inContextOf(get_class($ts1));
 
         $o5 = $container2->get(C::class);
@@ -210,47 +327,35 @@ final class ContainerTest extends TestCase
         $this->assertInstanceOf(B::class, $o7);
         $this->assertSame(A::class, $o7->getService());
 
-        $o8 = $container2->getAs(A::class, I::class);
+        $o8 = $container2->getAs(A::class, Service3::class);
         $this->assertInstanceOf(B::class, $o8);
-        $this->assertSame(I::class, $o8->getService());
+        $this->assertSame(Service3::class, $o8->getService());
     }
 
     /**
-     * @param class-string $concrete
+     * @param class-string ...$ids
      */
-    private function _testServiceTransient(Container $container, string $concrete = TestServiceImplA::class): void
+    private function doTestTransient(Container $container, string ...$ids): void
     {
-        $c1 = $container->get($concrete);
-        $c2 = $container->get($concrete);
-        $ts1a = $container->get(ITestService1::class);
-        $ts1b = $container->get(ITestService1::class);
-        $ts2a = $container->get(ITestService2::class);
-        $ts2b = $container->get(ITestService2::class);
-        $this->assertNotSame($ts1a, $ts1b);
-        $this->assertNotSame($ts2a, $ts2b);
-        $this->assertNotSame($c1, $c2);
-        $this->assertNotSame($c1, $ts1a);
-        $this->assertNotSame($c2, $ts1a);
-        $this->assertNotSame($c1, $ts2a);
-        $this->assertNotSame($c2, $ts2a);
+        foreach ($ids as $id) {
+            $this->assertNotSame($container->get($id), $container->get($id));
+        }
     }
 
     /**
-     * @param class-string $concrete
+     * @param class-string ...$ids
      */
-    private function _testServiceSingleton(Container $container, string $concrete = TestServiceImplA::class): void
+    private function doTestSingleton(Container $container, string ...$ids): void
     {
-        $c1 = $container->get($concrete);
-        $c2 = $container->get($concrete);
-        $ts1a = $container->get(ITestService1::class);
-        $ts1b = $container->get(ITestService1::class);
-        $ts2a = $container->get(ITestService2::class);
-        $ts2b = $container->get(ITestService2::class);
-        $this->assertSame($ts1a, $ts1b);
-        $this->assertSame($ts2a, $ts2b);
-        $this->assertSame($c1, $c2);
-        $this->assertSame($c1, $ts1a);
-        $this->assertSame($c1, $ts2a);
+        $last = null;
+        foreach ($ids as $id) {
+            $next = $container->get($id);
+            if ($last) {
+                $this->assertSame($last, $next);
+            }
+            $this->assertSame($next, $container->get($id));
+            $last = $next;
+        }
     }
 
     public function testRegisterServiceProvider(): void
@@ -408,15 +513,15 @@ final class ContainerTest extends TestCase
     }
 }
 
-interface ITestService1 {}
-interface ITestService2 {}
-interface I {}
+interface Service1 {}
+interface Service2 {}
+interface Service3 {}
 
-class TestServiceImplA implements HasServices, HasContextualBindings, ITestService1, ITestService2
+class ProviderA implements Service1, Service2, HasServices, HasContextualBindings
 {
     public static function getServices(): array
     {
-        return [ITestService1::class, ITestService2::class];
+        return [Service1::class, Service2::class];
     }
 
     public static function getContextualBindings(): array
@@ -425,17 +530,17 @@ class TestServiceImplA implements HasServices, HasContextualBindings, ITestServi
     }
 }
 
-class TestServiceImplB extends TestServiceImplA implements SingletonInterface {}
+class ProviderB extends ProviderA implements Service3, SingletonInterface {}
 
 class A implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
 {
     use TestTrait;
 
-    public ITestService1 $TestService;
+    public Service1 $TestService1;
 
-    public function __construct(ITestService1 $testService)
+    public function __construct(Service1 $testService1)
     {
-        $this->TestService = $testService;
+        $this->TestService1 = $testService1;
     }
 }
 
@@ -454,6 +559,16 @@ class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
 }
 
 class D extends C {}
+
+class E
+{
+    public LoggerInterface $Logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->Logger = $logger;
+    }
+}
 
 /**
  * @phpstan-require-implements ContainerAwareInterface
