@@ -20,13 +20,13 @@ use Salient\Contract\Core\Unloadable;
  * also implement any combination of the following interfaces:
  *
  * - {@see SingletonInterface} to be instantiated once per container
- * - {@see HasServices} to specify which of its interfaces are services that can
- *   be registered with the container
- * - {@see HasBindings} to register its own bindings with the container
- * - {@see HasContextualBindings} to register container bindings that only apply
- *   when resolving its dependencies
+ * - {@see HasServices} to specify which of its interfaces are services to
+ *   register with the container
+ * - {@see HasBindings} to bind additional services to the container
+ * - {@see HasContextualBindings} to bind services to the container that only
+ *   apply in the context of the provider
  *
- * {@see SingletonInterface} is ignored if a service lifetime other than
+ * {@see SingletonInterface} is ignored if a lifetime other than
  * {@see ServiceLifetime::INHERIT} is given when the service provider is
  * registered.
  *
@@ -63,7 +63,7 @@ interface ContainerInterface extends
      * @param class-string $id
      * @return static
      */
-    public function inContextOf(string $id): self;
+    public function inContextOf(string $id): ContainerInterface;
 
     /**
      * Resolve a service from the container
@@ -104,7 +104,7 @@ interface ContainerInterface extends
     public function getAs(string $id, string $service, array $args = []): object;
 
     /**
-     * Resolve a service from the container to a concrete class name
+     * Resolve a service to a concrete class name
      *
      * @template T
      *
@@ -163,7 +163,7 @@ interface ContainerInterface extends
         string $id,
         ?string $class = null,
         array $args = []
-    ): self;
+    ): ContainerInterface;
 
     /**
      * Bind a service to the container if it isn't already bound
@@ -180,7 +180,7 @@ interface ContainerInterface extends
         string $id,
         ?string $class = null,
         array $args = []
-    ): self;
+    ): ContainerInterface;
 
     /**
      * Bind a shared service to the container
@@ -200,7 +200,7 @@ interface ContainerInterface extends
         string $id,
         ?string $class = null,
         array $args = []
-    ): self;
+    ): ContainerInterface;
 
     /**
      * Bind a shared service to the container if it isn't already bound
@@ -217,7 +217,7 @@ interface ContainerInterface extends
         string $id,
         ?string $class = null,
         array $args = []
-    ): self;
+    ): ContainerInterface;
 
     /**
      * Bind a shared instance to the container
@@ -229,7 +229,7 @@ interface ContainerInterface extends
      * @param T&object $instance
      * @return $this
      */
-    public function instance(string $id, $instance): self;
+    public function instance(string $id, $instance): ContainerInterface;
 
     /**
      * Register a contextual binding with the container
@@ -247,10 +247,10 @@ interface ContainerInterface extends
      *
      * @param class-string[]|class-string $context
      * @param class-string<TValue>|string $dependency
-     * @param (callable($this): TValue)|class-string<TValue>|TValue $value
+     * @param (callable(ContainerInterface): TValue)|class-string<TValue>|TValue $value
      * @return $this
      */
-    public function addContextualBinding($context, string $dependency, $value): self;
+    public function addContextualBinding($context, string $dependency, $value): ContainerInterface;
 
     /**
      * Register a service provider with the container, optionally specifying
@@ -273,7 +273,7 @@ interface ContainerInterface extends
         ?array $services = null,
         array $exceptServices = [],
         int $lifetime = ServiceLifetime::INHERIT
-    ): self;
+    ): ContainerInterface;
 
     /**
      * Register a service map with the container
@@ -302,7 +302,7 @@ interface ContainerInterface extends
     public function providers(
         array $serviceMap,
         int $lifetime = ServiceLifetime::INHERIT
-    ): self;
+    ): ContainerInterface;
 
     /**
      * Get a list of service providers registered with the container
@@ -317,7 +317,7 @@ interface ContainerInterface extends
      * @param class-string $id
      * @return $this
      */
-    public function unbind(string $id): self;
+    public function unbind(string $id): ContainerInterface;
 
     /**
      * Remove a shared instance from the container
@@ -325,5 +325,5 @@ interface ContainerInterface extends
      * @param class-string $id
      * @return $this
      */
-    public function unbindInstance(string $id): self;
+    public function removeInstance(string $id): ContainerInterface;
 }

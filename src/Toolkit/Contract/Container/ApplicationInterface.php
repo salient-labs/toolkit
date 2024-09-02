@@ -3,6 +3,7 @@
 namespace Salient\Contract\Container;
 
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use LogicException;
@@ -22,25 +23,24 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Check if the application is running in a production environment
      *
-     * This method should return `true` if:
+     * Returns `true` if:
      *
      * - the name of the current environment is `"production"`
-     * - a Phar archive is currently executing, or
+     * - the application is running from a Phar archive, or
      * - the application was installed with `composer --no-dev`
      */
     public function isProduction(): bool;
 
     /**
-     * Get the application's root directory
+     * Get the application's base path
      */
     public function getBasePath(): string;
 
     /**
      * Get a writable cache directory for the application
      *
-     * The application's cache directory is appropriate for data that should
-     * persist between runs, but isn't important or portable enough for the data
-     * directory.
+     * Appropriate for replaceable data that should persist between runs to
+     * improve performance.
      */
     public function getCachePath(): string;
 
@@ -53,8 +53,7 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Get a writable data directory for the application
      *
-     * The application's data directory is appropriate for data that should
-     * persist indefinitely.
+     * Appropriate for critical data that should persist indefinitely.
      */
     public function getDataPath(): string;
 
@@ -78,23 +77,45 @@ interface ApplicationInterface extends ContainerInterface
      * the environment, messages with levels between {@see Level::EMERGENCY} and
      * {@see Level::DEBUG} are simultaneously written to `<name>.debug.log`.
      *
-     * @param string|null $name If `null`, the name returned by
-     * {@see ApplicationInterface::getAppName()} is used.
+     * @param string|null $name If `null`, the name of the application is used.
      * @return $this
      */
     public function logOutput(?string $name = null, ?bool $debug = null);
 
     /**
-     * Start a SQLite-backed cache store in the application's cache directory
-     * and make it the Cache facade's underlying instance
+     * Export the application's HTTP requests to an HTTP Archive (HAR) file in
+     * its log directory
+     *
+     * Requests made via {@see CurlerInterface} objects, including any resolved
+     * from a response cache, are recorded in `<name>-YYYY-MM-DD-<uuid>.har`.
+     *
+     * @param string|null $name If `null`, the name of the application is used.
+     * @param string|null $uuid If `null`, a UUID is generated.
+     * @param-out string $uuid
+     * @param-out string $filename
+     * @return $this
+     */
+    public function exportHar(
+        ?string $name = null,
+        ?string $creatorName = null,
+        ?string $creatorVersion = null,
+        ?string &$uuid = null,
+        ?string &$filename = null
+    );
+
+    /**
+     * Start a cache store and make it the global cache
+     *
+     * If the cache store is filesystem-backed, the application's cache
+     * directory is used.
      *
      * @return $this
      */
     public function startCache();
 
     /**
-     * Start a SQLite-backed cache store if a database file created by
-     * startCache() on a previous run is found
+     * Start a cache store and make it the global cache if a previously started
+     * cache store exists, otherwise do nothing
      *
      * @return $this
      */
@@ -108,10 +129,12 @@ interface ApplicationInterface extends ContainerInterface
     public function stopCache();
 
     /**
-     * Start a SQLite-backed entity store in the application's data directory
-     * and make it the Sync facade's underlying instance
+     * Start an entity store and make it the global sync entity store
      *
-     * @param mixed[] $arguments
+     * If the entity store is filesystem-backed, the application's data
+     * directory is used.
+     *
+     * @param mixed[]|null $arguments
      * @return $this
      */
     public function startSync(?string $command = null, ?array $arguments = null);
@@ -125,14 +148,14 @@ interface ApplicationInterface extends ContainerInterface
 
     /**
      * Register a namespace for sync entities and their provider interfaces with
-     * the global sync entity store if it is loaded
+     * the global sync entity store
      *
      * @see SyncStoreInterface::registerNamespace()
      *
      * @return $this
      * @throws LogicException if the global sync entity store is not loaded.
      */
-    public function syncNamespace(
+    public function registerSyncNamespace(
         string $prefix,
         string $uri,
         string $namespace,
@@ -142,11 +165,9 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Get the application's working directory
      *
-     * The application's working directory is either:
-     *
-     * - the directory in which it was started, or
-     * - the directory most recently set by calling
-     *   {@see ApplicationInterface::setWorkingDirectory()}
+     * The application's working directory is either the directory it was
+     * started in, or the directory most recently set via
+     * {@see ApplicationInterface::setWorkingDirectory()}.
      */
     public function getWorkingDirectory(): string;
 
@@ -174,14 +195,13 @@ interface ApplicationInterface extends ContainerInterface
      * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
      * reported, otherwise only metrics in the given groups are reported.
      * @return $this
-     *
-     * @see ApplicationInterface::reportResourceUsage()
-     * @see ApplicationInterface::reportTimers()
      */
     public function registerShutdownReport(
         int $level = Level::INFO,
+        bool $includeResourceUsage = true,
+        bool $includeRunningTimers = true,
         $groups = null,
-        bool $resourceUsage = true
+        ?int $limit = 10
     );
 
     /**

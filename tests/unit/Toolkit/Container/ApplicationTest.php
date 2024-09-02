@@ -84,8 +84,8 @@ final class ApplicationTest extends TestCase
         $app = new Application($basePath);
         $this->assertSame($basePath, $app->getBasePath());
         $this->assertSame($basePath . '/var/cache', $cachePath = $app->getCachePath());
-        $this->assertSame($basePath . '/config', $configPath = $app->getConfigPath());
-        $this->assertSame($basePath . '/var/lib', $dataPath = $app->getDataPath());
+        $this->assertSame($basePath . '/var/lib/config', $configPath = $app->getConfigPath());
+        $this->assertSame($basePath . '/var/lib/data', $dataPath = $app->getDataPath());
         $this->assertSame($basePath . '/var/log', $logPath = $app->getLogPath());
         $this->assertSame($basePath . '/var/tmp', $tempPath = $app->getTempPath());
         $this->assertDirectoryExists($cachePath);

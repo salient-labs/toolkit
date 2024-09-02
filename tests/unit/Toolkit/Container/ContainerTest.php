@@ -40,6 +40,8 @@ final class ContainerTest extends TestCase
 
     /**
      * @dataProvider onlyBindsContainerProvider
+     *
+     * @param class-string $id
      */
     public function testOnlyBindsContainer(string $id): void
     {
@@ -74,7 +76,7 @@ final class ContainerTest extends TestCase
         $container = new Container();
         $container->instance(stdClass::class, new stdClass());
         $this->assertTrue($container->hasSingleton(stdClass::class));
-        $container->unbindInstance(stdClass::class);
+        $container->removeInstance(stdClass::class);
         $this->assertFalse($container->hasInstance(stdClass::class));
         $this->assertFalse($container->hasSingleton(stdClass::class));
 
@@ -83,7 +85,7 @@ final class ContainerTest extends TestCase
         $this->assertTrue($container->hasSingleton(stdClass::class));
         $container->get(stdClass::class);
         $this->assertTrue($container->hasInstance(stdClass::class));
-        $container->unbindInstance(stdClass::class);
+        $container->removeInstance(stdClass::class);
         $this->assertFalse($container->hasInstance(stdClass::class));
         $this->assertTrue($container->hasSingleton(stdClass::class));
     }
@@ -213,6 +215,9 @@ final class ContainerTest extends TestCase
         $this->assertSame(I::class, $o8->getService());
     }
 
+    /**
+     * @param class-string $concrete
+     */
     private function _testServiceTransient(Container $container, string $concrete = TestServiceImplA::class): void
     {
         $c1 = $container->get($concrete);
@@ -230,6 +235,9 @@ final class ContainerTest extends TestCase
         $this->assertNotSame($c2, $ts2a);
     }
 
+    /**
+     * @param class-string $concrete
+     */
     private function _testServiceSingleton(Container $container, string $concrete = TestServiceImplA::class): void
     {
         $c1 = $container->get($concrete);

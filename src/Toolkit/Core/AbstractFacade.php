@@ -287,7 +287,7 @@ abstract class AbstractFacade implements FacadeInterface
                     $container->hasInstance($serviceName)
                     && $container->get($serviceName) === $instance
                 ) {
-                    $container->unbindInstance($serviceName);
+                    $container->removeInstance($serviceName);
                 }
             }
         }
