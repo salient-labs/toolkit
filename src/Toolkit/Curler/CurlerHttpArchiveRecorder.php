@@ -55,8 +55,10 @@ class CurlerHttpArchiveRecorder
         $this->Uri = $uri;
 
         if ($name === null && $version === null) {
+            // @codeCoverageIgnoreStart
             $name = Package::name();
             $version = Package::version(true, true);
+            // @codeCoverageIgnoreEnd
         }
 
         File::writeAll($this->Stream, sprintf(
@@ -140,7 +142,9 @@ class CurlerHttpArchiveRecorder
 
         $request = $event->getRequest();
         if ($request !== $this->LastRequest) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException('Response does not match request');
+            // @codeCoverageIgnoreEnd
         }
         $requestTime = $this->LastRequestTime;
 
@@ -220,7 +224,9 @@ class CurlerHttpArchiveRecorder
     {
         $value = curl_getinfo($handle, $option);
         if ($value === false) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException('Error getting cURL transfer information');
+            // @codeCoverageIgnoreEnd
         }
         /** @var mixed[]|int|float|string|null */
         return $value;
