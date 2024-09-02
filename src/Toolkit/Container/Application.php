@@ -91,127 +91,6 @@ class Application extends Container implements ApplicationInterface
     private static bool $ShutdownReportIsRegistered = false;
 
     /**
-     * @param self::PATH_* $index
-     */
-    private function getPath(int $index, bool $create): string
-    {
-        if ($this->Paths[$index] !== null) {
-            return $this->Paths[$index];
-        }
-
-        [$name, $parent, $child, $winChild, $srcChild] = self::PATHS[$index];
-        $varName = sprintf('app_%s_path', $name);
-
-        $path = Env::get($varName, null);
-        if ($path !== null) {
-            if (trim($path) === '') {
-                throw new InvalidEnvironmentException(sprintf(
-                    'Directory disabled (empty %s in environment)',
-                    $varName,
-                ));
-            }
-            if (!File::isAbsolute($path)) {
-                $path = $this->BasePath . '/' . $path;
-            }
-        } elseif (
-            !$this->isProduction()
-            && File::isCreatable($this->BasePath . '/' . $srcChild)
-        ) {
-            $path = $this->BasePath . '/' . $srcChild;
-        } elseif (Sys::isWindows()) {
-            switch ($parent) {
-                case self::PARENT_CONFIG:
-                case self::PARENT_DATA:
-                    $path = Env::get('APPDATA');
-                    break;
-
-                case self::PARENT_STATE:
-                    $path = Env::get('LOCALAPPDATA');
-                    break;
-            }
-
-            $path = Arr::implode('/', [$path, $this->AppName, $winChild], '');
-        } else {
-            $home = Env::getHomeDir();
-            if ($home === null || !is_dir($home)) {
-                throw new InvalidEnvironmentException('Home directory not found');
-            }
-
-            switch ($parent) {
-                case self::PARENT_CONFIG:
-                    $path = Env::get('XDG_CONFIG_HOME', $home . '/.config');
-                    break;
-
-                case self::PARENT_DATA:
-                    $path = Env::get('XDG_DATA_HOME', $home . '/.local/share');
-                    break;
-
-                case self::PARENT_STATE:
-                    $path = Env::get('XDG_CACHE_HOME', $home . '/.cache');
-                    break;
-            }
-
-            $path = Arr::implode('/', [$path, $this->AppName, $child], '');
-        }
-
-        if (!File::isAbsolute($path)) {
-            // @codeCoverageIgnoreStart
-            throw new RuntimeException(sprintf(
-                'Absolute path to %s directory required',
-                $name,
-            ));
-            // @codeCoverageIgnoreEnd
-        }
-
-        if ($create) {
-            File::createDir($path);
-            $this->Paths[$index] = $path;
-        }
-
-        return $path;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getCachePath(bool $create = true): string
-    {
-        return $this->getPath(self::PATH_CACHE, $create);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getConfigPath(bool $create = true): string
-    {
-        return $this->getPath(self::PATH_CONFIG, $create);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getDataPath(bool $create = true): string
-    {
-        return $this->getPath(self::PATH_DATA, $create);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getLogPath(bool $create = true): string
-    {
-        return $this->getPath(self::PATH_LOG, $create);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getTempPath(bool $create = true): string
-    {
-        return $this->getPath(self::PATH_TEMP, $create);
-    }
-
-    /**
      * Creates a new Application object
      *
      * If `$basePath` is `null`, the value of environment variable
@@ -332,9 +211,335 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
+    final public function getAppName(): string
+    {
+        return $this->AppName;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isProduction(): bool
+    {
+        $env = Env::getEnvironment();
+
+        return $env === 'production'
+            || ($env === null && (
+                !$this->RunningFromSource
+                || !Package::hasDevPackages()
+            ));
+    }
+
+    /**
+     * @inheritDoc
+     */
     final public function getBasePath(): string
     {
         return $this->BasePath;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getCachePath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_CACHE, $create);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getConfigPath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_CONFIG, $create);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getDataPath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_DATA, $create);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getLogPath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_LOG, $create);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getTempPath(bool $create = true): string
+    {
+        return $this->getPath(self::PATH_TEMP, $create);
+    }
+
+    /**
+     * @param self::PATH_* $index
+     */
+    private function getPath(int $index, bool $create): string
+    {
+        if ($this->Paths[$index] !== null) {
+            return $this->Paths[$index];
+        }
+
+        [$name, $parent, $child, $winChild, $srcChild] = self::PATHS[$index];
+        $varName = sprintf('app_%s_path', $name);
+
+        $path = Env::get($varName, null);
+        if ($path !== null) {
+            if (trim($path) === '') {
+                throw new InvalidEnvironmentException(sprintf(
+                    'Directory disabled (empty %s in environment)',
+                    $varName,
+                ));
+            }
+            if (!File::isAbsolute($path)) {
+                $path = $this->BasePath . '/' . $path;
+            }
+        } elseif (
+            !$this->isProduction()
+            && File::isCreatable($this->BasePath . '/' . $srcChild)
+        ) {
+            $path = $this->BasePath . '/' . $srcChild;
+        } elseif (Sys::isWindows()) {
+            switch ($parent) {
+                case self::PARENT_CONFIG:
+                case self::PARENT_DATA:
+                    $path = Env::get('APPDATA');
+                    break;
+
+                case self::PARENT_STATE:
+                    $path = Env::get('LOCALAPPDATA');
+                    break;
+            }
+
+            $path = Arr::implode('/', [$path, $this->AppName, $winChild], '');
+        } else {
+            $home = Env::getHomeDir();
+            if ($home === null || !is_dir($home)) {
+                throw new InvalidEnvironmentException('Home directory not found');
+            }
+
+            switch ($parent) {
+                case self::PARENT_CONFIG:
+                    $path = Env::get('XDG_CONFIG_HOME', $home . '/.config');
+                    break;
+
+                case self::PARENT_DATA:
+                    $path = Env::get('XDG_DATA_HOME', $home . '/.local/share');
+                    break;
+
+                case self::PARENT_STATE:
+                    $path = Env::get('XDG_CACHE_HOME', $home . '/.cache');
+                    break;
+            }
+
+            $path = Arr::implode('/', [$path, $this->AppName, $child], '');
+        }
+
+        if (!File::isAbsolute($path)) {
+            // @codeCoverageIgnoreStart
+            throw new RuntimeException(sprintf(
+                'Absolute path to %s directory required',
+                $name,
+            ));
+            // @codeCoverageIgnoreEnd
+        }
+
+        if ($create) {
+            File::createDir($path);
+            $this->Paths[$index] = $path;
+        }
+
+        return $path;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function logOutput(?string $name = null, ?bool $debug = null)
+    {
+        if ($this->OutputLogIsRegistered) {
+            throw new LogicException('Output log already registered');
+        }
+
+        $name ??= $this->AppName;
+        $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
+        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
+
+        if ($debug || ($debug === null && Env::getDebug())) {
+            $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
+            Console::registerTarget($target, LevelGroup::ALL);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function exportHar(
+        ?string $name = null,
+        ?string $creatorName = null,
+        ?string $creatorVersion = null,
+        ?string &$uuid = null,
+        ?string &$filename = null
+    ) {
+        if ($this->HarRecorder) {
+            throw new LogicException('HAR recorder already started');
+        }
+
+        $filename = sprintf(
+            '%s/%s-%s-%s.har',
+            $this->getLogPath(),
+            $name ?? $this->AppName,
+            (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d'),
+            $uuid ??= Get::uuid(),
+        );
+
+        if (file_exists($filename)) {
+            throw new RuntimeException(sprintf('File already exists: %s', $filename));
+        }
+
+        File::create($filename, 0600);
+
+        $this->HarRecorder = new CurlerHttpArchiveRecorder(
+            $filename,
+            $creatorName,
+            $creatorVersion,
+        );
+        $this->HarRecorder->start();
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function startCache()
+    {
+        if (Cache::isLoaded()) {
+            if ($this->checkCache(Cache::getInstance())) {
+                return $this;
+            }
+            throw new LogicException('Cache store already started');
+        }
+
+        Cache::load(new CacheStore($this->getCacheDb()));
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function resumeCache()
+    {
+        return file_exists($this->getCacheDb(false))
+            ? $this->startCache()
+            : $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function stopCache()
+    {
+        if (
+            Cache::isLoaded()
+            && $this->checkCache($cache = Cache::getInstance())
+        ) {
+            $cache->close();
+        }
+        return $this;
+    }
+
+    private function checkCache(CacheStoreInterface $cache): bool
+    {
+        return $cache instanceof CacheStore
+            && File::same($this->getCacheDb(false), $cache->getFilename());
+    }
+
+    private function getCacheDb(bool $create = true): string
+    {
+        return $this->getCachePath($create) . '/cache.db';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function startSync(?string $command = null, ?array $arguments = null)
+    {
+        $syncDb = $this->getSyncDb();
+
+        if (Sync::isLoaded()) {
+            $store = Sync::getInstance();
+            if ($store instanceof SyncStore) {
+                $file = $store->getFilename();
+                if (File::same($syncDb, $file)) {
+                    return $this;
+                }
+            }
+            throw new LogicException(sprintf(
+                'Entity store already started: %s',
+                $file ?? get_class($store),
+            ));
+        }
+
+        /** @disregard P1006 */
+        Sync::load(new SyncStore(
+            $syncDb,
+            $command ?? Sys::getProgramName($this->BasePath),
+            $arguments ?? ($command === null
+                ? (\PHP_SAPI === 'cli'
+                    ? array_slice($_SERVER['argv'], 1)
+                    : ['_GET' => $_GET, '_POST' => $_POST])
+                : [])
+        ));
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function stopSync()
+    {
+        if (
+            Sync::isLoaded()
+            && ($store = Sync::getInstance()) instanceof SyncStore
+            && File::same($this->getSyncDb(false), $store->getFilename())
+        ) {
+            $store->close();
+        }
+        return $this;
+    }
+
+    private function getSyncDb(bool $create = true): string
+    {
+        return $this->getDataPath($create) . '/sync.db';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function registerSyncNamespace(
+        string $prefix,
+        string $uri,
+        string $namespace,
+        ?SyncClassResolverInterface $resolver = null
+    ) {
+        if (!Sync::isLoaded()) {
+            throw new LogicException('Entity store not started');
+        }
+        Sync::registerNamespace($prefix, $uri, $namespace, $resolver);
+
+        return $this;
     }
 
     /**
@@ -401,201 +606,6 @@ class Application extends Container implements ApplicationInterface
 
         self::$ShutdownReportIsRegistered = true;
 
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isProduction(): bool
-    {
-        $env = Env::getEnvironment();
-
-        return $env === 'production'
-            || ($env === null && (
-                !$this->RunningFromSource
-                || !Package::hasDevPackages()
-            ));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getAppName(): string
-    {
-        return $this->AppName;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function startCache()
-    {
-        if (Cache::isLoaded()) {
-            if ($this->checkCache(Cache::getInstance())) {
-                return $this;
-            }
-            throw new LogicException('Cache store already started');
-        }
-
-        Cache::load(new CacheStore($this->getCacheDb()));
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function resumeCache()
-    {
-        return file_exists($this->getCacheDb(false))
-            ? $this->startCache()
-            : $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function stopCache()
-    {
-        if (
-            Cache::isLoaded()
-            && $this->checkCache($cache = Cache::getInstance())
-        ) {
-            $cache->close();
-        }
-        return $this;
-    }
-
-    private function checkCache(CacheStoreInterface $cache): bool
-    {
-        return $cache instanceof CacheStore
-            && File::same($this->getCacheDb(false), $cache->getFilename());
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function logOutput(?string $name = null, ?bool $debug = null)
-    {
-        if ($this->OutputLogIsRegistered) {
-            throw new LogicException('Output log already registered');
-        }
-
-        $name ??= $this->AppName;
-        $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
-        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
-
-        if ($debug || ($debug === null && Env::getDebug())) {
-            $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, LevelGroup::ALL);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function exportHar(
-        ?string $name = null,
-        ?string $creatorName = null,
-        ?string $creatorVersion = null,
-        ?string &$uuid = null,
-        ?string &$filename = null
-    ) {
-        if ($this->HarRecorder) {
-            throw new LogicException('HAR recorder already started');
-        }
-
-        $filename = sprintf(
-            '%s/%s-%s-%s.har',
-            $this->getLogPath(),
-            $name ?? $this->AppName,
-            (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d'),
-            $uuid ??= Get::uuid(),
-        );
-
-        if (file_exists($filename)) {
-            throw new RuntimeException(sprintf('File already exists: %s', $filename));
-        }
-
-        File::create($filename, 0600);
-
-        $this->HarRecorder = new CurlerHttpArchiveRecorder(
-            $filename,
-            $creatorName,
-            $creatorVersion,
-        );
-        $this->HarRecorder->start();
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function startSync(?string $command = null, ?array $arguments = null)
-    {
-        $syncDb = $this->getSyncDb();
-
-        if (Sync::isLoaded()) {
-            $store = Sync::getInstance();
-            if ($store instanceof SyncStore) {
-                $file = $store->getFilename();
-                if (File::same($syncDb, $file)) {
-                    return $this;
-                }
-            }
-            throw new LogicException(sprintf(
-                'Entity store already started: %s',
-                $file ?? get_class($store),
-            ));
-        }
-
-        /** @disregard P1006 */
-        Sync::load(new SyncStore(
-            $syncDb,
-            $command ?? Sys::getProgramName($this->BasePath),
-            $arguments ?? ($command === null
-                ? (\PHP_SAPI === 'cli'
-                    ? array_slice($_SERVER['argv'], 1)
-                    : ['_GET' => $_GET, '_POST' => $_POST])
-                : [])
-        ));
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function registerSyncNamespace(
-        string $prefix,
-        string $uri,
-        string $namespace,
-        ?SyncClassResolverInterface $resolver = null
-    ) {
-        if (!Sync::isLoaded()) {
-            throw new LogicException('Entity store not started');
-        }
-        Sync::registerNamespace($prefix, $uri, $namespace, $resolver);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function stopSync()
-    {
-        if (
-            Sync::isLoaded()
-            && ($store = Sync::getInstance()) instanceof SyncStore
-            && File::same($this->getSyncDb(false), $store->getFilename())
-        ) {
-            $store->close();
-        }
         return $this;
     }
 
@@ -740,15 +750,5 @@ class Application extends Container implements ApplicationInterface
                 MessageType::UNFORMATTED,
             );
         }
-    }
-
-    private function getCacheDb(bool $create = true): string
-    {
-        return $this->getCachePath($create) . '/cache.db';
-    }
-
-    private function getSyncDb(bool $create = true): string
-    {
-        return $this->getDataPath($create) . '/sync.db';
     }
 }
