@@ -10,6 +10,59 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.46] - 2024-09-02
+
+### Added
+
+#### `Container`
+
+- Add application method `exportHar()`
+
+#### `Curler`
+
+- **Add `CurlerHttpArchiveRecorder`**
+- Add, implement and dispatch `Curler` request and response events
+- Add and implement `Curler` exception interfaces
+- Add `Curler` method `getFormDataFlags()`
+
+#### `Http`
+
+- Add `Http::replaceQuery()`
+
+### Changed
+
+#### `Container`
+
+- Rename methods:
+  - `ContainerInterface::unbindInstance()` -> `removeInstance()`
+  - `ApplicationInterface::syncNamespace()` -> `registerSyncNamespace()`
+- In `Application`:
+  - Use `var/lib/config` and `var/lib/data` instead of `config` and `var/lib` as default config and data directories
+  - Use `$_SERVER['REQUEST_TIME_FLOAT']` to calculate elapsed time
+  - Throw an exception if `logOutput()` is called multiple times
+- Update `ApplicationInterface::registerShutdownReport()` parameters for consistency
+
+#### `Curler`
+
+- Replace `CurlerInterface::getUriWithQuery()` with `replaceQuery()`
+
+#### `Http`
+
+- Build out `jsonSerialize()` methods
+- Rename `Http::applyToQuery()` to `mergeQuery()`
+
+### Removed
+
+#### `Curler`
+
+- `CurlerFile`: remove unused `getCurlFile()` method
+
+### Fixed
+
+#### `File`
+
+- In `File::maybeOpen()`, always set `$uri` if null
+
 ## [v0.99.45] - 2024-08-28
 
 ### Added
@@ -3325,6 +3378,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.46]: https://github.com/salient-labs/toolkit/compare/v0.99.45...v0.99.46
 [v0.99.45]: https://github.com/salient-labs/toolkit/compare/v0.99.44...v0.99.45
 [v0.99.44]: https://github.com/salient-labs/toolkit/compare/v0.99.43...v0.99.44
 [v0.99.43]: https://github.com/salient-labs/toolkit/compare/v0.99.42...v0.99.43
