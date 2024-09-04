@@ -798,7 +798,7 @@ REGEX;
             return '';
         }
         $line = implode(', ', $values);
-        if (!($first | $last | $one)) {
+        if (!($first || $last || $one)) {
             return $line;
         }
         $values = Str::splitDelimited(',', $line);
