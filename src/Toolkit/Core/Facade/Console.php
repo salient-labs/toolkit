@@ -54,8 +54,8 @@ use Throwable;
  * @method static ConsoleWriterInterface registerTarget(ConsoleTargetInterface $target, array<Level::*> $levels = LevelGroup::ALL) Register a target to receive console output
  * @method static ConsoleWriterInterface setTargetPrefix(string|null $prefix, int-mask-of<ConsoleTargetTypeFlag::*> $flags = 0) Set or unset the prefix applied to each line of output by any registered targets that implement ConsoleTargetPrefixInterface
  * @method static ConsoleWriterInterface summary(string $finishedText = 'Command finished', string $successText = 'without errors', bool $withResourceUsage = false, bool $withoutErrorCount = false, bool $withStandardMessageType = false) Print a "command finished" message with a summary of errors, warnings and resource usage
- * @method static ConsoleWriterInterface warn(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "? $msg1 $msg2" with level WARNING
- * @method static ConsoleWriterInterface warnOnce(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "? $msg1 $msg2" with level WARNING once per run
+ * @method static ConsoleWriterInterface warn(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "^ $msg1 $msg2" with level WARNING
+ * @method static ConsoleWriterInterface warnOnce(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "^ $msg1 $msg2" with level WARNING once per run
  *
  * @api
  *

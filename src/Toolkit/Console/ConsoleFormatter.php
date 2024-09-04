@@ -31,7 +31,7 @@ final class ConsoleFormatter implements FormatterInterface
         Level::ALERT => '! ',  // U+0021
         Level::CRITICAL => '! ',  // U+0021
         Level::ERROR => '! ',  // U+0021
-        Level::WARNING => '? ',  // U+003F
+        Level::WARNING => '^ ',  // U+005E
         Level::NOTICE => '➤ ',  // U+27A4
         Level::INFO => '- ',  // U+002D
         Level::DEBUG => ': ',  // U+003A
