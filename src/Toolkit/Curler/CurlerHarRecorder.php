@@ -22,7 +22,7 @@ use Stringable;
 /**
  * Records Curler requests to an HTTP Archive (HAR) stream
  */
-class CurlerHttpArchiveRecorder
+class CurlerHarRecorder
 {
     /** @var resource|null */
     protected $Stream;
