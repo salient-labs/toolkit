@@ -154,7 +154,7 @@ interface ConsoleWriterInterface
     );
 
     /**
-     * Print "? $msg1 $msg2" with level WARNING
+     * Print "^ $msg1 $msg2" with level WARNING
      *
      * @return $this
      */
@@ -166,7 +166,7 @@ interface ConsoleWriterInterface
     );
 
     /**
-     * Print "? $msg1 $msg2" with level WARNING once per run
+     * Print "^ $msg1 $msg2" with level WARNING once per run
      *
      * @return $this
      */

@@ -51,7 +51,7 @@ target, e.g. by calling [registerTarget()][registerTarget], before any other
 | `Console` method | `ConsoleLevel`  | Message prefix | Default output target     |
 | ---------------- | --------------- | -------------- | ------------------------- |
 | `error[Once]()`  | `ERROR` = `3`   | ` !  `         | `STDERR`                  |
-| `warn[Once]()`   | `WARNING` = `4` | ` ?  `         | `STDERR`                  |
+| `warn[Once]()`   | `WARNING` = `4` | ` ^  `         | `STDERR`                  |
 | `info[Once]()`   | `NOTICE` = `5`  | ` ➤  `         | `STDOUT`                  |
 | `log[Once]()`    | `INFO` = `6`    | ` -  `         | `STDOUT`                  |
 | `debug[Once]()`  | `DEBUG` = `7`   | ` :  `         | `STDOUT` (if `DEBUG` set) |
