@@ -5,6 +5,7 @@ namespace Salient\Curler;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheStoreInterface;
 use Salient\Contract\Core\Arrayable;
@@ -65,8 +66,9 @@ use Throwable;
 /**
  * A PSR-18 HTTP client optimised for exchanging data with RESTful API endpoints
  *
+ * @api
+ *
  * @implements Buildable<CurlerBuilder>
- * @use HasBuilder<CurlerBuilder>
  */
 class Curler implements CurlerInterface, Buildable
 {
@@ -77,7 +79,14 @@ class Curler implements CurlerInterface, Buildable
      */
     protected const MAX_INPUT_LENGTH = 2 * 1024 ** 2;
 
-    /** @phpstan-use HasBuilder<CurlerBuilder> */
+    protected const METHOD_HAS_BODY = [
+        Method::POST => true,
+        Method::PUT => true,
+        Method::PATCH => true,
+        Method::DELETE => true,
+    ];
+
+    /** @use HasBuilder<CurlerBuilder> */
     use HasBuilder;
     use HasHttpHeaders;
     use HasImmutableProperties {
@@ -160,7 +169,7 @@ class Curler implements CurlerInterface, Buildable
      * @param bool $refreshCache Replace cached responses even if they haven't expired
      * @param int<0,max>|null $timeout Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
      * @param bool $followRedirects Follow "Location" headers
-     * @param int<-1,max>|null $maxRedirects Limit the number of "Location" headers followed (`-1` = unlimited; `0` = do not follow redirects; `null` = use underlying default of `20`; default: `null`)
+     * @param int<-1,max>|null $maxRedirects Limit the number of "Location" headers followed (`-1` = unlimited; `0` = do not follow redirects; `null` = use underlying default of `30`; default: `null`)
      * @param bool $retryAfterTooManyRequests Retry throttled requests when the endpoint returns a "Retry-After" header
      * @param int<0,max> $retryAfterMaxSeconds Limit the delay between request attempts (`0` = unlimited; default: `300`)
      * @param bool $throwHttpErrors Throw exceptions for HTTP errors
@@ -741,8 +750,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withRequest(RequestInterface $request)
     {
-        $uri = $request->getUri()->withQuery('')->withFragment('');
-        $curler = $this->withUri($uri);
+        $curler = $this->withUri($request->getUri());
 
         $headers = HttpHeaders::from($request);
         $currentHeaders = $this->getHttpHeaders();
@@ -1088,17 +1096,6 @@ class Curler implements CurlerInterface, Buildable
         $uri = $request->getUri()->withFragment('');
         $request = $request->withUri($uri);
 
-        if (self::$Handle === null) {
-            $handle = curl_init((string) $uri);
-            if ($handle === false) {
-                throw new RuntimeException('curl_init() failed');
-            }
-            self::$Handle = $handle;
-        } else {
-            curl_reset(self::$Handle);
-            $opt[\CURLOPT_URL] = (string) $uri;
-        }
-
         $version = (int) ((float) $request->getProtocolVersion() * 10);
         $opt[\CURLOPT_HTTP_VERSION] = [
             10 => \CURL_HTTP_VERSION_1_0,
@@ -1107,13 +1104,15 @@ class Curler implements CurlerInterface, Buildable
         ][$version] ?? \CURL_HTTP_VERSION_NONE;
 
         $method = $request->getMethod();
+        $body = $request->getBody();
         $opt[\CURLOPT_CUSTOMREQUEST] = $method;
         if ($method === Method::HEAD) {
             $opt[\CURLOPT_NOBODY] = true;
+            $size = 0;
+        } else {
+            $size = $body->getSize();
         }
 
-        $body = $request->getBody();
-        $size = $body->getSize();
         if ($size === null || $size > 0) {
             $size ??= HttpHeaders::from($request)->getContentLength();
             if ($size !== null && $size <= static::MAX_INPUT_LENGTH) {
@@ -1137,12 +1136,7 @@ class Curler implements CurlerInterface, Buildable
                     $body->rewind();
                 }
             }
-        } elseif ([
-            Method::POST => true,
-            Method::PUT => true,
-            Method::PATCH => true,
-            Method::DELETE => true,
-        ][$method] ?? false) {
+        } elseif (self::METHOD_HAS_BODY[$method] ?? false) {
             // [RFC7230], Section 3.3.2: "A user agent SHOULD send a
             // Content-Length in a request message when no Transfer-Encoding is
             // sent and the request method defines a meaning for an enclosed
@@ -1154,13 +1148,6 @@ class Curler implements CurlerInterface, Buildable
 
         if ($this->Timeout !== null) {
             $opt[\CURLOPT_CONNECTTIMEOUT] = $this->Timeout;
-        }
-
-        if ($this->FollowRedirects) {
-            $opt[\CURLOPT_FOLLOWLOCATION] = true;
-            if ($this->MaxRedirects !== null) {
-                $opt[\CURLOPT_MAXREDIRS] = $this->MaxRedirects;
-            }
         }
 
         if (!$request->hasHeader(HttpHeader::ACCEPT_ENCODING)) {
@@ -1181,126 +1168,238 @@ class Curler implements CurlerInterface, Buildable
                 ), $ex);
             }
             $host = $host->withScheme($uri->getScheme())->getAuthority();
-            if ($host === Uri::from($uri)->withUserInfo('')->getAuthority()) {
+            if ($host === $uri->withUserInfo('')->getAuthority()) {
                 $request = $request->withoutHeader(HttpHeader::HOST);
             }
+        }
+
+        /** @var string|null */
+        $statusLine = null;
+        /** @var HttpHeaders|null */
+        $headersIn = null;
+        $opt[\CURLOPT_HEADERFUNCTION] =
+            static function ($handle, string $header) use (&$statusLine, &$headersIn): int {
+                if (substr($header, 0, 5) === 'HTTP/') {
+                    $statusLine = rtrim($header, "\r\n");
+                    $headersIn = new HttpHeaders();
+                    return strlen($header);
+                }
+                if ($headersIn === null) {
+                    throw new InvalidHeaderException('No status line in HTTP response');
+                }
+                $headersIn = $headersIn->addLine($header);
+                return strlen($header);
+            };
+
+        /** @var HttpStream|null */
+        $bodyIn = null;
+        $opt[\CURLOPT_WRITEFUNCTION] =
+            static function ($handle, string $data) use (&$bodyIn): int {
+                /** @var HttpStream $bodyIn */
+                return $bodyIn->write($data);
+            };
+
+        if (self::$Handle === null) {
+            $handle = curl_init((string) $uri);
+            if ($handle === false) {
+                throw new RuntimeException('curl_init() failed');
+            }
+            self::$Handle = $handle;
+            $resetHandle = false;
+        } else {
+            $opt[\CURLOPT_URL] = (string) $uri;
+            $resetHandle = true;
         }
 
         $headers = HttpHeaders::from($request);
 
         $cacheKey = null;
-        if (
-            $this->CacheResponses
-            && ($size === 0 || is_string($body))
-            && ([Method::GET => true, Method::HEAD => true, Method::POST => $this->CachePostResponses][$method] ?? false)
-        ) {
-            $cacheKey = $this->CacheKeyClosure
-                ? (array) ($this->CacheKeyClosure)($request, $this)
-                : $headers->exceptIn($this->getUnstableHeaders())->getLines('%s:%s');
+        $transfer = 0;
+        $redirects = $this->FollowRedirects ? $this->MaxRedirects ?? 30 : 0;
+        $retrying = false;
+        do {
+            if ($cacheKey === null) {
+                if (
+                    $this->CacheResponses
+                    && ($size === 0 || is_string($body))
+                    && ([
+                        Method::GET => true,
+                        Method::HEAD => true,
+                        Method::POST => $this->CachePostResponses,
+                    ][$method] ?? false)
+                ) {
+                    $cacheKey = $this->CacheKeyClosure
+                        ? (array) ($this->CacheKeyClosure)($request, $this)
+                        : $headers->exceptIn($this->getUnstableHeaders())->getLines('%s:%s');
 
-            if ($size !== 0 || $method === Method::POST) {
-                $cacheKey[] = $size === 0 ? '' : $body;
+                    if ($size !== 0 || $method === Method::POST) {
+                        $cacheKey[] = $size === 0 ? '' : $body;
+                    }
+
+                    $cacheKey = implode(':', [
+                        self::class,
+                        'response',
+                        $method,
+                        rawurlencode((string) $uri),
+                        Get::hash(implode("\0", $cacheKey)),
+                    ]);
+                } else {
+                    $cacheKey = false;
+                }
             }
 
-            $cacheKey = implode(':', [
-                self::class,
-                'response',
-                $method,
-                rawurlencode((string) $uri),
-                Get::hash(implode("\0", $cacheKey)),
-            ]);
-
             if (
-                !$this->RefreshCache
+                $cacheKey !== false
+                && !$this->RefreshCache
                 && ($last = $this->getCache()->getArray($cacheKey)) !== null
             ) {
-                /** @var array{code:int,body:string,headers:HttpHeadersInterface,reason:string|null,version:string}|array{int,string,HttpHeadersInterface,string} $last */
-                $response = new HttpResponse(
-                    $last['code'] ?? $last[0] ?? 200,
-                    $last['body'] ?? $last[3] ?? null,
-                    $last['headers'] ?? $last[2] ?? null,
-                    $last['reason'] ?? $last[1] ?? null,
-                    $last['version'] ?? '1.1',
-                );
+                /** @var array{code:int,body:string,headers:array<array{name:string,value:string}>|HttpHeaders,reason:string|null,version:string}|array{int,string,HttpHeaders,string} $last */
+                $code = $last['code'] ?? $last[0] ?? 200;
+                $bodyIn = HttpStream::fromString($last['body'] ?? $last[3] ?? '');
+                $lastHeaders = $last['headers'] ?? $last[2] ?? null;
+                if (is_array($lastHeaders)) {
+                    $lastHeaders = Http::getNameValueGenerator($lastHeaders);
+                }
+                $headersIn = HttpHeaders::from($lastHeaders ?? []);
+                $reason = $last['reason'] ?? $last[1] ?? null;
+                $version = $last['version'] ?? '1.1';
+                $response = new HttpResponse($code, $bodyIn, $headersIn, $reason, $version);
                 Event::dispatch(new ResponseCacheHitEvent($this, $request, $response));
-                return $this->LastResponse = $response;
-            }
-        }
-
-        $opt[\CURLOPT_HTTPHEADER] = $headers->getLines('%s: %s', '%s;');
-
-        /** @var string|null */
-        $statusLine = null;
-        /** @var HttpHeaders|null */
-        $headers = null;
-        $opt[\CURLOPT_HEADERFUNCTION] =
-            static function ($handle, string $header) use (&$statusLine, &$headers): int {
-                if (substr($header, 0, 5) === 'HTTP/') {
-                    $statusLine = rtrim($header, "\r\n");
-                    $headers = new HttpHeaders();
-                    return strlen($header);
+            } else {
+                if ($transfer) {
+                    if ($size !== 0 && $body instanceof StreamInterface) {
+                        if (!$body->isSeekable()) {
+                            throw new RequestException(
+                                'Request cannot be sent again (body not seekable)',
+                                $request,
+                            );
+                        }
+                        $body->rewind();
+                    }
+                    $statusLine = null;
+                    $headersIn = null;
                 }
-                if ($headers === null) {
-                    throw new InvalidHeaderException('No status line in HTTP response');
+                $bodyIn = new HttpStream(File::open('php://temp', 'r+'));
+
+                if ($resetHandle || !$transfer) {
+                    if ($resetHandle) {
+                        curl_reset(self::$Handle);
+                        $resetHandle = false;
+                    }
+                    $opt[\CURLOPT_HTTPHEADER] = $headers->getLines('%s: %s', '%s;');
+                    curl_setopt_array(self::$Handle, $opt);
+
+                    if ($this->CookiesCacheKey !== null) {
+                        // "If the name is an empty string, no cookies are loaded,
+                        // but cookie handling is still enabled"
+                        curl_setopt(self::$Handle, \CURLOPT_COOKIEFILE, '');
+                        $cookies = $this->getCache()->getArray($this->CookiesCacheKey);
+                        if ($cookies) {
+                            foreach ($cookies as $cookie) {
+                                curl_setopt(self::$Handle, \CURLOPT_COOKIELIST, $cookie);
+                            }
+                        }
+                    }
                 }
-                $headers = $headers->addLine($header);
-                return strlen($header);
-            };
 
-        $body = new HttpStream(File::open('php://temp', 'r+'));
-        $opt[\CURLOPT_WRITEFUNCTION] =
-            static function ($handle, string $data) use ($body): int {
-                return $body->write($data);
-            };
+                $transfer++;
 
-        curl_setopt_array(self::$Handle, $opt);
-
-        if ($this->CookiesCacheKey !== null) {
-            // "If the name is an empty string, no cookies are loaded, but
-            // cookie handling is still enabled"
-            curl_setopt(self::$Handle, \CURLOPT_COOKIEFILE, '');
-            $cookies = $this->getCache()->getArray($this->CookiesCacheKey);
-            if ($cookies !== null) {
-                foreach ($cookies as $cookie) {
-                    curl_setopt(self::$Handle, \CURLOPT_COOKIELIST, $cookie);
+                Event::dispatch(new CurlRequestEvent($this, self::$Handle, $request));
+                $result = curl_exec(self::$Handle);
+                if ($result === false) {
+                    throw new CurlErrorException(curl_errno(self::$Handle), $request, $this->getCurlInfo());
                 }
-            }
-        }
 
-        $this->LastRequest = $request;
+                if (
+                    $statusLine === null
+                    || count($split = explode(' ', $statusLine, 3)) < 2
+                    || ($version = explode('/', $split[0])[1] ?? null) === null
+                ) {
+                    // @codeCoverageIgnoreStart
+                    throw new InvalidHeaderException(sprintf(
+                        'HTTP status line invalid or not in response: %s',
+                        rtrim((string) $statusLine, "\r\n"),
+                    ));
+                    // @codeCoverageIgnoreEnd
+                }
 
-        $attempts = 0;
-        do {
-            Event::dispatch(new CurlRequestEvent($this, self::$Handle, $request));
-            $result = curl_exec(self::$Handle);
-            if ($result === false) {
-                throw new CurlErrorException(curl_errno(self::$Handle), $request, $this->getCurlInfo());
+                /** @var HttpHeaders $headersIn */
+                $code = (int) $split[1];
+                $reason = $split[2] ?? null;
+                $response = new HttpResponse($code, $bodyIn, $headersIn, $reason, $version);
+                Event::dispatch(new CurlResponseEvent($this, self::$Handle, $request, $response));
+
+                if ($this->CookiesCacheKey !== null) {
+                    $this->getCache()->set(
+                        $this->CookiesCacheKey,
+                        curl_getinfo(self::$Handle, \CURLINFO_COOKIELIST)
+                    );
+                }
+
+                if ($cacheKey !== false && $this->CacheLifetime >= 0 && $code < 400) {
+                    $ttl = $this->CacheLifetime === 0
+                        ? null
+                        : $this->CacheLifetime;
+                    $this->getCache()->set($cacheKey, [
+                        'code' => $code,
+                        'body' => (string) $bodyIn,
+                        'headers' => $headersIn->jsonSerialize(),
+                        'reason' => $reason,
+                        'version' => $version,
+                    ], $ttl);
+                }
             }
 
             if (
-                $statusLine === null
-                || count($split = explode(' ', $statusLine, 3)) < 2
-                || ($version = explode('/', $split[0])[1] ?? null) === null
+                $redirects
+                && $code >= 300
+                && $code < 400
+                && count($location = $headersIn->getHeader(HttpHeader::LOCATION)) === 1
+                && ($location = $location[0]) !== ''
             ) {
-                // @codeCoverageIgnoreStart
-                throw new InvalidHeaderException(sprintf(
-                    'HTTP status line invalid or not in response: %s',
-                    rtrim((string) $statusLine, "\r\n"),
-                ));
-                // @codeCoverageIgnoreEnd
+                $uri = Uri::from($uri)->follow($location)->withFragment('');
+                $request = $request->withUri($uri);
+                // Match cURL's behaviour
+                if (($code === 301 || $code === 302 || $code === 303) && (
+                    $size !== 0
+                    || (self::METHOD_HAS_BODY[$method] ?? false)
+                )) {
+                    $method = Method::GET;
+                    $body = HttpStream::fromString('');
+                    $request = $request
+                        ->withMethod($method)
+                        ->withBody($body)
+                        ->withoutHeader(HttpHeader::CONTENT_LENGTH)
+                        ->withoutHeader(HttpHeader::TRANSFER_ENCODING);
+                    $size = 0;
+                    $opt[\CURLOPT_CUSTOMREQUEST] = $method;
+                    $opt[\CURLOPT_URL] = (string) $uri;
+                    unset(
+                        $opt[\CURLOPT_POSTFIELDS],
+                        $opt[\CURLOPT_UPLOAD],
+                        $opt[\CURLOPT_INFILESIZE],
+                        $opt[\CURLOPT_READFUNCTION],
+                    );
+                    $resetHandle = true;
+                } else {
+                    curl_setopt(
+                        self::$Handle,
+                        \CURLOPT_URL,
+                        $opt[\CURLOPT_URL] = (string) $uri,
+                    );
+                }
+                $headers = HttpHeaders::from($request);
+                $cacheKey = null;
+                $redirects--;
+                $retrying = false;
+                continue;
             }
-
-            /** @var HttpHeaders $headers */
-            $code = (int) $split[1];
-            $reason = $split[2] ?? null;
-            $response = new HttpResponse($code, $body, $headers, $reason, $version);
-            Event::dispatch(new CurlResponseEvent($this, self::$Handle, $request, $response));
 
             if (
                 !$this->RetryAfterTooManyRequests
-                || $attempts
+                || $retrying
                 || $code !== 429
-                || ($after = $headers->getRetryAfter()) === null
+                || ($after = $headersIn->getRetryAfter()) === null
                 || ($this->RetryAfterMaxSeconds !== 0 && $after > $this->RetryAfterMaxSeconds)
             ) {
                 break;
@@ -1309,37 +1408,14 @@ class Curler implements CurlerInterface, Buildable
             $after = max(1, $after);
             Console::debug(Inflect::format($after, 'Sleeping for {{#}} {{#:second}}'));
             sleep($after);
-            $attempts++;
+            $retrying = true;
         } while (true);
 
-        if ($this->CookiesCacheKey !== null) {
-            $this->getCache()->set(
-                $this->CookiesCacheKey,
-                curl_getinfo(self::$Handle, \CURLINFO_COOKIELIST)
-            );
-        }
-
+        $this->LastRequest = $request;
         $this->LastResponse = $response;
 
         if ($this->ThrowHttpErrors && $code >= 400) {
             throw new HttpErrorException($request, $response, $this->getCurlInfo());
-        }
-
-        if ($cacheKey !== null && $this->CacheLifetime >= 0) {
-            $ttl = $this->CacheLifetime === 0
-                ? null
-                : $this->CacheLifetime;
-            $this->getCache()->set(
-                $cacheKey,
-                [
-                    'code' => $code,
-                    'body' => (string) $body,
-                    'headers' => $headers,
-                    'reason' => $reason,
-                    'version' => $version,
-                ],
-                $ttl,
-            );
         }
 
         return $response;

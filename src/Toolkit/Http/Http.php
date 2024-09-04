@@ -16,6 +16,7 @@ use Salient\Utility\Str;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Generator;
 use InvalidArgumentException;
 use Stringable;
 
@@ -243,5 +244,18 @@ final class Http extends AbstractUtility
         return $uri->withQuery(
             (new FormData($data))->getQuery($flags, $dateFormatter)
         );
+    }
+
+    /**
+     * Get key-value pairs from a list of arrays with "name" and "value" keys
+     *
+     * @param iterable<array{name:string,value:string}> $items
+     * @return Generator<string,string>
+     */
+    public static function getNameValueGenerator(iterable $items): Generator
+    {
+        foreach ($items as $item) {
+            yield $item['name'] => $item['value'];
+        }
     }
 }

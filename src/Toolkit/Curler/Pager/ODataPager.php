@@ -12,6 +12,11 @@ use Salient\Http\HttpHeaders;
 use Salient\Http\Uri;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 
+/**
+ * Follows OData "nextLink" annotations in responses from the endpoint
+ *
+ * @api
+ */
 final class ODataPager implements CurlerPagerInterface
 {
     private ?int $MaxPageSize;

@@ -383,12 +383,87 @@ EOF,
         (new Curler('//localhost'))->get();
     }
 
-    public function testHttpError(): void
+    public function testThrowHttpErrors(): void
     {
-        $this->startHttpServer(new HttpResponse(404));
-        $this->expectException(HttpErrorExceptionInterface::class);
-        $this->expectExceptionMessage('HTTP error 404');
-        $this->getCurler()->get();
+        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $server = $this->startHttpServer($bad, $good, $bad);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->assertCallbackThrowsException(
+            fn() => $curler->get(),
+            HttpErrorExceptionInterface::class,
+            'HTTP error 502 Bad Gateway',
+        );
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(502, $response->getStatusCode());
+        $output[] = $server->getOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $output[] = $server->getNewOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('', $server->getNewOutput());
+
+        $expected = <<<EOF
+GET / HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF;
+        $this->assertSameHttpMessages([$expected, $expected], $output);
+    }
+
+    public function testWithoutThrowHttpErrors(): void
+    {
+        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $server = $this->startHttpServer($bad, $good, $bad);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withThrowHttpErrors(false)
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->assertSame('502 bad gateway', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(502, $response->getStatusCode());
+        $output[] = $server->getOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $output[] = $server->getNewOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('', $server->getNewOutput());
+
+        $expected = <<<EOF
+GET / HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF;
+        $this->assertSameHttpMessages([$expected, $expected], $output);
     }
 
     /**

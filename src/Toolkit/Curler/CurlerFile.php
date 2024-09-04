@@ -11,7 +11,7 @@ use InvalidArgumentException;
  *
  * @api
  */
-final class CurlerFile extends HttpMultipartStreamPart
+class CurlerFile extends HttpMultipartStreamPart
 {
     /**
      * Creates a new CurlerFile object

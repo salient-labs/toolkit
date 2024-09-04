@@ -7,12 +7,13 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Curler\CurlerPage;
-use Salient\Utility\Arr;
 use Closure;
 
 /**
  * Increments a value in the query string of each request until no results are
  * returned
+ *
+ * @api
  */
 final class QueryPager implements CurlerPagerInterface
 {
@@ -62,7 +63,7 @@ final class QueryPager implements CurlerPagerInterface
         ?array $query = null
     ): RequestInterface {
         $this->CurrentQuery = $query ?? [];
-        unset($this->CurrentPageKey);
+        $this->CurrentPageKey = null;
 
         // If `$this->PageKey` does not appear in the query, add it to
         // `$this->CurrentQuery` without changing the first request
@@ -92,16 +93,20 @@ final class QueryPager implements CurlerPagerInterface
             || $this->PageSize < 1
             || count($data) === $this->PageSize
         )) {
-            if ($this->PageKey === null && !$previousPage) {
-                $this->CurrentPageKey =
-                    $this->CurrentQuery && is_int(reset($this->CurrentQuery))
-                        ? key($this->CurrentQuery)
-                        : null;
+            if (
+                $this->PageKey === null
+                && !$previousPage
+                && $this->CurrentQuery
+                && is_int(reset($this->CurrentQuery))
+            ) {
+                $this->CurrentPageKey = key($this->CurrentQuery);
             }
             $key = $this->PageKey ?? $this->CurrentPageKey;
             if ($key !== null) {
                 $this->CurrentQuery[$key]++;
-                $nextRequest = $request->withUri($curler->replaceQuery($request->getUri(), $this->CurrentQuery));
+                $uri = $request->getUri();
+                $uri = $curler->replaceQuery($uri, $this->CurrentQuery);
+                $nextRequest = $request->withUri($uri);
             }
         }
 
