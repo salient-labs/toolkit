@@ -48,7 +48,7 @@ use Stringable;
  * @method $this refreshCache(bool $value = true) Replace cached responses even if they haven't expired (default: false)
  * @method $this timeout(int<0,max>|null $value) Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
  * @method $this followRedirects(bool $value = true) Follow "Location" headers (default: false)
- * @method $this maxRedirects(int<-1,max>|null $value) Limit the number of "Location" headers followed (`-1` = unlimited; `0` = do not follow redirects; `null` = use underlying default of `20`; default: `null`)
+ * @method $this maxRedirects(int<-1,max>|null $value) Limit the number of "Location" headers followed (`-1` = unlimited; `0` = do not follow redirects; `null` = use underlying default of `30`; default: `null`)
  * @method $this retryAfterTooManyRequests(bool $value = true) Retry throttled requests when the endpoint returns a "Retry-After" header (default: false)
  * @method $this retryAfterMaxSeconds(int<0,max> $value) Limit the delay between request attempts (`0` = unlimited; default: `300`)
  * @method $this throwHttpErrors(bool $value = true) Throw exceptions for HTTP errors (default: true)
@@ -67,6 +67,8 @@ use Stringable;
  * @method mixed putR(string $data, string $mediaType, mixed[]|null $query = null) Send raw data to the endpoint in a PUT request and return the body of the response
  * @method mixed patchR(string $data, string $mediaType, mixed[]|null $query = null) Send raw data to the endpoint in a PATCH request and return the body of the response
  * @method mixed deleteR(string $data, string $mediaType, mixed[]|null $query = null) Send raw data to the endpoint in a DELETE request and return the body of the response
+ *
+ * @api
  *
  * @extends AbstractBuilder<Curler>
  *

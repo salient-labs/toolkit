@@ -8,6 +8,8 @@ use OutOfRangeException;
 
 /**
  * Data returned by an HTTP endpoint
+ *
+ * @api
  */
 class CurlerPage implements CurlerPageInterface
 {

@@ -5,6 +5,9 @@ namespace Salient\Curler\Pager;
 use Salient\Utility\Arr;
 use Closure;
 
+/**
+ * @api
+ */
 trait HasEntitySelector
 {
     /** @var Closure(mixed): list<mixed> */

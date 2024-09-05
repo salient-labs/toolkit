@@ -6,13 +6,16 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Curler\Event\CurlResponseEventInterface;
 use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
 use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
+use Salient\Contract\Curler\Exception\TooManyRedirectsExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Core\Facade\Event;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerFile;
@@ -38,6 +41,8 @@ final class CurlerTest extends HttpTestCase
     private const IN = ['baz' => 'qux'];
     private const OUT = ['foo' => 'bar'];
     private const OUT_PAGES = [[['name' => 'foo'], ['name' => 'bar'], ['name' => 'baz']], [['name' => 'qux']]];
+
+    private int $ListenerId;
 
     public function testGet(): void
     {
@@ -383,12 +388,211 @@ EOF,
         (new Curler('//localhost'))->get();
     }
 
-    public function testHttpError(): void
+    public function testThrowHttpErrors(): void
     {
-        $this->startHttpServer(new HttpResponse(404));
-        $this->expectException(HttpErrorExceptionInterface::class);
-        $this->expectExceptionMessage('HTTP error 404');
-        $this->getCurler()->get();
+        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $server = $this->startHttpServer($bad, $good, $bad);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->assertCallbackThrowsException(
+            fn() => $curler->get(),
+            HttpErrorExceptionInterface::class,
+            'HTTP error 502 Bad Gateway',
+        );
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(502, $response->getStatusCode());
+        $output[] = $server->getOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $output[] = $server->getNewOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('', $server->getNewOutput());
+
+        $expected = <<<EOF
+GET / HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF;
+        $this->assertSameHttpMessages([$expected, $expected], $output);
+    }
+
+    public function testWithoutThrowHttpErrors(): void
+    {
+        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $server = $this->startHttpServer($bad, $good, $bad);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withThrowHttpErrors(false)
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->assertSame('502 bad gateway', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(502, $response->getStatusCode());
+        $output[] = $server->getOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $output[] = $server->getNewOutput();
+
+        $this->assertSame('foo', $curler->get());
+        $this->assertNotNull($curler->getLastRequest());
+        $this->assertNotNull($response = $curler->getLastResponse());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('', $server->getNewOutput());
+
+        $expected = <<<EOF
+GET / HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF;
+        $this->assertSameHttpMessages([$expected, $expected], $output);
+    }
+
+    public function testFollowRedirects(): void
+    {
+        $responses = [
+            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
+            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar?baz=1']),
+            new HttpResponse(200, Json::stringify(self::OUT), [Header::CONTENT_TYPE => MimeType::JSON]),
+        ];
+        $server = $this->startHttpServer(...$responses);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withFollowRedirects()
+            ->withMaxRedirects(3)
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->ListenerId = Event::getInstance()->listen(
+            function (CurlResponseEventInterface $event) use ($server, &$output) {
+                $output[] = $server->getNewOutput();
+            }
+        );
+
+        $this->assertSame(self::OUT, $curler->get(self::QUERY));
+        $this->assertSame(self::OUT, $curler->get(self::QUERY));
+
+        // 4 requests are made if every response is cached
+        $this->assertSame('', $server->getNewOutput());
+        $this->assertSameHttpMessages([
+            <<<EOF
+GET /?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo/bar HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo/bar?baz=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+        ], $output);
+    }
+
+    public function testTooManyRedirects(): void
+    {
+        $responses = [
+            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
+            new HttpResponse(302, '', [Header::LOCATION => '/']),
+        ];
+        $server = $this->startHttpServer(...$responses, ...$responses);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withFollowRedirects()
+            ->withMaxRedirects(3)
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->ListenerId = Event::getInstance()->listen(
+            function (CurlResponseEventInterface $event) use ($server, &$output) {
+                $output[] = $server->getNewOutput();
+            }
+        );
+
+        $this->assertCallbackThrowsException(
+            fn() => $curler->get(),
+            TooManyRedirectsExceptionInterface::class,
+            'Redirect limit exceeded: 3',
+        );
+
+        // 3 requests are made if the "GET /" response is cached
+        $this->assertSame('', $server->getNewOutput());
+        $this->assertSameHttpMessages([
+            <<<EOF
+GET / HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo/bar HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+        ], $output);
+    }
+
+    protected function tearDown(): void
+    {
+        if (isset($this->ListenerId)) {
+            Event::removeListener($this->ListenerId);
+        }
+
+        parent::tearDown();
     }
 
     /**

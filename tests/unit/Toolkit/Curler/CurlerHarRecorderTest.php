@@ -5,22 +5,22 @@ namespace Salient\Tests\Curler;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use Salient\Core\Facade\Cache;
-use Salient\Curler\CurlerHttpArchiveRecorder;
+use Salient\Curler\CurlerHarRecorder;
 use Salient\Tests\HttpTestCase;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 
 /**
- * @covers \Salient\Curler\CurlerHttpArchiveRecorder
+ * @covers \Salient\Curler\CurlerHarRecorder
  */
-final class CurlerHttpArchiveRecorderTest extends HttpTestCase
+final class CurlerHarRecorderTest extends HttpTestCase
 {
     private vfsStreamDirectory $Root;
 
     public function testConstructor(): void
     {
         $file = $this->Root->url() . '/archive.har';
-        new CurlerHttpArchiveRecorder($file, 'app', 'v1.0.0');
+        new CurlerHarRecorder($file, 'app', 'v1.0.0');
         $this->assertSame(
             '{"log":{"version":"1.2","creator":{"name":"app","version":"v1.0.0"},"pages":[],"entries":[]}}',
             File::getContents($file),
@@ -30,7 +30,7 @@ final class CurlerHttpArchiveRecorderTest extends HttpTestCase
     public function testRecording(): void
     {
         $file = $this->Root->url() . '/archive.har';
-        $recorder = new CurlerHttpArchiveRecorder($file, 'app', 'v1.0.0');
+        $recorder = new CurlerHarRecorder($file, 'app', 'v1.0.0');
         $recorder->start();
         $this->startHttpServer();
         $curler = $this->getCurler()->withUserAgent('app/1.0.0')->withResponseCache();

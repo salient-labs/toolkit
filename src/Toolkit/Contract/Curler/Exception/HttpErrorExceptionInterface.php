@@ -2,24 +2,11 @@
 
 namespace Salient\Contract\Curler\Exception;
 
-use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
-
 /**
  * @api
  */
-interface HttpErrorExceptionInterface extends CurlerExceptionInterface
+interface HttpErrorExceptionInterface extends ResponseExceptionInterface
 {
-    /**
-     * Get the request associated with the exception
-     */
-    public function getRequest(): RequestInterface;
-
-    /**
-     * Get the response associated with the exception
-     */
-    public function getResponse(): HttpResponseInterface;
-
     /**
      * Get the HTTP status code associated with the exception
      */

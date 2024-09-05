@@ -16,7 +16,7 @@ use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Facade\Sync;
-use Salient\Curler\CurlerHttpArchiveRecorder;
+use Salient\Curler\CurlerHarRecorder;
 use Salient\Sync\SyncStore;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\InvalidEnvironmentException;
@@ -77,7 +77,7 @@ class Application extends Container implements ApplicationInterface
     ];
 
     private bool $OutputLogIsRegistered = false;
-    private ?CurlerHttpArchiveRecorder $HarRecorder = null;
+    private ?CurlerHarRecorder $HarRecorder = null;
 
     // --
 
@@ -408,7 +408,7 @@ class Application extends Container implements ApplicationInterface
 
         File::create($filename, 0600);
 
-        $this->HarRecorder = new CurlerHttpArchiveRecorder(
+        $this->HarRecorder = new CurlerHarRecorder(
             $filename,
             $creatorName,
             $creatorVersion,

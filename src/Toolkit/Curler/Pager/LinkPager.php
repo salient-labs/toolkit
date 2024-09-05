@@ -14,6 +14,8 @@ use Closure;
 
 /**
  * Follows "Link" headers in responses from the endpoint
+ *
+ * @api
  */
 final class LinkPager implements CurlerPagerInterface
 {
@@ -57,8 +59,10 @@ final class LinkPager implements CurlerPagerInterface
         }
 
         $query[$this->PageSizeKey] = $this->PageSize;
+        $uri = $request->getUri();
+        $uri = $curler->replaceQuery($uri, $query);
 
-        return $request->withUri($curler->replaceQuery($request->getUri(), $query));
+        return $request->withUri($uri);
     }
 
     /**
@@ -79,9 +83,9 @@ final class LinkPager implements CurlerPagerInterface
                 $link = Http::getParameters($link);
                 if (($link['rel'] ?? null) === 'next') {
                     $link = trim($link[0], '<>');
-                    $nextRequest = $request->withUri(
-                        Uri::from($request->getUri())->follow($link)
-                    );
+                    $uri = $request->getUri();
+                    $uri = Uri::from($uri)->follow($link);
+                    $nextRequest = $request->withUri($uri);
                     break;
                 }
             }
