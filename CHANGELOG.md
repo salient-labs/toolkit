@@ -10,6 +10,35 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.47] - 2024-09-05
+
+### Changed
+
+#### `Console`
+
+- Adopt "^ " instead of "? " as the default warning message prefix
+
+#### `Curler`
+
+- Rename `CurlerHttpArchiveRecorder` to `CurlerHarRecorder`
+- Follow `Location` headers in `Curler` instead of enabling cURL's `CURLOPT_FOLLOWLOCATION` option
+  - This allows `CurlerHarRecorder` to be used when following redirects
+  - It will also allow redirect behaviour, including caching, to be customised in a future release
+- Throw `TooManyRedirectsException` if `MaxRedirects` is exceeded in `Curler`
+- Improve cache stability by serializing header values, not `HttpHeaders` instances, when caching responses in `Curler`
+- Don't silently remove query and fragment from request URI in `Curler::withRequest()`
+  - An exception is now thrown if the given URI has a query or fragment
+
+### Fixed
+
+#### `Curler`
+
+- Fix issue where `Curler` response cache resolves equivalent requests separately if one has an empty path and the other path is `"/"`
+- Fix `Curler` issue where HTTP error responses are cached if they are not thrown
+- Fix `Curler` issue where request bodies larger than 2MiB are not rewound when they are retried after "429 Too Many Requests"
+  - An exception is now thrown if a request body cannot be rewound after redirection or "429 Too Many Requests"
+- Fix `Curler` issue where multiple response bodies may be returned as one when a request is retried after "429 Too Many Requests"
+
 ## [v0.99.46] - 2024-09-02
 
 ### Added
@@ -3378,6 +3407,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.47]: https://github.com/salient-labs/toolkit/compare/v0.99.46...v0.99.47
 [v0.99.46]: https://github.com/salient-labs/toolkit/compare/v0.99.45...v0.99.46
 [v0.99.45]: https://github.com/salient-labs/toolkit/compare/v0.99.44...v0.99.45
 [v0.99.44]: https://github.com/salient-labs/toolkit/compare/v0.99.43...v0.99.44
