@@ -38,6 +38,7 @@ use Salient\Curler\Exception\CurlErrorException;
 use Salient\Curler\Exception\HttpErrorException;
 use Salient\Curler\Exception\NetworkException;
 use Salient\Curler\Exception\RequestException;
+use Salient\Curler\Exception\TooManyRedirectsException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\HasHttpHeaders;
@@ -1215,7 +1216,9 @@ class Curler implements CurlerInterface, Buildable
 
         $cacheKey = null;
         $transfer = 0;
-        $redirects = $this->FollowRedirects ? $this->MaxRedirects ?? 30 : 0;
+        $redirects = $this->FollowRedirects && $this->MaxRedirects !== 0
+            ? $this->MaxRedirects ?? 30
+            : false;
         $retrying = false;
         do {
             if ($cacheKey === null) {
@@ -1351,12 +1354,18 @@ class Curler implements CurlerInterface, Buildable
             }
 
             if (
-                $redirects
+                $redirects !== false
                 && $code >= 300
                 && $code < 400
                 && count($location = $headersIn->getHeader(HttpHeader::LOCATION)) === 1
                 && ($location = $location[0]) !== ''
             ) {
+                if (!$redirects) {
+                    throw new TooManyRedirectsException(sprintf(
+                        'Redirect limit exceeded: %d',
+                        $this->MaxRedirects,
+                    ), $request, $response);
+                }
                 $uri = Uri::from($uri)->follow($location)->withFragment('');
                 $request = $request->withUri($uri);
                 // Match cURL's behaviour
