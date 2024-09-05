@@ -1157,23 +1157,6 @@ class Curler implements CurlerInterface, Buildable
             $opt[\CURLOPT_ENCODING] = '';
         }
 
-        // Remove `Host` if its value is redundant
-        if (($host = $request->getHeaderLine(HttpHeader::HOST)) !== '') {
-            try {
-                $host = new Uri("//$host");
-            } catch (InvalidArgumentException $ex) {
-                throw new InvalidHeaderException(sprintf(
-                    'Invalid value for HTTP request header %s: %s',
-                    HttpHeader::HOST,
-                    $host,
-                ), $ex);
-            }
-            $host = $host->withScheme($uri->getScheme())->getAuthority();
-            if ($host === $uri->withUserInfo('')->getAuthority()) {
-                $request = $request->withoutHeader(HttpHeader::HOST);
-            }
-        }
-
         /** @var string|null */
         $statusLine = null;
         /** @var HttpHeaders|null */
@@ -1212,6 +1195,7 @@ class Curler implements CurlerInterface, Buildable
             $resetHandle = true;
         }
 
+        $request = $this->normaliseRequest($request, $uri);
         $headers = HttpHeaders::from($request);
 
         $cacheKey = null;
@@ -1239,11 +1223,14 @@ class Curler implements CurlerInterface, Buildable
                         $cacheKey[] = $size === 0 ? '' : $body;
                     }
 
+                    $cacheUri = $uri->getPath() === ''
+                        ? $uri->withPath('/')
+                        : $uri;
                     $cacheKey = implode(':', [
                         self::class,
                         'response',
                         $method,
-                        rawurlencode((string) $uri),
+                        rawurlencode((string) $cacheUri),
                         Get::hash(implode("\0", $cacheKey)),
                     ]);
                 } else {
@@ -1397,6 +1384,7 @@ class Curler implements CurlerInterface, Buildable
                         $opt[\CURLOPT_URL] = (string) $uri,
                     );
                 }
+                $request = $this->normaliseRequest($request, $uri);
                 $headers = HttpHeaders::from($request);
                 $cacheKey = null;
                 $redirects--;
@@ -1428,6 +1416,30 @@ class Curler implements CurlerInterface, Buildable
         }
 
         return $response;
+    }
+
+    private function normaliseRequest(
+        RequestInterface $request,
+        PsrUriInterface $uri
+    ): RequestInterface {
+        // Remove `Host` if its value is redundant
+        if (($host = $request->getHeaderLine(HttpHeader::HOST)) !== '') {
+            try {
+                $host = new Uri("//$host");
+            } catch (InvalidArgumentException $ex) {
+                throw new InvalidHeaderException(sprintf(
+                    'Invalid value for HTTP request header %s: %s',
+                    HttpHeader::HOST,
+                    $host,
+                ), $ex);
+            }
+            $host = $host->withScheme($uri->getScheme())->getAuthority();
+            if ($host === $uri->withUserInfo('')->getAuthority()) {
+                $request = $request->withoutHeader(HttpHeader::HOST);
+            }
+        }
+
+        return $request;
     }
 
     // --

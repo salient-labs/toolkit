@@ -6,13 +6,16 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Core\MimeType;
+use Salient\Contract\Curler\Event\CurlResponseEventInterface;
 use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
 use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
+use Salient\Contract\Curler\Exception\TooManyRedirectsExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Core\Facade\Event;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerFile;
@@ -38,6 +41,8 @@ final class CurlerTest extends HttpTestCase
     private const IN = ['baz' => 'qux'];
     private const OUT = ['foo' => 'bar'];
     private const OUT_PAGES = [[['name' => 'foo'], ['name' => 'bar'], ['name' => 'baz']], [['name' => 'qux']]];
+
+    private int $ListenerId;
 
     public function testGet(): void
     {
@@ -464,6 +469,130 @@ Accept: application/json
 
 EOF;
         $this->assertSameHttpMessages([$expected, $expected], $output);
+    }
+
+    public function testFollowRedirects(): void
+    {
+        $responses = [
+            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
+            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar?baz=1']),
+            new HttpResponse(200, Json::stringify(self::OUT), [Header::CONTENT_TYPE => MimeType::JSON]),
+        ];
+        $server = $this->startHttpServer(...$responses);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withFollowRedirects()
+            ->withMaxRedirects(3)
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->ListenerId = Event::getInstance()->listen(
+            function (CurlResponseEventInterface $event) use ($server, &$output) {
+                $output[] = $server->getNewOutput();
+            }
+        );
+
+        $this->assertSame(self::OUT, $curler->get(self::QUERY));
+        $this->assertSame(self::OUT, $curler->get(self::QUERY));
+
+        // 4 requests are made if every response is cached
+        $this->assertSame('', $server->getNewOutput());
+        $this->assertSameHttpMessages([
+            <<<EOF
+GET /?quux=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo/bar HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo/bar?baz=1 HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+        ], $output);
+    }
+
+    public function testTooManyRedirects(): void
+    {
+        $responses = [
+            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
+            new HttpResponse(302, '', [Header::LOCATION => '/']),
+        ];
+        $server = $this->startHttpServer(...$responses, ...$responses);
+        $output = [];
+        $curler = $this
+            ->getCurler()
+            ->withFollowRedirects()
+            ->withMaxRedirects(3)
+            ->withCacheStore(new CacheStore())
+            ->withResponseCache();
+
+        $this->ListenerId = Event::getInstance()->listen(
+            function (CurlResponseEventInterface $event) use ($server, &$output) {
+                $output[] = $server->getNewOutput();
+            }
+        );
+
+        $this->assertCallbackThrowsException(
+            fn() => $curler->get(),
+            TooManyRedirectsExceptionInterface::class,
+            'Redirect limit exceeded: 3',
+        );
+
+        // 3 requests are made if the "GET /" response is cached
+        $this->assertSame('', $server->getNewOutput());
+        $this->assertSameHttpMessages([
+            <<<EOF
+GET / HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+            <<<EOF
+GET /foo/bar HTTP/1.1
+Host: {{HTTP_SERVER_AUTHORITY}}
+Accept: application/json
+
+
+EOF,
+        ], $output);
+    }
+
+    protected function tearDown(): void
+    {
+        if (isset($this->ListenerId)) {
+            Event::removeListener($this->ListenerId);
+        }
+
+        parent::tearDown();
     }
 
     /**
