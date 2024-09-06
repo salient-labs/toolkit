@@ -51,7 +51,7 @@ final class CurlerTest extends HttpTestCase
         $this->assertSameHttpMessage(
             <<<EOF
 GET /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
@@ -70,7 +70,7 @@ EOF,
         $this->assertSameHttpMessage(
             <<<EOF
 HEAD /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
@@ -108,7 +108,7 @@ EOF,
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 Content-Length: 13
 Content-Type: application/json
@@ -122,7 +122,7 @@ EOF,
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 Content-Length: 0
 Content-Type: application/x-www-form-urlencoded
@@ -148,7 +148,7 @@ EOF,
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 Content-Length: {$length}
 Content-Type: multipart/form-data; boundary={$boundaryParam}
@@ -243,14 +243,14 @@ EOF;
         $this->assertSameHttpMessages([
             <<<EOF
 {$method} /foo HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json{$headers}
 
 {$body}
 EOF,
             <<<EOF
 GET /foo?page=2 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
@@ -291,7 +291,7 @@ EOF,
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: */*
 Content-Length: {$length}
 Content-Type: image/gif
@@ -315,7 +315,7 @@ EOF,
         $this->assertSameHttpMessage(
             $request = <<<EOF
 GET /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
@@ -344,7 +344,7 @@ EOF,
         $this->assertSameHttpMessage(
             $request = <<<EOF
 POST /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 Content-Length: 13
 Content-Type: application/json
@@ -365,7 +365,7 @@ EOF,
         $this->assertSameHttpMessage(
             <<<EOF
 POST /foo?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 Content-Length: 2
 Content-Type: application/json
@@ -423,7 +423,7 @@ EOF,
 
         $expected = <<<EOF
 GET / HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
@@ -463,7 +463,7 @@ EOF;
 
         $expected = <<<EOF
 GET / HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
@@ -502,28 +502,28 @@ EOF;
         $this->assertSameHttpMessages([
             <<<EOF
 GET /?quux=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
 EOF,
             <<<EOF
 GET /foo HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
 EOF,
             <<<EOF
 GET /foo/bar HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
 EOF,
             <<<EOF
 GET /foo/bar?baz=1 HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
@@ -564,21 +564,21 @@ EOF,
         $this->assertSameHttpMessages([
             <<<EOF
 GET / HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
 EOF,
             <<<EOF
 GET /foo HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 
 EOF,
             <<<EOF
 GET /foo/bar HTTP/1.1
-Host: {{HTTP_SERVER_AUTHORITY}}
+Host: {{authority}}
 Accept: application/json
 
 

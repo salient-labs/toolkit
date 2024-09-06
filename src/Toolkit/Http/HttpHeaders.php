@@ -492,11 +492,20 @@ REGEX;
     /**
      * @inheritDoc
      */
+    public function canonicalize()
+    {
+        return $this->maybeReplaceHeaders($this->Headers, $this->Index, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function sort()
     {
         return $this->maybeReplaceHeaders(
-            $this->Headers,
-            Arr::sortByKey($this->Index)
+            Arr::sort($this->Headers, true, fn($a, $b) => array_key_first($a) <=> array_key_first($b)),
+            Arr::sortByKey($this->Index),
+            true,
         );
     }
 
@@ -506,8 +515,9 @@ REGEX;
     public function reverse()
     {
         return $this->maybeReplaceHeaders(
-            $this->Headers,
-            array_reverse($this->Index, true)
+            array_reverse($this->Headers, true),
+            array_reverse($this->Index, true),
+            true,
         );
     }
 
@@ -857,10 +867,12 @@ REGEX;
      * @param array<string,int[]> $index
      * @return static
      */
-    protected function maybeReplaceHeaders(?array $headers, array $index)
+    protected function maybeReplaceHeaders(?array $headers, array $index, bool $filterHeaders = false)
     {
-        if ($headers === null) {
-            $headers = $this->getIndexHeaders($index);
+        $headers ??= $this->getIndexHeaders($index);
+
+        if ($filterHeaders) {
+            $headers = $this->filterHeaders($headers);
         }
 
         if ($headers === $this->Headers && $index === $this->Index) {
@@ -877,9 +889,7 @@ REGEX;
      */
     protected function replaceHeaders(?array $headers, array $index)
     {
-        if ($headers === null) {
-            $headers = $this->getIndexHeaders($index);
-        }
+        $headers ??= $this->getIndexHeaders($index);
 
         $clone = $this->clone();
         $clone->Headers = $headers;
@@ -921,6 +931,21 @@ REGEX;
             }
         }
         return array_intersect_key($this->Headers, $headers ?? []);
+    }
+
+    /**
+     * @param array<non-empty-array<string,string>> $headers
+     * @return array<non-empty-array<string,string>>
+     */
+    private function filterHeaders(array $headers): array
+    {
+        $host = [];
+        foreach ($headers as $i => $header) {
+            if (isset(array_change_key_case($header)['host'])) {
+                $host[$i] = $header;
+            }
+        }
+        return $host + $headers;
     }
 
     /**

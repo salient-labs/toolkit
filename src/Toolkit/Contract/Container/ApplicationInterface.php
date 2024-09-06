@@ -6,6 +6,7 @@ use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
+use Closure;
 use LogicException;
 
 /**
@@ -86,22 +87,28 @@ interface ApplicationInterface extends ContainerInterface
      * Export the application's HTTP requests to an HTTP Archive (HAR) file in
      * its log directory
      *
-     * Requests made via {@see CurlerInterface} objects, including any resolved
-     * from a response cache, are recorded in `<name>-YYYY-MM-DD-<uuid>.har`.
+     * If any requests are made via {@see CurlerInterface} objects,
+     * `<name>-<timestamp>-<uuid>.har` is created to record them.
      *
      * @param string|null $name If `null`, the name of the application is used.
-     * @param string|null $uuid If `null`, a UUID is generated.
-     * @param-out string $uuid
-     * @param-out string $filename
+     * @param (Closure(): string)|string|null $uuid
      * @return $this
+     * @throws LogicException if HTTP requests are already being recorded.
      */
     public function exportHar(
         ?string $name = null,
         ?string $creatorName = null,
         ?string $creatorVersion = null,
-        ?string &$uuid = null,
-        ?string &$filename = null
+        $uuid = null
     );
+
+    /**
+     * Get the name of the HTTP Archive (HAR) file created via exportHar() if it
+     * has been created
+     *
+     * @throws LogicException if HTTP requests are not being recorded.
+     */
+    public function getHarFilename(): ?string;
 
     /**
      * Start a cache store and make it the global cache

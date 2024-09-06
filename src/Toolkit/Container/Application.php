@@ -9,11 +9,15 @@ use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
+use Salient\Contract\Curler\Event\CurlerEventInterface;
+use Salient\Contract\Curler\Event\CurlRequestEventInterface;
+use Salient\Contract\Curler\Event\ResponseCacheHitEventInterface;
 use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
+use Salient\Core\Facade\Event;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Facade\Sync;
 use Salient\Curler\CurlerHarRecorder;
@@ -29,7 +33,7 @@ use Salient\Utility\Inflect;
 use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Sys;
-use DateTimeImmutable;
+use DateTime;
 use DateTimeZone;
 use LogicException;
 use Phar;
@@ -77,7 +81,9 @@ class Application extends Container implements ApplicationInterface
     ];
 
     private bool $OutputLogIsRegistered = false;
+    private ?int $HarListenerId = null;
     private ?CurlerHarRecorder $HarRecorder = null;
+    private string $HarFilename;
 
     // --
 
@@ -201,9 +207,13 @@ class Application extends Container implements ApplicationInterface
     {
         $this->stopCache();
         $this->stopSync();
-        if ($this->HarRecorder) {
+        if ($this->HarListenerId !== null) {
+            Event::removeListener($this->HarListenerId);
+            $this->HarListenerId = null;
+        } elseif ($this->HarRecorder) {
             $this->HarRecorder->close();
             $this->HarRecorder = null;
+            unset($this->HarFilename);
         }
         parent::unload();
     }
@@ -383,39 +393,70 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    public function exportHar(
+    final public function exportHar(
         ?string $name = null,
         ?string $creatorName = null,
         ?string $creatorVersion = null,
-        ?string &$uuid = null,
-        ?string &$filename = null
+        $uuid = null
     ) {
-        if ($this->HarRecorder) {
+        if ($this->HarListenerId !== null || $this->HarRecorder) {
             throw new LogicException('HAR recorder already started');
         }
 
-        $filename = sprintf(
-            '%s/%s-%s-%s.har',
-            $this->getLogPath(),
-            $name ?? $this->AppName,
-            (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d'),
-            $uuid ??= Get::uuid(),
-        );
+        $this->HarListenerId = Event::getInstance()->listen(function (
+            CurlerEventInterface $event
+        ) use ($name, $creatorName, $creatorVersion, $uuid): void {
+            if (
+                !$event instanceof CurlRequestEventInterface
+                && !$event instanceof ResponseCacheHitEventInterface
+            ) {
+                return;
+            }
 
-        if (file_exists($filename)) {
-            throw new RuntimeException(sprintf('File already exists: %s', $filename));
-        }
+            $filename = sprintf(
+                '%s/%s-%s-%s.har',
+                $this->getLogPath(),
+                $name ?? $this->AppName,
+                (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d-His.v'),
+                Get::value($uuid ?? Get::uuid()),
+            );
 
-        File::create($filename, 0600);
+            if (file_exists($filename)) {
+                throw new RuntimeException(sprintf('File already exists: %s', $filename));
+            }
 
-        $this->HarRecorder = new CurlerHarRecorder(
-            $filename,
-            $creatorName,
-            $creatorVersion,
-        );
-        $this->HarRecorder->start();
+            File::create($filename, 0600);
+
+            $recorder = new CurlerHarRecorder(
+                $filename,
+                $creatorName,
+                $creatorVersion,
+            );
+            $recorder->start($event);
+
+            /** @var int */
+            $id = $this->HarListenerId;
+            Event::removeListener($id);
+            $this->HarListenerId = null;
+            $this->HarRecorder = $recorder;
+            $this->HarFilename = $filename;
+        });
 
         return $this;
+    }
+
+    /**
+     * @phpstan-impure
+     */
+    final public function getHarFilename(): ?string
+    {
+        if ($this->HarListenerId === null && !$this->HarRecorder) {
+            throw new LogicException('HAR recorder not started');
+        }
+
+        return $this->HarRecorder
+            ? $this->HarFilename
+            : null;
     }
 
     /**

@@ -8,15 +8,15 @@ use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Facade\Config;
-use Salient\Tests\TestCase;
+use Salient\Tests\HttpTestCase;
 use Salient\Utility\Env;
 use Salient\Utility\File;
-use Salient\Utility\Regex;
+use Salient\Utility\Get;
 
 /**
  * @covers \Salient\Container\Application
  */
-final class ApplicationTest extends TestCase
+final class ApplicationTest extends HttpTestCase
 {
     private const CONFIG = [
         'app' => [
@@ -117,12 +117,26 @@ final class ApplicationTest extends TestCase
 
         $_ENV['app_env'] = 'test';
         $app = new Application($basePath);
-        $app->exportHar(null, 'app', 'v1.0.0', $uuid, $file);
+        /** @var string|null */
+        $uuid = null;
+        $app->exportHar(
+            null,
+            'app',
+            'v1.0.0',
+            function () use (&$uuid) { return $uuid = Get::uuid(); },
+        );
+        $this->assertNull($uuid);
+        $this->assertNull($app->getHarFilename());
+        $this->startHttpServer();
+        $this->getCurler()->get();
+        // @phpstan-ignore method.impossibleType
+        $this->assertNotNull($uuid);
+        $this->assertNotNull($file = $app->getHarFilename());
+        $this->assertStringEndsWith('-' . $uuid . '.har', $file);
         $app->unload();
         $this->assertTrue(File::same($file, $basePath . '/var/log/' . basename($file)));
-        $this->assertMatchesRegularExpression('/^' . Regex::UUID . '$/D', $uuid);
-        $this->assertSame(
-            '{"log":{"version":"1.2","creator":{"name":"app","version":"v1.0.0"},"pages":[],"entries":[]}}',
+        $this->assertStringStartsWith(
+            '{"log":{"version":"1.2","creator":{"name":"app","version":"v1.0.0"},"pages":[],"entries":[{',
             File::getContents($file),
         );
 

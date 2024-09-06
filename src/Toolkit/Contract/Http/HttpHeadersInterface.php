@@ -84,6 +84,13 @@ interface HttpHeadersInterface extends
     );
 
     /**
+     * Sort headers in the collection if necessary for compliance with [RFC7230]
+     *
+     * @return static
+     */
+    public function canonicalize();
+
+    /**
      * Reduce the collection to headers received after the HTTP message body
      *
      * @return static
