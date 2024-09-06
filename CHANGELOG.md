@@ -10,6 +10,34 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.48] - 2024-09-06
+
+### Added
+
+#### `Container`
+
+- Add application method `getHarFilename()`
+
+### Changed
+
+#### `Container`
+
+- In application method `exportHar()`:
+  - Defer creation of HAR file until first `Curler` request
+  - Allow `$uuid` to be given via callback (e.g. to match `Sync::getRunUuid()`)
+
+#### `Curler`
+
+- Add optional `$event` parameter to `CurlerHarRecorder::start()`
+
+### Fixed
+
+#### `Http`
+
+- Fix `OAuth2Client` issue where a stale JWKS may not be refreshed
+- Fix `HttpHeaders` issue where `getLines()` returns unsorted headers after the collection is sorted or reversed
+- Add and implement `HttpHeadersInterface::canonicalize()` to resolve issue where `HttpHeaders::getLines()` may return headers in an order not compliant with \[RFC7230]
+
 ## [v0.99.47] - 2024-09-05
 
 ### Changed
@@ -3407,6 +3435,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.48]: https://github.com/salient-labs/toolkit/compare/v0.99.47...v0.99.48
 [v0.99.47]: https://github.com/salient-labs/toolkit/compare/v0.99.46...v0.99.47
 [v0.99.46]: https://github.com/salient-labs/toolkit/compare/v0.99.45...v0.99.46
 [v0.99.45]: https://github.com/salient-labs/toolkit/compare/v0.99.44...v0.99.45
