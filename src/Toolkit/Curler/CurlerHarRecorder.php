@@ -21,6 +21,8 @@ use Stringable;
 
 /**
  * Records Curler requests to an HTTP Archive (HAR) stream
+ *
+ * @api
  */
 class CurlerHarRecorder
 {
@@ -36,11 +38,13 @@ class CurlerHarRecorder
     protected int $EntryCount = 0;
 
     /**
-     * Creates a new CurlerHttpArchiveRecorder object
+     * Creates a new CurlerHarRecorder object
      *
      * `$name` and `$version` are applied to the archive's `<creator>` object.
      * If both are `null`, they are replaced with the name and version of the
      * root package.
+     *
+     * @api
      *
      * @param Stringable|string|resource $resource
      */
@@ -78,6 +82,10 @@ class CurlerHarRecorder
         $this->close();
     }
 
+    /**
+     * Close the HTTP Archive (HAR) stream or detach it from the instance,
+     * stopping recording if necessary
+     */
     public function close(): void
     {
         $this->stop();
@@ -96,7 +104,13 @@ class CurlerHarRecorder
         $this->Uri = null;
     }
 
-    public function start(): void
+    /**
+     * Start recording requests, optionally with an initial event
+     *
+     * @param CurlRequestEventInterface|ResponseCacheHitEventInterface|null $event
+     * @throws LogicException if the instance is already recording.
+     */
+    public function start($event = null): void
     {
         if ($this->IsRecording) {
             throw new LogicException('Already recording');
@@ -112,8 +126,17 @@ class CurlerHarRecorder
             $dispatcher->listen(Closure::fromCallable([$this, 'handleCurlResponse'])),
             $dispatcher->listen(Closure::fromCallable([$this, 'handleResponseCacheHit'])),
         ];
+
+        if ($event instanceof CurlRequestEventInterface) {
+            $this->handleCurlRequest($event);
+        } elseif ($event instanceof ResponseCacheHitEventInterface) {
+            $this->handleResponseCacheHit($event);
+        }
     }
 
+    /**
+     * Stop recording requests if they are being recorded
+     */
     public function stop(): void
     {
         if (!$this->IsRecording) {
