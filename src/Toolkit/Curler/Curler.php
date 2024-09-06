@@ -143,7 +143,10 @@ class Curler implements CurlerInterface, Buildable
     private static $Handle;
 
     /**
-     * @internal
+     * Creates a new Curler object
+     *
+     * Parameters after `$uri` are not covered by the Salient toolkit's backward
+     * compatibility promise.
      *
      * @param PsrUriInterface|Stringable|string|null $uri Endpoint URI (cannot have query or fragment components)
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers Request headers

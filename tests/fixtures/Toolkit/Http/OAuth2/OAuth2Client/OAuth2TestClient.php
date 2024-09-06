@@ -3,14 +3,31 @@
 namespace Salient\Tests\Http\OAuth2\OAuth2Client;
 
 use League\OAuth2\Client\Provider\GenericProvider;
+use Salient\Core\Facade\Console;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\OAuth2\OAuth2Client;
 use Salient\Http\OAuth2\OAuth2Flow;
 use Salient\Http\HttpServer;
 use Salient\Utility\Env;
 
-class OAuth2TestClient extends OAuth2Client
+final class OAuth2TestClient extends OAuth2Client
 {
+    private string $TenantId;
+    private string $AppId;
+    private string $Secret;
+
+    public function __construct(string $tenantId, string $appId, string $secret)
+    {
+        $this->TenantId = $tenantId;
+        $this->AppId = $appId;
+        $this->Secret = $secret;
+
+        parent::__construct();
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function getListener(): ?HttpServer
     {
         $listener = new HttpServer(
@@ -33,31 +50,46 @@ class OAuth2TestClient extends OAuth2Client
         return $listener;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getProvider(): GenericProvider
     {
-        $tenantId = Env::get('microsoft_graph_tenant_id');
-
         return new GenericProvider([
-            'clientId' => Env::get('microsoft_graph_app_id'),
-            'clientSecret' => Env::get('microsoft_graph_secret'),
+            'clientId' => $this->AppId,
+            'clientSecret' => $this->Secret,
             'redirectUri' => $this->getRedirectUri(),
-            'urlAuthorize' => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $tenantId),
-            'urlAccessToken' => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $tenantId),
-            'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $tenantId),
+            'urlAuthorize' => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $this->TenantId),
+            'urlAccessToken' => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $this->TenantId),
+            'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $this->TenantId),
+            // The only scope required for access to the Microsoft Graph API is
+            // https://graph.microsoft.com/.default
             'scopes' => ['openid', 'profile', 'email', 'offline_access', 'https://graph.microsoft.com/.default'],
             'scopeSeparator' => ' ',
         ]);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getFlow(): int
     {
         return OAuth2Flow::CLIENT_CREDENTIALS;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getJsonWebKeySetUrl(): ?string
     {
         return 'https://login.microsoftonline.com/common/discovery/keys';
     }
 
-    protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void {}
+    /**
+     * @inheritDoc
+     */
+    protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void
+    {
+        Console::debug('OAuth 2.0 access token received');
+    }
 }

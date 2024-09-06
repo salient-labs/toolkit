@@ -28,8 +28,9 @@ abstract class HttpTestCase extends TestCase
     private Process $HttpServer;
 
     /**
-     * Assert that the given HTTP message lists are the same after normalising
-     * line endings, removing ignored headers and sorting the remaining headers
+     * Assert that the given lists of HTTP messages are the same after
+     * normalising line endings, removing ignored headers and sorting the
+     * remaining headers
      *
      * @param string[] $expected
      * @param string[] $actual
@@ -41,11 +42,12 @@ abstract class HttpTestCase extends TestCase
         array $ignore = self::HTTP_HEADER_IGNORE_LIST,
         string $message = ''
     ): void {
-        static::assertSameSize($expected, $actual, $message);
-        foreach ($expected as $expectedMessage) {
+        self::assertSameSize($expected, $actual, $message);
+        [$_expected, $_actual] = [$expected, $actual];
+        foreach ($_expected as $expected) {
             /** @var string */
-            $actualMessage = array_shift($actual);
-            static::assertSameHttpMessage($expectedMessage, $actualMessage, $ignore, $message);
+            $actual = array_shift($_actual);
+            self::assertSameHttpMessage($expected, $actual, $ignore, $message);
         }
     }
 
@@ -62,19 +64,28 @@ abstract class HttpTestCase extends TestCase
         string $message = ''
     ): void {
         $expected = str_replace(
-            ['{{HTTP_SERVER_AUTHORITY}}', '{{HTTP_SERVER_URI}}'],
+            ['{{authority}}', '{{uri}}'],
             [self::HTTP_SERVER_AUTHORITY, self::HTTP_SERVER_URI],
             Str::setEol($expected, "\r\n"),
         );
 
         $actual = explode("\r\n\r\n", $actual, 2);
-        $headers[] = explode("\r\n", $actual[0], 2)[0];
-        foreach (HttpHeaders::from($actual[0])->except($ignore)->sort()->getHeaders() as $name => $values) {
-            $headers[] = sprintf('%s: %s', $name, implode(', ', $values));
-        }
-        $actual[0] = implode("\r\n", $headers);
+        $headers = HttpHeaders::from($actual[0])->except($ignore)->sort();
+        $actual[0] = implode("\r\n", [
+            explode("\r\n", $actual[0], 2)[0],
+            ...$headers->getLines(),
+        ]);
         $actual = implode("\r\n\r\n", $actual);
-        static::assertEquals($expected, $actual, $message);
+
+        self::assertSame($expected, $actual, $message);
+    }
+
+    /**
+     * Get a Curler instance bound to the server started by startHttpServer()
+     */
+    protected static function getCurler(string $endpoint = ''): Curler
+    {
+        return new Curler(self::HTTP_SERVER_URI . $endpoint);
     }
 
     /**
@@ -101,10 +112,10 @@ abstract class HttpTestCase extends TestCase
 
         $process = new Process([
             ...self::PHP_COMMAND,
-            self::getPackagePath() . '/tests/unit/Toolkit/http-server.php',
+            __DIR__ . '/http-server.php',
             self::HTTP_SERVER_AUTHORITY,
             '-1',
-            ...($args ?? [])
+            ...($args ?? []),
         ], $input ?? '');
 
         $process->start();
@@ -112,7 +123,7 @@ abstract class HttpTestCase extends TestCase
         while ($process->poll()->isRunning()) {
             if (strpos(
                 $process->getOutput(FileDescriptor::ERR),
-                'Server started at ' . self::HTTP_SERVER_URI
+                'Server started at ' . self::HTTP_SERVER_URI,
             ) !== false) {
                 return $this->HttpServer = $process;
             }
@@ -126,11 +137,6 @@ abstract class HttpTestCase extends TestCase
         ));
     }
 
-    protected static function getCurler(string $endpoint = ''): Curler
-    {
-        return new Curler(self::HTTP_SERVER_URI . $endpoint);
-    }
-
     /**
      * @inheritDoc
      */
@@ -142,9 +148,7 @@ abstract class HttpTestCase extends TestCase
     private function stopHttpServer(): void
     {
         if (isset($this->HttpServer)) {
-            while ($this->HttpServer->isRunning()) {
-                $this->HttpServer->stop();
-            }
+            $this->HttpServer->stop();
             unset($this->HttpServer);
         }
 

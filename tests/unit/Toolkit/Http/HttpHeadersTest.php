@@ -48,6 +48,11 @@ final class HttpHeadersTest extends TestCase
                 ['foo' => 'bar', 'Foo' => 'bar'],
             ],
             [
+                ['host' => ['example.com'], 'qux' => ['quux'], 'foo' => ['bar']],
+                ['qux: quux', 'Foo: bar', 'Host: example.com'],
+                ['qux' => 'quux', 'Foo' => 'bar', 'Host' => 'example.com'],
+            ],
+            [
                 InvalidArgumentException::class . ',Invalid header name: foo bar',
                 null,
                 ['foo bar' => 'qux'],
@@ -488,11 +493,36 @@ final class HttpHeadersTest extends TestCase
         $this->assertSame(['foo:bar', 'baz;', 'foo;', 'qux;'], $headers->getLines('%s:%s', '%s;'));
     }
 
+    public function testCanonicalize(): void
+    {
+        $headers = $this->getHeaders()->set('host', 'example.com')->canonicalize();
+        $this->assertSame([
+            'host' => ['example.com'],
+            'foo2' => ['*'],
+            'foo' => ['bar', 'baz'],
+            'abc' => ['def'],
+            'qux' => ['quux'],
+        ], $headers->all());
+        $this->assertSame([
+            'host' => ['example.com'],
+            'Foo2' => ['*'],
+            'foo' => ['bar', 'baz'],
+            'abc' => ['def'],
+            'qux' => ['quux'],
+        ], $headers->getHeaders());
+        $this->assertSame([
+            'host: example.com',
+            'Foo2: *',
+            'foo: bar',
+            'abc: def',
+            'Foo: baz',
+            'qux: quux',
+        ], $headers->getLines());
+    }
+
     public function testSort(): void
     {
-        $headers = $this->getHeaders()->set('Host', 'example.com');
-        $lines = $headers->getLines();
-        $headers = $headers->sort();
+        $headers = $this->getHeaders()->set('host', 'example.com')->sort();
         $this->assertSame([
             'host' => ['example.com'],
             'abc' => ['def'],
@@ -501,20 +531,25 @@ final class HttpHeadersTest extends TestCase
             'qux' => ['quux'],
         ], $headers->all());
         $this->assertSame([
-            'Host' => ['example.com'],
+            'host' => ['example.com'],
             'abc' => ['def'],
             'foo' => ['bar', 'baz'],
             'Foo2' => ['*'],
             'qux' => ['quux'],
         ], $headers->getHeaders());
-        $this->assertSame($lines, $headers->getLines());
+        $this->assertSame([
+            'host: example.com',
+            'Foo: baz',
+            'Foo2: *',
+            'abc: def',
+            'foo: bar',
+            'qux: quux',
+        ], $headers->getLines());
     }
 
     public function testReverse(): void
     {
-        $headers = $this->getHeaders()->set('Host', 'example.com');
-        $lines = $headers->getLines();
-        $headers = $headers->reverse();
+        $headers = $this->getHeaders()->set('host', 'example.com')->reverse();
         $this->assertSame([
             'host' => ['example.com'],
             'qux' => ['quux'],
@@ -523,13 +558,20 @@ final class HttpHeadersTest extends TestCase
             'foo2' => ['*'],
         ], $headers->all());
         $this->assertSame([
-            'Host' => ['example.com'],
+            'host' => ['example.com'],
             'qux' => ['quux'],
             'abc' => ['def'],
             'foo' => ['bar', 'baz'],
             'Foo2' => ['*'],
         ], $headers->getHeaders());
-        $this->assertSame($lines, $headers->getLines());
+        $this->assertSame([
+            'host: example.com',
+            'qux: quux',
+            'Foo: baz',
+            'abc: def',
+            'foo: bar',
+            'Foo2: *',
+        ], $headers->getLines());
     }
 
     private function getHeaders(): HttpHeaders

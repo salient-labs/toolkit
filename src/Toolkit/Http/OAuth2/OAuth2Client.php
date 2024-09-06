@@ -19,6 +19,7 @@ use Salient\Utility\Json;
 use Salient\Utility\Str;
 use LogicException;
 use Throwable;
+use UnexpectedValueException;
 
 /**
  * A headless OAuth 2.0 client that acquires and validates tokens required for
@@ -48,16 +49,19 @@ abstract class OAuth2Client
      *             Env::get('app_host', 'localhost'),
      *             Env::getInt('app_port', 27755),
      *         );
+     *
      *         $proxyHost = Env::getNullable('app_proxy_host', null);
      *         $proxyPort = Env::getNullableInt('app_proxy_port', null);
+     *
      *         if ($proxyHost !== null && $proxyPort !== null) {
      *             return $listener->withProxy(
      *                 $proxyHost,
      *                 $proxyPort,
      *                 Env::getNullableBool('app_proxy_tls', null),
-     *                 Env::getNullable('app_proxy_base_path', null),
+     *                 Env::get('app_proxy_base_path', ''),
      *             );
      *         }
+     *
      *         return $listener;
      *     }
      * }
@@ -75,8 +79,8 @@ abstract class OAuth2Client
      * Graph API on behalf of a user or application. `redirectUri` can be
      * omitted if support for the Authorization Code flow is not required.
      *
-     * > The `openid`, `profile`, `email` and `offline_access` scopes are not
-     * > required for access to the Graph API.
+     * > The only scope required for access to the Microsoft Graph API is
+     * > `https://graph.microsoft.com/.default`
      *
      * ```php
      * <?php
@@ -84,14 +88,13 @@ abstract class OAuth2Client
      * {
      *     protected function getProvider(): GenericProvider
      *     {
-     *         $tenantId = Env::get('microsoft_graph_tenant_id');
      *         return new GenericProvider([
-     *             'clientId' => Env::get('microsoft_graph_app_id'),
-     *             'clientSecret' => Env::get('microsoft_graph_secret'),
+     *             'clientId' => $this->AppId,
+     *             'clientSecret' => $this->Secret,
      *             'redirectUri' => $this->getRedirectUri(),
-     *             'urlAuthorize' => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $tenantId),
-     *             'urlAccessToken' => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $tenantId),
-     *             'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $tenantId),
+     *             'urlAuthorize' => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $this->TenantId),
+     *             'urlAccessToken' => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $this->TenantId),
+     *             'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $this->TenantId),
      *             'scopes' => ['openid', 'profile', 'email', 'offline_access', 'https://graph.microsoft.com/.default'],
      *             'scopeSeparator' => ' ',
      *         ]);
@@ -501,7 +504,7 @@ abstract class OAuth2Client
                 $token,
                 JWK::parseKeySet($jwks, $alg)
             );
-        } catch (SignatureInvalidException $ex) {
+        } catch (SignatureInvalidException|UnexpectedValueException $ex) {
             // Refresh the JWKS when signature validation fails
             if (!$refreshKeys) {
                 return $this->getValidJsonWebToken($token, $required, true, $alg);
