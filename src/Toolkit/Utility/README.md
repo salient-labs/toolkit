@@ -11,8 +11,8 @@
 
 ---
 
-`salient/utils` provides a suite of useful utility methods via the following
-stateless classes.
+`salient/utils` provides a suite of useful utility methods via stateless
+classes.
 
 - **`Arr`** works with arrays and iterables.
 
