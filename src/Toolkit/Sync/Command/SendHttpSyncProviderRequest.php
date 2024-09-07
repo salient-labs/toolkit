@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sli\Command\Http;
+namespace Salient\Sync\Command;
 
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
@@ -18,7 +18,7 @@ use UnexpectedValueException;
 /**
  * Sends HTTP requests to HTTP sync providers
  */
-final class SendHttpRequest extends AbstractCommand
+final class SendHttpSyncProviderRequest extends AbstractCommand
 {
     /** @var class-string<HttpSyncProvider> */
     private string $Provider = HttpSyncProvider::class;

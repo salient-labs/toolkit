@@ -4,7 +4,7 @@ namespace Salient\Tests\Sync\Command;
 
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Sync\Command\GetSyncEntities;
+use Salient\Sync\Command\GetSyncEntity;
 use Salient\Tests\Sync\Entity\Comment;
 use Salient\Tests\Sync\Entity\Unimplemented;
 use Salient\Tests\Sync\Entity\User;
@@ -14,10 +14,10 @@ use Salient\Tests\Sync\Provider\MockProvider;
 use stdClass;
 
 /**
- * @covers \Salient\Sync\Command\GetSyncEntities
+ * @covers \Salient\Sync\Command\GetSyncEntity
  * @covers \Salient\Sync\Command\AbstractSyncCommand
  */
-final class GetSyncEntitiesTest extends SyncCommandTestCase
+final class GetSyncEntityTest extends SyncCommandTestCase
 {
     /**
      * @dataProvider runProvider
@@ -41,7 +41,7 @@ final class GetSyncEntitiesTest extends SyncCommandTestCase
         $this->assertCommandProduces(
             static::normaliseConsoleOutput($output),
             $exitStatus,
-            GetSyncEntities::class,
+            GetSyncEntity::class,
             $args,
             [],
             true,

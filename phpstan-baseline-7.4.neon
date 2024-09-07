@@ -256,41 +256,6 @@ parameters:
 			path: src/Toolkit/Sli/Command/Generate/GenerateTests.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:delete\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:patch\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:postP\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:put\\(\\) expects array\\|object\\|null, mixed given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(string\\)\\: \\(''\\|class\\-string\\) given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
-
-		-
-			message: "#^Property Salient\\\\Sli\\\\Command\\\\Http\\\\SendHttpRequest\\:\\:\\$HttpMethod \\('CONNECT'\\|'DELETE'\\|'GET'\\|'HEAD'\\|'OPTIONS'\\|'PATCH'\\|'POST'\\|'PUT'\\|'TRACE'\\) does not accept string\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Http/SendHttpRequest.php
-
-		-
 			message: "#^Method Salient\\\\Sli\\\\TokenExtractor\\:\\:getUseMap\\(\\) should return array\\<string, class\\-string\\> but returns array\\<string\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Sli/TokenExtractor.php
@@ -299,6 +264,41 @@ parameters:
 			message: "#^Method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:getMetaProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:delete\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Command/SendHttpSyncProviderRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:patch\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Command/SendHttpSyncProviderRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:post\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Command/SendHttpSyncProviderRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:postP\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Command/SendHttpSyncProviderRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of method Salient\\\\Contract\\\\Curler\\\\CurlerInterface\\:\\:put\\(\\) expects array\\|object\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Command/SendHttpSyncProviderRequest.php
+
+		-
+			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(string\\)\\: \\(''\\|class\\-string\\) given\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Command/SendHttpSyncProviderRequest.php
+
+		-
+			message: "#^Property Salient\\\\Sync\\\\Command\\\\SendHttpSyncProviderRequest\\:\\:\\$HttpMethod \\('CONNECT'\\|'DELETE'\\|'GET'\\|'HEAD'\\|'OPTIONS'\\|'PATCH'\\|'POST'\\|'PUT'\\|'TRACE'\\) does not accept string\\.$#"
+			count: 1
+			path: src/Toolkit/Sync/Command/SendHttpSyncProviderRequest.php
 
 		-
 			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"
