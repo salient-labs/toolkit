@@ -59,6 +59,7 @@
         "salient/polyfills": "self.version",
         "salient/sli": "self.version",
         "salient/sync": "self.version",
+        "salient/testing": "self.version",
         "salient/utils": "self.version"
     },
     "conflict": {

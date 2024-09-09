@@ -102,6 +102,7 @@ fi
     split Polyfill polyfills
     split Sli sli
     split Sync sync
+    split Testing testing
     split Utility utils
 
     exit
