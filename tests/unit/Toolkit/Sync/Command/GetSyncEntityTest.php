@@ -39,7 +39,7 @@ final class GetSyncEntityTest extends SyncCommandTestCase
         $this->Providers = $providers;
         $this->Providerless = $providerless;
         $this->assertCommandProduces(
-            static::normaliseConsoleOutput($output),
+            self::normaliseConsoleOutput($output),
             $exitStatus,
             GetSyncEntity::class,
             $args,
@@ -51,7 +51,7 @@ final class GetSyncEntityTest extends SyncCommandTestCase
             $httpRequestCount === null
                 ? null
                 : static function ($app) use ($httpRequestCount): void {
-                    static::assertSameHttpRequests($httpRequestCount, $app);
+                    self::assertSameHttpRequests($httpRequestCount, $app);
                 },
             true,
         );
@@ -541,7 +541,7 @@ EOF, JsonPlaceholderApi::class, Unimplemented::class),
                 true,
             ],
             [
-                sprintf(<<<EOF
+                <<<EOF
 Error: invalid filter (Invalid key-value pair: '=value')
 
 app [-IMsc] [-p <provider>] [-f <term=value>,...] [--shallow]
@@ -549,7 +549,7 @@ app [-IMsc] [-p <provider>] [-f <term=value>,...] [--shallow]
 
 See 'app --help' for more information.
 
-EOF),
+EOF,
                 1,
                 ['--filter', '=value', 'user'],
                 [],

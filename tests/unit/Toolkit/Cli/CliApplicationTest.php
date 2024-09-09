@@ -437,7 +437,7 @@ EOF,
                 [],
                 null,
                 fn(TestOptions $command) =>
-                    static::assertSame($command, $command->Result),
+                    self::assertSame($command, $command->Result),
             ],
             'apply option values (invalid values)' => [
                 null,

@@ -14,6 +14,7 @@ use Salient\Utility\Get;
 use Salient\Utility\Inflect;
 use Salient\Utility\Json;
 use Salient\Utility\Str;
+use InvalidArgumentException;
 use LogicException;
 
 /**
@@ -135,7 +136,16 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
         }
 
         $provider = $this->App->get($provider);
-        $query = Get::filter($this->Query);
+
+        try {
+            $query = Get::filter($this->Query);
+        } catch (InvalidArgumentException $ex) {
+            throw new CliInvalidArgumentsException(sprintf(
+                'invalid query (%s)',
+                $ex->getMessage(),
+            ));
+        }
+
         $data = $this->Data !== null
             ? $this->getJson($this->Data, false)
             : null;

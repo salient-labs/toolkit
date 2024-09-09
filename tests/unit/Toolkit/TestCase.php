@@ -27,9 +27,9 @@ abstract class TestCase extends PHPUnitTestCase
         try {
             $callback();
         } catch (Throwable $ex) {
-            static::assertInstanceOf($exception, $ex, $message);
+            self::assertInstanceOf($exception, $ex, $message);
             if ($exceptionMessage !== null) {
-                static::assertStringContainsString(
+                self::assertStringContainsString(
                     $exceptionMessage,
                     $ex->getMessage(),
                     $message
@@ -37,7 +37,7 @@ abstract class TestCase extends PHPUnitTestCase
             }
             return;
         }
-        static::fail($message === ''
+        self::fail($message === ''
             ? sprintf('Failed asserting that exception of type %s is thrown', $exception)
             : $message);
     }
@@ -55,12 +55,12 @@ abstract class TestCase extends PHPUnitTestCase
         string $message = ''
     ): void {
         foreach ($expected as $i => &$expectedMessage) {
-            $expectedMessage[1] = static::normaliseConsoleOutput($expectedMessage[1]);
+            $expectedMessage[1] = self::normaliseConsoleOutput($expectedMessage[1]);
             if (!isset($expectedMessage[2]) && isset($actual[$i][2])) {
                 unset($actual[$i][2]);
             }
         }
-        static::assertEquals($expected, $actual, $message);
+        self::assertEquals($expected, $actual, $message);
     }
 
     /**
