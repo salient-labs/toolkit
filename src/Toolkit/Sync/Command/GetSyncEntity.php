@@ -213,7 +213,6 @@ EOF)
             }
         }
 
-        /** @var SyncProviderInterface */
         $provider = $this->App->get($provider);
 
         $entityProvider = SyncIntrospector::entityToProvider($entity);

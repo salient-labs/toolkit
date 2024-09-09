@@ -121,7 +121,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         $this->HttpRequests[$uri] ??= 0;
         $this->HttpRequests[$uri]++;
 
-        return $curler;
+        return $curler->withPager(new MockoonPager());
     }
 
     public function getBaseUrl(?string $path = null): string
