@@ -7,7 +7,7 @@ use Salient\Contract\Curler\CurlerPageInterface;
 use OutOfRangeException;
 
 /**
- * Data returned by an HTTP endpoint
+ * A page of data returned by an HTTP endpoint
  *
  * @api
  */
@@ -15,19 +15,33 @@ class CurlerPage implements CurlerPageInterface
 {
     /** @var list<mixed> */
     protected array $Entities;
-    protected ?RequestInterface $NextRequest;
+    protected ?int $Current;
+    protected ?int $Total;
+    protected ?CurlerPageRequest $NextRequest;
 
     /**
      * Creates a new CurlerPage object
      *
+     * `$current` and `$total`, together with {@see CurlerPage::getCurrent()}
+     * and {@see CurlerPage::getTotal()}, allow pagers to track progress across
+     * responses if necessary.
+     *
      * @param list<mixed> $entities
+     * @param mixed[]|null $nextQuery
      */
     public function __construct(
         array $entities,
-        ?RequestInterface $nextRequest = null
+        ?RequestInterface $nextRequest = null,
+        ?array $nextQuery = null,
+        ?int $current = null,
+        ?int $total = null
     ) {
         $this->Entities = $entities;
-        $this->NextRequest = $nextRequest;
+        $this->Current = $current;
+        $this->Total = $total;
+        $this->NextRequest = $nextRequest
+            ? new CurlerPageRequest($nextRequest, $nextQuery)
+            : null;
     }
 
     /**
@@ -41,9 +55,9 @@ class CurlerPage implements CurlerPageInterface
     /**
      * @inheritDoc
      */
-    public function isLastPage(): bool
+    public function hasNextRequest(): bool
     {
-        return $this->NextRequest === null;
+        return $this->NextRequest !== null;
     }
 
     /**
@@ -54,6 +68,33 @@ class CurlerPage implements CurlerPageInterface
         if ($this->NextRequest === null) {
             throw new OutOfRangeException('No more pages');
         }
-        return $this->NextRequest;
+        return $this->NextRequest->getNextRequest();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNextQuery(): ?array
+    {
+        if ($this->NextRequest === null) {
+            throw new OutOfRangeException('No more pages');
+        }
+        return $this->NextRequest->getNextQuery();
+    }
+
+    /**
+     * Get the value of $current passed to the constructor
+     */
+    public function getCurrent(): ?int
+    {
+        return $this->Current;
+    }
+
+    /**
+     * Get the value of $total passed to the constructor
+     */
+    public function getTotal(): ?int
+    {
+        return $this->Total;
     }
 }
