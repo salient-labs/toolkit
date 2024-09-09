@@ -27,6 +27,7 @@
     },
     "suggest": {
         "salient/cache": "Required by Application::startCache()",
+        "salient/curler": "Required by Application::exportHar()",
         "salient/sync": "Required by Application::startSync()"
     },
     "autoload": {

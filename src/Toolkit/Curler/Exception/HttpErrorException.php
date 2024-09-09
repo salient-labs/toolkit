@@ -13,8 +13,6 @@ use Throwable;
  */
 class HttpErrorException extends AbstractResponseException implements HttpErrorExceptionInterface
 {
-    protected int $StatusCode;
-
     /**
      * @param array<string,mixed> $data
      */
@@ -24,11 +22,9 @@ class HttpErrorException extends AbstractResponseException implements HttpErrorE
         array $data = [],
         ?Throwable $previous = null
     ) {
-        $this->StatusCode = $response->getStatusCode();
-
         parent::__construct(
             sprintf('HTTP error %s', Arr::implode(' ', [
-                (string) $this->StatusCode,
+                (string) $response->getStatusCode(),
                 $response->getReasonPhrase(),
             ])),
             $request,
@@ -36,22 +32,5 @@ class HttpErrorException extends AbstractResponseException implements HttpErrorE
             $data,
             $previous,
         );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getStatusCode(): int
-    {
-        return $this->StatusCode;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isNotFoundError(): bool
-    {
-        return $this->StatusCode === 404
-            || $this->StatusCode === 410;
     }
 }

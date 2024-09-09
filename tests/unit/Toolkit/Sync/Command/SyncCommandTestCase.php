@@ -20,7 +20,7 @@ abstract class SyncCommandTestCase extends CommandTestCase
         array $requests,
         CliApplicationInterface $app
     ): void {
-        static::assertSame(
+        self::assertSame(
             $requests,
             $app->get(JsonPlaceholderApi::class)->HttpRequests,
             'JsonPlaceholderApi::$HttpRequests',

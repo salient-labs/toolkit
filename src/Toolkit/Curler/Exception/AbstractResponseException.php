@@ -7,7 +7,7 @@ use Salient\Contract\Http\HttpResponseInterface;
 use Throwable;
 
 /**
- * @internal
+ * @api
  */
 abstract class AbstractResponseException extends AbstractRequestException
 {

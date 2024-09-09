@@ -15,6 +15,7 @@ use Salient\Contract\Core\MimeType;
 use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
+use Salient\Contract\Curler\CurlerPageRequestInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\FormDataFlag;
@@ -288,7 +289,12 @@ class Curler implements CurlerInterface, Buildable
             throw new OutOfRangeException('No response to check');
         }
 
-        $headers = $this->LastResponse->getHttpHeaders();
+        return $this->responseIsJson($this->LastResponse);
+    }
+
+    private function responseIsJson(HttpResponseInterface $response): bool
+    {
+        $headers = $response->getHttpHeaders();
         if (!$headers->hasHeader(HttpHeader::CONTENT_TYPE)) {
             return $this->ExpectJson;
         }
@@ -368,19 +374,26 @@ class Curler implements CurlerInterface, Buildable
 
         $pager = $this->AlwaysPaginate ? $this->Pager : null;
         if ($pager) {
-            $request = $pager->getFirstRequest($request, $this);
+            $request = $pager->getFirstRequest($request, $this, $query);
+            if ($request instanceof CurlerPageRequestInterface) {
+                if (!$request->hasNextRequest()) {
+                    throw new LogicException('No first request');
+                }
+                $query = $request->getNextQuery() ?? $query;
+                $request = $request->getNextRequest();
+            }
         }
 
-        $this->doSendRequest($request);
+        $response = $this->doSendRequest($request);
 
         if ($method === Method::HEAD) {
-            return $this->LastResponse->getHttpHeaders();
+            return $response->getHttpHeaders();
         }
 
-        $result = $this->getLastResponseBody();
+        $result = $this->getResponseBody($response);
 
         if ($pager) {
-            $page = $pager->getPage($result, $request, $this);
+            $page = $pager->getPage($result, $request, $response, $this, null, $query);
             return Arr::unwrap($page->getEntities(), 1);
         }
 
@@ -441,20 +454,34 @@ class Curler implements CurlerInterface, Buildable
         }
 
         $request = $this->createRequest($method, $query, $data);
-        $request = $this->Pager->getFirstRequest($request, $this);
+        $request = $this->Pager->getFirstRequest($request, $this, $query);
+        if ($request instanceof CurlerPageRequestInterface) {
+            if (!$request->hasNextRequest()) {
+                throw new LogicException('No first request');
+            }
+            $query = $request->getNextQuery() ?? $query;
+            $request = $request->getNextRequest();
+        }
         $prev = null;
         do {
-            $this->doSendRequest($request);
+            $response = $this->doSendRequest($request);
             $page = $this->Pager->getPage(
-                $this->getLastResponseBody(),
+                $this->getResponseBody($response),
                 $request,
+                $response,
                 $this,
                 $prev,
+                $query,
             );
-            yield from $page->getEntities();
-            if ($page->isLastPage()) {
+            // Use `yield` instead of `yield from` so each entity gets a
+            // unique key
+            foreach ($page->getEntities() as $entity) {
+                yield $entity;
+            }
+            if (!$page->hasNextRequest()) {
                 break;
             }
+            $query = $page->getNextQuery() ?? $query;
             $request = $page->getNextRequest();
             $prev = $page;
         } while (true);
@@ -503,8 +530,8 @@ class Curler implements CurlerInterface, Buildable
         $request = $this->createRequest($method, $query, $data);
         $request = $request->withHeader(HttpHeader::CONTENT_TYPE, $mediaType);
         /** @disregard P1006 */
-        $this->doSendRequest($request);
-        return $this->getLastResponseBody();
+        $response = $this->doSendRequest($request);
+        return $this->getResponseBody($response);
     }
 
     // --
@@ -1506,11 +1533,10 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @return mixed
      */
-    private function getLastResponseBody()
+    private function getResponseBody(HttpResponseInterface $response)
     {
-        assert($this->LastResponse !== null);
-        $body = (string) $this->LastResponse->getBody();
-        return $this->lastResponseIsJson()
+        $body = (string) $response->getBody();
+        return $this->responseIsJson($response)
             ? ($body === ''
                 ? null
                 : Json::parse($body, $this->JsonDecodeFlags))

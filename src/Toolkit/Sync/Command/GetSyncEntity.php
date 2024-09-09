@@ -27,7 +27,7 @@ use InvalidArgumentException;
  *
  * @template T of SyncEntityInterface
  */
-final class GetSyncEntities extends AbstractSyncCommand
+final class GetSyncEntity extends AbstractSyncCommand
 {
     private string $EntityBasename = '';
     /** @var class-string<SyncEntityInterface> */
@@ -213,7 +213,6 @@ EOF)
             }
         }
 
-        /** @var SyncProviderInterface */
         $provider = $this->App->get($provider);
 
         $entityProvider = SyncIntrospector::entityToProvider($entity);

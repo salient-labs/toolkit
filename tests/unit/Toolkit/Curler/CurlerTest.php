@@ -15,6 +15,7 @@ use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Facade\Event;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
@@ -213,8 +214,10 @@ EOF,
                 function (
                     $data,
                     RequestInterface $request,
+                    HttpResponseInterface $response,
                     CurlerInterface $curler,
-                    ?CurlerPageInterface $previousPage = null
+                    ?CurlerPageInterface $previousPage = null,
+                    ?array $query = null
                 ) use ($server, &$output): CurlerPage {
                     $output[] = $server->getNewOutput();
                     return new CurlerPage(
@@ -238,7 +241,7 @@ EOF,
 Content-Length: 13
 Content-Type: application/json
 EOF;
-        $result = iterator_to_array($curler->{$m}(...$args), false);
+        $result = iterator_to_array($curler->{$m}(...$args));
         $this->assertSame(Arr::flatten(self::OUT_PAGES, 1), $result);
         $this->assertSameHttpMessages([
             <<<EOF

@@ -735,11 +735,12 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         try {
             return $httpClosure($curler, $this->Query, $payload);
         } catch (HttpErrorExceptionInterface $ex) {
-            if (
-                $operation === OP::READ
-                && $id !== null
-                && $ex->isNotFoundError()
-            ) {
+            // If a request to READ a known entity fails with 404 (Not Found) or
+            // 410 (Gone), throw a `SyncEntityNotFoundException`
+            if ($operation === OP::READ && $id !== null && (
+                ($status = $ex->getResponse()->getStatusCode()) === 404
+                || $status === 410
+            )) {
                 throw new SyncEntityNotFoundException(
                     $this->Provider,
                     $this->Entity,

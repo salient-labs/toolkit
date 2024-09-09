@@ -35,7 +35,7 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
         $this->Providers = $providers;
         $this->Providerless = $providerless;
         $this->assertCommandProduces(
-            static::normaliseConsoleOutput($output),
+            self::normaliseConsoleOutput($output),
             $exitStatus,
             CheckSyncProviderHeartbeat::class,
             $args,
@@ -47,7 +47,7 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
             $httpRequestCount === null
                 ? null
                 : static function ($app) use ($httpRequestCount): void {
-                    static::assertSameHttpRequests($httpRequestCount, $app);
+                    self::assertSameHttpRequests($httpRequestCount, $app);
                 },
         );
     }

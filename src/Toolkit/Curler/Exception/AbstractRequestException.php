@@ -9,7 +9,7 @@ use Salient\Utility\Format;
 use Throwable;
 
 /**
- * @internal
+ * @api
  */
 abstract class AbstractRequestException extends AbstractException
 {

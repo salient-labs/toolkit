@@ -499,7 +499,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
 
         $result = $this->_run($operation, ...$args);
         if (!is_array($result)) {
-            $result = iterator_to_array($result);
+            $result = iterator_to_array($result, false);
         }
 
         if ($deferralPolicy === DeferralPolicy::RESOLVE_LATE) {
