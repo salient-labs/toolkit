@@ -64,6 +64,10 @@ component_management:
       name: Sync
       paths:
         - "src/Toolkit/Sync/**"
+    - component_id: testing
+      name: Testing
+      paths:
+        - "src/Toolkit/Testing/**"
     - component_id: utils
       name: Utils
       paths:

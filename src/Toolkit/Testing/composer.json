@@ -1,0 +1,29 @@
+{
+    "name": "salient/testing",
+    "description": "The testing package of the Salient toolkit",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Luke Arms",
+            "email": "luke@linacreative.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/salient-labs/toolkit/issues",
+        "source": "https://github.com/salient-labs/toolkit"
+    },
+    "require": {
+        "php": ">=7.4",
+        "salient/contracts": "self.version",
+        "salient/core": "self.version"
+    },
+    "autoload": {
+        "psr-4": {
+            "Salient\\Testing\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
