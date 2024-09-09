@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Polyfill\StreamWrapper;
+namespace Salient\Contract\Polyfill;
 
 /**
+ * @api
+ *
  * @phpstan-require-extends StreamWrapper
  */
 interface StreamWrapperInterface

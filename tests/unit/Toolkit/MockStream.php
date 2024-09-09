@@ -2,9 +2,9 @@
 
 namespace Salient\Tests;
 
-use Salient\Polyfill\StreamWrapper\StreamWrapper;
+use Salient\Core\AbstractStreamWrapper;
 
-class MockStream extends StreamWrapper
+class MockStream extends AbstractStreamWrapper
 {
     private static string $Data = '';
     private static int $Length = 0;

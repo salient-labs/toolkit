@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Polyfill\StreamWrapper;
+namespace Salient\Core;
+
+use Salient\Contract\Polyfill\StreamWrapper;
 
 /**
- * Base class for stream wrappers derived from the streamWrapper prototype
- * described in the PHP manual
+ * @api
  */
-abstract class StreamWrapper implements StreamWrapperInterface
+abstract class AbstractStreamWrapper extends StreamWrapper
 {
     /** @var array{int,int,int,int,int,int,int,int,int,int,int,int,int} */
     protected const DEFAULT_STAT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1];
@@ -26,9 +27,6 @@ abstract class StreamWrapper implements StreamWrapperInterface
         'blksize',
         'blocks',
     ];
-
-    /** @var resource|null */
-    public $context;
 
     /**
      * @inheritDoc

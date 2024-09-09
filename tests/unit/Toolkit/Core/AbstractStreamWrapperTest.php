@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Polyfill\StreamWrapper;
+namespace Salient\Tests\Core;
 
 use Salient\Tests\MockStream;
 use Salient\Tests\TestCase;
 
 /**
- * @covers \Salient\Polyfill\StreamWrapper\StreamWrapper
+ * @covers \Salient\Core\AbstractStreamWrapper
  */
-final class StreamWrapperTest extends TestCase
+final class AbstractStreamWrapperTest extends TestCase
 {
     public function testStreamWrapper(): void
     {
