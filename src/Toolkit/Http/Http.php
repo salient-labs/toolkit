@@ -48,6 +48,8 @@ final class Http extends AbstractUtility
 
     /**
      * Check if a string is a valid HTTP request method
+     *
+     * @phpstan-assert-if-true HttpRequestMethod::* $method
      */
     public static function isRequestMethod(string $method): bool
     {

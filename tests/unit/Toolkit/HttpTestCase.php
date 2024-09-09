@@ -21,6 +21,7 @@ abstract class HttpTestCase extends TestCase
 
     protected const HTTP_HEADER_IGNORE_LIST = [
         Header::ACCEPT_ENCODING,
+        Header::CONNECTION,
         Header::USER_AGENT,
     ];
 

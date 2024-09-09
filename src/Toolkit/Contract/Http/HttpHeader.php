@@ -10,6 +10,7 @@ interface HttpHeader
     public const ACCEPT = 'Accept';
     public const ACCEPT_ENCODING = 'Accept-Encoding';
     public const AUTHORIZATION = 'Authorization';
+    public const CONNECTION = 'Connection';
     public const CONTENT_DISPOSITION = 'Content-Disposition';
     public const CONTENT_LENGTH = 'Content-Length';
     public const CONTENT_TYPE = 'Content-Type';
