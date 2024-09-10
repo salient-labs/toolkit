@@ -12,21 +12,9 @@ abstract class AbstractStreamWrapper extends StreamWrapper
     /** @var array{int,int,int,int,int,int,int,int,int,int,int,int,int} */
     protected const DEFAULT_STAT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1];
 
-    private const STAT_KEYS = [
-        'dev',
-        'ino',
-        'mode',
-        'nlink',
-        'uid',
-        'gid',
-        'rdev',
-        'size',
-        'atime',
-        'mtime',
-        'ctime',
-        'blksize',
-        'blocks',
-    ];
+    // --
+
+    private const STAT_KEYS = ['dev', 'ino', 'mode', 'nlink', 'uid', 'gid', 'rdev', 'size', 'atime', 'mtime', 'ctime', 'blksize', 'blocks'];
 
     /**
      * @inheritDoc

@@ -4,6 +4,8 @@ namespace Salient\Tests\Core;
 
 use Salient\Testing\Core\MockPhpStream;
 use Salient\Tests\TestCase;
+use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\File;
 
 /**
  * @covers \Salient\Core\AbstractStreamWrapper
@@ -13,12 +15,29 @@ final class AbstractStreamWrapperTest extends TestCase
 {
     public function testStreamWrapper(): void
     {
-        $this->assertTrue(stream_wrapper_register('mock', MockPhpStream::class));
+        MockPhpStream::register('mock');
         try {
-            $this->assertNotFalse(file_put_contents('mock://input', 'Foo'));
-            $this->assertSame('Foo', file_get_contents('mock://input'));
+            $this->assertSame(6, File::writeContents('mock://input', 'foobar'));
+            $this->assertSame(3, File::writeContents('mock://temp', 'baz'));
+            $this->assertSame(5, File::writeContents('mock://fd/2', 'Error'));
+            $this->assertSame('foobar', File::getContents('mock://input'));
+            $this->assertSame('baz', File::getContents('mock://temp/'));
+            $this->assertSame('Error', File::getContents('mock://fd/02'));
+            MockPhpStream::reset();
+            $this->assertSame('', File::getContents('mock://input'));
+            $invalid = [
+                'mock://input/',
+                'mock://fd/foo',
+                'mock://filter',
+            ];
+            foreach ($invalid as $path) {
+                $this->assertCallbackThrowsException(
+                    fn() => File::writeContents($path, ''),
+                    FilesystemErrorException::class,
+                );
+            }
         } finally {
-            stream_wrapper_unregister('mock');
+            MockPhpStream::deregister();
         }
     }
 }
