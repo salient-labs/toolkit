@@ -10,6 +10,63 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.49] - 2024-09-10
+
+### Added
+
+#### `Contract`
+
+- Add `StreamWrapper`, an abstraction of the `streamWrapper` prototype class described in the PHP manual
+
+#### `Curler`
+
+- Add `CurlerPageRequest` and allow it to be returned from `CurlerPagerInterface::getFirstRequest()` to minimise query string deserialization between requests
+- Add `CurlerPage` methods `getCurrent()` and `getTotal()`, which return `$current` and `$total` values passed to `__construct()`, so progress can be tracked across responses if needed
+- Add `AbstractRequestException` and `AbstractResponseException` to API so middleware can extend them
+
+#### `Testing` (new)
+
+- Add `MockPhpStream`
+- Add `MockTarget` (from `Console`)
+
+### Changed
+
+#### `Curler`
+
+- **In `CurlerPagerInterface::getPage()`, add `$response` and `$query` parameters to simplify pager code and improve consistency**
+- Move `isLastPage()` and `getNextRequest()` from `CurlerPageInterface` to `CurlerPageRequestInterface` and extend the latter from the former
+- Replace `isLastPage()` with `hasNextRequest()`
+
+#### `Sli`
+
+- Review `sli` subcommand names
+
+#### `Sync`
+
+- Move `SendHttpRequest` from `Sli` to `Sync`, rename it to `SendHttpSyncProviderRequest`, and refactor for consistency
+- Rename `GetSyncEntities` to `GetSyncEntity` for consistency
+
+### Removed
+
+#### `Console`
+
+- Remove `ConsoleInvalidTargetException`
+
+#### `Curler`
+
+- Remove redundant `HttpErrorExceptionInterface::getStatusCode()` and `isNotFoundError()` methods
+
+### Fixed
+
+#### `Curler`
+
+- Fix `Curler` issue where initial query is not passed to pagers
+- Fix `Curler` pagination issue where entities are returned with the same keys for each page of data
+
+#### `Sync`
+
+- Fix `SyncEntityProvider` issue where upstream iterator keys are preserved unnecessarily, leading to possible data loss
+
 ## [v0.99.48] - 2024-09-06
 
 ### Added
@@ -3435,6 +3492,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.49]: https://github.com/salient-labs/toolkit/compare/v0.99.48...v0.99.49
 [v0.99.48]: https://github.com/salient-labs/toolkit/compare/v0.99.47...v0.99.48
 [v0.99.47]: https://github.com/salient-labs/toolkit/compare/v0.99.46...v0.99.47
 [v0.99.46]: https://github.com/salient-labs/toolkit/compare/v0.99.45...v0.99.46
