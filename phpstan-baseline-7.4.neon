@@ -116,11 +116,6 @@ parameters:
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#2 \\$action of method Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:propertyActionIsAllowed\\(\\) expects 'get'\\|'isset'\\|'set'\\|'unset', string given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/Introspector.php
-
-		-
 			message: "#^Parameter \\#2 of closure expects TProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface, Salient\\\\Contract\\\\Core\\\\ProviderInterface given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Introspector.php
