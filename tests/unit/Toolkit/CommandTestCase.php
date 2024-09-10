@@ -3,12 +3,12 @@
 namespace Salient\Tests;
 
 use Salient\Cli\CliApplication;
-use Salient\Console\Target\MockTarget;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
+use Salient\Testing\Console\MockTarget;
 use Salient\Utility\File;
 
 abstract class CommandTestCase extends TestCase

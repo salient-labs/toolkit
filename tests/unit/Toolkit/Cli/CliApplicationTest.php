@@ -3,13 +3,13 @@
 namespace Salient\Tests\Cli;
 
 use Salient\Cli\CliApplication;
-use Salient\Console\Target\MockTarget;
 use Salient\Container\Application;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
+use Salient\Testing\Console\MockTarget;
 use Salient\Tests\Cli\Command\TestOptions;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;

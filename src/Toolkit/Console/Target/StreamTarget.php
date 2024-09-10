@@ -3,7 +3,6 @@
 namespace Salient\Console\Target;
 
 use Salient\Console\Concept\ConsoleStreamTarget;
-use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Contract\Core\EscapeSequence;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Err;
@@ -254,7 +253,7 @@ final class StreamTarget extends ConsoleStreamTarget
     protected function assertIsValid(): void
     {
         if (!$this->Stream) {
-            throw new ConsoleInvalidTargetException('Target is closed');
+            throw new LogicException('Target is closed');
         }
     }
 
