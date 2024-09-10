@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Console\Target\MockTarget;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
 use Salient\Core\AbstractMultipleErrorException;
+use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 

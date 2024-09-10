@@ -5,10 +5,10 @@ namespace Salient\Tests\PsrLog;
 use Psr\Log\Test\LoggerInterfaceTest;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Salient\Console\Target\MockTarget;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Console\ConsoleWriter;
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Testing\Console\MockTarget;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 

@@ -3,10 +3,10 @@
 namespace Salient\Tests\Console;
 
 use Salient\Console\Support\ConsoleWriterState;
-use Salient\Console\Target\MockTarget;
 use Salient\Console\ConsoleWriter;
 use Salient\Contract\Core\MessageLevel;
 use Salient\Core\Facade\Console;
+use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;
 
 /**

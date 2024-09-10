@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Target;
+namespace Salient\Testing\Console;
 
-use Salient\Console\Exception\ConsoleInvalidTargetException;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Utility\File;
+use LogicException;
 
 /**
- * Writes console output to an array
+ * @api
  */
 final class MockTarget implements ConsoleTargetStreamInterface
 {
@@ -42,8 +42,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
         $this->IsTty = $isTty;
         $this->Width = $width;
         $this->Stream = $stream;
-        $this->Formatter = $formatter
-            ?? new Formatter(null, null, fn(): ?int => $this->getWidth());
+        $this->Formatter = $formatter ?? new Formatter(null, null, fn() => $this->Width);
     }
 
     /**
@@ -83,11 +82,9 @@ final class MockTarget implements ConsoleTargetStreamInterface
      */
     public function close(): void
     {
-        if (!$this->Stream) {
+        if (!$this->IsValid) {
             return;
         }
-
-        $stream = $this->Stream;
 
         $this->IsStdout = false;
         $this->IsStderr = false;
@@ -97,12 +94,6 @@ final class MockTarget implements ConsoleTargetStreamInterface
         unset($this->Formatter);
 
         $this->IsValid = false;
-
-        if ($stream === \STDOUT || $stream === \STDERR) {
-            return;
-        }
-
-        File::close($stream);
     }
 
     /**
@@ -117,7 +108,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     {
         $this->assertIsValid();
 
-        return clone $this->Formatter;
+        return $this->Formatter;
     }
 
     /**
@@ -166,7 +157,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     private function assertIsValid(): void
     {
         if (!$this->IsValid) {
-            throw new ConsoleInvalidTargetException('Target is closed');
+            throw new LogicException('Target is closed');
         }
     }
 }
