@@ -3,9 +3,14 @@
 namespace Salient\Contract\Polyfill;
 
 /**
+ * Abstraction of the streamWrapper prototype described in the PHP manual
+ *
+ * Stream wrappers that do not support filesystem operations should extend
+ * {@see StreamWrapper} instead.
+ *
  * @api
  */
-interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
+abstract class FilesystemStreamWrapper extends StreamWrapper
 {
     /**
      * Close directory handle
@@ -17,7 +22,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      *
      * @return bool `true` on success or `false` on failure.
      */
-    public function dir_closedir(): bool;
+    abstract public function dir_closedir(): bool;
 
     /**
      * Open directory handle
@@ -28,7 +33,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      * {@see opendir()}.
      * @return bool `true` on success or `false` on failure.
      */
-    public function dir_opendir(string $path, int $options): bool;
+    abstract public function dir_opendir(string $path, int $options): bool;
 
     /**
      * Read entry from directory handle
@@ -38,7 +43,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      * @return string|false The next filename, or `false` if there is no next
      * file.
      */
-    public function dir_readdir();
+    abstract public function dir_readdir();
 
     /**
      * Rewind directory handle
@@ -52,7 +57,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      *
      * @return bool `true` on success or `false` on failure.
      */
-    public function dir_rewinddir(): bool;
+    abstract public function dir_rewinddir(): bool;
 
     /**
      * Create a directory
@@ -65,7 +70,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      * {@see \STREAM_MKDIR_RECURSIVE}.
      * @return bool `true` on success or `false` on failure.
      */
-    public function mkdir(string $path, int $mode, int $options): bool;
+    abstract public function mkdir(string $path, int $mode, int $options): bool;
 
     /**
      * Renames a file or directory
@@ -77,7 +82,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      * to.
      * @return bool `true` on success or `false` on failure.
      */
-    public function rename(string $path_from, string $path_to): bool;
+    abstract public function rename(string $path_from, string $path_to): bool;
 
     /**
      * Removes a directory
@@ -89,7 +94,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      * {@see \STREAM_MKDIR_RECURSIVE}.
      * @return bool `true` on success or `false` on failure.
      */
-    public function rmdir(string $path, int $options): bool;
+    abstract public function rmdir(string $path, int $options): bool;
 
     /**
      * Advisory file locking
@@ -108,7 +113,7 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      *   locking (not supported on Windows).
      * @return bool `true` on success or `false` on failure.
      */
-    public function stream_lock(int $operation): bool;
+    abstract public function stream_lock(int $operation): bool;
 
     /**
      * Delete a file
@@ -118,5 +123,5 @@ interface FilesystemStreamWrapperInterface extends StreamWrapperInterface
      * @param string $path The file URL which should be deleted.
      * @return bool `true` on success or `false` on failure.
      */
-    public function unlink(string $path): bool;
+    abstract public function unlink(string $path): bool;
 }
