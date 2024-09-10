@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests;
+namespace Salient\Testing\Core;
 
 use Salient\Core\AbstractStreamWrapper;
 
-class MockStream extends AbstractStreamWrapper
+class MockPhpStream extends AbstractStreamWrapper
 {
     private static string $Data = '';
     private static int $Length = 0;
