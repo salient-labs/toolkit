@@ -342,7 +342,7 @@ EOF,
         $this->assertSame([], $curler2->get(self::QUERY));
         $this->assertSame('', $server->getNewOutput());
 
-        $this->assertCount(1, $cacheKeys = $cache->getAllKeys());
+        $this->assertCount(1, $cacheKeys = $cache->getItemKeys());
         $this->assertSame(self::OUT, $curler->post(self::IN, self::QUERY));
         $this->assertSameHttpMessage(
             $request = <<<EOF
@@ -356,7 +356,7 @@ Content-Type: application/json
 EOF,
             $server->getNewOutput(),
         );
-        $this->assertSame($cacheKeys, $cache->getAllKeys());
+        $this->assertSame($cacheKeys, $cache->getItemKeys());
 
         $curler = $curler->withPostResponseCache();
         $this->assertSame([], $curler->post(self::IN, self::QUERY));
@@ -381,8 +381,8 @@ EOF,
             Curler::class . ':response:GET:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:a4801c4a7640292ec53bad9241ee376d',
             Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:025083437c7862fbace55c0ed8bbf16b',
             Curler::class . ':response:POST:http%3A%2F%2Flocalhost%3A3007%2Ffoo%3Fquux%3D1:ef13041d0a8b2d2f3084b396b3648def',
-        ], $cache->getAllKeys());
-        $this->assertCount(0, $cache->asOfNow(time() + 3601)->getAllKeys());
+        ], $cache->getItemKeys());
+        $this->assertCount(0, $cache->asOfNow(time() + 3601)->getItemKeys());
     }
 
     public function testCurlError(): void

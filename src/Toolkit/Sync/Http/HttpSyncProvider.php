@@ -178,7 +178,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
             Get::hash(implode("\0", $this->getBackendIdentifier())),
         ]);
 
-        if (!Cache::has($key, $ttl)) {
+        if (!Cache::has($key)) {
             try {
                 $resource = $this->getHeartbeat();
                 // @codeCoverageIgnoreStart

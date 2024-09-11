@@ -31,30 +31,18 @@ interface CacheStoreInterface extends CacheInterface
     /**
      * Check if an item exists and has not expired
      *
-     * If `$maxAge` is `null` (the default), the item's TTL is honoured,
-     * otherwise it is ignored and the item is considered fresh if:
-     *
-     * - its age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
-     *
      * @param string $key
      */
-    public function has($key, ?int $maxAge = null): bool;
+    public function has($key): bool;
 
     /**
      * Retrieve an item stored under a given key
-     *
-     * If `$maxAge` is `null` (the default), the item's TTL is honoured,
-     * otherwise it is ignored and the item is considered fresh if:
-     *
-     * - its age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
      *
      * @param string $key
      * @param mixed $default
      * @return mixed `$default` if the item has expired or doesn't exist.
      */
-    public function get($key, $default = null, ?int $maxAge = null);
+    public function get($key, $default = null);
 
     /**
      * Retrieve an instance of a class stored under a given key
@@ -67,7 +55,7 @@ interface CacheStoreInterface extends CacheInterface
      * @return T|null `$default` if the item has expired, doesn't exist or is
      * not an instance of `$class`.
      */
-    public function getInstanceOf($key, string $class, ?object $default = null, ?int $maxAge = null): ?object;
+    public function getInstanceOf($key, string $class, ?object $default = null): ?object;
 
     /**
      * Retrieve an array stored under a given key
@@ -77,7 +65,7 @@ interface CacheStoreInterface extends CacheInterface
      * @return mixed[]|null `$default` if the item has expired, doesn't exist or
      * is not an array.
      */
-    public function getArray($key, ?array $default = null, ?int $maxAge = null): ?array;
+    public function getArray($key, ?array $default = null): ?array;
 
     /**
      * Retrieve an integer stored under a given key
@@ -86,7 +74,7 @@ interface CacheStoreInterface extends CacheInterface
      * @return int|null `$default` if the item has expired, doesn't exist or is
      * not an integer.
      */
-    public function getInt($key, ?int $default = null, ?int $maxAge = null): ?int;
+    public function getInt($key, ?int $default = null): ?int;
 
     /**
      * Retrieve a string stored under a given key
@@ -95,7 +83,7 @@ interface CacheStoreInterface extends CacheInterface
      * @return string|null `$default` if the item has expired, doesn't exist or
      * is not a string.
      */
-    public function getString($key, ?string $default = null, ?int $maxAge = null): ?string;
+    public function getString($key, ?string $default = null): ?string;
 
     /**
      * Delete an item stored under a given key
@@ -128,7 +116,7 @@ interface CacheStoreInterface extends CacheInterface
      * @param mixed $default
      * @return iterable<string,mixed>
      */
-    public function getMultiple($keys, $default = null, ?int $maxAge = null);
+    public function getMultiple($keys, $default = null);
 
     /**
      * Delete items stored under the given keys
@@ -140,27 +128,15 @@ interface CacheStoreInterface extends CacheInterface
 
     /**
      * Get the number of unexpired items in the store
-     *
-     * If `$maxAge` is `null` (the default), each item's TTL is honoured,
-     * otherwise it is ignored and items are considered fresh if:
-     *
-     * - their age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
      */
-    public function getItemCount(?int $maxAge = null): int;
+    public function getItemCount(): int;
 
     /**
      * Get a list of keys under which unexpired items are stored
      *
-     * If `$maxAge` is `null` (the default), each item's TTL is honoured,
-     * otherwise it is ignored and items are considered fresh if:
-     *
-     * - their age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
-     *
      * @return string[]
      */
-    public function getAllKeys(?int $maxAge = null): array;
+    public function getItemKeys(): array;
 
     /**
      * Get a copy of the store where items do not expire over time

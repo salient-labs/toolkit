@@ -240,7 +240,7 @@ abstract class OAuth2Client
                 $cache->has($this->TokenKey)
                 || $cache->has("{$this->TokenKey}:refresh")
             ) {
-                $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class, null, 0);
+                $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class);
                 if ($lastToken) {
                     $scopes = Arr::extend($lastToken->Scopes, ...$scopes);
                 }
@@ -419,7 +419,7 @@ abstract class OAuth2Client
             ?? $scope);
 
         if (!$scopes && $grantType === OAuth2GrantType::REFRESH_TOKEN) {
-            $lastToken = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class, null, 0);
+            $lastToken = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class);
             if ($lastToken) {
                 $scopes = $lastToken->Scopes;
             }
@@ -576,8 +576,8 @@ abstract class OAuth2Client
         // Don't [re-]authorize for an ID token that won't be issued
         $cache = Cache::asOfNow();
         if (
-            $cache->has($this->TokenKey, 0)
-            && !$cache->has("{$this->TokenKey}:id", 0)
+            $cache->has($this->TokenKey)
+            && !$cache->has("{$this->TokenKey}:id")
         ) {
             return null;
         }
