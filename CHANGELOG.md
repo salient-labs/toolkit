@@ -10,6 +10,20 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.50] - 2024-09-11
+
+### Changed
+
+#### `Contract`
+
+- Simplify `StreamWrapper` and related interfaces
+
+#### `Cache`
+
+- Remove problematic `$maxAge` parameters from cache store methods
+- Rename `getAllKeys()` to `getItemKeys()` for consistency
+- Rename `CacheStoreInterface` to `CacheInterface`
+
 ## [v0.99.49] - 2024-09-10
 
 ### Added
@@ -3492,6 +3506,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.50]: https://github.com/salient-labs/toolkit/compare/v0.99.49...v0.99.50
 [v0.99.49]: https://github.com/salient-labs/toolkit/compare/v0.99.48...v0.99.49
 [v0.99.48]: https://github.com/salient-labs/toolkit/compare/v0.99.47...v0.99.48
 [v0.99.47]: https://github.com/salient-labs/toolkit/compare/v0.99.46...v0.99.47
