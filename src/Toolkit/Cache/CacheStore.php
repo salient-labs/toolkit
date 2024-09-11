@@ -2,7 +2,7 @@
 
 namespace Salient\Cache;
 
-use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Cache\CacheInterface;
 use Salient\Core\AbstractStore;
 use DateInterval;
 use DateTimeImmutable;
@@ -16,7 +16,7 @@ use SQLite3Stmt;
  *
  * @api
  */
-final class CacheStore extends AbstractStore implements CacheStoreInterface
+final class CacheStore extends AbstractStore implements CacheInterface
 {
     private ?SQLite3Stmt $Stmt = null;
     private ?int $Now = null;
@@ -316,7 +316,7 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function asOfNow(?int $now = null): CacheStoreInterface
+    public function asOfNow(?int $now = null): CacheInterface
     {
         if ($this->Now !== null) {
             throw new LogicException(

@@ -13,7 +13,7 @@ use Salient\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Container\Exception\ArgumentsNotUsedException;
 use Salient\Container\Exception\InvalidServiceException;
 use Salient\Container\Exception\ServiceNotFoundException;
-use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
@@ -58,7 +58,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     ];
 
     private const DEFAULT_SERVICES = [
-        CacheStoreInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
+        CacheInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
         ConsoleWriterInterface::class => [ConsoleWriter::class, ServiceLifetime::SINGLETON],
         LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::INHERIT],
         SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],

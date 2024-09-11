@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Cache;
 
-use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\CacheInterface as PsrCacheInterface;
 use DateInterval;
 use DateTimeInterface;
 use LogicException;
@@ -10,7 +10,7 @@ use LogicException;
 /**
  * @api
  */
-interface CacheStoreInterface extends CacheInterface
+interface CacheInterface extends PsrCacheInterface
 {
     /**
      * Store an item under a given key
@@ -154,7 +154,7 @@ interface CacheStoreInterface extends CacheInterface
      * @throws LogicException if the store is a copy, or if another copy of the
      * store is open.
      */
-    public function asOfNow(?int $now = null): CacheStoreInterface;
+    public function asOfNow(?int $now = null): CacheInterface;
 
     /**
      * Close the store and any underlying resources

@@ -5,7 +5,7 @@ namespace Salient\Curler;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Curler\CurlerInterface;
@@ -38,7 +38,7 @@ use Stringable;
  * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
  * @method $this pager(CurlerPagerInterface|null $value) Pagination handler
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
- * @method $this cacheStore(CacheStoreInterface|null $value) Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+ * @method $this cacheStore(CacheInterface|null $value) Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
  * @method $this handleCookies(bool $value = true) Enable cookie handling (default: false)
  * @method $this cookiesCacheKey(string|null $value) Key to cache cookies under (cookie handling is implicitly enabled if given)
  * @method $this cacheResponses(bool $value = true) Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY) (default: false)
