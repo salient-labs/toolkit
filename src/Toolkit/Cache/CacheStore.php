@@ -2,21 +2,23 @@
 
 namespace Salient\Cache;
 
-use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Cache\CacheInterface;
 use Salient\Core\AbstractStore;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use LogicException;
 use SQLite3Result;
+use SQLite3Stmt;
 
 /**
  * A PSR-16 key-value store backed by a SQLite database
  *
  * @api
  */
-final class CacheStore extends AbstractStore implements CacheStoreInterface
+final class CacheStore extends AbstractStore implements CacheInterface
 {
+    private ?SQLite3Stmt $Stmt = null;
     private ?int $Now = null;
 
     /**
@@ -103,7 +105,7 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function has($key, ?int $maxAge = null): bool
+    public function has($key): bool
     {
         $sql = <<<SQL
 SELECT
@@ -111,9 +113,10 @@ SELECT
 FROM
   _cache_item
 SQL;
-        $result = $this->queryItems($sql, $key, $maxAge);
+        $result = $this->queryItems($sql, $key);
         /** @var array{int} */
         $row = $result->fetchArray(\SQLITE3_NUM);
+        $this->closeStmt();
 
         return (bool) $row[0];
     }
@@ -121,7 +124,7 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function get($key, $default = null, ?int $maxAge = null)
+    public function get($key, $default = null)
     {
         $sql = <<<SQL
 SELECT
@@ -129,8 +132,9 @@ SELECT
 FROM
   _cache_item
 SQL;
-        $result = $this->queryItems($sql, $key, $maxAge);
+        $result = $this->queryItems($sql, $key);
         $row = $result->fetchArray(\SQLITE3_NUM);
+        $this->closeStmt();
 
         return $row === false
             ? $default
@@ -140,14 +144,10 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function getInstanceOf($key, string $class, ?object $default = null, ?int $maxAge = null): ?object
+    public function getInstanceOf($key, string $class, ?object $default = null): ?object
     {
-        $store = $this->maybeAsOfNow();
-        if (!$store->has($key, $maxAge)) {
-            return $default;
-        }
-        $item = $store->get($key, $default, $maxAge);
-        if (!is_object($item) || !is_a($item, $class)) {
+        $item = $this->get($key);
+        if ($item === null || !is_object($item) || !is_a($item, $class)) {
             return $default;
         }
         return $item;
@@ -156,14 +156,10 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function getArray($key, ?array $default = null, ?int $maxAge = null): ?array
+    public function getArray($key, ?array $default = null): ?array
     {
-        $store = $this->maybeAsOfNow();
-        if (!$store->has($key, $maxAge)) {
-            return $default;
-        }
-        $item = $store->get($key, $default, $maxAge);
-        if (!is_array($item)) {
+        $item = $this->get($key);
+        if ($item === null || !is_array($item)) {
             return $default;
         }
         return $item;
@@ -172,14 +168,10 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function getInt($key, ?int $default = null, ?int $maxAge = null): ?int
+    public function getInt($key, ?int $default = null): ?int
     {
-        $store = $this->maybeAsOfNow();
-        if (!$store->has($key, $maxAge)) {
-            return $default;
-        }
-        $item = $store->get($key, $default, $maxAge);
-        if (!is_int($item)) {
+        $item = $this->get($key);
+        if ($item === null || !is_int($item)) {
             return $default;
         }
         return $item;
@@ -188,14 +180,10 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function getString($key, ?string $default = null, ?int $maxAge = null): ?string
+    public function getString($key, ?string $default = null): ?string
     {
-        $store = $this->maybeAsOfNow();
-        if (!$store->has($key, $maxAge)) {
-            return $default;
-        }
-        $item = $store->get($key, $default, $maxAge);
-        if (!is_string($item)) {
+        $item = $this->get($key);
+        if ($item === null || !is_string($item)) {
             return $default;
         }
         return $item;
@@ -256,10 +244,10 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function getMultiple($keys, $default = null, ?int $maxAge = null)
+    public function getMultiple($keys, $default = null)
     {
         foreach ($keys as $key) {
-            $values[$key] = $this->get($key, $default, $maxAge);
+            $values[$key] = $this->get($key, $default);
         }
         return $values ?? [];
     }
@@ -289,7 +277,7 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function getItemCount(?int $maxAge = null): int
+    public function getItemCount(): int
     {
         $sql = <<<SQL
 SELECT
@@ -297,9 +285,10 @@ SELECT
 FROM
   _cache_item
 SQL;
-        $result = $this->queryItems($sql, null, $maxAge);
+        $result = $this->queryItems($sql);
         /** @var array{int} */
         $row = $result->fetchArray(\SQLITE3_NUM);
+        $this->closeStmt();
 
         return $row[0];
     }
@@ -307,7 +296,7 @@ SQL;
     /**
      * @phpstan-impure
      */
-    public function getAllKeys(?int $maxAge = null): array
+    public function getItemKeys(): array
     {
         $sql = <<<SQL
 SELECT
@@ -315,10 +304,11 @@ SELECT
 FROM
   _cache_item
 SQL;
-        $result = $this->queryItems($sql, null, $maxAge);
+        $result = $this->queryItems($sql);
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
             $keys[] = $row[0];
         }
+        $this->closeStmt();
 
         return $keys ?? [];
     }
@@ -326,7 +316,7 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function asOfNow(?int $now = null): CacheStoreInterface
+    public function asOfNow(?int $now = null): CacheInterface
     {
         if ($this->Now !== null) {
             throw new LogicException(
@@ -378,49 +368,34 @@ SQL;
         return $this->Now ?? time();
     }
 
-    /**
-     * @return static
-     */
-    private function maybeAsOfNow(): self
+    private function queryItems(string $sql, ?string $key = null): SQLite3Result
     {
-        return $this->Now === null
-            ? $this->asOfNow()
-            : $this;
-    }
-
-    private function queryItems(string $sql, ?string $key, ?int $maxAge): SQLite3Result
-    {
-        $where = [];
-        $bind = [];
-
         if ($key !== null) {
             $where[] = 'item_key = :item_key';
             $bind[] = [':item_key', $key, \SQLITE3_TEXT];
         }
 
-        $bindNow = false;
-        if ($maxAge === null) {
-            $where[] = "(expires_at IS NULL OR expires_at > DATETIME(:now, 'unixepoch'))";
-            $bindNow = true;
-        } elseif ($maxAge) {
-            $where[] = "DATETIME(set_at, :max_age) > DATETIME(:now, 'unixepoch')";
-            $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
-            $bindNow = true;
-        }
-        if ($bindNow) {
-            $bind[] = [':now', $this->now(), \SQLITE3_INTEGER];
-        }
+        $where[] = "(expires_at IS NULL OR expires_at > DATETIME(:now, 'unixepoch'))";
+        $bind[] = [':now', $this->now(), \SQLITE3_INTEGER];
 
         $where = implode(' AND ', $where);
-        if ($where !== '') {
-            $sql .= " WHERE $where";
-        }
+        $sql .= " WHERE $where";
 
         $stmt = $this->prepare($sql);
         foreach ($bind as [$param, $value, $type]) {
             $stmt->bindValue($param, $value, $type);
         }
 
-        return $this->execute($stmt);
+        $result = $this->execute($stmt);
+        $this->Stmt = $stmt;
+        return $result;
+    }
+
+    private function closeStmt(): void
+    {
+        if ($this->Stmt !== null) {
+            $this->Stmt->close();
+            $this->Stmt = null;
+        }
     }
 }

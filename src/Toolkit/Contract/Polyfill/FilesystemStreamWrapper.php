@@ -3,10 +3,7 @@
 namespace Salient\Contract\Polyfill;
 
 /**
- * Abstraction of the streamWrapper prototype described in the PHP manual
- *
- * Stream wrappers that do not support filesystem operations should extend
- * {@see StreamWrapper} instead.
+ * Base class for stream wrappers that support filesystem operations
  *
  * @api
  */
@@ -78,8 +75,8 @@ abstract class FilesystemStreamWrapper extends StreamWrapper
      * This method is called in response to {@see rename()}.
      *
      * @param string $path_from The URL to the current file.
-     * @param string $path_to The URL which the `path_from` should be renamed
-     * to.
+     * @param string $path_to The URL which the **`path_from`** should be
+     * renamed to.
      * @return bool `true` on success or `false` on failure.
      */
     abstract public function rename(string $path_from, string $path_to): bool;
@@ -100,7 +97,7 @@ abstract class FilesystemStreamWrapper extends StreamWrapper
      * Advisory file locking
      *
      * This method is called in response to {@see flock()},
-     * {@see file_put_contents()} (when `flags` contains {@see \LOCK_EX}),
+     * {@see file_put_contents()} (when **`flags`** contains {@see \LOCK_EX}),
      * {@see stream_set_blocking()} and when closing the stream
      * ({@see \LOCK_UN}).
      *
@@ -109,8 +106,8 @@ abstract class FilesystemStreamWrapper extends StreamWrapper
      * - {@see \LOCK_SH} to acquire a shared lock (reader).
      * - {@see \LOCK_EX} to acquire an exclusive lock (writer).
      * - {@see \LOCK_UN} to release a lock (shared or exclusive).
-     * - {@see \LOCK_NB} if you don't want {@see flock()} to block while
-     *   locking (not supported on Windows).
+     * - {@see \LOCK_NB} if you don't want {@see flock()} to block while locking
+     *   (not supported on Windows).
      * @return bool `true` on success or `false` on failure.
      */
     abstract public function stream_lock(int $operation): bool;

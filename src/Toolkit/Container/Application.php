@@ -4,7 +4,7 @@ namespace Salient\Container;
 
 use Salient\Cache\CacheStore;
 use Salient\Console\Target\StreamTarget;
-use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Core\MessageLevel as Level;
@@ -500,7 +500,7 @@ class Application extends Container implements ApplicationInterface
         return $this;
     }
 
-    private function checkCache(CacheStoreInterface $cache): bool
+    private function checkCache(CacheInterface $cache): bool
     {
         return $cache instanceof CacheStore
             && File::same($this->getCacheDb(false), $cache->getFilename());

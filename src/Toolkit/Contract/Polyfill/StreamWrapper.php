@@ -3,27 +3,19 @@
 namespace Salient\Contract\Polyfill;
 
 /**
- * Abstraction of the streamWrapper prototype described in the PHP manual
+ * Base class for stream wrappers
  *
- * Stream wrappers that support filesystem operations should extend
- * {@see FilesystemStreamWrapper} instead.
+ * This class provides an abstraction of the streamWrapper prototype described
+ * in the PHP manual.
  *
  * @api
  *
  * @link https://www.php.net/manual/en/class.streamwrapper.php
  */
-abstract class StreamWrapper
+abstract class StreamWrapper implements StreamWrapperInterface
 {
     /** @var resource|null */
     public $context;
-
-    /**
-     * Constructs a new stream wrapper
-     *
-     * Called when opening the stream wrapper, right before
-     * {@see StreamWrapper::stream_open()}.
-     */
-    abstract public function __construct();
 
     /**
      * Retrieve the underlying resource
@@ -101,7 +93,7 @@ abstract class StreamWrapper
      *   {@see chgrp()})
      * - {@see \STREAM_META_ACCESS} (The method was called in response to
      *   {@see chmod()})
-     * @param mixed $value If `option` is
+     * @param mixed $value If **`option`** is
      *
      * - {@see \STREAM_META_TOUCH}: Array consisting of two arguments of the
      *   {@see touch()} function.
@@ -111,8 +103,8 @@ abstract class StreamWrapper
      *   the owner user/group as `int`.
      * - {@see \STREAM_META_ACCESS}: The argument of the {@see chmod()} function
      *   as `int`.
-     * @return bool `true` on success or `false` on failure. If `option` is not
-     * implemented, `false` should be returned.
+     * @return bool `true` on success or `false` on failure. If **`option`** is
+     * not implemented, `false` should be returned.
      */
     abstract public function stream_metadata(string $path, int $option, $value): bool;
 
@@ -129,14 +121,15 @@ abstract class StreamWrapper
      * @param int $options Holds additional flags set by the streams API. It can
      * hold one or more of the following values OR'd together.
      *
-     * - {@see \STREAM_USE_PATH}: If `path` is relative, search for the resource
-     *   using the include_path.
+     * - {@see \STREAM_USE_PATH}: If **`path`** is relative, search for the
+     *   resource using the include_path.
      * - {@see \STREAM_REPORT_ERRORS}: If this flag is set, you are responsible
      *   for raising errors using {@see trigger_error()} during opening of the
      *   stream. If this flag is not set, you should not raise any errors.
-     * @param string|null $opened_path If the `path` is opened successfully, and
-     * {@see \STREAM_USE_PATH} is set in `options`, `opened_path` should be set
-     * to the full path of the file/resource that was actually opened.
+     * @param string|null $opened_path If the **`path`** is opened successfully,
+     * and {@see \STREAM_USE_PATH} is set in **`options`**, **`opened_path`**
+     * should be set to the full path of the file/resource that was actually
+     * opened.
      * @return bool `true` on success or `false` on failure.
      */
     abstract public function stream_open(
@@ -156,10 +149,10 @@ abstract class StreamWrapper
      *
      * @param int $count How many bytes of data from the current position should
      * be returned.
-     * @return string|false If there are less than `count` bytes available, as
-     * many as are available should be returned. If no more data is available,
-     * an empty string should be returned. To signal that reading failed,
-     * `false` should be returned.
+     * @return string|false If there are less than **`count`** bytes available,
+     * as many as are available should be returned. If no more data is
+     * available, an empty string should be returned. To signal that reading
+     * failed, `false` should be returned.
      */
     abstract public function stream_read(int $count);
 
@@ -171,11 +164,11 @@ abstract class StreamWrapper
      * @param int $offset The stream offset to seek to.
      * @param int $whence Possible values:
      *
-     * - {@see \SEEK_SET}: Set position equal to `offset` bytes.
-     * - {@see \SEEK_CUR}: Set position to current location plus `offset`.
+     * - {@see \SEEK_SET}: Set position equal to **`offset`** bytes.
+     * - {@see \SEEK_CUR}: Set position to current location plus **`offset`**.
      *   (Never used by current implementation; always internally converted to
      *   {@see \SEEK_SET}.)
-     * - {@see \SEEK_END}: Set position to end-of-file plus `offset`.
+     * - {@see \SEEK_END}: Set position to end-of-file plus **`offset`**.
      * @return bool `true` if the position was updated, `false` otherwise.
      */
     abstract public function stream_seek(int $offset, int $whence = \SEEK_SET): bool;
@@ -193,7 +186,7 @@ abstract class StreamWrapper
      *   {@see stream_set_read_buffer()})
      * - {@see \STREAM_OPTION_WRITE_BUFFER} (The method was called in response
      *   to {@see stream_set_write_buffer()})
-     * @param int $arg1 If `option` is
+     * @param int $arg1 If **`option`** is
      *
      * - {@see \STREAM_OPTION_BLOCKING}: requested blocking mode (1 meaning
      *   block, 0 not blocking).
@@ -202,14 +195,14 @@ abstract class StreamWrapper
      *   ({@see \STREAM_BUFFER_NONE} or {@see \STREAM_BUFFER_FULL}).
      * - {@see \STREAM_OPTION_WRITE_BUFFER}: buffer mode
      *   ({@see \STREAM_BUFFER_NONE} or {@see \STREAM_BUFFER_FULL}).
-     * @param int $arg2 If `option` is
+     * @param int $arg2 If **`option`** is
      *
      * - {@see \STREAM_OPTION_BLOCKING}: not set.
      * - {@see \STREAM_OPTION_READ_TIMEOUT}: the timeout in microseconds.
      * - {@see \STREAM_OPTION_READ_BUFFER}: the requested buffer size.
      * - {@see \STREAM_OPTION_WRITE_BUFFER}: the requested buffer size.
-     * @return bool `true` on success or `false` on failure. If `option` is not
-     * implemented, `false` should be returned.
+     * @return bool `true` on success or `false` on failure. If **`option`** is
+     * not implemented, `false` should be returned.
      */
     abstract public function stream_set_option(int $option, int $arg1, int $arg2): bool;
 
@@ -276,7 +269,21 @@ abstract class StreamWrapper
      * @return mixed[]|false `false` on failure, otherwise an `array` with the
      * same elements returned by {@see stat()}. Unknown or unavailable values
      * should be set to a rational value (usually `0`). Special attention should
-     * be paid to `mode` as documented under {@see stat()}.
+     * be paid to **`mode`** as documented under {@see stat()}.
      */
     abstract public function url_stat(string $path, int $flags);
+}
+
+/**
+ * @internal
+ */
+interface StreamWrapperInterface
+{
+    /**
+     * Constructs a new stream wrapper
+     *
+     * Called when opening the stream wrapper, right before
+     * {@see StreamWrapper::stream_open()}.
+     */
+    public function __construct();
 }

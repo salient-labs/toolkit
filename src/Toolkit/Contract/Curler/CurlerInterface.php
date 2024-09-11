@@ -6,7 +6,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\FormDataFlag;
@@ -475,7 +475,7 @@ interface CurlerInterface extends ClientInterface
     /**
      * Get the endpoint's cache store
      */
-    public function getCacheStore(): ?CacheStoreInterface;
+    public function getCacheStore(): ?CacheInterface;
 
     /**
      * Get an instance with the given cache store
@@ -485,7 +485,7 @@ interface CurlerInterface extends ClientInterface
      *
      * @return static
      */
-    public function withCacheStore(?CacheStoreInterface $store = null);
+    public function withCacheStore(?CacheInterface $store = null);
 
     /**
      * Check if the instance handles cookies

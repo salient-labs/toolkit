@@ -7,7 +7,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Contract\Cache\CacheStoreInterface;
+use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
@@ -115,7 +115,7 @@ class Curler implements CurlerInterface, Buildable
     protected array $Middleware = [];
     protected ?CurlerPagerInterface $Pager;
     protected bool $AlwaysPaginate;
-    protected ?CacheStoreInterface $CacheStore;
+    protected ?CacheInterface $CacheStore;
     protected ?string $CookiesCacheKey;
     protected bool $CacheResponses;
     protected bool $CachePostResponses;
@@ -164,7 +164,7 @@ class Curler implements CurlerInterface, Buildable
      * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
      * @param bool $alwaysPaginate Use the pager to process requests even if no pagination is required
-     * @param CacheStoreInterface|null $cacheStore Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+     * @param CacheInterface|null $cacheStore Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
      * @param bool $handleCookies Enable cookie handling
      * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
      * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
@@ -195,7 +195,7 @@ class Curler implements CurlerInterface, Buildable
         array $middleware = [],
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
-        ?CacheStoreInterface $cacheStore = null,
+        ?CacheInterface $cacheStore = null,
         bool $handleCookies = false,
         ?string $cookiesCacheKey = null,
         bool $cacheResponses = false,
@@ -658,7 +658,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getCacheStore(): ?CacheStoreInterface
+    public function getCacheStore(): ?CacheInterface
     {
         return $this->CacheStore;
     }
@@ -946,7 +946,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withCacheStore(?CacheStoreInterface $store = null)
+    public function withCacheStore(?CacheInterface $store = null)
     {
         return $this->with('CacheStore', $store);
     }
@@ -1600,7 +1600,7 @@ class Curler implements CurlerInterface, Buildable
         return Arr::implode(':', [self::class, 'cookies', $cacheKey], '');
     }
 
-    private function getCache(): CacheStoreInterface
+    private function getCache(): CacheInterface
     {
         return $this->CacheStore ?? Cache::getInstance();
     }

@@ -43,23 +43,21 @@ final class CacheStoreTest extends TestCase
 
         $this->assertTrue($this->Cache->has(__METHOD__));
         $this->assertSame($arr, $this->Cache->get(__METHOD__));
-        $this->assertEqualsCanonicalizing([__METHOD__, 'key1'], $this->Cache->getAllKeys());
+        $this->assertEqualsCanonicalizing([__METHOD__, 'key1'], $this->Cache->getItemKeys());
 
         $this->Cache->delete(__METHOD__);
-        $this->assertSame(['key1'], $this->Cache->getAllKeys());
+        $this->assertSame(['key1'], $this->Cache->getItemKeys());
         $this->assertFalse($this->Cache->has(__METHOD__));
         $this->assertNull($this->Cache->get(__METHOD__));
 
         $this->Cache->set('key1', 'value1', 0);
-        $this->assertSame([], $this->Cache->getAllKeys());
+        $this->assertSame([], $this->Cache->getItemKeys());
         $this->assertFalse($this->Cache->has('key1'));
         $this->assertNull($this->Cache->get('key1'));
     }
 
     public function testWithExpiration(): void
     {
-        $arr = ['foo' => 'bar'];
-        $this->Cache->set(__METHOD__, $arr, new DateTimeImmutable('24 hours ago'));
         $this->Cache->set('key0', 'value0', new DateTimeImmutable('10 seconds ago'));
         $this->Cache->set('key1', 'value1', 60);
         $this->Cache->set('key2', 'value2', new DateInterval('PT1M'));
@@ -67,40 +65,26 @@ final class CacheStoreTest extends TestCase
 
         // "rewind" by 30 seconds
         $current = $this->Cache->asOfNow($now - 30);
-        $this->assertFalse($this->Cache->has(__METHOD__));
         $this->assertFalse($this->Cache->has('key0'));
-        $this->assertFalse($current->has(__METHOD__));
         $this->assertTrue($current->has('key0'));
-        $this->assertTrue($this->Cache->has(__METHOD__, 30));
-        $this->assertTrue($this->Cache->has(__METHOD__, 0));
         $this->assertSame('value0', $current->get('key0'));
-        $this->assertSame($arr, $this->Cache->get(__METHOD__, null, 30));
-        $this->assertSame($arr, $this->Cache->get(__METHOD__, null, 0));
-
-        $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getAllKeys());
-        $this->assertEqualsCanonicalizing(['key0', 'key1', 'key2'], $current->getAllKeys());
-        $this->assertEqualsCanonicalizing([__METHOD__, 'key0', 'key1', 'key2'], $this->Cache->getAllKeys(30));
-        $this->assertEqualsCanonicalizing([__METHOD__, 'key0', 'key1', 'key2'], $this->Cache->getAllKeys(0));
+        $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getItemKeys());
+        $this->assertEqualsCanonicalizing(['key0', 'key1', 'key2'], $current->getItemKeys());
         $this->assertSame(2, $this->Cache->getItemCount());
         $this->assertSame(3, $current->getItemCount());
-        $this->assertSame(4, $this->Cache->getItemCount(30));
-        $this->assertSame(4, $this->Cache->getItemCount(0));
+        $current = null;
 
         $this->Cache->clearExpired();
-        $this->assertFalse($this->Cache->has(__METHOD__, 0));
-        $this->assertNull($this->Cache->get(__METHOD__, null, 0));
-
         $this->assertSame('value1', $this->Cache->get('key1'));
         $this->assertSame('value2', $this->Cache->get('key2'));
 
         // "sleep" for 30 seconds
-        $current = null;
         $current = $this->Cache->asOfNow($now + 30);
         $this->assertSame('value1', $current->get('key1'));
         $this->assertSame('value2', $current->get('key2'));
+        $current->close();
 
         // "sleep" for a further 90 seconds
-        $current->close();
         $current = $this->Cache->asOfNow($now + 120);
         $this->assertNull($current->get('key1'));
         $this->assertNull($current->get('key2'));
@@ -161,11 +145,11 @@ final class CacheStoreTest extends TestCase
             'key2' => 'value2',
             'key3' => 'value3',
         ]);
-        $this->assertEqualsCanonicalizing(['key1', 'key2', 'key3'], $this->Cache->getAllKeys());
+        $this->assertEqualsCanonicalizing(['key1', 'key2', 'key3'], $this->Cache->getItemKeys());
         $this->assertSame($values, $this->Cache->getMultiple(['key1', 'key2', 'key3']));
         $this->assertSame(['key0' => 'VALUE', 'key1' => 'value1'], $this->Cache->getMultiple(['key0', 'key1'], 'VALUE'));
         $this->Cache->deleteMultiple(['key1', 'key3']);
-        $this->assertSame(['key2'], $this->Cache->getAllKeys());
+        $this->assertSame(['key2'], $this->Cache->getItemKeys());
     }
 
     public function testGetInstanceOf(): void
@@ -220,11 +204,11 @@ final class CacheStoreTest extends TestCase
         $this->Cache->set('key2', 'value2');
         $this->assertSame('value1', $this->Cache->get('key1'));
         $this->assertSame('value2', $this->Cache->get('key2'));
-        $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getAllKeys(0));
+        $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getItemKeys());
         $this->Cache->clear();
         $this->assertNull($this->Cache->get('key1'));
         $this->assertNull($this->Cache->get('key2'));
-        $this->assertSame([], $this->Cache->getAllKeys(0));
+        $this->assertSame([], $this->Cache->getItemKeys());
     }
 
     protected function setUp(): void

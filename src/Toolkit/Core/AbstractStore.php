@@ -385,11 +385,13 @@ abstract class AbstractStore implements FacadeAwareInterface, Unloadable
     }
 
     /**
+     * Throw an exception if the database is not open
+     *
      * @phpstan-assert !null $this->State
      */
     final protected function assertIsOpen(): void
     {
-        if (!$this->isOpen()) {
+        if (!$this->State || !$this->State->IsOpen) {
             // @codeCoverageIgnoreStart
             throw new LogicException('No database open');
             // @codeCoverageIgnoreEnd
