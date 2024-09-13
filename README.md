@@ -1,7 +1,7 @@
 # salient/toolkit
 
-> A lightweight PHP toolkit for expressive backend/CLI apps. Opinionated but
-> adaptable. Negligible dependencies. May contain traces of Laravel.
+> A lightweight PHP toolkit for expressive backend/CLI apps. May contain traces
+> of Laravel.
 
 <p>
   <a href="https://packagist.org/packages/salient/toolkit"><img src="https://poser.pugx.org/salient/toolkit/v" alt="Latest Stable Version" /></a>
@@ -39,8 +39,13 @@ tools/apigen/vendor/bin/apigen -c tools/apigen/apigen.neon
 Other documentation is available under [docs][], and usage examples are provided
 in the form of [unit tests][tests].
 
+## License
+
+This project is licensed under the [MIT License][].
+
 [api-docs]: https://salient-labs.github.io/toolkit/
 [ApiGen]: https://github.com/ApiGen/ApiGen
 [docs]: docs/
+[MIT License]: LICENSE
 [repo]: https://github.com/salient-labs/toolkit
 [tests]: tests/unit/
