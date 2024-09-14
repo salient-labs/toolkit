@@ -2,6 +2,7 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\MimeType;
@@ -198,54 +199,60 @@ final class Http extends AbstractUtility
     }
 
     /**
-     * Merge values into the query string of a URI
+     * Merge values into the query string of a request or URI
      *
-     * @template TUri of PsrUriInterface|Stringable|string
+     * @template T of RequestInterface|PsrUriInterface|Stringable|string
      *
-     * @param TUri $uri
+     * @param T $value
      * @param mixed[] $data
      * @param int-mask-of<FormDataFlag::*> $flags
-     * @return (TUri is PsrUriInterface ? TUri : Uri)
+     * @return (T is RequestInterface|PsrUriInterface ? T : Uri)
      */
     public static function mergeQuery(
-        $uri,
+        $value,
         array $data,
         int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
-    ): PsrUriInterface {
-        if (!$uri instanceof PsrUriInterface) {
-            $uri = new Uri((string) $uri);
-        }
+    ) {
+        $uri = $value instanceof RequestInterface
+            ? $value->getUri()
+            : ($value instanceof PsrUriInterface
+                ? $value
+                : new Uri((string) $value));
         /** @todo Replace with `parse_str()` alternative */
         parse_str($uri->getQuery(), $query);
-        return $uri->withQuery(
-            (new FormData(array_replace_recursive($query, $data)))
-                ->getQuery($flags, $dateFormatter)
-        );
+        $query = (new FormData(array_replace_recursive($query, $data)))
+            ->getQuery($flags, $dateFormatter);
+        if ($value instanceof RequestInterface) {
+            return $value->withUri($uri->withQuery($query));
+        }
+        return $uri->withQuery($query);
     }
 
     /**
-     * Replace the query string of a URI with the given values
+     * Replace the query string of a request or URI with the given values
      *
-     * @template TUri of PsrUriInterface|Stringable|string
+     * @template T of RequestInterface|PsrUriInterface|Stringable|string
      *
-     * @param TUri $uri
+     * @param T $value
      * @param mixed[] $data
      * @param int-mask-of<FormDataFlag::*> $flags
-     * @return (TUri is PsrUriInterface ? TUri : Uri)
+     * @return (T is RequestInterface|PsrUriInterface ? T : Uri)
      */
     public static function replaceQuery(
-        $uri,
+        $value,
         array $data,
         int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
-    ): PsrUriInterface {
-        if (!$uri instanceof PsrUriInterface) {
-            $uri = new Uri((string) $uri);
+    ) {
+        $query = (new FormData($data))->getQuery($flags, $dateFormatter);
+        if ($value instanceof RequestInterface) {
+            return $value->withUri($value->getUri()->withQuery($query));
         }
-        return $uri->withQuery(
-            (new FormData($data))->getQuery($flags, $dateFormatter)
-        );
+        if (!$value instanceof PsrUriInterface) {
+            $value = new Uri((string) $value);
+        }
+        return $value->withQuery($query);
     }
 
     /**

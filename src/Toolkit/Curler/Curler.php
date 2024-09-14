@@ -754,10 +754,10 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function replaceQuery($uri, array $query): PsrUriInterface
+    public function replaceQuery($value, array $query)
     {
         return Http::replaceQuery(
-            $uri,
+            $value,
             $query,
             $this->FormDataFlags,
             $this->DateFormatter,
