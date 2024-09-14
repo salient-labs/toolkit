@@ -5,7 +5,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Http\HttpFactory;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
@@ -85,7 +85,7 @@ final class HttpFactoryTest extends TestCase
     public function testCreateUri(): void
     {
         $uri = $this->Factory->createUri('http://example.com');
-        $this->assertInstanceOf(UriInterface::class, $uri);
+        $this->assertInstanceOf(PsrUriInterface::class, $uri);
         $this->assertSame('http://example.com', (string) $uri);
     }
 

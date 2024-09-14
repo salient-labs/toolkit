@@ -7,6 +7,7 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Http\Http;
+use Salient\Http\HttpRequest;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -269,6 +270,10 @@ final class HttpTest extends TestCase
             $expected,
             (string) Http::mergeQuery($uri, $data, $flags, $dateFormatter),
         );
+        $request = new HttpRequest('GET', $uri);
+        $request = Http::mergeQuery($request, $data, $flags, $dateFormatter);
+        $this->assertInstanceOf(HttpRequest::class, $request);
+        $this->assertSame($expected, (string) $request->getUri());
     }
 
     /**
@@ -327,6 +332,10 @@ final class HttpTest extends TestCase
             $expected,
             (string) Http::replaceQuery($uri, $data, $flags, $dateFormatter),
         );
+        $request = new HttpRequest('GET', $uri);
+        $request = Http::replaceQuery($request, $data, $flags, $dateFormatter);
+        $this->assertInstanceOf(HttpRequest::class, $request);
+        $this->assertSame($expected, (string) $request->getUri());
     }
 
     /**

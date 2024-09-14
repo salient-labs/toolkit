@@ -672,13 +672,13 @@ interface CurlerInterface extends ClientInterface
 
     /**
      * Use the form data flags and date formatter applied to the instance to
-     * replace the query string of a URI
+     * replace the query string of a request or URI
      *
-     * @template TUri of PsrUriInterface|Stringable|string
+     * @template T of RequestInterface|PsrUriInterface|Stringable|string
      *
-     * @param TUri $uri
+     * @param T $value
      * @param mixed[] $query
-     * @return (TUri is PsrUriInterface ? TUri : PsrUriInterface)
+     * @return (T is RequestInterface|PsrUriInterface ? T : UriInterface)
      */
-    public function replaceQuery($uri, array $query): PsrUriInterface;
+    public function replaceQuery($value, array $query);
 }

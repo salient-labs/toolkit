@@ -13,7 +13,7 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Utility\File;
 
 /**
@@ -106,7 +106,7 @@ class HttpFactory implements
     /**
      * @inheritDoc
      */
-    public function createUri(string $uri = ''): UriInterface
+    public function createUri(string $uri = ''): PsrUriInterface
     {
         return new Uri($uri);
     }
