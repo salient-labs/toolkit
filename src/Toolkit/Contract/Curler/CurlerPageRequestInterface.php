@@ -3,7 +3,6 @@
 namespace Salient\Contract\Curler;
 
 use Psr\Http\Message\RequestInterface;
-use OutOfRangeException;
 
 /**
  * @api
@@ -11,22 +10,14 @@ use OutOfRangeException;
 interface CurlerPageRequestInterface
 {
     /**
-     * Check if a page of data can be retrieved from the endpoint
+     * Get a request to retrieve a page of data from the endpoint
      */
-    public function hasNextRequest(): bool;
+    public function getRequest(): RequestInterface;
 
     /**
-     * Get a request to retrieve the next page of data from the endpoint
-     *
-     * @throws OutOfRangeException if there are no more pages to retrieve.
-     */
-    public function getNextRequest(): RequestInterface;
-
-    /**
-     * Get the query applied to the request to retrieve the next page of data
+     * Get the query applied to the request to retrieve a page of data
      *
      * @return mixed[]|null
-     * @throws OutOfRangeException if there are no more pages to retrieve.
      */
-    public function getNextQuery(): ?array;
+    public function getQuery(): ?array;
 }

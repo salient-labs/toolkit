@@ -15,6 +15,9 @@ interface CurlerPagerInterface
      *
      * Return `$request` if no special handling is required.
      *
+     * Return a {@see CurlerPageRequestInterface} to propagate `$query` changes
+     * to {@see CurlerPagerInterface::getPage()} in array form.
+     *
      * @param mixed[]|null $query The query applied to `$request`.
      * @return CurlerPageRequestInterface|RequestInterface
      */

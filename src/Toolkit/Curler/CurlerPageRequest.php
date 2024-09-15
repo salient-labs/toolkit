@@ -32,15 +32,7 @@ class CurlerPageRequest implements CurlerPageRequestInterface
     /**
      * @inheritDoc
      */
-    public function hasNextRequest(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getNextRequest(): RequestInterface
+    public function getRequest(): RequestInterface
     {
         return $this->NextRequest;
     }
@@ -48,7 +40,7 @@ class CurlerPageRequest implements CurlerPageRequestInterface
     /**
      * @inheritDoc
      */
-    public function getNextQuery(): ?array
+    public function getQuery(): ?array
     {
         return $this->NextQuery;
     }

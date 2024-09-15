@@ -376,11 +376,8 @@ class Curler implements CurlerInterface, Buildable
         if ($pager) {
             $request = $pager->getFirstRequest($request, $this, $query);
             if ($request instanceof CurlerPageRequestInterface) {
-                if (!$request->hasNextRequest()) {
-                    throw new LogicException('No first request');
-                }
-                $query = $request->getNextQuery() ?? $query;
-                $request = $request->getNextRequest();
+                $query = $request->getQuery() ?? $query;
+                $request = $request->getRequest();
             }
         }
 
@@ -455,15 +452,12 @@ class Curler implements CurlerInterface, Buildable
 
         $request = $this->createRequest($method, $query, $data);
         $request = $this->Pager->getFirstRequest($request, $this, $query);
-        if ($request instanceof CurlerPageRequestInterface) {
-            if (!$request->hasNextRequest()) {
-                throw new LogicException('No first request');
-            }
-            $query = $request->getNextQuery() ?? $query;
-            $request = $request->getNextRequest();
-        }
         $prev = null;
         do {
+            if ($request instanceof CurlerPageRequestInterface) {
+                $query = $request->getQuery() ?? $query;
+                $request = $request->getRequest();
+            }
             $response = $this->doSendRequest($request);
             $page = $this->Pager->getPage(
                 $this->getResponseBody($response),
@@ -481,7 +475,6 @@ class Curler implements CurlerInterface, Buildable
             if (!$page->hasNextRequest()) {
                 break;
             }
-            $query = $page->getNextQuery() ?? $query;
             $request = $page->getNextRequest();
             $prev = $page;
         } while (true);

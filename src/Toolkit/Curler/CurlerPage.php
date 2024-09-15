@@ -57,29 +57,18 @@ class CurlerPage implements CurlerPageInterface
      */
     public function hasNextRequest(): bool
     {
-        return $this->NextRequest !== null;
+        return (bool) $this->NextRequest;
     }
 
     /**
      * @inheritDoc
      */
-    public function getNextRequest(): RequestInterface
+    public function getNextRequest()
     {
-        if ($this->NextRequest === null) {
+        if (!$this->NextRequest) {
             throw new OutOfRangeException('No more pages');
         }
-        return $this->NextRequest->getNextRequest();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getNextQuery(): ?array
-    {
-        if ($this->NextRequest === null) {
-            throw new OutOfRangeException('No more pages');
-        }
-        return $this->NextRequest->getNextQuery();
+        return $this->NextRequest;
     }
 
     /**
