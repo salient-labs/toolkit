@@ -651,6 +651,14 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
+    public function alwaysPaginates(): bool
+    {
+        return $this->AlwaysPaginate;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getCacheStore(): ?CacheInterface
     {
         return $this->CacheStore;

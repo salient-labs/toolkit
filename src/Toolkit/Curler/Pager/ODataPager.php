@@ -73,8 +73,7 @@ final class ODataPager implements CurlerPagerInterface
             throw new InvalidArgumentTypeException(1, 'data', 'mixed[]', $data);
         }
         /** @var array{'@odata.nextLink'?:string,'@nextLink'?:string,value:list<mixed>,...} $data */
-        $response = $curler->getLastResponse();
-        if ($response && $response->getHeaderLine(HttpHeader::ODATA_VERSION) === '4.0') {
+        if ($response->getHeaderLine(HttpHeader::ODATA_VERSION) === '4.0') {
             $nextLink = $data['@odata.nextLink'] ?? null;
         } else {
             $nextLink = $data['@nextLink'] ?? $data['@odata.nextLink'] ?? null;

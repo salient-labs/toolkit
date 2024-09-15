@@ -8,7 +8,9 @@ use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Curler\CurlerPage;
+use Salient\Utility\Test;
 use Closure;
+use LogicException;
 
 /**
  * Increments a value in the query string of each request until no results are
@@ -22,11 +24,8 @@ final class QueryPager implements CurlerPagerInterface
 
     /** @var array-key|null */
     private $PageKey;
+    /** @var int<1,max>|null */
     private ?int $PageSize;
-    /** @var mixed[] */
-    private array $CurrentQuery;
-    /** @var array-key|null */
-    private $CurrentPageKey;
 
     /**
      * Creates a new QueryPager object
@@ -40,10 +39,9 @@ final class QueryPager implements CurlerPagerInterface
      * - `Arr::get($data, $entitySelector)` if `$entitySelector` is a string or
      *   integer, or
      * - `$data` if `$entitySelector` is `null`
-     * @param int|null $pageSize Another page is requested if:
+     * @param int<1,max>|null $pageSize Another page is requested if:
      * - `$pageSize` is `null` and at least one result is returned, or
-     * - `$pageSize` is greater than `0` and exactly `$pageSize` results are
-     *   returned
+     * - exactly `$pageSize` results are returned
      */
     public function __construct(
         $pageKey = null,
@@ -63,18 +61,6 @@ final class QueryPager implements CurlerPagerInterface
         CurlerInterface $curler,
         ?array $query = null
     ): RequestInterface {
-        $this->CurrentQuery = $query ?? [];
-        $this->CurrentPageKey = null;
-
-        // If `$this->PageKey` does not appear in the query, add it to
-        // `$this->CurrentQuery` without changing the first request
-        if (
-            $this->PageKey !== null
-            && !array_key_exists($this->PageKey, $this->CurrentQuery)
-        ) {
-            $this->CurrentQuery[$this->PageKey] = 1;
-        }
-
         return $request;
     }
 
@@ -93,26 +79,20 @@ final class QueryPager implements CurlerPagerInterface
 
         if ($data && (
             $this->PageSize === null
-            || $this->PageSize < 1
             || count($data) === $this->PageSize
         )) {
-            if (
-                $this->PageKey === null
-                && !$previousPage
-                && $this->CurrentQuery
-                && is_int(reset($this->CurrentQuery))
-            ) {
-                $this->CurrentPageKey = key($this->CurrentQuery);
+            $key = $this->PageKey;
+            if ($key === null && $query && Test::isInteger(reset($query))) {
+                $key = key($query);
             }
-            $key = $this->PageKey ?? $this->CurrentPageKey;
-            if ($key !== null) {
-                $this->CurrentQuery[$key]++;
-                $uri = $request->getUri();
-                $uri = $curler->replaceQuery($uri, $this->CurrentQuery);
-                $nextRequest = $request->withUri($uri);
+            if ($key === null) {
+                throw new LogicException('No page key and no integer value at query offset 0');
             }
+            $query[$key] ??= 1;
+            $query[$key]++;
+            $nextRequest = $curler->replaceQuery($request, $query);
         }
 
-        return new CurlerPage($data, $nextRequest ?? null);
+        return new CurlerPage($data, $nextRequest ?? null, $query);
     }
 }

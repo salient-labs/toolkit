@@ -9,12 +9,13 @@ use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Curler\CurlerPage;
+use Salient\Curler\CurlerPageRequest;
 use Salient\Http\Http;
 use Salient\Http\Uri;
 use Closure;
 
 /**
- * Follows "Link" headers in responses from the endpoint
+ * Follows "Link" headers with rel="next" in responses from the endpoint
  *
  * @api
  */
@@ -54,16 +55,16 @@ final class LinkPager implements CurlerPagerInterface
         RequestInterface $request,
         CurlerInterface $curler,
         ?array $query = null
-    ): RequestInterface {
+    ) {
         if ($this->PageSize === null) {
             return $request;
         }
 
         $query[$this->PageSizeKey] = $this->PageSize;
-        $uri = $request->getUri();
-        $uri = $curler->replaceQuery($uri, $query);
-
-        return $request->withUri($uri);
+        return new CurlerPageRequest(
+            $curler->replaceQuery($request, $query),
+            $query,
+        );
     }
 
     /**
@@ -79,18 +80,15 @@ final class LinkPager implements CurlerPagerInterface
     ): CurlerPageInterface {
         $data = ($this->EntitySelector)($data);
 
-        $response = $curler->getLastResponse();
-        if ($response && ($links = $response->getHeaderValues(HttpHeader::LINK))) {
-            foreach ($links as $link) {
-                /** @var array{string,rel?:string} */
-                $link = Http::getParameters($link);
-                if (($link['rel'] ?? null) === 'next') {
-                    $link = trim($link[0], '<>');
-                    $uri = $request->getUri();
-                    $uri = Uri::from($uri)->follow($link);
-                    $nextRequest = $request->withUri($uri);
-                    break;
-                }
+        foreach ($response->getHeaderValues(HttpHeader::LINK) as $link) {
+            /** @var array{string,rel?:string} */
+            $link = Http::getParameters($link);
+            if (($link['rel'] ?? null) === 'next') {
+                $link = trim($link[0], '<>');
+                $uri = $request->getUri();
+                $uri = Uri::from($uri)->follow($link);
+                $nextRequest = $request->withUri($uri);
+                break;
             }
         }
 

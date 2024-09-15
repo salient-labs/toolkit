@@ -22,7 +22,7 @@ class MockoonPager implements CurlerPagerInterface
         $query['limit'] ??= 50;
         unset($query['page']);
         return new CurlerPageRequest(
-            $request->withUri($curler->replaceQuery($request->getUri(), $query)),
+            $curler->replaceQuery($request, $query),
             $query,
         );
     }
@@ -49,7 +49,7 @@ class MockoonPager implements CurlerPagerInterface
             /** @var array{page?:int} $query */
             $query['page'] ??= 1;
             $query['page']++;
-            $nextRequest = $request->withUri($curler->replaceQuery($request->getUri(), $query));
+            $nextRequest = $curler->replaceQuery($request, $query);
         }
 
         return new CurlerPage($data, $nextRequest ?? null, $query, $count, $total);

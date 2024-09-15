@@ -464,6 +464,12 @@ interface CurlerInterface extends ClientInterface
     public function getPager(): ?CurlerPagerInterface;
 
     /**
+     * Check if the endpoint's pagination handler is used to process every
+     * request
+     */
+    public function alwaysPaginates(): bool;
+
+    /**
      * Get an instance with the given pagination handler
      *
      * @param bool $alwaysPaginate If `true`, the pager is used to process
