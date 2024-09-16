@@ -54,9 +54,7 @@ use LogicException;
 abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chainable, Readable
 {
     use HasChainableMethods;
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
     use HasReadableProperties;
 
     /**

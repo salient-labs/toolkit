@@ -11,7 +11,7 @@ use stdClass;
  */
 final class HasMutatorTest extends TestCase
 {
-    public function testWithPropertyValue(): void
+    public function testWith(): void
     {
         $a = new MyImmutableClass();
         $b = $a->with('A', 1);
@@ -94,7 +94,7 @@ final class HasMutatorTest extends TestCase
         $this->assertEquals($A, $g);
     }
 
-    public function testWithoutProperty(): void
+    public function testWithout(): void
     {
         $a = new MyImmutableClass();
         $b = $a->without('A');

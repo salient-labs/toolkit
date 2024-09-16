@@ -72,7 +72,7 @@ class ProviderContext implements ProviderContextInterface
      */
     final public function withContainer(ContainerInterface $container)
     {
-        return $this->withPropertyValue('Container', $container);
+        return $this->with('Container', $container);
     }
 
     /**
@@ -80,7 +80,7 @@ class ProviderContext implements ProviderContextInterface
      */
     final public function push($entity)
     {
-        $clone = $this->clone();
+        $clone = clone $this;
         $clone->Stack[] = $entity;
 
         if ($entity instanceof HasId) {
@@ -110,7 +110,7 @@ class ProviderContext implements ProviderContextInterface
             }
         }
 
-        return $this->withPropertyValue('Values', $values);
+        return $this->with('Values', $values);
     }
 
     /**
@@ -118,7 +118,7 @@ class ProviderContext implements ProviderContextInterface
      */
     final public function withParent(?Treeable $parent)
     {
-        return $this->withPropertyValue('Parent', $parent);
+        return $this->with('Parent', $parent);
     }
 
     /**
@@ -126,7 +126,7 @@ class ProviderContext implements ProviderContextInterface
      */
     final public function withConformity($conformity)
     {
-        return $this->withPropertyValue('Conformity', $conformity);
+        return $this->with('Conformity', $conformity);
     }
 
     /**

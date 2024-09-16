@@ -8,6 +8,7 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\InvalidFilterException;
 use Salient\Sync\Exception\InvalidFilterSignatureException;
@@ -29,6 +30,8 @@ use LogicException;
  */
 final class SyncContext extends ProviderContext implements SyncContextInterface
 {
+    use HasMutator;
+
     private const INTEGER = 1;
     private const STRING = 2;
     private const LIST = 8;
@@ -61,7 +64,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     public function withFilterPolicyCallback(?callable $callback)
     {
-        return $this->withPropertyValue('FilterPolicyCallback', $callback);
+        return $this->with('FilterPolicyCallback', $callback);
     }
 
     /**
@@ -69,7 +72,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     public function online()
     {
-        return $this->withPropertyValue('Offline', false);
+        return $this->with('Offline', false);
     }
 
     /**
@@ -77,7 +80,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     public function offline()
     {
-        return $this->withPropertyValue('Offline', true);
+        return $this->with('Offline', true);
     }
 
     /**
@@ -85,7 +88,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     public function offlineFirst()
     {
-        return $this->withPropertyValue('Offline', null);
+        return $this->with('Offline', null);
     }
 
     /**
@@ -204,7 +207,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
      */
     public function withDeferralPolicy($policy)
     {
-        return $this->withPropertyValue('DeferralPolicy', $policy);
+        return $this->with('DeferralPolicy', $policy);
     }
 
     /**
@@ -220,7 +223,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             throw new LogicException('$depth must be greater than 0');
         }
 
-        $clone = $this->clone();
+        $clone = clone $this;
         $clone->applyHydrationPolicy($policy, $entity, $depth);
 
         if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy
@@ -238,7 +241,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     {
         return $this
             ->push($entity)
-            ->withPropertyValue(
+            ->with(
                 'LastRecursedInto',
                 in_array($entity, $this->Stack, true) ? $entity : null,
             );
@@ -431,8 +434,8 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     private function applyFilters(array $filters = [], array $filterKeys = [])
     {
         return $this
-            ->withPropertyValue('Filters', $filters)
-            ->withPropertyValue('FilterKeys', $filterKeys);
+            ->with('Filters', $filters)
+            ->with('FilterKeys', $filterKeys);
     }
 
     /**

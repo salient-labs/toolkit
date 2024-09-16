@@ -2,11 +2,15 @@
 
 namespace Salient\PHPDoc\Tag;
 
+use Salient\Core\Concern\HasMutator;
+
 /**
  * A "@var" tag
  */
 class VarTag extends AbstractTag
 {
+    use HasMutator;
+
     /**
      * Creates a new VarTag object
      *

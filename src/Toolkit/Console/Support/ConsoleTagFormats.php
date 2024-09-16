@@ -38,7 +38,7 @@ final class ConsoleTagFormats implements Immutable
      */
     public function withUnescape(bool $value = true)
     {
-        return $this->withPropertyValue('Unescape', $value);
+        return $this->with('Unescape', $value);
     }
 
     /**
@@ -46,7 +46,7 @@ final class ConsoleTagFormats implements Immutable
      */
     public function withWrapAfterApply(bool $value = true)
     {
-        return $this->withPropertyValue('WrapAfterApply', $value);
+        return $this->with('WrapAfterApply', $value);
     }
 
     /**
@@ -73,7 +73,7 @@ final class ConsoleTagFormats implements Immutable
      */
     public function withFormat($tag, Format $format)
     {
-        return $this->withPropertyValue('Formats', Arr::set($this->Formats, $tag, $format));
+        return $this->with('Formats', Arr::set($this->Formats, $tag, $format));
     }
 
     /**

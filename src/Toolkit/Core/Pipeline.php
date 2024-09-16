@@ -34,9 +34,7 @@ final class Pipeline implements
     StreamPipelineInterface
 {
     use HasChainableMethods;
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     private bool $HasPayload = false;
     private bool $HasStream;

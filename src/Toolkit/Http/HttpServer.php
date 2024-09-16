@@ -22,9 +22,7 @@ use Salient\Utility\Str;
  */
 class HttpServer implements Immutable
 {
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     protected string $Host;
     protected int $Port;

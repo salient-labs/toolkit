@@ -19,9 +19,7 @@ use Stringable;
  */
 class Uri implements UriInterface
 {
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     /**
      * Replace empty HTTP and HTTPS paths with "/"

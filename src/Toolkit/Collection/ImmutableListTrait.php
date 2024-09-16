@@ -37,6 +37,6 @@ trait ImmutableListTrait
      */
     protected function maybeClone()
     {
-        return $this->clone();
+        return clone $this;
     }
 }

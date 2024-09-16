@@ -213,7 +213,7 @@ final class CliHelpStyle implements CliHelpStyleInterface
      */
     public function withCollapseSynopsis(bool $value = true)
     {
-        return $this->withPropertyValue('CollapseSynopsis', $value);
+        return $this->with('CollapseSynopsis', $value);
     }
 
     public function prepareHelp(string $text, string $indent = ''): string

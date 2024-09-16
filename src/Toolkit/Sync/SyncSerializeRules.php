@@ -89,9 +89,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
 
     /** @use HasBuilder<SyncSerializeRulesBuilder<TEntity>> */
     use HasBuilder;
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     /** @var class-string<TEntity> */
     private string $Entity;
@@ -188,7 +186,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     public function merge(SerializeRulesInterface $rules): SerializeRulesInterface
     {
         /** @var static<T> */
-        $clone = $this->clone();
+        $clone = clone $this;
         $clone->applyRules($rules);
         return $clone;
     }

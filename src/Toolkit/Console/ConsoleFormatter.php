@@ -189,7 +189,7 @@ REGEX;
      */
     public function withUnescape(bool $value = true)
     {
-        return $this->withPropertyValue('TagFormats', $this->TagFormats->withUnescape($value));
+        return $this->with('TagFormats', $this->TagFormats->withUnescape($value));
     }
 
     /**
@@ -197,7 +197,7 @@ REGEX;
      */
     public function withWrapAfterApply(bool $value = true)
     {
-        return $this->withPropertyValue('TagFormats', $this->TagFormats->withWrapAfterApply($value));
+        return $this->with('TagFormats', $this->TagFormats->withWrapAfterApply($value));
     }
 
     /**

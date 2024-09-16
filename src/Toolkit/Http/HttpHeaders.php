@@ -36,9 +36,7 @@ class HttpHeaders implements HttpHeadersInterface
     use ReadableCollectionTrait;
     /** @use ImmutableArrayAccessTrait<string,string[]> */
     use ImmutableArrayAccessTrait;
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
     private const HTTP_HEADER_FIELD_VALUE = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
@@ -891,7 +889,7 @@ REGEX;
     {
         $headers ??= $this->getIndexHeaders($index);
 
-        $clone = $this->clone();
+        $clone = clone $this;
         $clone->Headers = $headers;
         $clone->Index = $clone->filterIndex($index);
         $clone->Items = $clone->doGetHeaders();

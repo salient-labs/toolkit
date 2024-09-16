@@ -154,7 +154,7 @@ final class SyncError implements SyncErrorInterface, Buildable
      */
     public function count()
     {
-        return $this->withPropertyValue('Count', $this->Count + 1);
+        return $this->with('Count', $this->Count + 1);
     }
 
     /**

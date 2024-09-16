@@ -22,9 +22,7 @@ use LogicException;
  */
 class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
 {
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     protected ?string $Name;
     protected ?string $Filename;

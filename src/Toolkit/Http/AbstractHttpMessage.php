@@ -23,9 +23,7 @@ use InvalidArgumentException;
 abstract class AbstractHttpMessage implements HttpMessageInterface
 {
     use HasHttpHeaders;
-    use HasMutator {
-        HasMutator::withPropertyValue as with;
-    }
+    use HasMutator;
 
     protected string $ProtocolVersion;
     protected HttpHeadersInterface $Headers;

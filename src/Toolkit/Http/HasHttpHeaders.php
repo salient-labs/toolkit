@@ -7,9 +7,7 @@ use Salient\Core\Concern\HasMutator;
 
 trait HasHttpHeaders
 {
-    use HasMutator {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     protected HttpHeadersInterface $Headers;
 

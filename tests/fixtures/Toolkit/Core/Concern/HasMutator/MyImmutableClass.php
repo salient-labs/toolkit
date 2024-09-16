@@ -10,8 +10,8 @@ use stdClass;
 class MyImmutableClass implements Immutable
 {
     use HasMutator {
-        withPropertyValue as public with;
-        withoutProperty as public without;
+        with as public;
+        without as public;
     }
 
     public int $A;

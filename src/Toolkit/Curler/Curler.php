@@ -74,6 +74,11 @@ use Throwable;
  */
 class Curler implements CurlerInterface, Buildable
 {
+    /** @use HasBuilder<CurlerBuilder> */
+    use HasBuilder;
+    use HasHttpHeaders;
+    use HasMutator;
+
     /**
      * Limit input strings to 2MiB
      *
@@ -87,14 +92,6 @@ class Curler implements CurlerInterface, Buildable
         Method::PATCH => true,
         Method::DELETE => true,
     ];
-
-    /** @use HasBuilder<CurlerBuilder> */
-    use HasBuilder;
-    use HasHttpHeaders;
-    use HasMutator {
-        HasMutator::withPropertyValue as with;
-        HasMutator::withoutProperty as without;
-    }
 
     protected Uri $Uri;
     protected HttpHeadersInterface $Headers;

@@ -15,10 +15,7 @@ use Salient\Utility\Test;
  */
 abstract class AbstractTag implements Immutable
 {
-    use HasMutator {
-        withPropertyValue as with;
-        withoutProperty as without;
-    }
+    use HasMutator;
 
     protected string $Tag;
     protected string $Name;
