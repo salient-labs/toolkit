@@ -10,7 +10,7 @@ use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\App;
 use Salient\Utility\Arr;
 use Closure;
@@ -34,7 +34,7 @@ final class Pipeline implements
     StreamPipelineInterface
 {
     use HasChainableMethods;
-    use HasImmutableProperties {
+    use HasMutator {
         withPropertyValue as with;
     }
 

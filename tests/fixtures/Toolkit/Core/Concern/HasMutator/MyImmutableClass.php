@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Concern\HasImmutableProperties;
+namespace Salient\Tests\Core\Concern\HasMutator;
 
 use Salient\Collection\ImmutableCollection;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use stdClass;
 
 class MyImmutableClass implements Immutable
 {
-    use HasImmutableProperties {
+    use HasMutator {
         withPropertyValue as public with;
         withoutProperty as public without;
     }

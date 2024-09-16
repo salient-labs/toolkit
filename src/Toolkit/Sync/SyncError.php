@@ -9,7 +9,7 @@ use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Arr;
 
 /**
@@ -21,7 +21,7 @@ final class SyncError implements SyncErrorInterface, Buildable
 {
     /** @use HasBuilder<SyncErrorBuilder> */
     use HasBuilder;
-    use HasImmutableProperties;
+    use HasMutator;
 
     /** @var SyncErrorType::* */
     private int $ErrorType;

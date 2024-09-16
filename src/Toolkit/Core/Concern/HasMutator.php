@@ -8,7 +8,7 @@ use ReflectionProperty;
 /**
  * @phpstan-require-implements Immutable
  */
-trait HasImmutableProperties
+trait HasMutator
 {
     /**
      * Clone the object

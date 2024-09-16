@@ -8,7 +8,7 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\HttpServerRequestInterface;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\Console;
 use Salient\Http\Exception\HttpServerException;
 use Salient\Http\Exception\InvalidHeaderException;
@@ -22,7 +22,7 @@ use Salient\Utility\Str;
  */
 class HttpServer implements Immutable
 {
-    use HasImmutableProperties {
+    use HasMutator {
         withPropertyValue as with;
     }
 

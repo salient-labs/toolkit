@@ -10,7 +10,7 @@ use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Http\Exception\InvalidHeaderException;
@@ -36,7 +36,7 @@ class HttpHeaders implements HttpHeadersInterface
     use ReadableCollectionTrait;
     /** @use ImmutableArrayAccessTrait<string,string[]> */
     use ImmutableArrayAccessTrait;
-    use HasImmutableProperties {
+    use HasMutator {
         withPropertyValue as with;
     }
 

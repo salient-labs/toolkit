@@ -4,7 +4,7 @@ namespace Salient\Collection;
 
 use Salient\Contract\Collection\ListInterface;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 
 /**
@@ -30,7 +30,7 @@ trait ImmutableListTrait
         ImmutableArrayAccessTrait::offsetSet insteadof ListTrait;
         ImmutableArrayAccessTrait::offsetUnset insteadof ListTrait;
     }
-    use HasImmutableProperties;
+    use HasMutator;
 
     /**
      * @return static

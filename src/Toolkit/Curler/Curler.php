@@ -28,7 +28,7 @@ use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
@@ -91,9 +91,9 @@ class Curler implements CurlerInterface, Buildable
     /** @use HasBuilder<CurlerBuilder> */
     use HasBuilder;
     use HasHttpHeaders;
-    use HasImmutableProperties {
-        HasImmutableProperties::withPropertyValue as with;
-        HasImmutableProperties::withoutProperty as without;
+    use HasMutator {
+        HasMutator::withPropertyValue as with;
+        HasMutator::withoutProperty as without;
     }
 
     protected Uri $Uri;

@@ -9,7 +9,7 @@ use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Treeable;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Get;
 use Salient\Utility\Str;
 
@@ -24,7 +24,7 @@ use Salient\Utility\Str;
  */
 class ProviderContext implements ProviderContextInterface
 {
-    use HasImmutableProperties;
+    use HasMutator;
 
     protected ContainerInterface $Container;
     /** @var TProvider */

@@ -4,7 +4,7 @@ namespace Salient\Http;
 
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\UriInterface;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
@@ -19,7 +19,7 @@ use Stringable;
  */
 class Uri implements UriInterface
 {
-    use HasImmutableProperties {
+    use HasMutator {
         withPropertyValue as with;
     }
 

@@ -10,7 +10,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
@@ -89,7 +89,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
 
     /** @use HasBuilder<SyncSerializeRulesBuilder<TEntity>> */
     use HasBuilder;
-    use HasImmutableProperties {
+    use HasMutator {
         withPropertyValue as with;
     }
 

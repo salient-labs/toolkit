@@ -5,7 +5,7 @@ namespace Salient\Http;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
@@ -22,7 +22,7 @@ use LogicException;
  */
 class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
 {
-    use HasImmutableProperties {
+    use HasMutator {
         withPropertyValue as with;
     }
 
