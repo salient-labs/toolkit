@@ -73,6 +73,7 @@ final class ConsoleTagFormats implements Immutable
      */
     public function withFormat($tag, Format $format)
     {
+        // @phpstan-ignore salient.property.type
         return $this->with('Formats', Arr::set($this->Formats, $tag, $format));
     }
 

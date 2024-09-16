@@ -825,6 +825,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withSensitiveHeader(string $name)
     {
+        // @phpstan-ignore salient.property.type
         return $this->with(
             'SensitiveHeaders',
             Arr::set($this->SensitiveHeaders, Str::lower($name), true)
@@ -836,6 +837,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withoutSensitiveHeader(string $name)
     {
+        // @phpstan-ignore salient.property.type
         return $this->with(
             'SensitiveHeaders',
             Arr::unset($this->SensitiveHeaders, Str::lower($name))
@@ -984,6 +986,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withCacheKeyCallback(?callable $callback)
     {
+        // @phpstan-ignore salient.property.type
         return $this->with('CacheKeyClosure', Get::closure($callback));
     }
 

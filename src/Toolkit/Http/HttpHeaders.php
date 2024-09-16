@@ -59,7 +59,7 @@ REGEX;
     /**
      * [ [ Name => value ], ... ]
      *
-     * @var array<non-empty-array<string,string>>
+     * @var array<int,non-empty-array<string,string>>
      */
     protected array $Headers = [];
 
@@ -861,7 +861,7 @@ REGEX;
     }
 
     /**
-     * @param array<non-empty-array<string,string>>|null $headers
+     * @param array<int,non-empty-array<string,string>>|null $headers
      * @param array<string,int[]> $index
      * @return static
      */
@@ -881,7 +881,7 @@ REGEX;
     }
 
     /**
-     * @param array<non-empty-array<string,string>>|null $headers
+     * @param array<int,non-empty-array<string,string>>|null $headers
      * @param array<string,int[]> $index
      * @return static
      */
@@ -919,7 +919,7 @@ REGEX;
 
     /**
      * @param array<string,int[]> $index
-     * @return array<non-empty-array<string,string>>
+     * @return array<int,non-empty-array<string,string>>
      */
     protected function getIndexHeaders(array $index): array
     {
@@ -932,8 +932,8 @@ REGEX;
     }
 
     /**
-     * @param array<non-empty-array<string,string>> $headers
-     * @return array<non-empty-array<string,string>>
+     * @param array<int,non-empty-array<string,string>> $headers
+     * @return array<int,non-empty-array<string,string>>
      */
     private function filterHeaders(array $headers): array
     {

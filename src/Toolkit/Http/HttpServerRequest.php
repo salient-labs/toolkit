@@ -69,6 +69,9 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
             throw new InvalidArgumentTypeException(1, 'message', ServerRequestInterface::class, $message);
         }
 
+        /** @var array<string,mixed> */
+        $attributes = $message->getAttributes();
+
         return (new self(
             $message->getMethod(),
             $message->getUri(),
@@ -82,7 +85,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
             ->withQueryParams($message->getQueryParams())
             ->withUploadedFiles($message->getUploadedFiles())
             ->withParsedBody($message->getParsedBody())
-            ->with('Attributes', $message->getAttributes());
+            ->with('Attributes', $attributes);
     }
 
     /**

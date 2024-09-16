@@ -120,12 +120,15 @@ final class Pipeline implements
             // @codeCoverageIgnoreEnd
         }
 
-        /** @var static<TInput&T0,TOutput,TArgument&T1> */
-        return $this
+        /** @var static<T0,TOutput,T1> */
+        $pipeline = $this;
+        $pipeline = $pipeline
             ->with('HasPayload', true)
             ->with('HasStream', $stream)
             ->with('Payload', $payload)
             ->with('Arg', $arg);
+        /** @var static<TInput&T0,TOutput,TArgument&T1> */
+        return $pipeline;
     }
 
     /**
