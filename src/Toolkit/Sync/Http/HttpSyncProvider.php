@@ -30,19 +30,21 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      * expire, or:
      * - `null`: do not cache responses
      * - `0`: cache responses indefinitely
-     * - `-1` (default): use the value returned by {@see getExpiry()}
+     * - `-1` (default): use value returned by {@see getExpiry()}
      */
     final public function getCurler(
         string $path,
         ?int $expiry = -1,
         ?HttpHeadersInterface $headers = null,
         ?CurlerPagerInterface $pager = null,
+        bool $alwaysPaginate = false,
         ?DateFormatterInterface $dateFormatter = null
     ): CurlerInterface {
         $builder = Curler::build()
             ->uri($this->getEndpointUrl($path))
             ->headers($headers ?? $this->getHeaders($path))
             ->pager($pager ?? $this->getPager($path))
+            ->alwaysPaginate($pager ? $alwaysPaginate : $this->getAlwaysPaginate($path))
             ->dateFormatter($dateFormatter ?? $this->getDateFormatter());
 
         if ($expiry === -1) {
@@ -101,6 +103,17 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     }
 
     /**
+     * Override if the pager returned by getPager() should be used to process
+     * requests even if no pagination is required
+     *
+     * @codeCoverageIgnore
+     */
+    protected function getAlwaysPaginate(string $path): bool
+    {
+        return false;
+    }
+
+    /**
      * Override to specify the number of seconds before cached responses from
      * the upstream API expire
      *
@@ -118,8 +131,8 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      * Override to customise Curler instances before they are used to perform
      * sync operations
      *
-     * Values passed to {@see HttpSyncProvider::getCurler()} take precedence
-     * over values applied by this method.
+     * Values passed to {@see HttpSyncProvider::getCurler()} are applied before
+     * this method is called.
      *
      * @codeCoverageIgnore
      */

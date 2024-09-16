@@ -65,6 +65,7 @@ use UnexpectedValueException;
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
  * @property-read HttpHeadersInterface|null $Headers HTTP headers applied to the sync operation request
  * @property-read CurlerPagerInterface|null $Pager Pagination handler for the endpoint servicing the entity
+ * @property-read bool $AlwaysPaginate Use the pager to process requests even if no pagination is required
  * @property-read int<-1,max>|null $Expiry Seconds before cached responses expire
  * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap Array that maps sync operations to HTTP request methods
  * @property-read (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $CurlerCallback Callback applied to the Curler instance created to perform each sync operation
@@ -155,6 +156,11 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * {@see HttpSyncDefinition::$Callback}.
      */
     protected ?CurlerPagerInterface $Pager;
+
+    /**
+     * Use the pager to process requests even if no pagination is required
+     */
+    protected bool $AlwaysPaginate;
 
     /**
      * Seconds before cached responses expire
@@ -251,6 +257,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         ?array $query = null,
         ?HttpHeadersInterface $headers = null,
         ?CurlerPagerInterface $pager = null,
+        bool $alwaysPaginate = false,
         ?callable $callback = null,
         $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
@@ -286,6 +293,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         $this->Query = $query;
         $this->Headers = $headers;
         $this->Pager = $pager;
+        $this->AlwaysPaginate = $pager && $alwaysPaginate;
         $this->Callback = $callback;
         $this->Expiry = $expiry;
         $this->MethodMap = $methodMap;
@@ -331,11 +339,15 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     /**
      * Get an instance with the given pagination handler
      *
+     * @param bool $alwaysPaginate If `true`, the pager is used to process
+     * requests even if no pagination is required.
      * @return static
      */
-    public function withPager(?CurlerPagerInterface $pager)
+    public function withPager(?CurlerPagerInterface $pager, bool $alwaysPaginate = false)
     {
-        return $this->with('Pager', $pager);
+        return $this
+            ->with('Pager', $pager)
+            ->with('AlwaysPaginate', $pager && $alwaysPaginate);
     }
 
     /**
@@ -716,7 +728,13 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             );
         }
 
-        $curler = $this->Provider->getCurler($path, $this->Expiry, $this->Headers, $this->Pager);
+        $curler = $this->Provider->getCurler(
+            $path,
+            $this->Expiry,
+            $this->Headers,
+            $this->Pager,
+            $this->AlwaysPaginate,
+        );
 
         if ($this->CurlerCallback) {
             $curler = ($this->CurlerCallback)($curler, $this, $operation, $ctx, ...$args);
@@ -867,6 +885,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             'Query',
             'Headers',
             'Pager',
+            'AlwaysPaginate',
             'Expiry',
             'MethodMap',
             'CurlerCallback',

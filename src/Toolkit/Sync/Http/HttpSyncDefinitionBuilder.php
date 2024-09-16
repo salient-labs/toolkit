@@ -27,6 +27,7 @@ use Closure;
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
  * @method $this headers(?HttpHeadersInterface $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
  * @method $this pager(?CurlerPagerInterface $value) Pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
+ * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) Callback applied to the definition before each sync operation (see {@see HttpSyncDefinition::$Callback})
  * @method $this conformity(ListConformity::* $value) Conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
  * @method $this filterPolicy(FilterPolicy::*|null $value) Action to take when filters are not claimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
