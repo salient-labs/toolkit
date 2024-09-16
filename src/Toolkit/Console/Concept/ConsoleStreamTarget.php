@@ -67,16 +67,16 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
         $yellowUnderline = Format::ttyUnderline(Colour::YELLOW);
 
         return (new TagFormats())
-            ->set(Tag::HEADING, $boldCyan)
-            ->set(Tag::BOLD, $bold)
-            ->set(Tag::ITALIC, $yellow)
-            ->set(Tag::UNDERLINE, $yellowUnderline)
-            ->set(Tag::LOW_PRIORITY, $dim)
-            ->set(Tag::CODE_SPAN, $bold)
-            ->set(Tag::DIFF_HEADER, $bold)
-            ->set(Tag::DIFF_RANGE, $cyan)
-            ->set(Tag::DIFF_ADDITION, $green)
-            ->set(Tag::DIFF_REMOVAL, $red);
+            ->withFormat(Tag::HEADING, $boldCyan)
+            ->withFormat(Tag::BOLD, $bold)
+            ->withFormat(Tag::ITALIC, $yellow)
+            ->withFormat(Tag::UNDERLINE, $yellowUnderline)
+            ->withFormat(Tag::LOW_PRIORITY, $dim)
+            ->withFormat(Tag::CODE_SPAN, $bold)
+            ->withFormat(Tag::DIFF_HEADER, $bold)
+            ->withFormat(Tag::DIFF_RANGE, $cyan)
+            ->withFormat(Tag::DIFF_ADDITION, $green)
+            ->withFormat(Tag::DIFF_REMOVAL, $red);
     }
 
     protected function createMessageFormats(): MessageFormats

@@ -205,7 +205,7 @@ REGEX;
      */
     public function getTagFormat($tag): Format
     {
-        return $this->TagFormats->get($tag);
+        return $this->TagFormats->getFormat($tag);
     }
 
     /**
@@ -583,11 +583,11 @@ REGEX;
     public function formatDiff(string $diff): string
     {
         $formats = [
-            '---' => $this->TagFormats->get(Tag::DIFF_HEADER),
-            '+++' => $this->TagFormats->get(Tag::DIFF_HEADER),
-            '@' => $this->TagFormats->get(Tag::DIFF_RANGE),
-            '+' => $this->TagFormats->get(Tag::DIFF_ADDITION),
-            '-' => $this->TagFormats->get(Tag::DIFF_REMOVAL),
+            '---' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
+            '+++' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
+            '@' => $this->TagFormats->getFormat(Tag::DIFF_RANGE),
+            '+' => $this->TagFormats->getFormat(Tag::DIFF_ADDITION),
+            '-' => $this->TagFormats->getFormat(Tag::DIFF_REMOVAL),
         ];
 
         return Regex::replaceCallback(

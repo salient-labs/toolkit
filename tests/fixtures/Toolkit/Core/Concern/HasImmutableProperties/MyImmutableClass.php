@@ -3,10 +3,11 @@
 namespace Salient\Tests\Core\Concern\HasImmutableProperties;
 
 use Salient\Collection\ImmutableCollection;
+use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasImmutableProperties;
 use stdClass;
 
-class MyImmutableClass
+class MyImmutableClass implements Immutable
 {
     use HasImmutableProperties {
         withPropertyValue as public with;

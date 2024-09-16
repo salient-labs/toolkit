@@ -3,12 +3,13 @@
 namespace Salient\Contract\Console;
 
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\MessageLevel as Level;
 
 /**
  * @api
  */
-interface ConsoleFormatterInterface
+interface ConsoleFormatterInterface extends Immutable
 {
     /**
      * Get an instance with the given spinner state array

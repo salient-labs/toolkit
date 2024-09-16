@@ -2,8 +2,12 @@
 
 namespace Salient\Core\Concern;
 
+use Salient\Contract\Core\Immutable;
 use ReflectionProperty;
 
+/**
+ * @phpstan-require-implements Immutable
+ */
 trait HasImmutableProperties
 {
     /**

@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeader;
@@ -23,7 +24,7 @@ use Stringable;
 /**
  * @api
  */
-interface CurlerInterface extends ClientInterface
+interface CurlerInterface extends ClientInterface, Immutable
 {
     /**
      * Get the URI of the endpoint
