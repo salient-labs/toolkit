@@ -935,10 +935,8 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withPager(
-        ?CurlerPagerInterface $pager,
-        bool $alwaysPaginate = false
-    ) {
+    public function withPager(?CurlerPagerInterface $pager, bool $alwaysPaginate = false)
+    {
         return $this
             ->with('Pager', $pager)
             ->with('AlwaysPaginate', $pager && $alwaysPaginate);
