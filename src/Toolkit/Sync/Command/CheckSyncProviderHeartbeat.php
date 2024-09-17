@@ -70,6 +70,8 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
                 ->description('If a check fails, exit without checking other providers')
                 ->bindTo($this->FailEarly),
         ];
+
+        yield from $this->getGlobalOptionList();
     }
 
     public function getLongDescription(): ?string
@@ -92,7 +94,7 @@ EOF;
 
     protected function run(string ...$args)
     {
-        Console::registerStderrTarget();
+        $this->startRun();
 
         if ($this->Providers) {
             $providers = array_values(array_map(

@@ -54,7 +54,6 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
 
         if ($this->HttpProviders) {
             yield $builder
-                ->description('The HTTP provider to use')
                 ->optionType(CliOptionType::ONE_OF_POSITIONAL)
                 ->allowedValues(array_keys($this->HttpProviders))
                 ->bindTo($this->ProviderBasename);
@@ -107,11 +106,13 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
                     ->bindTo($this->Stream),
             ];
         }
+
+        yield from $this->getGlobalOptionList();
     }
 
     protected function run(string ...$args)
     {
-        Console::registerStderrTarget();
+        $this->startRun();
 
         if ($this->HttpProviders) {
             $provider = $this->HttpProviders[$this->ProviderBasename];

@@ -4,10 +4,13 @@ namespace Salient\Sync\Command;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
+use Salient\Cli\CliOption;
+use Salient\Cli\CliOptionBuilder;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
+use Salient\Core\Facade\Console;
 use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Arr;
@@ -18,10 +21,14 @@ use Salient\Utility\Str;
 use JsonException;
 
 /**
- * Base class for generic sync commands
+ * @internal
  */
 abstract class AbstractSyncCommand extends CliCommand
 {
+    protected bool $ExportHar = false;
+
+    // --
+
     protected SyncStoreInterface $Store;
 
     /**
@@ -132,6 +139,29 @@ abstract class AbstractSyncCommand extends CliCommand
     }
 
     /**
+     * @return array<CliOption|CliOptionBuilder>
+     */
+    protected function getGlobalOptionList(): array
+    {
+        return [
+            CliOption::build()
+                ->long('har')
+                ->short('H')
+                ->description('Export HTTP requests to an HTTP Archive file in the log directory')
+                ->bindTo($this->ExportHar),
+        ];
+    }
+
+    protected function startRun(): void
+    {
+        Console::registerStderrTarget();
+
+        if ($this->ExportHar) {
+            $this->App->exportHar();
+        }
+    }
+
+    /**
      * @return mixed[]|object
      */
     protected function getJson(string $filename, bool $associative = true)
@@ -143,15 +173,11 @@ abstract class AbstractSyncCommand extends CliCommand
                 ? Json::parseObjectAsArray($json)
                 : Json::parse($json);
         } catch (JsonException $ex) {
+            $message = $ex->getMessage();
             throw new CliInvalidArgumentsException(
-                $filename === '-' ? sprintf(
-                    'invalid JSON: %s',
-                    $ex->getMessage(),
-                ) : sprintf(
-                    "invalid JSON in '%s': %s",
-                    $filename,
-                    $ex->getMessage(),
-                )
+                $filename === '-'
+                    ? sprintf('invalid JSON: %s', $message)
+                    : sprintf("invalid JSON in '%s': %s", $filename, $message)
             );
         }
 
