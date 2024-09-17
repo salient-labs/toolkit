@@ -2,27 +2,24 @@
 
 namespace Salient\Core\Concern;
 
+use Salient\Contract\Core\Immutable;
 use ReflectionProperty;
 
-trait HasImmutableProperties
+/**
+ * @api
+ *
+ * @phpstan-require-implements Immutable
+ */
+trait HasMutator
 {
     /**
-     * Clone the object
-     *
-     * @return static
-     */
-    protected function clone()
-    {
-        return clone $this;
-    }
-
-    /**
-     * Apply a value to a clone of the object if the current value differs
+     * Get a copy of the object with a value assigned to a property if its
+     * current value differs, otherwise return the object
      *
      * @param mixed $value
      * @return static
      */
-    protected function withPropertyValue(string $property, $value)
+    private function with(string $property, $value)
     {
         if ((
             isset($this->$property)
@@ -31,18 +28,18 @@ trait HasImmutableProperties
             return $this;
         }
 
-        $clone = $this->clone();
+        $clone = clone $this;
         $clone->$property = $value;
         return $clone;
     }
 
     /**
-     * Remove a property from a clone of the object if it is currently set or
-     * initialized
+     * Get a copy of the object where a property is unset if it is currently
+     * set, otherwise return the object
      *
      * @return static
      */
-    protected function withoutProperty(string $property)
+    private function without(string $property)
     {
         if (
             !isset($this->$property)
@@ -51,7 +48,7 @@ trait HasImmutableProperties
             return $this;
         }
 
-        $clone = $this->clone();
+        $clone = clone $this;
         unset($clone->$property);
         return $clone;
     }

@@ -2,6 +2,7 @@
 
 namespace Salient\PHPDoc\Tag;
 
+use Salient\Core\Concern\HasMutator;
 use Stringable;
 
 /**
@@ -9,6 +10,8 @@ use Stringable;
  */
 class TemplateTag extends AbstractTag implements Stringable
 {
+    use HasMutator;
+
     /** @var "covariant"|"contravariant"|null */
     protected ?string $Variance;
 

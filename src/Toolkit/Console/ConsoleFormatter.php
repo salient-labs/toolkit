@@ -13,7 +13,7 @@ use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use LogicException;
@@ -24,7 +24,7 @@ use UnexpectedValueException;
  */
 final class ConsoleFormatter implements FormatterInterface
 {
-    use HasImmutableProperties;
+    use HasMutator;
 
     public const DEFAULT_LEVEL_PREFIX_MAP = [
         Level::EMERGENCY => '! ',  // U+0021
@@ -189,7 +189,7 @@ REGEX;
      */
     public function withUnescape(bool $value = true)
     {
-        return $this->withPropertyValue('TagFormats', $this->TagFormats->withUnescape($value));
+        return $this->with('TagFormats', $this->TagFormats->withUnescape($value));
     }
 
     /**
@@ -197,7 +197,7 @@ REGEX;
      */
     public function withWrapAfterApply(bool $value = true)
     {
-        return $this->withPropertyValue('TagFormats', $this->TagFormats->withWrapAfterApply($value));
+        return $this->with('TagFormats', $this->TagFormats->withWrapAfterApply($value));
     }
 
     /**
@@ -205,7 +205,7 @@ REGEX;
      */
     public function getTagFormat($tag): Format
     {
-        return $this->TagFormats->get($tag);
+        return $this->TagFormats->getFormat($tag);
     }
 
     /**
@@ -583,11 +583,11 @@ REGEX;
     public function formatDiff(string $diff): string
     {
         $formats = [
-            '---' => $this->TagFormats->get(Tag::DIFF_HEADER),
-            '+++' => $this->TagFormats->get(Tag::DIFF_HEADER),
-            '@' => $this->TagFormats->get(Tag::DIFF_RANGE),
-            '+' => $this->TagFormats->get(Tag::DIFF_ADDITION),
-            '-' => $this->TagFormats->get(Tag::DIFF_REMOVAL),
+            '---' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
+            '+++' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
+            '@' => $this->TagFormats->getFormat(Tag::DIFF_RANGE),
+            '+' => $this->TagFormats->getFormat(Tag::DIFF_ADDITION),
+            '-' => $this->TagFormats->getFormat(Tag::DIFF_REMOVAL),
         ];
 
         return Regex::replaceCallback(

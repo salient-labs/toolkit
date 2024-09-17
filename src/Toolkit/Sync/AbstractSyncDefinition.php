@@ -16,7 +16,7 @@ use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
@@ -54,9 +54,7 @@ use LogicException;
 abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chainable, Readable
 {
     use HasChainableMethods;
-    use HasImmutableProperties {
-        withPropertyValue as with;
-    }
+    use HasMutator;
     use HasReadableProperties;
 
     /**

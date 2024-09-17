@@ -5,14 +5,14 @@ namespace Salient\Console\Support;
 use Salient\Contract\Console\ConsoleMessageAttributesInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 
 /**
  * Message attributes
  */
 final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterface
 {
-    use HasImmutableProperties;
+    use HasMutator;
 
     /**
      * Message level
@@ -74,7 +74,7 @@ final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterfac
      */
     public function withIsMsg1(bool $value = true)
     {
-        return $this->withPropertyValue('IsMsg1', $value);
+        return $this->with('IsMsg1', $value);
     }
 
     /**
@@ -82,7 +82,7 @@ final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterfac
      */
     public function withIsMsg2(bool $value = true)
     {
-        return $this->withPropertyValue('IsMsg2', $value);
+        return $this->with('IsMsg2', $value);
     }
 
     /**
@@ -90,6 +90,6 @@ final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterfac
      */
     public function withIsPrefix(bool $value = true)
     {
-        return $this->withPropertyValue('IsPrefix', $value);
+        return $this->with('IsPrefix', $value);
     }
 }

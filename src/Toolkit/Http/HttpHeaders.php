@@ -10,7 +10,7 @@ use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Http\Exception\InvalidHeaderException;
@@ -36,9 +36,7 @@ class HttpHeaders implements HttpHeadersInterface
     use ReadableCollectionTrait;
     /** @use ImmutableArrayAccessTrait<string,string[]> */
     use ImmutableArrayAccessTrait;
-    use HasImmutableProperties {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
     private const HTTP_HEADER_FIELD_VALUE = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
@@ -61,7 +59,7 @@ REGEX;
     /**
      * [ [ Name => value ], ... ]
      *
-     * @var array<non-empty-array<string,string>>
+     * @var array<int,non-empty-array<string,string>>
      */
     protected array $Headers = [];
 
@@ -863,7 +861,7 @@ REGEX;
     }
 
     /**
-     * @param array<non-empty-array<string,string>>|null $headers
+     * @param array<int,non-empty-array<string,string>>|null $headers
      * @param array<string,int[]> $index
      * @return static
      */
@@ -883,7 +881,7 @@ REGEX;
     }
 
     /**
-     * @param array<non-empty-array<string,string>>|null $headers
+     * @param array<int,non-empty-array<string,string>>|null $headers
      * @param array<string,int[]> $index
      * @return static
      */
@@ -891,7 +889,7 @@ REGEX;
     {
         $headers ??= $this->getIndexHeaders($index);
 
-        $clone = $this->clone();
+        $clone = clone $this;
         $clone->Headers = $headers;
         $clone->Index = $clone->filterIndex($index);
         $clone->Items = $clone->doGetHeaders();
@@ -921,7 +919,7 @@ REGEX;
 
     /**
      * @param array<string,int[]> $index
-     * @return array<non-empty-array<string,string>>
+     * @return array<int,non-empty-array<string,string>>
      */
     protected function getIndexHeaders(array $index): array
     {
@@ -934,8 +932,8 @@ REGEX;
     }
 
     /**
-     * @param array<non-empty-array<string,string>> $headers
-     * @return array<non-empty-array<string,string>>
+     * @param array<int,non-empty-array<string,string>> $headers
+     * @return array<int,non-empty-array<string,string>>
      */
     private function filterHeaders(array $headers): array
     {

@@ -5,14 +5,16 @@ namespace Salient\Console\Support;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Contract\Console\ConsoleFormatInterface as Format;
 use Salient\Contract\Console\ConsoleTag as Tag;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Contract\Core\Immutable;
+use Salient\Core\Concern\HasMutator;
+use Salient\Utility\Arr;
 
 /**
  * Maps inline formatting tags to formats
  */
-final class ConsoleTagFormats
+final class ConsoleTagFormats implements Immutable
 {
-    use HasImmutableProperties;
+    use HasMutator;
 
     /** @var array<Tag::*,Format> */
     private array $Formats = [];
@@ -36,7 +38,7 @@ final class ConsoleTagFormats
      */
     public function withUnescape(bool $value = true)
     {
-        return $this->withPropertyValue('Unescape', $value);
+        return $this->with('Unescape', $value);
     }
 
     /**
@@ -44,7 +46,7 @@ final class ConsoleTagFormats
      */
     public function withWrapAfterApply(bool $value = true)
     {
-        return $this->withPropertyValue('WrapAfterApply', $value);
+        return $this->with('WrapAfterApply', $value);
     }
 
     /**
@@ -64,15 +66,15 @@ final class ConsoleTagFormats
     }
 
     /**
-     * Assign a format to a tag
+     * Get an instance with a format assigned to a tag
      *
      * @param Tag::* $tag
-     * @return $this
+     * @return static
      */
-    public function set($tag, Format $format)
+    public function withFormat($tag, Format $format)
     {
-        $this->Formats[$tag] = $format;
-        return $this;
+        // @phpstan-ignore salient.property.type
+        return $this->with('Formats', Arr::set($this->Formats, $tag, $format));
     }
 
     /**
@@ -80,7 +82,7 @@ final class ConsoleTagFormats
      *
      * @param Tag::* $tag
      */
-    public function get($tag): Format
+    public function getFormat($tag): Format
     {
         return $this->Formats[$tag] ?? $this->FallbackFormat;
     }

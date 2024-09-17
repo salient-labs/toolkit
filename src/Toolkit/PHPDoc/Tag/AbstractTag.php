@@ -3,7 +3,7 @@
 namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
@@ -15,10 +15,7 @@ use Salient\Utility\Test;
  */
 abstract class AbstractTag implements Immutable
 {
-    use HasImmutableProperties {
-        withPropertyValue as with;
-        withoutProperty as without;
-    }
+    use HasMutator;
 
     protected string $Tag;
     protected string $Name;

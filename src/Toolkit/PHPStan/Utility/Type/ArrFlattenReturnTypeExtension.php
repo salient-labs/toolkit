@@ -52,9 +52,6 @@ class ArrFlattenReturnTypeExtension implements DynamicStaticMethodReturnTypeExte
                 return null;
             }
             $values = $type->getConstantScalarValues();
-            if (count($values) !== 1) {
-                return null;
-            }
             /** @var int */
             $limit = $values[0];
         }

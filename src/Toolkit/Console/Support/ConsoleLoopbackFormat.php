@@ -79,12 +79,12 @@ final class ConsoleLoopbackFormat implements
     public static function getTagFormats(): TagFormats
     {
         return (new TagFormats(false))
-            ->set(Tag::HEADING, new self('***', '***'))
-            ->set(Tag::BOLD, new self('**', '**'))
-            ->set(Tag::ITALIC, new self('*', '*'))
-            ->set(Tag::UNDERLINE, new self('<', '>'))
-            ->set(Tag::LOW_PRIORITY, new self('~~', '~~'))
-            ->set(Tag::CODE_SPAN, new self('`', '`'))
-            ->set(Tag::CODE_BLOCK, new self('```', '```'));
+            ->withFormat(Tag::HEADING, new self('***', '***'))
+            ->withFormat(Tag::BOLD, new self('**', '**'))
+            ->withFormat(Tag::ITALIC, new self('*', '*'))
+            ->withFormat(Tag::UNDERLINE, new self('<', '>'))
+            ->withFormat(Tag::LOW_PRIORITY, new self('~~', '~~'))
+            ->withFormat(Tag::CODE_SPAN, new self('`', '`'))
+            ->withFormat(Tag::CODE_BLOCK, new self('```', '```'));
     }
 }

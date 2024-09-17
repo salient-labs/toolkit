@@ -1,5 +1,10 @@
 services:
 	-
+		class: Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: Salient\PHPStan\Utility\Rules\GetCoalesceRule
 		tags:
 			- phpstan.rules.rule

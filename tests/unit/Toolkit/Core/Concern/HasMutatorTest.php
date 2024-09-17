@@ -2,16 +2,16 @@
 
 namespace Salient\Tests\Core\Concern;
 
-use Salient\Tests\Core\Concern\HasImmutableProperties\MyImmutableClass;
+use Salient\Tests\Core\Concern\HasMutator\MyImmutableClass;
 use Salient\Tests\TestCase;
 use stdClass;
 
 /**
- * @covers \Salient\Core\Concern\HasImmutableProperties
+ * @covers \Salient\Core\Concern\HasMutator
  */
-final class HasImmutablePropertiesTest extends TestCase
+final class HasMutatorTest extends TestCase
 {
-    public function testWithPropertyValue(): void
+    public function testWith(): void
     {
         $a = new MyImmutableClass();
         $b = $a->with('A', 1);
@@ -94,7 +94,7 @@ final class HasImmutablePropertiesTest extends TestCase
         $this->assertEquals($A, $g);
     }
 
-    public function testWithoutProperty(): void
+    public function testWithout(): void
     {
         $a = new MyImmutableClass();
         $b = $a->without('A');

@@ -27,6 +27,14 @@ parameters:
 				- tests/fixtures/Toolkit/PHPStan/Utility/Rules/GetCoalesceRuleFailures.php
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/GetCoalesceReturnTypeExtensionAssertions.php
 		-
+			identifier: salient.property.notFound
+			paths:
+				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+		-
+			identifier: salient.property.type
+			paths:
+				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+		-
 			identifier: arguments.count
 			paths:
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrExtendReturnTypeExtensionAssertions.php

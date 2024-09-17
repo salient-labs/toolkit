@@ -10,7 +10,7 @@ use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\App;
 use Salient\Utility\Arr;
 use Closure;
@@ -34,9 +34,7 @@ final class Pipeline implements
     StreamPipelineInterface
 {
     use HasChainableMethods;
-    use HasImmutableProperties {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     private bool $HasPayload = false;
     private bool $HasStream;
@@ -122,12 +120,15 @@ final class Pipeline implements
             // @codeCoverageIgnoreEnd
         }
 
-        /** @var static<TInput&T0,TOutput,TArgument&T1> */
-        return $this
+        /** @var static<T0,TOutput,T1> */
+        $pipeline = $this;
+        $pipeline = $pipeline
             ->with('HasPayload', true)
             ->with('HasStream', $stream)
             ->with('Payload', $payload)
             ->with('Arg', $arg);
+        /** @var static<TInput&T0,TOutput,TArgument&T1> */
+        return $pipeline;
     }
 
     /**

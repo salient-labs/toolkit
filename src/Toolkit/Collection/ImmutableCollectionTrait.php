@@ -4,7 +4,7 @@ namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 
 /**
@@ -31,13 +31,13 @@ trait ImmutableCollectionTrait
         ImmutableArrayAccessTrait::offsetSet insteadof CollectionTrait;
         ImmutableArrayAccessTrait::offsetUnset insteadof CollectionTrait;
     }
-    use HasImmutableProperties;
+    use HasMutator;
 
     /**
      * @return static
      */
     protected function maybeClone()
     {
-        return $this->clone();
+        return clone $this;
     }
 }

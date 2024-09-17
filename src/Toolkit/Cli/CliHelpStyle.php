@@ -11,7 +11,7 @@ use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Regex;
 use LogicException;
@@ -23,7 +23,7 @@ use LogicException;
  */
 final class CliHelpStyle implements CliHelpStyleInterface
 {
-    use HasImmutableProperties;
+    use HasMutator;
 
     private ?int $Width;
     private FormatterInterface $Formatter;
@@ -213,7 +213,7 @@ final class CliHelpStyle implements CliHelpStyleInterface
      */
     public function withCollapseSynopsis(bool $value = true)
     {
-        return $this->withPropertyValue('CollapseSynopsis', $value);
+        return $this->with('CollapseSynopsis', $value);
     }
 
     public function prepareHelp(string $text, string $indent = ''): string

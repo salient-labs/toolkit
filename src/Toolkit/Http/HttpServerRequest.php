@@ -8,6 +8,7 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpServerRequestInterface;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Stringable;
 
@@ -18,6 +19,8 @@ use Stringable;
  */
 class HttpServerRequest extends HttpRequest implements HttpServerRequestInterface
 {
+    use HasMutator;
+
     /** @var mixed[] */
     protected array $ServerParams;
     /** @var mixed[] */
@@ -66,6 +69,9 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
             throw new InvalidArgumentTypeException(1, 'message', ServerRequestInterface::class, $message);
         }
 
+        /** @var array<string,mixed> */
+        $attributes = $message->getAttributes();
+
         return (new self(
             $message->getMethod(),
             $message->getUri(),
@@ -79,7 +85,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
             ->withQueryParams($message->getQueryParams())
             ->withUploadedFiles($message->getUploadedFiles())
             ->withParsedBody($message->getParsedBody())
-            ->with('Attributes', $message->getAttributes());
+            ->with('Attributes', $attributes);
     }
 
     /**

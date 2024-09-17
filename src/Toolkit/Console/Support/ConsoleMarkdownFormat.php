@@ -85,12 +85,12 @@ final class ConsoleMarkdownFormat implements
     public static function getTagFormats(): TagFormats
     {
         return (new TagFormats(false, true))
-            ->set(Tag::HEADING, new self('***', '***'))
-            ->set(Tag::BOLD, new self('**', '**'))
-            ->set(Tag::ITALIC, new self('*', '*'))
-            ->set(Tag::UNDERLINE, new self('*<u>', '</u>*'))
-            ->set(Tag::LOW_PRIORITY, new self('<small>', '</small>'))
-            ->set(Tag::CODE_SPAN, new self('`', '`'))
-            ->set(Tag::CODE_BLOCK, new self('```', '```'));
+            ->withFormat(Tag::HEADING, new self('***', '***'))
+            ->withFormat(Tag::BOLD, new self('**', '**'))
+            ->withFormat(Tag::ITALIC, new self('*', '*'))
+            ->withFormat(Tag::UNDERLINE, new self('*<u>', '</u>*'))
+            ->withFormat(Tag::LOW_PRIORITY, new self('<small>', '</small>'))
+            ->withFormat(Tag::CODE_SPAN, new self('`', '`'))
+            ->withFormat(Tag::CODE_BLOCK, new self('```', '```'));
     }
 }

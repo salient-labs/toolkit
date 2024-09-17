@@ -11,6 +11,7 @@ use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestInterface;
 use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
@@ -23,6 +24,8 @@ use Stringable;
  */
 class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
 {
+    use HasMutator;
+
     private const TOKEN = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
 
     protected string $Method;
