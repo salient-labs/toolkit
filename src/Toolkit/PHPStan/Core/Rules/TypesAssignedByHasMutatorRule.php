@@ -67,7 +67,7 @@ class TypesAssignedByHasMutatorRule implements Rule
         /** @var string */
         $propertyName = $propertyName->getConstantScalarValues()[0];
         $has = $calledOnType->hasProperty($propertyName);
-        if (!$has->yes() && !($has->maybe() && $this->allowsDynamicProperties($calledOnType))) {
+        if (!$has->yes() /* && !($has->maybe() && $this->allowsDynamicProperties($calledOnType)) */) {
             return [
                 RuleErrorBuilder::message(sprintf(
                     'Access to an undefined property %s::$%s.',
@@ -104,7 +104,7 @@ class TypesAssignedByHasMutatorRule implements Rule
         return [];
     }
 
-    private function allowsDynamicProperties(Type $type): bool
+    /* private function allowsDynamicProperties(Type $type): bool
     {
         foreach ($type->getObjectClassReflections() as $reflection) {
             if ($reflection->allowsDynamicProperties()) {
@@ -112,5 +112,5 @@ class TypesAssignedByHasMutatorRule implements Rule
             }
         }
         return false;
-    }
+    } */
 }
