@@ -13,9 +13,9 @@ use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Core\JsonSchemaInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
-use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
@@ -177,9 +177,7 @@ abstract class CliCommand implements CliCommandInterface
         }
 
         if ($this->HasVersionArgument) {
-            $appName = $this->App->getAppName();
-            $version = Package::version(true, true);
-            Console::printStdout('__' . $appName . '__ ' . $version);
+            $this->App->reportVersion(Level::INFO, true);
             return 0;
         }
 

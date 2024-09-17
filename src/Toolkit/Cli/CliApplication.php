@@ -11,7 +11,9 @@ use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\JsonSchemaInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Arr;
@@ -323,12 +325,9 @@ class CliApplication extends Application implements CliApplicationInterface
                 return $this;
             }
 
-            // or version number if it's "--version"
+            // or version info if it's "--version"
             if ($arg === '--version' && !$args) {
-                $appName = $this->getAppName();
-                $version = Package::version(true, true);
-                Console::printStdout('__' . $appName . '__ ' . $version);
-                return $this;
+                return $this->reportVersion(Level::INFO, true);
             }
 
             // - If $args was empty before this iteration, print terse usage
@@ -453,6 +452,27 @@ class CliApplication extends Application implements CliApplicationInterface
     public function runAndExit()
     {
         $this->run()->exit();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reportVersion(int $level = Level::INFO, bool $stdout = false)
+    {
+        $version = sprintf(
+            '%s %s (%s) PHP %s',
+            $this->getAppName(),
+            Package::version(),
+            Package::ref(),
+            \PHP_VERSION,
+        );
+
+        if ($stdout) {
+            Console::printStdout($version, $level, MessageType::UNFORMATTED);
+        } else {
+            Console::print($version, $level, MessageType::UNFORMATTED);
+        }
+        return $this;
     }
 
     /**

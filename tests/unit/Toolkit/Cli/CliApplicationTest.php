@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Cli;
 
+use Composer\InstalledVersions;
 use Salient\Cli\CliApplication;
 use Salient\Container\Application;
 use Salient\Contract\Cli\CliApplicationInterface;
@@ -9,9 +10,11 @@ use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Event;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\Cli\Command\TestOptions;
 use Salient\Tests\TestCase;
+use Salient\Utility\Event\PackageDataReceivedEvent;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Json;
@@ -33,12 +36,29 @@ use stdClass;
 final class CliApplicationTest extends TestCase
 {
     private static string $BasePath;
+    private static int $ListenerId;
     private CliApplicationInterface $App;
     private MockTarget $ConsoleTarget;
 
     public static function setUpBeforeClass(): void
     {
         self::$BasePath = File::createTempDir();
+        self::$ListenerId = Event::getInstance()->listen(
+            static function (PackageDataReceivedEvent $event): void {
+                if ($event->isMethod(InstalledVersions::class, 'getRootPackage')) {
+                    $event->setData([
+                        'name' => 'test/options',
+                        'pretty_version' => 'v1.0.0',
+                        'version' => '1.0.0.0',
+                        'reference' => 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+                        'type' => 'library',
+                        'install_path' => self::$BasePath,
+                        'aliases' => [],
+                        'dev' => false,
+                    ]);
+                }
+            }
+        );
     }
 
     protected function setUp(): void
@@ -60,6 +80,7 @@ final class CliApplicationTest extends TestCase
 
     public static function tearDownAfterClass(): void
     {
+        Event::removeListener(self::$ListenerId);
         File::pruneDir(self::$BasePath, true);
     }
 
@@ -457,6 +478,14 @@ See 'app --help' for more information.
 EOF],
                 ],
             ],
+            'version' => [
+                null,
+                0,
+                ['--version'],
+                [
+                    [Level::INFO, 'app v1.0.0 (deadbeef) PHP ' . \PHP_VERSION],
+                ],
+            ],
             'markdown (positional, extra)' => [
                 <<<'EOF'
 ## NAME
@@ -663,7 +692,7 @@ app - Test CliCommand options
 
 EOF,
                 0,
-                ['_man', '', 'v1.0.0'],
+                ['_man'],
                 null,
                 ['positional' => '1', 'extra' => '1'],
             ],
