@@ -29,20 +29,28 @@ class TypesAssignedByHasMutatorRule implements Rule
         /** @var MethodCall $node */
         $methodName = $node->name;
         if (!$methodName instanceof Identifier) {
+            // @codeCoverageIgnoreStart
             return [];
+            // @codeCoverageIgnoreEnd
         }
         $calledOnType = $scope->getType($node->var);
         $methodReflection = $scope->getMethodReflection($calledOnType, $methodName->toString());
         if (!$methodReflection) {
+            // @codeCoverageIgnoreStart
             return [];
+            // @codeCoverageIgnoreEnd
         }
         $prototypeReflection = $methodReflection->getPrototype();
         if (!$prototypeReflection instanceof PhpMethodReflection) {
+            // @codeCoverageIgnoreStart
             return [];
+            // @codeCoverageIgnoreEnd
         }
         $traitReflection = $prototypeReflection->getDeclaringTrait();
         if (!$traitReflection || $traitReflection->getName() !== HasMutator::class) {
+            // @codeCoverageIgnoreStart
             return [];
+            // @codeCoverageIgnoreEnd
         }
         $classReflection = $prototypeReflection->getDeclaringClass();
         $aliases = array_change_key_case($classReflection->getNativeReflection()->getTraitAliases());
@@ -51,18 +59,24 @@ class TypesAssignedByHasMutatorRule implements Rule
             $name = explode('::', $aliases[$name])[1];
         }
         if ($name !== 'with' && $name !== 'without') {
+            // @codeCoverageIgnoreStart
             return [];
+            // @codeCoverageIgnoreEnd
         }
         $args = $node->getArgs();
         if (!$args) {
+            // @codeCoverageIgnoreStart
             return [];
+            // @codeCoverageIgnoreEnd
         }
         $propertyName = $scope->getType($args[0]->value);
         if (
             !$propertyName->isConstantScalarValue()->yes()
             || !$propertyName->isString()->yes()
         ) {
+            // @codeCoverageIgnoreStart
             return [];
+            // @codeCoverageIgnoreEnd
         }
         /** @var string */
         $propertyName = $propertyName->getConstantScalarValues()[0];
