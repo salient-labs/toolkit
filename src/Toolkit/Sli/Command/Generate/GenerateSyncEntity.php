@@ -177,13 +177,13 @@ EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->SkipProperties),
-            ...$this->getOutputOptionList('entity'),
+            ...$this->getGlobalOptionList('entity'),
         ];
     }
 
     protected function run(string ...$args)
     {
-        $this->reset();
+        $this->startRun();
 
         $this->Entity = null;
 

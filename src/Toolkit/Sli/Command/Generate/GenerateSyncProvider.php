@@ -83,7 +83,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
                 ->description('Specify the plural form of <class>')
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->Plural),
-            ...$this->getOutputOptionList('interface'),
+            ...$this->getGlobalOptionList('interface'),
         ];
     }
 
@@ -94,7 +94,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
             Sync::load();
         }
 
-        $this->reset();
+        $this->startRun();
 
         $this->OutputType = self::GENERATE_INTERFACE;
 

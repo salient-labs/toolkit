@@ -82,13 +82,13 @@ final class GenerateFacade extends AbstractGenerateCommand
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->SkipMethods),
-            ...$this->getOutputOptionList('facade'),
+            ...$this->getGlobalOptionList('facade'),
         ];
     }
 
     protected function run(string ...$args)
     {
-        $this->reset();
+        $this->startRun();
 
         $this->SkipMethods = array_merge($this->SkipMethods, self::SKIP_METHODS);
 
