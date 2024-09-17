@@ -10,6 +10,74 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.51] - 2024-09-17
+
+### Added
+
+#### `Curler`
+
+- Add `Curler` method `alwaysPaginates()`
+
+#### `PHPStan`
+
+- Add `TypesAssignedByHasMutatorRule` to check property changes made by `HasMutator` (previously `HasImmutableProperties`)
+
+#### `Sync`
+
+- Add `HttpSyncProvider::getAlwaysPaginate()` method
+- Add `$alwaysPaginate` parameter to `HttpSyncProvider::getCurler()`
+- Add `HttpSyncDefinition::$AlwaysPaginate` property
+- Add `$alwaysPaginate` parameter to `HttpSyncDefinition::withPager()` for consistency with the equivalent `Curler` method
+
+### Changed
+
+#### `Console`
+
+- In `ConsoleTagFormats`:
+  - Implement `Immutable`
+  - Rename `set()` to `withFormat()` and return a copy
+  - Rename `get()` to `getFormat()`
+- Extend `Immutable` from `ConsoleFormatterInterface`
+
+#### `Core`
+
+- In `HasImmutableProperties`, require implementation of `Immutable`
+- Rename `HasImmutableProperties` to `HasMutator`
+- Rename `HasMutator::withPropertyValue()` to `with()`
+- Rename `HasMutator::withoutProperty()` to `without()`
+- Make `HasMutator` methods private for better safety by default
+
+#### `Curler`
+
+- Accept and return request objects in `Curler` method `replaceQuery()`
+- Don't extend `CurlerPageRequestInterface` from `CurlerPageInterface`
+- Reinstate `CurlerPageInterface` methods `hasNextRequest()` and `getNextRequest()`
+- Allow `CurlerPageInterface::getNextRequest()` to return `CurlerPageRequestInterface` for consistency with `CurlerPagerInterface::getFirstRequest()`
+- Add `TPage` template to `CurlerPagerInterface::getPage()`
+- Rename `CurlerPageRequestInterface::getNextRequest()` to `getRequest()`
+- Rename `CurlerPageRequestInterface::getNextQuery()` to `getQuery()`
+- Extend `Immutable` from `CurlerInterface`
+
+#### `Http`
+
+- Accept and return request objects in `Http::mergeQuery()` and `Http::replaceQuery()`
+
+### Removed
+
+#### `Core`
+
+- Remove `HasMutator::clone()` (previously `HasImmutableProperties::clone()`)
+
+#### `Curler`
+
+- Remove `CurlerPageRequestInterface::hasNextRequest()`
+
+### Fixed
+
+#### `Sync`
+
+- Fix incorrect documentation that indicates `HttpSyncProvider::getCurler()` arguments take precedence over `HttpSyncProvider::filterCurler()`
+
 ## [v0.99.50] - 2024-09-11
 
 ### Changed
@@ -3506,6 +3574,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.51]: https://github.com/salient-labs/toolkit/compare/v0.99.50...v0.99.51
 [v0.99.50]: https://github.com/salient-labs/toolkit/compare/v0.99.49...v0.99.50
 [v0.99.49]: https://github.com/salient-labs/toolkit/compare/v0.99.48...v0.99.49
 [v0.99.48]: https://github.com/salient-labs/toolkit/compare/v0.99.47...v0.99.48
