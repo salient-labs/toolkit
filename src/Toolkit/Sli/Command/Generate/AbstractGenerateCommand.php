@@ -60,6 +60,8 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      */
     public ?string $OutputFile = null;
 
+    // --
+
     /**
      * The user-supplied description of the generated entity
      *
@@ -208,11 +210,9 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected array $InputFileTypeMaps;
 
     /**
-     * Get mandatory options
-     *
      * @return array<CliOption|CliOptionBuilder>
      */
-    protected function getOutputOptionList(
+    protected function getGlobalOptionList(
         string $outputType,
         bool $withDesc = true
     ): array {
@@ -255,7 +255,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         ];
     }
 
-    protected function reset(): void
+    protected function startRun(): void
     {
         $this->OutputFile = null;
         unset($this->OutputClass);

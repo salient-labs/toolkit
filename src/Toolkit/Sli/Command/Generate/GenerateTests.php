@@ -58,13 +58,13 @@ class GenerateTests extends AbstractGenerateCommand
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->Skip),
-            ...$this->getOutputOptionList('tests', false),
+            ...$this->getGlobalOptionList('tests', false),
         ];
     }
 
     protected function run(string ...$args)
     {
-        $this->reset();
+        $this->startRun();
 
         $this->Skip = array_merge($this->Skip, self::SKIP);
 

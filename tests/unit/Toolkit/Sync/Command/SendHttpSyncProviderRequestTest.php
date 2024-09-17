@@ -65,12 +65,10 @@ NAME
     app get - Send a GET request to an HTTP provider
 
 SYNOPSIS
-    app get [-Ps] [-q field=value,...] [--] provider endpoint
+    app get [-PsH] [-q field=value,...] [--] provider endpoint
 
 OPTIONS
     provider
-        The HTTP provider to use
-
         The provider can be:
 
         - json-placeholder-api
@@ -87,6 +85,9 @@ OPTIONS
     -s, --stream
         Output a stream of entities when pagination is used
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 'get',
@@ -99,12 +100,10 @@ NAME
     app patch - Send a PATCH request to an HTTP provider
 
 SYNOPSIS
-    app patch [-q field=value,...] [-J file] [--] provider endpoint
+    app patch [-H] [-q field=value,...] [-J file] [--] provider endpoint
 
 OPTIONS
     provider
-        The HTTP provider to use
-
         The provider can be:
 
         - json-placeholder-api
@@ -118,6 +117,9 @@ OPTIONS
     -J, --data file
         The path to JSON-serialized data to submit with the request
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 'patch',
@@ -130,12 +132,10 @@ NAME
     app post - Send a POST request to an HTTP provider
 
 SYNOPSIS
-    app post [-Ps] [-q field=value,...] [-J file] [--] provider endpoint
+    app post [-PsH] [-q field=value,...] [-J file] [--] provider endpoint
 
 OPTIONS
     provider
-        The HTTP provider to use
-
         The provider can be:
 
         - Salient\Tests\Sync\External\Provider\MockProvider
@@ -157,6 +157,9 @@ OPTIONS
     -s, --stream
         Output a stream of entities when pagination is used
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 'post',
@@ -175,7 +178,7 @@ NAME
     app head - Send a HEAD request to an HTTP provider
 
 SYNOPSIS
-    app head [-q field=value,...] [--] provider endpoint
+    app head [-H] [-q field=value,...] [--] provider endpoint
 
 OPTIONS
     provider
@@ -186,6 +189,9 @@ OPTIONS
 
     -q, --query field=value,...
         A query parameter to apply to the request
+
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -200,7 +206,7 @@ EOF,
                 sprintf(<<<EOF
 Error: stdClass does not inherit %s
 
-app get [-Ps] [-q <field=value>,...] [--] <provider> <endpoint>
+app get [-PsH] [-q <field=value>,...] [--] <provider> <endpoint>
 
 See 'app help get' for more information.
 
@@ -217,7 +223,7 @@ EOF, HttpSyncProvider::class),
                 <<<EOF
 Error: invalid query (Invalid key-value pair: '=value')
 
-app get [-Ps] [-q <field=value>,...] [--] <provider> <endpoint>
+app get [-PsH] [-q <field=value>,...] [--] <provider> <endpoint>
 
 See 'app help get' for more information.
 
@@ -231,7 +237,7 @@ EOF,
                 <<<EOF
 Error: MockProvider does not support pagination
 
-app get [-Ps] [-q <field=value>,...] [--] <provider> <endpoint>
+app get [-PsH] [-q <field=value>,...] [--] <provider> <endpoint>
 
 See 'app help get' for more information.
 

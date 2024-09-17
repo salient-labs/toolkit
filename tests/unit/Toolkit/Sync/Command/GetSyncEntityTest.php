@@ -271,7 +271,7 @@ EOF,
 ➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/-1
 Error: entity not found: -1 (JSONPlaceholder { http://localhost:3001 } [#1] does not have %s with id = {-1})
 
-app [-IMsc] [-p <provider>] [-f <term=value>,...] [--shallow]
+app [-IMscH] [-p <provider>] [-f <term=value>,...] [--shallow]
     [-F (<field>|<field>=<title>),...] [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.
@@ -288,7 +288,7 @@ EOF, User::class),
 ➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
 Error: Invalid field: address.postcode
 
-app [-IMsc] [-p <provider>] [-f <term=value>,...] [--shallow]
+app [-IMscH] [-p <provider>] [-f <term=value>,...] [--shallow]
     [-F (<field>|<field>=<title>),...] [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.
@@ -306,7 +306,7 @@ NAME
     app - Get entities from a registered provider
 
 SYNOPSIS
-    app [-IMsc] [-p provider] [-f term=value,...] [--shallow]
+    app [-IMscH] [-p provider] [-f term=value,...] [--shallow]
         [-F (field|field=title),...] [--] entity [entity-id]
 
 OPTIONS
@@ -352,6 +352,9 @@ OPTIONS
     -c, --csv
         Generate CSV output (implies --shallow if --field is not given)
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 ['--help'],
@@ -363,7 +366,7 @@ NAME
     app - Get entities from a registered provider
 
 SYNOPSIS
-    app [-IMsc] [-p provider] [-f term=value,...] [--shallow]
+    app [-IMscH] [-p provider] [-f term=value,...] [--shallow]
         [-F (field|field=title),...] [--] entity [entity-id]
 
 OPTIONS
@@ -414,6 +417,9 @@ OPTIONS
     -c, --csv
         Generate CSV output (implies --shallow if --field is not given)
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 ['--help'],
@@ -431,7 +437,7 @@ NAME
     app - Get entities from a provider
 
 SYNOPSIS
-    app [-IMsc] [-f term=value,...] [--shallow] [-F (field|field=title),...]
+    app [-IMscH] [-f term=value,...] [--shallow] [-F (field|field=title),...]
         -p provider [--] entity [entity-id]
 
 OPTIONS
@@ -467,6 +473,9 @@ OPTIONS
     -c, --csv
         Generate CSV output (implies --shallow if --field is not given)
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 ['--help'],
@@ -479,7 +488,7 @@ EOF,
                 sprintf(<<<EOF
 Error: no default provider: %s
 
-app [-IMsc] [-p <provider>] [-f <term=value>,...] [--shallow]
+app [-IMscH] [-p <provider>] [-f <term=value>,...] [--shallow]
     [-F (<field>|<field>=<title>),...] [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.
@@ -493,8 +502,8 @@ EOF, Comment::class),
                 sprintf(<<<EOF
 Error: stdClass does not implement %s
 
-app [-IMsc] [-f <term=value>,...] [--shallow] [-F (<field>|<field>=<title>),...]
-    -p <provider> [--] <entity> [<entity-id>]
+app [-IMscH] [-f <term=value>,...] [--shallow]
+    [-F (<field>|<field>=<title>),...] -p <provider> [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.
 
@@ -510,8 +519,8 @@ EOF, SyncEntityInterface::class),
                 sprintf(<<<EOF
 Error: stdClass does not implement %s
 
-app [-IMsc] [-f <term=value>,...] [--shallow] [-F (<field>|<field>=<title>),...]
-    -p <provider> [--] <entity> [<entity-id>]
+app [-IMscH] [-f <term=value>,...] [--shallow]
+    [-F (<field>|<field>=<title>),...] -p <provider> [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.
 
@@ -527,8 +536,8 @@ EOF, SyncProviderInterface::class),
                 sprintf(<<<EOF
 Error: %s does not service %s
 
-app [-IMsc] [-f <term=value>,...] [--shallow] [-F (<field>|<field>=<title>),...]
-    -p <provider> [--] <entity> [<entity-id>]
+app [-IMscH] [-f <term=value>,...] [--shallow]
+    [-F (<field>|<field>=<title>),...] -p <provider> [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.
 
@@ -544,7 +553,7 @@ EOF, JsonPlaceholderApi::class, Unimplemented::class),
                 <<<EOF
 Error: invalid filter (Invalid key-value pair: '=value')
 
-app [-IMsc] [-p <provider>] [-f <term=value>,...] [--shallow]
+app [-IMscH] [-p <provider>] [-f <term=value>,...] [--shallow]
     [-F (<field>|<field>=<title>),...] [--] <entity> [<entity-id>]
 
 See 'app --help' for more information.

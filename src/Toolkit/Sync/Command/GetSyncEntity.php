@@ -155,11 +155,13 @@ EOF)
                 ->description('Generate CSV output (implies `--shallow` if `--field` is not given)')
                 ->bindTo($this->Csv),
         ];
+
+        yield from $this->getGlobalOptionList();
     }
 
     protected function run(string ...$args)
     {
-        Console::registerStderrTarget();
+        $this->startRun();
 
         $this->Fields = [];
 

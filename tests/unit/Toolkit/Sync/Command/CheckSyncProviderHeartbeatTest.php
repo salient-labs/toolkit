@@ -102,7 +102,7 @@ NAME
     app - Send a heartbeat request to registered providers
 
 SYNOPSIS
-    app [-f] [-t seconds] [--] [provider...]
+    app [-fH] [-t seconds] [--] [provider...]
 
 DESCRIPTION
     If no providers are given, all providers are checked.
@@ -130,6 +130,9 @@ OPTIONS
     -f, --fail-early
         If a check fails, exit without checking other providers
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 ['--help'],
@@ -141,7 +144,7 @@ NAME
     app - Send a heartbeat request to registered providers
 
 SYNOPSIS
-    app [-f] [-t seconds] [--] [provider...]
+    app [-fH] [-t seconds] [--] [provider...]
 
 DESCRIPTION
     If no providers are given, all providers are checked.
@@ -171,6 +174,9 @@ OPTIONS
     -f, --fail-early
         If a check fails, exit without checking other providers
 
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
+
 EOF,
                 0,
                 ['--help'],
@@ -188,7 +194,7 @@ NAME
     app - Send a heartbeat request to one or more providers
 
 SYNOPSIS
-    app [-f] [-t seconds] [--] provider...
+    app [-fH] [-t seconds] [--] provider...
 
 DESCRIPTION
     If a heartbeat request fails, app continues to the next provider unless
@@ -208,6 +214,9 @@ OPTIONS
 
     -f, --fail-early
         If a check fails, exit without checking other providers
+
+    -H, --har
+        Export HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -238,7 +247,7 @@ EOF,
                 sprintf(<<<EOF
 Error: stdClass does not implement %s
 
-app [-f] [-t <seconds>] [--] <provider>...
+app [-fH] [-t <seconds>] [--] <provider>...
 
 See 'app --help' for more information.
 

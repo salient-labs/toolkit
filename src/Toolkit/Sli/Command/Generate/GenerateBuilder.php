@@ -137,13 +137,13 @@ EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->Skip),
-            ...$this->getOutputOptionList('builder'),
+            ...$this->getGlobalOptionList('builder'),
         ];
     }
 
     protected function run(string ...$args)
     {
-        $this->reset();
+        $this->startRun();
 
         $this->Skip = array_merge($this->Skip, self::SKIP);
         $this->ToDeclare = [];

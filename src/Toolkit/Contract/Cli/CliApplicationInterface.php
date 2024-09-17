@@ -3,6 +3,7 @@
 namespace Salient\Contract\Cli;
 
 use Salient\Contract\Container\ApplicationInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use LogicException;
 
 /**
@@ -80,7 +81,8 @@ interface CliApplicationInterface extends ApplicationInterface
      *   arguments, print a help message to `STDOUT`. Return value: `0`
      *
      * - If `--version` is the only remaining argument, print the application's
-     *   name and version number to `STDOUT`. Return value: `0`
+     *   name, version and commit reference to `STDOUT`, followed by the PHP
+     *   version. Return value: `0`
      *
      * - If subcommand arguments resolve to a registered command, create an
      *   instance of the command and run it. Return value: command exit status
@@ -115,4 +117,13 @@ interface CliApplicationInterface extends ApplicationInterface
      * @return never
      */
     public function runAndExit();
+
+    /**
+     * Print the application's name, version and commit reference, followed by
+     * the PHP version
+     *
+     * @param Level::* $level
+     * @return $this
+     */
+    public function reportVersion(int $level = Level::INFO, bool $stdout = false);
 }
