@@ -35,8 +35,43 @@ use stdClass;
  */
 final class CliApplicationTest extends TestCase
 {
+    private const PROD_PACKAGE = [
+        'name' => 'test/options',
+        'pretty_version' => 'v1.0.0',
+        'version' => '1.0.0.0',
+        'reference' => 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => [],
+        'dev' => false,
+    ];
+
+    private const DEV_PACKAGE = [
+        'name' => 'test/options',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => [],
+        'dev' => true,
+    ];
+
+    private const NULL_REF_PACKAGE = [
+        'name' => 'test/options',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => null,
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => [],
+        'dev' => true,
+    ];
+
     private static string $BasePath;
     private static int $ListenerId;
+    /** @var array<string,mixed>|null */
+    private static ?array $RootPackage = null;
     private CliApplicationInterface $App;
     private MockTarget $ConsoleTarget;
 
@@ -45,17 +80,11 @@ final class CliApplicationTest extends TestCase
         self::$BasePath = File::createTempDir();
         self::$ListenerId = Event::getInstance()->listen(
             static function (PackageDataReceivedEvent $event): void {
-                if ($event->isMethod(InstalledVersions::class, 'getRootPackage')) {
-                    $event->setData([
-                        'name' => 'test/options',
-                        'pretty_version' => 'v1.0.0',
-                        'version' => '1.0.0.0',
-                        'reference' => 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
-                        'type' => 'library',
-                        'install_path' => self::$BasePath,
-                        'aliases' => [],
-                        'dev' => false,
-                    ]);
+                if (
+                    self::$RootPackage !== null
+                    && $event->isMethod(InstalledVersions::class, 'getRootPackage')
+                ) {
+                    $event->setData(self::$RootPackage);
                 }
             }
         );
@@ -63,6 +92,8 @@ final class CliApplicationTest extends TestCase
 
     protected function setUp(): void
     {
+        self::$RootPackage = self::PROD_PACKAGE;
+
         $this->ConsoleTarget = new MockTarget();
         Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
 
@@ -104,6 +135,7 @@ final class CliApplicationTest extends TestCase
      * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $consoleMessages
      * @param array<string,string>|null $env
      * @param (Closure(TestOptions): mixed)|null $callback
+     * @param array<string,mixed>|null $rootPackage
      */
     public function testCommand(
         ?string $output,
@@ -111,13 +143,17 @@ final class CliApplicationTest extends TestCase
         array $args = [],
         ?array $consoleMessages = null,
         ?array $env = null,
-        ?Closure $callback = null
+        ?Closure $callback = null,
+        ?array $rootPackage = null
     ): void {
         $_SERVER['argv'] = ['app', ...$args];
         if ($env !== null) {
             foreach ($env as $name => $value) {
                 $_ENV[$name] = $value;
             }
+        }
+        if ($rootPackage !== null) {
+            self::$RootPackage = $rootPackage;
         }
         $this->App->oneCommand(TestOptions::class);
         if ($output !== null) {
@@ -135,7 +171,7 @@ final class CliApplicationTest extends TestCase
     }
 
     /**
-     * @return array<array{string|null,int,2?:string[],3?:array<array{Level::*,string,2?:array<string,mixed>}>|null,4?:array<string,string>|null,5?:(Closure(TestOptions): mixed)|null}>
+     * @return array<array{string|null,int,2?:string[],3?:array<array{Level::*,string,2?:array<string,mixed>}>|null,4?:array<string,string>|null,5?:(Closure(TestOptions): mixed)|null,6?:array<string,mixed>|null}>
      */
     public static function commandProvider(): array
     {
@@ -485,6 +521,28 @@ EOF],
                 [
                     [Level::INFO, 'app v1.0.0 (deadbeef) PHP ' . \PHP_VERSION],
                 ],
+            ],
+            'version (dev)' => [
+                null,
+                0,
+                ['--version'],
+                [
+                    [Level::INFO, 'app dev-main (deadbeef) PHP ' . \PHP_VERSION],
+                ],
+                null,
+                null,
+                self::DEV_PACKAGE,
+            ],
+            'version (null ref)' => [
+                null,
+                0,
+                ['--version'],
+                [
+                    [Level::INFO, 'app dev-main PHP ' . \PHP_VERSION],
+                ],
+                null,
+                null,
+                self::NULL_REF_PACKAGE,
             ],
             'markdown (positional, extra)' => [
                 <<<'EOF'

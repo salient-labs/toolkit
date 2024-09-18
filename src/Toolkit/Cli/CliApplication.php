@@ -459,13 +459,7 @@ class CliApplication extends Application implements CliApplicationInterface
      */
     public function reportVersion(int $level = Level::INFO, bool $stdout = false)
     {
-        $version = sprintf(
-            '%s %s (%s) PHP %s',
-            $this->getAppName(),
-            Package::version(),
-            Package::ref(),
-            \PHP_VERSION,
-        );
+        $version = $this->getVersionString();
 
         if ($stdout) {
             Console::printStdout($version, $level, MessageType::UNFORMATTED);
@@ -473,6 +467,19 @@ class CliApplication extends Application implements CliApplicationInterface
             Console::print($version, $level, MessageType::UNFORMATTED);
         }
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVersionString(): string
+    {
+        $ref = Package::ref();
+        return Arr::implode(' ', [
+            sprintf('%s %s', $this->getAppName(), Package::version(true, false)),
+            $ref !== null ? "($ref)" : null,
+            sprintf('PHP %s', \PHP_VERSION),
+        ]);
     }
 
     /**
