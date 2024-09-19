@@ -368,11 +368,11 @@ final class Arr extends AbstractUtility
     /**
      * Remove duplicate values from an array
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue
      *
      * @param iterable<TKey,TValue> $array
-     * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
+     * @return ($preserveKeys is true ? (TKey is array-key ? array<TKey,TValue> : array<array-key,TValue>) : list<TValue>)
      */
     public static function unique(
         iterable $array,
@@ -384,7 +384,7 @@ final class Arr extends AbstractUtility
                 continue;
             }
             if ($preserveKeys) {
-                $unique[$key] = $value;
+                $unique[self::getKey($key, $i)] = $value;
             } else {
                 $unique[] = $value;
             }
@@ -549,11 +549,11 @@ final class Arr extends AbstractUtility
     /**
      * Remove null values from an array
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue
      *
      * @param iterable<TKey,TValue|null> $array
-     * @return array<TKey,TValue>
+     * @return (TKey is array-key ? array<TKey,TValue> : array<array-key,TValue>)
      */
     public static function whereNotNull(iterable $array): array
     {
@@ -561,7 +561,7 @@ final class Arr extends AbstractUtility
             if ($value === null) {
                 continue;
             }
-            $filtered[$key] = $value;
+            $filtered[self::getKey($key, $i)] = $value;
         }
         return $filtered ?? [];
     }
@@ -569,11 +569,11 @@ final class Arr extends AbstractUtility
     /**
      * Remove empty strings from an array of strings and Stringables
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue of int|float|string|bool|Stringable
      *
      * @param iterable<TKey,TValue|null> $array
-     * @return array<TKey,TValue>
+     * @return (TKey is array-key ? array<TKey,TValue> : array<array-key,TValue>)
      */
     public static function whereNotEmpty(iterable $array): array
     {
@@ -581,7 +581,7 @@ final class Arr extends AbstractUtility
             if ($value === null || (string) $value === '') {
                 continue;
             }
-            $filtered[$key] = $value;
+            $filtered[self::getKey($key, $i)] = $value;
         }
         return $filtered ?? [];
     }
@@ -618,12 +618,12 @@ final class Arr extends AbstractUtility
      * Trim characters from each value in an array of strings and Stringables
      * before removing or optionally replacing empty strings
      *
-     * @template TKey of array-key
+     * @template TKey
      *
      * @param iterable<TKey,int|float|string|bool|Stringable|null> $array
      * @param string|null $characters Characters to trim, `null` (the default)
      * to trim whitespace, or an empty string to trim nothing.
-     * @return ($removeEmpty is false ? ($nullEmpty is true ? array<TKey,string|null> : array<TKey,string>) : list<string>)
+     * @return ($removeEmpty is false ? ($nullEmpty is true ? (TKey is array-key ? array<TKey,string|null> : array<array-key,string|null>) : (TKey is array-key ? array<TKey,string> : array<array-key,string>)) : list<string>)
      */
     public static function trim(
         iterable $array,
@@ -644,7 +644,7 @@ final class Arr extends AbstractUtility
                 }
                 continue;
             }
-            $trimmed[$key] = $nullEmpty && $value === ''
+            $trimmed[self::getKey($key, $i)] = $nullEmpty && $value === ''
                 ? null
                 : $value;
         }
@@ -654,16 +654,16 @@ final class Arr extends AbstractUtility
     /**
      * Make an array of strings and Stringables lowercase
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     * @return array<TKey,string>
+     * @return (TKey is array-key ? array<TKey,string> : array<array-key,string>)
      */
     public static function lower(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            $lower[$key] = Str::lower((string) $value);
+            $lower[self::getKey($key, $i)] = Str::lower((string) $value);
         }
         return $lower ?? [];
     }
@@ -671,16 +671,16 @@ final class Arr extends AbstractUtility
     /**
      * Make an array of strings and Stringables uppercase
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     * @return array<TKey,string>
+     * @return (TKey is array-key ? array<TKey,string> : array<array-key,string>)
      */
     public static function upper(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            $upper[$key] = Str::upper((string) $value);
+            $upper[self::getKey($key, $i)] = Str::upper((string) $value);
         }
         return $upper ?? [];
     }
@@ -688,16 +688,16 @@ final class Arr extends AbstractUtility
     /**
      * Make an array of strings and Stringables snake_case
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue of int|float|string|bool|Stringable|null
      *
      * @param iterable<TKey,TValue> $array
-     * @return array<TKey,string>
+     * @return (TKey is array-key ? array<TKey,string> : array<array-key,string>)
      */
     public static function snakeCase(iterable $array): array
     {
         foreach ($array as $key => $value) {
-            $snakeCase[$key] = Str::toSnakeCase((string) $value);
+            $snakeCase[self::getKey($key, $i)] = Str::snake((string) $value);
         }
         return $snakeCase ?? [];
     }
@@ -709,13 +709,13 @@ final class Arr extends AbstractUtility
      * values are replaced with `$null`. Other non-scalar values are
      * JSON-encoded.
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue of int|float|string|bool
      * @template TNull of int|float|string|bool|null
      *
      * @param iterable<TKey,TValue|mixed[]|object|null> $array
      * @param TNull $null
-     * @return array<TKey,TValue|TNull|string>
+     * @return (TKey is array-key ? array<TKey,TValue|TNull|string> : array<array-key,TValue|TNull|string>)
      */
     public static function toScalars(iterable $array, $null = null): array
     {
@@ -731,7 +731,7 @@ final class Arr extends AbstractUtility
                     $value = Json::stringify($value);
                 }
             }
-            $scalars[$key] = $value;
+            $scalars[self::getKey($key, $i)] = $value;
         }
         return $scalars ?? [];
     }
@@ -743,12 +743,12 @@ final class Arr extends AbstractUtility
      * string. `null` values are replaced with `$null`. Other non-scalar values
      * are JSON-encoded.
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TNull of string|null
      *
      * @param iterable<TKey,mixed[]|object|int|float|string|bool|null> $array
      * @param TNull $null
-     * @return array<TKey,TNull|string>
+     * @return (TKey is array-key ? array<TKey,TNull|string> : array<array-key,TNull|string>)
      */
     public static function toStrings(iterable $array, ?string $null = null): array
     {
@@ -762,7 +762,7 @@ final class Arr extends AbstractUtility
             } else {
                 $value = Json::stringify($value);
             }
-            $strings[$key] = $value;
+            $strings[self::getKey($key, $i)] = $value;
         }
         return $strings ?? [];
     }
@@ -920,7 +920,7 @@ final class Arr extends AbstractUtility
      *
      * Similar to {@see array_reduce()}.
      *
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue
      * @template T
      *
@@ -1018,5 +1018,28 @@ final class Arr extends AbstractUtility
             $limit--;
         }
         return $value;
+    }
+
+    /**
+     * @template T
+     *
+     * @param T $key
+     * @return (T is array-key ? T : int)
+     */
+    private static function getKey($key, ?int &$i = null)
+    {
+        if (is_int($key)) {
+            if ($i === null || $key > $i) {
+                $i = $key;
+            }
+            return $key;
+        }
+        if (is_string($key)) {
+            return $key;
+        }
+        if ($i === null) {
+            return $i = 0;
+        }
+        return ++$i;
     }
 }

@@ -670,7 +670,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             foreach ($matches as $name) {
                 if (
                     $id !== null
-                    && Str::toSnakeCase($name) === 'id'
+                    && Str::snake($name) === 'id'
                 ) {
                     $idApplied = true;
                     $path = $this->applyParameterValue((string) $id, $name, $path);

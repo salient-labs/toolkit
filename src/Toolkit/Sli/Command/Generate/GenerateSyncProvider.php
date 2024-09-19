@@ -142,11 +142,11 @@ class GenerateSyncProvider extends AbstractGenerateCommand
             $this->Operations
         );
 
-        $camelClass = Str::toCamelCase($class);
+        $camelClass = Str::camel($class);
         $plural = Str::coalesce($this->Plural ?? $fqcn::getPlural(), $class);
 
         if (strcasecmp($class, $plural)) {
-            $camelPlural = Str::toCamelCase($plural);
+            $camelPlural = Str::camel($plural);
             $opMethod = [
                 SyncOperation::CREATE => 'create' . $class,
                 SyncOperation::READ => 'get' . $class,

@@ -11,7 +11,6 @@ use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
-use Salient\Utility\Test;
 use InvalidArgumentException;
 use LogicException;
 
@@ -171,7 +170,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
             return null;
         }
         if (
-            !Test::isAsciiString($filename)
+            !Str::isAscii($filename)
             || Regex::match('/%[0-9a-f]{2}|\\\\|"/i', $filename)
         ) {
             if ($fallbackFilename === null) {

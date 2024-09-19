@@ -157,7 +157,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
 
                 // Map unambiguous kebab-case entity basenames to qualified names in
                 // SyncProviderEntityBasenames
-                $basename = Str::toKebabCase(Get::basename($entity->Class));
+                $basename = Str::kebab(Get::basename($entity->Class));
                 $this->SyncProviderEntityBasenames[$basename] =
                     array_key_exists($basename, $this->SyncProviderEntityBasenames)
                         ? null

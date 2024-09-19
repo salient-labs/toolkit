@@ -258,7 +258,7 @@ EOF)
                 ? HttpRequestMethod::POST
                 : $this->HttpMethod;
             $endpoint = $endpoint === null
-                ? '/' . Str::toKebabCase($class)
+                ? '/' . Str::kebab($class)
                 : $endpoint;
 
             $curler = $provider->getCurler($endpoint);
@@ -296,7 +296,7 @@ EOF)
         $normaliser = $entityClass::getNormaliser();
         $normaliser =
             fn(string $name): string =>
-                Str::toPascalCase($normaliser($name));
+                Str::pascal($normaliser($name));
 
         $skip = [];
         foreach ($this->SkipProperties as $property) {
