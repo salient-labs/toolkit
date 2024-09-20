@@ -657,6 +657,7 @@ EOF,
             ['        a', "\ta", 8],
             ["   \nabc\t", "\t\nabc\t", 4, false, 2],
             ["   \n    abc\t", "\t\n\tabc\t", 4, false, 2],
+            ["   0\t1\t2\n    0\t1\t2", "\t0\t1\t2\n\t0\t1\t2", 4, false, 2],
             [
                 <<<EOF
     abc\tde\tf\t\tg

@@ -39,7 +39,7 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Convert ASCII alphabetic characters in a string to lowercase
+     * Convert an ASCII string to lowercase
      */
     public static function lower(string $string): string
     {
@@ -47,7 +47,7 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Convert ASCII alphabetic characters in a string to uppercase
+     * Convert an ASCII string to uppercase
      */
     public static function upper(string $string): string
     {
@@ -55,8 +55,7 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * If the first character in a string is an ASCII alphabetic character, make
-     * it uppercase
+     * Make the first character in an ASCII string uppercase
      */
     public static function upperFirst(string $string): string
     {
@@ -102,7 +101,7 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Check if a string starts with any of the given substrings
+     * Check if a string starts with a given substring
      *
      * @param iterable<string>|string $needles
      */
@@ -124,7 +123,7 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Check if a string ends with any of the given substrings
+     * Check if a string ends with a given substring
      *
      * @param iterable<string>|string $needles
      */
@@ -369,7 +368,9 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Expand tabs to spaces
+     * Expand tabs in a string to spaces
+     *
+     * @param int $column The starting column (1-based) of `$text`.
      */
     public static function expandTabs(
         string $text,
@@ -379,7 +380,7 @@ final class Str extends AbstractUtility
         if (strpos($text, "\t") === false) {
             return $text;
         }
-        $eol = Get::eol($text) ?: "\n";
+        $eol = Get::eol($text) ?? "\n";
         $expanded = '';
         foreach (explode($eol, $text) as $i => $line) {
             !$i || $expanded .= $eol;
@@ -402,7 +403,11 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Expand leading tabs to spaces
+     * Expand leading tabs in a string to spaces
+     *
+     * @param bool $preserveLine1 If `true`, tabs in the first line of `$text`
+     * are not expanded.
+     * @param int $column The starting column (1-based) of `$text`.
      */
     public static function expandLeadingTabs(
         string $text,
@@ -413,7 +418,7 @@ final class Str extends AbstractUtility
         if (strpos($text, "\t") === false) {
             return $text;
         }
-        $eol = Get::eol($text) ?: "\n";
+        $eol = Get::eol($text) ?? "\n";
         $softTab = str_repeat(' ', $tabSize);
         $expanded = '';
         foreach (explode($eol, $text) as $i => $line) {
@@ -432,7 +437,7 @@ final class Str extends AbstractUtility
                 if (!$parts) {
                     break;
                 }
-                if ($part) {
+                if ($part !== '') {
                     $expanded .= "\t" . implode("\t", $parts);
                     break;
                 }
