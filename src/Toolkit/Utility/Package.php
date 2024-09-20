@@ -49,15 +49,17 @@ final class Package extends AbstractUtility
     /**
      * Get the version of the root package
      *
-     * If Composer returns a version like `dev-*` or `v1.x-dev`, `@<reference>`
-     * is added. Otherwise, if `$withRef` is `true` and a commit reference is
-     * available, `-<reference>` is added.
+     * If Composer returns a version like `dev-*` or `v1.x-dev` and `$withRef`
+     * is not `false`, `@<reference>` is added. Otherwise, if `$withRef` is
+     * `true` and a commit reference is available, `-<reference>` is added.
      *
      * @param bool $pretty If `true`, return the original version number, e.g.
      * `v1.2.3` instead of `1.2.3.0`.
      */
-    public static function version(bool $pretty = true, bool $withRef = false): string
-    {
+    public static function version(
+        bool $pretty = true,
+        ?bool $withRef = null
+    ): string {
         /** @var string */
         $version = self::getRootPackageValue($pretty ? 'pretty_version' : 'version');
         return self::formatVersion($version, $withRef, fn() => self::ref());
@@ -95,9 +97,9 @@ final class Package extends AbstractUtility
     /**
      * Get the version of an installed package, or null if it is not installed
      *
-     * If Composer returns a version like `dev-*` or `v1.x-dev`, `@<reference>`
-     * is added. Otherwise, if `$withRef` is `true` and a commit reference
-     * is available, `-<reference>` is added.
+     * If Composer returns a version like `dev-*` or `v1.x-dev` and `$withRef`
+     * is not `false`, `@<reference>` is added. Otherwise, if `$withRef` is
+     * `true` and a commit reference is available, `-<reference>` is added.
      *
      * @param bool $pretty If `true`, return the original version number, e.g.
      * `v1.2.3` instead of `1.2.3.0`.
@@ -105,7 +107,7 @@ final class Package extends AbstractUtility
     public static function getPackageVersion(
         string $package,
         bool $pretty = true,
-        bool $withRef = false
+        ?bool $withRef = null
     ): ?string {
         if (!self::isInstalled($package)) {
             return null;
@@ -141,8 +143,6 @@ final class Package extends AbstractUtility
      * doesn't exist
      *
      * @param class-string $class
-     *
-     * @see Package::namespacePath()
      */
     public static function getClassPath(string $class): ?string
     {
@@ -296,10 +296,10 @@ final class Package extends AbstractUtility
      */
     private static function formatVersion(
         string $version,
-        bool $withRef,
+        ?bool $withRef,
         Closure $refCallback
     ): string {
-        if (Regex::match('/(?:^dev-|-dev$)/', $version)) {
+        if ($withRef !== false && Regex::match('/(?:^dev-|-dev$)/', $version)) {
             $ref = $refCallback();
             if ($ref !== null) {
                 return $version . "@$ref";

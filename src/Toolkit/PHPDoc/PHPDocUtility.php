@@ -7,7 +7,7 @@ use Salient\Utility\Get;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
-use Salient\Utility\Test;
+use LogicException;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionMethod;
@@ -79,15 +79,18 @@ final class PHPDocUtility extends AbstractUtility
             $classDocComments = [];
         }
 
-        $name = $method->getName();
+        $class = $fromClass ?? $method->getDeclaringClass();
+        $name = self::getMethodName($method, $class);
+        // @phpstan-ignore argument.templateType
         $comments = self::doGetAllMethodDocComments(
             $method,
+            // @phpstan-ignore argument.type
             $fromClass,
             $name,
             $classDocComments
         );
 
-        foreach (self::getInterfaces($fromClass ?? $method->getDeclaringClass()) as $interface) {
+        foreach (self::getInterfaces($class) as $interface) {
             if (!$interface->hasMethod($name)) {
                 continue;
             }
@@ -121,14 +124,12 @@ final class PHPDocUtility extends AbstractUtility
         $comments = [];
         $current = $fromClass ?? $method->getDeclaringClass();
         do {
-            // The declaring class of methods declared in traits is always the
-            // class or trait that inserted it, so use the location of the
-            // declaration's code as an additional check
-            $isDeclaring =
-                ($fromClass
-                    ? $method->getDeclaringClass()->getName() === $current->getName()
-                    : true)
-                && self::isMethodInClass($method, $current);
+            // The declaring class of a method declared in a trait is always the
+            // class or trait that inserted it, so use its location to be sure
+            $isDeclaring = (
+                !$fromClass
+                || $method->getDeclaringClass()->getName() === $current->getName()
+            ) && self::isMethodInClass($method, $current, $name);
 
             $comment = $isDeclaring ? $method->getDocComment() : false;
 
@@ -147,25 +148,27 @@ final class PHPDocUtility extends AbstractUtility
                 }
             }
 
-            // Interfaces don't have traits and their parents are returned by
-            // getInterfaces(), so there's nothing else to do here
+            // Interfaces don't have traits and their parents don't need to be
+            // retrieved separately, so there's nothing else to do here
             if ($current->isInterface()) {
                 return $comments;
             }
 
-            // getTraits() doesn't return inherited traits, so recurse into them
+            $aliases = self::getTraitAliases($current);
             foreach ($current->getTraits() as $trait) {
-                if (!$trait->hasMethod($name)) {
+                $originalName = $aliases[$trait->getName()][$name] ?? $name;
+                if (!$trait->hasMethod($originalName)) {
                     continue;
                 }
+                // Recurse into inherited traits
                 $comments = array_merge(
                     $comments,
                     self::doGetAllMethodDocComments(
-                        $trait->getMethod($name),
+                        $trait->getMethod($originalName),
                         $fromClass ? $trait : null,
-                        $name,
-                        $classDocComments
-                    )
+                        $originalName,
+                        $classDocComments,
+                    ),
                 );
             }
 
@@ -481,23 +484,102 @@ final class PHPDocUtility extends AbstractUtility
     /**
      * @param ReflectionClass<object> $class
      */
-    private static function isMethodInClass(
+    private static function getMethodName(
         ReflectionMethod $method,
         ReflectionClass $class
-    ): bool {
-        $file = $method->getFileName();
-        if ($file === false || $file !== $class->getFileName()) {
-            return false;
+    ): string {
+        $name = $method->getName();
+
+        // Work around https://bugs.php.net/bug.php?id=69180
+        if (\PHP_VERSION_ID < 80000 && !self::isMethodInClass($method, $class, $name)) {
+            foreach (self::getTraitAliases($class) as $aliases) {
+                $alias = array_search($name, $aliases, true);
+                if ($alias !== false) {
+                    return $alias;
+                }
+            }
         }
 
-        [$line, $start, $end] = [
+        return $name;
+    }
+
+    /**
+     * @param ReflectionClass<object> $class
+     */
+    private static function isMethodInClass(
+        ReflectionMethod $method,
+        ReflectionClass $class,
+        string $name
+    ): bool {
+        $traits = $class->getTraits();
+        if (!$traits) {
+            return true;
+        }
+
+        $location = [
+            $method->getFileName(),
             $method->getStartLine(),
             $class->getStartLine(),
             $class->getEndLine(),
         ];
 
-        return
-            ($line && $start && $end)
-            && Test::isBetween($line, $start, $end);
+        if (in_array(false, $location, true)) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException(sprintf(
+                'Unable to check method location: %s::%s()',
+                $class->getName(),
+                $method->getName(),
+            ));
+            // @codeCoverageIgnoreEnd
+        }
+
+        [$file, $line, $start, $end] = $location;
+
+        if ($file !== $class->getFileName() || $line < $start || $line > $end) {
+            return false;
+        }
+
+        if ($line > $start && $line < $end) {
+            return true;
+        }
+
+        // Check if the method belongs to an adjacent trait on the same line
+        $aliases = self::getTraitAliases($class);
+        foreach ($traits as $trait) {
+            $originalName = $aliases[$trait->getName()][$name] ?? $name;
+            if (
+                $trait->hasMethod($originalName)
+                && ($traitMethod = $trait->getMethod($originalName))->getFileName() === $file
+                && $traitMethod->getStartLine() === $line
+            ) {
+                throw new LogicException(sprintf(
+                    'Unable to check location of %s::%s(): %s::%s() declared on same line',
+                    $class->getName(),
+                    $method->getName(),
+                    $traitMethod->getDeclaringClass()->getName(),
+                    $originalName,
+                ));
+            }
+        }
+
+        // @codeCoverageIgnoreStart
+        return true;
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Get an array that maps traits to [ alias => method ] arrays for the trait
+     * aliases of a class
+     *
+     * @param ReflectionClass<object> $class
+     * @return array<string,array<string,string>>
+     */
+    private static function getTraitAliases(ReflectionClass $class): array
+    {
+        foreach ($class->getTraitAliases() as $alias => $original) {
+            $original = explode('::', $original, 2);
+            $aliases[$original[0]][$alias] = $original[1];
+        }
+        return $aliases ?? [];
     }
 }

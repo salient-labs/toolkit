@@ -96,7 +96,7 @@ abstract class AbstractSyncCommand extends CliCommand
                 $entities[$entityKey] = $entity;
             }
 
-            $providerKey = Str::toKebabCase(
+            $providerKey = Str::kebab(
                 Get::basename($provider, 'SyncProvider', 'Provider')
             );
 

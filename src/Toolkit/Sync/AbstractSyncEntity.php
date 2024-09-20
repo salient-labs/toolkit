@@ -282,7 +282,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         if (!$prefixes) {
             return static function (string $name): string {
                 return self::$NormalisedPropertyMap[static::class][$name]
-                    ??= Str::toSnakeCase($name);
+                    ??= Str::snake($name);
             };
         }
 
@@ -297,9 +297,9 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         ) use ($regex): string {
             if ($greedy && !$hints) {
                 return self::$NormalisedPropertyMap[static::class][$name]
-                    ??= Regex::replace($regex, '', Str::toSnakeCase($name));
+                    ??= Regex::replace($regex, '', Str::snake($name));
             }
-            $_name = Str::toSnakeCase($name);
+            $_name = Str::snake($name);
             if (!$greedy || in_array($_name, $hints)) {
                 return $_name;
             }
@@ -422,7 +422,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         }
 
         foreach ($prefixes as $prefix) {
-            $prefix = Str::toSnakeCase($prefix);
+            $prefix = Str::snake($prefix);
             $expanded[$prefix] = true;
             $prefix = explode('_', $prefix);
             while (array_shift($prefix)) {

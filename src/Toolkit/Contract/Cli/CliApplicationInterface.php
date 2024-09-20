@@ -126,4 +126,13 @@ interface CliApplicationInterface extends ApplicationInterface
      * @return $this
      */
     public function reportVersion(int $level = Level::INFO, bool $stdout = false);
+
+    /**
+     * Get the application's name, version and commit reference, followed by the
+     * PHP version
+     *
+     * This method should return the string that
+     * {@see CliApplicationInterface::reportVersion()} would print.
+     */
+    public function getVersionString(): string;
 }

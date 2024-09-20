@@ -27,7 +27,7 @@ trait HasNormaliser
     public static function getNormaliser(): Closure
     {
         return fn(string $name): string =>
-            Str::toSnakeCase($name);
+            Str::snake($name);
     }
 
     /**

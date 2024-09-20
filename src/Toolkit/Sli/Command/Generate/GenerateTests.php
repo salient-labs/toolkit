@@ -161,8 +161,8 @@ class GenerateTests extends AbstractGenerateCommand
                 continue;
             }
 
-            $testMethod = Str::toCamelCase("test_{$method}");
-            $providerMethod = Str::toCamelCase("{$method}_provider");
+            $testMethod = Str::camel("test_{$method}");
+            $providerMethod = Str::camel("{$method}_provider");
 
             $_parameters = $_method->getParameters();
             if ($_method->hasReturnType()) {

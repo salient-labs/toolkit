@@ -61,7 +61,7 @@ interface SyncEntityInterface extends
      * - `updateList_faculty()`
      * - `deleteList_faculty()`
      *
-     * If the same method returns `'Faculties'`, these are also recognised as
+     * If the same method returns `"Faculties"`, these are also recognised as
      * `Faculty` sync implementations:
      *
      * - `createFaculty()`

@@ -2,6 +2,7 @@
 
 namespace Salient\Utility;
 
+use Closure;
 use InvalidArgumentException;
 
 /**
@@ -20,6 +21,7 @@ final class Str extends AbstractUtility
     public const PRESERVE_DOUBLE_QUOTED = 1;
     public const PRESERVE_SINGLE_QUOTED = 2;
     public const PRESERVE_QUOTED = Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED;
+    public const ASCII_EXTENDED = "\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
 
     /**
      * Get the first string that is not null or empty, or return the last value
@@ -34,15 +36,6 @@ final class Str extends AbstractUtility
             return $string;
         }
         return $string;
-    }
-
-    /**
-     * Convert ASCII alphabetic characters in a string to lowercase, then make
-     * the first character uppercase if it is an ASCII alphabetic character
-     */
-    public static function title(string $string): string
-    {
-        return self::upperFirst(self::lower($string));
     }
 
     /**
@@ -98,7 +91,7 @@ final class Str extends AbstractUtility
         }
 
         if (
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore booleanNot.alwaysTrue
             (!$hasUpper && !$hasLower)
             || $upper !== $match
         ) {
@@ -109,26 +102,79 @@ final class Str extends AbstractUtility
     }
 
     /**
+     * Check if a string starts with any of the given substrings
+     *
+     * @param iterable<string>|string $needles
+     */
+    public static function startsWith(string $haystack, $needles, bool $ignoreCase = false): bool
+    {
+        if (!is_iterable($needles)) {
+            $needles = [$needles];
+        }
+        if ($ignoreCase) {
+            $haystack = self::lower($haystack);
+            $needles = Arr::lower($needles);
+        }
+        foreach ($needles as $needle) {
+            if ($needle !== '' && strpos($haystack, $needle) === 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if a string ends with any of the given substrings
+     *
+     * @param iterable<string>|string $needles
+     */
+    public static function endsWith(string $haystack, $needles, bool $ignoreCase = false): bool
+    {
+        if (!is_iterable($needles)) {
+            $needles = [$needles];
+        }
+        if ($ignoreCase) {
+            $haystack = self::lower($haystack);
+            $needles = Arr::lower($needles);
+        }
+        foreach ($needles as $needle) {
+            if ($needle !== '' && substr($haystack, -strlen($needle)) === $needle) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if every character in a string has a codepoint between 0 and 127
+     */
+    public static function isAscii(string $string): bool
+    {
+        return strcspn($string, self::ASCII_EXTENDED) === strlen($string);
+    }
+
+    /**
      * Normalise a string for comparison
      *
-     * The return value of this method is not covered by a backward
-     * compatibility guarantee, but transformations applied include:
-     *
-     * 1. Replace ampersands (`"&"`) with `" and "`, e.g. `"Science &
-     *    Technology"` -> `"Science and Technology"`
-     * 2. Remove full stops (`"."`), e.g. `"I.T."` -> `"IT"`
-     * 3. Replace sequences of one or more non-alphanumeric characters with one
-     *    space (`"\x20"`), e.g. `"History  —  Ancient"` -> `"History Ancient"`
-     * 4. Remove leading and trailing whitespace
-     * 5. Convert ASCII alphabetic characters to uppercase
+     * The return value of this method is not covered by the Salient toolkit's
+     * backward compatibility promise.
      */
     public static function normalise(string $string): string
     {
-        return self::upper(trim(Regex::replace(
-            ['/([[:alnum:]][^&]*+)&(?=[^&[:alnum:]]*+[[:alnum:]])/u', '/\.++/', '/[^[:alnum:]]++/u'],
-            ['$1 and ', '', ' '],
-            $string,
-        )));
+        // 4. Remove leading and trailing whitespace
+        // 5. Convert ASCII characters to uppercase
+        return self::upper(trim(Regex::replace([
+            // 1. Replace "&" with " and "
+            '/([[:alnum:]][^&]*+)&(?=[^&[:alnum:]]*+[[:alnum:]])/u',
+            // 2. Remove "."
+            '/\.++/',
+            // 3. Replace non-alphanumeric character sequences with " "
+            '/[^[:alnum:]]++/u',
+        ], [
+            '$1 and ',
+            '',
+            ' ',
+        ], $string)));
     }
 
     /**
@@ -212,80 +258,65 @@ final class Str extends AbstractUtility
 
     /**
      * Convert words in an arbitrarily capitalised string to snake_case,
-     * optionally preserving given characters
-     *
-     * @see Str::toWords()
+     * optionally preserving non-word characters
      */
-    public static function toSnakeCase(string $string, ?string $preserve = null): string
+    public static function snake(string $string, string $preserve = ''): string
     {
-        return self::lower(self::toWords($string, '_', $preserve));
+        return self::lower(self::words($string, '_', $preserve));
     }
 
     /**
      * Convert words in an arbitrarily capitalised string to kebab-case,
-     * optionally preserving given characters
-     *
-     * @see Str::toWords()
+     * optionally preserving non-word characters
      */
-    public static function toKebabCase(string $string, ?string $preserve = null): string
+    public static function kebab(string $string, string $preserve = ''): string
     {
-        return self::lower(self::toWords($string, '-', $preserve));
+        return self::lower(self::words($string, '-', $preserve));
     }
 
     /**
      * Convert words in an arbitrarily capitalised string to camelCase,
-     * optionally preserving given characters
-     *
-     * @see Str::toWords()
+     * optionally preserving non-word characters
      */
-    public static function toCamelCase(string $string, ?string $preserve = null): string
+    public static function camel(string $string, string $preserve = ''): string
     {
         return Regex::replaceCallback(
             '/(?<![[:alnum:]])[[:alpha:]]/u',
             fn($matches) => self::lower($matches[0]),
-            self::toPascalCase($string, $preserve),
+            self::pascal($string, $preserve),
         );
     }
 
     /**
      * Convert words in an arbitrarily capitalised string to PascalCase,
-     * optionally preserving given characters
-     *
-     * @see Str::toWords()
+     * optionally preserving non-word characters
      */
-    public static function toPascalCase(string $string, ?string $preserve = null): string
+    public static function pascal(string $string, string $preserve = ''): string
     {
-        return self::toWords($string, '', $preserve, [self::class, 'title']);
+        return self::words($string, '', $preserve, fn($string) => self::upperFirst(self::lower($string)));
     }
 
     /**
-     * Get the words in an arbitrarily capitalised string and delimit them with
-     * a given separator, optionally preserving given characters and applying a
+     * Get words from an arbitrarily capitalised string and delimit them with a
+     * separator, optionally preserving non-word characters and applying a
      * callback to each word
      *
-     * Words in `$string` may be separated by any combination of
-     * non-alphanumeric characters and capitalisation. For example:
+     * A word consists of one or more letters of the same case, or one uppercase
+     * letter followed by zero or more lowercase letters. Numbers are treated as
+     * lowercase letters except that two or more uppercase letters form one word
+     * with any subsequent numbers.
      *
-     * - `foo bar` => foo bar
-     * - `FOO_BAR` => FOO BAR
-     * - `fooBar` => foo Bar
-     * - `$this = fooBar` => this foo Bar
-     * - `PHPDoc` => PHP Doc
-     *
-     * This method forms the basis of capitalisation methods.
-     *
-     * @param string|null $preserve Characters to keep in the string.
-     * Alphanumeric characters are always preserved.
-     * @param (callable(string): string)|null $callback
+     * @param string $preserve Non-alphanumeric characters to preserve.
+     * @param (Closure(string): string)|null $callback
      */
-    public static function toWords(
+    public static function words(
         string $string,
         string $separator = ' ',
-        ?string $preserve = null,
-        ?callable $callback = null
+        string $preserve = '',
+        ?Closure $callback = null
     ): string {
         $notAfterPreserve = '';
-        if ($preserve !== null && $preserve !== '') {
+        if ($preserve !== '') {
             $preserve = Regex::replace('/[[:alnum:]]++/u', '', $preserve);
             if ($preserve !== '') {
                 $preserve = Regex::quoteCharacterClass($preserve, '/');
@@ -305,36 +336,36 @@ final class Str extends AbstractUtility
         $word = '(?:[[:upper:]]?[[:lower:][:digit:]]++'
             . '|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)';
 
-        // Insert separators before words not adjacent to a preserved character
-        // to prevent "foo bar" becoming "foobar", for example
+        // Insert separators before words to prevent "foo bar" becoming "foobar"
         if ($separator !== '') {
+            if (Regex::match("/[{$preserve}]/u", $separator)) {
+                throw new InvalidArgumentException('Invalid separator (preserved characters cannot be used)');
+            }
+            $separator = Regex::quoteReplacement($separator);
             $string = Regex::replace(
                 "/$notAfterPreserve$word/u",
                 $separator . '$0',
-                $string
+                $string,
             );
         }
 
         if ($callback !== null) {
             $string = Regex::replaceCallback(
                 "/$word/u",
-                fn(array $match): string => $callback($match[0]),
-                $string
+                fn($match) => $callback($match[0]),
+                $string,
             );
         }
 
         // Trim unpreserved characters from the beginning and end of the string,
-        // then replace sequences of one or more unpreserved characters with one
-        // separator
-        $string = Regex::replace([
-            "/^[^{$preserve}]++|[^{$preserve}]++\$/u",
+        // then replace sequences of them with one separator
+        return Regex::replace([
+            "/^[^{$preserve}]++|[^{$preserve}]++\$/Du",
             "/[^{$preserve}]++/u",
         ], [
             '',
             $separator,
         ], $string);
-
-        return $string;
     }
 
     /**

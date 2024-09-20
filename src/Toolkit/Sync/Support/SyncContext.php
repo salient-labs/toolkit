@@ -138,7 +138,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
 
                 $normalised = false;
                 if (Regex::match('/^([[:alnum:]]++($|[ _-]++(?!$)))++$/D', $key)) {
-                    $key = Str::toSnakeCase($key);
+                    $key = Str::snake($key);
                     $normalised = true;
                 }
 
@@ -192,7 +192,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
 
                 $service = $entity->getService();
                 $key = self::$ServiceKeyMap[$service]
-                    ??= Str::toSnakeCase(Get::basename($service));
+                    ??= Str::snake(Get::basename($service));
                 $filters[$key][] = $entity->getId();
             }
 
@@ -538,7 +538,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     {
         if (
             !array_key_exists($key, $this->Filters)
-            && !array_key_exists($key = Str::toSnakeCase($key), $this->Filters)
+            && !array_key_exists($key = Str::snake($key), $this->Filters)
         ) {
             if (!array_key_exists($key, $this->FilterKeys)) {
                 return $orValue

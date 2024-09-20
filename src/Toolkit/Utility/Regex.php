@@ -346,4 +346,12 @@ REGEX;
         // and the terminating ] are non-special in character classes"
         return self::replace("/(?:[]^\\\\-]$orDelimiter)/", '\\\\$0', $characters);
     }
+
+    /**
+     * Quote a string for use with replace()
+     */
+    public static function quoteReplacement(string $replacement): string
+    {
+        return self::replace('/[$\\\\]/', '\\\\$0', $replacement);
+    }
 }

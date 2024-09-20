@@ -55,8 +55,8 @@ classes.
   - `Str::expandLeadingTabs()` expands leading tabs to spaces
   - `Str::matchCase()` matches the case of one string to another
   - `Str::ngrams()` gets a string's n-grams
+  - `Str::snake()` converts a string to snake_case
   - `Str::splitDelimited()` safely splits strings that contain delimiters
-  - `Str::toSnakeCase()` converts a string to snake_case
 
 - **`Sys`** retrieves information about the runtime environment, and provides a
   handler for exit signals (`SIGTERM`, `SIGINT` and `SIGHUP`).

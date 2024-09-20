@@ -99,12 +99,12 @@ class ProviderContext implements ProviderContextInterface
      */
     final public function withValue(string $name, $value)
     {
-        $name = Str::toSnakeCase($name);
+        $name = Str::snake($name);
         $values = $this->Values;
         $values[$name] = $value;
 
         if (substr($name, -3) === '_id') {
-            $name = Str::toSnakeCase(substr($name, 0, -3));
+            $name = Str::snake(substr($name, 0, -3));
             if ($name !== '') {
                 $values[$name] = $value;
             }
@@ -158,7 +158,7 @@ class ProviderContext implements ProviderContextInterface
      */
     final public function getValue(string $name)
     {
-        $name = Str::toSnakeCase($name);
+        $name = Str::snake($name);
 
         if (array_key_exists($name, $this->Values)) {
             return $this->Values[$name];
@@ -168,7 +168,7 @@ class ProviderContext implements ProviderContextInterface
             return null;
         }
 
-        $name = Str::toSnakeCase(substr($name, 0, -3));
+        $name = Str::snake(substr($name, 0, -3));
 
         return $this->Values[$name] ?? null;
     }
@@ -178,7 +178,7 @@ class ProviderContext implements ProviderContextInterface
      */
     final public function hasValue(string $name): bool
     {
-        $name = Str::toSnakeCase($name);
+        $name = Str::snake($name);
 
         if (array_key_exists($name, $this->Values)) {
             return true;
@@ -188,7 +188,7 @@ class ProviderContext implements ProviderContextInterface
             return false;
         }
 
-        $name = Str::toSnakeCase(substr($name, 0, -3));
+        $name = Str::snake(substr($name, 0, -3));
 
         return array_key_exists($name, $this->Values);
     }

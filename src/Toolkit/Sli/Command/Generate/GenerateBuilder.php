@@ -184,7 +184,7 @@ EOF)
             $writable = $introspector->getWritableProperties();
             $writable = array_combine(
                 array_map(
-                    fn(string $name) => Str::toCamelCase($name),
+                    fn(string $name) => Str::camel($name),
                     $writable
                 ),
                 $writable
@@ -226,7 +226,7 @@ EOF)
 
         if ($_constructor = $this->InputClass->getConstructor()) {
             foreach ($_constructor->getParameters() as $_param) {
-                $name = Str::toCamelCase($_param->getName());
+                $name = Str::camel($_param->getName());
                 unset($writable[$name]);
                 $_params[$name] = $_param;
                 // Variables can't be passed to __call by reference, so this
@@ -260,7 +260,7 @@ EOF)
                     continue;
                 }
                 $_name = $_property->getName();
-                $name = Str::toCamelCase($_name);
+                $name = Str::camel($_name);
                 $_allProperties[$name] = $_property;
                 if (array_key_exists($_name, $defaults)) {
                     $_defaultProperties[$name] = $defaults[$_name];
@@ -577,8 +577,8 @@ EOF)
                         || $_method->isStatic()
                         || strpos($name, '__') === 0
                         || isset($phpDoc->TagsByName['deprecated'])
-                        || in_array(Str::toCamelCase($name), $names)
-                        || in_array(Str::toCamelCase(Regex::replace('/^(with|get)/i', '', $name)), $names)
+                        || in_array(Str::camel($name), $names)
+                        || in_array(Str::camel(Regex::replace('/^(with|get)/i', '', $name)), $names)
                         || in_array($name, $this->Skip)
                         || ($this->Forward !== [] && !in_array($name, $this->Forward))) {
                     continue;

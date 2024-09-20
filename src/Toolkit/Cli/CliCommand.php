@@ -686,7 +686,7 @@ abstract class CliCommand implements CliCommandInterface
                 continue;
             }
 
-            $name = Str::toCamelCase((string) $option->Name);
+            $name = Str::camel((string) $option->Name);
             if ($name === '' || isset($schema['properties'][$name])) {
                 throw new LogicException(sprintf('Schema option names must be unique and non-empty after camelCase conversion: %s', $option->Name));
             }
@@ -1281,7 +1281,7 @@ abstract class CliCommand implements CliCommandInterface
         }
 
         if ($option->Visibility & CliOptionVisibility::SCHEMA) {
-            $name = Str::toCamelCase((string) $option->Name);
+            $name = Str::camel((string) $option->Name);
             if ($name === '' || isset($this->SchemaOptions[$name])) {
                 throw new LogicException(sprintf(
                     'Schema option names must be unique and non-empty after camelCase conversion: %s',

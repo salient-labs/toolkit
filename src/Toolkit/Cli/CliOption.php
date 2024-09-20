@@ -374,7 +374,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         $this->EnvVariable = Str::coalesce($envVariable, null);
 
         if ($this->IsPositional) {
-            $this->ValueName = Str::coalesce($valueName, Str::toKebabCase((string) $name, '='), 'value');
+            $this->ValueName = Str::coalesce($valueName, Str::kebab((string) $name, '='), 'value');
             $this->DisplayName = $this->getValueName();
         } else {
             $this->ValueName = $this->IsFlag ? null : Str::coalesce($valueName, 'value');
@@ -701,7 +701,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             return '';
         }
 
-        return Str::lower(Str::toWords($this->ValueName));
+        return Str::lower(Str::words($this->ValueName));
     }
 
     /**
@@ -728,7 +728,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             return (string) $this->ValueName;
         }
 
-        $name = Str::toKebabCase($this->ValueName, '=');
+        $name = Str::kebab($this->ValueName, '=');
 
         if (
             strpbrk($this->ValueName, Str::UPPER) !== false

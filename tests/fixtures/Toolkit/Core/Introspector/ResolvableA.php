@@ -12,6 +12,6 @@ class ResolvableA implements Normalisable
         bool $greedy = true,
         string ...$hints
     ): string {
-        return Str::toSnakeCase($name);
+        return Str::snake($name);
     }
 }

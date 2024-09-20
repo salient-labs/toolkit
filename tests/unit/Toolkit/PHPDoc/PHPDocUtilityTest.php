@@ -10,13 +10,18 @@ use Salient\Tests\Reflection\MyClass;
 use Salient\Tests\Reflection\MyClassWithDnfTypes;
 use Salient\Tests\Reflection\MyClassWithUnionsAndIntersections;
 use Salient\Tests\Reflection\MyInterface;
+use Salient\Tests\Reflection\MyOneLineClass;
+use Salient\Tests\Reflection\MyOneLineTrait;
 use Salient\Tests\Reflection\MyOtherInterface;
 use Salient\Tests\Reflection\MyReusedTrait;
 use Salient\Tests\Reflection\MySubclass;
 use Salient\Tests\Reflection\MyTrait;
+use Salient\Tests\Reflection\MyTraitAdaptationClass;
+use Salient\Tests\Reflection\MyTraitAdaptationInterface;
 use Salient\Tests\Reflection\MyUndocumentedClass;
 use Salient\Tests\TestCase;
 use Generator;
+use LogicException;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -150,7 +155,7 @@ final class PHPDocUtilityTest extends TestCase
                 [
                     MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
-                ]
+                ],
             ],
             MySubclass::class . '::MySparselyDocumentedMethod() + fromClass' => [
                 new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
@@ -179,7 +184,7 @@ final class PHPDocUtilityTest extends TestCase
                     MyUndocumentedClass::class => null,
                     MyClass::class => null,
                     MyTrait::class => "/**\n     * MyTrait::MyTraitOnlyMethod() PHPDoc\n     */",
-                ]
+                ],
             ],
             MyInterface::class . '::MySparselyDocumentedMethod()' => [
                 new ReflectionMethod(MyInterface::class, 'MySparselyDocumentedMethod'),
@@ -196,7 +201,45 @@ final class PHPDocUtilityTest extends TestCase
                     MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
                 ],
             ],
+            MyTraitAdaptationClass::class . '::MyAdaptableMethod()' => [
+                new ReflectionMethod(MyTraitAdaptationClass::class, 'MyAdaptableMethod'),
+                null,
+                [
+                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
+                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+                ],
+            ],
+            MyTraitAdaptationClass::class . '::MyAdaptableMethod() + fromClass' => [
+                new ReflectionMethod(MyTraitAdaptationClass::class, 'MyAdaptableMethod'),
+                new ReflectionClass(MyTraitAdaptationClass::class),
+                [
+                    MyTraitAdaptationClass::class => null,
+                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
+                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+                ],
+            ],
+            MyTraitAdaptationClass::class . '::Adaptable()' => [
+                new ReflectionMethod(MyTraitAdaptationClass::class, 'Adaptable'),
+                null,
+                [
+                    MyTraitAdaptationClass::class => "/**\n     * MyTraitAdaptationClass::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
+                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
+                ],
+            ],
         ];
+    }
+
+    public function testGetAllMethodDocCommentsFromOneLineDeclaration(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Unable to check location of %s::%s(): %s::%s() declared on same line',
+            MyOneLineClass::class,
+            \PHP_VERSION_ID < 80000 ? 'Method' : 'MyOneLineMethod',
+            MyOneLineTrait::class,
+            \PHP_VERSION_ID < 80000 ? 'Method' : 'MyMethod',
+        ));
+        PHPDocUtility::getAllMethodDocComments(new ReflectionMethod(MyOneLineClass::class, 'MyOneLineMethod'));
     }
 
     /**

@@ -88,7 +88,7 @@ final class PackageTest extends TestCase
         string $expected,
         array $package,
         bool $pretty = true,
-        bool $withReference = false
+        ?bool $withReference = null
     ): void {
         self::$RootPackage = $package;
         $this->assertSame($expected, Package::version($pretty, $withReference));

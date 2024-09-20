@@ -12,6 +12,6 @@ class ResolvableB implements Normalisable
         bool $greedy = true,
         string ...$hints
     ): string {
-        return Str::upper(Str::toKebabCase($name));
+        return Str::upper(Str::kebab($name));
     }
 }

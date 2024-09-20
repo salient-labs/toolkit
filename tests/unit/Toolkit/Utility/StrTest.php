@@ -5,6 +5,8 @@ namespace Salient\Tests\Utility;
 use Salient\Tests\TestCase;
 use Salient\Utility\Get;
 use Salient\Utility\Str;
+use Closure;
+use InvalidArgumentException;
 use ReflectionParameter;
 
 /**
@@ -229,29 +231,27 @@ EOF,
      * @dataProvider caseConversionProvider
      */
     public function testCaseConversion(
-        string $expectedTitle,
         string $expectedLower,
         string $expectedUpper,
         string $expectedUpperFirst,
         string $string
     ): void {
-        $this->assertSame($expectedTitle, Str::title($string));
         $this->assertSame($expectedLower, Str::lower($string));
         $this->assertSame($expectedUpper, Str::upper($string));
         $this->assertSame($expectedUpperFirst, Str::upperFirst($string));
     }
 
     /**
-     * @return array<array{string,string,string,string,string}>
+     * @return array<array{string,string,string,string}>
      */
     public static function caseConversionProvider(): array
     {
         return [
-            ['', '', '', '', ''],
-            ['Foobar', 'foobar', 'FOOBAR', 'FoObAr', 'foObAr'],
-            ['Foo bar', 'foo bar', 'FOO BAR', 'FoO bAr', 'foO bAr'],
-            ['123 foo', '123 foo', '123 FOO', '123 foo', '123 foo'],
-            ['äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ'],
+            ['', '', '', ''],
+            ['foobar', 'FOOBAR', 'FoObAr', 'foObAr'],
+            ['foo bar', 'FOO BAR', 'FoO bAr', 'foO bAr'],
+            ['123 foo', '123 FOO', '123 foo', '123 foo'],
+            ['äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ', 'äëïöüÿ'],
         ];
     }
 
@@ -282,6 +282,94 @@ EOF,
             'empty' => ['hElLo', 'hElLo', ''],
             'mixed case' => ['hElLo', 'hElLo', 'wORLD'],
             'numeric' => ['hElLo', 'hElLo', '12345'],
+        ];
+    }
+
+    /**
+     * @dataProvider startsWithProvider
+     *
+     * @param iterable<string>|string $needles
+     */
+    public function testStartsWith(bool $expected, string $haystack, $needles, bool $ignoreCase = false): void
+    {
+        $this->assertSame($expected, Str::startsWith($haystack, $needles, $ignoreCase));
+    }
+
+    /**
+     * @return array<array{bool,string,iterable<string>|string,3?:bool}>
+     */
+    public static function startsWithProvider(): array
+    {
+        return [
+            [true, 'hello world', 'hello'],
+            [true, 'hello world', 'he'],
+            [false, 'hello world', 'world'],
+            [false, 'hello world', ''],
+            [true, 'hello world', ['world', 'hello']],
+            [false, 'hello world', ['world', 'planet']],
+            [true, 'hello world', ['wo', 'he']],
+            [false, '', 'hello'],
+            [false, 'hello', 'world'],
+            [false, 'hello world', 'HELLO'],
+            [false, 'hello world', 'HE'],
+            [true, 'hello world', 'HELLO', true],
+            [true, 'hello world', 'HE', true],
+            [false, 'hello world', 'WORLD', true],
+            [true, 'hello world', ['WORLD', 'HELLO'], true],
+        ];
+    }
+
+    /**
+     * @dataProvider endsWithProvider
+     *
+     * @param iterable<string>|string $needles
+     */
+    public function testEndsWith(bool $expected, string $haystack, $needles, bool $ignoreCase = false): void
+    {
+        $this->assertSame($expected, Str::endsWith($haystack, $needles, $ignoreCase));
+    }
+
+    /**
+     * @return array<array{bool,string,iterable<string>|string,3?:bool}>
+     */
+    public static function endsWithProvider(): array
+    {
+        return [
+            [true, 'hello world', 'world'],
+            [false, 'hello world', 'hello'],
+            [true, 'hello world', ['planet', 'world']],
+            [false, 'hello world', 'planet'],
+            [false, 'hello', ''],
+            [false, '', 'hello'],
+            [true, 'hello', 'o'],
+            [false, 'hello', 'a'],
+            [false, 'hello world', 'WORLD'],
+            [false, 'hello', 'O'],
+            [true, 'hello world', 'WORLD', true],
+            [false, 'hello world', 'HELLO', true],
+            [true, 'hello world', ['PLANET', 'WORLD'], true],
+            [true, 'hello', 'O', true],
+        ];
+    }
+
+    /**
+     * @dataProvider isAsciiProvider
+     */
+    public function testIsAscii(bool $expected, string $string): void
+    {
+        $this->assertSame($expected, Str::isAscii($string));
+    }
+
+    /**
+     * @return array<array{bool,string}>
+     */
+    public static function isAsciiProvider(): array
+    {
+        return [
+            [false, 'äëïöüÿ'],
+            [false, '👩🏼‍🚒'],
+            [true, ''],
+            [true, 'Hello, world!'],
         ];
     }
 
@@ -344,22 +432,25 @@ EOF,
     }
 
     /**
-     * @dataProvider toWordsProvider
+     * @dataProvider wordsProvider
      */
-    public function testToWords(
-        string $expected,
+    public function testWords(
+        ?string $expected,
         string $string,
         string $separator = ' ',
-        ?string $preserve = null,
-        ?callable $callback = null
+        string $preserve = '',
+        ?Closure $callback = null
     ): void {
-        $this->assertSame($expected, Str::toWords($string, $separator, $preserve, $callback));
+        if ($expected === null) {
+            $this->expectException(InvalidArgumentException::class);
+        }
+        $this->assertSame($expected, Str::words($string, $separator, $preserve, $callback));
     }
 
     /**
-     * @return array<array{string,string,2?:string,3?:string|null,4?:callable|null}>
+     * @return array<array{string|null,string,2?:string,3?:string,4?:Closure|null}>
      */
-    public static function toWordsProvider(): array
+    public static function wordsProvider(): array
     {
         return [
             ['foo bar', 'foo bar'],
@@ -370,82 +461,103 @@ EOF,
             ['this=foo Bar', '$this=fooBar', ' ', '='],
             ['PHP Doc', 'PHPDoc'],
             ['PHP8 Doc', 'PHP8Doc'],
+            ['PHP8 DOC', 'PHP8DOC'],
+            ['PHP8 doc', 'PHP8doc'],
+            ['Php8 Doc', 'Php8Doc'],
+            ['Php8 DOC', 'Php8DOC'],
+            ['Php8doc', 'Php8doc'],
+            ['php8 Doc', 'php8Doc'],
+            ['php8 DOC', 'php8DOC'],
+            ['php8doc', 'php8doc'],
+            ['8 Doc', '8Doc'],
+            ['8 DOC', '8DOC'],
+            ['8doc', '8doc'],
             ['PHP8.3_0 Doc', 'PHP8.3_0Doc', ' ', '._'],
+            ['foo\Bar', 'fooBar', '\\'],
+            ['foo$Bar', 'fooBar', '$'],
+            ['foo*Bar', '*fooBar*', '*'],
+            ['foo Bar', '🚀fooBar🚀'],
+            ['🚀foo Bar🚀', '🚀fooBar🚀', ' ', '🚀'],
+            ['foo🚀Bar', '🚀fooBar🚀', '🚀'],
+            [null, 'fooBar', '\\', '\\'],
+            [null, 'fooBar', '$0'],
+            [null, 'fooBar', 'T'],
+            [null, '🚀fooBar🚀', '🚀', '🚀'],
         ];
     }
 
     /**
-     * @dataProvider toCaseProvider
+     * @dataProvider caseProvider
      */
-    public function testToCase(
+    public function testCase(
         string $string,
-        ?string $preserve,
+        string $preserve,
         string $expectedSnakeCase,
         string $expectedKebabCase,
         string $expectedCamelCase,
         string $expectedPascalCase
     ): void {
         $name = Get::code([$string, $preserve]);
-        $this->assertSame($expectedSnakeCase, Str::toSnakeCase($string, $preserve), "snake_case{$name}");
-        $this->assertSame($expectedKebabCase, Str::toKebabCase($string, $preserve), "kebab-case{$name}");
-        $this->assertSame($expectedCamelCase, Str::toCamelCase($string, $preserve), "camelCase{$name}");
-        $this->assertSame($expectedPascalCase, Str::toPascalCase($string, $preserve), "PascalCase{$name}");
+        $this->assertSame($expectedSnakeCase, Str::snake($string, $preserve), "snake_case{$name}");
+        $this->assertSame($expectedKebabCase, Str::kebab($string, $preserve), "kebab-case{$name}");
+        $this->assertSame($expectedCamelCase, Str::camel($string, $preserve), "camelCase{$name}");
+        $this->assertSame($expectedPascalCase, Str::pascal($string, $preserve), "PascalCase{$name}");
     }
 
     /**
-     * @return array<array{string,string|null,string,string,string,string}>
+     * @return array<array{string,string,string,string,string,string}>
      */
-    public static function toCaseProvider(): array
+    public static function caseProvider(): array
     {
         return [
-            ['', null, '', '', '', ''],
-            ['__', null, '', '', '', ''],
-            ['0', null, '0', '0', '0', '0'],
-            [' 0 ', null, '0', '0', '0', '0'],
-            ['0.00', null, '0_00', '0-00', '000', '000'],
-            ['2e5', null, '2e5', '2e5', '2e5', '2e5'],
-            ['2.0e5', null, '2_0e5', '2-0e5', '20e5', '20e5'],
-            ['**two words**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['**Two_Words**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['**TWO-WORDS**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['**two.Words**', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['12two_words', null, '12two_words', '12two-words', '12twoWords', '12twoWords'],
-            ['12two_Words', null, '12two_words', '12two-words', '12twoWords', '12twoWords'],
-            ['12Two_Words', null, '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
-            ['12TWO_WORDS', null, '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
-            ['12twoWords', null, '12two_words', '12two-words', '12twoWords', '12twoWords'],
-            ['12TwoWords', null, '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
-            ['12TWOWords', null, '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
+            ['', '', '', '', '', ''],
+            ['__', '', '', '', '', ''],
+            ['0', '', '0', '0', '0', '0'],
+            [' 0 ', '', '0', '0', '0', '0'],
+            ['0.00', '', '0_00', '0-00', '000', '000'],
+            ['2e5', '', '2e5', '2e5', '2e5', '2e5'],
+            ['2.0e5', '', '2_0e5', '2-0e5', '20e5', '20e5'],
+            ['**two words**', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['**Two_Words**', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['**TWO-WORDS**', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['**two.Words**', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['12two_words', '', '12two_words', '12two-words', '12twoWords', '12twoWords'],
+            ['12two_Words', '', '12two_words', '12two-words', '12twoWords', '12twoWords'],
+            ['12Two_Words', '', '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
+            ['12TWO_WORDS', '', '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
+            ['12twoWords', '', '12two_words', '12two-words', '12twoWords', '12twoWords'],
+            ['12TwoWords', '', '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
+            ['12TWOWords', '', '12_two_words', '12-two-words', '12TwoWords', '12TwoWords'],
             ['field-name=value-name', '=', 'field_name=value_name', 'field-name=value-name', 'fieldName=valueName', 'FieldName=ValueName'],
             ['Field-name=Value-name', '=', 'field_name=value_name', 'field-name=value-name', 'fieldName=valueName', 'FieldName=ValueName'],
             ['Field-Name=Value-Name', '=', 'field_name=value_name', 'field-name=value-name', 'fieldName=valueName', 'FieldName=ValueName'],
             ['FIELD-NAME=VALUE-NAME', '=', 'field_name=value_name', 'field-name=value-name', 'fieldName=valueName', 'FieldName=ValueName'],
-            ['two words', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['two_12words', null, 'two_12words', 'two-12words', 'two12words', 'Two12words'],
-            ['two_12Words', null, 'two_12_words', 'two-12-words', 'two12Words', 'Two12Words'],
-            ['Two_12Words', null, 'two_12_words', 'two-12-words', 'two12Words', 'Two12Words'],
-            ['TWO_12WORDS', null, 'two_12_words', 'two-12-words', 'two12Words', 'Two12Words'],
-            ['Two_Words', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['two_words12', null, 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
-            ['two_Words12', null, 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
-            ['Two_Words12', null, 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
-            ['TWO_WORDS12', null, 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
-            ['TWO-WORDS', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['two.Words', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['two12_words', null, 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
-            ['two12_Words', null, 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
-            ['Two12_Words', null, 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
-            ['TWO12_WORDS', null, 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
-            ['two12words', null, 'two12words', 'two12words', 'two12words', 'Two12words'],
-            ['two12Words', null, 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
-            ['Two12Words', null, 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
-            ['TWO12WORDS', null, 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
-            ['twoWords', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['TwoWords', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['TWOWords', null, 'two_words', 'two-words', 'twoWords', 'TwoWords'],
-            ['twoWords12', null, 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
-            ['TwoWords12', null, 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
-            ['TWOWords12', null, 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['two words', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['two_12words', '', 'two_12words', 'two-12words', 'two12words', 'Two12words'],
+            ['two_12Words', '', 'two_12_words', 'two-12-words', 'two12Words', 'Two12Words'],
+            ['Two_12Words', '', 'two_12_words', 'two-12-words', 'two12Words', 'Two12Words'],
+            ['TWO_12WORDS', '', 'two_12_words', 'two-12-words', 'two12Words', 'Two12Words'],
+            ['Two_Words', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['two_words12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['two_Words12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['Two_Words12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['TWO_WORDS12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['TWO-WORDS', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['two.Words', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['two12_words', '', 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
+            ['two12_Words', '', 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
+            ['Two12_Words', '', 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
+            ['TWO12_WORDS', '', 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
+            ['two12words', '', 'two12words', 'two12words', 'two12words', 'Two12words'],
+            ['two12Words', '', 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
+            ['Two12Words', '', 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
+            ['TWO12WORDS', '', 'two12_words', 'two12-words', 'two12Words', 'Two12Words'],
+            ['twoWords', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['TwoWords', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['TWOWords', '', 'two_words', 'two-words', 'twoWords', 'TwoWords'],
+            ['twoWords12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['TwoWords12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['TWOWords12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
         ];
     }
 
@@ -992,11 +1104,11 @@ EOF,
     }
 
     /**
-     * @dataProvider ngramProvider
+     * @dataProvider ngramsProvider
      *
      * @param string[] $expected
      */
-    public function testNgram(
+    public function testNgrams(
         array $expected,
         string $string,
         int $size = 2
@@ -1009,7 +1121,7 @@ EOF,
     /**
      * @return array<array{string[],string,2?:int}>
      */
-    public static function ngramProvider(): array
+    public static function ngramsProvider(): array
     {
         return [
             [
