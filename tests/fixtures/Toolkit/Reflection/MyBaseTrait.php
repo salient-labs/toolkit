@@ -29,4 +29,11 @@ trait MyBaseTrait
      * @return mixed
      */
     public function MySparselyDocumentedMethod() {}
+
+    /**
+     * MyBaseTrait::Adaptable() PHPDoc
+     *
+     * @return mixed
+     */
+    private function Adaptable() {}
 }
