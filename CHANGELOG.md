@@ -10,6 +10,55 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.53] - 2024-09-20
+
+### Added
+
+#### `Cli`
+
+- Add `CliApplication` method `getVersionString()`
+
+#### `Utility`
+
+- Add `Str::startsWith()`, `Str::endsWith()` and `Str::isAscii()`
+- Add `Regex::quoteReplacement()`
+
+### Changed
+
+#### `Utility`
+
+- Rename `Str` methods:
+  - `toSnakeCase()` -> `snake()`
+  - `toKebabCase()` -> `kebab()`
+  - `toCamelCase()` -> `camel()`
+  - `toPascalCase()` -> `pascal()`
+  - `toWords()` -> `words()`
+- Allow ref to be suppressed unconditionally in `Package` methods `version()` and `getPackageVersion()`
+- Change `TKey` type from `array-key` to `mixed` in `Arr` methods `unique()`, `whereNotNull()`, `whereNotEmpty()`, `trim()`, `lower()`, `upper()`, `snakeCase()`, `toScalars()` and `toStrings()`
+
+### Removed
+
+#### `Utility`
+
+- Remove `Str::title()`
+- Remove `Test::isAsciiString()`
+
+### Fixed
+
+#### `Cli`
+
+- Fix issue where `CliApplication::reportVersion()` may print the commit reference twice or print empty brackets when there is no reference
+
+#### `PHPDoc`
+
+- Fix issue where trait aliases are not followed
+- Work around PHP 7.4 bug where `ReflectionMethod` does not honour trait aliases
+
+#### `Utility`
+
+- Fix issue where `Str::words()` may return unexpected results when `$separator` contains `'\'`, `'$'` or a preserved character
+- Fix `Str::expandLeadingTabs()` issue where tabs after a falsey value at the start of the first line may not be preserved
+
 ## [v0.99.52] - 2024-09-17
 
 ### Added
@@ -3592,6 +3641,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.53]: https://github.com/salient-labs/toolkit/compare/v0.99.52...v0.99.53
 [v0.99.52]: https://github.com/salient-labs/toolkit/compare/v0.99.51...v0.99.52
 [v0.99.51]: https://github.com/salient-labs/toolkit/compare/v0.99.50...v0.99.51
 [v0.99.50]: https://github.com/salient-labs/toolkit/compare/v0.99.49...v0.99.50
