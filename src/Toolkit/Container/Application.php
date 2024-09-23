@@ -413,18 +413,24 @@ class Application extends Container implements ApplicationInterface
                 return;
             }
 
+            $uuid ??= fn() =>
+                Sync::isLoaded() && Sync::runHasStarted()
+                    ? Sync::getRunUuid()
+                    : Get::uuid();
+
             $filename = sprintf(
-                '%s/%s-%s-%s.har',
+                '%s/har/%s-%s-%s.har',
                 $this->getLogPath(),
                 $name ?? $this->AppName,
                 (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d-His.v'),
-                Get::value($uuid ?? Get::uuid()),
+                Get::value($uuid),
             );
 
             if (file_exists($filename)) {
                 throw new RuntimeException(sprintf('File already exists: %s', $filename));
             }
 
+            File::createDir(dirname($filename));
             File::create($filename, 0600);
 
             $recorder = new CurlerHarRecorder(

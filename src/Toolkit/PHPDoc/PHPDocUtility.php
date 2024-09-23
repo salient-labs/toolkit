@@ -3,6 +3,7 @@
 namespace Salient\PHPDoc;
 
 use Salient\Utility\AbstractUtility;
+use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
@@ -43,10 +44,11 @@ final class PHPDocUtility extends AbstractUtility
             }
         } while ($class = $class->getParentClass());
 
-        foreach ($interfaces as $interface) {
+        /** @var class-string $name */
+        foreach ($interfaces as $name => $interface) {
             $comment = $interface->getDocComment();
             if ($comment !== false) {
-                $comments[$interface->getName()] = Str::setEol($comment);
+                $comments[$name] = Str::setEol($comment);
             }
         }
 
@@ -155,8 +157,8 @@ final class PHPDocUtility extends AbstractUtility
             }
 
             $aliases = self::getTraitAliases($current);
-            foreach ($current->getTraits() as $trait) {
-                $originalName = $aliases[$trait->getName()][$name] ?? $name;
+            foreach ($current->getTraits() as $traitName => $trait) {
+                $originalName = $aliases[$traitName][$name] ?? $name;
                 if (!$trait->hasMethod($originalName)) {
                     continue;
                 }
@@ -456,19 +458,14 @@ final class PHPDocUtility extends AbstractUtility
 
     /**
      * @param ReflectionClass<object> $class
-     * @return array<ReflectionClass<object>>
+     * @return array<string,ReflectionClass<object>>
      */
     private static function getInterfaces(ReflectionClass $class): array
     {
-        $interfaces = $class->getInterfaces();
-
-        if (!$interfaces) {
-            return [];
-        }
-
         // Group by base interface, then sort children before parents
-        usort(
-            $interfaces,
+        return Arr::sort(
+            $class->getInterfaces(),
+            true,
             fn(ReflectionClass $a, ReflectionClass $b) =>
                 $a->isSubclassOf($b)
                     ? -1
@@ -477,8 +474,6 @@ final class PHPDocUtility extends AbstractUtility
                         : Reflect::getBaseClass($a)->getName()
                             <=> Reflect::getBaseClass($b)->getName())
         );
-
-        return $interfaces;
     }
 
     /**
@@ -545,8 +540,8 @@ final class PHPDocUtility extends AbstractUtility
 
         // Check if the method belongs to an adjacent trait on the same line
         $aliases = self::getTraitAliases($class);
-        foreach ($traits as $trait) {
-            $originalName = $aliases[$trait->getName()][$name] ?? $name;
+        foreach ($traits as $traitName => $trait) {
+            $originalName = $aliases[$traitName][$name] ?? $name;
             if (
                 $trait->hasMethod($originalName)
                 && ($traitMethod = $trait->getMethod($originalName))->getFileName() === $file

@@ -8,6 +8,10 @@ use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Facade\Config;
+use Salient\Core\Facade\Sync;
+use Salient\Tests\Sync\Entity\Provider\PostProvider;
+use Salient\Tests\Sync\Entity\Post;
+use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\HttpTestCase;
 use Salient\Utility\Env;
 use Salient\Utility\File;
@@ -134,11 +138,34 @@ final class ApplicationTest extends HttpTestCase
         $this->assertNotNull($file = $app->getHarFilename());
         $this->assertStringEndsWith('-' . $uuid . '.har', $file);
         $app->unload();
-        $this->assertTrue(File::same($file, $basePath . '/var/log/' . basename($file)));
+        $this->assertTrue(File::same($file, $basePath . '/var/log/har/' . basename($file)));
         $this->assertStringStartsWith(
             '{"log":{"version":"1.2","creator":{"name":"app","version":"v1.0.0"},"pages":[],"entries":[{',
             File::getContents($file),
         );
+
+        File::pruneDir($basePath, true);
+    }
+
+    /**
+     * @backupGlobals enabled
+     */
+    public function testExportHarWithSync(): void
+    {
+        $basePath = File::createTempDir();
+
+        $_ENV['app_env'] = 'test';
+        $app = (new Application($basePath))
+            ->exportHar(null, 'app', 'v1.0.0')
+            ->provider(JsonPlaceholderApi::class)
+            ->startSync(static::class, []);
+        $this->assertNull($app->getHarFilename());
+        // Trigger the start of a run
+        $app->get(PostProvider::class)->with(Post::class)->get(1);
+        $uuid = Sync::getRunUuid();
+        $this->assertNotNull($file = $app->getHarFilename());
+        $this->assertStringEndsWith('-' . $uuid . '.har', $file);
+        $app->unload();
 
         File::pruneDir($basePath, true);
     }

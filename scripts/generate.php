@@ -139,6 +139,7 @@ foreach ($class->getReflectionConstants() as $constant) {
     Env::unset($value);
 }
 
+/** @disregard P1006 */
 $args = [
     '--collapse',
     '--force',
