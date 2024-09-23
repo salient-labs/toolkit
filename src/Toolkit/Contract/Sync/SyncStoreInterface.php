@@ -14,18 +14,21 @@ interface SyncStoreInterface
     /**
      * Register a namespace for sync entities and their provider interfaces
      *
+     * Namespaces allow sync entities to be serialized, linked and resolved via
+     * compact, stable identifiers. They also allow control over the provider
+     * interfaces that service sync entities.
+     *
      * A prefix can only be associated with one namespace per entity store and
      * cannot be changed without resetting its backing database.
      *
      * If `$prefix` was registered on a previous run, its URI and PHP namespace
-     * are updated if they differ. This is by design and is intended to
-     * facilitate refactoring.
+     * are updated in the backing database if they differ.
      *
-     * If `$resolver` is `null`, the entity store assumes sync entities in
+     * If `$helper` is `null`, the entity store assumes sync entities in
      * `$namespace` are serviced by provider interfaces called
-     * `<entity-namespace>\Provider\<entity>Provider`, e.g. `Acme\Sync\User`
-     * entities would be serviced by `Acme\Sync\Provider\UserProvider`. Provide
-     * a {@see SyncClassResolverInterface} to modify this behaviour.
+     * `<entity-namespace>\Provider\<entity>Provider`, e.g. `Sync\User` entities
+     * would be serviced by `Sync\Provider\UserProvider`. Provide a
+     * {@see SyncNamespaceHelperInterface} to modify this behaviour.
      *
      * @param string $prefix A short alternative to `$uri`. Case-insensitive.
      * Must be unique to the entity store. Must be a scheme name compliant with
@@ -42,16 +45,16 @@ interface SyncStoreInterface
         string $prefix,
         string $uri,
         string $namespace,
-        ?SyncClassResolverInterface $resolver = null
+        ?SyncNamespaceHelperInterface $helper = null
     );
 
     /**
-     * Get a class resolver for a sync entity or provider interface, or null if
-     * it is not in a namespace with a registered resolver
+     * Get a namespace helper for a sync entity or provider interface, or null
+     * if it is not in a namespace with a registered helper
      *
      * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
      */
-    public function getClassResolver(string $class): ?SyncClassResolverInterface;
+    public function getNamespaceHelper(string $class): ?SyncNamespaceHelperInterface;
 
     /**
      * Get a stable value that uniquely identifies a sync provider with the

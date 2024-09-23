@@ -8,8 +8,8 @@ classes][SyncEntityInterface] to propagate data to and from a backend.
 
 For a provider to perform sync operations on entities of a given type, it must
 also implement the entity's provider interface, which--aside from entities in
-namespaces with a registered [class resolver][SyncClassResolverInterface]--has
-the following name:
+namespaces with a registered [helper][SyncNamespaceHelperInterface]--has the
+following name:
 
 ```
 <entity-namespace>\Provider\<entity>Provider
@@ -27,12 +27,12 @@ entities can be serviced this way if needed), but it does need to exist.
 vendor/bin/sli generate sync provider --magic --op 'get,get-list' 'Acme\Sync\User'
 ```
 
-#### Class resolvers
+#### Namespace helpers
 
 To map entity classes to different provider interfaces (or multiple entities to
-one interface, perhaps), you can provide a [SyncClassResolverInterface][] to the
-entity store when registering a namespace. See [registerNamespace()][] for
-details and [this test fixture][SyncClassResolver.php] for a working example
+one interface, perhaps), you can provide a [SyncNamespaceHelperInterface][] to
+the entity store when registering a namespace. See [registerNamespace()][] for
+details and [this test fixture][SyncNamespaceHelper.php] for a working example
 that maps `Acme\Sync\Entity\User` to `Acme\Sync\Contract\ProvidesUser`.
 
 #### Operations
@@ -76,15 +76,16 @@ The first value passed is always the current [SyncContextInterface][] and
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncProviderInterface.html#_getDefinition
 [registerNamespace()]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncStoreInterface.html#_registerNamespace
-[SyncClassResolver.php]: ../tests/fixtures/Toolkit/Sync/SyncClassResolver.php
-[SyncClassResolverInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncClassResolverInterface.html
 [SyncContextInterface::withFilter()]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withFilter
 [SyncContextInterface]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html
 [SyncEntityInterface]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncEntityInterface.html
+[SyncNamespaceHelper.php]:
+  ../tests/fixtures/Toolkit/Sync/SyncNamespaceHelper.php
+[SyncNamespaceHelperInterface]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncNamespaceHelperInterface.html
 [SyncOperation]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncOperation.html
 [SyncProviderInterface]:

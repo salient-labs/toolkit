@@ -9,11 +9,11 @@ use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\DeferredRelationshipInterface;
 use Salient\Contract\Sync\HydrationPolicy;
-use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncErrorType;
+use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Console;
@@ -90,11 +90,11 @@ final class SyncStore extends AbstractStore implements SyncStoreInterface
     private $NamespaceUrisByPrefix;
 
     /**
-     * Prefix => resolver
+     * Prefix => helper
      *
-     * @var array<string,SyncClassResolverInterface>|null
+     * @var array<string,SyncNamespaceHelperInterface>|null
      */
-    private $NamespaceResolversByPrefix;
+    private $NamespaceHelpersByPrefix;
 
     /**
      * Provider ID => entity type ID => entity ID => entity
@@ -159,9 +159,9 @@ final class SyncStore extends AbstractStore implements SyncStoreInterface
     /**
      * Deferred namespace registrations
      *
-     * Prefix => [ namespace base URI, PHP namespace, class resolver ]
+     * Prefix => [ namespace base URI, PHP namespace, namespace helper ]
      *
-     * @var array<string,array{string,string,SyncClassResolverInterface|null}>
+     * @var array<string,array{string,string,SyncNamespaceHelperInterface|null}>
      */
     private $DeferredNamespaces = [];
 
@@ -565,7 +565,7 @@ SQL;
         string $prefix,
         string $uri,
         string $namespace,
-        ?SyncClassResolverInterface $resolver = null
+        ?SyncNamespaceHelperInterface $helper = null
     ) {
         $prefix = Str::lower($prefix);
         if (isset($this->RegisteredNamespaces[$prefix])
@@ -593,7 +593,7 @@ SQL;
 
         // Don't start a run just to register a namespace
         if (!$this->runHasStarted()) {
-            $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $resolver];
+            $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $helper];
             return $this;
         }
 
@@ -622,8 +622,8 @@ SQL;
 
         $this->RegisteredNamespaces[$prefix] = true;
 
-        if ($resolver) {
-            $this->NamespaceResolversByPrefix[$prefix] = $resolver;
+        if ($helper) {
+            $this->NamespaceHelpersByPrefix[$prefix] = $helper;
         }
 
         // Don't reload while bootstrapping
@@ -661,41 +661,41 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function getClassResolver(string $class): ?SyncClassResolverInterface
+    public function getNamespaceHelper(string $class): ?SyncNamespaceHelperInterface
     {
         if ($this->classToNamespace(
             $class,
             $uri,
             $namespace,
-            $resolver
+            $helper
         ) === null) {
             return null;
         }
 
-        return $resolver;
+        return $helper;
     }
 
     /**
      * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
-     * @param-out SyncClassResolverInterface|null $resolver
+     * @param-out SyncNamespaceHelperInterface|null $helper
      */
     private function classToNamespace(
         string $class,
         ?string &$uri = null,
         ?string &$namespace = null,
-        ?SyncClassResolverInterface &$resolver = null
+        ?SyncNamespaceHelperInterface &$helper = null
     ): ?string {
         $class = ltrim($class, '\\');
         $lower = Str::lower($class);
 
         // Don't start a run just to resolve a class to a namespace
         if (!$this->runHasStarted()) {
-            foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_resolver]) {
+            foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_helper]) {
                 $_namespace = Str::lower($_namespace);
                 if (strpos($lower, $_namespace) === 0) {
                     $uri = $_uri;
                     $namespace = $_namespace;
-                    $resolver = $_resolver;
+                    $helper = $_helper;
                     return $prefix;
                 }
             }
@@ -706,7 +706,7 @@ SQL;
             if (strpos($lower, $_namespace) === 0) {
                 $uri = $this->NamespaceUrisByPrefix[$prefix];
                 $namespace = $this->NamespacesByPrefix[$prefix];
-                $resolver = $this->NamespaceResolversByPrefix[$prefix] ?? null;
+                $helper = $this->NamespaceHelpersByPrefix[$prefix] ?? null;
                 return $prefix;
             }
         }
@@ -1152,8 +1152,8 @@ SQL;
         }
         unset($this->DeferredEntityTypes);
 
-        foreach ($this->DeferredNamespaces as $prefix => [$uri, $namespace, $resolver]) {
-            $this->registerNamespace($prefix, $uri, $namespace, $resolver);
+        foreach ($this->DeferredNamespaces as $prefix => [$uri, $namespace, $helper]) {
+            $this->registerNamespace($prefix, $uri, $namespace, $helper);
         }
         unset($this->DeferredNamespaces);
 

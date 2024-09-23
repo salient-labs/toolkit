@@ -94,7 +94,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $_entity = $entity;
         $checked = [];
         do {
-            $entityProvider = SyncIntrospector::entityToProvider($entity, $container);
+            $entityProvider = SyncIntrospector::getEntityProvider($entity, $container);
             if (interface_exists($entityProvider)) {
                 break;
             }

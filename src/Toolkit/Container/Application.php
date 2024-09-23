@@ -12,7 +12,7 @@ use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Curler\Event\CurlerEventInterface;
 use Salient\Contract\Curler\Event\CurlRequestEventInterface;
 use Salient\Contract\Curler\Event\ResponseCacheHitEventInterface;
-use Salient\Contract\Sync\SyncClassResolverInterface;
+use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
@@ -579,12 +579,12 @@ class Application extends Container implements ApplicationInterface
         string $prefix,
         string $uri,
         string $namespace,
-        ?SyncClassResolverInterface $resolver = null
+        ?SyncNamespaceHelperInterface $helper = null
     ) {
         if (!Sync::isLoaded()) {
             throw new LogicException('Entity store not started');
         }
-        Sync::registerNamespace($prefix, $uri, $namespace, $resolver);
+        Sync::registerNamespace($prefix, $uri, $namespace, $helper);
 
         return $this;
     }

@@ -4,7 +4,7 @@ namespace Salient\Contract\Container;
 
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Curler\CurlerInterface;
-use Salient\Contract\Sync\SyncClassResolverInterface;
+use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Closure;
 use LogicException;
@@ -166,7 +166,7 @@ interface ApplicationInterface extends ContainerInterface
         string $prefix,
         string $uri,
         string $namespace,
-        ?SyncClassResolverInterface $resolver = null
+        ?SyncNamespaceHelperInterface $helper = null
     );
 
     /**

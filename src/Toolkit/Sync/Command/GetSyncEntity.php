@@ -170,7 +170,7 @@ EOF)
             $entity = $this->Entities[$this->EntityBasename];
 
             $provider = $this->ProviderBasename ?? array_search(
-                $this->App->getName(SyncIntrospector::entityToProvider($entity)),
+                $this->App->getName(SyncIntrospector::getEntityProvider($entity)),
                 $this->Providers,
             );
 
@@ -217,7 +217,7 @@ EOF)
 
         $provider = $this->App->get($provider);
 
-        $entityProvider = SyncIntrospector::entityToProvider($entity);
+        $entityProvider = SyncIntrospector::getEntityProvider($entity);
         if (!$provider instanceof $entityProvider) {
             throw new CliInvalidArgumentsException(sprintf(
                 '%s does not service %s',

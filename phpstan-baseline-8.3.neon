@@ -261,11 +261,6 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncEntityProvider.php
 
 		-
-			message: "#^Parameter \\#1 \\$provider of static method Salient\\\\Sync\\\\Support\\\\SyncIntrospector\\<object\\>\\:\\:providerToEntity\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\>, string given\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospectionClass.php
-
-		-
 			message: "#^Parameter \\#2 \\$string2 of function strcasecmp expects string, mixed given\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospectionClass.php
@@ -291,22 +286,7 @@ parameters:
 			path: src/Toolkit/Sync/Support/SyncIntrospectionClass.php
 
 		-
-			message: "#^Property Salient\\\\Sync\\\\Support\\\\SyncIntrospectionClass\\<TClass of object\\>\\:\\:\\$SyncProviderInterfaces \\(array\\<class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\>\\>\\) does not accept array\\<string\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospectionClass.php
-
-		-
 			message: "#^Cannot call method getOffline\\(\\) on Salient\\\\Contract\\\\Sync\\\\SyncContextInterface\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:entityToProvider\\(\\) should return class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\> but returns string\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Method Salient\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:providerToEntity\\(\\) should return array\\<class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\> but returns array\\<int, string\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
 
@@ -399,16 +379,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, int\\|string\\|null given\\.$#"
 			count: 1
 			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Sync\\\\SyncClassResolver\\:\\:entityToProvider\\(\\) should return class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncProviderInterface\\> but returns string\\.$#"
-			count: 1
-			path: tests/fixtures/Toolkit/Sync/SyncClassResolver.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Sync\\\\SyncClassResolver\\:\\:providerToEntity\\(\\) should return array\\<class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\> but returns array\\<int, string\\>\\.$#"
-			count: 1
-			path: tests/fixtures/Toolkit/Sync/SyncClassResolver.php
 
 		-
 			message: "#^Cannot access property \\$Foo on mixed\\.$#"
