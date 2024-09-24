@@ -21,7 +21,7 @@ use ReflectionUnionType;
 /**
  * @internal
  */
-final class PHPDocUtility extends AbstractUtility
+final class PHPDocUtil extends AbstractUtility
 {
     /**
      * Get an array of doc comments for a class and its parents

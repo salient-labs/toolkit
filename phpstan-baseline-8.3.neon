@@ -161,7 +161,7 @@ parameters:
 			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
 
 		-
-			message: "#^Parameter \\#1 \\$method of static method Salient\\\\PHPDoc\\\\PHPDocUtility\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$method of static method Salient\\\\PHPDoc\\\\PHPDocUtil\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
 

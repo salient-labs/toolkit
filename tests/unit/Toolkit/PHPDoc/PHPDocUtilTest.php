@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\PHPDoc;
 
-use Salient\PHPDoc\PHPDocUtility;
+use Salient\PHPDoc\PHPDocUtil;
 use Salient\Tests\Reflection\MyBaseClass;
 use Salient\Tests\Reflection\MyBaseInterface;
 use Salient\Tests\Reflection\MyBaseTrait;
@@ -27,9 +27,9 @@ use ReflectionMethod;
 use ReflectionProperty;
 
 /**
- * @covers \Salient\PHPDoc\PHPDocUtility
+ * @covers \Salient\PHPDoc\PHPDocUtil
  */
-final class PHPDocUtilityTest extends TestCase
+final class PHPDocUtilTest extends TestCase
 {
     /**
      * @dataProvider getAllClassDocCommentsProvider
@@ -39,7 +39,7 @@ final class PHPDocUtilityTest extends TestCase
      */
     public function testGetAllClassDocComments(ReflectionClass $class, array $expected): void
     {
-        $comments = PHPDocUtility::getAllClassDocComments($class);
+        $comments = PHPDocUtil::getAllClassDocComments($class);
         $this->assertSame($expected, $comments);
     }
 
@@ -77,12 +77,12 @@ final class PHPDocUtilityTest extends TestCase
         ?array $expectedClassDocComments = null
     ): void {
         if ($expectedClassDocComments === null) {
-            $comments = PHPDocUtility::getAllMethodDocComments($method, $fromClass);
+            $comments = PHPDocUtil::getAllMethodDocComments($method, $fromClass);
             $this->assertSame($expected, $comments, 'comments');
             return;
         }
 
-        $comments = PHPDocUtility::getAllMethodDocComments($method, $fromClass, $classDocComments);
+        $comments = PHPDocUtil::getAllMethodDocComments($method, $fromClass, $classDocComments);
         $this->assertSame($expected, $comments, 'comments');
         $this->assertSame($expectedClassDocComments, $classDocComments, 'classDocComments');
     }
@@ -239,7 +239,7 @@ final class PHPDocUtilityTest extends TestCase
             MyOneLineTrait::class,
             \PHP_VERSION_ID < 80000 ? 'Method' : 'MyMethod',
         ));
-        PHPDocUtility::getAllMethodDocComments(new ReflectionMethod(MyOneLineClass::class, 'MyOneLineMethod'));
+        PHPDocUtil::getAllMethodDocComments(new ReflectionMethod(MyOneLineClass::class, 'MyOneLineMethod'));
     }
 
     /**
@@ -254,12 +254,12 @@ final class PHPDocUtilityTest extends TestCase
         ?array $expectedClassDocComments = null
     ): void {
         if ($expectedClassDocComments === null) {
-            $comments = PHPDocUtility::getAllPropertyDocComments($property);
+            $comments = PHPDocUtil::getAllPropertyDocComments($property);
             $this->assertSame($expected, $comments);
             return;
         }
 
-        $comments = PHPDocUtility::getAllPropertyDocComments($property, $classDocComments);
+        $comments = PHPDocUtil::getAllPropertyDocComments($property, $classDocComments);
         $this->assertSame($expected, $comments);
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
@@ -312,7 +312,7 @@ final class PHPDocUtilityTest extends TestCase
         $method = new ReflectionMethod($class, $method);
         $types = [];
         foreach ($method->getParameters() as $param) {
-            $types[] = PHPDocUtility::getTypeDeclaration(
+            $types[] = PHPDocUtil::getTypeDeclaration(
                 $param->getType(),
                 '\\',
                 fn($name) => $name === MyClass::class ? 'MyClass' : null,
@@ -416,7 +416,7 @@ final class PHPDocUtilityTest extends TestCase
         $method = new ReflectionMethod($class, $method);
         $params = [];
         foreach ($method->getParameters() as $param) {
-            $params[] = PHPDocUtility::getParameterDeclaration(
+            $params[] = PHPDocUtil::getParameterDeclaration(
                 $param,
                 '',
                 fn($name) => $name === MyClass::class ? 'MyClass' : null,

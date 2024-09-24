@@ -43,11 +43,11 @@ use Salient\Curler\Exception\TooManyRedirectsException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\HasHttpHeaders;
-use Salient\Http\Http;
 use Salient\Http\HttpHeaders;
 use Salient\Http\HttpRequest;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpStream;
+use Salient\Http\HttpUtil;
 use Salient\Http\Uri;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
@@ -297,7 +297,7 @@ class Curler implements CurlerInterface, Buildable
         }
 
         try {
-            return Http::mediaTypeIs(
+            return HttpUtil::mediaTypeIs(
                 $headers->getOneHeaderLine(HttpHeader::CONTENT_TYPE),
                 MimeType::JSON
             );
@@ -754,7 +754,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function replaceQuery($value, array $query)
     {
-        return Http::replaceQuery(
+        return HttpUtil::replaceQuery(
             $value,
             $query,
             $this->FormDataFlags,
@@ -1277,7 +1277,7 @@ class Curler implements CurlerInterface, Buildable
                 $bodyIn = HttpStream::fromString($last['body'] ?? $last[3] ?? '');
                 $lastHeaders = $last['headers'] ?? $last[2] ?? null;
                 if (is_array($lastHeaders)) {
-                    $lastHeaders = Http::getNameValueGenerator($lastHeaders);
+                    $lastHeaders = HttpUtil::getNameValueGenerator($lastHeaders);
                 }
                 $headersIn = HttpHeaders::from($lastHeaders ?? []);
                 $reason = $last['reason'] ?? $last[1] ?? null;
@@ -1606,7 +1606,7 @@ class Curler implements CurlerInterface, Buildable
 
     private function getDefaultUserAgent(): string
     {
-        return self::$DefaultUserAgent ??= Http::getProduct();
+        return self::$DefaultUserAgent ??= HttpUtil::getProduct();
     }
 
     /**

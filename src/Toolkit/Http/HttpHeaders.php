@@ -187,7 +187,7 @@ REGEX;
         }
 
         try {
-            return Http::getParameters(
+            return HttpUtil::getParameters(
                 $this->getOneHeaderLine(HttpHeader::CONTENT_TYPE),
                 false,
                 false,
@@ -210,7 +210,7 @@ REGEX;
 
         foreach ($this->getHeaderValues(HttpHeader::PREFER) as $pref) {
             /** @var array<string,string> */
-            $params = Http::getParameters($pref, true);
+            $params = HttpUtil::getParameters($pref, true);
             if (!$params) {
                 continue;
             }
@@ -235,7 +235,7 @@ REGEX;
             if (isset($prefs[$lower])) {
                 continue;
             }
-            $prefs[$lower] = Http::mergeParameters(
+            $prefs[$lower] = HttpUtil::mergeParameters(
                 is_string($pref)
                     ? [$name => $pref]
                     : [$name => $pref['value']] + ($pref['parameters'] ?? [])

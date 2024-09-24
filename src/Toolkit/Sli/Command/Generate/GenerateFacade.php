@@ -6,7 +6,7 @@ use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Core\AbstractFacade;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocUtility;
+use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
 use Salient\Utility\Arr;
 use ReflectionMethod;
@@ -148,7 +148,7 @@ final class GenerateFacade extends AbstractGenerateCommand
             $methodName = $_method->getName();
             $getMethodFqsen = fn() => $this->getTypeAlias($declaring) . "::{$methodName}()";
             $_params = $_method->getParameters();
-            $docBlocks = PHPDocUtility::getAllMethodDocComments($_method, null, $classDocBlocks);
+            $docBlocks = PHPDocUtil::getAllMethodDocComments($_method, null, $classDocBlocks);
             $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
             $methodFilename = $_method->getFileName() ?: null;
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
@@ -188,7 +188,7 @@ final class GenerateFacade extends AbstractGenerateCommand
                     );
                 } else {
                     $type = $_method->hasReturnType()
-                        ? PHPDocUtility::getTypeDeclaration(
+                        ? PHPDocUtil::getTypeDeclaration(
                             $_method->getReturnType(),
                             $classPrefix,
                             fn(string $type): ?string =>
@@ -247,14 +247,14 @@ final class GenerateFacade extends AbstractGenerateCommand
                 }
                 $params[] =
                     $declare
-                        ? PHPDocUtility::getParameterPHPDoc(
+                        ? PHPDocUtil::getParameterPHPDoc(
                             $_param,
                             $classPrefix,
                             fn(string $type): ?string =>
                                 $this->getTypeAlias($type, $methodFilename, false),
                             $_type
                         )
-                        : PHPDocUtility::getParameterDeclaration(
+                        : PHPDocUtil::getParameterDeclaration(
                             $_param,
                             $classPrefix,
                             fn(string $type): ?string =>
@@ -268,7 +268,7 @@ final class GenerateFacade extends AbstractGenerateCommand
             if ($declare) {
                 $params = array_filter($params);
                 $return = ($type && (!$_method->hasReturnType()
-                        || PHPDocUtility::getTypeDeclaration(
+                        || PHPDocUtil::getTypeDeclaration(
                             $_method->getReturnType(),
                             $classPrefix,
                             fn(string $type): ?string =>

@@ -10,7 +10,7 @@ use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
 
-final class TestUtility extends AbstractUtility
+final class TestUtil extends AbstractUtility
 {
     /**
      * Read an HTTP message from a stream and write it to STDOUT

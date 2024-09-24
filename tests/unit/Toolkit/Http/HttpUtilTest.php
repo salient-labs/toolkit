@@ -6,24 +6,24 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\FormDataFlag;
-use Salient\Http\Http;
 use Salient\Http\HttpRequest;
+use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Stringable;
 
 /**
- * @covers \Salient\Http\Http
+ * @covers \Salient\Http\HttpUtil
  */
-final class HttpTest extends TestCase
+final class HttpUtilTest extends TestCase
 {
     /**
      * @dataProvider isRequestMethodProvider
      */
     public function testIsRequestMethod(bool $expected, string $method): void
     {
-        $this->assertSame($expected, Http::isRequestMethod($method));
+        $this->assertSame($expected, HttpUtil::isRequestMethod($method));
     }
 
     /**
@@ -53,7 +53,7 @@ final class HttpTest extends TestCase
      */
     public function testMediaTypeIs(bool $expected, string $type, string $mimeType): void
     {
-        $this->assertSame($expected, Http::mediaTypeIs($type, $mimeType));
+        $this->assertSame($expected, HttpUtil::mediaTypeIs($type, $mimeType));
     }
 
     /**
@@ -77,7 +77,7 @@ final class HttpTest extends TestCase
     public function testGetDate(): void
     {
         $date = new DateTimeImmutable('2021-10-02T17:23:14+10:00');
-        $this->assertSame('Sat, 02 Oct 2021 07:23:14 GMT', Http::getDate($date));
+        $this->assertSame('Sat, 02 Oct 2021 07:23:14 GMT', HttpUtil::getDate($date));
     }
 
     /**
@@ -93,7 +93,7 @@ final class HttpTest extends TestCase
         bool $strict = false
     ): void {
         $this->maybeExpectException($expected);
-        $this->assertSame($expected, Http::getParameters($value, $firstIsParameter, $unquote, $strict));
+        $this->assertSame($expected, HttpUtil::getParameters($value, $firstIsParameter, $unquote, $strict));
     }
 
     /**
@@ -181,7 +181,7 @@ final class HttpTest extends TestCase
         string $expected,
         array $value
     ): void {
-        $this->assertSame($expected, Http::mergeParameters($value));
+        $this->assertSame($expected, HttpUtil::mergeParameters($value));
     }
 
     /**
@@ -229,27 +229,27 @@ final class HttpTest extends TestCase
     {
         $this->assertStringEndsWith(
             sprintf(' php/%s', \PHP_VERSION),
-            Http::getProduct(),
+            HttpUtil::getProduct(),
         );
     }
 
     public function testMaybeQuoteString(): void
     {
-        $this->assertSame('token', Http::maybeQuoteString('token'));
-        $this->assertSame('another-token!', Http::maybeQuoteString('another-token!'));
-        $this->assertSame('"not a token"', Http::maybeQuoteString('not a token'));
-        $this->assertSame('"colon:delimited"', Http::maybeQuoteString('colon:delimited'));
-        $this->assertSame('"escap\\\\ed"', Http::maybeQuoteString('escap\ed'));
-        $this->assertSame('"double \"quotes\""', Http::maybeQuoteString('double "quotes"'));
+        $this->assertSame('token', HttpUtil::maybeQuoteString('token'));
+        $this->assertSame('another-token!', HttpUtil::maybeQuoteString('another-token!'));
+        $this->assertSame('"not a token"', HttpUtil::maybeQuoteString('not a token'));
+        $this->assertSame('"colon:delimited"', HttpUtil::maybeQuoteString('colon:delimited'));
+        $this->assertSame('"escap\\\\ed"', HttpUtil::maybeQuoteString('escap\ed'));
+        $this->assertSame('"double \"quotes\""', HttpUtil::maybeQuoteString('double "quotes"'));
     }
 
     public function testUnquoteString(): void
     {
-        $this->assertSame('token', Http::unquoteString('token'));
-        $this->assertSame('not a token', Http::unquoteString('"not a token"'));
-        $this->assertSame('colon:delimited', Http::unquoteString('"colon:delimited"'));
-        $this->assertSame('escap\ed', Http::unquoteString('"escap\\\\ed"'));
-        $this->assertSame('double "quotes"', Http::unquoteString('"double \"quotes\""'));
+        $this->assertSame('token', HttpUtil::unquoteString('token'));
+        $this->assertSame('not a token', HttpUtil::unquoteString('"not a token"'));
+        $this->assertSame('colon:delimited', HttpUtil::unquoteString('"colon:delimited"'));
+        $this->assertSame('escap\ed', HttpUtil::unquoteString('"escap\\\\ed"'));
+        $this->assertSame('double "quotes"', HttpUtil::unquoteString('"double \"quotes\""'));
     }
 
     /**
@@ -268,10 +268,10 @@ final class HttpTest extends TestCase
     ): void {
         $this->assertSame(
             $expected,
-            (string) Http::mergeQuery($uri, $data, $flags, $dateFormatter),
+            (string) HttpUtil::mergeQuery($uri, $data, $flags, $dateFormatter),
         );
         $request = new HttpRequest('GET', $uri);
-        $request = Http::mergeQuery($request, $data, $flags, $dateFormatter);
+        $request = HttpUtil::mergeQuery($request, $data, $flags, $dateFormatter);
         $this->assertInstanceOf(HttpRequest::class, $request);
         $this->assertSame($expected, (string) $request->getUri());
     }
@@ -330,10 +330,10 @@ final class HttpTest extends TestCase
     ): void {
         $this->assertSame(
             $expected,
-            (string) Http::replaceQuery($uri, $data, $flags, $dateFormatter),
+            (string) HttpUtil::replaceQuery($uri, $data, $flags, $dateFormatter),
         );
         $request = new HttpRequest('GET', $uri);
-        $request = Http::replaceQuery($request, $data, $flags, $dateFormatter);
+        $request = HttpUtil::replaceQuery($request, $data, $flags, $dateFormatter);
         $this->assertInstanceOf(HttpRequest::class, $request);
         $this->assertSame($expected, (string) $request->getUri());
     }

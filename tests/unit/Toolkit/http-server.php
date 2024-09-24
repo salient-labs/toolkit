@@ -4,8 +4,8 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Http\Http;
 use Salient\Http\HttpResponse;
+use Salient\Http\HttpUtil;
 use Salient\Utility\File;
 use Salient\Utility\Inflect;
 use Salient\Utility\Regex;
@@ -82,12 +82,12 @@ do {
         $remotePort
     );
 
-    TestUtility::dumpHttpMessage($stream, true, $startLine);
+    TestUtil::dumpHttpMessage($stream, true, $startLine);
 
     $response = $responses[$i]
         ?? (string) (new HttpResponse())
-            ->withHeader(HttpHeader::DATE, Http::getDate())
-            ->withHeader(HttpHeader::SERVER, Http::getProduct());
+            ->withHeader(HttpHeader::DATE, HttpUtil::getDate())
+            ->withHeader(HttpHeader::SERVER, HttpUtil::getProduct());
 
     [$method] = explode(' ', $startLine, 2);
     if ($method === Method::HEAD) {
