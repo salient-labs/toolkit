@@ -3,8 +3,6 @@
 namespace Salient\Contract\Sync;
 
 /**
- * Resolves sync entities to provider interfaces, and vice-versa
- *
  * @api
  */
 interface SyncNamespaceHelperInterface

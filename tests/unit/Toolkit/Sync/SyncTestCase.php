@@ -58,11 +58,9 @@ abstract class SyncTestCase extends TestCase
      */
     protected function tearDown(): void
     {
-        $this
-            ->App
-            ->unload();
-        unset($this->App);
-        unset($this->Store);
         unset($this->Provider);
+        unset($this->Store);
+        $this->App->unload();
+        unset($this->App);
     }
 }

@@ -377,7 +377,9 @@ SQL;
         $stmt->close();
 
         if ($row === false) {
+            // @codeCoverageIgnoreStart
             throw new SyncStoreException('Error retrieving provider ID');
+            // @codeCoverageIgnoreEnd
         }
 
         $providerId = $row[0];
@@ -509,11 +511,13 @@ SQL;
         }
 
         if (!$class->implementsInterface(SyncEntityInterface::class)) {
+            // @codeCoverageIgnoreStart
             throw new LogicException(sprintf(
                 'Does not implement %s: %s',
                 SyncEntityInterface::class,
                 $entityType,
             ));
+            // @codeCoverageIgnoreEnd
         }
 
         // Update `last_seen` if the entity type is already in the database
@@ -760,8 +764,6 @@ SQL;
      */
     private function getNamespaces(): Generator
     {
-        $this->assertRunHasStarted();
-
         foreach ($this->NamespacesByPrefix as $prefix => $namespace) {
             yield $prefix => [
                 $this->NamespaceUrisByPrefix[$prefix],
