@@ -5,7 +5,7 @@ namespace Salient\Sli\Command\Generate;
 use PHPUnit\Framework\TestCase;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
-use Salient\PHPDoc\PHPDocUtility;
+use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
 use Salient\Utility\Str;
 
@@ -166,7 +166,7 @@ class GenerateTests extends AbstractGenerateCommand
 
             $_parameters = $_method->getParameters();
             if ($_method->hasReturnType()) {
-                $returnType = PHPDocUtility::getTypeDeclaration(
+                $returnType = PHPDocUtil::getTypeDeclaration(
                     $_method->getReturnType(),
                     $classPrefix,
                     fn(string $type): ?string =>

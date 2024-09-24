@@ -2,13 +2,16 @@
 
 namespace Salient\Tests\Sync;
 
-use Salient\Contract\Sync\SyncClassResolverInterface;
+use Salient\Contract\Sync\SyncEntityInterface;
+use Salient\Contract\Sync\SyncNamespaceHelperInterface;
+use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Utility\Regex;
 
-class SyncClassResolver implements SyncClassResolverInterface
+class SyncNamespaceHelper implements SyncNamespaceHelperInterface
 {
-    public function entityToProvider(string $entity): string
+    public function getEntityProvider(string $entity): string
     {
+        /** @var class-string<SyncProviderInterface> */
         return Regex::replace(
             [
                 '/(?<=\\\\)Entity(?=\\\\)/i',
@@ -24,8 +27,9 @@ class SyncClassResolver implements SyncClassResolverInterface
         );
     }
 
-    public function providerToEntity(string $provider): array
+    public function getProviderEntities(string $provider): array
     {
+        /** @var array<class-string<SyncEntityInterface>> */
         return [
             Regex::replace(
                 [

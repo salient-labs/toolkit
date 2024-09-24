@@ -24,7 +24,7 @@ use Stringable;
 /**
  * @api
  */
-final class Http extends AbstractUtility
+final class HttpUtil extends AbstractUtility
 {
     /**
      * @var array<string,string>

@@ -8,11 +8,11 @@ use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
+use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasChainableMethods;
@@ -47,7 +47,7 @@ use LogicException;
  * @property-read PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $PipelineFromBackend Pipeline that maps provider data to a serialized entity, or `null` if mapping is not required
  * @property-read PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $PipelineToBackend Pipeline that maps a serialized entity to provider data, or `null` if mapping is not required
  * @property-read bool $ReadFromList Perform READ operations by iterating over entities returned by READ_LIST
- * @property-read SyncEntitySource::*|null $ReturnEntitiesFrom Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ * @property-read EntitySource::*|null $ReturnEntitiesFrom Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
  * @implements SyncDefinitionInterface<TEntity,TProvider>
  */
@@ -197,7 +197,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * Source of entity data for the return value of a successful CREATE, UPDATE
      * or DELETE operation
      *
-     * @var SyncEntitySource::*|null
+     * @var EntitySource::*|null
      */
     protected ?int $ReturnEntitiesFrom;
 
@@ -222,7 +222,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
-     * @param SyncEntitySource::*|null $returnEntitiesFrom
+     * @param EntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
         string $entity,
@@ -371,7 +371,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * Get an instance that uses the given entity data source for the return
      * value of a successful CREATE, UPDATE or DELETE operation
      *
-     * @param SyncEntitySource::*|null $source
+     * @param EntitySource::*|null $source
      * @return static
      */
     final public function withReturnEntitiesFrom(?int $source)

@@ -10,7 +10,7 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Curler\CurlerPage;
 use Salient\Curler\CurlerPageRequest;
-use Salient\Http\Http;
+use Salient\Http\HttpUtil;
 use Salient\Http\Uri;
 use Closure;
 
@@ -82,7 +82,7 @@ final class LinkPager implements CurlerPagerInterface
 
         foreach ($response->getHeaderValues(HttpHeader::LINK) as $link) {
             /** @var array{string,rel?:string} */
-            $link = Http::getParameters($link);
+            $link = HttpUtil::getParameters($link);
             if (($link['rel'] ?? null) === 'next') {
                 $link = trim($link[0], '<>');
                 $uri = $request->getUri();

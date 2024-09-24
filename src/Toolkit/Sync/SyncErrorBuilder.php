@@ -3,15 +3,15 @@
 namespace Salient\Sync;
 
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\AbstractBuilder;
 
 /**
  * A fluent SyncError factory
  *
- * @method $this errorType(SyncErrorType::* $value) Error type
+ * @method $this errorType(ErrorType::* $value) Error type
  * @method $this message(string $value) `sprintf()` format string that explains the error
  * @method $this values(list<mixed[]|object|int|float|string|bool|null>|null $value) Values applied to the message format string. Default: `[$entityName]`
  * @method $this level(Level::* $value) Error severity/message level

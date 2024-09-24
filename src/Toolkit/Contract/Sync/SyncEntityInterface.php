@@ -8,7 +8,6 @@ use Salient\Contract\Core\HasName;
 use Salient\Contract\Core\ProvidableEntityInterface;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
-use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use JsonSerializable;
 
 /**

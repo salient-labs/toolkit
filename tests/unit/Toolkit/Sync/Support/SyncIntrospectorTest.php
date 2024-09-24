@@ -12,7 +12,7 @@ use Salient\Tests\Sync\Entity\Provider\UserProvider;
 use Salient\Tests\Sync\Entity\Task;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
-use Salient\Tests\Sync\SyncClassResolver;
+use Salient\Tests\Sync\SyncNamespaceHelper;
 use Salient\Tests\TestCase;
 use Closure;
 use ReflectionFunction;
@@ -22,34 +22,34 @@ use ReflectionFunction;
  */
 final class SyncIntrospectorTest extends TestCase
 {
-    public function testEntityToProvider(): void
+    public function testGetEntityProvider(): void
     {
         $this->assertEquals(
             UserProvider::class,
-            SyncIntrospector::entityToProvider(User::class)
+            SyncIntrospector::getEntityProvider(User::class)
         );
 
         $this->assertEquals(
             'Component\Sync\Contract\People\ProvidesContact',
-            SyncIntrospector::entityToProvider(
-                // @phpstan-ignore-next-line
+            SyncIntrospector::getEntityProvider(
+                // @phpstan-ignore argument.type
                 'Component\Sync\Entity\People\Contact',
                 $this->getContainer()
             )
         );
     }
 
-    public function testProviderToEntity(): void
+    public function testGetProviderEntities(): void
     {
         $this->assertEquals(
             [User::class],
-            SyncIntrospector::providerToEntity(UserProvider::class)
+            SyncIntrospector::getProviderEntities(UserProvider::class)
         );
 
         $this->assertEquals(
             ['Component\Sync\Entity\People\Contact'],
-            SyncIntrospector::providerToEntity(
-                // @phpstan-ignore-next-line
+            SyncIntrospector::getProviderEntities(
+                // @phpstan-ignore argument.type
                 'Component\Sync\Contract\People\ProvidesContact',
                 $this->getContainer()
             )
@@ -64,7 +64,7 @@ final class SyncIntrospectorTest extends TestCase
                 'component',
                 'https://sync.salient-labs.github.io/component',
                 'Component\Sync',
-                new SyncClassResolver(),
+                new SyncNamespaceHelper(),
             );
 
         return $container;

@@ -3,11 +3,9 @@
 namespace Salient\Contract\Sync;
 
 /**
- * Resolves sync entities to provider interfaces, and vice-versa
- *
  * @api
  */
-interface SyncClassResolverInterface
+interface SyncNamespaceHelperInterface
 {
     /**
      * Get a sync entity's provider interface
@@ -15,7 +13,7 @@ interface SyncClassResolverInterface
      * @param class-string<SyncEntityInterface> $entity
      * @return class-string<SyncProviderInterface>
      */
-    public function entityToProvider(string $entity): string;
+    public function getEntityProvider(string $entity): string;
 
     /**
      * Get sync entities serviced by a provider interface
@@ -23,5 +21,5 @@ interface SyncClassResolverInterface
      * @param class-string<SyncProviderInterface> $provider
      * @return array<class-string<SyncEntityInterface>>
      */
-    public function providerToEntity(string $provider): array;
+    public function getProviderEntities(string $provider): array;
 }

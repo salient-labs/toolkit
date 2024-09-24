@@ -3,9 +3,9 @@
 namespace Salient\Sync\Support;
 
 use Salient\Contract\Sync\DeferredEntityInterface;
+use Salient\Contract\Sync\LinkType;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Closure;
@@ -65,7 +65,7 @@ final class DeferredEntity implements DeferredEntityInterface
 
         $this
             ->getStore()
-            ->registerEntity($entity)
+            ->registerEntityType($entity)
             ->deferEntity(
                 $this->Provider->getProviderId(),
                 $entity,
@@ -107,10 +107,7 @@ final class DeferredEntity implements DeferredEntityInterface
 
     private function getTypeUri(bool $compact): string
     {
-        $typeUri = $this->getStore()->getEntityUri($this->Entity, $compact);
-
-        return $typeUri
-            ?? '/' . str_replace('\\', '/', ltrim($this->Entity, '\\'));
+        return $this->getStore()->getEntityTypeUri($this->Entity, $compact);
     }
 
     /**

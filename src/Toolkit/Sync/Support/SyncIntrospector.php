@@ -99,13 +99,14 @@ final class SyncIntrospector extends Introspector
      * @param class-string<SyncEntityInterface> $entity
      * @return class-string<SyncProviderInterface>
      */
-    public static function entityToProvider(string $entity, ?ContainerInterface $container = null): string
+    public static function getEntityProvider(string $entity, ?ContainerInterface $container = null): string
     {
         if (($store = self::maybeGetStore($container))
-                && ($resolver = $store->getClassResolver($entity))) {
-            return $resolver->entityToProvider($entity);
+                && ($helper = $store->getNamespaceHelper($entity))) {
+            return $helper->getEntityProvider($entity);
         }
 
+        /** @var class-string<SyncProviderInterface> */
         return sprintf(
             '%s\Provider\%sProvider',
             Get::namespace($entity),
@@ -119,11 +120,11 @@ final class SyncIntrospector extends Introspector
      * @param class-string<SyncProviderInterface> $provider
      * @return array<class-string<SyncEntityInterface>>
      */
-    public static function providerToEntity(string $provider, ?ContainerInterface $container = null): array
+    public static function getProviderEntities(string $provider, ?ContainerInterface $container = null): array
     {
         if (($store = self::maybeGetStore($container))
-                && ($resolver = $store->getClassResolver($provider))) {
-            return $resolver->providerToEntity($provider);
+                && ($helper = $store->getNamespaceHelper($provider))) {
+            return $helper->getProviderEntities($provider);
         }
 
         if (Regex::match(
@@ -132,6 +133,7 @@ final class SyncIntrospector extends Introspector
             $provider,
             $matches
         )) {
+            /** @var array<class-string<SyncEntityInterface>> */
             return [$matches['namespace'] . $matches['class']];
         }
 
@@ -479,7 +481,7 @@ final class SyncIntrospector extends Introspector
                     return $obj;
                 }
 
-                $store = $provider->getStore()->registerEntity($service ?? $entityType);
+                $store = $provider->getStore()->registerEntityType($service ?? $entityType);
                 $providerId = $provider->getProviderId();
                 $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context->getOffline());
 
@@ -871,7 +873,7 @@ final class SyncIntrospector extends Introspector
         bool $isChildren
     ): Closure {
         $entityType = $this->_Class->Class;
-        $entityProvider = self::entityToProvider($relationship);
+        $entityProvider = self::getEntityProvider($relationship);
 
         return
             static function (

@@ -6,10 +6,10 @@ use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
+use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Sync\Support\SyncPipelineArgument;
@@ -53,7 +53,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
-     * @param SyncEntitySource::*|null $returnEntitiesFrom
+     * @param EntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
         string $entity,

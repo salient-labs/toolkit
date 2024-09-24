@@ -58,13 +58,13 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
 
             $disposition = [
                 'form-data',
-                sprintf('name="%s"', Http::escapeQuotedString($part->getName())),
+                sprintf('name="%s"', HttpUtil::escapeQuotedString($part->getName())),
             ];
             $fallbackFilename = $part->getFallbackFilename();
             if ($fallbackFilename !== null) {
                 $disposition[] = sprintf(
                     'filename="%s"',
-                    Http::escapeQuotedString($fallbackFilename),
+                    HttpUtil::escapeQuotedString($fallbackFilename),
                 );
             }
             $filename = $part->getFilename();

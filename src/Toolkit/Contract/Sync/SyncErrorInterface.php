@@ -11,7 +11,7 @@ interface SyncErrorInterface extends Comparable, Immutable
     /**
      * Get the error's type
      *
-     * @return SyncErrorType::*
+     * @return ErrorType::*
      */
     public function getType(): int;
 

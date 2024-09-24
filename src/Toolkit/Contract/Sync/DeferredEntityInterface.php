@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Closure;
 use LogicException;
 

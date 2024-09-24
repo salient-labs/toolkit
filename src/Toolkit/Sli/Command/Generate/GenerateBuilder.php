@@ -10,7 +10,7 @@ use Salient\Core\Introspector;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocUtility;
+use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -280,7 +280,7 @@ EOF)
             $_properties[$name] = $_allProperties[$name];
         }
 
-        $_docBlocks = PHPDocUtility::getAllMethodDocComments($_constructor, null, $classDocBlocks);
+        $_docBlocks = PHPDocUtil::getAllMethodDocComments($_constructor, null, $classDocBlocks);
 
         /**
          * Constructor PHPDoc
@@ -296,7 +296,7 @@ EOF)
             }
 
             if ($_property = $_properties[$name] ?? null) {
-                $_docBlocks = PHPDocUtility::getAllPropertyDocComments($_property, $classDocBlocks);
+                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, $classDocBlocks);
 
                 /**
                  * Property PHPDoc
@@ -329,7 +329,7 @@ EOF)
                     }
                 } else {
                     $type = $_property->hasType()
-                        ? PHPDocUtility::getTypeDeclaration(
+                        ? PHPDocUtil::getTypeDeclaration(
                             $_property->getType(),
                             $classPrefix,
                             fn(string $type): ?string =>
@@ -399,7 +399,7 @@ EOF)
 
             // If the parameter has a matching property, retrieve its DocBlock
             if ($_property = $_allProperties[$name] ?? null) {
-                $_docBlocks = PHPDocUtility::getAllPropertyDocComments($_property, $classDocBlocks);
+                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, $classDocBlocks);
 
                 /**
                  * Unwritable property PHPDoc
@@ -440,7 +440,7 @@ EOF)
                 $fromPHPDoc = true;
             } else {
                 $type = $_param->hasType()
-                    ? PHPDocUtility::getTypeDeclaration(
+                    ? PHPDocUtil::getTypeDeclaration(
                         $_param->getType(),
                         $classPrefix,
                         fn(string $type): ?string =>
@@ -493,7 +493,7 @@ EOF)
 
             if ($declare) {
                 $templates = $declareTemplates[$name] ?? null;
-                $param = PHPDocUtility::getParameterPHPDoc(
+                $param = PHPDocUtil::getParameterPHPDoc(
                     $_param,
                     $classPrefix,
                     fn(string $type): ?string =>
@@ -570,7 +570,7 @@ EOF)
 
             foreach ($_methods as $_method) {
                 $name = $_method->getName();
-                $_docBlocks = PHPDocUtility::getAllMethodDocComments($_method, null, $classDocBlocks);
+                $_docBlocks = PHPDocUtil::getAllMethodDocComments($_method, null, $classDocBlocks);
                 $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $name . '()');
 
                 if ($_method->isConstructor()
@@ -628,7 +628,7 @@ EOF)
                     }
                 } else {
                     $type = $_method->hasReturnType()
-                        ? PHPDocUtility::getTypeDeclaration(
+                        ? PHPDocUtil::getTypeDeclaration(
                             $_method->getReturnType(),
                             $classPrefix,
                             fn(string $type): ?string =>
@@ -672,14 +672,14 @@ EOF)
                     }
                     $params[] =
                         $declare
-                            ? PHPDocUtility::getParameterPHPDoc(
+                            ? PHPDocUtil::getParameterPHPDoc(
                                 $_param,
                                 $classPrefix,
                                 fn(string $type): ?string =>
                                     $this->getTypeAlias($type, $propertyFile, false),
                                 $_type
                             )
-                            : PHPDocUtility::getParameterDeclaration(
+                            : PHPDocUtil::getParameterDeclaration(
                                 $_param,
                                 $classPrefix,
                                 fn(string $type): ?string =>
@@ -693,7 +693,7 @@ EOF)
                 if ($declare) {
                     $params = array_filter($params);
                     $return = ($type && (!$_method->hasReturnType()
-                            || PHPDocUtility::getTypeDeclaration(
+                            || PHPDocUtil::getTypeDeclaration(
                                 $_method->getReturnType(),
                                 $classPrefix,
                                 fn(string $type): ?string =>
@@ -875,7 +875,7 @@ EOF)
             }
 
             $type = $_param->hasType()
-                ? PHPDocUtility::getTypeDeclaration(
+                ? PHPDocUtil::getTypeDeclaration(
                     $_param->getType(),
                     $classPrefix,
                     fn(string $type): ?string =>

@@ -8,12 +8,12 @@ use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\DeferredRelationshipInterface;
+use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\HydrationPolicy;
-use Salient\Contract\Sync\SyncClassResolverInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
-use Salient\Contract\Sync\SyncErrorType;
+use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Console;
@@ -29,6 +29,7 @@ use Salient\Utility\Get;
 use Salient\Utility\Json;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Generator;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
@@ -44,78 +45,84 @@ use ReflectionClass;
 final class SyncStore extends AbstractStore implements SyncStoreInterface
 {
     private ?int $RunId = null;
-    private ?string $RunUuid = null;
+    private string $RunUuid;
+
+    /**
+     * Prefix => true
+     *
+     * @var array<string,true>
+     */
+    private array $Namespaces = [];
 
     /**
      * Provider ID => provider
      *
      * @var array<int,SyncProviderInterface>
      */
-    private $Providers = [];
+    private array $Providers = [];
 
     /**
      * Provider hash => provider ID
      *
      * @var array<string,int>
      */
-    private $ProviderMap = [];
+    private array $ProviderMap = [];
 
     /**
-     * Entity type ID => entity class
+     * Entity type ID => entity type
      *
-     * @var array<int,string>
-     * @phpstan-ignore-next-line
+     * @var array<int,class-string<SyncEntityInterface>>
      */
-    private $EntityTypes = [];
+    private array $EntityTypes = [];
 
     /**
-     * Entity class => entity type ID
+     * Entity type => entity type ID
      *
-     * @var array<string,int>
+     * @var array<class-string<SyncEntityInterface>,int>
      */
-    private $EntityTypeMap = [];
+    private array $EntityTypeMap = [];
 
     /**
-     * Prefix => lowercase PHP namespace
+     * Prefix => PHP namespace with trailing "/"
      *
-     * @var array<string,string>|null
+     * @var array<string,string>
      */
-    private $NamespacesByPrefix;
+    private array $NamespacesByPrefix;
 
     /**
-     * Prefix => namespace base URI
+     * Prefix => namespace URI with trailing "/"
      *
-     * @var array<string,string>|null
+     * @var array<string,string>
      */
-    private $NamespaceUrisByPrefix;
+    private array $NamespaceUrisByPrefix;
 
     /**
-     * Prefix => resolver
+     * Prefix => namespace helper
      *
-     * @var array<string,SyncClassResolverInterface>|null
+     * @var array<string,SyncNamespaceHelperInterface>
      */
-    private $NamespaceResolversByPrefix;
+    private array $NamespaceHelpersByPrefix;
 
     /**
      * Provider ID => entity type ID => entity ID => entity
      *
      * @var array<int,array<int,array<int|string,SyncEntityInterface>>>
      */
-    private $Entities;
+    private array $Entities;
 
     /**
      * SPL object ID => checkpoint
      *
      * @var array<int,int>
      */
-    private $EntityCheckpoints;
+    private array $EntityCheckpoints;
 
     /**
      * Provider ID => entity type ID => entity ID => [ deferred entity ]
      *
-     * @var array<int,array<int,array<int|string,array<DeferredEntityInterface<SyncEntityInterface>>>>>
+     * @var array<int,array<int,array<int|string,DeferredEntityInterface<SyncEntityInterface>[]>>>
      */
-    private $DeferredEntities = [];
+    private array $DeferredEntities = [];
 
     /**
      * Provider ID => entity type ID => requesting entity type ID => requesting
@@ -123,47 +130,19 @@ final class SyncStore extends AbstractStore implements SyncStoreInterface
      *
      * @var array<int,array<int,array<int,array<string,array<int|string,DeferredRelationshipInterface<SyncEntityInterface>[]>>>>>
      */
-    private $DeferredRelationships = [];
+    private array $DeferredRelationships = [];
 
-    /** @var SyncErrorCollection */
-    private $Errors;
-
-    /**
-     * Prefix => true
-     *
-     * @var array<string,true>
-     */
-    private $RegisteredNamespaces = [];
-
-    /** @var int */
-    private $DeferralCheckpoint = 0;
-    /** @var string|null */
-    private $Command;
-    /** @var string[]|null */
-    private $Arguments;
-
-    /**
-     * Deferred provider registrations
-     *
-     * @var SyncProviderInterface[]
-     */
-    private $DeferredProviders = [];
-
-    /**
-     * Deferred entity type registrations
-     *
-     * @var class-string<SyncEntityInterface>[]
-     */
-    private $DeferredEntityTypes = [];
-
-    /**
-     * Deferred namespace registrations
-     *
-     * Prefix => [ namespace base URI, PHP namespace, class resolver ]
-     *
-     * @var array<string,array{string,string,SyncClassResolverInterface|null}>
-     */
-    private $DeferredNamespaces = [];
+    private SyncErrorCollection $Errors;
+    private int $DeferralCheckpoint = 0;
+    private string $Command;
+    /** @var string[] */
+    private array $Arguments;
+    /** @var array<string,array{string,string,SyncNamespaceHelperInterface|null}> */
+    private array $DeferredNamespaces = [];
+    /** @var SyncProviderInterface[] */
+    private array $DeferredProviders = [];
+    /** @var class-string<SyncEntityInterface>[] */
+    private array $DeferredEntityTypes = [];
 
     /**
      * Creates a new SyncStore object
@@ -299,9 +278,6 @@ SQL;
 
     /**
      * @phpstan-assert-if-true !null $this->RunId
-     * @phpstan-assert-if-true !null $this->RunUuid
-     * @phpstan-assert-if-true !null $this->NamespacesByPrefix
-     * @phpstan-assert-if-true !null $this->NamespaceUrisByPrefix
      */
     public function runHasStarted(): bool
     {
@@ -340,7 +316,6 @@ SQL;
 
     /**
      * @phpstan-assert !null $this->RunId
-     * @phpstan-assert !null $this->RunUuid
      */
     private function assertRunHasStarted(): void
     {
@@ -402,7 +377,9 @@ SQL;
         $stmt->close();
 
         if ($row === false) {
+            // @codeCoverageIgnoreStart
             throw new SyncStoreException('Error retrieving provider ID');
+            // @codeCoverageIgnoreEnd
         }
 
         $providerId = $row[0];
@@ -415,19 +392,45 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function getProviderId(SyncProviderInterface $provider): int
+    public function hasProvider($provider): bool
+    {
+        if ($provider instanceof SyncProviderInterface) {
+            $providers = $this->runHasStarted()
+                ? $this->Providers
+                : $this->DeferredProviders;
+            return in_array($provider, $providers, true);
+        }
+
+        if (!$this->runHasStarted()) {
+            foreach ($this->DeferredProviders as $deferred) {
+                if ($this->getProviderSignature($deferred) === $provider) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return isset($this->ProviderMap[$provider]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getProviderId($provider): int
     {
         if (!$this->runHasStarted()) {
             $this->check();
         }
 
-        $hash = $this->getProviderSignature($provider);
+        $hash = $provider instanceof SyncProviderInterface
+            ? $this->getProviderSignature($provider)
+            : $provider;
         $id = $this->ProviderMap[$hash] ?? null;
         if ($id === null) {
-            throw new LogicException(sprintf(
-                'Provider not registered: %s',
-                get_class($provider),
-            ));
+            throw new LogicException('Provider not registered'
+                . ($provider instanceof SyncProviderInterface
+                    ? sprintf(': %s', get_class($provider))
+                    : ''));
         }
         return $id;
     }
@@ -435,21 +438,37 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function getProvider(string $signature): ?SyncProviderInterface
+    public function getProvider($provider): SyncProviderInterface
     {
-        // Don't start a run just to get a provider
-        if (!$this->runHasStarted()) {
-            foreach ($this->DeferredProviders as $provider) {
-                if ($this->getProviderSignature($provider) === $signature) {
-                    return $provider;
-                }
+        if (is_int($provider)) {
+            if (!$this->runHasStarted()) {
+                throw new LogicException(sprintf(
+                    'Provider ID not issued during run: %d',
+                    $provider,
+                ));
             }
-            return null;
+            if (!isset($this->Providers[$provider])) {
+                throw new LogicException(sprintf(
+                    'Provider not registered: #%d',
+                    $provider,
+                ));
+            }
+            return $this->Providers[$provider];
         }
 
-        $id = $this->ProviderMap[$signature] ?? null;
+        // Don't start a run just to get a provider
+        if (!$this->runHasStarted()) {
+            foreach ($this->DeferredProviders as $deferred) {
+                if ($this->getProviderSignature($deferred) === $provider) {
+                    return $deferred;
+                }
+            }
+            throw new LogicException('Provider not registered');
+        }
+
+        $id = $this->ProviderMap[$provider] ?? null;
         if ($id === null) {
-            return null;
+            throw new LogicException('Provider not registered');
         }
         return $this->Providers[$id];
     }
@@ -469,34 +488,36 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function registerEntity(string $entity)
+    public function registerEntityType(string $entityType)
     {
         // Don't start a run just to register an entity type
         if (!$this->runHasStarted()) {
-            $this->DeferredEntityTypes[] = $entity;
+            $this->DeferredEntityTypes[] = $entityType;
             return $this;
         }
 
-        if (isset($this->EntityTypeMap[$entity])) {
+        if (isset($this->EntityTypeMap[$entityType])) {
             return $this;
         }
 
-        $class = new ReflectionClass($entity);
+        $class = new ReflectionClass($entityType);
 
-        if ($entity !== $class->getName()) {
+        if ($entityType !== $class->getName()) {
             throw new LogicException(sprintf(
                 'Not an exact match for declared class (%s expected): %s',
                 $class->getName(),
-                $entity,
+                $entityType,
             ));
         }
 
         if (!$class->implementsInterface(SyncEntityInterface::class)) {
+            // @codeCoverageIgnoreStart
             throw new LogicException(sprintf(
                 'Does not implement %s: %s',
                 SyncEntityInterface::class,
-                $entity,
+                $entityType,
             ));
+            // @codeCoverageIgnoreEnd
         }
 
         // Update `last_seen` if the entity type is already in the database
@@ -510,7 +531,7 @@ SET
   last_seen = CURRENT_TIMESTAMP;
 SQL;
         $stmt = $this->prepare($sql);
-        $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
+        $stmt->bindValue(':entity_type_class', $entityType, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -523,7 +544,7 @@ WHERE
   entity_type_class = :entity_type_class;
 SQL;
         $stmt = $this->prepare($sql);
-        $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
+        $stmt->bindValue(':entity_type_class', $entityType, \SQLITE3_TEXT);
         $result = $this->execute($stmt);
         /** @var array{int}|false */
         $row = $result->fetchArray(\SQLITE3_NUM);
@@ -533,8 +554,8 @@ SQL;
             throw new SyncStoreException('Error retrieving entity type ID');
         }
 
-        $this->EntityTypes[$row[0]] = $entity;
-        $this->EntityTypeMap[$entity] = $row[0];
+        $this->EntityTypes[$row[0]] = $entityType;
+        $this->EntityTypeMap[$entityType] = $row[0];
 
         return $this;
     }
@@ -542,20 +563,52 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function getEntityId(string $entity): int
+    public function hasEntityType(string $entityType): bool
+    {
+        if (!$this->runHasStarted()) {
+            return in_array($entityType, $this->DeferredEntityTypes, true);
+        }
+
+        return isset($this->EntityTypeMap[$entityType]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEntityTypeId(string $entityType): int
     {
         if (!$this->runHasStarted()) {
             $this->check();
         }
 
-        $id = $this->EntityTypeMap[$entity] ?? null;
+        $id = $this->EntityTypeMap[$entityType] ?? null;
         if ($id === null) {
             throw new LogicException(sprintf(
                 'Entity not registered: %s',
-                $entity,
+                $entityType,
             ));
         }
         return $id;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEntityType(int $entityTypeId): string
+    {
+        if (!$this->runHasStarted()) {
+            throw new LogicException(sprintf(
+                'Entity type ID not issued during run: %d',
+                $entityTypeId,
+            ));
+        }
+        if (!isset($this->EntityTypes[$entityTypeId])) {
+            throw new LogicException(sprintf(
+                'Entity type not registered: #%d',
+                $entityTypeId,
+            ));
+        }
+        return $this->EntityTypes[$entityTypeId];
     }
 
     /**
@@ -565,22 +618,26 @@ SQL;
         string $prefix,
         string $uri,
         string $namespace,
-        ?SyncClassResolverInterface $resolver = null
+        ?SyncNamespaceHelperInterface $helper = null
     ) {
         $prefix = Str::lower($prefix);
-        if (isset($this->RegisteredNamespaces[$prefix])
-            || (!$this->runHasStarted()
-                && isset($this->DeferredNamespaces[$prefix]))) {
+        if (isset($this->Namespaces[$prefix]) || (
+            !$this->runHasStarted()
+            && isset($this->DeferredNamespaces[$prefix])
+        )) {
             throw new LogicException(sprintf(
                 'Prefix already registered: %s',
                 $prefix,
             ));
         }
 
-        // Namespaces are validated and normalised before deferral because
-        // `classToNamespace()` resolves entity classes without starting a run.
+        // Namespaces are validated and normalised before deferral so
+        // `classToNamespace()` can be used without starting a run.
         // `$DeferredNamespaces` is used to ensure it's only done once.
-        if (!isset($this->DeferredNamespaces[$prefix])) {
+        if (
+            !isset($this->DeferredNamespaces)
+            || !isset($this->DeferredNamespaces[$prefix])
+        ) {
             if (!Regex::match('/^[a-z][-a-z0-9+.]*$/iD', $prefix)) {
                 throw new InvalidArgumentException(sprintf(
                     'Invalid prefix: %s',
@@ -593,7 +650,7 @@ SQL;
 
         // Don't start a run just to register a namespace
         if (!$this->runHasStarted()) {
-            $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $resolver];
+            $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $helper];
             return $this;
         }
 
@@ -620,14 +677,14 @@ SQL;
         $stmt->execute();
         $stmt->close();
 
-        $this->RegisteredNamespaces[$prefix] = true;
+        $this->Namespaces[$prefix] = true;
 
-        if ($resolver) {
-            $this->NamespaceResolversByPrefix[$prefix] = $resolver;
+        if ($helper) {
+            $this->NamespaceHelpersByPrefix[$prefix] = $helper;
         }
 
         // Don't reload while bootstrapping
-        if ($this->NamespacesByPrefix === null) {
+        if (!isset($this->NamespacesByPrefix)) {
             return $this;
         }
 
@@ -637,81 +694,83 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function getEntityUri(string $entity, bool $compact = true): ?string
+    public function getEntityTypeUri(string $entityType, bool $compact = true): string
     {
-        $prefix = $this->classToNamespace($entity, $uri, $namespace);
+        $prefix = $this->classToNamespace($entityType, $uri, $namespace);
         if ($prefix === null) {
-            return null;
+            return SyncUtil::getEntityTypeUri($entityType, $compact);
         }
-        $entity = str_replace('\\', '/', substr(ltrim($entity, '\\'), strlen($namespace)));
+        $entityType = str_replace('\\', '/', substr(ltrim($entityType, '\\'), strlen($namespace)));
 
         return $compact
-            ? "{$prefix}:{$entity}"
-            : "{$uri}{$entity}";
+            ? "{$prefix}:{$entityType}"
+            : "{$uri}{$entityType}";
     }
 
     /**
      * @inheritDoc
      */
-    public function getEntityPrefix(string $entity): ?string
+    public function getNamespacePrefix(string $class): ?string
     {
-        return $this->classToNamespace($entity);
+        return $this->classToNamespace($class);
     }
 
     /**
      * @inheritDoc
      */
-    public function getClassResolver(string $class): ?SyncClassResolverInterface
+    public function getNamespaceHelper(string $class): ?SyncNamespaceHelperInterface
     {
         if ($this->classToNamespace(
             $class,
             $uri,
             $namespace,
-            $resolver
+            $helper
         ) === null) {
             return null;
         }
 
-        return $resolver;
+        return $helper;
     }
 
     /**
      * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
-     * @param-out SyncClassResolverInterface|null $resolver
+     * @param-out SyncNamespaceHelperInterface|null $helper
      */
     private function classToNamespace(
         string $class,
         ?string &$uri = null,
         ?string &$namespace = null,
-        ?SyncClassResolverInterface &$resolver = null
+        ?SyncNamespaceHelperInterface &$helper = null
     ): ?string {
-        $class = ltrim($class, '\\');
-        $lower = Str::lower($class);
-
+        $class = Str::lower(ltrim($class, '\\'));
         // Don't start a run just to resolve a class to a namespace
-        if (!$this->runHasStarted()) {
-            foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_resolver]) {
-                $_namespace = Str::lower($_namespace);
-                if (strpos($lower, $_namespace) === 0) {
-                    $uri = $_uri;
-                    $namespace = $_namespace;
-                    $resolver = $_resolver;
-                    return $prefix;
-                }
-            }
-            return null;
-        }
-
-        foreach ($this->NamespacesByPrefix as $prefix => $_namespace) {
-            if (strpos($lower, $_namespace) === 0) {
-                $uri = $this->NamespaceUrisByPrefix[$prefix];
-                $namespace = $this->NamespacesByPrefix[$prefix];
-                $resolver = $this->NamespaceResolversByPrefix[$prefix] ?? null;
+        $namespaces = $this->runHasStarted()
+            ? $this->getNamespaces()
+            : $this->DeferredNamespaces;
+        foreach ($namespaces as $prefix => [$_uri, $_namespace, $_helper]) {
+            $_namespace = Str::lower($_namespace);
+            if (strpos($class, $_namespace) === 0) {
+                $uri = $_uri;
+                $namespace = $_namespace;
+                $helper = $_helper;
                 return $prefix;
             }
         }
-
         return null;
+    }
+
+    /**
+     * @return Generator<string,array{string,string,SyncNamespaceHelperInterface|null}>
+     */
+    private function getNamespaces(): Generator
+    {
+        foreach ($this->NamespacesByPrefix as $prefix => $namespace) {
+            yield $prefix => [
+                $this->NamespaceUrisByPrefix[$prefix],
+                $namespace,
+                $this->NamespaceHelpersByPrefix[$prefix] ?? null,
+            ];
+        }
     }
 
     /**
@@ -823,17 +882,15 @@ SQL;
         $entityTypeId = $this->EntityTypeMap[$entityType];
         $forEntityTypeId = $this->EntityTypeMap[$forEntityType];
 
-        $deferredList =
-            &$this->DeferredRelationships[$providerId][$entityTypeId][
-                $forEntityTypeId
-            ][$forEntityProperty][$forEntityId];
+        /** @var DeferredRelationshipInterface<SyncEntityInterface>[]|null */
+        $deferredList = &$this->DeferredRelationships[$providerId][$entityTypeId][
+            $forEntityTypeId
+        ][$forEntityProperty][$forEntityId];
 
-        // @phpstan-ignore-next-line
         if (isset($deferredList)) {
             throw new LogicException('Relationship already registered');
         }
 
-        // @phpstan-ignore-next-line
         $deferredList = [];
 
         // Get hydration policy from the context within which the deferral was
@@ -1056,7 +1113,7 @@ SQL;
                 $failed[] = $provider;
                 $this->recordError(
                     SyncError::build()
-                        ->errorType(SyncErrorType::BACKEND_UNREACHABLE)
+                        ->errorType(ErrorType::BACKEND_UNREACHABLE)
                         ->message('Heartbeat check failed: %s')
                         ->values([[
                             'provider_id' => $id,
@@ -1107,9 +1164,6 @@ SQL;
 
     /**
      * @phpstan-assert !null $this->RunId
-     * @phpstan-assert !null $this->RunUuid
-     * @phpstan-assert !null $this->NamespacesByPrefix
-     * @phpstan-assert !null $this->NamespaceUrisByPrefix
      */
     protected function check()
     {
@@ -1148,12 +1202,12 @@ SQL;
         unset($this->DeferredProviders);
 
         foreach ($this->DeferredEntityTypes as $entity) {
-            $this->registerEntity($entity);
+            $this->registerEntityType($entity);
         }
         unset($this->DeferredEntityTypes);
 
-        foreach ($this->DeferredNamespaces as $prefix => [$uri, $namespace, $resolver]) {
-            $this->registerNamespace($prefix, $uri, $namespace, $resolver);
+        foreach ($this->DeferredNamespaces as $prefix => [$uri, $namespace, $helper]) {
+            $this->registerNamespace($prefix, $uri, $namespace, $helper);
         }
         unset($this->DeferredNamespaces);
 
@@ -1182,7 +1236,7 @@ SQL;
         $this->NamespaceUrisByPrefix = [];
         while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
             /** @var array{string,string,string} $row */
-            $this->NamespacesByPrefix[$row[0]] = Str::lower($row[2]);
+            $this->NamespacesByPrefix[$row[0]] = $row[2];
             $this->NamespaceUrisByPrefix[$row[0]] = $row[1];
         }
         $result->finalize();

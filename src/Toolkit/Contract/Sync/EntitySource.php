@@ -3,9 +3,9 @@
 namespace Salient\Contract\Sync;
 
 /**
- * Sync entity data sources
+ * @api
  */
-interface SyncEntitySource
+interface EntitySource
 {
     /**
      * Output from a successful CREATE, UPDATE or DELETE operation

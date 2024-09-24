@@ -78,6 +78,6 @@ EOF,
 
 File::writeAll($client, Str::setEol($request, "\r\n"));
 
-TestUtility::dumpHttpMessage($client);
+TestUtil::dumpHttpMessage($client);
 
 File::close($client);

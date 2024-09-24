@@ -138,17 +138,19 @@ final class SyncIntrospectionClass extends IntrospectionClass
         }
 
         $namespace = (new ReflectionClass(AbstractSyncProvider::class))->getNamespaceName();
+        /** @var class-string $name */
         foreach ($class->getInterfaces() as $name => $interface) {
             if (!$interface->isSubclassOf(SyncProviderInterface::class)) {
                 continue;
             }
 
             // Add SyncProviderInterface interfaces to SyncProviderInterfaces
+            /** @var class-string<SyncProviderInterface> $name */
             $this->SyncProviderInterfaces[] = $name;
 
             // Add the entities they service to SyncProviderEntities
             /** @disregard P1006 */
-            foreach (SyncIntrospector::providerToEntity($name) as $entity) {
+            foreach (SyncIntrospector::getProviderEntities($name) as $entity) {
                 if (!is_a($entity, SyncEntityInterface::class, true)) {
                     continue;
                 }

@@ -117,7 +117,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
 
         $this->requireFqcnOptionValue(
             'interface',
-            SyncIntrospector::entityToProvider($fqcn),
+            SyncIntrospector::getEntityProvider($fqcn),
             null,
             $interface,
             $namespace

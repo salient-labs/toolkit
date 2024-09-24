@@ -188,7 +188,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
             $postData = [
                 'postData' => [
                     'mimeType' => $mediaType,
-                    'params' => Http::mediaTypeIs($mediaType, MimeType::FORM)
+                    'params' => HttpUtil::mediaTypeIs($mediaType, MimeType::FORM)
                         ? $this->splitQuery($body)
                         : [],
                     'text' => $body,

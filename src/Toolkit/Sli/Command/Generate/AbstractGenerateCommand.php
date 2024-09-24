@@ -15,7 +15,7 @@ use Salient\Core\ProviderContext;
 use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocUtility;
+use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\Command\AbstractCommand;
 use Salient\Sli\TokenExtractor;
 use Salient\Utility\Arr;
@@ -306,7 +306,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     {
         $this->InputClass = new ReflectionClass($fqcn);
         $this->InputClassName = $this->InputClass->getName();
-        $this->InputClassPHPDoc = PHPDoc::fromDocBlocks(PHPDocUtility::getAllClassDocComments($this->InputClass));
+        $this->InputClassPHPDoc = PHPDoc::fromDocBlocks(PHPDocUtil::getAllClassDocComments($this->InputClass));
         $this->InputClassTemplates = $this->InputClassPHPDoc
             ? $this->InputClassPHPDoc->getTemplates()
             : [];
@@ -898,7 +898,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
         foreach ($params as &$param) {
             if ($param instanceof ReflectionParameter) {
-                $param = PHPDocUtility::getParameterDeclaration(
+                $param = PHPDocUtil::getParameterDeclaration(
                     $param,
                     $this->getClassPrefix(),
                     $callback,
@@ -908,7 +908,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $params = implode(', ', $params);
 
         if ($returnType instanceof ReflectionType) {
-            $returnType = PHPDocUtility::getTypeDeclaration(
+            $returnType = PHPDocUtil::getTypeDeclaration(
                 $returnType,
                 $this->getClassPrefix(),
                 $callback,
