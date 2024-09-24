@@ -79,8 +79,8 @@ final class DeferredRelationship implements DeferredRelationshipInterface
 
         $this
             ->getStore()
-            ->registerEntity($entity)
-            ->registerEntity($forEntity)
+            ->registerEntityType($entity)
+            ->registerEntityType($forEntity)
             ->deferRelationship(
                 $this->Provider->getProviderId(),
                 $entity,

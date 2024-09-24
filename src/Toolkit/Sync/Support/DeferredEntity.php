@@ -65,7 +65,7 @@ final class DeferredEntity implements DeferredEntityInterface
 
         $this
             ->getStore()
-            ->registerEntity($entity)
+            ->registerEntityType($entity)
             ->deferEntity(
                 $this->Provider->getProviderId(),
                 $entity,
@@ -107,10 +107,7 @@ final class DeferredEntity implements DeferredEntityInterface
 
     private function getTypeUri(bool $compact): string
     {
-        $typeUri = $this->getStore()->getEntityUri($this->Entity, $compact);
-
-        return $typeUri
-            ?? '/' . str_replace('\\', '/', ltrim($this->Entity, '\\'));
+        return $this->getStore()->getEntityTypeUri($this->Entity, $compact);
     }
 
     /**

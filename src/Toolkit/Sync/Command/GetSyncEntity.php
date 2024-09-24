@@ -256,8 +256,7 @@ EOF)
 
         Console::info(
             sprintf('Retrieving from %s:', $provider->getName()),
-            ($this->Store->getEntityUri($entity)
-                    ?? '/' . str_replace('\\', '/', $entity))
+            $this->Store->getEntityTypeUri($entity)
                 . ($this->EntityId === null ? '' : '/' . $this->EntityId)
         );
 

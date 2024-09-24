@@ -49,8 +49,16 @@ interface SyncStoreInterface
     );
 
     /**
-     * Get a namespace helper for a sync entity or provider interface, or null
-     * if it is not in a namespace with a registered helper
+     * Get a namespace prefix for a sync entity type or provider interface, or
+     * null if it is not in a registered namespace
+     *
+     * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
+     */
+    public function getNamespacePrefix(string $class): ?string;
+
+    /**
+     * Get a namespace helper for a sync entity type or provider interface, or
+     * null if it is not in a namespace with a registered helper
      *
      * @param class-string<SyncEntityInterface|SyncProviderInterface> $class
      */
@@ -58,7 +66,7 @@ interface SyncStoreInterface
 
     /**
      * Get a stable value that uniquely identifies a sync provider with the
-     * entity store
+     * entity store and is independent of its backing database
      */
     public function getProviderSignature(SyncProviderInterface $provider): string;
 
@@ -71,16 +79,33 @@ interface SyncStoreInterface
     public function registerProvider(SyncProviderInterface $provider);
 
     /**
-     * Get the provider ID of a registered sync provider
+     * Check if a sync provider is registered with the entity store
      *
-     * @throws LogicException if the provider is not registered.
+     * @param SyncProviderInterface|string $provider A provider instance, or a
+     * value returned by the store's
+     * {@see SyncStoreInterface::getProviderSignature()} method.
      */
-    public function getProviderId(SyncProviderInterface $provider): int;
+    public function hasProvider($provider): bool;
 
     /**
-     * Get a sync provider if it is registered with the entity store
+     * Get the provider ID by which a registered sync provider is uniquely
+     * identified in the entity store's backing database
+     *
+     * @param SyncProviderInterface|string $provider A provider instance, or a
+     * value returned by the store's
+     * {@see SyncStoreInterface::getProviderSignature()} method.
+     * @throws LogicException if the provider is not registered.
      */
-    public function getProvider(string $signature): ?SyncProviderInterface;
+    public function getProviderId($provider): int;
+
+    /**
+     * Get a sync provider registered with the entity store
+     *
+     * @param string|int $provider A provider ID, or a value returned by the
+     * store's {@see SyncStoreInterface::getProviderSignature()} method.
+     * @throws LogicException if the provider is not registered.
+     */
+    public function getProvider($provider): SyncProviderInterface;
 
     /**
      * Throw an exception if a sync provider's backend is unreachable
@@ -107,37 +132,43 @@ interface SyncStoreInterface
      * Register a sync entity type with the entity store if it is not already
      * registered
      *
-     * `$entity` is case-sensitive and must exactly match the declared name of
-     * the sync entity class.
+     * `$entityType` is case-sensitive and must exactly match the declared name
+     * of the sync entity class.
      *
-     * @param class-string<SyncEntityInterface> $entity
+     * @param class-string<SyncEntityInterface> $entityType
      * @return $this
      */
-    public function registerEntity(string $entity);
+    public function registerEntityType(string $entityType);
 
     /**
-     * Get the entity ID of a registered sync entity type
+     * Check if a sync entity type is registered with the entity store
      *
-     * @param class-string<SyncEntityInterface> $entity
+     * @param class-string<SyncEntityInterface> $entityType
+     */
+    public function hasEntityType(string $entityType): bool;
+
+    /**
+     * Get the entity type ID of a registered sync entity type
+     *
+     * @param class-string<SyncEntityInterface> $entityType
      * @throws LogicException if the entity type is not registered.
      */
-    public function getEntityId(string $entity): int;
+    public function getEntityTypeId(string $entityType): int;
 
     /**
-     * Get the canonical URI of a sync entity, or null if it is not in a
-     * registered namespace
+     * Get a sync entity type registered with the entity store
      *
-     * @param class-string<SyncEntityInterface> $entity
+     * @return class-string<SyncEntityInterface>
+     * @throws LogicException if the entity type is not registered.
      */
-    public function getEntityUri(string $entity, bool $compact = true): ?string;
+    public function getEntityType(int $entityTypeId): string;
 
     /**
-     * Get the prefix of a sync entity's namespace, or null if it is not in a
-     * registered namespace
+     * Get the canonical URI of a sync entity type
      *
-     * @param class-string<SyncEntityInterface> $entity
+     * @param class-string<SyncEntityInterface> $entityType
      */
-    public function getEntityPrefix(string $entity): ?string;
+    public function getEntityTypeUri(string $entityType, bool $compact = true): string;
 
     /**
      * Apply a sync entity retrieved from a provider to the entity store,

@@ -20,7 +20,7 @@ final class SyncStoreTest extends SyncTestCase
 
         $this->assertSame(1, $this->Store->getRunId(), 'getRunId()');
         $this->assertMatchesRegularExpression(Regex::delimit('^' . Regex::UUID . '$', '/'), $this->Store->getRunUuid(), 'getRunUuid()');
-        $this->assertSame('salient-tests:User', $this->Store->getEntityUri(User::class), '$this->Store->getEntityUri()');
-        $this->assertSame('https://salient-labs.github.io/toolkit/tests/entity/User', $this->Store->getEntityUri(User::class, false), '$this->Store->getEntityUri(, false)');
+        $this->assertSame('salient-tests:User', $this->Store->getEntityTypeUri(User::class), '$this->Store->getEntityTypeUri()');
+        $this->assertSame('https://salient-labs.github.io/toolkit/tests/entity/User', $this->Store->getEntityTypeUri(User::class, false), '$this->Store->getEntityTypeUri(, false)');
     }
 }

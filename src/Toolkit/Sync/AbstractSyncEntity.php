@@ -438,12 +438,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
         /** @var class-string<self> */
         $service = $this->getService();
         $store ??= $this->Provider ? $this->Provider->getStore() : null;
-        if ($store) {
-            $typeUri = $store->getEntityUri($service, $compact);
-        }
-
-        return $typeUri
-            ?? '/' . str_replace('\\', '/', ltrim($service, '\\'));
+        return SyncUtil::getEntityTypeUri($service, $compact, $store);
     }
 
     /**
@@ -795,7 +790,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     {
         foreach ($data as $property => $value) {
             if ($property === 'Provider' && $value !== null) {
-                $value = is_string($value) && Sync::isLoaded()
+                $value = is_string($value) && Sync::isLoaded() && Sync::hasProvider($value)
                     ? Sync::getProvider($value)
                     : null;
                 if ($value === null) {
