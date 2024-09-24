@@ -10,6 +10,48 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.54] - 2024-09-24
+
+### Added
+
+#### `Sync`
+
+- Add `SyncStoreInterface`/`SyncStore`/`Sync` methods `hasProvider()`, `hasEntityType()` and `getEntityType()` for completeness
+- Add `SyncUtil` with `getEntityTypeUri()`
+
+### Changed
+
+#### `Container`
+
+- In `Application::exportHar()`:
+  - If no `$uuid` is given, use the UUID of the current sync run if available when naming the HAR file
+  - Export HAR files to their own subdirectory
+
+#### `Http`
+
+- Rename `Http` to `HttpUtil` for consistency with other component utility classes
+
+#### `Sync`
+
+- Rename "class resolvers" to "namespace helpers" to widen their scope for features like URI mapping in the future
+  - Rename `SyncClassResolverInterface` to `SyncNamespaceHelperInterface`, and rename its methods for consistency:
+    - `entityToProvider()` -> `getEntityProvider()`
+    - `providerToEntity()` -> `getProviderEntities()`
+  - Rename `getClassResolver()` methods to `getNamespaceHelper()`
+- Review `SyncStoreInterface`/`SyncStore`/`Sync`:
+  - Accept provider signatures in `getProviderId()`
+  - Accept provider IDs in `getProvider()`, and if the provider is not registered, throw an exception instead of returning `null`
+  - Rename entity type-related methods for clarity:
+    - `registerEntity()` -> `registerEntityType()`
+    - `getEntityId()` -> `getEntityTypeId()`
+    - `getEntityUri()` -> `getEntityTypeUri()` (and do not return `null`)
+    - `getEntityPrefix()` -> `getNamespacePrefix()`
+- Rename interfaces:
+  - `SyncEntityLinkType` -> `LinkType`
+  - `SyncEntitySource` -> `EntitySource`
+  - `SyncEntityState` -> `EntityState`
+  - `SyncErrorType` -> `ErrorType`
+
 ## [v0.99.53] - 2024-09-20
 
 ### Added
@@ -3641,6 +3683,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.54]: https://github.com/salient-labs/toolkit/compare/v0.99.53...v0.99.54
 [v0.99.53]: https://github.com/salient-labs/toolkit/compare/v0.99.52...v0.99.53
 [v0.99.52]: https://github.com/salient-labs/toolkit/compare/v0.99.51...v0.99.52
 [v0.99.51]: https://github.com/salient-labs/toolkit/compare/v0.99.50...v0.99.51
