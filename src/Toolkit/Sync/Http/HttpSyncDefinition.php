@@ -14,10 +14,10 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestMethod;
+use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasMutator;
@@ -248,7 +248,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
-     * @param SyncEntitySource::*|null $returnEntitiesFrom
+     * @param EntitySource::*|null $returnEntitiesFrom
      * @param mixed[]|null $args
      */
     public function __construct(
@@ -273,7 +273,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
         bool $readFromList = false,
-        ?int $returnEntitiesFrom = SyncEntitySource::PROVIDER_OUTPUT,
+        ?int $returnEntitiesFrom = EntitySource::PROVIDER_OUTPUT,
         ?array $args = null
     ) {
         parent::__construct(
@@ -831,13 +831,13 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     private function getRoundTripPayload($response, $requestPayload, $operation)
     {
         switch ($this->ReturnEntitiesFrom) {
-            case SyncEntitySource::PROVIDER_OUTPUT:
+            case EntitySource::PROVIDER_OUTPUT:
                 /** @var iterable<mixed[]>|mixed[] */
                 return Env::getDryRun()
                     ? $requestPayload
                     : $response;
 
-            case SyncEntitySource::OPERATION_INPUT:
+            case EntitySource::OPERATION_INPUT:
                 /** @var iterable<mixed[]>|mixed[] */
                 return $requestPayload;
 
@@ -857,13 +857,13 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     private function getRoundTripPipeline($operation): PipelineInterface
     {
         switch ($this->ReturnEntitiesFrom) {
-            case SyncEntitySource::PROVIDER_OUTPUT:
+            case EntitySource::PROVIDER_OUTPUT:
                 /** @var PipelineInterface<mixed[],TEntity,SyncPipelineArgument> */
                 return Env::getDryRun()
                     ? Pipeline::create()
                     : $this->getPipelineFromBackend();
 
-            case SyncEntitySource::OPERATION_INPUT:
+            case EntitySource::OPERATION_INPUT:
                 /** @var PipelineInterface<mixed[],TEntity,SyncPipelineArgument> */
                 return Pipeline::create();
 

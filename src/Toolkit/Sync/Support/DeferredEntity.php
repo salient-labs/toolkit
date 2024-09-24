@@ -3,9 +3,9 @@
 namespace Salient\Sync\Support;
 
 use Salient\Contract\Sync\DeferredEntityInterface;
+use Salient\Contract\Sync\LinkType;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Closure;

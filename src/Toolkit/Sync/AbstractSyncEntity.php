@@ -18,11 +18,11 @@ use Salient\Contract\Core\Writable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\DeferredRelationshipInterface;
+use Salient\Contract\Sync\EntityState;
+use Salient\Contract\Sync\LinkType;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntityLinkType as LinkType;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
-use Salient\Contract\Sync\SyncEntityState;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
@@ -106,7 +106,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     private $Provider;
     /** @var SyncContextInterface|null */
     private $Context;
-    /** @var int-mask-of<SyncEntityState::*> */
+    /** @var int-mask-of<EntityState::*> */
     private $State = 0;
 
     /**
@@ -381,7 +381,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     /**
      * Get the current state of the entity
      *
-     * @return int-mask-of<SyncEntityState::*>
+     * @return int-mask-of<EntityState::*>
      */
     final public function state(): int
     {
@@ -641,7 +641,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     private function serialize(SyncSerializeRulesInterface $rules): array
     {
         $clone = clone $this;
-        $clone->State |= SyncEntityState::SERIALIZING;
+        $clone->State |= EntityState::SERIALIZING;
         $array = SyncIntrospector::get(static::class)
             ->getSerializeClosure($rules)($clone);
 

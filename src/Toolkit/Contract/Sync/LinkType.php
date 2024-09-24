@@ -3,9 +3,9 @@
 namespace Salient\Contract\Sync;
 
 /**
- * Serialized sync entity relationship data formats, inspired by JSON-LD
+ * @api
  */
-interface SyncEntityLinkType
+interface LinkType
 {
     /**
      * "@type" and "@id"

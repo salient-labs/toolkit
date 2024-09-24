@@ -5,10 +5,10 @@ namespace Salient\Sync\Db;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\ArrayMapperFlag;
 use Salient\Contract\Core\ListConformity;
+use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntitySource;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\AbstractBuilder;
 use Salient\Sync\Support\SyncPipelineArgument;
@@ -26,7 +26,7 @@ use Closure;
  * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) Array that maps keys to properties for entity data returned by the provider (see {@see AbstractSyncDefinition::$KeyMap})
  * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Array mapper flags used if a key map is provided
  * @method $this readFromList(bool $value = true) Perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromList})
- * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ * @method $this returnEntitiesFrom(EntitySource::*|null $value) Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider

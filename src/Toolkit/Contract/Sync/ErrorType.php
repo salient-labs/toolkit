@@ -3,9 +3,9 @@
 namespace Salient\Contract\Sync;
 
 /**
- * Sync error types
+ * @api
  */
-interface SyncErrorType
+interface ErrorType
 {
     /**
      * No entities matching the criteria were returned by the provider

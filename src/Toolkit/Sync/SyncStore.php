@@ -8,11 +8,11 @@ use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\DeferredRelationshipInterface;
+use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
-use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
@@ -1113,7 +1113,7 @@ SQL;
                 $failed[] = $provider;
                 $this->recordError(
                     SyncError::build()
-                        ->errorType(SyncErrorType::BACKEND_UNREACHABLE)
+                        ->errorType(ErrorType::BACKEND_UNREACHABLE)
                         ->message('Heartbeat check failed: %s')
                         ->values([[
                             'provider_id' => $id,

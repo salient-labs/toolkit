@@ -4,9 +4,9 @@ namespace Salient\Sync;
 
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
-use Salient\Contract\Sync\SyncErrorType;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasMutator;
@@ -23,7 +23,7 @@ final class SyncError implements SyncErrorInterface, Buildable
     use HasBuilder;
     use HasMutator;
 
-    /** @var SyncErrorType::* */
+    /** @var ErrorType::* */
     private int $ErrorType;
     private string $Message;
     /** @var list<mixed[]|object|int|float|string|bool|null> */
@@ -38,7 +38,7 @@ final class SyncError implements SyncErrorInterface, Buildable
     /**
      * @internal
      *
-     * @param SyncErrorType::* $errorType Error type.
+     * @param ErrorType::* $errorType Error type.
      * @param string $message `sprintf()` format string that explains the error.
      * @param list<mixed[]|object|int|float|string|bool|null>|null $values Values applied to the message format string. Default: `[$entityName]`
      * @param Level::* $level Error severity/message level.

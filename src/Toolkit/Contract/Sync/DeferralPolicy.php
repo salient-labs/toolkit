@@ -3,7 +3,7 @@
 namespace Salient\Contract\Sync;
 
 /**
- * Policies for deferral of sync entities and relationships
+ * @api
  */
 interface DeferralPolicy
 {

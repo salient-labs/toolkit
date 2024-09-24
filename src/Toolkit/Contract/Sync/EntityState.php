@@ -3,9 +3,9 @@
 namespace Salient\Contract\Sync;
 
 /**
- * Sync entity states
+ * @api
  */
-interface SyncEntityState
+interface EntityState
 {
     /**
      * The entity is being serialized
