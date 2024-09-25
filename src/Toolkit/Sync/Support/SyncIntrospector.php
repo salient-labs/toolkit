@@ -10,11 +10,11 @@ use Salient\Contract\Core\Treeable;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -25,9 +25,6 @@ use LogicException;
 
 /**
  * Generates closures that perform sync-related operations on a class
- *
- * @property-read string $EntityNoun
- * @property-read string|null $EntityPlural Not set if the plural class name is the same as the singular one
  *
  * @template TClass of object
  *
@@ -84,44 +81,6 @@ final class SyncIntrospector extends Introspector
     protected function getIntrospectionClass(string $class): SyncIntrospectionClass
     {
         return new SyncIntrospectionClass($class);
-    }
-
-    /**
-     * Get a list of SyncProviderInterface interfaces implemented by the
-     * provider
-     *
-     * @return array<class-string<SyncProviderInterface>>
-     */
-    public function getSyncProviderInterfaces(): array
-    {
-        $this->assertIsProvider();
-
-        return $this->_Class->SyncProviderInterfaces;
-    }
-
-    /**
-     * Get a list of SyncEntityInterface classes serviced by the provider
-     *
-     * @return array<class-string<SyncEntityInterface>>
-     */
-    public function getSyncProviderEntities(): array
-    {
-        $this->assertIsProvider();
-
-        return $this->_Class->SyncProviderEntities;
-    }
-
-    /**
-     * Get an array that maps unambiguous lowercase entity basenames to
-     * SyncEntityInterface classes serviced by the provider
-     *
-     * @return array<string,class-string<SyncEntityInterface>>
-     */
-    public function getSyncProviderEntityBasenames(): array
-    {
-        $this->assertIsProvider();
-
-        return $this->_Class->SyncProviderEntityBasenames;
     }
 
     /**
@@ -211,51 +170,6 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * Get the provider method that implements a sync operation for an entity
-     *
-     * Returns `null` if the provider doesn't implement the given operation via
-     * a declared method, otherwise creates a closure for the operation and
-     * binds it to `$provider`.
-     *
-     * @template T of SyncEntityInterface
-     *
-     * @param SyncOperation::* $operation
-     * @param class-string<T>|static<T> $entity
-     * @return (Closure(SyncContextInterface, mixed...): (iterable<T>|T))|null
-     * @throws LogicException if the {@see SyncIntrospector} and `$entity` don't
-     * respectively represent a {@see SyncProviderInterface} and
-     * {@see SyncEntityInterface}.
-     */
-    public function getDeclaredSyncOperationClosure($operation, $entity, SyncProviderInterface $provider): ?Closure
-    {
-        if (!$entity instanceof SyncIntrospector) {
-            $entity = static::get($entity);
-        }
-
-        $_entity = $entity->_Class;
-        $closure = $this->_Class->DeclaredSyncOperationClosures[$_entity->Class][$operation] ?? false;
-
-        // Use strict comparison with `false` because null closures are cached
-        if ($closure === false) {
-            $this->assertIsProvider();
-
-            if (!$_entity->IsSyncEntity) {
-                throw new LogicException(
-                    sprintf('%s does not implement %s', $_entity->Class, SyncEntityInterface::class)
-                );
-            }
-
-            $method = $this->getSyncOperationMethod($operation, $entity);
-            if ($method) {
-                $closure = fn(...$args) => $this->$method(...$args);
-            }
-            $this->_Class->DeclaredSyncOperationClosures[$_entity->Class][$operation] = $closure ?: null;
-        }
-
-        return $closure ? $closure->bindTo($provider) : null;
-    }
-
-    /**
      * Get a closure to perform sync operations on behalf of a provider's
      * "magic" method
      *
@@ -279,7 +193,10 @@ final class SyncIntrospector extends Introspector
         $closure = $this->_Class->MagicSyncOperationClosures[$method] ?? false;
         // Use strict comparison with `false` because null closures are cached
         if ($closure === false) {
-            $operation = $this->_Class->SyncOperationMagicMethods[$method] ?? null;
+            /** @var class-string<SyncProviderInterface> */
+            $class = $this->_Class->Class;
+            $operation = (new ReflectionSyncProvider($class))
+                ->getSyncOperationMagicMethods()[$method] ?? null;
             if ($operation) {
                 $entity = $operation[1];
                 $operation = $operation[0];
@@ -838,98 +755,5 @@ final class SyncIntrospector extends Introspector
                     },
                 );
             };
-    }
-
-    /**
-     * @param SyncOperation::* $operation
-     * @param static<SyncEntityInterface> $entity
-     */
-    private function getSyncOperationMethod($operation, SyncIntrospector $entity): ?string
-    {
-        $_entity = $entity->_Class;
-        $noun = Str::lower($_entity->EntityNoun);
-        $methods = [];
-
-        if ($_entity->EntityPlural !== null) {
-            $plural = Str::lower($_entity->EntityPlural);
-            switch ($operation) {
-                case SyncOperation::CREATE_LIST:
-                    $methods[] = 'create' . $plural;
-                    break;
-
-                case SyncOperation::READ_LIST:
-                    $methods[] = 'get' . $plural;
-                    break;
-
-                case SyncOperation::UPDATE_LIST:
-                    $methods[] = 'update' . $plural;
-                    break;
-
-                case SyncOperation::DELETE_LIST:
-                    $methods[] = 'delete' . $plural;
-                    break;
-            }
-        }
-
-        switch ($operation) {
-            case SyncOperation::CREATE:
-                $methods[] = 'create' . $noun;
-                $methods[] = 'create_' . $noun;
-                break;
-
-            case SyncOperation::READ:
-                $methods[] = 'get' . $noun;
-                $methods[] = 'get_' . $noun;
-                break;
-
-            case SyncOperation::UPDATE:
-                $methods[] = 'update' . $noun;
-                $methods[] = 'update_' . $noun;
-                break;
-
-            case SyncOperation::DELETE:
-                $methods[] = 'delete' . $noun;
-                $methods[] = 'delete_' . $noun;
-                break;
-
-            case SyncOperation::CREATE_LIST:
-                $methods[] = 'createlist_' . $noun;
-                break;
-
-            case SyncOperation::READ_LIST:
-                $methods[] = 'getlist_' . $noun;
-                break;
-
-            case SyncOperation::UPDATE_LIST:
-                $methods[] = 'updatelist_' . $noun;
-                break;
-
-            case SyncOperation::DELETE_LIST:
-                $methods[] = 'deletelist_' . $noun;
-                break;
-        }
-
-        $methods = array_intersect_key(
-            $this->_Class->SyncOperationMethods,
-            array_flip($methods)
-        );
-
-        if (count($methods) > 1) {
-            throw new LogicException(sprintf(
-                'Too many implementations: %s',
-                implode(', ', $methods),
-            ));
-        }
-
-        return reset($methods) ?: null;
-    }
-
-    private function assertIsProvider(): void
-    {
-        if (!$this->_Class->IsSyncProvider) {
-            throw new LogicException(
-                sprintf('%s does not implement %s', $this->_Class->Class, SyncProviderInterface::class)
-            );
-        }
     }
 }

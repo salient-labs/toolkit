@@ -12,6 +12,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
@@ -201,7 +202,8 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      */
     final public static function getServices(): array
     {
-        return SyncIntrospector::get(static::class)->getSyncProviderInterfaces();
+        $provider = new ReflectionSyncProvider(static::class);
+        return $provider->getSyncProviderInterfaces();
     }
 
     /**

@@ -22,6 +22,8 @@ use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\FilterPolicyViolationException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Reflection\ReflectionSyncEntity;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Utility\Reflect;
@@ -201,10 +203,10 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      */
     protected ?int $ReturnEntitiesFrom;
 
-    /** @var SyncIntrospector<TEntity> */
-    protected SyncIntrospector $EntityIntrospector;
-    /** @var SyncIntrospector<TProvider> */
-    protected SyncIntrospector $ProviderIntrospector;
+    /** @var ReflectionSyncEntity<TEntity> */
+    protected ReflectionSyncEntity $EntityReflector;
+    /** @var ReflectionSyncProvider<TProvider> */
+    protected ReflectionSyncProvider $ProviderReflector;
     /** @var array<OP::*,SyncOperationClosure|null> */
     private array $Closures = [];
     /** @var static|null */
@@ -273,8 +275,8 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         }
 
         $this->Operations = array_intersect($allOps, $operations);
-        $this->EntityIntrospector = SyncIntrospector::get($entity);
-        $this->ProviderIntrospector = SyncIntrospector::get(get_class($provider));
+        $this->EntityReflector = new ReflectionSyncEntity($entity);
+        $this->ProviderReflector = new ReflectionSyncProvider($provider);
     }
 
     /**
@@ -405,9 +407,9 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
         // If a method has been declared for this operation, use it, even if
         // it's not in $this->Operations
-        $closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure(
+        $closure = $this->ProviderReflector->getSyncOperationClosure(
             $operation,
-            $this->EntityIntrospector,
+            $this->EntityReflector,
             $this->Provider
         );
 
