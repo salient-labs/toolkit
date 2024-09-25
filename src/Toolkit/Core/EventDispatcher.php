@@ -2,10 +2,11 @@
 
 namespace Salient\Core;
 
-use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\EventDispatcher\ListenerProviderInterface;
-use Psr\EventDispatcher\StoppableEventInterface;
+use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface as PsrListenerProviderInterface;
+use Psr\EventDispatcher\StoppableEventInterface as PsrStoppableEventInterface;
 use Salient\Contract\Core\HasName;
+use Salient\Contract\Core\Instantiable;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 use LogicException;
@@ -17,7 +18,10 @@ use LogicException;
  *
  * @api
  */
-final class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface
+final class EventDispatcher implements
+    PsrEventDispatcherInterface,
+    PsrListenerProviderInterface,
+    Instantiable
 {
     /**
      * Listener ID => list of events
@@ -34,7 +38,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
     private array $EventListeners = [];
 
     private int $NextListenerId = 0;
-    private ListenerProviderInterface $ListenerProvider;
+    private PsrListenerProviderInterface $ListenerProvider;
 
     /**
      * Creates a new EventDispatcher object
@@ -43,7 +47,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      * {@see EventDispatcher::dispatch()} will fail with a
      * {@see LogicException}.
      */
-    public function __construct(?ListenerProviderInterface $listenerProvider = null)
+    public function __construct(?PsrListenerProviderInterface $listenerProvider = null)
     {
         $this->ListenerProvider = $listenerProvider ?? $this;
     }
@@ -102,7 +106,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
 
         foreach ($listeners as $listener) {
             if (
-                $event instanceof StoppableEventInterface
+                $event instanceof PsrStoppableEventInterface
                 && $event->isPropagationStopped()
             ) {
                 break;

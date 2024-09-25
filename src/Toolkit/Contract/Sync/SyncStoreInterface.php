@@ -2,6 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Sync\Exception\HeartbeatCheckFailedExceptionInterface;
@@ -12,7 +13,7 @@ use LogicException;
 /**
  * @api
  */
-interface SyncStoreInterface
+interface SyncStoreInterface extends Instantiable
 {
     /**
      * Register a namespace for sync entities and their provider interfaces

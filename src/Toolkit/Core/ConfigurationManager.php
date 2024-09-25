@@ -2,6 +2,7 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\Instantiable;
 use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidConfigurationException;
 use Salient\Utility\Arr;
@@ -18,7 +19,7 @@ use ReturnTypeWillChange;
  *
  * @implements ArrayAccess<string,mixed>
  */
-final class ConfigurationManager implements ArrayAccess
+final class ConfigurationManager implements ArrayAccess, Instantiable
 {
     /** @use ImmutableArrayAccessTrait<string,mixed> */
     use ImmutableArrayAccessTrait;

@@ -5,6 +5,7 @@ namespace Salient\Core;
 use Salient\Contract\Core\ExceptionInterface;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Instantiable;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Facade\Console;
 use Salient\Utility\File;
@@ -18,7 +19,7 @@ use Throwable;
  *
  * @implements FacadeAwareInterface<FacadeInterface<self>>
  */
-final class ErrorHandler implements FacadeAwareInterface
+final class ErrorHandler implements FacadeAwareInterface, Instantiable
 {
     /** @use UnloadsFacades<FacadeInterface<self>> */
     use UnloadsFacades;
@@ -46,6 +47,11 @@ final class ErrorHandler implements FacadeAwareInterface
     private bool $IsShuttingDownOnFatalError = false;
     private bool $IsShuttingDownOnUncaughtException = false;
     private bool $IsShuttingDownOnExitSignal = false;
+
+    /**
+     * Creates a new ErrorHandler object
+     */
+    public function __construct() {}
 
     /**
      * Register error, exception and shutdown handlers
