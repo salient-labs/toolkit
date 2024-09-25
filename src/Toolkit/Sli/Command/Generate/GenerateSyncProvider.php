@@ -10,7 +10,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
-use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Str;
 
@@ -117,7 +117,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
 
         $this->requireFqcnOptionValue(
             'interface',
-            SyncIntrospector::getEntityProvider($fqcn),
+            SyncUtil::getEntityTypeProvider($fqcn, SyncUtil::getStore($this->App)),
             null,
             $interface,
             $namespace
@@ -174,7 +174,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
         $methods = [];
         foreach ($ops as $op) {
             // CREATE and UPDATE have the same signature, so it's a good default
-            if (SyncIntrospector::isListOperation($op)) {
+            if (SyncUtil::isListOperation($op)) {
                 $paramDoc = 'iterable<' . $service . '> $' . $camelPlural;
                 $paramCode = 'iterable $' . $camelPlural;
                 $returnDoc = 'iterable<' . $service . '>';
@@ -202,10 +202,10 @@ class GenerateSyncProvider extends AbstractGenerateCommand
 
                 $phpDoc = [];
                 if ($paramDoc !== ''
-                        && (SyncIntrospector::isListOperation($op) || $op === SyncOperation::READ)) {
+                        && (SyncUtil::isListOperation($op) || $op === SyncOperation::READ)) {
                     $phpDoc[] = "@param $paramDoc";
                 }
-                if (SyncIntrospector::isListOperation($op)) {
+                if (SyncUtil::isListOperation($op)) {
                     $phpDoc[] = "@return $returnDoc";
                 }
 

@@ -213,7 +213,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      */
     final public static function getDefaultProvider(ContainerInterface $container): SyncProviderInterface
     {
-        return $container->get(SyncIntrospector::getEntityProvider(static::class, $container));
+        return $container->get(SyncUtil::getEntityTypeProvider(static::class, SyncUtil::getStore($container)));
     }
 
     /**

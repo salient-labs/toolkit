@@ -26,9 +26,9 @@ use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
-use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Sync\AbstractSyncDefinition;
+use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\Regex;
@@ -558,7 +558,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     {
         // In dry-run mode, return a no-op closure for write operations
         if (
-            SyncIntrospector::isWriteOperation($operation)
+            SyncUtil::isWriteOperation($operation)
             && Env::getDryRun()
         ) {
             /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
@@ -779,7 +779,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      */
     private function getIdFromArgs($operation, array $args)
     {
-        if (SyncIntrospector::isListOperation($operation)) {
+        if (SyncUtil::isListOperation($operation)) {
             return null;
         }
 

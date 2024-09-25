@@ -11,8 +11,8 @@ use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Console;
-use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\SyncSerializeRules;
+use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Get;
@@ -170,7 +170,7 @@ EOF)
             $entity = $this->Entities[$this->EntityBasename];
 
             $provider = $this->ProviderBasename ?? array_search(
-                $this->App->getName(SyncIntrospector::getEntityProvider($entity)),
+                $this->App->getName(SyncUtil::getEntityTypeProvider($entity, SyncUtil::getStore($this->App))),
                 $this->Providers,
             );
 
@@ -217,7 +217,7 @@ EOF)
 
         $provider = $this->App->get($provider);
 
-        $entityProvider = SyncIntrospector::getEntityProvider($entity);
+        $entityProvider = SyncUtil::getEntityTypeProvider($entity, SyncUtil::getStore($this->App));
         if (!$provider instanceof $entityProvider) {
             throw new CliInvalidArgumentsException(sprintf(
                 '%s does not service %s',

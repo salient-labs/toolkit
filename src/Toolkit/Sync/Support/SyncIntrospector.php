@@ -12,10 +12,10 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
+use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Regex;
@@ -42,114 +42,6 @@ final class SyncIntrospector extends Introspector
 
     /** @var SyncIntrospectionClass<TClass> */
     protected $_Class;
-
-    /**
-     * Check if a sync operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
-     * DELETE_LIST
-     *
-     * @param SyncOperation::* $operation
-     * @return ($operation is SyncOperation::*_LIST ? true : false)
-     */
-    public static function isListOperation($operation): bool
-    {
-        return [
-            SyncOperation::CREATE_LIST => true,
-            SyncOperation::READ_LIST => true,
-            SyncOperation::UPDATE_LIST => true,
-            SyncOperation::DELETE_LIST => true,
-        ][$operation] ?? false;
-    }
-
-    /**
-     * Check if a sync operation is READ or READ_LIST
-     *
-     * @param SyncOperation::* $operation
-     * @return ($operation is SyncOperation::READ* ? true : false)
-     */
-    public static function isReadOperation($operation): bool
-    {
-        return [
-            SyncOperation::READ => true,
-            SyncOperation::READ_LIST => true,
-        ][$operation] ?? false;
-    }
-
-    /**
-     * Check if a sync operation is CREATE, UPDATE, DELETE, CREATE_LIST,
-     * UPDATE_LIST or DELETE_LIST
-     *
-     * @param SyncOperation::* $operation
-     * @return ($operation is SyncOperation::READ* ? false : true)
-     */
-    public static function isWriteOperation($operation): bool
-    {
-        return [
-            SyncOperation::CREATE => true,
-            SyncOperation::UPDATE => true,
-            SyncOperation::DELETE => true,
-            SyncOperation::CREATE_LIST => true,
-            SyncOperation::UPDATE_LIST => true,
-            SyncOperation::DELETE_LIST => true,
-        ][$operation] ?? false;
-    }
-
-    /**
-     * Get the name of a sync entity's provider interface
-     *
-     * @param class-string<SyncEntityInterface> $entity
-     * @return class-string<SyncProviderInterface>
-     */
-    public static function getEntityProvider(string $entity, ?ContainerInterface $container = null): string
-    {
-        if (($store = self::maybeGetStore($container))
-                && ($helper = $store->getNamespaceHelper($entity))) {
-            return $helper->getEntityProvider($entity);
-        }
-
-        /** @var class-string<SyncProviderInterface> */
-        return sprintf(
-            '%s\Provider\%sProvider',
-            Get::namespace($entity),
-            Get::basename($entity)
-        );
-    }
-
-    /**
-     * Get the names of sync entities serviced by a provider interface
-     *
-     * @param class-string<SyncProviderInterface> $provider
-     * @return array<class-string<SyncEntityInterface>>
-     */
-    public static function getProviderEntities(string $provider, ?ContainerInterface $container = null): array
-    {
-        if (($store = self::maybeGetStore($container))
-                && ($helper = $store->getNamespaceHelper($provider))) {
-            return $helper->getProviderEntities($provider);
-        }
-
-        if (Regex::match(
-            '/^(?<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
-                . '(?<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
-            $provider,
-            $matches
-        )) {
-            /** @var array<class-string<SyncEntityInterface>> */
-            return [$matches['namespace'] . $matches['class']];
-        }
-
-        return [];
-    }
-
-    private static function maybeGetStore(?ContainerInterface $container = null): ?SyncStoreInterface
-    {
-        if ($container && $container->hasInstance(SyncStoreInterface::class)) {
-            return $container->get(SyncStoreInterface::class);
-        }
-        if (Sync::isLoaded()) {
-            return Sync::getInstance();
-        }
-        return null;
-    }
 
     /**
      * @template T of object
@@ -873,7 +765,7 @@ final class SyncIntrospector extends Introspector
         bool $isChildren
     ): Closure {
         $entityType = $this->_Class->Class;
-        $entityProvider = self::getEntityProvider($relationship);
+        $entityProvider = null;
 
         return
             static function (
@@ -889,12 +781,12 @@ final class SyncIntrospector extends Introspector
                 $filter,
                 $isChildren,
                 $entityType,
-                $entityProvider
+                &$entityProvider
             ): void {
                 if (
                     !$context instanceof SyncContextInterface
                     || !$provider instanceof SyncProviderInterface
-                    || !is_a($provider, $entityProvider)
+                    || !is_a($provider, $entityProvider ??= SyncUtil::getEntityTypeProvider($relationship, SyncUtil::getStore($context->getContainer())))
                     || $data[$idKey] === null
                 ) {
                     return;

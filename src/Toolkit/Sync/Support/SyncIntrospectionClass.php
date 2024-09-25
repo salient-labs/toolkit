@@ -7,6 +7,7 @@ use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\IntrospectionClass;
 use Salient\Sync\AbstractSyncProvider;
+use Salient\Sync\SyncUtil;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;
@@ -150,7 +151,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
 
             // Add the entities they service to SyncProviderEntities
             /** @disregard P1006 */
-            foreach (SyncIntrospector::getProviderEntities($name) as $entity) {
+            foreach (SyncUtil::getProviderEntityTypes($name, SyncUtil::getStore()) as $entity) {
                 if (!is_a($entity, SyncEntityInterface::class, true)) {
                     continue;
                 }

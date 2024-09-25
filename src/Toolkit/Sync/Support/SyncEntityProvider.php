@@ -18,6 +18,7 @@ use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
 use Salient\Sync\AbstractSyncEntity;
+use Salient\Sync\SyncUtil;
 use Generator;
 use LogicException;
 
@@ -94,7 +95,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $_entity = $entity;
         $checked = [];
         do {
-            $entityProvider = SyncIntrospector::getEntityProvider($entity, $container);
+            $entityProvider = SyncUtil::getEntityTypeProvider($entity, SyncUtil::getStore($container));
             if (interface_exists($entityProvider)) {
                 break;
             }
@@ -197,7 +198,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         $fromCheckpoint = $this->Store->getDeferralCheckpoint();
         $deferralPolicy = $this->Context->getDeferralPolicy();
 
-        if (!SyncIntrospector::isListOperation($operation)) {
+        if (!SyncUtil::isListOperation($operation)) {
             $result = $this->_run($operation, ...$args);
 
             if ($deferralPolicy === DeferralPolicy::RESOLVE_LATE) {
@@ -490,7 +491,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
 
     public function runA($operation, ...$args): array
     {
-        if (!SyncIntrospector::isListOperation($operation)) {
+        if (!SyncUtil::isListOperation($operation)) {
             throw new LogicException('Not a *_LIST operation: ' . $operation);
         }
 

@@ -589,7 +589,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
             case FilterPolicy::RETURN_EMPTY:
                 $returnEmpty = true;
-                $empty = SyncIntrospector::isListOperation($operation) ? [] : null;
+                $empty = SyncUtil::isListOperation($operation) ? [] : null;
 
                 return;
 

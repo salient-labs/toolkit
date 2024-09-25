@@ -7,6 +7,7 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\SyncUtil;
 use Salient\Tests\Sync\Entity\Provider\TaskProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
 use Salient\Tests\Sync\Entity\Task;
@@ -19,6 +20,7 @@ use ReflectionFunction;
 
 /**
  * @covers \Salient\Sync\Support\SyncIntrospector
+ * @covers \Salient\Sync\SyncUtil
  */
 final class SyncIntrospectorTest extends TestCase
 {
@@ -26,15 +28,15 @@ final class SyncIntrospectorTest extends TestCase
     {
         $this->assertEquals(
             UserProvider::class,
-            SyncIntrospector::getEntityProvider(User::class)
+            SyncUtil::getEntityTypeProvider(User::class)
         );
 
         $this->assertEquals(
             'Component\Sync\Contract\People\ProvidesContact',
-            SyncIntrospector::getEntityProvider(
+            SyncUtil::getEntityTypeProvider(
                 // @phpstan-ignore argument.type
                 'Component\Sync\Entity\People\Contact',
-                $this->getContainer()
+                $this->getContainer()->get(SyncStoreInterface::class)
             )
         );
     }
@@ -43,15 +45,15 @@ final class SyncIntrospectorTest extends TestCase
     {
         $this->assertEquals(
             [User::class],
-            SyncIntrospector::getProviderEntities(UserProvider::class)
+            SyncUtil::getProviderEntityTypes(UserProvider::class)
         );
 
         $this->assertEquals(
             ['Component\Sync\Entity\People\Contact'],
-            SyncIntrospector::getProviderEntities(
+            SyncUtil::getProviderEntityTypes(
                 // @phpstan-ignore argument.type
                 'Component\Sync\Contract\People\ProvidesContact',
-                $this->getContainer()
+                $this->getContainer()->get(SyncStoreInterface::class)
             )
         );
     }
