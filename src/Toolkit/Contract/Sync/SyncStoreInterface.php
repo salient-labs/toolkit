@@ -30,7 +30,7 @@ interface SyncStoreInterface extends Instantiable
      *
      * If `$helper` is `null`, the entity store assumes sync entities in
      * `$namespace` are serviced by provider interfaces called
-     * `<entity-namespace>\Provider\<entity>Provider`, e.g. `Sync\User` entities
+     * `<entity_namespace>\Provider\<entity>Provider`, e.g. `Sync\User` entities
      * would be serviced by `Sync\Provider\UserProvider`. Provide a
      * {@see SyncNamespaceHelperInterface} to modify this behaviour.
      *

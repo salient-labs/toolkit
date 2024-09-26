@@ -843,7 +843,7 @@ SQL;
         // deferred
         $context = $entity->getContext();
         if ($context) {
-            $last = $context->last();
+            $last = $context->getLastEntity();
             if ($last) {
                 $context = $last->getContext();
             }
@@ -897,7 +897,7 @@ SQL;
         // created
         $context = $relationship->getContext();
         if ($context) {
-            $last = $context->last();
+            $last = $context->getLastEntity();
             if ($last) {
                 $context = $last->getContext();
             }

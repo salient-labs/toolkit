@@ -6,8 +6,7 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
 
 /**
- * The context within which entities of a given type are instantiated by a
- * provider
+ * @api
  *
  * @template TProvider of ProviderInterface
  * @template TEntity of Providable
@@ -20,83 +19,70 @@ interface ProviderContextInterface extends
     HasProvider
 {
     /**
+     * Get the context's provider
+     *
      * @return TProvider
      */
     public function getProvider(): ProviderInterface;
 
     /**
-     * Apply a container to the context
+     * Get an instance with the given container
      *
      * @return static
      */
     public function withContainer(ContainerInterface $container);
 
     /**
-     * Get the current payload's array key conformity
+     * Get the array key conformity applied to the context
      *
      * @return ListConformity::*
      */
-    public function getConformity();
+    public function getConformity(): int;
 
     /**
-     * Apply the current payload's array key conformity to the context
+     * Get an instance with the given array key conformity
      *
      * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
      * wherever possible to improve performance.
      * @return static
      */
-    public function withConformity($conformity);
+    public function withConformity(int $conformity);
 
     /**
-     * Get the entities responsible for propagating this context
+     * Get entities for which the context has been propagated
      *
      * @return TEntity[]
      */
-    public function stack(): array;
+    public function getEntities(): array;
 
     /**
-     * Get the entity responsible for the most recent propagation of this
-     * context
+     * Get the entity for which the context was most recently propagated
      *
      * @return TEntity|null
      */
-    public function last(): ?Providable;
+    public function getLastEntity(): ?Providable;
 
     /**
-     * Push the entity propagating the context onto the stack
+     * Add the entity for which the context is being propagated
      *
-     * Note that although the same entity may be passed to both
-     * {@see ProviderContextInterface::push()} and
-     * {@see ProviderContextInterface::withParent()} (e.g. when a hierarchy is
-     * being populated from a root entity), they serve different purposes.
-     *
-     * Example: a `Post` object would `push()` itself onto the entity stack to
-     * retrieve a `User` instance for its `Author` property, but a `Staff`
-     * object would `push()` itself onto the entity stack to retrieve `Staff`
-     * instances for its `DirectReports` property, **and** pass itself to
-     * `withParent()` as the parent (a.k.a. manager) of those `Staff`.
-     *
-     * Pushing an entity that implements {@see HasId} onto the stack implicitly
-     * adds its unique identifier to the context as a value with name
-     * `<entity_basename>_id` if {@see HasId::getId()} returns a value other
-     * than `null`.
+     * If `$entity` implements {@see HasId} and the return value of
+     * {@see HasId::getId()} is not `null`, it is applied to the context as a
+     * value with name `<entity_basename>_id`.
      *
      * @param TEntity $entity
      * @return static
      */
-    public function push($entity);
+    public function pushEntity($entity);
 
     /**
      * Get the parent entity applied to the context
      *
      * @return (TEntity&Treeable)|null
      */
-    public function getParent(): ?Treeable;
+    public function getParent(): ?Providable;
 
     /**
-     * Apply a parent entity to the context
-     *
-     * @see ProviderContextInterface::push()
+     * Get an instance with the given parent entity
      *
      * @param (TEntity&Treeable)|null $parent
      * @return static
@@ -104,21 +90,19 @@ interface ProviderContextInterface extends
     public function withParent(?Treeable $parent);
 
     /**
-     * True if a value was previously applied to the context
+     * Check if a value has been applied to the context
      */
     public function hasValue(string $name): bool;
 
     /**
-     * Get a value previously applied to the context
-     *
-     * Returns `null` if no value for `$name` has been applied to the context.
+     * Get a value applied to the context, or null if it has not been applied
      *
      * @return (int|string|float|bool|null)[]|int|string|float|bool|null
      */
     public function getValue(string $name);
 
     /**
-     * Apply a value to the context
+     * Get an instance with the given value applied
      *
      * @param (int|string|float|bool|null)[]|int|string|float|bool|null $value
      * @return static

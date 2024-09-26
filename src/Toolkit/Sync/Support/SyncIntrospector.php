@@ -577,7 +577,7 @@ final class SyncIntrospector extends Introspector
                         if (!$isChildren) {
                             DeferredEntity::deferList(
                                 $provider,
-                                $context->pushWithRecursionCheck($entity),
+                                $context->pushEntity($entity, true),
                                 $relationship,
                                 $data[$key],
                                 $entity->{$property},
@@ -589,7 +589,7 @@ final class SyncIntrospector extends Introspector
                         /** @disregard P1008 */
                         DeferredEntity::deferList(
                             $provider,
-                            $context->pushWithRecursionCheck($entity),
+                            $context->pushEntity($entity, true),
                             $relationship,
                             $data[$key],
                             $replace,
@@ -606,7 +606,7 @@ final class SyncIntrospector extends Introspector
                             $data[$key],
                             $provider,
                             $context->getConformity(),
-                            $context->push($entity),
+                            $context->pushEntity($entity),
                         )->toArray();
 
                     if (!$isChildren) {
@@ -626,7 +626,7 @@ final class SyncIntrospector extends Introspector
                     if (!$isParent) {
                         DeferredEntity::defer(
                             $provider,
-                            $context->pushWithRecursionCheck($entity),
+                            $context->pushEntity($entity, true),
                             $relationship,
                             $data[$key],
                             $entity->{$property},
@@ -638,7 +638,7 @@ final class SyncIntrospector extends Introspector
                     /** @disregard P1008 */
                     DeferredEntity::defer(
                         $provider,
-                        $context->pushWithRecursionCheck($entity),
+                        $context->pushEntity($entity, true),
                         $relationship,
                         $data[$key],
                         $replace,
@@ -654,7 +654,7 @@ final class SyncIntrospector extends Introspector
                     $relationship::provide(
                         $data[$key],
                         $provider,
-                        $context->push($entity),
+                        $context->pushEntity($entity),
                     );
 
                 if (!$isParent) {
@@ -721,7 +721,7 @@ final class SyncIntrospector extends Introspector
                 if (!$isChildren) {
                     DeferredRelationship::defer(
                         $provider,
-                        $context->pushWithRecursionCheck($entity),
+                        $context->pushEntity($entity, true),
                         $relationship,
                         $service ?? $entityType,
                         $property,
@@ -736,7 +736,7 @@ final class SyncIntrospector extends Introspector
                 /** @disregard P1008 */
                 DeferredRelationship::defer(
                     $provider,
-                    $context->pushWithRecursionCheck($entity),
+                    $context->pushEntity($entity, true),
                     $relationship,
                     $service ?? $entityType,
                     $property,

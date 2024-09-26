@@ -10,12 +10,15 @@ use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Treeable;
 use Salient\Core\Concern\HasMutator;
+use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Str;
 
 /**
  * The context within which entities of a given type are instantiated by a
  * provider
+ *
+ * @api
  *
  * @template TProvider of ProviderInterface
  * @template TEntity of Providable
@@ -30,7 +33,7 @@ class ProviderContext implements ProviderContextInterface
     /** @var TProvider */
     protected ProviderInterface $Provider;
     /** @var TEntity[] */
-    protected array $Stack = [];
+    protected array $Entities = [];
     /** @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> */
     protected array $Values = [];
     /** @var (TEntity&Treeable)|null */
@@ -39,8 +42,6 @@ class ProviderContext implements ProviderContextInterface
     protected $Conformity = ListConformity::NONE;
 
     /**
-     * Creates a new ProviderContext object
-     *
      * @param TProvider $provider
      */
     public function __construct(
@@ -54,7 +55,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getProvider(): ProviderInterface
+    public function getProvider(): ProviderInterface
     {
         return $this->Provider;
     }
@@ -62,7 +63,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getContainer(): ContainerInterface
+    public function getContainer(): ContainerInterface
     {
         return $this->Container;
     }
@@ -70,7 +71,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function withContainer(ContainerInterface $container)
+    public function withContainer(ContainerInterface $container)
     {
         return $this->with('Container', $container);
     }
@@ -78,7 +79,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getConformity()
+    public function getConformity(): int
     {
         return $this->Conformity;
     }
@@ -86,7 +87,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function withConformity($conformity)
+    public function withConformity(int $conformity)
     {
         return $this->with('Conformity', $conformity);
     }
@@ -94,26 +95,26 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function stack(): array
+    public function getEntities(): array
     {
-        return $this->Stack;
+        return $this->Entities;
     }
 
     /**
      * @inheritDoc
      */
-    final public function last(): ?Providable
+    public function getLastEntity(): ?Providable
     {
-        return end($this->Stack) ?: null;
+        return Arr::last($this->Entities);
     }
 
     /**
      * @inheritDoc
      */
-    final public function push($entity)
+    public function pushEntity($entity)
     {
         $clone = clone $this;
-        $clone->Stack[] = $entity;
+        $clone->Entities[] = $entity;
 
         if ($entity instanceof HasId) {
             $id = $entity->getId();
@@ -129,7 +130,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getParent(): ?Treeable
+    public function getParent(): ?Providable
     {
         return $this->Parent;
     }
@@ -137,7 +138,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function withParent(?Treeable $parent)
+    public function withParent(?Treeable $parent)
     {
         return $this->with('Parent', $parent);
     }
@@ -145,7 +146,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function hasValue(string $name): bool
+    public function hasValue(string $name): bool
     {
         $name = Str::snake($name);
 
@@ -165,7 +166,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getValue(string $name)
+    public function getValue(string $name)
     {
         $name = Str::snake($name);
 
@@ -185,7 +186,7 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function withValue(string $name, $value)
+    public function withValue(string $name, $value)
     {
         $name = Str::snake($name);
         $values = $this->Values;
@@ -193,9 +194,7 @@ class ProviderContext implements ProviderContextInterface
 
         if (substr($name, -3) === '_id') {
             $name = Str::snake(substr($name, 0, -3));
-            if ($name !== '') {
-                $values[$name] = $value;
-            }
+            $values[$name] = $value;
         }
 
         return $this->with('Values', $values);

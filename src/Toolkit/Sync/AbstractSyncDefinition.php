@@ -125,7 +125,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * entities--if not all of them--the default policy if there are unclaimed
      * filters is {@see FilterPolicy::THROW_EXCEPTION}.
      *
-     * @see SyncContextInterface::withFilter()
+     * @see SyncContextInterface::withArgs()
      *
      * @var FilterPolicy::*
      */
@@ -580,7 +580,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
         if (
             $this->FilterPolicy === FilterPolicy::IGNORE
-            || !($filter = $ctx->getFilter())
+            || !($filter = $ctx->getFilters())
         ) {
             return;
         }

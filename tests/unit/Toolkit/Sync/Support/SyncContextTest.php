@@ -5,6 +5,7 @@ namespace Salient\Tests\Sync\Support;
 use Salient\Contract\Sync\Exception\InvalidFilterExceptionInterface;
 use Salient\Contract\Sync\Exception\InvalidFilterSignatureExceptionInterface;
 use Salient\Contract\Sync\SyncOperation;
+use Salient\Sync\Support\SyncContext;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
@@ -21,35 +22,36 @@ final class SyncContextTest extends SyncTestCase
         $context = $this->Provider->getContext();
 
         $this->assertNull($context->getOffline());
-        $this->assertSame($context, $context->offlineFirst());
+        $this->assertSame($context, $context->withOffline(null));
         $this->assertNull($context->getOffline());
 
-        $this->assertNotSame($context, $context2 = $context->online());
+        $this->assertNotSame($context, $context2 = $context->withOffline(false));
         $this->assertFalse($context2->getOffline());
-        $this->assertSame($context2, $context2->online());
+        $this->assertSame($context2, $context2->withOffline(false));
         $this->assertFalse($context2->getOffline());
 
-        $this->assertNotSame($context2, $context3 = $context2->offline());
+        $this->assertNotSame($context2, $context3 = $context2->withOffline(true));
         $this->assertTrue($context3->getOffline());
-        $this->assertSame($context3, $context3->offline());
+        $this->assertSame($context3, $context3->withOffline(true));
         $this->assertTrue($context3->getOffline());
     }
 
-    public function testWithFilterWithoutArgs(): void
+    public function testWithArgsWithoutArgs(): void
     {
         $context = $this->Provider->getContext();
 
-        $this->assertSame($context, $context->withFilter(SyncOperation::READ_LIST));
-        $this->assertSame($context, $context->withFilter(SyncOperation::READ, 1));
+        $this->assertSame($context, $context->withArgs(SyncOperation::READ_LIST));
+        $this->assertSame($context, $context->withArgs(SyncOperation::READ, 1));
     }
 
     /**
-     * @dataProvider withFilterProvider
+     * @dataProvider withArgsProvider
      *
      * @param array<string,mixed>|string $expected
+     * @param array<string,string>|null $expectedFilterKeys
      * @param mixed ...$args
      */
-    public function testWithFilter($expected, ...$args): void
+    public function testWithArgs($expected, ?array $expectedFilterKeys, ...$args): void
     {
         $this->maybeExpectException($expected);
 
@@ -58,16 +60,19 @@ final class SyncContextTest extends SyncTestCase
         }
 
         $context = $this->Provider->getContext();
-        $context2 = $context->withFilter(SyncOperation::READ_LIST, ...$args);
+        $context2 = $context->withArgs(SyncOperation::READ_LIST, ...$args);
 
         $this->assertNotSame($context, $context2);
-        $this->assertSame($expected, $context2->getFilter());
+        $this->assertSame($expected, $context2->getFilters());
+        if ($expectedFilterKeys !== null && $context2 instanceof SyncContext) {
+            $this->assertSame($expectedFilterKeys, $this->getFilterKeys($context2));
+        }
     }
 
     /**
-     * @return array<array{array<string,mixed>|string,...}>
+     * @return array<array{array<string,mixed>|string,array<string,string>|null,...}>
      */
-    public static function withFilterProvider(): array
+    public static function withArgsProvider(): array
     {
         $user = fn(self $test) => $test->Provider->with(User::class)->get(1);
         $post1 = fn(self $test) => $test->Provider->with(Post::class)->get(11);
@@ -91,6 +96,11 @@ final class SyncContextTest extends SyncTestCase
                     'org_unit' => [42, 71],
                 ],
                 [
+                    'first_name_id' => 'first_name',
+                    'last_name_id' => 'last_name',
+                    'org_unit_id' => 'org_unit',
+                ],
+                [
                     '__' => __DIR__,
                     '__meta' => null,
                     '_null_ok_' => false,
@@ -102,22 +112,37 @@ final class SyncContextTest extends SyncTestCase
             ],
             'array + numeric key' => [
                 $exception,
+                null,
                 [null],
             ],
             'array + empty key' => [
-                $exception,
                 ['' => null],
+                [],
+                ['' => null],
+            ],
+            'array + whitespace key' => [
+                ['' => null],
+                [],
+                [' ' => null],
+            ],
+            'array + numeric string key' => [
+                $exception,
+                null,
+                [' 0 ' => null],
             ],
             'int' => [
                 ['id' => [42]],
+                [],
                 42,
             ],
             'string' => [
                 ['id' => ['foo']],
+                [],
                 'foo',
             ],
             'list of int' => [
                 ['id' => [42, 71]],
+                [],
                 42,
                 71,
             ],
@@ -126,24 +151,29 @@ final class SyncContextTest extends SyncTestCase
                     'foo',
                     'bar',
                 ]],
+                [],
                 'foo',
                 'bar',
             ],
             'list of int and string' => [
                 $exception,
+                null,
                 42,
                 'foo',
             ],
             'entity' => [
                 ['user' => [1]],
+                ['user_id' => 'user'],
                 $user,
             ],
             'list of entity' => [
                 ['post' => [11, 21]],
+                ['post_id' => 'post'],
                 fn(self $test) => [$post1($test), $post2($test)],
             ],
             'list of multiple entity types' => [
                 ['post' => [11, 21], 'user' => [1]],
+                ['post_id' => 'post', 'user_id' => 'user'],
                 fn(self $test) => [$post1($test), $post2($test), $user($test)],
             ],
             'invalid entity' => [
@@ -152,6 +182,7 @@ final class SyncContextTest extends SyncTestCase
                     InvalidFilterExceptionInterface::class,
                     User::class,
                 ),
+                null,
                 new User(),
             ],
         ];
@@ -160,55 +191,55 @@ final class SyncContextTest extends SyncTestCase
     public function testClaimFilterWithIdKey(): void
     {
         // Claim under original key
-        $context = $this->Provider->getContext()->withFilter(SyncOperation::READ_LIST, ['user' => 2]);
-        $this->assertSame(['user' => 2], $context->getFilter());
+        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user' => 2]);
+        $this->assertSame(['user' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user_id'));
         $this->assertSame(2, $context->claimFilter('user'));
         $this->assertNull($context->getFilter('user_id'));
         $this->assertNull($context->getFilter('user'));
-        $this->assertSame([], $context->getFilter());
+        $this->assertSame([], $context->getFilters());
 
         // Claim under alternate key ('_id' removed)
-        $context = $this->Provider->getContext()->withFilter(SyncOperation::READ_LIST, ['user_id' => 2]);
-        $this->assertSame(['user_id' => 2], $context->getFilter());
+        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user_id' => 2]);
+        $this->assertSame(['user_id' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user_id'));
         $this->assertSame(2, $context->claimFilter('user'));
         $this->assertNull($context->getFilter('user_id'));
         $this->assertNull($context->getFilter('user'));
-        $this->assertSame([], $context->getFilter());
+        $this->assertSame([], $context->getFilters());
 
         // Claim under alternate key ('_id' added)
-        $context = $this->Provider->getContext()->withFilter(SyncOperation::READ_LIST, ['user' => 2]);
-        $this->assertSame(['user' => 2], $context->getFilter());
+        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user' => 2]);
+        $this->assertSame(['user' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertSame(2, $context->claimFilter('user_id'));
         $this->assertNull($context->getFilter('user'));
         $this->assertNull($context->getFilter('user_id'));
-        $this->assertSame([], $context->getFilter());
+        $this->assertSame([], $context->getFilters());
 
         // Original and alternate keys both used ('_id' second)
-        $context = $this->Provider->getContext()->withFilter(SyncOperation::READ_LIST, ['user' => 2, 'user_id' => 'foo']);
-        $this->assertSame(['user' => 2, 'user_id' => 'foo'], $context->getFilter());
+        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user' => 2, 'user_id' => 'foo']);
+        $this->assertSame(['user' => 2, 'user_id' => 'foo'], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertSame('foo', $context->claimFilter('user_id'));
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertNull($context->getFilter('user_id'));
-        $this->assertSame(['user' => 2], $context->getFilter());
+        $this->assertSame(['user' => 2], $context->getFilters());
         $this->assertSame(2, $context->claimFilter('user'));
         $this->assertNull($context->getFilter('user'));
-        $this->assertSame([], $context->getFilter());
+        $this->assertSame([], $context->getFilters());
 
         // Original and alternate keys both used ('_id' first)
-        $context = $this->Provider->getContext()->withFilter(SyncOperation::READ_LIST, ['user_id' => 'foo', 'user' => 2]);
-        $this->assertSame(['user_id' => 'foo', 'user' => 2], $context->getFilter());
+        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user_id' => 'foo', 'user' => 2]);
+        $this->assertSame(['user_id' => 'foo', 'user' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertSame('foo', $context->claimFilter('user_id'));
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertNull($context->getFilter('user_id'));
-        $this->assertSame(['user' => 2], $context->getFilter());
+        $this->assertSame(['user' => 2], $context->getFilters());
         $this->assertSame(2, $context->claimFilter('user'));
         $this->assertNull($context->getFilter('user'));
-        $this->assertSame([], $context->getFilter());
+        $this->assertSame([], $context->getFilters());
     }
 
     /**
@@ -222,147 +253,87 @@ final class SyncContextTest extends SyncTestCase
         $expected,
         array $args,
         string $key,
-        ?string $method,
-        ?string $invalidMethod = null,
         array $values = []
     ): void {
         $context = $this
             ->Provider
             ->getContext()
-            ->withFilter(SyncOperation::READ_LIST, ...$args);
+            ->withArgs(SyncOperation::READ_LIST, ...$args);
 
         foreach ($values as $name => $value) {
             $context = $context->withValue($name, $value);
         }
 
-        if ($method !== null) {
-            $this->assertSame($expected, $context->$method($key));
-        }
-
-        if ($invalidMethod !== null) {
-            $this->expectException(InvalidFilterExceptionInterface::class);
-            $this->expectExceptionMessageMatches('/Invalid (filter|context) value/');
-            $context->$invalidMethod($key);
-        }
+        $this->assertSame($expected, $context->getFilter($key));
     }
 
     /**
-     * @return array<array{mixed,mixed[],string,string|null,4?:string|null,5?:array<string,mixed>}>
+     * @return array<array{mixed,mixed[],string,3?:array<string,(int|string|float|bool|null)[]|int|string|float|bool|null>}>
      */
     public static function getFilterProvider(): array
     {
         return [
             'int' => [
-                42,
+                [42],
                 [42],
                 'id',
-                'getFilterInt',
-                'getFilterString',
             ],
-            'int (key not set)' => [
+            'key not set' => [
                 null,
                 [],
                 'id',
-                'getFilterInt',
             ],
-            'int (key not set + fallback value)' => [
+            'key not set + fallback value (int)' => [
                 42,
                 [],
                 'value',
-                'getFilterInt',
-                null,
                 ['value' => 42],
             ],
-            'int (key not set + invalid fallback value)' => [
-                null,
+            'key not set + fallback value (string)' => [
+                'foo',
                 [],
                 'value',
-                null,
-                'getFilterInt',
                 ['value' => 'foo'],
             ],
-            'int from float' => [
-                null,
+            'scalar input (float)' => [
+                3.14,
                 [['value' => 3.14]],
                 'value',
-                null,
-                'getFilterInt',
             ],
             'string' => [
-                'foo',
+                ['foo'],
                 ['foo'],
                 'id',
-                'getFilterString',
-                'getFilterInt',
-            ],
-            'array-key (int)' => [
-                42,
-                [42],
-                'id',
-                'getFilterArrayKey',
-            ],
-            'array-key (string)' => [
-                'foo',
-                ['foo'],
-                'id',
-                'getFilterArrayKey',
             ],
             'list of int' => [
                 [42, 71],
                 [42, 71],
                 'id',
-                'getFilterIntList',
-                'getFilterStringList',
             ],
-            'list of int (key not set)' => [
-                null,
-                [],
-                'id',
-                'getFilterIntList',
-            ],
-            'list of int + scalar input' => [
-                [42],
+            'scalar input (int)' => [
+                42,
                 [['user_id' => 42]],
                 'user_id',
-                'getFilterIntList',
             ],
             'list of string' => [
                 ['foo', 'bar'],
                 ['foo', 'bar'],
                 'id',
-                'getFilterStringList',
-                'getFilterIntList',
             ],
-            'list of string + scalar input' => [
-                ['foo'],
+            'scalar input (string)' => [
+                'foo',
                 [['user_id' => 'foo']],
                 'user_id',
-                'getFilterStringList',
             ],
-            'list of array-key (int)' => [
-                [42, 71],
-                [42, 71],
-                'id',
-                'getFilterArrayKeyList',
-            ],
-            'list of array-key (string)' => [
-                ['foo', 'bar'],
-                ['foo', 'bar'],
-                'id',
-                'getFilterArrayKeyList',
-            ],
-            'list of array-key (mixed)' => [
+            'list of array-key' => [
                 [42, 'foo'],
                 [['user_id' => [42, 'foo']]],
                 'user_id',
-                'getFilterArrayKeyList',
             ],
-            'list of array-key (mixed + float)' => [
-                null,
+            'list of mixed' => [
+                [42, 'foo', 3.14],
                 [['value' => [42, 'foo', 3.14]]],
                 'value',
-                null,
-                'getFilterArrayKeyList',
             ],
         ];
     }
@@ -378,157 +349,106 @@ final class SyncContextTest extends SyncTestCase
         $expected,
         array $args,
         string $key,
-        ?string $method,
-        ?string $invalidMethod = null,
         bool $checkClaim = true,
         array $values = []
     ): void {
         $context = $this
             ->Provider
             ->getContext()
-            ->withFilter(SyncOperation::READ_LIST, ...$args);
+            ->withArgs(SyncOperation::READ_LIST, ...$args);
 
         foreach ($values as $name => $value) {
             $context = $context->withValue($name, $value);
         }
 
-        if ($method !== null) {
-            $this->assertSame($expected, $context->$method($key));
-            if ($checkClaim) {
-                $this->assertNull($context->$method($key));
-            }
-        }
-
-        if ($invalidMethod !== null) {
-            if ($method !== null) {
-                $context = $context->withFilter(SyncOperation::READ_LIST, ...$args);
-            }
-            $this->expectException(InvalidFilterExceptionInterface::class);
-            $this->expectExceptionMessageMatches('/Invalid (filter|context) value/');
-            $context->$invalidMethod($key);
+        $this->assertSame($expected, $context->claimFilter($key));
+        if ($checkClaim) {
+            $this->assertNull($context->claimFilter($key));
         }
     }
 
     /**
-     * @return array<array{mixed,mixed[],string,string|null,4?:string|null,5?:bool,6?:array<string,mixed>}>
+     * @return array<array{mixed,mixed[],string,3?:bool,4?:array<string,(int|string|float|bool|null)[]|int|string|float|bool|null>}>
      */
     public static function claimFilterProvider(): array
     {
         return [
             'int' => [
-                42,
+                [42],
                 [42],
                 'id',
-                'claimFilterInt',
-                'claimFilterString',
             ],
-            'int (key not set)' => [
+            'key not set' => [
                 null,
                 [],
                 'id',
-                'claimFilterInt',
             ],
-            'int (key not set + fallback value)' => [
+            'key not set + fallback value (int)' => [
                 42,
                 [],
                 'value',
-                'claimFilterInt',
-                null,
                 false,
                 ['value' => 42],
             ],
-            'int (key not set + invalid fallback value)' => [
-                null,
+            'key not set + fallback value (string)' => [
+                'foo',
                 [],
                 'value',
-                null,
-                'claimFilterInt',
                 false,
                 ['value' => 'foo'],
             ],
-            'int from float' => [
-                null,
+            'scalar input (float)' => [
+                3.14,
                 [['value' => 3.14]],
                 'value',
-                null,
-                'claimFilterInt',
             ],
             'string' => [
-                'foo',
+                ['foo'],
                 ['foo'],
                 'id',
-                'claimFilterString',
-                'claimFilterInt',
-            ],
-            'array-key (int)' => [
-                42,
-                [42],
-                'id',
-                'claimFilterArrayKey',
-            ],
-            'array-key (string)' => [
-                'foo',
-                ['foo'],
-                'id',
-                'claimFilterArrayKey',
             ],
             'list of int' => [
                 [42, 71],
                 [42, 71],
                 'id',
-                'claimFilterIntList',
-                'claimFilterStringList',
             ],
-            'list of int (key not set)' => [
-                null,
-                [],
-                'id',
-                'claimFilterIntList',
-            ],
-            'list of int + scalar input' => [
-                [42],
+            'scalar input (int)' => [
+                42,
                 [['user_id' => 42]],
                 'user_id',
-                'claimFilterIntList',
             ],
             'list of string' => [
                 ['foo', 'bar'],
                 ['foo', 'bar'],
                 'id',
-                'claimFilterStringList',
-                'claimFilterIntList',
             ],
-            'list of string + scalar input' => [
-                ['foo'],
+            'scalar input (string)' => [
+                'foo',
                 [['user_id' => 'foo']],
                 'user_id',
-                'claimFilterStringList',
             ],
-            'list of array-key (int)' => [
-                [42, 71],
-                [42, 71],
-                'id',
-                'claimFilterArrayKeyList',
-            ],
-            'list of array-key (string)' => [
-                ['foo', 'bar'],
-                ['foo', 'bar'],
-                'id',
-                'claimFilterArrayKeyList',
-            ],
-            'list of array-key (mixed)' => [
+            'list of array-key' => [
                 [42, 'foo'],
                 [['user_id' => [42, 'foo']]],
                 'user_id',
-                'claimFilterArrayKeyList',
             ],
-            'list of array-key (mixed + float)' => [
-                null,
+            'list of mixed' => [
+                [42, 'foo', 3.14],
                 [['value' => [42, 'foo', 3.14]]],
                 'value',
-                null,
-                'claimFilterArrayKeyList',
             ],
         ];
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function getFilterKeys(SyncContext $context): array
+    {
+        return (function () {
+            /** @var SyncContext $this */
+            // @phpstan-ignore property.protected
+            return $this->FilterKeys;
+        })->bindTo($context, $context)();
     }
 }

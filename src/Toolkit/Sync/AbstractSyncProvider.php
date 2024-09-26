@@ -12,6 +12,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
+use Salient\Sync\Exception\SyncEntityRecursionException;
 use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
@@ -215,7 +216,12 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
     final public function with(string $entity, ?SyncContextInterface $context = null): SyncEntityProvider
     {
         if ($context) {
-            $context->maybeThrowRecursionException();
+            if ($context->recursionDetected()) {
+                throw new SyncEntityRecursionException(sprintf(
+                    'Circular reference detected: %s',
+                    $context->getLastEntity()->getUri($this->Store),
+                ));
+            }
             $container = $context->getContainer();
         } else {
             $container = $this->App;

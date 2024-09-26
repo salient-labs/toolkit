@@ -185,7 +185,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         }
 
         return $closure(
-            $this->Context->withFilter($operation, ...$args),
+            $this->Context->withArgs($operation, ...$args),
             ...$args
         );
     }
@@ -535,7 +535,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      */
     public function online()
     {
-        $this->Context = $this->Context->online();
+        $this->Context = $this->Context->withOffline(false);
         return $this;
     }
 
@@ -544,7 +544,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      */
     public function offline()
     {
-        $this->Context = $this->Context->offline();
+        $this->Context = $this->Context->withOffline(true);
         return $this;
     }
 
@@ -553,7 +553,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      */
     public function offlineFirst()
     {
-        $this->Context = $this->Context->offlineFirst();
+        $this->Context = $this->Context->withOffline(null);
         return $this;
     }
 
