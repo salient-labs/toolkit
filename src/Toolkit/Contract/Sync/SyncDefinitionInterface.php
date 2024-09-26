@@ -36,5 +36,5 @@ interface SyncDefinitionInterface extends Immutable
      *     )
      * )|null
      */
-    public function getOperationClosure($operation): ?Closure;
+    public function getOperationClosure(int $operation): ?Closure;
 }

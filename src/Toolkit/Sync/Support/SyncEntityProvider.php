@@ -169,7 +169,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      *     : TEntity
      * )
      */
-    private function _run($operation, ...$args)
+    private function _run(int $operation, ...$args)
     {
         $closure =
             $this
@@ -193,7 +193,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     /**
      * @inheritDoc
      */
-    public function run($operation, ...$args)
+    public function run(int $operation, ...$args)
     {
         $fromCheckpoint = $this->Store->getDeferralCheckpoint();
         $deferralPolicy = $this->Context->getDeferralPolicy();
@@ -241,7 +241,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      * @param mixed ...$args
      * @return Generator<TEntity>
      */
-    private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, $operation, ...$args): Generator
+    private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, int $operation, ...$args): Generator
     {
         yield from $this->_run($operation, ...$args);
         $this->Store->resolveDeferrals($fromCheckpoint);
@@ -489,7 +489,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
-    public function runA($operation, ...$args): array
+    public function runA(int $operation, ...$args): array
     {
         if (!SyncUtil::isListOperation($operation)) {
             throw new LogicException('Not a *_LIST operation: ' . $operation);

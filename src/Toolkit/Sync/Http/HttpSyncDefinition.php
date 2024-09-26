@@ -405,7 +405,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     /**
      * @inheritDoc
      */
-    protected function getClosure($operation): ?Closure
+    protected function getClosure(int $operation): ?Closure
     {
         // Return null if no endpoint path has been provided
         if (
@@ -554,7 +554,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param OP::* $operation
      * @return Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[])
      */
-    private function getHttpOperationClosure($operation): Closure
+    private function getHttpOperationClosure(int $operation): Closure
     {
         // In dry-run mode, return a no-op closure for write operations
         if (
@@ -625,7 +625,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param mixed ...$args
      * @return iterable<mixed[]>|mixed[]
      */
-    private function runHttpOperation($operation, SyncContextInterface $ctx, ...$args)
+    private function runHttpOperation(int $operation, SyncContextInterface $ctx, ...$args)
     {
         return (
             $this->Callback === null
@@ -639,7 +639,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param mixed ...$args
      * @return iterable<mixed[]>|mixed[]
      */
-    private function doRunHttpOperation($operation, SyncContextInterface $ctx, ...$args)
+    private function doRunHttpOperation(int $operation, SyncContextInterface $ctx, ...$args)
     {
         if ($this->Path === null || $this->Path === []) {
             throw new LogicException('Path required');
@@ -777,7 +777,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param mixed[] $args
      * @return int|string|null
      */
-    private function getIdFromArgs($operation, array $args)
+    private function getIdFromArgs(int $operation, array $args)
     {
         if (SyncUtil::isListOperation($operation)) {
             return null;
@@ -828,7 +828,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param OP::* $operation
      * @return (TPayload is TEntity[] ? iterable<mixed[]> : mixed[])
      */
-    private function getRoundTripPayload($response, $requestPayload, $operation)
+    private function getRoundTripPayload($response, $requestPayload, int $operation)
     {
         switch ($this->ReturnEntitiesFrom) {
             case EntitySource::PROVIDER_OUTPUT:
@@ -854,7 +854,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param OP::* $operation
      * @return PipelineInterface<mixed[],TEntity,SyncPipelineArgument>
      */
-    private function getRoundTripPipeline($operation): PipelineInterface
+    private function getRoundTripPipeline(int $operation): PipelineInterface
     {
         switch ($this->ReturnEntitiesFrom) {
             case EntitySource::PROVIDER_OUTPUT:

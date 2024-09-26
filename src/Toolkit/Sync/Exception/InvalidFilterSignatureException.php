@@ -19,7 +19,7 @@ class InvalidFilterSignatureException extends InvalidFilterException implements 
      * @param SyncOperation::* $operation
      * @param mixed ...$args
      */
-    public function __construct($operation, ...$args)
+    public function __construct(int $operation, ...$args)
     {
         $this->Args = $args;
 

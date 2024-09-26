@@ -65,7 +65,7 @@ interface SyncContextInterface extends ProviderContextInterface
      * @return static
      * @throws InvalidFilterSignatureExceptionInterface
      */
-    public function withFilter($operation, ...$args);
+    public function withFilter(int $operation, ...$args);
 
     /**
      * Use a callback to enforce the provider's unclaimed filter policy

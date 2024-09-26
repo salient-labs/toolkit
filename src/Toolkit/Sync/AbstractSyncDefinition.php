@@ -84,7 +84,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      *     )
      * )|null
      */
-    abstract protected function getClosure($operation): ?Closure;
+    abstract protected function getClosure(int $operation): ?Closure;
 
     /**
      * The entity being serviced
@@ -384,7 +384,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * @inheritDoc
      */
-    final public function getOperationClosure($operation): ?Closure
+    final public function getOperationClosure(int $operation): ?Closure
     {
         // Return a previous result if possible
         if (array_key_exists($operation, $this->Closures)) {
@@ -469,7 +469,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * )
      * @throws LogicException If the operation is not supported.
      */
-    final public function getFallbackClosure($operation): Closure
+    final public function getFallbackClosure(int $operation): Closure
     {
         $closure = ($this->WithoutOverrides ??= $this->with('Overrides', []))
             ->getOperationClosure($operation);
@@ -571,7 +571,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @see AbstractSyncDefinition::$FilterPolicy
      */
     final protected function applyFilterPolicy(
-        $operation,
+        int $operation,
         SyncContextInterface $ctx,
         ?bool &$returnEmpty,
         &$empty
@@ -610,7 +610,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @param OP::* $operation
      */
     private function getContextWithFilterCallback(
-        $operation,
+        int $operation,
         SyncContextInterface $ctx
     ): SyncContextInterface {
         return $ctx->withFilterPolicyCallback(

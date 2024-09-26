@@ -112,7 +112,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     /**
      * @inheritDoc
      */
-    public function withFilter($operation, ...$args)
+    public function withFilter(int $operation, ...$args)
     {
         // READ_LIST is the only operation with no mandatory argument after the
         // `SyncContextInterface` argument

@@ -91,7 +91,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
     /**
      * @inheritDoc
      */
-    protected function getClosure($operation): ?Closure
+    protected function getClosure(int $operation): ?Closure
     {
         // Return null if no table name has been provided
         if ($this->Table === null) {

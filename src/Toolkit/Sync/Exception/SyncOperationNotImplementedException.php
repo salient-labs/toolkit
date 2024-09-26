@@ -17,7 +17,7 @@ class SyncOperationNotImplementedException extends AbstractSyncException impleme
      * @param class-string<SyncEntityInterface> $entity
      * @param SyncOperation::* $operation
      */
-    public function __construct(SyncProviderInterface $provider, string $entity, $operation)
+    public function __construct(SyncProviderInterface $provider, string $entity, int $operation)
     {
         parent::__construct(sprintf(
             '%s has not implemented SyncOperation::%s for %s',

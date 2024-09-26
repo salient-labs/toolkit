@@ -23,7 +23,7 @@ final class SyncPipelineArgumentTest extends SyncTestCase
      */
     public function testConstructor(
         ?string $exception,
-        $operation,
+        int $operation,
         array $args = [],
         $id = null,
         ?SyncEntityInterface $entity = null
