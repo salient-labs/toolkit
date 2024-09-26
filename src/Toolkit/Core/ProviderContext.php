@@ -54,17 +54,17 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getContainer(): ContainerInterface
+    final public function getProvider(): ProviderInterface
     {
-        return $this->Container;
+        return $this->Provider;
     }
 
     /**
      * @inheritDoc
      */
-    final public function getProvider(): ProviderInterface
+    final public function getContainer(): ContainerInterface
     {
-        return $this->Provider;
+        return $this->Container;
     }
 
     /**
@@ -78,47 +78,9 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function push($entity)
+    final public function getConformity()
     {
-        $clone = clone $this;
-        $clone->Stack[] = $entity;
-
-        if ($entity instanceof HasId) {
-            $id = $entity->getId();
-            if ($id !== null) {
-                $name = Get::basename(get_class($entity));
-                return $clone->withValue("{$name}_id", $id);
-            }
-        }
-
-        return $clone;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function withValue(string $name, $value)
-    {
-        $name = Str::snake($name);
-        $values = $this->Values;
-        $values[$name] = $value;
-
-        if (substr($name, -3) === '_id') {
-            $name = Str::snake(substr($name, 0, -3));
-            if ($name !== '') {
-                $values[$name] = $value;
-            }
-        }
-
-        return $this->with('Values', $values);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function withParent(?Treeable $parent)
-    {
-        return $this->with('Parent', $parent);
+        return $this->Conformity;
     }
 
     /**
@@ -148,6 +110,25 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
+    final public function push($entity)
+    {
+        $clone = clone $this;
+        $clone->Stack[] = $entity;
+
+        if ($entity instanceof HasId) {
+            $id = $entity->getId();
+            if ($id !== null) {
+                $name = Get::basename(get_class($entity));
+                return $clone->withValue("{$name}_id", $id);
+            }
+        }
+
+        return $clone;
+    }
+
+    /**
+     * @inheritDoc
+     */
     final public function getParent(): ?Treeable
     {
         return $this->Parent;
@@ -156,21 +137,9 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getValue(string $name)
+    final public function withParent(?Treeable $parent)
     {
-        $name = Str::snake($name);
-
-        if (array_key_exists($name, $this->Values)) {
-            return $this->Values[$name];
-        }
-
-        if (substr($name, -3) !== '_id') {
-            return null;
-        }
-
-        $name = Str::snake(substr($name, 0, -3));
-
-        return $this->Values[$name] ?? null;
+        return $this->with('Parent', $parent);
     }
 
     /**
@@ -196,8 +165,39 @@ class ProviderContext implements ProviderContextInterface
     /**
      * @inheritDoc
      */
-    final public function getConformity()
+    final public function getValue(string $name)
     {
-        return $this->Conformity;
+        $name = Str::snake($name);
+
+        if (array_key_exists($name, $this->Values)) {
+            return $this->Values[$name];
+        }
+
+        if (substr($name, -3) !== '_id') {
+            return null;
+        }
+
+        $name = Str::snake(substr($name, 0, -3));
+
+        return $this->Values[$name] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function withValue(string $name, $value)
+    {
+        $name = Str::snake($name);
+        $values = $this->Values;
+        $values[$name] = $value;
+
+        if (substr($name, -3) === '_id') {
+            $name = Str::snake(substr($name, 0, -3));
+            if ($name !== '') {
+                $values[$name] = $value;
+            }
+        }
+
+        return $this->with('Values', $values);
     }
 }

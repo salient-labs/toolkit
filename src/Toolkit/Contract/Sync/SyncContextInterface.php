@@ -16,120 +16,6 @@ use DateTimeInterface;
 interface SyncContextInterface extends ProviderContextInterface
 {
     /**
-     * Normalise non-mandatory arguments to a sync operation and apply them to
-     * the context
-     *
-     * An exception is thrown if `$args` doesn't match one of the following
-     * non-mandatory argument signatures.
-     *
-     * 1. An associative array (`fn(..., array<string,mixed> $filter)`)
-     *
-     *    - Keys are trimmed
-     *    - Keys that only contain space-, hyphen- or underscore-delimited
-     *      letters and numbers are converted to snake_case
-     *    - Empty and numeric keys are invalid
-     *
-     * 2. A list of identifiers (`fn(..., [ int ...$ids | string ...$ids ] )`)
-     *
-     *    - Becomes `[ 'id' => $ids ]`
-     *
-     * 3. A list of entities (`fn(..., SyncEntityInterface ...$entities)`)
-     *
-     *    - Grouped by {@see ServiceAwareInterface::getService() service} after
-     *      removing namespace and converting to snake_case
-     *    - Example: `[ 'faculty' => [42, 71], 'faculty_user' => [101] ]`
-     *
-     * 4. No arguments (`fn(...)`)
-     *
-     *    - Becomes `[]`
-     *
-     * In all cases:
-     *
-     * - {@see SyncEntityInterface} objects are replaced with their identifiers
-     * - An exception is thrown if any {@see SyncEntityInterface} objects do not
-     *   have an identifier ({@see SyncEntityInterface::getId()} returns `null`)
-     *   or do not have the same provider as the context
-     * - {@see DateTimeInterface} instances are converted to ISO-8601 strings
-     * - The result is surfaced via {@see SyncContextInterface::getFilter()},
-     *   {@see SyncContextInterface::claimFilter()} and their variants.
-     *
-     * Using {@see SyncContextInterface::claimFilter()} to "claim" filters is
-     * recommended. Depending on the provider's {@see FilterPolicy}, unclaimed
-     * filters may cause requests to fail.
-     *
-     * When a filter is "claimed", it is removed from the context.
-     *
-     * @param SyncOperation::* $operation
-     * @param mixed ...$args Sync operation arguments, not including the
-     * {@see SyncContextInterface} argument.
-     * @return static
-     * @throws InvalidFilterSignatureExceptionInterface
-     */
-    public function withFilter(int $operation, ...$args);
-
-    /**
-     * Use a callback to enforce the provider's unclaimed filter policy
-     *
-     * Allows providers to enforce their {@see FilterPolicy} by calling
-     * {@see SyncContextInterface::applyFilterPolicy()} in scenarios where
-     * enforcement before a sync operation starts isn't possible.
-     *
-     * @see SyncContextInterface::applyFilterPolicy()
-     *
-     * @param (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
-     * @return static
-     */
-    public function withFilterPolicyCallback(?callable $callback);
-
-    /**
-     * Only retrieve entities from the provider
-     *
-     * @return static
-     */
-    public function online();
-
-    /**
-     * Only retrieve entities from the local entity store
-     *
-     * @return static
-     */
-    public function offline();
-
-    /**
-     * Retrieve entities from the provider as needed to update the local entity
-     * store
-     *
-     * This is the default behaviour.
-     *
-     * @return static
-     */
-    public function offlineFirst();
-
-    /**
-     * Apply the given deferral policy to the context
-     *
-     * @param DeferralPolicy::* $policy
-     * @return static
-     */
-    public function withDeferralPolicy($policy);
-
-    /**
-     * Apply the given hydration policy to the context
-     *
-     * @param HydrationPolicy::* $policy
-     * @param class-string<SyncEntityInterface>|null $entity Limit the scope of
-     * the change to an entity and its subclasses.
-     * @param array<int<1,max>>|int<1,max>|null $depth Limit the scope of the
-     * change to entities at a given `$depth` from the current context.
-     * @return static
-     */
-    public function withHydrationPolicy(
-        int $policy,
-        ?string $entity = null,
-        $depth = null
-    );
-
-    /**
      * Push the entity propagating the context onto the stack after checking if
      * it is already present
      *
@@ -147,36 +33,6 @@ interface SyncContextInterface extends ProviderContextInterface
      * {@see SyncContextInterface::pushWithRecursionCheck()} detected recursion.
      */
     public function maybeThrowRecursionException(): void;
-
-    /**
-     * Run the unclaimed filter policy callback
-     *
-     * Example:
-     *
-     * ```php
-     * <?php
-     * class Provider extends HttpSyncProvider
-     * {
-     *     public function getEntities(SyncContextInterface $ctx): iterable
-     *     {
-     *         // Claim filter values
-     *         $start = $ctx->claimFilter('start_date');
-     *         $end = $ctx->claimFilter('end_date');
-     *
-     *         // Check for violations and return `$empty` if `$returnEmpty` is true
-     *         $ctx->applyFilterPolicy($returnEmpty, $empty);
-     *         if ($returnEmpty) {
-     *             return $empty;
-     *         }
-     *
-     *         // Perform sync operation
-     *     }
-     * }
-     * ```
-     *
-     * @param array{}|null $empty
-     */
-    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void;
 
     /**
      * Get the value of a filter passed to the context via optional sync
@@ -367,6 +223,141 @@ interface SyncContextInterface extends ProviderContextInterface
     public function claimFilterArrayKeyList(string $key, bool $orValue = true): ?array;
 
     /**
+     * Normalise non-mandatory arguments to a sync operation and apply them to
+     * the context
+     *
+     * An exception is thrown if `$args` doesn't match one of the following
+     * non-mandatory argument signatures.
+     *
+     * 1. An associative array (`fn(..., array<string,mixed> $filter)`)
+     *
+     *    - Keys are trimmed
+     *    - Keys that only contain space-, hyphen- or underscore-delimited
+     *      letters and numbers are converted to snake_case
+     *    - Empty and numeric keys are invalid
+     *
+     * 2. A list of identifiers (`fn(..., [ int ...$ids | string ...$ids ] )`)
+     *
+     *    - Becomes `[ 'id' => $ids ]`
+     *
+     * 3. A list of entities (`fn(..., SyncEntityInterface ...$entities)`)
+     *
+     *    - Grouped by {@see ServiceAwareInterface::getService() service} after
+     *      removing namespace and converting to snake_case
+     *    - Example: `[ 'faculty' => [42, 71], 'faculty_user' => [101] ]`
+     *
+     * 4. No arguments (`fn(...)`)
+     *
+     *    - Becomes `[]`
+     *
+     * In all cases:
+     *
+     * - {@see SyncEntityInterface} objects are replaced with their identifiers
+     * - An exception is thrown if any {@see SyncEntityInterface} objects do not
+     *   have an identifier ({@see SyncEntityInterface::getId()} returns `null`)
+     *   or do not have the same provider as the context
+     * - {@see DateTimeInterface} instances are converted to ISO-8601 strings
+     * - The result is surfaced via {@see SyncContextInterface::getFilter()},
+     *   {@see SyncContextInterface::claimFilter()} and their variants.
+     *
+     * Using {@see SyncContextInterface::claimFilter()} to "claim" filters is
+     * recommended. Depending on the provider's {@see FilterPolicy}, unclaimed
+     * filters may cause requests to fail.
+     *
+     * When a filter is "claimed", it is removed from the context.
+     *
+     * @param SyncOperation::* $operation
+     * @param mixed ...$args Sync operation arguments, not including the
+     * {@see SyncContextInterface} argument.
+     * @return static
+     * @throws InvalidFilterSignatureExceptionInterface
+     */
+    public function withFilter(int $operation, ...$args);
+
+    /**
+     * Run the unclaimed filter policy callback
+     *
+     * Example:
+     *
+     * ```php
+     * <?php
+     * class Provider extends HttpSyncProvider
+     * {
+     *     public function getEntities(SyncContextInterface $ctx): iterable
+     *     {
+     *         // Claim filter values
+     *         $start = $ctx->claimFilter('start_date');
+     *         $end = $ctx->claimFilter('end_date');
+     *
+     *         // Check for violations and return `$empty` if `$returnEmpty` is true
+     *         $ctx->applyFilterPolicy($returnEmpty, $empty);
+     *         if ($returnEmpty) {
+     *             return $empty;
+     *         }
+     *
+     *         // Perform sync operation
+     *     }
+     * }
+     * ```
+     *
+     * @param array{}|null $empty
+     */
+    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void;
+
+    /**
+     * Use a callback to enforce the provider's unclaimed filter policy
+     *
+     * Allows providers to enforce their {@see FilterPolicy} by calling
+     * {@see SyncContextInterface::applyFilterPolicy()} in scenarios where
+     * enforcement before a sync operation starts isn't possible.
+     *
+     * @see SyncContextInterface::applyFilterPolicy()
+     *
+     * @param (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
+     * @return static
+     */
+    public function withFilterPolicyCallback(?callable $callback);
+
+    /**
+     * Get the deferred sync entity policy applied to the context
+     *
+     * @return DeferralPolicy::*
+     */
+    public function getDeferralPolicy();
+
+    /**
+     * Apply the given deferral policy to the context
+     *
+     * @param DeferralPolicy::* $policy
+     * @return static
+     */
+    public function withDeferralPolicy($policy);
+
+    /**
+     * Get the hydration policy applied to the context for a given sync entity
+     *
+     * @param class-string<SyncEntityInterface>|null $entity
+     * @return HydrationPolicy::*
+     */
+    public function getHydrationPolicy(?string $entity): int;
+
+    /**
+     * Apply the given hydration policy to the context
+     *
+     * @param HydrationPolicy::* $policy
+     * @param class-string<SyncEntityInterface>|null $entity Limit the scope of
+     * the change to an entity and its subclasses.
+     * @param array<int<1,max>>|int<1,max>|null $depth Limit the scope of the
+     * change to entities at a given `$depth` from the current context.
+     * @return static
+     */
+    public function withHydrationPolicy(
+        int $policy,
+        ?string $entity = null,
+        $depth = null
+    );
+
+    /**
      * Get the "work offline" status applied via online(), offline() or
      * offlineFirst()
      *
@@ -381,17 +372,26 @@ interface SyncContextInterface extends ProviderContextInterface
     public function getOffline(): ?bool;
 
     /**
-     * Get the deferred sync entity policy applied to the context
+     * Only retrieve entities from the provider
      *
-     * @return DeferralPolicy::*
+     * @return static
      */
-    public function getDeferralPolicy();
+    public function online();
 
     /**
-     * Get the hydration policy applied to the context for a given sync entity
+     * Only retrieve entities from the local entity store
      *
-     * @param class-string<SyncEntityInterface>|null $entity
-     * @return HydrationPolicy::*
+     * @return static
      */
-    public function getHydrationPolicy(?string $entity): int;
+    public function offline();
+
+    /**
+     * Retrieve entities from the provider as needed to update the local entity
+     * store
+     *
+     * This is the default behaviour.
+     *
+     * @return static
+     */
+    public function offlineFirst();
 }

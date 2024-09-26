@@ -20,11 +20,47 @@ interface ProviderContextInterface extends
     HasProvider
 {
     /**
+     * @return TProvider
+     */
+    public function getProvider(): ProviderInterface;
+
+    /**
      * Apply a container to the context
      *
      * @return static
      */
     public function withContainer(ContainerInterface $container);
+
+    /**
+     * Get the current payload's array key conformity
+     *
+     * @return ListConformity::*
+     */
+    public function getConformity();
+
+    /**
+     * Apply the current payload's array key conformity to the context
+     *
+     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
+     * wherever possible to improve performance.
+     * @return static
+     */
+    public function withConformity($conformity);
+
+    /**
+     * Get the entities responsible for propagating this context
+     *
+     * @return TEntity[]
+     */
+    public function stack(): array;
+
+    /**
+     * Get the entity responsible for the most recent propagation of this
+     * context
+     *
+     * @return TEntity|null
+     */
+    public function last(): ?Providable;
 
     /**
      * Push the entity propagating the context onto the stack
@@ -51,12 +87,11 @@ interface ProviderContextInterface extends
     public function push($entity);
 
     /**
-     * Apply a value to the context
+     * Get the parent entity applied to the context
      *
-     * @param (int|string|float|bool|null)[]|int|string|float|bool|null $value
-     * @return static
+     * @return (TEntity&Treeable)|null
      */
-    public function withValue(string $name, $value);
+    public function getParent(): ?Treeable;
 
     /**
      * Apply a parent entity to the context
@@ -69,40 +104,9 @@ interface ProviderContextInterface extends
     public function withParent(?Treeable $parent);
 
     /**
-     * Apply the current payload's array key conformity to the context
-     *
-     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
-     * wherever possible to improve performance.
-     * @return static
+     * True if a value was previously applied to the context
      */
-    public function withConformity($conformity);
-
-    /**
-     * @return TProvider
-     */
-    public function getProvider(): ProviderInterface;
-
-    /**
-     * Get the entities responsible for propagating this context
-     *
-     * @return TEntity[]
-     */
-    public function stack(): array;
-
-    /**
-     * Get the entity responsible for the most recent propagation of this
-     * context
-     *
-     * @return TEntity|null
-     */
-    public function last(): ?Providable;
-
-    /**
-     * Get the parent entity applied to the context
-     *
-     * @return (TEntity&Treeable)|null
-     */
-    public function getParent(): ?Treeable;
+    public function hasValue(string $name): bool;
 
     /**
      * Get a value previously applied to the context
@@ -114,14 +118,10 @@ interface ProviderContextInterface extends
     public function getValue(string $name);
 
     /**
-     * True if a value was previously applied to the context
-     */
-    public function hasValue(string $name): bool;
-
-    /**
-     * Get the current payload's array key conformity
+     * Apply a value to the context
      *
-     * @return ListConformity::*
+     * @param (int|string|float|bool|null)[]|int|string|float|bool|null $value
+     * @return static
      */
-    public function getConformity();
+    public function withValue(string $name, $value);
 }

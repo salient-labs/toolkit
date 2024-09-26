@@ -62,181 +62,6 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     /**
      * @inheritDoc
      */
-    public function withFilterPolicyCallback(?callable $callback)
-    {
-        return $this->with('FilterPolicyCallback', $callback);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function online()
-    {
-        return $this->with('Offline', false);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function offline()
-    {
-        return $this->with('Offline', true);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function offlineFirst()
-    {
-        return $this->with('Offline', null);
-    }
-
-    /**
-     * Run the unclaimed filter policy callback
-     *
-     * {@see AbstractSyncProvider::run()} calls this method on your behalf and
-     * is recommended for providers where sync operations are performed by
-     * declared methods.
-     *
-     * {@inheritDoc}
-     */
-    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void
-    {
-        $returnEmpty = false;
-
-        if ($this->FilterPolicyCallback) {
-            ($this->FilterPolicyCallback)($this, $returnEmpty, $empty);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withFilter(int $operation, ...$args)
-    {
-        // READ_LIST is the only operation with no mandatory argument after the
-        // `SyncContextInterface` argument
-        if ($operation !== SyncOperation::READ_LIST) {
-            array_shift($args);
-        }
-
-        if (!$args) {
-            return $this->applyFilters();
-        }
-
-        if (is_array($args[0]) && count($args) === 1) {
-            $filters = [];
-            $filterKeys = [];
-            foreach ($args[0] as $key => $value) {
-                if (
-                    is_int($key)
-                    || ($key = trim($key)) === ''
-                    || Test::isNumericKey($key)
-                ) {
-                    throw new InvalidFilterSignatureException($operation, ...$args);
-                }
-
-                $normalised = false;
-                if (Regex::match('/^([[:alnum:]]++($|[ _-]++(?!$)))++$/D', $key)) {
-                    $key = Str::snake($key);
-                    $normalised = true;
-                }
-
-                $filters[$key] = $value = $this->normaliseFilterValue($value);
-                unset($filterKeys[$key]);
-
-                if (!$normalised || !(
-                    $value === null
-                    || is_int($value)
-                    || is_string($value)
-                    || Arr::ofArrayKey($value, true)
-                )) {
-                    continue;
-                }
-
-                $altKey = substr($key, -3) === '_id'
-                    ? substr($key, 0, -3)
-                    : $key . '_id';
-
-                if (isset($filters[$altKey])) {
-                    continue;
-                }
-
-                $filterKeys[$altKey] = $key;
-            }
-
-            return $this->applyFilters($filters, $filterKeys);
-        }
-
-        if (Arr::ofArrayKey($args)) {
-            return $this->applyFilters(['id' => $args]);
-        }
-
-        if (Arr::of($args, SyncEntityInterface::class)) {
-            foreach ($args as $entity) {
-                /** @var SyncEntityInterface $entity */
-                $id = $entity->getId();
-                if ($id === null) {
-                    throw new InvalidFilterException(sprintf(
-                        '%s has no identifier',
-                        get_class($entity),
-                    ));
-                }
-
-                if ($entity->getProvider() !== $this->Provider) {
-                    throw new InvalidFilterException(sprintf(
-                        '%s does not have same provider',
-                        get_class($entity),
-                    ));
-                }
-
-                $service = $entity->getService();
-                $key = self::$ServiceKeyMap[$service]
-                    ??= Str::snake(Get::basename($service));
-                $filters[$key][] = $entity->getId();
-            }
-
-            return $this->applyFilters($filters);
-        }
-
-        throw new InvalidFilterSignatureException($operation, ...$args);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withDeferralPolicy($policy)
-    {
-        return $this->with('DeferralPolicy', $policy);
-    }
-
-    /**
-     * @param int&HydrationPolicy::* $policy
-     */
-    public function withHydrationPolicy(
-        int $policy,
-        ?string $entity = null,
-        $depth = null
-    ) {
-        // @phpstan-ignore-next-line
-        if ($depth !== null && array_filter((array) $depth, fn($depth) => $depth < 1)) {
-            throw new LogicException('$depth must be greater than 0');
-        }
-
-        $clone = clone $this;
-        $clone->applyHydrationPolicy($policy, $entity, $depth);
-
-        if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy
-                && $this->FallbackHydrationPolicy === $clone->FallbackHydrationPolicy) {
-            return $this;
-        }
-
-        return $clone;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function pushWithRecursionCheck(SyncEntityInterface $entity)
     {
         return $this
@@ -380,136 +205,6 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function getOffline(): ?bool
-    {
-        return $this->Offline;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getDeferralPolicy()
-    {
-        return $this->DeferralPolicy;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHydrationPolicy(?string $entity): int
-    {
-        $depth = count($this->Stack) + 1;
-
-        if ($entity !== null && $this->EntityHydrationPolicy) {
-            $applied = false;
-            $flags = 0;
-            foreach ($this->EntityHydrationPolicy as $entityType => $values) {
-                if (!is_a($entityType, $entity, true)) {
-                    continue;
-                }
-                $value = $values[$depth] ?? $values[0] ?? null;
-                if ($value === null) {
-                    continue;
-                }
-                $flags |= $value;
-                $applied = true;
-            }
-            if ($applied) {
-                return $flags;
-            }
-        }
-
-        return $this->FallbackHydrationPolicy[$depth]
-            ?? $this->FallbackHydrationPolicy[0]
-            ?? HydrationPolicy::DEFER;
-    }
-
-    /**
-     * @param array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> $filters
-     * @param array<string,string> $filterKeys
-     * @return $this
-     */
-    private function applyFilters(array $filters = [], array $filterKeys = [])
-    {
-        return $this
-            ->with('Filters', $filters)
-            ->with('FilterKeys', $filterKeys);
-    }
-
-    /**
-     * @param mixed $value
-     * @return (int|string|float|bool|null)[]|int|string|float|bool|null
-     */
-    private function normaliseFilterValue($value)
-    {
-        if ($value === null || $value === [] || is_scalar($value)) {
-            return $value;
-        }
-
-        if ($value instanceof DateTimeInterface) {
-            return $value->format(DateTimeInterface::ATOM);
-        }
-
-        if ($value instanceof SyncEntityInterface) {
-            return $this->normaliseFilterEntity($value);
-        }
-
-        if (is_array($value)) {
-            $invalid = false;
-            foreach ($value as &$entry) {
-                if ($entry === null || is_scalar($entry)) {
-                    continue;
-                }
-
-                if ($entry instanceof DateTimeInterface) {
-                    $entry = $entry->format(DateTimeInterface::ATOM);
-                    continue;
-                }
-
-                if ($entry instanceof SyncEntityInterface) {
-                    $entry = $this->normaliseFilterEntity($entry);
-                    continue;
-                }
-
-                $invalid = true;
-                break;
-            }
-
-            if (!$invalid) {
-                return $value;
-            }
-        }
-
-        throw new InvalidArgumentException('Invalid filter value');
-    }
-
-    /**
-     * @return array-key
-     */
-    private function normaliseFilterEntity(SyncEntityInterface $entity)
-    {
-        $id = $entity->getId();
-
-        if ($id === null) {
-            throw new InvalidArgumentException(sprintf(
-                '%s has no identifier',
-                get_class($entity),
-            ));
-        }
-
-        if ($entity->getProvider() === $this->Provider) {
-            return $id;
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            '%s has a different provider',
-            get_class($entity),
-        ));
-    }
-
-    /**
      * @template TType of int-mask-of<self::*>|null
      *
      * @param (int|null)&TType $type
@@ -634,6 +329,279 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function withFilter(int $operation, ...$args)
+    {
+        // READ_LIST is the only operation with no mandatory argument after the
+        // `SyncContextInterface` argument
+        if ($operation !== SyncOperation::READ_LIST) {
+            array_shift($args);
+        }
+
+        if (!$args) {
+            return $this->applyFilters();
+        }
+
+        if (is_array($args[0]) && count($args) === 1) {
+            $filters = [];
+            $filterKeys = [];
+            foreach ($args[0] as $key => $value) {
+                if (
+                    is_int($key)
+                    || ($key = trim($key)) === ''
+                    || Test::isNumericKey($key)
+                ) {
+                    throw new InvalidFilterSignatureException($operation, ...$args);
+                }
+
+                $normalised = false;
+                if (Regex::match('/^([[:alnum:]]++($|[ _-]++(?!$)))++$/D', $key)) {
+                    $key = Str::snake($key);
+                    $normalised = true;
+                }
+
+                $filters[$key] = $value = $this->normaliseFilterValue($value);
+                unset($filterKeys[$key]);
+
+                if (!$normalised || !(
+                    $value === null
+                    || is_int($value)
+                    || is_string($value)
+                    || Arr::ofArrayKey($value, true)
+                )) {
+                    continue;
+                }
+
+                $altKey = substr($key, -3) === '_id'
+                    ? substr($key, 0, -3)
+                    : $key . '_id';
+
+                if (isset($filters[$altKey])) {
+                    continue;
+                }
+
+                $filterKeys[$altKey] = $key;
+            }
+
+            return $this->applyFilters($filters, $filterKeys);
+        }
+
+        if (Arr::ofArrayKey($args)) {
+            return $this->applyFilters(['id' => $args]);
+        }
+
+        if (Arr::of($args, SyncEntityInterface::class)) {
+            foreach ($args as $entity) {
+                /** @var SyncEntityInterface $entity */
+                $id = $entity->getId();
+                if ($id === null) {
+                    throw new InvalidFilterException(sprintf(
+                        '%s has no identifier',
+                        get_class($entity),
+                    ));
+                }
+
+                if ($entity->getProvider() !== $this->Provider) {
+                    throw new InvalidFilterException(sprintf(
+                        '%s does not have same provider',
+                        get_class($entity),
+                    ));
+                }
+
+                $service = $entity->getService();
+                $key = self::$ServiceKeyMap[$service]
+                    ??= Str::snake(Get::basename($service));
+                $filters[$key][] = $entity->getId();
+            }
+
+            return $this->applyFilters($filters);
+        }
+
+        throw new InvalidFilterSignatureException($operation, ...$args);
+    }
+
+    /**
+     * @param array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> $filters
+     * @param array<string,string> $filterKeys
+     * @return $this
+     */
+    private function applyFilters(array $filters = [], array $filterKeys = [])
+    {
+        return $this
+            ->with('Filters', $filters)
+            ->with('FilterKeys', $filterKeys);
+    }
+
+    /**
+     * @param mixed $value
+     * @return (int|string|float|bool|null)[]|int|string|float|bool|null
+     */
+    private function normaliseFilterValue($value)
+    {
+        if ($value === null || $value === [] || is_scalar($value)) {
+            return $value;
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format(DateTimeInterface::ATOM);
+        }
+
+        if ($value instanceof SyncEntityInterface) {
+            return $this->normaliseFilterEntity($value);
+        }
+
+        if (is_array($value)) {
+            $invalid = false;
+            foreach ($value as &$entry) {
+                if ($entry === null || is_scalar($entry)) {
+                    continue;
+                }
+
+                if ($entry instanceof DateTimeInterface) {
+                    $entry = $entry->format(DateTimeInterface::ATOM);
+                    continue;
+                }
+
+                if ($entry instanceof SyncEntityInterface) {
+                    $entry = $this->normaliseFilterEntity($entry);
+                    continue;
+                }
+
+                $invalid = true;
+                break;
+            }
+
+            if (!$invalid) {
+                return $value;
+            }
+        }
+
+        throw new InvalidArgumentException('Invalid filter value');
+    }
+
+    /**
+     * @return array-key
+     */
+    private function normaliseFilterEntity(SyncEntityInterface $entity)
+    {
+        $id = $entity->getId();
+
+        if ($id === null) {
+            throw new InvalidArgumentException(sprintf(
+                '%s has no identifier',
+                get_class($entity),
+            ));
+        }
+
+        if ($entity->getProvider() === $this->Provider) {
+            return $id;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            '%s has a different provider',
+            get_class($entity),
+        ));
+    }
+
+    /**
+     * Run the unclaimed filter policy callback
+     *
+     * {@see AbstractSyncProvider::run()} calls this method on your behalf and
+     * is recommended for providers where sync operations are performed by
+     * declared methods.
+     *
+     * {@inheritDoc}
+     */
+    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void
+    {
+        $returnEmpty = false;
+
+        if ($this->FilterPolicyCallback) {
+            ($this->FilterPolicyCallback)($this, $returnEmpty, $empty);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withFilterPolicyCallback(?callable $callback)
+    {
+        return $this->with('FilterPolicyCallback', $callback);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDeferralPolicy()
+    {
+        return $this->DeferralPolicy;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withDeferralPolicy($policy)
+    {
+        return $this->with('DeferralPolicy', $policy);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHydrationPolicy(?string $entity): int
+    {
+        $depth = count($this->Stack) + 1;
+
+        if ($entity !== null && $this->EntityHydrationPolicy) {
+            $applied = false;
+            $flags = 0;
+            foreach ($this->EntityHydrationPolicy as $entityType => $values) {
+                if (!is_a($entityType, $entity, true)) {
+                    continue;
+                }
+                $value = $values[$depth] ?? $values[0] ?? null;
+                if ($value === null) {
+                    continue;
+                }
+                $flags |= $value;
+                $applied = true;
+            }
+            if ($applied) {
+                return $flags;
+            }
+        }
+
+        return $this->FallbackHydrationPolicy[$depth]
+            ?? $this->FallbackHydrationPolicy[0]
+            ?? HydrationPolicy::DEFER;
+    }
+
+    /**
+     * @param int&HydrationPolicy::* $policy
+     */
+    public function withHydrationPolicy(
+        int $policy,
+        ?string $entity = null,
+        $depth = null
+    ) {
+        // @phpstan-ignore-next-line
+        if ($depth !== null && array_filter((array) $depth, fn($depth) => $depth < 1)) {
+            throw new LogicException('$depth must be greater than 0');
+        }
+
+        $clone = clone $this;
+        $clone->applyHydrationPolicy($policy, $entity, $depth);
+
+        if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy
+                && $this->FallbackHydrationPolicy === $clone->FallbackHydrationPolicy) {
+            return $this;
+        }
+
+        return $clone;
+    }
+
+    /**
      * @param int&HydrationPolicy::* $policy
      * @param class-string<SyncEntityInterface>|null $entity
      * @param array<int<1,max>>|int<1,max>|null $depth
@@ -696,5 +664,37 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             $currentPolicy[$currentDepth + $depth] = $policy;
         }
         return $currentPolicy;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOffline(): ?bool
+    {
+        return $this->Offline;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function online()
+    {
+        return $this->with('Offline', false);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offline()
+    {
+        return $this->with('Offline', true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offlineFirst()
+    {
+        return $this->with('Offline', null);
     }
 }
