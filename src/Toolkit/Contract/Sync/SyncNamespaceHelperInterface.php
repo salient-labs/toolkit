@@ -10,10 +10,10 @@ interface SyncNamespaceHelperInterface
     /**
      * Get a sync entity's provider interface
      *
-     * @param class-string<SyncEntityInterface> $entity
+     * @param class-string<SyncEntityInterface> $entityType
      * @return class-string<SyncProviderInterface>
      */
-    public function getEntityProvider(string $entity): string;
+    public function getEntityTypeProvider(string $entityType): string;
 
     /**
      * Get sync entities serviced by a provider interface
@@ -21,5 +21,5 @@ interface SyncNamespaceHelperInterface
      * @param class-string<SyncProviderInterface> $provider
      * @return array<class-string<SyncEntityInterface>>
      */
-    public function getProviderEntities(string $provider): array;
+    public function getProviderEntityTypes(string $provider): array;
 }

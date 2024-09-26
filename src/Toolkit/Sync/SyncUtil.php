@@ -64,7 +64,7 @@ final class SyncUtil extends AbstractUtility
         if ($store) {
             $helper = $store->getNamespaceHelper($entityType);
             if ($helper) {
-                return $helper->getEntityProvider($entityType);
+                return $helper->getEntityTypeProvider($entityType);
             }
         }
 
@@ -89,7 +89,7 @@ final class SyncUtil extends AbstractUtility
         if ($store) {
             $helper = $store->getNamespaceHelper($provider);
             if ($helper) {
-                return $helper->getProviderEntities($provider);
+                return $helper->getProviderEntityTypes($provider);
             }
         }
 

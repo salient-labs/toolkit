@@ -9,7 +9,7 @@ use Salient\Utility\Regex;
 
 class SyncNamespaceHelper implements SyncNamespaceHelperInterface
 {
-    public function getEntityProvider(string $entity): string
+    public function getEntityTypeProvider(string $entityType): string
     {
         /** @var class-string<SyncProviderInterface> */
         return Regex::replace(
@@ -23,11 +23,11 @@ class SyncNamespaceHelper implements SyncNamespaceHelperInterface
                 'Provides$1',
                 '',
             ],
-            "\\$entity"
+            "\\$entityType"
         );
     }
 
-    public function getProviderEntities(string $provider): array
+    public function getProviderEntityTypes(string $provider): array
     {
         /** @var array<class-string<SyncEntityInterface>> */
         return [
