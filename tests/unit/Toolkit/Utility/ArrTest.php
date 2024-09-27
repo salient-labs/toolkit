@@ -39,9 +39,15 @@ final class ArrTest extends TestCase
         $data = [
             ['foo' => ['bar' => ['baz' => 'value1', 'quux' => 'key1']]],
             ['foo' => ['bar' => ['baz' => ['value2'], 'quux' => 'key2']]],
+            ['foo' => ['bar' => ['quux' => 'key3']]],
         ];
-        $this->assertSame(['value1', ['value2']], Arr::pluck($data, 'foo.bar.baz'));
-        $this->assertSame(['key1' => 'value1', 'key2' => ['value2']], Arr::pluck($data, 'foo.bar.baz', 'foo.bar.quux'));
+        $this->assertSame(['value1', ['value2'], null], Arr::pluck($data, 'foo.bar.baz'));
+        $this->assertSame(['key1' => 'value1', 'key2' => ['value2'], 'key3' => null], Arr::pluck($data, 'foo.bar.baz', 'foo.bar.quux'));
+
+        $data[] = ['foo' => ['bar' => ['baz' => 4]]];
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Value not found: foo.bar.quux');
+        Arr::pluck($data, 'foo.bar.baz', 'foo.bar.quux');
     }
 
     /**
@@ -178,7 +184,7 @@ final class ArrTest extends TestCase
     public function testGetThrowsException(): void
     {
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Array key not found: foo.bar');
+        $this->expectExceptionMessage('Value not found: foo.bar');
         Arr::get([], 'foo.bar');
     }
 
@@ -529,6 +535,21 @@ final class ArrTest extends TestCase
             $this->expectExceptionMessage('Value not found in array');
         }
         $this->assertSame($expected, Arr::keyOf($array, $value));
+    }
+
+    /**
+     * @dataProvider keyOfProvider
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param TKey|null $expected
+     * @param array<TKey,TValue> $array
+     * @param TValue $value
+     */
+    public function testSearch($expected, array $array, $value): void
+    {
+        $this->assertSame($expected, Arr::search($array, $value));
     }
 
     /**
