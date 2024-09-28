@@ -7,6 +7,7 @@ use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Utility\Env;
 use Salient\Utility\Format;
 use Salient\Utility\Get;
+use Salient\Utility\Reflect;
 use ADOConnection;
 use RuntimeException;
 use UnexpectedValueException;
@@ -71,7 +72,7 @@ final class DbConnector implements Readable
         /** @var (int&DbDriver::*)|string $driver */
         if (is_string($driver)) {
             /** @var (int&DbDriver::*) */
-            $driver = DbDriver::fromName($driver);
+            $driver = Reflect::getConstantValue(DbDriver::class, $driver, true);
         }
 
         $this->Name = $name;

@@ -376,6 +376,31 @@ final class Reflect extends AbstractUtility
     }
 
     /**
+     * Get the value of a public constant with the given name from a class or
+     * interface
+     *
+     * @param ReflectionClass<object>|class-string $class
+     * @return mixed
+     * @throws InvalidArgumentException if `$name` is invalid.
+     */
+    public static function getConstantValue($class, string $name, bool $ignoreCase = false)
+    {
+        $constants = self::getConstants($class);
+        if (array_key_exists($name, $constants)) {
+            return $constants[$name];
+        }
+
+        if ($ignoreCase) {
+            $constants = array_change_key_case($constants, \CASE_UPPER);
+            if (array_key_exists($upper = Str::upper($name), $constants)) {
+                return $constants[$upper];
+            }
+        }
+
+        throw new InvalidArgumentException(sprintf('Invalid name: %s', $name));
+    }
+
+    /**
      * @template T of object
      *
      * @param ReflectionClass<T>|class-string<T> $class

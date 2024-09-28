@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\MultipleErrorExceptionInterface;
+use Salient\Contract\Core\Exception\MultipleErrorExceptionInterface;
 use Salient\Core\Concern\MultipleErrorExceptionTrait;
 
 /**

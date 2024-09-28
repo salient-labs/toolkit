@@ -2,7 +2,7 @@
 
 namespace Salient\Sync\Db;
 
-use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;

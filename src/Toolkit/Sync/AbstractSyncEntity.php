@@ -4,13 +4,13 @@ namespace Salient\Sync;
 
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\HasDescription;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\ProviderContextInterface;
-use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Core\Readable;
 use Salient\Contract\Core\TextComparisonAlgorithm as Algorithm;
 use Salient\Contract\Core\TextComparisonFlag as Flag;

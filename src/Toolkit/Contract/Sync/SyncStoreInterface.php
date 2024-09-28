@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\Instantiable;
-use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
-use Salient\Contract\Core\ProviderInterface;
 use Salient\Contract\Sync\Exception\HeartbeatCheckFailedExceptionInterface;
 use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use InvalidArgumentException;

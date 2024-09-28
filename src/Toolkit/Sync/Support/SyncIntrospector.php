@@ -3,8 +3,8 @@
 namespace Salient\Sync\Support;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\Providable;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\Treeable;
 use Salient\Contract\Sync\HydrationPolicy;

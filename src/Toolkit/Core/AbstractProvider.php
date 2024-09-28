@@ -3,9 +3,9 @@
 namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\ProviderContextInterface;
-use Salient\Contract\Core\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 
 /**

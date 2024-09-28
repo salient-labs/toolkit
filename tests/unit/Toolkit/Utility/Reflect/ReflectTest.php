@@ -437,6 +437,70 @@ final class ReflectTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider getConstantValueProvider
+     *
+     * @param array{class-string<Throwable>,string}|int|string $expected
+     * @param ReflectionClass<object>|class-string $class
+     */
+    public function testGetConstantValue($expected, $class, string $name, bool $ignoreCase = false): void
+    {
+        if (is_array($expected)) {
+            $this->expectException($expected[0]);
+            $this->expectExceptionMessage($expected[1]);
+            Reflect::getConstantValue($class, $name, $ignoreCase);
+            return;
+        }
+        $this->assertSame($expected, Reflect::getConstantValue($class, $name, $ignoreCase));
+    }
+
+    /**
+     * @return array<array{array{class-string<Throwable>,string}|int|string,ReflectionClass<object>|class-string,string,3?:bool}>
+     */
+    public static function getConstantValueProvider(): array
+    {
+        return [
+            [
+                0,
+                MyEnum::class,
+                'FOO',
+            ],
+            [
+                0,
+                new ReflectionClass(MyEnum::class),
+                'FOO',
+            ],
+            [
+                [
+                    InvalidArgumentException::class,
+                    'Invalid name: foo',
+                ],
+                MyEnum::class,
+                'foo',
+            ],
+            [
+                0,
+                MyEnum::class,
+                'foo',
+                true,
+            ],
+            [
+                [
+                    InvalidArgumentException::class,
+                    'Invalid name: QUX',
+                ],
+                MyEnum::class,
+                'QUX',
+                true,
+            ],
+            [
+                'Bar',
+                MyDict::class,
+                'BAR',
+            ],
+        ];
+    }
+
     public function testNamedType(): void
     {
         $types = Reflect::normaliseType(

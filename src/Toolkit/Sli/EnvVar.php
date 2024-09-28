@@ -2,14 +2,10 @@
 
 namespace Salient\Sli;
 
-use Salient\Core\AbstractDictionary;
-
 /**
  * Environment variables used by sli commands
- *
- * @extends AbstractDictionary<string>
  */
-final class EnvVar extends AbstractDictionary
+interface EnvVar
 {
     public const NS_DEFAULT = 'DEFAULT_NAMESPACE';
     public const NS_PROVIDER = 'PROVIDER_NAMESPACE';

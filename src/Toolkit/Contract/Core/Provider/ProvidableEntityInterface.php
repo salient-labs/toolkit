@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Core\Provider;
+
+use Salient\Contract\Core\EntityInterface;
 
 /**
  * A generic entity serviced by a provider

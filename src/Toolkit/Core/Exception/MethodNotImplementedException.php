@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
 use Salient\Utility\Reflect;
 use LogicException;
 use ReflectionMethod;

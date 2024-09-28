@@ -3,9 +3,9 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Provider\ProvidableEntityInterface;
 use Salient\Contract\Core\HasId;
 use Salient\Contract\Core\HasName;
-use Salient\Contract\Core\ProvidableEntityInterface;
 use Salient\Contract\Core\Relatable;
 use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
 use JsonSerializable;

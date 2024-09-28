@@ -2,15 +2,12 @@
 
 namespace Salient\Db;
 
-use Salient\Core\AbstractReflectiveEnumeration;
 use LogicException;
 
 /**
  * Database connection drivers
- *
- * @extends AbstractReflectiveEnumeration<int>
  */
-final class DbDriver extends AbstractReflectiveEnumeration
+final class DbDriver
 {
     /**
      * IBM Db2

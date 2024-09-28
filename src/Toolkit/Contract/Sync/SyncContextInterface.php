@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Core\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Sync\Exception\InvalidFilterSignatureExceptionInterface;
 use DateTimeInterface;
 

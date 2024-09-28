@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\ProvidableEntityInterface;
+use Salient\Contract\Core\Provider\ProvidableEntityInterface;
 
 /**
  * Base class for provider-serviced entities

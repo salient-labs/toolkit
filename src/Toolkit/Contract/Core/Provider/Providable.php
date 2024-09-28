@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Core\Provider;
 
 use Salient\Contract\Container\ServiceAwareInterface;
+use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 
 /**

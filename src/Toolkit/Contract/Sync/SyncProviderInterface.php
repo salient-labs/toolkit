@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Closure;
 
 /**

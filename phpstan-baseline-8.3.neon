@@ -81,7 +81,7 @@ parameters:
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#2 of closure expects TProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface, Salient\\\\Contract\\\\Core\\\\ProviderInterface given\\.$#"
+			message: "#^Parameter \\#2 of closure expects TProvider of Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderInterface, Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderInterface given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Introspector.php
 
@@ -91,17 +91,17 @@ parameters:
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#3 of closure expects TContext of Salient\\\\Contract\\\\Core\\\\ProviderContextInterface, Salient\\\\Contract\\\\Core\\\\ProviderContextInterface given\\.$#"
+			message: "#^Parameter \\#3 of closure expects TContext of Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderContextInterface, Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderContextInterface given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#4 of closure expects \\(TProvider of Salient\\\\Contract\\\\Core\\\\ProviderInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\ProviderInterface\\|null given\\.$#"
+			message: "#^Parameter \\#4 of closure expects \\(TProvider of Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderInterface\\|null given\\.$#"
 			count: 3
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Parameter \\#5 of closure expects \\(TContext of Salient\\\\Contract\\\\Core\\\\ProviderContextInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\ProviderContextInterface\\|null given\\.$#"
+			message: "#^Parameter \\#5 of closure expects \\(TContext of Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderContextInterface\\)\\|null, Salient\\\\Contract\\\\Core\\\\Provider\\\\ProviderContextInterface\\|null given\\.$#"
 			count: 3
 			path: src/Toolkit/Core/Introspector.php
 
