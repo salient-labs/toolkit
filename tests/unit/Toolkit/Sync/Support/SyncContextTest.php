@@ -40,8 +40,13 @@ final class SyncContextTest extends SyncTestCase
     {
         $context = $this->Provider->getContext();
 
-        $this->assertSame($context, $context->withArgs(SyncOperation::READ_LIST));
-        $this->assertSame($context, $context->withArgs(SyncOperation::READ, 1));
+        $context = $context->withOperation(SyncOperation::READ_LIST, User::class);
+        $this->assertFalse($context->hasFilter());
+        $this->assertSame($context, $context->withOperation(SyncOperation::READ_LIST, User::class));
+
+        $context = $context->withOperation(SyncOperation::READ, User::class, 1);
+        $this->assertFalse($context->hasFilter());
+        $this->assertSame($context, $context->withOperation(SyncOperation::READ, User::class, 1));
     }
 
     /**
@@ -60,7 +65,7 @@ final class SyncContextTest extends SyncTestCase
         }
 
         $context = $this->Provider->getContext();
-        $context2 = $context->withArgs(SyncOperation::READ_LIST, ...$args);
+        $context2 = $context->withOperation(SyncOperation::READ_LIST, User::class, ...$args);
 
         $this->assertNotSame($context, $context2);
         $this->assertSame($expected, $context2->getFilters());
@@ -191,7 +196,7 @@ final class SyncContextTest extends SyncTestCase
     public function testClaimFilterWithIdKey(): void
     {
         // Claim under original key
-        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user' => 2]);
+        $context = $this->Provider->getContext()->withOperation(SyncOperation::READ_LIST, User::class, ['user' => 2]);
         $this->assertSame(['user' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user_id'));
         $this->assertSame(2, $context->claimFilter('user'));
@@ -200,7 +205,7 @@ final class SyncContextTest extends SyncTestCase
         $this->assertSame([], $context->getFilters());
 
         // Claim under alternate key ('_id' removed)
-        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user_id' => 2]);
+        $context = $this->Provider->getContext()->withOperation(SyncOperation::READ_LIST, User::class, ['user_id' => 2]);
         $this->assertSame(['user_id' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user_id'));
         $this->assertSame(2, $context->claimFilter('user'));
@@ -209,7 +214,7 @@ final class SyncContextTest extends SyncTestCase
         $this->assertSame([], $context->getFilters());
 
         // Claim under alternate key ('_id' added)
-        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user' => 2]);
+        $context = $this->Provider->getContext()->withOperation(SyncOperation::READ_LIST, User::class, ['user' => 2]);
         $this->assertSame(['user' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertSame(2, $context->claimFilter('user_id'));
@@ -218,7 +223,7 @@ final class SyncContextTest extends SyncTestCase
         $this->assertSame([], $context->getFilters());
 
         // Original and alternate keys both used ('_id' second)
-        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user' => 2, 'user_id' => 'foo']);
+        $context = $this->Provider->getContext()->withOperation(SyncOperation::READ_LIST, User::class, ['user' => 2, 'user_id' => 'foo']);
         $this->assertSame(['user' => 2, 'user_id' => 'foo'], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertSame('foo', $context->claimFilter('user_id'));
@@ -230,7 +235,7 @@ final class SyncContextTest extends SyncTestCase
         $this->assertSame([], $context->getFilters());
 
         // Original and alternate keys both used ('_id' first)
-        $context = $this->Provider->getContext()->withArgs(SyncOperation::READ_LIST, ['user_id' => 'foo', 'user' => 2]);
+        $context = $this->Provider->getContext()->withOperation(SyncOperation::READ_LIST, User::class, ['user_id' => 'foo', 'user' => 2]);
         $this->assertSame(['user_id' => 'foo', 'user' => 2], $context->getFilters());
         $this->assertSame(2, $context->getFilter('user'));
         $this->assertSame('foo', $context->claimFilter('user_id'));
@@ -258,7 +263,7 @@ final class SyncContextTest extends SyncTestCase
         $context = $this
             ->Provider
             ->getContext()
-            ->withArgs(SyncOperation::READ_LIST, ...$args);
+            ->withOperation(SyncOperation::READ_LIST, User::class, ...$args);
 
         foreach ($values as $name => $value) {
             $context = $context->withValue($name, $value);
@@ -355,7 +360,7 @@ final class SyncContextTest extends SyncTestCase
         $context = $this
             ->Provider
             ->getContext()
-            ->withArgs(SyncOperation::READ_LIST, ...$args);
+            ->withOperation(SyncOperation::READ_LIST, User::class, ...$args);
 
         foreach ($values as $name => $value) {
             $context = $context->withValue($name, $value);

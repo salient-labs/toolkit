@@ -4,10 +4,7 @@ namespace Salient\Tests\Sync\Support;
 
 use Salient\Tests\Sync\CustomEntity\Task as CustomTask;
 use Salient\Tests\Sync\CustomEntity\Unserviced as CustomUnserviced;
-use Salient\Tests\Sync\Entity\Provider\TaskProvider;
-use Salient\Tests\Sync\Entity\Provider\UnimplementedProvider;
 use Salient\Tests\Sync\Entity\Post;
-use Salient\Tests\Sync\Entity\Task;
 use Salient\Tests\Sync\Entity\Unimplemented;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\Provider\MockProvider;
@@ -21,20 +18,18 @@ final class SyncEntityProviderTest extends SyncTestCase
 {
     public function testGetList(): void
     {
-        $posts =
-            $this
-                ->Provider
-                ->with(Post::class)
-                ->doNotResolve()
-                ->doNotHydrate()
-                ->getListA();
+        $posts = $this
+            ->Provider
+            ->with(Post::class)
+            ->doNotResolve()
+            ->doNotHydrate()
+            ->getListA();
 
-        $userProvider =
-            $this
-                ->Provider
-                ->with(User::class)
-                ->doNotResolve()
-                ->doNotHydrate();
+        $userProvider = $this
+            ->Provider
+            ->with(User::class)
+            ->doNotResolve()
+            ->doNotHydrate();
 
         // Load every user entity so deferred users are resolved
         // immediately
@@ -147,10 +142,9 @@ final class SyncEntityProviderTest extends SyncTestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(sprintf(
-            '%s does not have a provider interface (tried: %s, %s)',
+            '%s does not service %s',
+            get_class($this->Provider),
             CustomUnserviced::class,
-            'Salient\Tests\Sync\CustomEntity\Provider\UnservicedProvider',
-            'Salient\Tests\Sync\Entity\Provider\UnservicedProvider',
         ));
         $this->Provider->with(CustomUnserviced::class);
     }
@@ -159,9 +153,9 @@ final class SyncEntityProviderTest extends SyncTestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(sprintf(
-            '%s does not implement %s',
+            '%s does not service %s',
             get_class($this->Provider),
-            UnimplementedProvider::class,
+            Unimplemented::class,
         ));
         $this->Provider->with(Unimplemented::class);
     }
@@ -170,10 +164,9 @@ final class SyncEntityProviderTest extends SyncTestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(sprintf(
-            '%s cannot be serviced by provider interface %s unless it is bound to the container as %s',
+            '%s does not service %s',
+            get_class($this->Provider),
             CustomTask::class,
-            TaskProvider::class,
-            Task::class,
         ));
         $this->Provider->with(CustomTask::class);
     }
@@ -183,8 +176,7 @@ final class SyncEntityProviderTest extends SyncTestCase
         $context = $this->App->get(MockProvider::class)->getContext();
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(sprintf(
-            '%s has different provider (MockProvider, expected %s)',
-            get_class($context),
+            'Context has a different provider (MockProvider, expected %s)',
             $this->Provider->getName(),
         ));
         $this->Provider->with(User::class, $context);

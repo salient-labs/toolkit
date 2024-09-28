@@ -12,7 +12,6 @@ use Salient\Core\Concern\HasMutator;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\InvalidFilterException;
 use Salient\Sync\Exception\InvalidFilterSignatureException;
-use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Regex;
@@ -30,12 +29,12 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
 {
     use HasMutator;
 
+    /** @var SyncOperation::* */
+    protected ?int $Operation = null;
     /** @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> */
     protected array $Filters = [];
     /** @var array<string,string> */
     protected array $FilterKeys = [];
-    /** @var (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null */
-    protected $FilterPolicyCallback;
     protected ?bool $Offline = null;
     /** @var DeferralPolicy::* */
     protected int $DeferralPolicy = DeferralPolicy::RESOLVE_EARLY;
@@ -70,6 +69,22 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     public function recursionDetected(): bool
     {
         return $this->RecursionDetected;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasOperation(): bool
+    {
+        return $this->Operation !== null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOperation(): ?int
+    {
+        return $this->Operation;
     }
 
     /**
@@ -135,7 +150,20 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     /**
      * @inheritDoc
      */
-    public function withArgs(int $operation, ...$args)
+    public function withOperation(int $operation, string $entityType, ...$args)
+    {
+        return $this
+            ->with('Operation', $operation)
+            ->withEntityType($entityType)
+            ->withArgs($operation, ...$args);
+    }
+
+    /**
+     * @param SyncOperation::* $operation
+     * @param mixed ...$args
+     * @return static
+     */
+    private function withArgs(int $operation, ...$args)
     {
         // READ_LIST is the only operation with no mandatory argument after the
         // `SyncContextInterface` argument
@@ -293,32 +321,6 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             '%s has a different provider',
             get_class($entity),
         ));
-    }
-
-    /**
-     * Run the unclaimed filter policy callback
-     *
-     * {@see AbstractSyncProvider::run()} calls this method on your behalf and
-     * is recommended for providers where sync operations are performed by
-     * declared methods.
-     *
-     * {@inheritDoc}
-     */
-    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void
-    {
-        $returnEmpty = false;
-
-        if ($this->FilterPolicyCallback) {
-            ($this->FilterPolicyCallback)($this, $returnEmpty, $empty);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withFilterPolicyCallback(?callable $callback)
-    {
-        return $this->with('FilterPolicyCallback', $callback);
     }
 
     /**

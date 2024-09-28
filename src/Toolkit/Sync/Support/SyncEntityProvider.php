@@ -17,7 +17,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
-use Salient\Sync\AbstractSyncEntity;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\SyncUtil;
 use Generator;
 use LogicException;
@@ -48,22 +48,13 @@ use LogicException;
 final class SyncEntityProvider implements SyncEntityProviderInterface
 {
     /** @var class-string<TEntity> */
-    private $Entity;
-
-    /**
-     * @todo Remove `SyncProviderInterface&` when Intelephense generics issues
-     * are fixed
-     *
-     * @var SyncProviderInterface&TProvider
-     */
-    private $Provider;
-
+    private string $Entity;
+    /** @var TProvider */
+    private SyncProviderInterface $Provider;
     /** @var SyncDefinitionInterface<TEntity,TProvider> */
-    private $Definition;
-    /** @var SyncContextInterface */
-    private $Context;
-    /** @var SyncStoreInterface */
-    private $Store;
+    private SyncDefinitionInterface $Definition;
+    private SyncContextInterface $Context;
+    private SyncStoreInterface $Store;
 
     /**
      * @param class-string<TEntity> $entity
@@ -71,75 +62,38 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      */
     public function __construct(
         ContainerInterface $container,
-        string $entity,
         SyncProviderInterface $provider,
+        string $entity,
         ?SyncContextInterface $context = null
     ) {
         if (!is_a($entity, SyncEntityInterface::class, true)) {
             throw new LogicException(sprintf(
-                'Does not implement %s: %s',
-                SyncEntityInterface::class,
+                '%s does not implement %s',
                 $entity,
+                SyncEntityInterface::class,
             ));
         }
 
         if ($context && $context->getProvider() !== $provider) {
             throw new LogicException(sprintf(
-                '%s has different provider (%s, expected %s)',
-                get_class($context),
+                'Context has a different provider (%s, expected %s)',
                 $context->getProvider()->getName(),
                 $provider->getName(),
             ));
         }
 
-        $_entity = $entity;
-        $checked = [];
-        do {
-            $entityProvider = SyncUtil::getEntityTypeProvider($entity, SyncUtil::getStore($container));
-            if (interface_exists($entityProvider)) {
-                break;
-            }
-            $checked[] = $entityProvider;
-            $entityProvider = null;
-            $entity = get_parent_class($entity);
-            if ($entity === false
-                    || $entity === AbstractSyncEntity::class
-                    || !is_a($entity, SyncEntityInterface::class, true)) {
-                break;
-            }
-        } while (true);
-
-        if ($entityProvider === null) {
+        if (!(new ReflectionSyncProvider($provider))->isSyncEntityProvider($entity)) {
             throw new LogicException(sprintf(
-                '%s does not have a provider interface (tried: %s)',
-                $_entity,
-                implode(', ', $checked),
-            ));
-        }
-
-        if (!is_a($provider, $entityProvider)) {
-            throw new LogicException(sprintf(
-                '%s does not implement %s',
+                '%s does not service %s',
                 get_class($provider),
-                $entityProvider
-            ));
-        }
-
-        /** @var class-string $entity */
-        if ($entity !== $_entity && $container->getName($entity) !== $_entity) {
-            throw new LogicException(sprintf(
-                '%s cannot be serviced by provider interface %s unless it is bound to the container as %s',
-                $_entity,
-                $entityProvider,
                 $entity,
             ));
         }
 
-        /** @var class-string<TEntity> $entity */
         $this->Entity = $entity;
         $this->Provider = $provider;
         $this->Definition = $provider->getDefinition($entity);
-        $this->Context = $context ?? $provider->getContext($container);
+        $this->Context = ($context ?? $provider->getContext())->withContainer($container);
         $this->Store = $provider->getStore();
     }
 
@@ -185,7 +139,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         }
 
         return $closure(
-            $this->Context->withArgs($operation, ...$args),
+            $this->Context->withOperation($operation, $this->Entity, ...$args),
             ...$args
         );
     }

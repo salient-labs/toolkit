@@ -28,6 +28,21 @@ interface SyncContextInterface extends ProviderContextInterface
     public function recursionDetected(): bool;
 
     /**
+     * Check if a sync operation has been applied to the context
+     *
+     * @phpstan-assert-if-true !null $this->getEntityType()
+     * @phpstan-assert-if-true !null $this->getOperation()
+     */
+    public function hasOperation(): bool;
+
+    /**
+     * Get the sync operation applied to the context
+     *
+     * @return SyncOperation::*|null
+     */
+    public function getOperation(): ?int;
+
+    /**
      * Check if the context has an unclaimed filter applied via non-mandatory
      * sync operation arguments
      *
@@ -69,8 +84,8 @@ interface SyncContextInterface extends ProviderContextInterface
     public function getFilters(): array;
 
     /**
-     * Get an instance with filters derived from non-mandatory sync operation
-     * arguments
+     * Get an instance with the given sync operation and filters derived from
+     * its non-mandatory arguments
      *
      * An exception is thrown if non-mandatory arguments in `$args` don't match
      * one of the following signatures.
@@ -112,56 +127,13 @@ interface SyncContextInterface extends ProviderContextInterface
      * prevent sync operation failures caused by unclaimed filters.
      *
      * @param SyncOperation::* $operation
+     * @param class-string<SyncEntityInterface> $entityType
      * @param mixed ...$args Sync operation arguments, not including the
      * {@see SyncContextInterface} argument.
      * @return static
      * @throws InvalidFilterSignatureExceptionInterface
      */
-    public function withArgs(int $operation, ...$args);
-
-    /**
-     * Run the unclaimed filter policy callback
-     *
-     * Example:
-     *
-     * ```php
-     * <?php
-     * class Provider extends HttpSyncProvider
-     * {
-     *     public function getEntities(SyncContextInterface $ctx): iterable
-     *     {
-     *         // Claim filter values
-     *         $start = $ctx->claimFilter('start_date');
-     *         $end = $ctx->claimFilter('end_date');
-     *
-     *         // Check for violations and return `$empty` if `$returnEmpty` is true
-     *         $ctx->applyFilterPolicy($returnEmpty, $empty);
-     *         if ($returnEmpty) {
-     *             return $empty;
-     *         }
-     *
-     *         // Perform sync operation
-     *     }
-     * }
-     * ```
-     *
-     * @param array{}|null $empty
-     */
-    public function applyFilterPolicy(?bool &$returnEmpty, ?array &$empty): void;
-
-    /**
-     * Use a callback to enforce the provider's unclaimed filter policy
-     *
-     * Allows providers to enforce their {@see FilterPolicy} by calling
-     * {@see SyncContextInterface::applyFilterPolicy()} in scenarios where
-     * enforcement before a sync operation starts isn't possible.
-     *
-     * @see SyncContextInterface::applyFilterPolicy()
-     *
-     * @param (callable(SyncContextInterface, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
-     * @return static
-     */
-    public function withFilterPolicyCallback(?callable $callback);
+    public function withOperation(int $operation, string $entityType, ...$args);
 
     /**
      * Get the deferral policy applied to the context

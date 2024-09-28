@@ -79,11 +79,10 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): ProviderContextInterface
+    public function getContext(): ProviderContextInterface
     {
-        $container ??= $this->App;
-
-        return $container->get(ProviderContext::class, [$this]);
+        /** @var ProviderContext<$this,AbstractEntity> */
+        return new ProviderContext($this->App, $this);
     }
 
     /**

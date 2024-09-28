@@ -20,7 +20,6 @@ use Salient\Core\Concern\HasMutator;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
-use Salient\Sync\Exception\FilterPolicyViolationException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Reflection\ReflectionSyncEntity;
 use Salient\Sync\Reflection\ReflectionSyncProvider;
@@ -125,7 +124,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * entities--if not all of them--the default policy if there are unclaimed
      * filters is {@see FilterPolicy::THROW_EXCEPTION}.
      *
-     * @see SyncContextInterface::withArgs()
+     * @see SyncContextInterface::withOperation()
      *
      * @var FilterPolicy::*
      */
@@ -399,7 +398,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
                 $this->Overrides[$operation](
                     $this,
                     $operation,
-                    $this->getContextWithFilterCallback($operation, $ctx),
+                    $ctx,
                     ...$args
                 );
             return $this->Closures[$operation] = $closure;
@@ -417,7 +416,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
             /** @var SyncOperationClosure */
             $closure = fn(SyncContextInterface $ctx, ...$args) =>
                 $closure(
-                    $this->getContextWithFilterCallback($operation, $ctx),
+                    $ctx,
                     ...$args
                 );
             return $this->Closures[$operation] = $closure;
@@ -560,64 +559,6 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
                 return $entity;
             });
-    }
-
-    /**
-     * Enforce the unclaimed filter policy
-     *
-     * @param OP::* $operation
-     * @param array{}|null $empty
-     *
-     * @see AbstractSyncDefinition::$FilterPolicy
-     */
-    final protected function applyFilterPolicy(
-        int $operation,
-        SyncContextInterface $ctx,
-        ?bool &$returnEmpty,
-        &$empty
-    ): void {
-        $returnEmpty = false;
-
-        if (
-            $this->FilterPolicy === FilterPolicy::IGNORE
-            || !($filter = $ctx->getFilters())
-        ) {
-            return;
-        }
-
-        switch ($this->FilterPolicy) {
-            case FilterPolicy::THROW_EXCEPTION:
-                throw new FilterPolicyViolationException($this->Provider, $this->Entity, $filter);
-
-            case FilterPolicy::RETURN_EMPTY:
-                $returnEmpty = true;
-                $empty = SyncUtil::isListOperation($operation) ? [] : null;
-
-                return;
-
-            case FilterPolicy::FILTER:
-                /** @todo Implement FilterPolicy::FILTER */
-                break;
-        }
-
-        throw new LogicException(sprintf(
-            'FilterPolicy invalid or not implemented: %s',
-            $this->FilterPolicy,
-        ));
-    }
-
-    /**
-     * @param OP::* $operation
-     */
-    private function getContextWithFilterCallback(
-        int $operation,
-        SyncContextInterface $ctx
-    ): SyncContextInterface {
-        return $ctx->withFilterPolicyCallback(
-            function (SyncContextInterface $ctx, ?bool &$returnEmpty, &$empty) use ($operation): void {
-                $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
-            }
-        );
     }
 
     /**

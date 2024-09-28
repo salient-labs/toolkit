@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
 use Stringable;
 
@@ -67,7 +66,7 @@ interface ProviderInterface extends HasContainer, HasName
      *
      * @return TContext
      */
-    public function getContext(?ContainerInterface $container = null): ProviderContextInterface;
+    public function getContext(): ProviderContextInterface;
 
     /**
      * Throw an exception if the backend isn't reachable

@@ -32,6 +32,8 @@ class ProviderContext implements ProviderContextInterface
     protected ContainerInterface $Container;
     /** @var TProvider */
     protected ProviderInterface $Provider;
+    /** @var class-string<TEntity>|null */
+    protected ?string $EntityType = null;
     /** @var TEntity[] */
     protected array $Entities = [];
     /** @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> */
@@ -74,6 +76,22 @@ class ProviderContext implements ProviderContextInterface
     public function withContainer(ContainerInterface $container)
     {
         return $this->with('Container', $container);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEntityType(): ?string
+    {
+        return $this->EntityType;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withEntityType(string $entityType)
+    {
+        return $this->with('EntityType', $entityType);
     }
 
     /**

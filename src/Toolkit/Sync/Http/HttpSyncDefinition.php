@@ -114,7 +114,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *   {@see ProviderContextInterface::withValue()} or implicitly via
      *   {@see ProviderContextInterface::push()}
      * - Unclaimed filters passed to the operation via
-     *   {@see SyncContextInterface::withArgs()}
+     *   {@see SyncContextInterface::withOperation()}
      *
      * Names are normalised for comparison by converting them to snake_case and
      * removing any `_id` suffixes.
@@ -742,34 +742,34 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             $curler = ($this->CurlerCallback)($curler, $this, $operation, $ctx, ...$args);
         }
 
-        $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
-        if ($returnEmpty) {
-            return $empty;
-        }
-
         $httpClosure = $this->getHttpOperationClosure($operation);
         $payload = isset($args[0]) && is_array($args[0])
             ? $args[0]
             : null;
 
-        try {
-            return $httpClosure($curler, $this->Query, $payload);
-        } catch (HttpErrorExceptionInterface $ex) {
-            // If a request to READ a known entity fails with 404 (Not Found) or
-            // 410 (Gone), throw a `SyncEntityNotFoundException`
-            if ($operation === OP::READ && $id !== null && (
-                ($status = $ex->getResponse()->getStatusCode()) === 404
-                || $status === 410
-            )) {
-                throw new SyncEntityNotFoundException(
-                    $this->Provider,
-                    $this->Entity,
-                    $id,
-                    $ex,
-                );
-            }
-            throw $ex;
-        }
+        return $this->Provider->runOperation(
+            $ctx,
+            function () use ($operation, $id, $curler, $httpClosure, $payload) {
+                try {
+                    return $httpClosure($curler, $this->Query, $payload);
+                } catch (HttpErrorExceptionInterface $ex) {
+                    // If a request to READ an entity fails with 404 (Not Found)
+                    // or 410 (Gone), throw a `SyncEntityNotFoundException`
+                    if ($operation === OP::READ && $id !== null && (
+                        ($status = $ex->getResponse()->getStatusCode()) === 404
+                        || $status === 410
+                    )) {
+                        throw new SyncEntityNotFoundException(
+                            $this->Provider,
+                            $this->Entity,
+                            $id,
+                            $ex,
+                        );
+                    }
+                    throw $ex;
+                }
+            },
+        );
     }
 
     /**

@@ -43,7 +43,9 @@ class ReflectionSyncProvider extends ReflectionClass
     {
         $this->assertImplements($provider, SyncProviderInterface::class);
 
-        $this->Store = $store ?? SyncUtil::getStore();
+        $this->Store = $store
+            ?? ($provider instanceof SyncProviderInterface ? $provider->getStore() : null)
+            ?? SyncUtil::getStore();
 
         parent::__construct($provider);
     }
@@ -128,6 +130,27 @@ class ReflectionSyncProvider extends ReflectionClass
             }
         }
         return $entities ?? [];
+    }
+
+    /**
+     * Check if the provider services a sync entity type
+     *
+     * @template T of SyncEntityInterface
+     *
+     * @param ReflectionSyncEntity<T>|class-string<T>|T $entity
+     */
+    public function isSyncEntityProvider($entity): bool
+    {
+        if ($entity instanceof ReflectionSyncEntity) {
+            $entity = $entity->name;
+        } elseif ($entity instanceof SyncEntityInterface) {
+            $entity = get_class($entity);
+        }
+
+        $interface = SyncUtil::getEntityTypeProvider($entity, $this->Store);
+
+        return interface_exists($interface)
+            && $this->implementsInterface($interface);
     }
 
     /**

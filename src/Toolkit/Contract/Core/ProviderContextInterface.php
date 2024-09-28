@@ -33,6 +33,21 @@ interface ProviderContextInterface extends
     public function withContainer(ContainerInterface $container);
 
     /**
+     * Get the entity type applied to the context
+     *
+     * @return class-string<TEntity>|null
+     */
+    public function getEntityType(): ?string;
+
+    /**
+     * Get an instance with the given entity type
+     *
+     * @param class-string<TEntity> $entityType
+     * @return static
+     */
+    public function withEntityType(string $entityType);
+
+    /**
      * Get the array key conformity applied to the context
      *
      * @return ListConformity::*

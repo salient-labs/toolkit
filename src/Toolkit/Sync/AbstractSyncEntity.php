@@ -679,9 +679,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             : $provider->getContainer();
         $container = $container->inContextOf(get_class($provider));
 
-        $context = $context
-            ? $context->withContainer($container)
-            : $provider->getContext($container);
+        $context = ($context ?? $provider->getContext())->withContainer($container);
 
         $closure = SyncIntrospector::getService(
             $container, static::class
@@ -733,17 +731,16 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             return $nameOrId;
         }
 
-        $entity =
-            $provider
-                ->with(static::class, $context)
-                ->getResolver(
-                    $nameProperty,
-                    Algorithm::SAME | Algorithm::CONTAINS | Algorithm::NGRAM_SIMILARITY | Flag::NORMALISE,
-                    $uncertaintyThreshold,
-                    null,
-                    true,
-                )
-                ->getByName((string) $nameOrId, $uncertainty);
+        $entity = $provider
+            ->with(static::class, $context)
+            ->getResolver(
+                $nameProperty,
+                Algorithm::SAME | Algorithm::CONTAINS | Algorithm::NGRAM_SIMILARITY | Flag::NORMALISE,
+                $uncertaintyThreshold,
+                null,
+                true,
+            )
+            ->getByName((string) $nameOrId, $uncertainty);
 
         if ($entity) {
             return $entity->Id;
@@ -819,19 +816,19 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
             : $provider->getContainer();
         $container = $container->inContextOf(get_class($provider));
 
-        $context = $context
-            ? $context->withContainer($container)
-            : $provider->getContext($container);
-        $context = $context->withConformity($conformity);
+        $conformity = $context
+            ? max($context->getConformity(), $conformity)
+            : $conformity;
+
+        $context = ($context ?? $provider->getContext())->withContainer($container);
 
         $introspector = SyncIntrospector::getService($container, static::class);
 
         foreach ($list as $key => $data) {
             if (!isset($closure)) {
-                $closure =
-                    in_array($conformity, [ListConformity::PARTIAL, ListConformity::COMPLETE])
-                        ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
-                        : $introspector->getCreateSyncEntityFromClosure();
+                $closure = $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
+                    ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
+                    : $introspector->getCreateSyncEntityFromClosure();
             }
 
             yield $key => $closure($data, $provider, $context);

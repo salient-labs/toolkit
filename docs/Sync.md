@@ -68,7 +68,7 @@ arguments may be accepted after mandatory parameters.
     Recommended when the singular and plural forms of a class name are the same.
     Method names must match the entity's unqualified name.
 
-[^3]: See [`withArgs()`][withArgs] for recognised signatures.
+[^3]: See [`withOperation()`][withOperation] for recognised signatures.
 
 #### Contexts
 
@@ -76,19 +76,22 @@ Sync operations are performed within an immutable [context][] created by the
 [provider][] and replaced as needed to reflect changes to configuration and
 state. Contents include:
 
-| Description            | Getter(s)                                   | Setter(s)                    | Notes                                                      |
-| ---------------------- | ------------------------------------------- | ---------------------------- | ---------------------------------------------------------- |
-| Provider               | `getProvider()`                             | -                            |                                                            |
-| Service container      | `getContainer()`                            | `withContainer()`            |                                                            |
-| Array key conformity   | `getConformity()`                           | `withConformity()`           |                                                            |
-| Entities               | `getEntities()`, `getLastEntity()`          | `pushEntity()`               | Tracks nested entity scope. See `recursionDetected()`.     |
-| Parent entity          | `getParent()`                               | `withParent()`               | [`Treeable`][treeable] entities only.                      |
-| Arbitrary values       | `hasValue()`, `getValue()`                  | `withValue()`                |                                                            |
-| Filter values          | `hasFilter()`,`getFilter()`, `getFilters()` | `withArgs()`                 | Derived from non-mandatory arguments. See `claimFilter()`. |
-| Filter policy callback | `applyFilterPolicy()`                       | `withFilterPolicyCallback()` |                                                            |
-| Deferral policy        | `getDeferralPolicy()`                       | `withDeferralPolicy()`       | Applies to nested entity retrieval.                        |
-| Hydration policy       | `getHydrationPolicy()`                      | `withHydrationPolicy()`      | Applies to entity relationship retrieval.                  |
-| Offline mode           | `getOffline()`                              | `withOffline()`              |                                                            |
+| Description            | Getter(s)                                   | Setter(s)               | Notes                                                      |
+| ---------------------- | ------------------------------------------- | ----------------------- | ---------------------------------------------------------- |
+| _Provider_             | `getProvider()`                             | -                       |                                                            |
+| _Service container_    | `getContainer()`                            | `withContainer()`       |                                                            |
+| _Entity type_          | `getEntityType()`                           | `withEntityType()`      |                                                            |
+| _Array key conformity_ | `getConformity()`                           | `withConformity()`      |                                                            |
+| _Entities_             | `getEntities()`, `getLastEntity()`          | `pushEntity()`          | Tracks nested entity scope. See `recursionDetected()`.     |
+| _Parent entity_        | `getParent()`                               | `withParent()`          | [`Treeable`][treeable] entities only.                      |
+| _Arbitrary values_     | `hasValue()`, `getValue()`                  | `withValue()`           |                                                            |
+| Operation              | `hasOperation()`, `getOperation()`          | `withOperation()`       | `withOperation()` also sets entity type.                   |
+| Filters                | `hasFilter()`,`getFilter()`, `getFilters()` | `withOperation()`       | Derived from non-mandatory arguments. See `claimFilter()`. |
+| Deferral policy        | `getDeferralPolicy()`                       | `withDeferralPolicy()`  | Applies to nested entity retrieval.                        |
+| Hydration policy       | `getHydrationPolicy()`                      | `withHydrationPolicy()` | Applies to entity relationship retrieval.                  |
+| Offline mode           | `getOffline()`                              | `withOffline()`         |                                                            |
+
+(Italicised entries are inherited from `ProviderContextInterface`.)
 
 [context]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html
@@ -108,5 +111,5 @@ state. Contents include:
   ../tests/fixtures/Toolkit/Sync/SyncNamespaceHelper.php
 [treeable]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Core.Treeable.html
-[withArgs]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withArgs
+[withOperation]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withOperation
