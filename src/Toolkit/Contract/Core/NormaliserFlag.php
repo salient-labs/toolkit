@@ -2,6 +2,9 @@
 
 namespace Salient\Contract\Core;
 
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\NormaliserFactory;
+
 /**
  * Normaliser flags
  *

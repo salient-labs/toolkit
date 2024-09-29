@@ -4,7 +4,7 @@ namespace Salient\Core\Concern;
 
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\Constructible;
+use Salient\Contract\Core\Entity\Constructible;
 use Salient\Contract\Core\ListConformity;
 use Salient\Core\Introspector;
 use Generator;

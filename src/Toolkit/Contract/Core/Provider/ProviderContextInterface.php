@@ -4,9 +4,9 @@ namespace Salient\Contract\Core\Provider;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
+use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\ListConformity;
-use Salient\Contract\Core\Treeable;
 
 /**
  * @api

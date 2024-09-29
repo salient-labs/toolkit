@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Core\Entity;
+
+use Salient\Contract\Core\HierarchyInterface;
 
 /**
  * Has a parent and children of the same type and can be traversed towards them

@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Core\Normalisable;
-use Salient\Contract\Core\NormaliserFactory;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\NormaliserFactory;
 use Salient\Utility\Str;
 use Closure;
 

@@ -2,7 +2,7 @@
 
 namespace Salient\Db;
 
-use Salient\Contract\Core\Readable;
+use Salient\Contract\Core\Entity\Readable;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Utility\Env;
 use Salient\Utility\Format;

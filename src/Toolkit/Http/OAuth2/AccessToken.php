@@ -2,8 +2,8 @@
 
 namespace Salient\Http\OAuth2;
 
+use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Core\Readable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Utility\Date;

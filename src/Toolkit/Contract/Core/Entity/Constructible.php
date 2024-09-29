@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Core\Entity;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\ListConformity;
 
 /**
  * @api

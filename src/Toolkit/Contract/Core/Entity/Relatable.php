@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Core\Entity;
 
 /**
  * Has one-to-one and one-to-many relationships with other classes implementing

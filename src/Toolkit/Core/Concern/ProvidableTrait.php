@@ -2,10 +2,10 @@
 
 namespace Salient\Core\Concern;
 
+use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
-use Salient\Contract\Core\Extensible;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Core\Introspector;

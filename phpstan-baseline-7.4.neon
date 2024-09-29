@@ -41,7 +41,7 @@ parameters:
 			path: src/Toolkit/Core/ArrayMapper.php
 
 		-
-			message: "#^Argument of an invalid type array\\<string, array\\<int, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Relatable\\>\\>\\>\\|false supplied for foreach, only iterables are supported\\.$#"
+			message: "#^Argument of an invalid type array\\<string, array\\<int, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Entity\\\\Relatable\\>\\>\\>\\|false supplied for foreach, only iterables are supported\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
 
@@ -81,12 +81,12 @@ parameters:
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$OneToManyRelationships \\(array\\<string, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Relatable\\>\\>\\) does not accept array\\<string, class\\-string\\<object\\>\\>\\.$#"
+			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$OneToManyRelationships \\(array\\<string, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Entity\\\\Relatable\\>\\>\\) does not accept array\\<string, class\\-string\\<object\\>\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$OneToOneRelationships \\(array\\<string, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Relatable\\>\\>\\) does not accept array\\<string, class\\-string\\<object\\>\\>\\.$#"
+			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$OneToOneRelationships \\(array\\<string, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Entity\\\\Relatable\\>\\>\\) does not accept array\\<string, class\\-string\\<object\\>\\>\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
 
@@ -411,12 +411,12 @@ parameters:
 			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$list of static method Salient\\\\Contract\\\\Core\\\\Constructible\\:\\:constructList\\(\\) expects iterable\\<int, array\\>, array\\<int, mixed\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$list of static method Salient\\\\Contract\\\\Core\\\\Entity\\\\Constructible\\:\\:constructList\\(\\) expects iterable\\<int, array\\>, array\\<int, mixed\\> given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
 
 		-
-			message: "#^Parameter \\#2 \\$conformity of static method Salient\\\\Contract\\\\Core\\\\Constructible\\:\\:constructList\\(\\) expects 0\\|1\\|2, 0\\|1\\|2\\|null given\\.$#"
+			message: "#^Parameter \\#2 \\$conformity of static method Salient\\\\Contract\\\\Core\\\\Entity\\\\Constructible\\:\\:constructList\\(\\) expects 0\\|1\\|2, 0\\|1\\|2\\|null given\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
 

@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core\Provider;
 
-use Salient\Contract\Core\EntityInterface;
+use Salient\Contract\Core\Entity\EntityInterface;
 
 /**
  * A generic entity serviced by a provider

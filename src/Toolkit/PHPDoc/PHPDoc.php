@@ -2,7 +2,7 @@
 
 namespace Salient\PHPDoc;
 
-use Salient\Contract\Core\Readable;
+use Salient\Contract\Core\Entity\Readable;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\Tag\AbstractTag;

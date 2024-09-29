@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Core\Treeable;
+use Salient\Contract\Core\Entity\Treeable;
 use Salient\Core\Introspector;
 use LogicException;
 

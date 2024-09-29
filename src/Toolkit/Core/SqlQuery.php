@@ -2,8 +2,8 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Chainable;
-use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
 use LogicException;

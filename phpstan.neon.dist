@@ -19,7 +19,7 @@ parameters:
 		- tests/stubs/ADOConnection.stub
 		- tests/stubs/ADORecordSet.stub
 	universalObjectCratesClasses:
-		- Salient\Contract\Core\Extensible
+		- Salient\Contract\Core\Entity\Extensible
 	ignoreErrors:
 		-
 			identifier: salient.needless.coalesce

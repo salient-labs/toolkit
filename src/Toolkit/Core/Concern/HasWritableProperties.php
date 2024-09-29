@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Core\Writable;
+use Salient\Contract\Core\Entity\Writable;
 use Salient\Core\Introspector;
 
 /**

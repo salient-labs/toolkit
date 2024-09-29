@@ -2,17 +2,17 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\NormaliserFactory;
+use Salient\Contract\Core\Entity\Readable;
+use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\Temporal;
+use Salient\Contract\Core\Entity\Treeable;
+use Salient\Contract\Core\Entity\Writable;
 use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\Cardinality;
-use Salient\Contract\Core\Extensible;
-use Salient\Contract\Core\Normalisable;
-use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\Readable;
-use Salient\Contract\Core\Relatable;
-use Salient\Contract\Core\Temporal;
-use Salient\Contract\Core\Treeable;
-use Salient\Contract\Core\Writable;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;

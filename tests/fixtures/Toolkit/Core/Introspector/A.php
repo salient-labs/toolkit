@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Core\Introspector;
 
-use Salient\Contract\Core\Extensible;
-use Salient\Contract\Core\Normalisable;
-use Salient\Contract\Core\NormaliserFactory;
-use Salient\Contract\Core\Readable;
-use Salient\Contract\Core\Writable;
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\NormaliserFactory;
+use Salient\Contract\Core\Entity\Readable;
+use Salient\Contract\Core\Entity\Writable;
 use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasWritableProperties;

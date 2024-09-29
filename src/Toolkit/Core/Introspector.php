@@ -3,18 +3,18 @@
 namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\NormaliserFactory;
+use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\Extensible;
 use Salient\Contract\Core\HasName;
-use Salient\Contract\Core\Normalisable;
-use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\SerializeRulesInterface;
-use Salient\Contract\Core\Treeable;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Closure;
