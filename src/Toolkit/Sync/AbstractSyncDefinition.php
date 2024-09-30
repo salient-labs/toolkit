@@ -4,7 +4,7 @@ namespace Salient\Sync;
 
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Iterator\FluentIteratorInterface;
@@ -44,7 +44,7 @@ use LogicException;
  * @property-read array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $Overrides Array that maps sync operations to closures that override other implementations
  * @phpstan-property-read array<OP::*,OverrideClosure> $Overrides
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap Array that maps keys to properties for entity data returned by the provider
- * @property-read int-mask-of<ArrayMapperFlag::*> $KeyMapFlags Array mapper flags used if a key map is provided
+ * @property-read int-mask-of<ArrayMapperInterface::*> $KeyMapFlags Array mapper flags used if a key map is provided
  * @property-read PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $PipelineFromBackend Pipeline that maps provider data to a serialized entity, or `null` if mapping is not required
  * @property-read PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $PipelineToBackend Pipeline that maps a serialized entity to provider data, or `null` if mapping is not required
  * @property-read bool $ReadFromList Perform READ operations by iterating over entities returned by READ_LIST
@@ -166,7 +166,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * Array mapper flags used if a key map is provided
      *
-     * @var int-mask-of<ArrayMapperFlag::*>
+     * @var int-mask-of<ArrayMapperInterface::*>
      */
     protected int $KeyMapFlags;
 
@@ -220,7 +220,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @param array<int-mask-of<OP::*>,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -233,7 +233,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
-        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
+        int $keyMapFlags = ArrayMapperInterface::ADD_UNMAPPED,
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
         bool $readFromList = false,
@@ -325,7 +325,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * Get an instance where the given array mapper flags are used if a key map
      * is provided
      *
-     * @param int-mask-of<ArrayMapperFlag::*> $flags
+     * @param int-mask-of<ArrayMapperInterface::*> $flags
      * @return static
      */
     final public function withKeyMapFlags(int $flags)

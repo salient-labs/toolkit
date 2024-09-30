@@ -6,7 +6,7 @@ use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
@@ -245,7 +245,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -269,7 +269,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         bool $syncOneEntityPerRequest = false,
         array $overrides = [],
         ?array $keyMap = null,
-        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
+        int $keyMapFlags = ArrayMapperInterface::ADD_UNMAPPED,
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
         bool $readFromList = false,

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\ListConformity;
 use Salient\Core\ArrayMapper;
 use Salient\Tests\TestCase;
@@ -22,14 +22,14 @@ final class ArrayMapperTest extends TestCase
      * @param array<array-key,array-key|array-key[]> $keyMap
      * @param array<string,mixed> $in
      * @param ListConformity::* $conformity
-     * @param int-mask-of<ArrayMapperFlag::*> $flags
+     * @param int-mask-of<ArrayMapperInterface::*> $flags
      */
     public function testMap(
         $expected,
         array $keyMap,
         array $in,
         $conformity = ListConformity::NONE,
-        int $flags = ArrayMapperFlag::ADD_UNMAPPED
+        int $flags = ArrayMapperInterface::ADD_UNMAPPED
     ): void {
         $mapper = new ArrayMapper($keyMap, $conformity, $flags);
 
@@ -49,7 +49,7 @@ final class ArrayMapperTest extends TestCase
     }
 
     /**
-     * @return array<string,array{array<string,mixed>|class-string<Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:ListConformity::*,4?:int-mask-of<ArrayMapperFlag::*>}>
+     * @return array<string,array{array<string,mixed>|class-string<Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:ListConformity::*,4?:int-mask-of<ArrayMapperInterface::*>}>
      */
     public static function mapProvider(): array
     {
@@ -92,7 +92,7 @@ final class ArrayMapperTest extends TestCase
                 $map,
                 $in,
                 ListConformity::NONE,
-                ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING,
+                ArrayMapperInterface::ADD_UNMAPPED | ArrayMapperInterface::ADD_MISSING,
             ],
             'add unmapped + ignore missing + keep null' => [
                 [
@@ -106,7 +106,7 @@ final class ArrayMapperTest extends TestCase
                 $map,
                 $in,
                 ListConformity::NONE,
-                ArrayMapperFlag::ADD_UNMAPPED,
+                ArrayMapperInterface::ADD_UNMAPPED,
             ],
             'add unmapped + ignore missing + remove null' => [
                 [
@@ -117,7 +117,7 @@ final class ArrayMapperTest extends TestCase
                 $map,
                 $in,
                 ListConformity::NONE,
-                ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL,
+                ArrayMapperInterface::ADD_UNMAPPED | ArrayMapperInterface::REMOVE_NULL,
             ],
             'ignore unmapped + add missing + keep null' => [
                 [
@@ -130,7 +130,7 @@ final class ArrayMapperTest extends TestCase
                 $map,
                 $in,
                 ListConformity::NONE,
-                ArrayMapperFlag::ADD_MISSING,
+                ArrayMapperInterface::ADD_MISSING,
             ],
             'ignore unmapped + ignore missing + keep null' => [
                 [
@@ -152,7 +152,7 @@ final class ArrayMapperTest extends TestCase
                 $map,
                 $in,
                 ListConformity::NONE,
-                ArrayMapperFlag::REMOVE_NULL,
+                ArrayMapperInterface::REMOVE_NULL,
             ],
             'ignore unmapped + require mapped + keep null' => [
                 [
@@ -167,7 +167,7 @@ final class ArrayMapperTest extends TestCase
                     'MAIL' => null,
                 ],
                 ListConformity::NONE,
-                ArrayMapperFlag::REQUIRE_MAPPED,
+                ArrayMapperInterface::REQUIRE_MAPPED,
             ],
             'ignore unmapped + require mapped + remove null' => [
                 [
@@ -181,7 +181,7 @@ final class ArrayMapperTest extends TestCase
                     'MAIL' => null,
                 ],
                 ListConformity::NONE,
-                ArrayMapperFlag::REQUIRE_MAPPED | ArrayMapperFlag::REMOVE_NULL,
+                ArrayMapperInterface::REQUIRE_MAPPED | ArrayMapperInterface::REMOVE_NULL,
             ],
             'require mapped + missing input key' => [
                 InvalidArgumentException::class,
@@ -191,7 +191,7 @@ final class ArrayMapperTest extends TestCase
                     'FULL_NAME' => 'Greta',
                 ],
                 ListConformity::NONE,
-                ArrayMapperFlag::REQUIRE_MAPPED,
+                ArrayMapperInterface::REQUIRE_MAPPED,
             ],
             'complete conformity + ignore unmapped + ignore missing + keep null #1' => [
                 [
@@ -251,7 +251,7 @@ final class ArrayMapperTest extends TestCase
                     'MAIL' => null,
                 ],
                 ListConformity::COMPLETE,
-                ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL,
+                ArrayMapperInterface::ADD_UNMAPPED | ArrayMapperInterface::REMOVE_NULL,
             ],
             'complete conformity + extra input key' => [
                 null,

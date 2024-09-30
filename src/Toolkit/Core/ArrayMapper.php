@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\ListConformity;
 use Salient\Utility\Arr;
 use InvalidArgumentException;
@@ -50,19 +50,19 @@ final class ArrayMapper
      * - preserves unmapped values (input values for which there are no maps)
      * - keeps `null` values in the output array
      *
-     * Provide a bitmask of {@see ArrayMapperFlag} values to modify this
+     * Provide a bitmask of {@see ArrayMapperInterface} values to modify this
      * behaviour.
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
      * input keys to one or more output keys.
      * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
      * wherever possible to improve performance.
-     * @param int-mask-of<ArrayMapperFlag::*> $flags
+     * @param int-mask-of<ArrayMapperInterface::*> $flags
      */
     public function __construct(
         array $keyMap,
         $conformity = ListConformity::NONE,
-        int $flags = ArrayMapperFlag::ADD_UNMAPPED
+        int $flags = ArrayMapperInterface::ADD_UNMAPPED
     ) {
         foreach ($keyMap as $inKey => $outKey) {
             foreach ((array) $outKey as $outKey) {
@@ -70,7 +70,7 @@ final class ArrayMapper
             }
         }
 
-        $this->RemoveNull = (bool) ($flags & ArrayMapperFlag::REMOVE_NULL);
+        $this->RemoveNull = (bool) ($flags & ArrayMapperInterface::REMOVE_NULL);
 
         if (
             count($keyMap) === count($this->OutputMap)
@@ -81,9 +81,9 @@ final class ArrayMapper
         }
 
         $this->KeyMap = $keyMap;
-        $this->AddUnmapped = (bool) ($flags & ArrayMapperFlag::ADD_UNMAPPED);
-        $this->AddMissing = (bool) ($flags & ArrayMapperFlag::ADD_MISSING);
-        $this->RequireMapped = (bool) ($flags & ArrayMapperFlag::REQUIRE_MAPPED);
+        $this->AddUnmapped = (bool) ($flags & ArrayMapperInterface::ADD_UNMAPPED);
+        $this->AddMissing = (bool) ($flags & ArrayMapperInterface::ADD_MISSING);
+        $this->RequireMapped = (bool) ($flags & ArrayMapperInterface::REQUIRE_MAPPED);
     }
 
     /**

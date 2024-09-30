@@ -3,7 +3,7 @@
 namespace Salient\Tests\Core;
 
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\ListConformity;
 use Salient\Core\Pipeline;
 use Salient\Tests\TestCase;
@@ -138,19 +138,19 @@ final class PipelineTest extends TestCase
         }
 
         $pipeline = Pipeline::create()
-            ->throughKeyMap($map, ArrayMapperFlag::ADD_MISSING);
+            ->throughKeyMap($map, ArrayMapperInterface::ADD_MISSING);
         foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()
-            ->throughKeyMap($map, ArrayMapperFlag::ADD_UNMAPPED);
+            ->throughKeyMap($map, ArrayMapperInterface::ADD_UNMAPPED);
         foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()
-            ->throughKeyMap($map, ArrayMapperFlag::REMOVE_NULL);
+            ->throughKeyMap($map, ArrayMapperInterface::REMOVE_NULL);
         foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
@@ -158,9 +158,9 @@ final class PipelineTest extends TestCase
         $pipeline = Pipeline::create()
             ->throughKeyMap(
                 $map,
-                ArrayMapperFlag::ADD_MISSING
-                    | ArrayMapperFlag::ADD_UNMAPPED
-                    | ArrayMapperFlag::REMOVE_NULL
+                ArrayMapperInterface::ADD_MISSING
+                    | ArrayMapperInterface::ADD_UNMAPPED
+                    | ArrayMapperInterface::REMOVE_NULL
             );
         foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
@@ -172,7 +172,7 @@ final class PipelineTest extends TestCase
             'MAIL' => ['Email', 'UPN'],
         ];
         $pipeline = Pipeline::create()
-            ->throughKeyMap($mapToMultiple, ArrayMapperFlag::ADD_MISSING);
+            ->throughKeyMap($mapToMultiple, ArrayMapperInterface::ADD_MISSING);
         foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
@@ -205,7 +205,7 @@ final class PipelineTest extends TestCase
         ], $out);
 
         $pipeline = Pipeline::create()
-            ->throughKeyMap($map, ArrayMapperFlag::REQUIRE_MAPPED);
+            ->throughKeyMap($map, ArrayMapperInterface::REQUIRE_MAPPED);
         $this->expectException(InvalidArgumentException::class);
         foreach ($in as $_in) {
             $pipeline->send($_in)->run();

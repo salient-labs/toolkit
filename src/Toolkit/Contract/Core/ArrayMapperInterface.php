@@ -5,7 +5,7 @@ namespace Salient\Contract\Core;
 /**
  * Array mapper flags
  */
-interface ArrayMapperFlag
+interface ArrayMapperInterface
 {
     /**
      * Remove null values from the output array
