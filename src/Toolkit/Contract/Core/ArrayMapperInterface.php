@@ -3,7 +3,7 @@
 namespace Salient\Contract\Core;
 
 /**
- * Array mapper flags
+ * @api
  */
 interface ArrayMapperInterface
 {
@@ -20,16 +20,24 @@ interface ArrayMapperInterface
     /**
      * Add missing values to the output array
      *
-     * If applied, `null` is added to the output array if the input array has no
-     * data for a given map.
+     * `null` is added to the output array if the input array has no data for a
+     * given map.
      */
     public const ADD_MISSING = 4;
 
     /**
      * Throw an exception if there are missing values
      *
-     * If applied and the input array has no data for a given map, an
-     * `UnexpectedValueException` is thrown.
+     * An {@InvalidArgumentException} is thrown if the input array has no data
+     * for a given map.
      */
     public const REQUIRE_MAPPED = 8;
+
+    /**
+     * Map an input array to an output array
+     *
+     * @param mixed[] $in
+     * @return mixed[]
+     */
+    public function map(array $in): array;
 }

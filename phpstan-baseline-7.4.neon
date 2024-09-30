@@ -36,11 +36,6 @@ parameters:
 			path: src/Toolkit/Console/ConsoleWriter.php
 
 		-
-			message: "#^Property Salient\\\\Core\\\\ArrayMapper\\:\\:\\$KeyMap \\(array\\<\\(int\\|string\\)\\>\\) does not accept array\\<array\\<\\(int\\|string\\)\\>\\|int\\|string\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/ArrayMapper.php
-
-		-
 			message: "#^Argument of an invalid type array\\<string, array\\<int, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Entity\\\\Relatable\\>\\>\\>\\|false supplied for foreach, only iterables are supported\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php

@@ -7,7 +7,6 @@ use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipeInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
-use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasMutator;
@@ -48,7 +47,7 @@ final class Pipeline implements
     private ?Closure $After = null;
     /** @var array<(Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>>> */
     private array $Pipes = [];
-    /** @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapperInterface::*>}> */
+    /** @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapper::*>}> */
     private array $KeyMaps = [];
     /** @var ArrayMapper[] */
     private array $ArrayMappers;
@@ -197,7 +196,7 @@ final class Pipeline implements
     /**
      * @inheritDoc
      */
-    public function throughKeyMap(array $keyMap, int $flags = ArrayMapperInterface::ADD_UNMAPPED)
+    public function throughKeyMap(array $keyMap, int $flags = ArrayMapper::ADD_UNMAPPED)
     {
         $keyMapKey = count($this->KeyMaps);
         $clone = $this->through(

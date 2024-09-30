@@ -36,11 +36,6 @@ parameters:
 			path: src/Toolkit/Console/Target/StreamTarget.php
 
 		-
-			message: "#^Property Salient\\\\Core\\\\ArrayMapper\\:\\:\\$KeyMap \\(array\\<\\(int\\|string\\)\\>\\) does not accept array\\<array\\<\\(int\\|string\\)\\>\\|int\\|string\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Core/ArrayMapper.php
-
-		-
 			message: "#^Parameter \\#1 \\$callback of static method Closure\\:\\:fromCallable\\(\\) expects callable\\(\\)\\: mixed, array\\{class\\-string\\<TClass of object\\>, 'normalise'\\} given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/IntrospectionClass.php
