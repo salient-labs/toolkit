@@ -51,7 +51,7 @@ parameters:
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Parameter \\#1 \\$arr1 of function array_merge expects array, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$arr1 of function array_merge expects array, array\\<string\\>\\|false given\\.$#"
 			count: 2
 			path: src/Toolkit/Core/IntrospectionClass.php
 
@@ -251,7 +251,7 @@ parameters:
 			path: src/Toolkit/Sli/TokenExtractor.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:getMetaProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
+			message: "#^Method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:getDynamicProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
 			count: 1
 			path: src/Toolkit/Sync/AbstractSyncEntity.php
 
@@ -381,7 +381,7 @@ parameters:
 			path: tests/fixtures/Toolkit/Core/AbstractFacade/MyHasFacadeClass.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Introspector\\\\A\\:\\:getMetaProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
+			message: "#^Method Salient\\\\Tests\\\\Core\\\\Introspector\\\\A\\:\\:getDynamicProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
 			count: 1
 			path: tests/fixtures/Toolkit/Core/Introspector/A.php
 
@@ -401,7 +401,7 @@ parameters:
 			path: tests/unit/Toolkit/Cache/CacheStoreTest.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Concern\\\\ConstructibleTrait\\\\D\\:\\:getMetaProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
+			message: "#^Method Salient\\\\Tests\\\\Core\\\\Concern\\\\ConstructibleTrait\\\\D\\:\\:getDynamicProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
 

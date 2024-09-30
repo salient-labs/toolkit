@@ -3,70 +3,62 @@
 namespace Salient\Contract\Core\Entity;
 
 /**
- * Reads and writes arbitrary undeclared properties
+ * @api
  */
 interface Extensible
 {
     /**
-     * Set the value of an undeclared property
+     * Get the property that stores dynamic properties
      *
-     * @param mixed $value
+     * The property returned must accept `array<string,mixed>` or
+     * `\ArrayAccess<string,mixed>`.
      */
-    public function setMetaProperty(string $name, $value): void;
+    public static function getDynamicPropertiesProperty(): string;
 
     /**
-     * Get the value of an undeclared property
+     * Get the property that stores dynamic property names
      *
-     * @return mixed `null` if the undeclared property is not set.
+     * The property returned must accept `array<string,string>` or
+     * `\ArrayAccess<string,string>`.
      */
-    public function getMetaProperty(string $name);
+    public static function getDynamicPropertyNamesProperty(): string;
 
     /**
-     * True if an undeclared property is set
-     */
-    public function isMetaPropertySet(string $name): bool;
-
-    /**
-     * Unset an undeclared property
-     */
-    public function unsetMetaProperty(string $name): void;
-
-    /**
-     * Get an array that maps the object's undeclared property names to their
-     * current values
+     * Get the object's dynamic properties
      *
-     * @return array<string,mixed>
+     * @return array<string,mixed> An array that maps property names to values.
      */
-    public function getMetaProperties(): array;
+    public function getDynamicProperties(): array;
 
     /**
-     * Unset the object's undeclared properties
+     * Set the object's dynamic properties
      *
-     * @return $this
+     * @param array<string,mixed> $values An array that maps property names to
+     * values.
      */
-    public function clearMetaProperties();
+    public function setDynamicProperties(array $values): void;
 
     /**
-     * Set the value of an undeclared property
+     * Set the value of a property
      *
      * @param mixed $value
      */
     public function __set(string $name, $value): void;
 
     /**
-     * Get the value of an undeclared property
+     * Get the value of a property, or null if it is not set
      *
-     * @return mixed `null` if the undeclared property is not set.
+     * @return mixed
      */
     public function __get(string $name);
 
     /**
-     * True if an undeclared property is set
+     * Check if a property is set
      */
     public function __isset(string $name): bool;
 
     /**
-     * Unset an undeclared property
+     * Unset a property
      */
     public function __unset(string $name): void;
 }

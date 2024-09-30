@@ -2,29 +2,24 @@
 
 namespace Salient\Contract\Core\Entity;
 
-use Salient\Contract\Core\HierarchyInterface;
+use Salient\Contract\Core\Hierarchical;
 
 /**
- * Has a parent and children of the same type and can be traversed towards them
- * via public properties
- *
- * The properties need not be declared if the class uses property overloading.
+ * @api
  */
-interface Treeable extends HierarchyInterface, Relatable
+interface Treeable extends Hierarchical, Relatable
 {
     /**
-     * Get the name of the property that links the object to a parent of the
-     * same type
+     * Get the property that links children to a parent of the same type
      *
-     * The property should accept values of type `static|null`.
+     * The property returned must accept `static|null`.
      */
     public static function getParentProperty(): string;
 
     /**
-     * Get the name of the property that links the object to children of the
-     * same type
+     * Get the property that links a parent to children of the same type
      *
-     * The property should accept values of type `iterable<static>`.
+     * The property returned must accept `iterable<static>`.
      */
     public static function getChildrenProperty(): string;
 }

@@ -11,7 +11,6 @@ use Salient\Contract\Core\Entity\Temporal;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Entity\Writable;
 use Salient\Contract\Core\Provider\Providable;
-use Salient\Contract\Core\Cardinality;
 use Salient\Contract\Core\NormaliserFlag;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
@@ -136,6 +135,16 @@ class IntrospectionClass
      * @var array<string,string>
      */
     public $WritableProperties = [];
+
+    /**
+     * Set if the class implements Extensible
+     */
+    public string $DynamicPropertiesProperty;
+
+    /**
+     * Set if the class implements Extensible
+     */
+    public string $DynamicPropertyNamesProperty;
 
     /**
      * Action => normalised property name => "magic" property method
@@ -423,7 +432,8 @@ class IntrospectionClass
                 : $this->Properties;
 
         if ($this->IsReadable) {
-            $readable = $class->getMethod('getReadableProperties')->invoke(null);
+            /** @var class-string<Readable> $className */
+            $readable = $className::getReadableProperties();
             $readable = array_merge(
                 ['*'] === $readable
                     ? $this->Properties
@@ -434,7 +444,8 @@ class IntrospectionClass
         }
 
         if ($this->IsWritable) {
-            $writable = $class->getMethod('getWritableProperties')->invoke(null);
+            /** @var class-string<Writable> $className */
+            $writable = $className::getWritableProperties();
             $writable = array_merge(
                 ['*'] === $writable
                     ? $this->Properties
@@ -442,6 +453,12 @@ class IntrospectionClass
                 $this->PublicProperties
             );
             $this->WritableProperties = array_intersect($this->Properties, $writable);
+        }
+
+        if ($this->IsExtensible) {
+            /** @var class-string<Extensible> $className */
+            $this->DynamicPropertiesProperty = $className::getDynamicPropertiesProperty();
+            $this->DynamicPropertyNamesProperty = $className::getDynamicPropertyNamesProperty();
         }
 
         // Get "magic" property methods, e.g. _get<Property>()
@@ -542,8 +559,8 @@ class IntrospectionClass
             );
 
         if ($this->IsRelatable) {
-            /** @var array<string,array<Cardinality::*,class-string<Relatable>>> */
-            $relationships = $class->getMethod('getRelationships')->invoke(null);
+            /** @var class-string<Relatable> $className */
+            $relationships = $className::getRelationships();
             $relationships = array_combine(
                 $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
                 $relationships
@@ -566,10 +583,10 @@ class IntrospectionClass
                     ? $childrenClass->getName()
                     : $parentClass->getName();
 
-                /** @var string[] */
+                /** @var class-string<Treeable> $className */
                 $treeable = [
-                    $parentMethod->invoke(null),
-                    $childrenMethod->invoke(null),
+                    $className::getParentProperty(),
+                    $className::getChildrenProperty(),
                 ];
 
                 $treeable = array_unique($this->maybeNormalise(
@@ -599,11 +616,11 @@ class IntrospectionClass
                     continue;
                 }
                 switch ($type) {
-                    case Cardinality::ONE_TO_ONE:
+                    case Relatable::ONE_TO_ONE:
                         $this->OneToOneRelationships[$property] = $target;
                         break;
 
-                    case Cardinality::ONE_TO_MANY:
+                    case Relatable::ONE_TO_MANY:
                         $this->OneToManyRelationships[$property] = $target;
                         break;
                 }
@@ -611,8 +628,8 @@ class IntrospectionClass
         }
 
         if ($this->HasDates) {
-            /** @var string[] */
-            $dates = $class->getMethod('getDateProperties')->invoke(null);
+            /** @var class-string<Temporal> $className */
+            $dates = $className::getDateProperties();
 
             $nativeDates = [];
             foreach ($properties as $property) {

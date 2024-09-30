@@ -93,7 +93,7 @@ trait ProvidableTrait
      * The constructor (if any) is invoked with values from `$data`. If `$data`
      * values remain, they are assigned to writable properties. If further
      * values remain and the class implements {@see Extensible}, they are
-     * assigned via {@see Extensible::setMetaProperty()}.
+     * assigned to dynamic properties.
      *
      * `$data` keys, constructor parameters and writable properties are
      * normalised for comparison.

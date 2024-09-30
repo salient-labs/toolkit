@@ -3,28 +3,28 @@
 namespace Salient\Contract\Core\Entity;
 
 /**
- * Reads private, protected or undeclared properties
+ * @api
  */
 interface Readable
 {
     /**
-     * Get a list of readable properties
+     * Get readable properties
      *
-     * `["*"]` expands to all `protected` properties.
+     * If `["*"]` is returned, all `protected` properties are readable.
      *
      * @return string[]
      */
     public static function getReadableProperties(): array;
 
     /**
-     * Get the value of a property
+     * Get the value of a property, or null if it is not set
      *
-     * @return mixed `null` if the property is not set.
+     * @return mixed
      */
     public function __get(string $name);
 
     /**
-     * True if a property is set
+     * Check if a property is set
      */
     public function __isset(string $name): bool;
 }

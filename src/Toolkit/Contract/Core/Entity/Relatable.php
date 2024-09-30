@@ -3,29 +3,17 @@
 namespace Salient\Contract\Core\Entity;
 
 /**
- * Has one-to-one and one-to-many relationships with other classes implementing
- * the same interface
+ * @api
  */
 interface Relatable
 {
+    public const ONE_TO_ONE = 0;
+    public const ONE_TO_MANY = 1;
+
     /**
-     * Get an array that maps property names to relationships
+     * Get an array that maps properties to relationships
      *
-     * Example:
-     *
-     * ```php
-     * <?php
-     * public static function getRelationships(): array
-     * {
-     *     return [
-     *         'CreatedBy' => [Cardinality::ONE_TO_ONE => User::class],
-     *         'Tags' => [Cardinality::ONE_TO_MANY => Tag::class],
-     *     ];
-     * }
-     * ```
-     *
-     * @return array<string,array<Cardinality::*,class-string<Relatable>>>
-     * Property name => relationship type => target class
+     * @return array<string,array<Relatable::*,class-string<Relatable>>>
      */
     public static function getRelationships(): array;
 }

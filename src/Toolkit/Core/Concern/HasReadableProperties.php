@@ -37,12 +37,12 @@ trait HasReadableProperties
     /**
      * @return mixed
      */
-    final public function __get(string $name)
+    public function __get(string $name)
     {
         return $this->getProperty('get', $name);
     }
 
-    final public function __isset(string $name): bool
+    public function __isset(string $name): bool
     {
         return (bool) $this->getProperty('isset', $name);
     }

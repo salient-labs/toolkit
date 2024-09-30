@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Sync\Entity;
 
-use Salient\Contract\Core\Cardinality;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\AbstractSyncEntity;
 
@@ -30,7 +29,7 @@ class Comment extends AbstractSyncEntity
     public static function getRelationships(): array
     {
         return [
-            'Post' => [Cardinality::ONE_TO_ONE => Post::class],
+            'Post' => [self::ONE_TO_ONE => Post::class],
         ];
     }
 }

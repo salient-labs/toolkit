@@ -37,12 +37,12 @@ trait HasWritableProperties
     /**
      * @param mixed $value
      */
-    final public function __set(string $name, $value): void
+    public function __set(string $name, $value): void
     {
         $this->setProperty('set', $name, $value);
     }
 
-    final public function __unset(string $name): void
+    public function __unset(string $name): void
     {
         $this->setProperty('unset', $name);
     }

@@ -3,14 +3,14 @@
 namespace Salient\Contract\Core\Entity;
 
 /**
- * Writes private, protected or undeclared properties
+ * @api
  */
 interface Writable
 {
     /**
-     * Get a list of writable properties
+     * Get writable properties
      *
-     * `["*"]` expands to all `protected` properties.
+     * If `["*"]` is returned, all `protected` properties are writable.
      *
      * @return string[]
      */

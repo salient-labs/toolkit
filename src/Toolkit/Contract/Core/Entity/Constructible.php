@@ -16,8 +16,7 @@ interface Constructible
      * If the class has a constructor, values are passed from `$data` to its
      * parameters. If values remain, they are assigned to writable properties.
      * If further values remain and the class implements {@see Extensible}, they
-     * are assigned via {@see Extensible::setMetaProperty()}, otherwise an
-     * exception is thrown.
+     * are assigned to dynamic properties, otherwise an exception is thrown.
      *
      * Array keys, constructor parameters and property names are normalised for
      * comparison if the class implements {@see Normalisable} or

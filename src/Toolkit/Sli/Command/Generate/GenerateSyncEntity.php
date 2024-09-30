@@ -7,7 +7,6 @@ use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Contract\Core\Cardinality;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Concern\TreeableTrait;
 use Salient\Core\DateFormatter;
@@ -445,7 +444,6 @@ EOF)
         if ($relationships) {
             // Sort relationships by the position of their respective properties
             $relationships = array_replace(array_intersect_key($properties, $relationships), $relationships);
-            $cardinalityAlias = $this->getFqcnAlias(Cardinality::class);
         }
 
         $docBlock = [];
@@ -497,9 +495,8 @@ EOF;
             $lines = [];
             foreach ($relationships as $property => $type) {
                 $lines[] = sprintf(
-                    "'%s' => [%s::%s => %s::class],",
+                    "'%s' => [self::%s => %s::class],",
                     $property,
-                    $cardinalityAlias,
                     isset($oneToMany[$property]) ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
                     $type,
                 );

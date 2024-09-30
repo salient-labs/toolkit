@@ -16,7 +16,12 @@ class A implements Readable, Writable, Extensible, Normalisable, NormaliserFacto
 {
     use ReadsProtectedProperties;
     use HasWritableProperties;
-    use ExtensibleTrait;
+    use ExtensibleTrait {
+        ExtensibleTrait::__set insteadof HasWritableProperties;
+        ExtensibleTrait::__get insteadof ReadsProtectedProperties;
+        ExtensibleTrait::__isset insteadof ReadsProtectedProperties;
+        ExtensibleTrait::__unset insteadof HasWritableProperties;
+    }
     use HasNormaliser;
 
     /**

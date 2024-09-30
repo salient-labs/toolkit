@@ -5,7 +5,7 @@ namespace Salient\Contract\Core;
 /**
  * @api
  */
-interface HierarchyInterface
+interface Hierarchical
 {
     /**
      * Get the parent of the object
@@ -26,11 +26,11 @@ interface HierarchyInterface
      *
      * - `$child->setParent($parent)` is equivalent to
      *   `$parent->addChild($child)`
-     * - `$child->setParent(null)` has the same effect as
+     * - `$child->setParent(null)` is equivalent to
      *   `$parent->removeChild($child)`
      *
      * @param static|null $parent
-     * @return $this
+     * @return static
      */
     public function setParent($parent);
 
@@ -40,7 +40,7 @@ interface HierarchyInterface
      * Equivalent to `$child->setParent($parent)`.
      *
      * @param static $child
-     * @return $this
+     * @return static
      */
     public function addChild($child);
 
@@ -50,20 +50,17 @@ interface HierarchyInterface
      * Equivalent to `$child->setParent(null)`.
      *
      * @param static $child
-     * @return $this
+     * @return static
      */
     public function removeChild($child);
 
     /**
-     * Get the object's distance from the top of the hierarchy it belongs to
-     *
-     * Returns `0` if the object has no parent, `1` if its parent has no parent,
-     * and so on.
+     * Get the length of the path to the object's root node
      */
     public function getDepth(): int;
 
     /**
      * Get the number of objects descended from the object
      */
-    public function getDescendantCount(): int;
+    public function countDescendants(): int;
 }

@@ -78,7 +78,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     use ConstructibleTrait;
     use HasReadableProperties;
     use HasWritableProperties;
-    use ExtensibleTrait;
+    use ExtensibleTrait {
+        ExtensibleTrait::__set insteadof HasWritableProperties;
+        ExtensibleTrait::__get insteadof HasReadableProperties;
+        ExtensibleTrait::__isset insteadof HasReadableProperties;
+        ExtensibleTrait::__unset insteadof HasWritableProperties;
+    }
     /** @use ProvidableTrait<SyncProviderInterface,SyncContextInterface> */
     use ProvidableTrait;
     use HasNormaliser;

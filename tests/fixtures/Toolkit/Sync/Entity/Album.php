@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Sync\Entity;
 
-use Salient\Contract\Core\Cardinality;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\Support\DeferredRelationship;
 use Salient\Sync\AbstractSyncEntity;
@@ -29,8 +28,8 @@ class Album extends AbstractSyncEntity
     public static function getRelationships(): array
     {
         return [
-            'User' => [Cardinality::ONE_TO_ONE => User::class],
-            'Photos' => [Cardinality::ONE_TO_MANY => Photo::class],
+            'User' => [self::ONE_TO_ONE => User::class],
+            'Photos' => [self::ONE_TO_MANY => Photo::class],
         ];
     }
 }

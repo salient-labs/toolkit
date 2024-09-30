@@ -2,15 +2,18 @@
 
 namespace Salient\Contract\Core\Entity;
 
+use DateTimeInterface;
+
 /**
- * Has declared or undeclared properties that accept date and time values
+ * @api
  */
 interface Temporal
 {
     /**
      * Get properties that accept date and time values
      *
-     * Return `["*"]` to detect date and time values automatically.
+     * If `["*"]` is returned, a {@see DateTimeInterface} instance may be
+     * applied to any accessible property.
      *
      * @return string[]
      */
