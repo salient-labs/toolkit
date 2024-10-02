@@ -7,6 +7,7 @@ use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasUnderlyingService;
 use Salient\Core\Facade\App;
@@ -19,7 +20,7 @@ use LogicException;
  *
  * @api
  *
- * @template TService of object
+ * @template TService of Instantiable
  *
  * @implements FacadeInterface<TService>
  */

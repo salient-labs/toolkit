@@ -2,71 +2,69 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Core\Extensible;
-use Salient\Core\Introspector as IS;
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Core\Internal\ReadPropertyTrait;
+use Salient\Core\Internal\WritePropertyTrait;
+use Salient\Utility\Arr;
 
 /**
  * Implements Extensible to store arbitrary property values
  *
  * @see Extensible
+ *
+ * @phpstan-require-implements Extensible
  */
 trait ExtensibleTrait
 {
+    use ReadPropertyTrait;
+    use WritePropertyTrait;
+
     /**
      * Normalised property name => value
      *
      * @var array<string,mixed>
      */
-    private $MetaProperties = [];
+    protected $MetaProperties = [];
 
     /**
-     * Normalised property name => first name passed to setMetaProperty
+     * Normalised property name => first name passed to __set
      *
      * @var array<string,string>
      */
-    private $MetaPropertyNames = [];
+    protected $MetaPropertyNames = [];
 
-    final public function clearMetaProperties()
+    /**
+     * @inheritDoc
+     */
+    public static function getDynamicPropertiesProperty(): string
+    {
+        return 'MetaProperties';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getDynamicPropertyNamesProperty(): string
+    {
+        return 'MetaPropertyNames';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function setDynamicProperties(array $values): void
     {
         $this->MetaProperties = [];
         $this->MetaPropertyNames = [];
 
-        return $this;
-    }
-
-    /**
-     * @param mixed $value
-     */
-    final public function setMetaProperty(string $name, $value): void
-    {
-        $normalised = IS::get(static::class)->maybeNormalise($name);
-        $this->MetaProperties[$normalised] = $value;
-        if (!array_key_exists($normalised, $this->MetaPropertyNames)) {
-            $this->MetaPropertyNames[$normalised] = $name;
+        foreach ($values as $name => $value) {
+            $this->__set($name, $value);
         }
     }
 
-    /**
-     * @return mixed
-     */
-    final public function getMetaProperty(string $name)
+    final public function getDynamicProperties(): array
     {
-        return $this->MetaProperties[IS::get(static::class)->maybeNormalise($name)] ?? null;
-    }
-
-    final public function isMetaPropertySet(string $name): bool
-    {
-        return isset($this->MetaProperties[IS::get(static::class)->maybeNormalise($name)]);
-    }
-
-    final public function unsetMetaProperty(string $name): void
-    {
-        unset($this->MetaProperties[IS::get(static::class)->maybeNormalise($name)]);
-    }
-
-    final public function getMetaProperties(): array
-    {
-        return array_combine(
+        return Arr::combine(
             array_map(
                 fn(string $name): string => $this->MetaPropertyNames[$name],
                 array_keys($this->MetaProperties)

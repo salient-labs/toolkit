@@ -2,11 +2,12 @@
 
 namespace Salient\Contract\Core;
 
+use Salient\Contract\Core\Entity\Normalisable;
+
 /**
  * Normaliser flags
  *
  * @see Normalisable::normalise()
- * @see NormaliserFactory::getNormaliser()
  */
 interface NormaliserFlag
 {

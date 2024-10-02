@@ -6,6 +6,7 @@ use Salient\Contract\Core\Jsonable;
 use ArrayAccess;
 use OutOfRangeException;
 use Stringable;
+use ValueError;
 
 /**
  * Work with arrays and iterables
@@ -25,18 +26,18 @@ final class Arr extends AbstractUtility
      * Get values from a list of arrays using dot notation
      *
      * @param iterable<mixed[]> $array
-     * @return ($keyKey is null ? list<mixed> : mixed[])
+     * @return ($key is null ? list<mixed> : mixed[])
      */
-    public static function pluck(iterable $array, string $valueKey, ?string $keyKey = null): array
+    public static function pluck(iterable $array, string $value, ?string $key = null): array
     {
         foreach ($array as $item) {
-            $value = self::get($item, $valueKey);
-            if ($keyKey === null) {
-                $plucked[] = $value;
+            $itemValue = self::get($item, $value, null);
+            if ($key === null) {
+                $plucked[] = $itemValue;
                 continue;
             }
-            $key = self::get($item, $keyKey);
-            $plucked[$key] = $value;
+            $itemKey = self::get($item, $key);
+            $plucked[$itemKey] = $itemValue;
         }
         return $plucked ?? [];
     }
@@ -58,10 +59,7 @@ final class Arr extends AbstractUtility
                 continue;
             }
             if (func_num_args() < 3) {
-                throw new OutOfRangeException(sprintf(
-                    'Array key not found: %s',
-                    $key,
-                ));
+                throw new OutOfRangeException(sprintf('Value not found: %s', $key));
             }
             return $default;
         }
@@ -94,10 +92,7 @@ final class Arr extends AbstractUtility
      */
     public static function first(array $array)
     {
-        if ($array === []) {
-            return null;
-        }
-        return reset($array);
+        return $array ? reset($array) : null;
     }
 
     /**
@@ -110,10 +105,7 @@ final class Arr extends AbstractUtility
      */
     public static function last(array $array)
     {
-        if ($array === []) {
-            return null;
-        }
-        return end($array);
+        return $array ? end($array) : null;
     }
 
     /**
@@ -135,6 +127,45 @@ final class Arr extends AbstractUtility
         }
         /** @var TKey */
         return $key;
+    }
+
+    /**
+     * Get the key of a value in an array, or null if it is not found
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TValue $value
+     * @return TKey|null
+     */
+    public static function search(array $array, $value)
+    {
+        $key = array_search($value, $array, true);
+        return $key === false
+            ? null
+            : $key;
+    }
+
+    /**
+     * Get an array comprised of the given keys and values
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param TKey[] $keys
+     * @param TValue[] $values
+     * @return array<TKey,TValue>
+     */
+    public static function combine(array $keys, array $values): array
+    {
+        $array = @array_combine($keys, $values);
+        if ($array === false) {
+            throw new ValueError(
+                error_get_last()['message'] ?? 'array_combine() failed',
+            );
+        }
+        return $array;
     }
 
     /**
@@ -795,6 +826,7 @@ final class Arr extends AbstractUtility
      * @param TKey $key
      * @param TKey $newKey
      * @return array<TKey,TValue>
+     * @throws OutOfRangeException if `$key` is not found in `$array`.
      */
     public static function rename(array $array, $key, $newKey): array
     {
@@ -846,6 +878,7 @@ final class Arr extends AbstractUtility
      * @param array<TKey,TValue>|null $replaced
      * @param-out array<TKey,TValue> $replaced
      * @return array<TKey,TValue>
+     * @throws OutOfRangeException if `$key` is not found in `$array`.
      */
     public static function spliceByKey(
         array $array,
@@ -863,11 +896,11 @@ final class Arr extends AbstractUtility
         if ($length === null) {
             $length = count($array);
         }
-        $replaced = array_combine(
+        $replaced = self::combine(
             array_splice($keys, $offset, $length, array_keys($replacement)),
             array_splice($array, $offset, $length, $replacement),
         );
-        return array_combine($keys, $array);
+        return self::combine($keys, $array);
     }
 
     /**

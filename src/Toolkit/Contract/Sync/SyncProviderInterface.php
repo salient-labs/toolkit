@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
+use Closure;
 
 /**
  * Base interface for providers that sync entities to and from third-party
@@ -16,7 +16,7 @@ interface SyncProviderInterface extends ProviderInterface
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): SyncContextInterface;
+    public function getContext(): SyncContextInterface;
 
     /**
      * Get the provider ID assigned to the backend instance by its entity store
@@ -63,4 +63,26 @@ interface SyncProviderInterface extends ProviderInterface
      * @return SyncEntityProviderInterface<T>
      */
     public function with(string $entity, ?SyncContextInterface $context = null): SyncEntityProviderInterface;
+
+    /**
+     * Perform a sync operation after validating its context
+     *
+     * @template T
+     * @template TOutput of iterable<T>|T
+     *
+     * @param Closure(): TOutput $operation
+     * @return TOutput
+     */
+    public function runOperation(SyncContextInterface $context, Closure $operation);
+
+    /**
+     * Filter the output of a sync operation if required by its context
+     *
+     * @template T of SyncEntityInterface
+     * @template TOutput of iterable<T>|T
+     *
+     * @param TOutput $output
+     * @return TOutput
+     */
+    public function filterOperationOutput(SyncContextInterface $context, $output);
 }

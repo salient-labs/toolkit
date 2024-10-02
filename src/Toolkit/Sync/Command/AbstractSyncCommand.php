@@ -12,7 +12,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Console;
 use Salient\Sync\Http\HttpSyncProvider;
-use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Get;
@@ -82,9 +82,9 @@ abstract class AbstractSyncCommand extends CliCommand
                 continue;
             }
 
-            $introspector = SyncIntrospector::get($provider);
-            $entityBasenames = $introspector->getSyncProviderEntityBasenames();
-            foreach ($entityBasenames as $entityKey => $entity) {
+            $basenames = (new ReflectionSyncProvider($provider))
+                ->getSyncProviderEntityTypeBasenames();
+            foreach ($basenames as $entityKey => $entity) {
                 if (array_key_exists($entityKey, $entities) && (
                     $entities[$entityKey] === null
                     || $entities[$entityKey] !== $entity
@@ -114,7 +114,7 @@ abstract class AbstractSyncCommand extends CliCommand
                     }
                 }
                 $providers[$provider] = $provider;
-                if ($entityBasenames) {
+                if ($basenames) {
                     $entityProviders[$provider] = $provider;
                 }
                 if (is_a($provider, HttpSyncProvider::class, true)) {
@@ -124,7 +124,7 @@ abstract class AbstractSyncCommand extends CliCommand
             }
 
             $providers[$providerKey] = $provider;
-            if ($entityBasenames) {
+            if ($basenames) {
                 $entityProviders[$providerKey] = $provider;
             }
             if (is_a($provider, HttpSyncProvider::class, true)) {

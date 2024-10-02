@@ -4,6 +4,7 @@ namespace Salient\Tests\Utility;
 
 use Salient\Tests\TestCase;
 use Salient\Utility\Exception\PcreErrorException;
+use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -272,7 +273,7 @@ final class RegexTest extends TestCase
                 $start = (int) hexdec($match[1]);
                 $end = (int) hexdec($match[2] ?? $match[1]);
                 $range = range($start, $end);
-                $codepoints += array_combine($range, $range);
+                $codepoints += Arr::combine($range, $range);
             }
             File::close($stream, $file);
         }

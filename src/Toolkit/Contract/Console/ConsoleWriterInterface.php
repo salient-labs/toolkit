@@ -5,11 +5,12 @@ namespace Salient\Contract\Console;
 use Psr\Log\LoggerInterface;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Throwable;
 
-interface ConsoleWriterInterface
+interface ConsoleWriterInterface extends Instantiable
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the

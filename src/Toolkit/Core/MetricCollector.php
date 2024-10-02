@@ -2,6 +2,7 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Metric;
 use Salient\Utility\Reflect;
 use LogicException;
@@ -9,7 +10,7 @@ use LogicException;
 /**
  * Collects runtime performance metrics
  */
-final class MetricCollector
+final class MetricCollector implements Instantiable
 {
     /**
      * Group => name => metric
@@ -48,6 +49,11 @@ final class MetricCollector
 
     /** @var array<array{array<string,array<string,Metric::*>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}> */
     private array $Stack = [];
+
+    /**
+     * Creates a new MetricCollector object
+     */
+    public function __construct() {}
 
     /**
      * Increment a counter and return its value

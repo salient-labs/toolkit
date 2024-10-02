@@ -17,7 +17,7 @@ final class SyncPipelineArgument
      * @readonly
      * @var SyncOperation::*
      */
-    public $Operation;
+    public int $Operation;
 
     /** @readonly */
     public SyncContextInterface $Context;
@@ -52,7 +52,7 @@ final class SyncPipelineArgument
      * by reference for CREATE_LIST, UPDATE_LIST and DELETE_LIST operations.
      */
     public function __construct(
-        $operation,
+        int $operation,
         SyncContextInterface $context,
         array $args,
         $id = null,

@@ -2,8 +2,8 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
 use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\DeferredEntityInterface;
@@ -843,7 +843,7 @@ SQL;
         // deferred
         $context = $entity->getContext();
         if ($context) {
-            $last = $context->last();
+            $last = $context->getLastEntity();
             if ($last) {
                 $context = $last->getContext();
             }
@@ -897,7 +897,7 @@ SQL;
         // created
         $context = $relationship->getContext();
         if ($context) {
-            $last = $context->last();
+            $last = $context->getLastEntity();
             if ($last) {
                 $context = $last->getContext();
             }

@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Core\Treeable;
+use Salient\Contract\Core\Entity\Treeable;
 use Salient\Core\Introspector;
 use LogicException;
 
@@ -156,18 +156,18 @@ trait TreeableTrait
         return $depth;
     }
 
-    final public function getDescendantCount(): int
+    final public function countDescendants(): int
     {
         if (!isset(self::$ChildrenProperties[static::class])) {
             static::loadHierarchyProperties();
         }
 
-        return $this->countDescendants(
+        return $this->doCountDescendants(
             self::$ChildrenProperties[static::class]
         );
     }
 
-    private function countDescendants(string $_children): int
+    private function doCountDescendants(string $_children): int
     {
         /** @var static[] */
         $children = $this->{$_children} ?? [];
@@ -178,7 +178,7 @@ trait TreeableTrait
 
         $count = 0;
         foreach ($children as $child) {
-            $count += 1 + $child->countDescendants($_children);
+            $count += 1 + $child->doCountDescendants($_children);
         }
 
         return $count;

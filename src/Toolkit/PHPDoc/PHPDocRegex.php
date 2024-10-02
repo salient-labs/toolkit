@@ -2,12 +2,10 @@
 
 namespace Salient\PHPDoc;
 
-use Salient\Contract\Core\DictionaryInterface;
-
 /**
- * @extends DictionaryInterface<string>
+ * @internal
  */
-interface PHPDocRegex extends DictionaryInterface
+interface PHPDocRegex
 {
     /**
      * A valid PHP DocBlock, i.e. a DocComment containing a single PHPDoc

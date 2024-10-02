@@ -9,11 +9,11 @@ use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\Readable;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Facade\Console;
@@ -536,7 +536,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             $lower = Arr::lower($this->AllowedValues);
             if (count(Arr::unique($lower)) === count($this->AllowedValues)) {
                 $this->CaseSensitive = false;
-                $this->AllowedValues = array_combine($lower, $this->AllowedValues);
+                $this->AllowedValues = Arr::combine($lower, $this->AllowedValues);
             }
         }
 

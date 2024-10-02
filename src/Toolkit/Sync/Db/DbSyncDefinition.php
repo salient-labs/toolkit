@@ -3,7 +3,7 @@
 namespace Salient\Sync\Db;
 
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Sync\EntitySource;
@@ -50,7 +50,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -60,11 +60,11 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
         DbSyncProvider $provider,
         array $operations = [],
         ?string $table = null,
-        $conformity = ListConformity::PARTIAL,
+        int $conformity = ListConformity::PARTIAL,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
-        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
+        int $keyMapFlags = ArrayMapperInterface::ADD_UNMAPPED,
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
         bool $readFromList = false,
@@ -91,7 +91,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
     /**
      * @inheritDoc
      */
-    protected function getClosure($operation): ?Closure
+    protected function getClosure(int $operation): ?Closure
     {
         // Return null if no table name has been provided
         if ($this->Table === null) {

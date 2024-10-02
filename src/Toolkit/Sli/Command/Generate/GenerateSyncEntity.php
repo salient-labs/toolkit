@@ -6,8 +6,7 @@ use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
-use Salient\Contract\Core\Cardinality;
-use Salient\Contract\Core\Treeable;
+use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Concern\TreeableTrait;
 use Salient\Core\DateFormatter;
@@ -257,9 +256,7 @@ EOF)
             $method = $data !== null && $endpoint !== null
                 ? HttpRequestMethod::POST
                 : $this->HttpMethod;
-            $endpoint = $endpoint === null
-                ? '/' . Str::kebab($class)
-                : $endpoint;
+            $endpoint ??= '/' . Str::kebab($class);
 
             $curler = $provider->getCurler($endpoint);
             $entityUri = $provider->getEndpointUrl($endpoint);
@@ -288,15 +285,16 @@ EOF)
             }
         };
 
-        $entityClass::$Prefixes = $this->RemovablePrefixes ?: [$class];
         if ($this->RemovablePrefixes) {
+            $entityClass::$Prefixes = $this->RemovablePrefixes;
             $entityClass::$Expand = false;
+        } else {
+            $entityClass::$Prefixes = [$class];
         }
 
-        $normaliser = $entityClass::getNormaliser();
-        $normaliser =
-            fn(string $name): string =>
-                Str::pascal($normaliser($name));
+        $normaliser = static fn(string $name): string =>
+            Str::pascal($entityClass::normaliseProperty($name));
+        $entityClass::flushStatic();
 
         $skip = [];
         foreach ($this->SkipProperties as $property) {
@@ -344,7 +342,7 @@ EOF)
                 }
 
                 // Don't limit `Id` to one type
-                if (array_key_exists($key, $properties)) {
+                if (isset($properties[$key])) {
                     continue;
                 }
 
@@ -445,7 +443,6 @@ EOF)
         if ($relationships) {
             // Sort relationships by the position of their respective properties
             $relationships = array_replace(array_intersect_key($properties, $relationships), $relationships);
-            $cardinalityAlias = $this->getFqcnAlias(Cardinality::class);
         }
 
         $docBlock = [];
@@ -497,9 +494,8 @@ EOF;
             $lines = [];
             foreach ($relationships as $property => $type) {
                 $lines[] = sprintf(
-                    "'%s' => [%s::%s => %s::class],",
+                    "'%s' => [self::%s => %s::class],",
                     $property,
-                    $cardinalityAlias,
                     isset($oneToMany[$property]) ? 'ONE_TO_MANY' : 'ONE_TO_ONE',
                     $type,
                 );

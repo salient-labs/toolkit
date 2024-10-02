@@ -3,8 +3,8 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Core\Exception\MultipleErrorExceptionInterface;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\MultipleErrorExceptionInterface;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Format;

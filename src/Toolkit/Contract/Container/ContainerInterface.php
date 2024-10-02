@@ -4,6 +4,7 @@ namespace Salient\Contract\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Salient\Contract\Core\Chainable;
+use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
 
 /**
@@ -35,6 +36,7 @@ use Salient\Contract\Core\Unloadable;
 interface ContainerInterface extends
     PsrContainerInterface,
     Chainable,
+    Instantiable,
     Unloadable
 {
     /**

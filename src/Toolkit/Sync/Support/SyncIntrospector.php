@@ -3,19 +3,19 @@
 namespace Salient\Sync\Support;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\Treeable;
+use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\Providable;
-use Salient\Contract\Core\Relatable;
-use Salient\Contract\Core\Treeable;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Regex;
@@ -25,9 +25,6 @@ use LogicException;
 
 /**
  * Generates closures that perform sync-related operations on a class
- *
- * @property-read string $EntityNoun
- * @property-read string|null $EntityPlural Not set if the plural class name is the same as the singular one
  *
  * @template TClass of object
  *
@@ -42,114 +39,6 @@ final class SyncIntrospector extends Introspector
 
     /** @var SyncIntrospectionClass<TClass> */
     protected $_Class;
-
-    /**
-     * Check if a sync operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
-     * DELETE_LIST
-     *
-     * @param SyncOperation::* $operation
-     * @return ($operation is SyncOperation::*_LIST ? true : false)
-     */
-    public static function isListOperation($operation): bool
-    {
-        return [
-            SyncOperation::CREATE_LIST => true,
-            SyncOperation::READ_LIST => true,
-            SyncOperation::UPDATE_LIST => true,
-            SyncOperation::DELETE_LIST => true,
-        ][$operation] ?? false;
-    }
-
-    /**
-     * Check if a sync operation is READ or READ_LIST
-     *
-     * @param SyncOperation::* $operation
-     * @return ($operation is SyncOperation::READ* ? true : false)
-     */
-    public static function isReadOperation($operation): bool
-    {
-        return [
-            SyncOperation::READ => true,
-            SyncOperation::READ_LIST => true,
-        ][$operation] ?? false;
-    }
-
-    /**
-     * Check if a sync operation is CREATE, UPDATE, DELETE, CREATE_LIST,
-     * UPDATE_LIST or DELETE_LIST
-     *
-     * @param SyncOperation::* $operation
-     * @return ($operation is SyncOperation::READ* ? false : true)
-     */
-    public static function isWriteOperation($operation): bool
-    {
-        return [
-            SyncOperation::CREATE => true,
-            SyncOperation::UPDATE => true,
-            SyncOperation::DELETE => true,
-            SyncOperation::CREATE_LIST => true,
-            SyncOperation::UPDATE_LIST => true,
-            SyncOperation::DELETE_LIST => true,
-        ][$operation] ?? false;
-    }
-
-    /**
-     * Get the name of a sync entity's provider interface
-     *
-     * @param class-string<SyncEntityInterface> $entity
-     * @return class-string<SyncProviderInterface>
-     */
-    public static function getEntityProvider(string $entity, ?ContainerInterface $container = null): string
-    {
-        if (($store = self::maybeGetStore($container))
-                && ($helper = $store->getNamespaceHelper($entity))) {
-            return $helper->getEntityProvider($entity);
-        }
-
-        /** @var class-string<SyncProviderInterface> */
-        return sprintf(
-            '%s\Provider\%sProvider',
-            Get::namespace($entity),
-            Get::basename($entity)
-        );
-    }
-
-    /**
-     * Get the names of sync entities serviced by a provider interface
-     *
-     * @param class-string<SyncProviderInterface> $provider
-     * @return array<class-string<SyncEntityInterface>>
-     */
-    public static function getProviderEntities(string $provider, ?ContainerInterface $container = null): array
-    {
-        if (($store = self::maybeGetStore($container))
-                && ($helper = $store->getNamespaceHelper($provider))) {
-            return $helper->getProviderEntities($provider);
-        }
-
-        if (Regex::match(
-            '/^(?<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
-                . '(?<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
-            $provider,
-            $matches
-        )) {
-            /** @var array<class-string<SyncEntityInterface>> */
-            return [$matches['namespace'] . $matches['class']];
-        }
-
-        return [];
-    }
-
-    private static function maybeGetStore(?ContainerInterface $container = null): ?SyncStoreInterface
-    {
-        if ($container && $container->hasInstance(SyncStoreInterface::class)) {
-            return $container->get(SyncStoreInterface::class);
-        }
-        if (Sync::isLoaded()) {
-            return Sync::getInstance();
-        }
-        return null;
-    }
 
     /**
      * @template T of object
@@ -192,44 +81,6 @@ final class SyncIntrospector extends Introspector
     protected function getIntrospectionClass(string $class): SyncIntrospectionClass
     {
         return new SyncIntrospectionClass($class);
-    }
-
-    /**
-     * Get a list of SyncProviderInterface interfaces implemented by the
-     * provider
-     *
-     * @return array<class-string<SyncProviderInterface>>
-     */
-    public function getSyncProviderInterfaces(): array
-    {
-        $this->assertIsProvider();
-
-        return $this->_Class->SyncProviderInterfaces;
-    }
-
-    /**
-     * Get a list of SyncEntityInterface classes serviced by the provider
-     *
-     * @return array<class-string<SyncEntityInterface>>
-     */
-    public function getSyncProviderEntities(): array
-    {
-        $this->assertIsProvider();
-
-        return $this->_Class->SyncProviderEntities;
-    }
-
-    /**
-     * Get an array that maps unambiguous lowercase entity basenames to
-     * SyncEntityInterface classes serviced by the provider
-     *
-     * @return array<string,class-string<SyncEntityInterface>>
-     */
-    public function getSyncProviderEntityBasenames(): array
-    {
-        $this->assertIsProvider();
-
-        return $this->_Class->SyncProviderEntityBasenames;
     }
 
     /**
@@ -319,51 +170,6 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * Get the provider method that implements a sync operation for an entity
-     *
-     * Returns `null` if the provider doesn't implement the given operation via
-     * a declared method, otherwise creates a closure for the operation and
-     * binds it to `$provider`.
-     *
-     * @template T of SyncEntityInterface
-     *
-     * @param SyncOperation::* $operation
-     * @param class-string<T>|static<T> $entity
-     * @return (Closure(SyncContextInterface, mixed...): (iterable<T>|T))|null
-     * @throws LogicException if the {@see SyncIntrospector} and `$entity` don't
-     * respectively represent a {@see SyncProviderInterface} and
-     * {@see SyncEntityInterface}.
-     */
-    public function getDeclaredSyncOperationClosure($operation, $entity, SyncProviderInterface $provider): ?Closure
-    {
-        if (!$entity instanceof SyncIntrospector) {
-            $entity = static::get($entity);
-        }
-
-        $_entity = $entity->_Class;
-        $closure = $this->_Class->DeclaredSyncOperationClosures[$_entity->Class][$operation] ?? false;
-
-        // Use strict comparison with `false` because null closures are cached
-        if ($closure === false) {
-            $this->assertIsProvider();
-
-            if (!$_entity->IsSyncEntity) {
-                throw new LogicException(
-                    sprintf('%s does not implement %s', $_entity->Class, SyncEntityInterface::class)
-                );
-            }
-
-            $method = $this->getSyncOperationMethod($operation, $entity);
-            if ($method) {
-                $closure = fn(...$args) => $this->$method(...$args);
-            }
-            $this->_Class->DeclaredSyncOperationClosures[$_entity->Class][$operation] = $closure ?: null;
-        }
-
-        return $closure ? $closure->bindTo($provider) : null;
-    }
-
-    /**
      * Get a closure to perform sync operations on behalf of a provider's
      * "magic" method
      *
@@ -387,7 +193,10 @@ final class SyncIntrospector extends Introspector
         $closure = $this->_Class->MagicSyncOperationClosures[$method] ?? false;
         // Use strict comparison with `false` because null closures are cached
         if ($closure === false) {
-            $operation = $this->_Class->SyncOperationMagicMethods[$method] ?? null;
+            /** @var class-string<SyncProviderInterface> */
+            $class = $this->_Class->Class;
+            $operation = (new ReflectionSyncProvider($class))
+                ->getSyncOperationMagicMethods()[$method] ?? null;
             if ($operation) {
                 $entity = $operation[1];
                 $operation = $operation[0];
@@ -519,10 +328,9 @@ final class SyncIntrospector extends Introspector
         array $keyClosures = []
     ): IntrospectorKeyTargets {
         /** @var array<string,string> Normalised key => original key */
-        $keys =
-            $this->_Class->Normaliser
-                ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
-                : array_combine($keys, $keys);
+        $keys = $this->_Class->Normaliser
+            ? Arr::combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+            : Arr::combine($keys, $keys);
 
         foreach ([
             self::ID_KEY => self::ID_PROPERTY,
@@ -534,10 +342,9 @@ final class SyncIntrospector extends Introspector
             }
 
             if ($key === self::ID_KEY) {
-                $property =
-                    $this->_Class->Normaliser
-                        ? ($this->_Class->CarefulNormaliser)($property)
-                        : $property;
+                $property = $this->_Class->Normaliser
+                    ? ($this->_Class->CarefulNormaliser)($property)
+                    : $property;
             }
 
             // If receiving values for this property, add the relevant key to
@@ -650,10 +457,9 @@ final class SyncIntrospector extends Introspector
                 continue;
             }
 
-            $match =
-                $this->_Class->Normaliser
-                    ? ($this->_Class->CarefulNormaliser)($matches[1])
-                    : $matches[1];
+            $match = $this->_Class->Normaliser
+                ? ($this->_Class->CarefulNormaliser)($matches[1])
+                : $matches[1];
 
             // Don't use the same key twice
             if (isset($keys[$match]) || isset($keyClosures[$match])) {
@@ -768,7 +574,7 @@ final class SyncIntrospector extends Introspector
                         if (!$isChildren) {
                             DeferredEntity::deferList(
                                 $provider,
-                                $context->pushWithRecursionCheck($entity),
+                                $context->pushEntity($entity, true),
                                 $relationship,
                                 $data[$key],
                                 $entity->{$property},
@@ -780,7 +586,7 @@ final class SyncIntrospector extends Introspector
                         /** @disregard P1008 */
                         DeferredEntity::deferList(
                             $provider,
-                            $context->pushWithRecursionCheck($entity),
+                            $context->pushEntity($entity, true),
                             $relationship,
                             $data[$key],
                             $replace,
@@ -793,11 +599,11 @@ final class SyncIntrospector extends Introspector
                     }
 
                     $entities =
-                        $relationship::provideList(
+                        $relationship::provideMultiple(
                             $data[$key],
                             $provider,
                             $context->getConformity(),
-                            $context->push($entity),
+                            $context->pushEntity($entity),
                         )->toArray();
 
                     if (!$isChildren) {
@@ -817,7 +623,7 @@ final class SyncIntrospector extends Introspector
                     if (!$isParent) {
                         DeferredEntity::defer(
                             $provider,
-                            $context->pushWithRecursionCheck($entity),
+                            $context->pushEntity($entity, true),
                             $relationship,
                             $data[$key],
                             $entity->{$property},
@@ -829,7 +635,7 @@ final class SyncIntrospector extends Introspector
                     /** @disregard P1008 */
                     DeferredEntity::defer(
                         $provider,
-                        $context->pushWithRecursionCheck($entity),
+                        $context->pushEntity($entity, true),
                         $relationship,
                         $data[$key],
                         $replace,
@@ -845,7 +651,7 @@ final class SyncIntrospector extends Introspector
                     $relationship::provide(
                         $data[$key],
                         $provider,
-                        $context->push($entity),
+                        $context->pushEntity($entity),
                     );
 
                 if (!$isParent) {
@@ -873,7 +679,7 @@ final class SyncIntrospector extends Introspector
         bool $isChildren
     ): Closure {
         $entityType = $this->_Class->Class;
-        $entityProvider = self::getEntityProvider($relationship);
+        $entityProvider = null;
 
         return
             static function (
@@ -889,12 +695,12 @@ final class SyncIntrospector extends Introspector
                 $filter,
                 $isChildren,
                 $entityType,
-                $entityProvider
+                &$entityProvider
             ): void {
                 if (
                     !$context instanceof SyncContextInterface
                     || !$provider instanceof SyncProviderInterface
-                    || !is_a($provider, $entityProvider)
+                    || !is_a($provider, $entityProvider ??= SyncUtil::getEntityTypeProvider($relationship, SyncUtil::getStore($context->getContainer())))
                     || $data[$idKey] === null
                 ) {
                     return;
@@ -912,7 +718,7 @@ final class SyncIntrospector extends Introspector
                 if (!$isChildren) {
                     DeferredRelationship::defer(
                         $provider,
-                        $context->pushWithRecursionCheck($entity),
+                        $context->pushEntity($entity, true),
                         $relationship,
                         $service ?? $entityType,
                         $property,
@@ -927,7 +733,7 @@ final class SyncIntrospector extends Introspector
                 /** @disregard P1008 */
                 DeferredRelationship::defer(
                     $provider,
-                    $context->pushWithRecursionCheck($entity),
+                    $context->pushEntity($entity, true),
                     $relationship,
                     $service ?? $entityType,
                     $property,
@@ -946,98 +752,5 @@ final class SyncIntrospector extends Introspector
                     },
                 );
             };
-    }
-
-    /**
-     * @param SyncOperation::* $operation
-     * @param static<SyncEntityInterface> $entity
-     */
-    private function getSyncOperationMethod($operation, SyncIntrospector $entity): ?string
-    {
-        $_entity = $entity->_Class;
-        $noun = Str::lower($_entity->EntityNoun);
-        $methods = [];
-
-        if ($_entity->EntityPlural !== null) {
-            $plural = Str::lower($_entity->EntityPlural);
-            switch ($operation) {
-                case SyncOperation::CREATE_LIST:
-                    $methods[] = 'create' . $plural;
-                    break;
-
-                case SyncOperation::READ_LIST:
-                    $methods[] = 'get' . $plural;
-                    break;
-
-                case SyncOperation::UPDATE_LIST:
-                    $methods[] = 'update' . $plural;
-                    break;
-
-                case SyncOperation::DELETE_LIST:
-                    $methods[] = 'delete' . $plural;
-                    break;
-            }
-        }
-
-        switch ($operation) {
-            case SyncOperation::CREATE:
-                $methods[] = 'create' . $noun;
-                $methods[] = 'create_' . $noun;
-                break;
-
-            case SyncOperation::READ:
-                $methods[] = 'get' . $noun;
-                $methods[] = 'get_' . $noun;
-                break;
-
-            case SyncOperation::UPDATE:
-                $methods[] = 'update' . $noun;
-                $methods[] = 'update_' . $noun;
-                break;
-
-            case SyncOperation::DELETE:
-                $methods[] = 'delete' . $noun;
-                $methods[] = 'delete_' . $noun;
-                break;
-
-            case SyncOperation::CREATE_LIST:
-                $methods[] = 'createlist_' . $noun;
-                break;
-
-            case SyncOperation::READ_LIST:
-                $methods[] = 'getlist_' . $noun;
-                break;
-
-            case SyncOperation::UPDATE_LIST:
-                $methods[] = 'updatelist_' . $noun;
-                break;
-
-            case SyncOperation::DELETE_LIST:
-                $methods[] = 'deletelist_' . $noun;
-                break;
-        }
-
-        $methods = array_intersect_key(
-            $this->_Class->SyncOperationMethods,
-            array_flip($methods)
-        );
-
-        if (count($methods) > 1) {
-            throw new LogicException(sprintf(
-                'Too many implementations: %s',
-                implode(', ', $methods),
-            ));
-        }
-
-        return reset($methods) ?: null;
-    }
-
-    private function assertIsProvider(): void
-    {
-        if (!$this->_Class->IsSyncProvider) {
-            throw new LogicException(
-                sprintf('%s does not implement %s', $this->_Class->Class, SyncProviderInterface::class)
-            );
-        }
     }
 }

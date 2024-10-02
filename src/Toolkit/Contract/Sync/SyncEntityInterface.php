@@ -3,10 +3,10 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Provider\ProvidableEntityInterface;
 use Salient\Contract\Core\HasId;
 use Salient\Contract\Core\HasName;
-use Salient\Contract\Core\ProvidableEntityInterface;
-use Salient\Contract\Core\Relatable;
 use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
 use JsonSerializable;
 
@@ -42,11 +42,11 @@ interface SyncEntityInterface extends
     public static function getSerializeRules(): SyncSerializeRulesInterface;
 
     /**
-     * Get the plural form of the entity's unqualified name
+     * Get the plural form of the entity's short name
      *
-     * If this method returns a value other than `null`, an empty string, or the
-     * unqualified name of the entity, it may be used to identify provider
-     * methods that implement sync operations on the entity.
+     * If this method returns a value other than `null` or the unqualified name
+     * of the entity, it may be used to identify provider methods that implement
+     * sync operations on the entity.
      *
      * For example, if `Faculty::getPlural()` returns `null`, a provider may
      * implement `Faculty` sync operations via one or more of the following:

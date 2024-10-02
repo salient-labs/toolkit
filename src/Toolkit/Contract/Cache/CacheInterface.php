@@ -3,6 +3,7 @@
 namespace Salient\Contract\Cache;
 
 use Psr\SimpleCache\CacheInterface as PsrCacheInterface;
+use Salient\Contract\Core\Instantiable;
 use DateInterval;
 use DateTimeInterface;
 use LogicException;
@@ -10,7 +11,7 @@ use LogicException;
 /**
  * @api
  */
-interface CacheInterface extends PsrCacheInterface
+interface CacheInterface extends PsrCacheInterface, Instantiable
 {
     /**
      * Store an item under a given key

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core\Introspector;
 
-use Salient\Contract\Core\Constructible;
+use Salient\Contract\Core\Entity\Constructible;
 use Salient\Core\Concern\ConstructibleTrait;
 use DateTimeImmutable;
 

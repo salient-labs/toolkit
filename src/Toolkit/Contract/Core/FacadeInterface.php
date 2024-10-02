@@ -9,12 +9,12 @@ use LogicException;
  *
  * @api
  *
- * @template TService of object
+ * @template TService of Instantiable
  */
 interface FacadeInterface
 {
     /**
-     * True if the facade's underlying instance is loaded
+     * Check if the facade's underlying instance is loaded
      */
     public static function isLoaded(): bool;
 

@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Core\HasProvider;
+use Salient\Contract\Core\Provider\HasProvider;
 use Salient\Contract\Core\TextComparisonAlgorithm;
 use Salient\Contract\Core\TextComparisonFlag;
 use Salient\Contract\Iterator\FluentIteratorInterface;
@@ -38,7 +38,7 @@ interface SyncEntityProviderInterface extends HasProvider
      *     : TEntity
      * )
      */
-    public function run($operation, ...$args);
+    public function run(int $operation, ...$args);
 
     /**
      * Add an entity to the backend
@@ -121,7 +121,7 @@ interface SyncEntityProviderInterface extends HasProvider
      * @param mixed ...$args
      * @return array<TEntity>
      */
-    public function runA($operation, ...$args): array;
+    public function runA(int $operation, ...$args): array;
 
     /**
      * Add a list of entities to the backend and return an array

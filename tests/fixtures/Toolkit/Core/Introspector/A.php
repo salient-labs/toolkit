@@ -2,21 +2,25 @@
 
 namespace Salient\Tests\Core\Introspector;
 
-use Salient\Contract\Core\Extensible;
-use Salient\Contract\Core\Normalisable;
-use Salient\Contract\Core\NormaliserFactory;
-use Salient\Contract\Core\Readable;
-use Salient\Contract\Core\Writable;
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\Readable;
+use Salient\Contract\Core\Entity\Writable;
 use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;
 use Salient\Core\Concern\HasWritableProperties;
 use Salient\Core\Concern\ReadsProtectedProperties;
 
-class A implements Readable, Writable, Extensible, Normalisable, NormaliserFactory
+class A implements Readable, Writable, Extensible, Normalisable
 {
     use ReadsProtectedProperties;
     use HasWritableProperties;
-    use ExtensibleTrait;
+    use ExtensibleTrait {
+        ExtensibleTrait::__set insteadof HasWritableProperties;
+        ExtensibleTrait::__get insteadof ReadsProtectedProperties;
+        ExtensibleTrait::__isset insteadof ReadsProtectedProperties;
+        ExtensibleTrait::__unset insteadof HasWritableProperties;
+    }
     use HasNormaliser;
 
     /**

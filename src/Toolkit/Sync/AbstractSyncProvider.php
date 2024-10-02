@@ -6,12 +6,16 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
+use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
+use Salient\Sync\Exception\FilterPolicyViolationException;
+use Salient\Sync\Exception\SyncEntityRecursionException;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
@@ -75,13 +79,9 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): SyncContextInterface
+    public function getContext(): SyncContextInterface
     {
-        if (!$container) {
-            $container = $this->App;
-        }
-
-        return $container->get(SyncContext::class, ['provider' => $this]);
+        return new SyncContext($this->App, $this);
     }
 
     /**
@@ -153,19 +153,18 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      * }
      * ```
      *
-     * @template T of iterable<SyncEntityInterface>|SyncEntityInterface
+     * @template T of SyncEntityInterface
+     * @template TOutput of iterable<T>|T
      *
-     * @param callable(): T $operation
-     * @return T
+     * @param Closure(): TOutput $operation
+     * @return TOutput
      */
-    protected function run(SyncContextInterface $context, callable $operation)
+    protected function run(SyncContextInterface $context, Closure $operation)
     {
-        $context->applyFilterPolicy($returnEmpty, $empty);
-        if ($returnEmpty) {
-            return $empty;
-        }
-
-        return $operation();
+        return $this->filterOperationOutput(
+            $context,
+            $this->runOperation($context, $operation),
+        );
     }
 
     /**
@@ -201,7 +200,8 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      */
     final public static function getServices(): array
     {
-        return SyncIntrospector::get(static::class)->getSyncProviderInterfaces();
+        $provider = new ReflectionSyncProvider(static::class);
+        return $provider->getSyncProviderInterfaces();
     }
 
     /**
@@ -213,21 +213,91 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
     final public function with(string $entity, ?SyncContextInterface $context = null): SyncEntityProvider
     {
         if ($context) {
-            $context->maybeThrowRecursionException();
+            if ($context->recursionDetected()) {
+                throw new SyncEntityRecursionException(sprintf(
+                    'Circular reference detected: %s',
+                    $context->getLastEntity()->getUri($this->Store),
+                ));
+            }
             $container = $context->getContainer();
         } else {
             $container = $this->App;
         }
 
         $container = $container->inContextOf(static::class);
-        $context = $context
-            ? $context->withContainer($container)
-            : $this->getContext($container);
+        $context = ($context ?? $this->getContext())->withContainer($container);
 
         return $container->get(
             SyncEntityProvider::class,
             ['entity' => $entity, 'provider' => $this, 'context' => $context],
         );
+    }
+
+    /**
+     * @template T
+     * @template TOutput of iterable<T>|T
+     *
+     * @param Closure(): TOutput $operation
+     * @return TOutput
+     */
+    final public function runOperation(SyncContextInterface $context, Closure $operation)
+    {
+        if (!$context->hasOperation()) {
+            throw new LogicException('Context has no operation');
+        }
+
+        if ($context->hasFilter()) {
+            $policy = $context->getProvider()->getFilterPolicy()
+                ?? FilterPolicy::THROW_EXCEPTION;
+
+            switch ($policy) {
+                case FilterPolicy::IGNORE:
+                    break;
+
+                case FilterPolicy::THROW_EXCEPTION:
+                    throw new FilterPolicyViolationException(
+                        $this,
+                        $context->getEntityType(),
+                        $context->getFilters(),
+                    );
+
+                case FilterPolicy::RETURN_EMPTY:
+                    /** @var TOutput */
+                    return SyncUtil::isListOperation($context->getOperation())
+                        ? []
+                        : null;
+
+                case FilterPolicy::FILTER:
+                    break;
+
+                default:
+                    throw new LogicException(sprintf(
+                        'Invalid unclaimed filter policy: %d',
+                        $policy,
+                    ));
+            }
+        }
+
+        return $operation();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function filterOperationOutput(SyncContextInterface $context, $output)
+    {
+        if (!$context->hasOperation()) {
+            throw new LogicException('Context has no operation');
+        }
+
+        if (
+            $context->hasFilter()
+            && $context->getProvider()->getFilterPolicy() === FilterPolicy::FILTER
+        ) {
+            throw new LogicException('Unclaimed filter policy not implemented');
+        }
+
+        return $output;
     }
 
     /**

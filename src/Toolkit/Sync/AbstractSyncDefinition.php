@@ -2,11 +2,11 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\ListConformity;
-use Salient\Contract\Core\Readable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
@@ -20,8 +20,9 @@ use Salient\Core\Concern\HasMutator;
 use Salient\Core\Concern\HasReadableProperties;
 use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
-use Salient\Sync\Exception\FilterPolicyViolationException;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Reflection\ReflectionSyncEntity;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Utility\Reflect;
@@ -43,7 +44,7 @@ use LogicException;
  * @property-read array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $Overrides Array that maps sync operations to closures that override other implementations
  * @phpstan-property-read array<OP::*,OverrideClosure> $Overrides
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap Array that maps keys to properties for entity data returned by the provider
- * @property-read int-mask-of<ArrayMapperFlag::*> $KeyMapFlags Array mapper flags used if a key map is provided
+ * @property-read int-mask-of<ArrayMapperInterface::*> $KeyMapFlags Array mapper flags used if a key map is provided
  * @property-read PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $PipelineFromBackend Pipeline that maps provider data to a serialized entity, or `null` if mapping is not required
  * @property-read PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $PipelineToBackend Pipeline that maps a serialized entity to provider data, or `null` if mapping is not required
  * @property-read bool $ReadFromList Perform READ operations by iterating over entities returned by READ_LIST
@@ -82,7 +83,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      *     )
      * )|null
      */
-    abstract protected function getClosure($operation): ?Closure;
+    abstract protected function getClosure(int $operation): ?Closure;
 
     /**
      * The entity being serviced
@@ -123,7 +124,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * entities--if not all of them--the default policy if there are unclaimed
      * filters is {@see FilterPolicy::THROW_EXCEPTION}.
      *
-     * @see SyncContextInterface::withFilter()
+     * @see SyncContextInterface::withOperation()
      *
      * @var FilterPolicy::*
      */
@@ -165,7 +166,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * Array mapper flags used if a key map is provided
      *
-     * @var int-mask-of<ArrayMapperFlag::*>
+     * @var int-mask-of<ArrayMapperInterface::*>
      */
     protected int $KeyMapFlags;
 
@@ -201,10 +202,10 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      */
     protected ?int $ReturnEntitiesFrom;
 
-    /** @var SyncIntrospector<TEntity> */
-    protected SyncIntrospector $EntityIntrospector;
-    /** @var SyncIntrospector<TProvider> */
-    protected SyncIntrospector $ProviderIntrospector;
+    /** @var ReflectionSyncEntity<TEntity> */
+    protected ReflectionSyncEntity $EntityReflector;
+    /** @var ReflectionSyncProvider<TProvider> */
+    protected ReflectionSyncProvider $ProviderReflector;
     /** @var array<OP::*,SyncOperationClosure|null> */
     private array $Closures = [];
     /** @var static|null */
@@ -219,7 +220,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @param array<int-mask-of<OP::*>,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -228,11 +229,11 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         string $entity,
         SyncProviderInterface $provider,
         array $operations = [],
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
-        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
+        int $keyMapFlags = ArrayMapperInterface::ADD_UNMAPPED,
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
         bool $readFromList = false,
@@ -273,8 +274,8 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         }
 
         $this->Operations = array_intersect($allOps, $operations);
-        $this->EntityIntrospector = SyncIntrospector::get($entity);
-        $this->ProviderIntrospector = SyncIntrospector::get(get_class($provider));
+        $this->EntityReflector = new ReflectionSyncEntity($entity);
+        $this->ProviderReflector = new ReflectionSyncProvider($provider);
     }
 
     /**
@@ -324,7 +325,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * Get an instance where the given array mapper flags are used if a key map
      * is provided
      *
-     * @param int-mask-of<ArrayMapperFlag::*> $flags
+     * @param int-mask-of<ArrayMapperInterface::*> $flags
      * @return static
      */
     final public function withKeyMapFlags(int $flags)
@@ -382,7 +383,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * @inheritDoc
      */
-    final public function getOperationClosure($operation): ?Closure
+    final public function getOperationClosure(int $operation): ?Closure
     {
         // Return a previous result if possible
         if (array_key_exists($operation, $this->Closures)) {
@@ -397,7 +398,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
                 $this->Overrides[$operation](
                     $this,
                     $operation,
-                    $this->getContextWithFilterCallback($operation, $ctx),
+                    $ctx,
                     ...$args
                 );
             return $this->Closures[$operation] = $closure;
@@ -405,9 +406,9 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
         // If a method has been declared for this operation, use it, even if
         // it's not in $this->Operations
-        $closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure(
+        $closure = $this->ProviderReflector->getSyncOperationClosure(
             $operation,
-            $this->EntityIntrospector,
+            $this->EntityReflector,
             $this->Provider
         );
 
@@ -415,7 +416,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
             /** @var SyncOperationClosure */
             $closure = fn(SyncContextInterface $ctx, ...$args) =>
                 $closure(
-                    $this->getContextWithFilterCallback($operation, $ctx),
+                    $ctx,
                     ...$args
                 );
             return $this->Closures[$operation] = $closure;
@@ -467,7 +468,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * )
      * @throws LogicException If the operation is not supported.
      */
-    final public function getFallbackClosure($operation): Closure
+    final public function getFallbackClosure(int $operation): Closure
     {
         $closure = ($this->WithoutOverrides ??= $this->with('Overrides', []))
             ->getOperationClosure($operation);
@@ -558,64 +559,6 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
                 return $entity;
             });
-    }
-
-    /**
-     * Enforce the unclaimed filter policy
-     *
-     * @param OP::* $operation
-     * @param array{}|null $empty
-     *
-     * @see AbstractSyncDefinition::$FilterPolicy
-     */
-    final protected function applyFilterPolicy(
-        $operation,
-        SyncContextInterface $ctx,
-        ?bool &$returnEmpty,
-        &$empty
-    ): void {
-        $returnEmpty = false;
-
-        if (
-            $this->FilterPolicy === FilterPolicy::IGNORE
-            || !($filter = $ctx->getFilter())
-        ) {
-            return;
-        }
-
-        switch ($this->FilterPolicy) {
-            case FilterPolicy::THROW_EXCEPTION:
-                throw new FilterPolicyViolationException($this->Provider, $this->Entity, $filter);
-
-            case FilterPolicy::RETURN_EMPTY:
-                $returnEmpty = true;
-                $empty = SyncIntrospector::isListOperation($operation) ? [] : null;
-
-                return;
-
-            case FilterPolicy::FILTER:
-                /** @todo Implement FilterPolicy::FILTER */
-                break;
-        }
-
-        throw new LogicException(sprintf(
-            'FilterPolicy invalid or not implemented: %s',
-            $this->FilterPolicy,
-        ));
-    }
-
-    /**
-     * @param OP::* $operation
-     */
-    private function getContextWithFilterCallback(
-        $operation,
-        SyncContextInterface $ctx
-    ): SyncContextInterface {
-        return $ctx->withFilterPolicyCallback(
-            function (SyncContextInterface $ctx, ?bool &$returnEmpty, &$empty) use ($operation): void {
-                $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
-            }
-        );
     }
 
     /**

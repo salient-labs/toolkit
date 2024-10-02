@@ -3,18 +3,17 @@
 namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\Treeable;
+use Salient\Contract\Core\Provider\Providable;
+use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\Extensible;
 use Salient\Contract\Core\HasName;
-use Salient\Contract\Core\Normalisable;
-use Salient\Contract\Core\NormaliserFactory;
 use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\Providable;
-use Salient\Contract\Core\ProviderContextInterface;
-use Salient\Contract\Core\ProviderInterface;
-use Salient\Contract\Core\Relatable;
 use Salient\Contract\Core\SerializeRulesInterface;
-use Salient\Contract\Core\Treeable;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Closure;
@@ -181,7 +180,6 @@ class Introspector
      * @return T
      *
      * @see Normalisable::normalise()
-     * @see NormaliserFactory::getNormaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {
@@ -429,10 +427,9 @@ class Introspector
         array $keyClosures = []
     ): IntrospectorKeyTargets {
         if (!$normalised) {
-            $keys =
-                $this->_Class->Normaliser
-                    ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
-                    : array_combine($keys, $keys);
+            $keys = $this->_Class->Normaliser
+                ? Arr::combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+                : Arr::combine($keys, $keys);
         }
 
         /** @var array<string,string> $keys Normalised key => original key */
@@ -732,10 +729,52 @@ class Introspector
                 }
             }
         } elseif ($this->_Class->IsExtensible) {
-            $method = $action == IntrospectionClass::ACTION_ISSET ? 'isMetaPropertySet' : $action . 'MetaProperty';
-            $closure = static function ($instance, ...$params) use ($method, $name) {
-                return $instance->$method($name, ...$params);
-            };
+            $properties = $this->_Class->DynamicPropertiesProperty;
+            $propertyNames = $this->_Class->DynamicPropertyNamesProperty;
+            switch ($action) {
+                case IntrospectionClass::ACTION_SET:
+                    $closure = static function ($instance, $value) use (
+                        $name,
+                        $_name,
+                        $properties,
+                        $propertyNames
+                    ) {
+                        $instance->$properties[$_name] = $value;
+                        $instance->$propertyNames[$_name] ??= $name;
+                    };
+                    break;
+
+                case IntrospectionClass::ACTION_GET:
+                    $closure = static function ($instance) use (
+                        $_name,
+                        $properties
+                    ) {
+                        return $instance->$properties[$_name] ?? null;
+                    };
+                    break;
+
+                case IntrospectionClass::ACTION_ISSET:
+                    $closure = static function ($instance) use (
+                        $_name,
+                        $properties
+                    ) {
+                        return isset($instance->$properties[$_name]);
+                    };
+                    break;
+
+                case IntrospectionClass::ACTION_UNSET:
+                    $closure = static function ($instance) use (
+                        $_name,
+                        $properties,
+                        $propertyNames
+                    ) {
+                        unset(
+                            $instance->$properties[$_name],
+                            $instance->$propertyNames[$_name],
+                        );
+                    };
+                    break;
+            }
         }
 
         if (!$closure) {
@@ -745,6 +784,16 @@ class Introspector
         $closure = $closure->bindTo(null, $this->_Class->Class);
 
         return $this->_Class->PropertyActionClosures[$_name][$action] = $closure;
+    }
+
+    /**
+     * Check if a property is declared or has a "magic" property method
+     */
+    final public function hasProperty(string $name): bool
+    {
+        $_name = $this->_Class->maybeNormalise($name, NormaliserFlag::CAREFUL);
+
+        return in_array($_name, $this->_Class->NormalisedKeys, true);
     }
 
     /**
@@ -774,7 +823,7 @@ class Introspector
             'id',
         ];
 
-        $names = array_combine(
+        $names = Arr::combine(
             $names,
             $this->_Class->maybeNormalise($names, NormaliserFlag::CAREFUL)
         );
@@ -892,7 +941,7 @@ class Introspector
 
         if ($includeMeta) {
             $closure = static function (Extensible $instance) use ($closure) {
-                $meta = $instance->getMetaProperties();
+                $meta = $instance->getDynamicProperties();
 
                 return ($meta ? ['@meta' => $meta] : []) + $closure($instance);
             };
@@ -992,7 +1041,8 @@ class Introspector
 
             if ($metaKeys) {
                 foreach ($metaKeys as $key) {
-                    $obj->setMetaProperty((string) $key, $array[$key]);
+                    /** @var TClass&TEntity&Extensible $obj */
+                    $obj->__set((string) $key, $array[$key]);
                 }
             }
 

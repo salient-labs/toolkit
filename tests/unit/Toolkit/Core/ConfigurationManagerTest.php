@@ -91,7 +91,7 @@ final class ConfigurationManagerTest extends TestCase
         $this->assertSame('default', $config->get('app.maintenance.does-not-exist.key', 'default'));
 
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Array key not found: app.maintenance.does-not-exist');
+        $this->expectExceptionMessage('Value not found: app.maintenance.does-not-exist');
         $config->get('app.maintenance.does-not-exist');
     }
 
@@ -116,7 +116,7 @@ final class ConfigurationManagerTest extends TestCase
         ]));
 
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Array key not found: app.does-not-exist');
+        $this->expectExceptionMessage('Value not found: app.does-not-exist');
         $config->getMany(['app.name', 'app.does-not-exist']);
     }
 
@@ -133,7 +133,7 @@ final class ConfigurationManagerTest extends TestCase
         $this->assertNull($config['app.description']);
 
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Array key not found: app.does-not-exist');
+        $this->expectExceptionMessage('Value not found: app.does-not-exist');
         // @phpstan-ignore-next-line
         $config['app.does-not-exist'];
     }

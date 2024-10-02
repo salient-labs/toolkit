@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Immutable;
 use Closure;
@@ -69,10 +69,10 @@ interface BasePipelineInterface extends Chainable, Immutable
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
      * input keys to one or more output keys.
-     * @param int-mask-of<ArrayMapperFlag::*> $flags
+     * @param int-mask-of<ArrayMapperInterface::*> $flags
      * @return static
      */
-    public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
+    public function throughKeyMap(array $keyMap, int $flags = ArrayMapperInterface::ADD_UNMAPPED);
 
     /**
      * Apply a closure to each result

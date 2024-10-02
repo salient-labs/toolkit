@@ -2,8 +2,9 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Core\MethodNotImplementedExceptionInterface;
-use Salient\Contract\Core\ProviderInterface;
+use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
+use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Sync\Exception\HeartbeatCheckFailedExceptionInterface;
 use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use InvalidArgumentException;
@@ -12,7 +13,7 @@ use LogicException;
 /**
  * @api
  */
-interface SyncStoreInterface
+interface SyncStoreInterface extends Instantiable
 {
     /**
      * Register a namespace for sync entities and their provider interfaces
@@ -29,7 +30,7 @@ interface SyncStoreInterface
      *
      * If `$helper` is `null`, the entity store assumes sync entities in
      * `$namespace` are serviced by provider interfaces called
-     * `<entity-namespace>\Provider\<entity>Provider`, e.g. `Sync\User` entities
+     * `<entity_namespace>\Provider\<entity>Provider`, e.g. `Sync\User` entities
      * would be serviced by `Sync\Provider\UserProvider`. Provide a
      * {@see SyncNamespaceHelperInterface} to modify this behaviour.
      *

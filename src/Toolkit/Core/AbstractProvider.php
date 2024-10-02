@@ -3,9 +3,9 @@
 namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\ProviderContextInterface;
-use Salient\Contract\Core\ProviderInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 
 /**
@@ -79,11 +79,10 @@ abstract class AbstractProvider implements ProviderInterface
     /**
      * @inheritDoc
      */
-    public function getContext(?ContainerInterface $container = null): ProviderContextInterface
+    public function getContext(): ProviderContextInterface
     {
-        $container ??= $this->App;
-
-        return $container->get(ProviderContext::class, [$this]);
+        /** @var ProviderContext<$this,AbstractEntity> */
+        return new ProviderContext($this->App, $this);
     }
 
     /**

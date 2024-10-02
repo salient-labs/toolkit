@@ -2,14 +2,10 @@
 
 namespace Salient\Http\OAuth2;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * OAuth 2.0 flows
- *
- * @extends AbstractEnumeration<int>
  */
-class OAuth2Flow extends AbstractEnumeration
+interface OAuth2Flow
 {
     /**
      * Client Credentials flow

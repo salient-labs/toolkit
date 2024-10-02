@@ -5,10 +5,10 @@ namespace Salient\Sync\Http;
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\ListConformity;
-use Salient\Contract\Core\ProviderContextInterface;
 use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
@@ -26,9 +26,9 @@ use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncInvalidContextException;
 use Salient\Sync\Exception\SyncInvalidEntitySourceException;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
-use Salient\Sync\Support\SyncIntrospector;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Sync\AbstractSyncDefinition;
+use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\Regex;
@@ -114,7 +114,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *   {@see ProviderContextInterface::withValue()} or implicitly via
      *   {@see ProviderContextInterface::push()}
      * - Unclaimed filters passed to the operation via
-     *   {@see SyncContextInterface::withFilter()}
+     *   {@see SyncContextInterface::withOperation()}
      *
      * Names are normalised for comparison by converting them to snake_case and
      * removing any `_id` suffixes.
@@ -245,7 +245,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -261,7 +261,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
         ?callable $callback = null,
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
@@ -269,7 +269,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         bool $syncOneEntityPerRequest = false,
         array $overrides = [],
         ?array $keyMap = null,
-        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
+        int $keyMapFlags = ArrayMapperInterface::ADD_UNMAPPED,
         ?PipelineInterface $pipelineFromBackend = null,
         ?PipelineInterface $pipelineToBackend = null,
         bool $readFromList = false,
@@ -405,7 +405,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
     /**
      * @inheritDoc
      */
-    protected function getClosure($operation): ?Closure
+    protected function getClosure(int $operation): ?Closure
     {
         // Return null if no endpoint path has been provided
         if (
@@ -554,11 +554,11 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param OP::* $operation
      * @return Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[])
      */
-    private function getHttpOperationClosure($operation): Closure
+    private function getHttpOperationClosure(int $operation): Closure
     {
         // In dry-run mode, return a no-op closure for write operations
         if (
-            SyncIntrospector::isWriteOperation($operation)
+            SyncUtil::isWriteOperation($operation)
             && Env::getDryRun()
         ) {
             /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
@@ -625,7 +625,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param mixed ...$args
      * @return iterable<mixed[]>|mixed[]
      */
-    private function runHttpOperation($operation, SyncContextInterface $ctx, ...$args)
+    private function runHttpOperation(int $operation, SyncContextInterface $ctx, ...$args)
     {
         return (
             $this->Callback === null
@@ -639,7 +639,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param mixed ...$args
      * @return iterable<mixed[]>|mixed[]
      */
-    private function doRunHttpOperation($operation, SyncContextInterface $ctx, ...$args)
+    private function doRunHttpOperation(int $operation, SyncContextInterface $ctx, ...$args)
     {
         if ($this->Path === null || $this->Path === []) {
             throw new LogicException('Path required');
@@ -742,34 +742,34 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             $curler = ($this->CurlerCallback)($curler, $this, $operation, $ctx, ...$args);
         }
 
-        $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
-        if ($returnEmpty) {
-            return $empty;
-        }
-
         $httpClosure = $this->getHttpOperationClosure($operation);
         $payload = isset($args[0]) && is_array($args[0])
             ? $args[0]
             : null;
 
-        try {
-            return $httpClosure($curler, $this->Query, $payload);
-        } catch (HttpErrorExceptionInterface $ex) {
-            // If a request to READ a known entity fails with 404 (Not Found) or
-            // 410 (Gone), throw a `SyncEntityNotFoundException`
-            if ($operation === OP::READ && $id !== null && (
-                ($status = $ex->getResponse()->getStatusCode()) === 404
-                || $status === 410
-            )) {
-                throw new SyncEntityNotFoundException(
-                    $this->Provider,
-                    $this->Entity,
-                    $id,
-                    $ex,
-                );
-            }
-            throw $ex;
-        }
+        return $this->Provider->runOperation(
+            $ctx,
+            function () use ($operation, $id, $curler, $httpClosure, $payload) {
+                try {
+                    return $httpClosure($curler, $this->Query, $payload);
+                } catch (HttpErrorExceptionInterface $ex) {
+                    // If a request to READ an entity fails with 404 (Not Found)
+                    // or 410 (Gone), throw a `SyncEntityNotFoundException`
+                    if ($operation === OP::READ && $id !== null && (
+                        ($status = $ex->getResponse()->getStatusCode()) === 404
+                        || $status === 410
+                    )) {
+                        throw new SyncEntityNotFoundException(
+                            $this->Provider,
+                            $this->Entity,
+                            $id,
+                            $ex,
+                        );
+                    }
+                    throw $ex;
+                }
+            },
+        );
     }
 
     /**
@@ -777,9 +777,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param mixed[] $args
      * @return int|string|null
      */
-    private function getIdFromArgs($operation, array $args)
+    private function getIdFromArgs(int $operation, array $args)
     {
-        if (SyncIntrospector::isListOperation($operation)) {
+        if (SyncUtil::isListOperation($operation)) {
             return null;
         }
 
@@ -828,7 +828,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param OP::* $operation
      * @return (TPayload is TEntity[] ? iterable<mixed[]> : mixed[])
      */
-    private function getRoundTripPayload($response, $requestPayload, $operation)
+    private function getRoundTripPayload($response, $requestPayload, int $operation)
     {
         switch ($this->ReturnEntitiesFrom) {
             case EntitySource::PROVIDER_OUTPUT:
@@ -854,7 +854,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param OP::* $operation
      * @return PipelineInterface<mixed[],TEntity,SyncPipelineArgument>
      */
-    private function getRoundTripPipeline($operation): PipelineInterface
+    private function getRoundTripPipeline(int $operation): PipelineInterface
     {
         switch ($this->ReturnEntitiesFrom) {
             case EntitySource::PROVIDER_OUTPUT:

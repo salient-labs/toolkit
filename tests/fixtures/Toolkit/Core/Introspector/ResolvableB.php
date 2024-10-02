@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Core\Introspector;
 
-use Salient\Contract\Core\Normalisable;
+use Salient\Contract\Core\Entity\Normalisable;
 use Salient\Utility\Str;
 
 class ResolvableB implements Normalisable
 {
-    public static function normalise(
+    public static function normaliseProperty(
         string $name,
         bool $greedy = true,
         string ...$hints

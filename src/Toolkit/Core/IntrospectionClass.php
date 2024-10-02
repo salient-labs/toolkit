@@ -2,17 +2,16 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\Cardinality;
-use Salient\Contract\Core\Extensible;
-use Salient\Contract\Core\Normalisable;
-use Salient\Contract\Core\NormaliserFactory;
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\Readable;
+use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\Temporal;
+use Salient\Contract\Core\Entity\Treeable;
+use Salient\Contract\Core\Entity\Writable;
+use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\Providable;
-use Salient\Contract\Core\Readable;
-use Salient\Contract\Core\Relatable;
-use Salient\Contract\Core\Temporal;
-use Salient\Contract\Core\Treeable;
-use Salient\Contract\Core\Writable;
+use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -136,6 +135,16 @@ class IntrospectionClass
      * @var array<string,string>
      */
     public $WritableProperties = [];
+
+    /**
+     * Set if the class implements Extensible
+     */
+    public string $DynamicPropertiesProperty;
+
+    /**
+     * Set if the class implements Extensible
+     */
+    public string $DynamicPropertyNamesProperty;
 
     /**
      * Action => normalised property name => "magic" property method
@@ -280,16 +289,16 @@ class IntrospectionClass
     /**
      * Normalises property names with $greedy = false
      *
-     * @var (Closure(string): string)|null
+     * @var Closure(string): string
      */
-    public $GentleNormaliser;
+    public Closure $GentleNormaliser;
 
     /**
      * Normalises property names with $hints = $this->NormalisedProperties
      *
-     * @var (Closure(string): string)|null
+     * @var Closure(string): string
      */
-    public $CarefulNormaliser;
+    public Closure $CarefulNormaliser;
 
     /**
      * Signature => closure
@@ -363,26 +372,29 @@ class IntrospectionClass
         $this->IsRelatable = $this->IsTreeable || $class->implementsInterface(Relatable::class);
         $this->HasDates = $class->implementsInterface(Temporal::class);
 
-        if ($class->implementsInterface(NormaliserFactory::class)) {
-            /** @var class-string<NormaliserFactory> $className */
-            $this->Normaliser = $className::getNormaliser();
-        } elseif ($class->implementsInterface(Normalisable::class)) {
-            $this->Normaliser = Closure::fromCallable([$className, 'normalise']);
-        }
-
-        if ($this->Normaliser) {
+        if ($class->implementsInterface(Normalisable::class)) {
+            /** @var class-string<Normalisable> $className */
+            $this->Normaliser = static fn(string $name, bool $greedy = true, string ...$hints) =>
+                $className::normaliseProperty($name, $greedy, ...$hints);
             $this->GentleNormaliser = fn(string $name): string => ($this->Normaliser)($name, false);
             $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedKeys);
         }
 
         $propertyFilter = ReflectionProperty::IS_PUBLIC;
         $methodFilter = 0;
+        $reserved = [];
 
         // Readable and Writable provide access to protected and "magic"
         // property methods
         if ($this->IsReadable || $this->IsWritable) {
             $propertyFilter |= ReflectionProperty::IS_PROTECTED;
             $methodFilter |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
+        }
+
+        if ($this->IsExtensible) {
+            /** @var class-string<Extensible> $className */
+            $reserved[] = $this->DynamicPropertiesProperty = $className::getDynamicPropertiesProperty();
+            $reserved[] = $this->DynamicPropertyNamesProperty = $className::getDynamicPropertyNamesProperty();
         }
 
         $parent = $class;
@@ -407,9 +419,12 @@ class IntrospectionClass
             }
         );
         $names = Reflect::getNames($properties);
-        $this->Properties = array_combine(
-            $this->maybeNormalise($names, NormaliserFlag::LAZY),
-            $names
+        $this->Properties = array_diff_key(
+            Arr::combine(
+                $this->maybeNormalise($names, NormaliserFlag::LAZY),
+                $names
+            ),
+            array_flip($this->maybeNormalise($reserved, NormaliserFlag::LAZY)),
         );
         $this->PublicProperties =
             $propertyFilter & ReflectionProperty::IS_PROTECTED
@@ -423,7 +438,8 @@ class IntrospectionClass
                 : $this->Properties;
 
         if ($this->IsReadable) {
-            $readable = $class->getMethod('getReadableProperties')->invoke(null);
+            /** @var class-string<Readable> $className */
+            $readable = $className::getReadableProperties();
             $readable = array_merge(
                 ['*'] === $readable
                     ? $this->Properties
@@ -434,7 +450,8 @@ class IntrospectionClass
         }
 
         if ($this->IsWritable) {
-            $writable = $class->getMethod('getWritableProperties')->invoke(null);
+            /** @var class-string<Writable> $className */
+            $writable = $className::getWritableProperties();
             $writable = array_merge(
                 ['*'] === $writable
                     ? $this->Properties
@@ -542,9 +559,9 @@ class IntrospectionClass
             );
 
         if ($this->IsRelatable) {
-            /** @var array<string,array<Cardinality::*,class-string<Relatable>>> */
-            $relationships = $class->getMethod('getRelationships')->invoke(null);
-            $relationships = array_combine(
+            /** @var class-string<Relatable> $className */
+            $relationships = $className::getRelationships();
+            $relationships = Arr::combine(
                 $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
                 $relationships
             );
@@ -566,10 +583,10 @@ class IntrospectionClass
                     ? $childrenClass->getName()
                     : $parentClass->getName();
 
-                /** @var string[] */
+                /** @var class-string<Treeable> $className */
                 $treeable = [
-                    $parentMethod->invoke(null),
-                    $childrenMethod->invoke(null),
+                    $className::getParentProperty(),
+                    $className::getChildrenProperty(),
                 ];
 
                 $treeable = array_unique($this->maybeNormalise(
@@ -599,11 +616,11 @@ class IntrospectionClass
                     continue;
                 }
                 switch ($type) {
-                    case Cardinality::ONE_TO_ONE:
+                    case Relatable::ONE_TO_ONE:
                         $this->OneToOneRelationships[$property] = $target;
                         break;
 
-                    case Cardinality::ONE_TO_MANY:
+                    case Relatable::ONE_TO_MANY:
                         $this->OneToManyRelationships[$property] = $target;
                         break;
                 }
@@ -611,8 +628,8 @@ class IntrospectionClass
         }
 
         if ($this->HasDates) {
-            /** @var string[] */
-            $dates = $class->getMethod('getDateProperties')->invoke(null);
+            /** @var class-string<Temporal> $className */
+            $dates = $className::getDateProperties();
 
             $nativeDates = [];
             foreach ($properties as $property) {
@@ -650,7 +667,6 @@ class IntrospectionClass
      * @return T
      *
      * @see Normalisable::normalise()
-     * @see NormaliserFactory::getNormaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {

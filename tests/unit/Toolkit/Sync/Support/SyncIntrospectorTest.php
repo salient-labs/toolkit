@@ -6,7 +6,9 @@ use Salient\Container\Container;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\Reflection\ReflectionSyncEntity;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\SyncUtil;
 use Salient\Tests\Sync\Entity\Provider\TaskProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
 use Salient\Tests\Sync\Entity\Task;
@@ -18,40 +20,42 @@ use Closure;
 use ReflectionFunction;
 
 /**
- * @covers \Salient\Sync\Support\SyncIntrospector
+ * @covers \Salient\Sync\Reflection\ReflectionSyncEntity
+ * @covers \Salient\Sync\Reflection\ReflectionSyncProvider
+ * @covers \Salient\Sync\SyncUtil
  */
 final class SyncIntrospectorTest extends TestCase
 {
     public function testGetEntityProvider(): void
     {
-        $this->assertEquals(
+        $this->assertSame(
             UserProvider::class,
-            SyncIntrospector::getEntityProvider(User::class)
+            SyncUtil::getEntityTypeProvider(User::class)
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             'Component\Sync\Contract\People\ProvidesContact',
-            SyncIntrospector::getEntityProvider(
+            SyncUtil::getEntityTypeProvider(
                 // @phpstan-ignore argument.type
                 'Component\Sync\Entity\People\Contact',
-                $this->getContainer()
+                $this->getContainer()->get(SyncStoreInterface::class)
             )
         );
     }
 
     public function testGetProviderEntities(): void
     {
-        $this->assertEquals(
+        $this->assertSame(
             [User::class],
-            SyncIntrospector::getProviderEntities(UserProvider::class)
+            SyncUtil::getProviderEntityTypes(UserProvider::class)
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             ['Component\Sync\Entity\People\Contact'],
-            SyncIntrospector::getProviderEntities(
+            SyncUtil::getProviderEntityTypes(
                 // @phpstan-ignore argument.type
                 'Component\Sync\Contract\People\ProvidesContact',
-                $this->getContainer()
+                $this->getContainer()->get(SyncStoreInterface::class)
             )
         );
     }
@@ -75,12 +79,12 @@ final class SyncIntrospectorTest extends TestCase
         $container = (new Container())->provider(JsonPlaceholderApi::class);
         $provider = $container->get(TaskProvider::class);
 
-        $entityIntrospector = SyncIntrospector::get(Task::class);
-        $providerIntrospector = SyncIntrospector::getService($container, TaskProvider::class);
+        $_entity = new ReflectionSyncEntity(Task::class);
+        $_provider = new ReflectionSyncProvider($container->getName(TaskProvider::class));
 
-        $this->assertEquals('getTask', $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ, $entityIntrospector, $provider)));
-        $this->assertEquals(null, $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ_LIST, $entityIntrospector, $provider)));
-        $this->assertEquals(null, $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::CREATE, $entityIntrospector, $provider)));
+        $this->assertSame('gettask', $this->getMethodVar($_provider->getSyncOperationClosure(SyncOperation::READ, $_entity, $provider)));
+        $this->assertNull($this->getMethodVar($_provider->getSyncOperationClosure(SyncOperation::READ_LIST, $_entity, $provider)));
+        $this->assertNull($this->getMethodVar($_provider->getSyncOperationClosure(SyncOperation::CREATE, $_entity, $provider)));
     }
 
     private function getMethodVar(?Closure $closure): ?string

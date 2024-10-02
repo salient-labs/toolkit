@@ -2,7 +2,9 @@
 
 namespace Salient\Tests\Core\AbstractFacade;
 
-interface MyServiceInterface
+use Salient\Contract\Core\Instantiable;
+
+interface MyServiceInterface extends Instantiable
 {
     /**
      * Get arguments

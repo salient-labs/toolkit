@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Sync\Entity;
 
-use Salient\Contract\Core\Cardinality;
 use Salient\Sync\Support\DeferredEntity;
 use Salient\Sync\AbstractSyncEntity;
 
@@ -28,7 +27,7 @@ class Task extends AbstractSyncEntity
     public static function getRelationships(): array
     {
         return [
-            'User' => [Cardinality::ONE_TO_ONE => User::class],
+            'User' => [self::ONE_TO_ONE => User::class],
         ];
     }
 }

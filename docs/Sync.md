@@ -2,26 +2,25 @@
 
 ### Sync providers
 
-A sync provider is a class that implements [SyncProviderInterface][] and
-performs one or more [sync operations][SyncOperation] on supported [entity
-classes][SyncEntityInterface] to propagate data to and from a backend.
+A sync provider is a class that implements [`SyncProviderInterface`][provider]
+to propagate data to and from a backend, e.g. an API or database.
 
-For a provider to perform sync operations on entities of a given type, it must
-also implement the entity's provider interface, which--aside from entities in
-namespaces with a registered [helper][SyncNamespaceHelperInterface]--has the
-following name:
+For a provider to perform [sync operations][operation] on an [entity][] of a
+given type, it must also implement the entity's provider interface, which--aside
+from entities with a registered [namespace helper][]--has the following name:
 
 ```
-<entity-namespace>\Provider\<entity>Provider
+<entity_namespace>\Provider\<entity>Provider
 ```
 
-A provider would be expected to service `Acme\Sync\User` entities if it
-implemented the `Acme\Sync\Provider\UserProvider` interface, for example.
+A provider servicing `Acme\Sync\User` entities would need to implement the
+`Acme\Sync\Provider\UserProvider` interface, for example.
 
-The entity provider interface doesn't need to have declared methods (although
-entities can be serviced this way if needed), but it does need to exist.
+Entity provider interfaces must extend [`SyncProviderInterface`][provider]. They
+don't need to have declared methods, but sync operations can be implemented as
+declared methods if desired.
 
-`sli` makes it easy to generate a provider interface:
+`sli` makes it easy to generate a provider interface for an entity:
 
 ```shell
 vendor/bin/sli generate sync provider --magic --op 'get,get-list' 'Acme\Sync\User'
@@ -30,23 +29,24 @@ vendor/bin/sli generate sync provider --magic --op 'get,get-list' 'Acme\Sync\Use
 #### Namespace helpers
 
 To map entity classes to different provider interfaces (or multiple entities to
-one interface, perhaps), you can provide a [SyncNamespaceHelperInterface][] to
-the entity store when registering a namespace. See [registerNamespace()][] for
-details and [this test fixture][SyncNamespaceHelper.php] for a working example
-that maps `Acme\Sync\Entity\User` to `Acme\Sync\Contract\ProvidesUser`.
+one interface, perhaps), you can provide a [namespace helper][] to the entity
+store when registering a namespace. See
+[`registerNamespace()`][registerNamespace] for details and
+[SyncNamespaceHelper.php][] for a working example that maps
+`Acme\Sync\Entity\User` to `Acme\Sync\Contract\ProvidesUser`.
 
 #### Operations
 
-To perform a sync operation on an [entity][SyncEntityInterface], a
-[SyncProviderInterface][] must implement its provider interface and either:
+To perform a sync operation on an [entity][], a [provider][] must implement its
+provider interface and either:
 
-1. return a closure for the [SyncOperation][] and entity via
-   [getDefinition()][], or
+1. return a closure for the [operation][] and entity via
+   [`getDefinition()`][getDefinition], or
 2. declare a method for the operation using the naming convention below.
 
 In either case, the signature for the implemented operation must be as follows.
-The first value passed is always the current [SyncContextInterface][] and
-**optional** arguments may be accepted after mandatory parameters.
+The first value passed is always the current [context][] and **optional**
+arguments may be accepted after mandatory parameters.
 
 | Operation[^op]  | Closure signature                                                                           | Equivalent method[^1]    | Alternative method[^2] |
 | --------------- | ------------------------------------------------------------------------------------------- | ------------------------ | ---------------------- |
@@ -59,7 +59,7 @@ The first value passed is always the current [SyncContextInterface][] and
 | `UPDATE_LIST`   | `fn(SyncContextInterface $ctx, iterable $entities, ...$args): iterable`                     | `update<EntityPlural>`   | `updateList_<Entity>`  |
 | `DELETE_LIST`   | `fn(SyncContextInterface $ctx, iterable $entities, ...$args): iterable`                     | `delete<EntityPlural>`   | `deleteList_<Entity>`  |
 
-[^op]: See [SyncOperation][].
+[^op]: See [`SyncOperation`][operation].
 [^1]:
     Method names must match either the singular or plural form of the entity's
     unqualified name.
@@ -68,25 +68,48 @@ The first value passed is always the current [SyncContextInterface][] and
     Recommended when the singular and plural forms of a class name are the same.
     Method names must match the entity's unqualified name.
 
-[^3]:
-    See [SyncContextInterface::withFilter()][] for filter argument
-    recommendations, including recognised signatures.
+[^3]: See [`withOperation()`][withOperation] for recognised signatures.
 
-[getDefinition()]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncProviderInterface.html#_getDefinition
-[registerNamespace()]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncStoreInterface.html#_registerNamespace
-[SyncContextInterface::withFilter()]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withFilter
-[SyncContextInterface]:
+#### Contexts
+
+Sync operations are performed within an immutable [context][] created by the
+[provider][] and replaced as needed to reflect changes to configuration and
+state. Contents include:
+
+| Description            | Getter(s)                                   | Setter(s)               | Notes                                                      |
+| ---------------------- | ------------------------------------------- | ----------------------- | ---------------------------------------------------------- |
+| _Provider_             | `getProvider()`                             | -                       |                                                            |
+| _Service container_    | `getContainer()`                            | `withContainer()`       |                                                            |
+| _Entity type_          | `getEntityType()`                           | `withEntityType()`      |                                                            |
+| _Array key conformity_ | `getConformity()`                           | `withConformity()`      |                                                            |
+| _Entities_             | `getEntities()`, `getLastEntity()`          | `pushEntity()`          | Tracks nested entity scope. See `recursionDetected()`.     |
+| _Parent entity_        | `getParent()`                               | `withParent()`          | [`Treeable`][treeable] entities only.                      |
+| _Arbitrary values_     | `hasValue()`, `getValue()`                  | `withValue()`           |                                                            |
+| Operation              | `hasOperation()`, `getOperation()`          | `withOperation()`       | `withOperation()` also sets entity type.                   |
+| Filters                | `hasFilter()`,`getFilter()`, `getFilters()` | `withOperation()`       | Derived from non-mandatory arguments. See `claimFilter()`. |
+| Deferral policy        | `getDeferralPolicy()`                       | `withDeferralPolicy()`  | Applies to nested entity retrieval.                        |
+| Hydration policy       | `getHydrationPolicy()`                      | `withHydrationPolicy()` | Applies to entity relationship retrieval.                  |
+| Offline mode           | `getOffline()`                              | `withOffline()`         |                                                            |
+
+(Italicised entries are inherited from `ProviderContextInterface`.)
+
+[context]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html
-[SyncEntityInterface]:
+[entity]:
   https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncEntityInterface.html
+[getDefinition]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncProviderInterface.html#_getDefinition
+[namespace helper]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncNamespaceHelperInterface.html
+[operation]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncOperation.html
+[provider]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncProviderInterface.html
+[registerNamespace]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncStoreInterface.html#_registerNamespace
 [SyncNamespaceHelper.php]:
   ../tests/fixtures/Toolkit/Sync/SyncNamespaceHelper.php
-[SyncNamespaceHelperInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncNamespaceHelperInterface.html
-[SyncOperation]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncOperation.html
-[SyncProviderInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncProviderInterface.html
+[treeable]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Core.Treeable.html
+[withOperation]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Sync.SyncContextInterface.html#_withOperation

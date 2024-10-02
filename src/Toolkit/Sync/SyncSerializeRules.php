@@ -394,7 +394,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
 
         if ($ruleType === self::TYPE_REMOVE) {
             $keys = array_keys($rules);
-            $rules = array_combine($keys, $keys);
+            $rules = Arr::combine($keys, $keys);
             return $this->CompileCache[$ruleType][$cacheKey] = $rules;
         }
 

@@ -3,7 +3,7 @@
 namespace Salient\Sync\Http;
 
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperFlag;
+use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
@@ -37,7 +37,7 @@ use Closure;
  * @method $this syncOneEntityPerRequest(bool $value = true) Perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)
  * @method $this overrides(array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $value) Array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})
  * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) Array that maps keys to properties for entity data returned by the provider (see {@see AbstractSyncDefinition::$KeyMap})
- * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Array mapper flags used if a key map is provided
+ * @method $this keyMapFlags(int-mask-of<ArrayMapperInterface::*> $value) Array mapper flags used if a key map is provided
  * @method $this readFromList(bool $value = true) Perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromList})
  * @method $this returnEntitiesFrom(EntitySource::*|null $value) Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  * @method $this args(mixed[]|null $value) Arguments passed to each sync operation
