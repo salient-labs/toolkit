@@ -3,7 +3,7 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Entity\Writable;
-use Salient\Core\Introspector;
+use Salient\Core\Internal\WritePropertyTrait;
 
 /**
  * Implements Writable
@@ -21,29 +21,10 @@ use Salient\Core\Introspector;
  */
 trait HasWritableProperties
 {
+    use WritePropertyTrait;
+
     public static function getWritableProperties(): array
     {
         return [];
-    }
-
-    /**
-     * @param mixed ...$params
-     */
-    private function setProperty(string $action, string $name, ...$params): void
-    {
-        Introspector::get(static::class)->getPropertyActionClosure($name, $action)($this, ...$params);
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function __set(string $name, $value): void
-    {
-        $this->setProperty('set', $name, $value);
-    }
-
-    public function __unset(string $name): void
-    {
-        $this->setProperty('unset', $name);
     }
 }

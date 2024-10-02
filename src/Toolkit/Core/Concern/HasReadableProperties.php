@@ -3,7 +3,7 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Entity\Readable;
-use Salient\Core\Introspector;
+use Salient\Core\Internal\ReadPropertyTrait;
 
 /**
  * Implements Readable
@@ -21,29 +21,10 @@ use Salient\Core\Introspector;
  */
 trait HasReadableProperties
 {
+    use ReadPropertyTrait;
+
     public static function getReadableProperties(): array
     {
         return [];
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getProperty(string $action, string $name)
-    {
-        return Introspector::get(static::class)->getPropertyActionClosure($name, $action)($this);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        return $this->getProperty('get', $name);
-    }
-
-    public function __isset(string $name): bool
-    {
-        return (bool) $this->getProperty('isset', $name);
     }
 }

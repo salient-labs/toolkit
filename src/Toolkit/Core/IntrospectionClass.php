@@ -382,12 +382,19 @@ class IntrospectionClass
 
         $propertyFilter = ReflectionProperty::IS_PUBLIC;
         $methodFilter = 0;
+        $reserved = [];
 
         // Readable and Writable provide access to protected and "magic"
         // property methods
         if ($this->IsReadable || $this->IsWritable) {
             $propertyFilter |= ReflectionProperty::IS_PROTECTED;
             $methodFilter |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
+        }
+
+        if ($this->IsExtensible) {
+            /** @var class-string<Extensible> $className */
+            $reserved[] = $this->DynamicPropertiesProperty = $className::getDynamicPropertiesProperty();
+            $reserved[] = $this->DynamicPropertyNamesProperty = $className::getDynamicPropertyNamesProperty();
         }
 
         $parent = $class;
@@ -412,9 +419,12 @@ class IntrospectionClass
             }
         );
         $names = Reflect::getNames($properties);
-        $this->Properties = Arr::combine(
-            $this->maybeNormalise($names, NormaliserFlag::LAZY),
-            $names
+        $this->Properties = array_diff_key(
+            Arr::combine(
+                $this->maybeNormalise($names, NormaliserFlag::LAZY),
+                $names
+            ),
+            array_flip($this->maybeNormalise($reserved, NormaliserFlag::LAZY)),
         );
         $this->PublicProperties =
             $propertyFilter & ReflectionProperty::IS_PROTECTED
@@ -449,12 +459,6 @@ class IntrospectionClass
                 $this->PublicProperties
             );
             $this->WritableProperties = array_intersect($this->Properties, $writable);
-        }
-
-        if ($this->IsExtensible) {
-            /** @var class-string<Extensible> $className */
-            $this->DynamicPropertiesProperty = $className::getDynamicPropertiesProperty();
-            $this->DynamicPropertyNamesProperty = $className::getDynamicPropertyNamesProperty();
         }
 
         // Get "magic" property methods, e.g. _get<Property>()

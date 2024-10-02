@@ -3,7 +3,8 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Entity\Extensible;
-use Salient\Core\Introspector as IS;
+use Salient\Core\Internal\ReadPropertyTrait;
+use Salient\Core\Internal\WritePropertyTrait;
 use Salient\Utility\Arr;
 
 /**
@@ -15,19 +16,22 @@ use Salient\Utility\Arr;
  */
 trait ExtensibleTrait
 {
+    use ReadPropertyTrait;
+    use WritePropertyTrait;
+
     /**
      * Normalised property name => value
      *
      * @var array<string,mixed>
      */
-    private $MetaProperties = [];
+    protected $MetaProperties = [];
 
     /**
      * Normalised property name => first name passed to __set
      *
      * @var array<string,string>
      */
-    private $MetaPropertyNames = [];
+    protected $MetaPropertyNames = [];
 
     /**
      * @inheritDoc
@@ -56,54 +60,6 @@ trait ExtensibleTrait
         foreach ($values as $name => $value) {
             $this->__set($name, $value);
         }
-    }
-
-    /**
-     * @param mixed $value
-     */
-    final public function __set(string $name, $value): void
-    {
-        if (($is = IS::get(static::class))->hasProperty($name)) {
-            $is->getPropertyActionClosure($name, 'set')($this, $value);
-            return;
-        }
-        $normalised = $is->maybeNormalise($name);
-        $this->MetaProperties[$normalised] = $value;
-        if (!array_key_exists($normalised, $this->MetaPropertyNames)) {
-            $this->MetaPropertyNames[$normalised] = $name;
-        }
-    }
-
-    /**
-     * @return mixed
-     */
-    final public function __get(string $name)
-    {
-        if (($is = IS::get(static::class))->hasProperty($name)) {
-            return $is->getPropertyActionClosure($name, 'get')($this);
-        }
-        return $this->MetaProperties[$is->maybeNormalise($name)] ?? null;
-    }
-
-    final public function __isset(string $name): bool
-    {
-        if (($is = IS::get(static::class))->hasProperty($name)) {
-            return $is->getPropertyActionClosure($name, 'isset')($this);
-        }
-        return isset($this->MetaProperties[$is->maybeNormalise($name)]);
-    }
-
-    final public function __unset(string $name): void
-    {
-        if (($is = IS::get(static::class))->hasProperty($name)) {
-            $is->getPropertyActionClosure($name, 'unset')($this);
-            return;
-        }
-        $normalised = $is->maybeNormalise($name);
-        unset(
-            $this->MetaProperties[$normalised],
-            $this->MetaPropertyNames[$normalised],
-        );
     }
 
     final public function getDynamicProperties(): array
