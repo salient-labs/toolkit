@@ -4,6 +4,7 @@ namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Core\Introspector as IS;
+use Salient\Utility\Arr;
 
 /**
  * Implements Extensible to store arbitrary property values
@@ -107,7 +108,7 @@ trait ExtensibleTrait
 
     final public function getDynamicProperties(): array
     {
-        return array_combine(
+        return Arr::combine(
             array_map(
                 fn(string $name): string => $this->MetaPropertyNames[$name],
                 array_keys($this->MetaProperties)

@@ -81,11 +81,7 @@ final class ArrayMapper implements ArrayMapperInterface
     {
         if ($this->OutputKeys !== null) {
             try {
-                $out = @array_combine($this->OutputKeys, $in);
-
-                if ($out === false) {
-                    throw new InvalidArgumentException('Invalid input array');
-                }
+                $out = Arr::combine($this->OutputKeys, $in);
             } catch (ValueError $ex) {
                 throw new InvalidArgumentException('Invalid input array', 0, $ex);
             }

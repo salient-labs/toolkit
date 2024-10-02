@@ -40,9 +40,9 @@ return [
                 'message' => '#^Parameter \#1 \$handle of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects CurlHandle, CurlHandle\|resource(\|null)? given\.$#',
             ],
             [
-                'message' => '#^Strict comparison using \=\=\= between array and false will always evaluate to false\.$#',
+                'message' => '#^Strict comparison using \=\=\= between array.* and false will always evaluate to false\.$#',
                 'count' => 1,
-                'path' => '../src/Toolkit/Core/ArrayMapper.php',
+                'path' => '../src/Toolkit/Utility/Arr.php',
             ],
         ],
     ] + $parameters,

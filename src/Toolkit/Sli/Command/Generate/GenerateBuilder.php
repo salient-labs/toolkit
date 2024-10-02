@@ -12,6 +12,7 @@ use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
+use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
@@ -182,7 +183,7 @@ EOF)
         if ($this->IncludeProperties) {
             $introspector = Introspector::get($this->InputClass->getName());
             $writable = $introspector->getWritableProperties();
-            $writable = array_combine(
+            $writable = Arr::combine(
                 array_map(
                     fn(string $name) => Str::camel($name),
                     $writable
@@ -520,7 +521,7 @@ EOF)
                 $lines[] = '';
                 if ($templates) {
                     $returnType = array_keys($this->InputClassTemplates);
-                    $returnType = array_combine($returnType, $returnType);
+                    $returnType = Arr::combine($returnType, $returnType);
                     $i = count($templates) > 1 ? 0 : -1;
                     /** @var TemplateTag $templateTag */
                     foreach ($templates as $template => $templateTag) {

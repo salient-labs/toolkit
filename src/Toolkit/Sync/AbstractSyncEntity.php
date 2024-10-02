@@ -4,12 +4,12 @@ namespace Salient\Sync;
 
 use Salient\Container\RequiresContainer;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\Entity\NormaliserFactory;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Writable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\Flushable;
 use Salient\Contract\Core\HasDescription;
 use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFlag;
@@ -43,7 +43,6 @@ use Salient\Utility\Get;
 use Salient\Utility\Inflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
-use Closure;
 use DateTimeInterface;
 use Generator;
 use LogicException;
@@ -73,7 +72,9 @@ use UnexpectedValueException;
  * {@see AbstractSyncEntity::buildSerializeRules()} to provide serialization
  * rules for nested entities.
  */
-abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityInterface, NormaliserFactory
+abstract class AbstractSyncEntity extends AbstractEntity implements
+    SyncEntityInterface,
+    Flushable
 {
     use ConstructibleTrait;
     use HasReadableProperties;
@@ -115,11 +116,18 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     private $State = 0;
 
     /**
+     * Entity => "/^<pattern>_/" | false
+     *
+     * @var array<class-string<self>,string|false>
+     */
+    private static array $RemovablePrefixRegex = [];
+
+    /**
      * Entity => [ property name => normalised property name ]
      *
-     * @var array<class-string<AbstractSyncEntity>,array<string,string>>
+     * @var array<class-string<self>,array<string,string>>
      */
-    private static $NormalisedPropertyMap = [];
+    private static array $NormalisedPropertyMap = [];
 
     /**
      * @inheritDoc
@@ -143,6 +151,17 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     public static function getDateProperties(): array
     {
         return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function flushStatic(): void
+    {
+        unset(
+            self::$RemovablePrefixRegex[static::class],
+            self::$NormalisedPropertyMap[static::class],
+        );
     }
 
     /**
@@ -180,7 +199,10 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * and "Name". For a subclass of `User` called `AdminUser`, both "User" and
      * "AdminUser" are removed.
      *
-     * Return `null` to suppress prefix removal.
+     * Return `null` to suppress prefix removal, otherwise use
+     * {@see AbstractSyncEntity::normalisePrefixes()} or
+     * {@see AbstractSyncEntity::expandPrefixes()} to normalise the return
+     * value.
      *
      * @return string[]|null
      */
@@ -265,52 +287,52 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
     }
 
     /**
-     * Get a closure that normalises a property name
+     * Normalise a property name
      *
-     * If {@see AbstractSyncEntity::getRemovablePrefixes()} doesn't return any
-     * prefixes, a closure that converts the property name to snake_case is
-     * returned.
-     *
-     * Otherwise, the closure converts the property name to snake_case, and if
-     * `$greedy` is `true` (the default) and the property name doesn't match one
-     * of the provided `$hints`, prefixes are removed before it is returned.
-     *
-     * {@see AbstractSyncEntity::getRemovablePrefixes()} should use
-     * {@see AbstractSyncEntity::normalisePrefixes()} or
-     * {@see AbstractSyncEntity::expandPrefixes()} to normalise prefixes.
+     * 1. `$name` is converted to snake_case
+     * 2. If the result is one of the given `$hints`, it is returned
+     * 3. If `$greedy` is `true`, prefixes returned by
+     *    {@see AbstractSyncEntity::getRemovablePrefixes()} are removed
      */
-    final public static function getNormaliser(): Closure
-    {
-        // If there aren't any prefixes to remove, return a closure that
-        // converts everything to snake_case
-        $prefixes = static::getRemovablePrefixes();
-        if (!$prefixes) {
-            return static function (string $name): string {
-                return self::$NormalisedPropertyMap[static::class][$name]
-                    ??= Str::snake($name);
-            };
+    final public static function normaliseProperty(
+        string $name,
+        bool $greedy = true,
+        string ...$hints
+    ): string {
+        $regex = self::$RemovablePrefixRegex[static::class]
+            ??= self::getRemovablePrefixRegex();
+
+        if ($regex === false) {
+            return self::$NormalisedPropertyMap[static::class][$name]
+                ??= Str::snake($name);
         }
 
-        $regex = implode('|', $prefixes);
-        $regex = count($prefixes) > 1 ? "(?:$regex)" : $regex;
-        $regex = "/^{$regex}_/";
+        if ($greedy && !$hints) {
+            return self::$NormalisedPropertyMap[static::class][$name]
+                ??= Regex::replace($regex, '', Str::snake($name));
+        }
 
-        return static function (
-            string $name,
-            bool $greedy = true,
-            string ...$hints
-        ) use ($regex): string {
-            if ($greedy && !$hints) {
-                return self::$NormalisedPropertyMap[static::class][$name]
-                    ??= Regex::replace($regex, '', Str::snake($name));
-            }
-            $_name = Str::snake($name);
-            if (!$greedy || in_array($_name, $hints)) {
-                return $_name;
-            }
+        $_name = Str::snake($name);
+        if (!$greedy || in_array($_name, $hints)) {
+            return $_name;
+        }
 
-            return Regex::replace($regex, '', $_name);
-        };
+        return Regex::replace($regex, '', $_name);
+    }
+
+    /**
+     * @return string|false
+     */
+    private static function getRemovablePrefixRegex()
+    {
+        $prefixes = static::getRemovablePrefixes();
+
+        return $prefixes
+            ? sprintf(
+                count($prefixes) > 1 ? '/^(?:%s)_/' : '/^%s_/',
+                implode('|', $prefixes),
+            )
+            : false;
     }
 
     /**
@@ -697,14 +719,14 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * @param SyncProviderInterface $provider
      * @param SyncContextInterface|null $context
      */
-    final public static function provideList(
+    final public static function provideMultiple(
         iterable $list,
         ProviderInterface $provider,
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?ProviderContextInterface $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
-            self::_provideList($list, $provider, $conformity, $context)
+            self::_provideMultiple($list, $provider, $conformity, $context)
         );
     }
 
@@ -810,7 +832,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements SyncEntityIn
      * @param SyncContextInterface|null $context
      * @return Generator<array-key,static>
      */
-    private static function _provideList(
+    private static function _provideMultiple(
         iterable $list,
         ProviderInterface $provider,
         $conformity,

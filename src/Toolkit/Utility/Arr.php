@@ -6,6 +6,7 @@ use Salient\Contract\Core\Jsonable;
 use ArrayAccess;
 use OutOfRangeException;
 use Stringable;
+use ValueError;
 
 /**
  * Work with arrays and iterables
@@ -144,6 +145,27 @@ final class Arr extends AbstractUtility
         return $key === false
             ? null
             : $key;
+    }
+
+    /**
+     * Get an array comprised of the given keys and values
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param TKey[] $keys
+     * @param TValue[] $values
+     * @return array<TKey,TValue>
+     */
+    public static function combine(array $keys, array $values): array
+    {
+        $array = @array_combine($keys, $values);
+        if ($array === false) {
+            throw new ValueError(
+                error_get_last()['message'] ?? 'array_combine() failed',
+            );
+        }
+        return $array;
     }
 
     /**
@@ -874,11 +896,11 @@ final class Arr extends AbstractUtility
         if ($length === null) {
             $length = count($array);
         }
-        $replaced = array_combine(
+        $replaced = self::combine(
             array_splice($keys, $offset, $length, array_keys($replacement)),
             array_splice($array, $offset, $length, $replacement),
         );
-        return array_combine($keys, $array);
+        return self::combine($keys, $array);
     }
 
     /**

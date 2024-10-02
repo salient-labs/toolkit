@@ -6,9 +6,9 @@ namespace Salient\Contract\Core\Entity;
  * @api
  */
 interface EntityInterface extends
-    Normalisable,
     Constructible,
+    Extensible,
+    Normalisable,
     Readable,
     Writable,
-    Extensible,
     Temporal {}

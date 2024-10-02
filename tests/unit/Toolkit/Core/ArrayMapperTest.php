@@ -25,7 +25,7 @@ final class ArrayMapperTest extends TestCase
         $expected,
         array $keyMap,
         array $in,
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         int $flags = ArrayMapper::ADD_UNMAPPED
     ): void {
         $mapper = new ArrayMapper($keyMap, $conformity, $flags);

@@ -4,6 +4,7 @@ namespace Salient\Contract\Core\Entity;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\ListConformity;
+use LogicException;
 
 /**
  * @api
@@ -11,48 +12,51 @@ use Salient\Contract\Core\ListConformity;
 interface Constructible
 {
     /**
-     * Create an instance of the class from an array
+     * Get an instance from an array
      *
-     * If the class has a constructor, values are passed from `$data` to its
-     * parameters. If values remain, they are assigned to writable properties.
-     * If further values remain and the class implements {@see Extensible}, they
-     * are assigned to dynamic properties, otherwise an exception is thrown.
+     * Values in `$data` are applied to:
      *
-     * Array keys, constructor parameters and property names are normalised for
-     * comparison if the class implements {@see Normalisable} or
-     * {@see NormaliserFactory}.
+     * 1. Constructor parameters
+     * 2. Writable properties
+     * 3. Dynamic properties (if the class implements {@see Extensible})
      *
-     * If the class implements {@see Treeable} and `$parent` is set, it is
-     * passed to the instance via {@see Treeable::setParent()}.
+     * If the class implements {@see Normalisable}, identifiers are normalised
+     * for comparison.
+     *
+     * If the class implements {@see Treeable} and `$parent` is given, the
+     * instance is added to `$parent` as a child.
      *
      * @param mixed[] $data
-     * @param (Treeable&static)|null $parent
+     * @param static|null $parent
      * @return static
+     * @throws LogicException if any values in `$data` cannot be applied to the
+     * class.
      */
     public static function construct(
         array $data,
-        ?ContainerInterface $container = null,
-        $parent = null
+        ?object $parent = null,
+        ?ContainerInterface $container = null
     );
 
     /**
-     * Create instances of the class from arrays
+     * Get instances from arrays
      *
-     * See {@see Constructible::construct()} for more information.
+     * Values in `$data` arrays are applied as per
+     * {@see Constructible::construct()}.
      *
      * @template TKey of array-key
      *
-     * @param iterable<TKey,mixed[]> $list
-     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
-     * or {@see ListConformity::PARTIAL} wherever possible to improve
-     * performance.
-     * @param (Treeable&static)|null $parent
+     * @param iterable<TKey,mixed[]> $data
+     * @param ListConformity::* $conformity
+     * @param static|null $parent
      * @return iterable<TKey,static>
+     * @throws LogicException if any values in `$data` arrays cannot be applied
+     * to the class.
      */
-    public static function constructList(
-        iterable $list,
-        $conformity = ListConformity::NONE,
-        ?ContainerInterface $container = null,
-        $parent = null
+    public static function constructMultiple(
+        iterable $data,
+        int $conformity = ListConformity::NONE,
+        ?object $parent = null,
+        ?ContainerInterface $container = null
     ): iterable;
 }

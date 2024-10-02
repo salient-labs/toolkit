@@ -256,9 +256,7 @@ EOF)
             $method = $data !== null && $endpoint !== null
                 ? HttpRequestMethod::POST
                 : $this->HttpMethod;
-            $endpoint = $endpoint === null
-                ? '/' . Str::kebab($class)
-                : $endpoint;
+            $endpoint ??= '/' . Str::kebab($class);
 
             $curler = $provider->getCurler($endpoint);
             $entityUri = $provider->getEndpointUrl($endpoint);
@@ -287,15 +285,16 @@ EOF)
             }
         };
 
-        $entityClass::$Prefixes = $this->RemovablePrefixes ?: [$class];
         if ($this->RemovablePrefixes) {
+            $entityClass::$Prefixes = $this->RemovablePrefixes;
             $entityClass::$Expand = false;
+        } else {
+            $entityClass::$Prefixes = [$class];
         }
 
-        $normaliser = $entityClass::getNormaliser();
-        $normaliser =
-            fn(string $name): string =>
-                Str::pascal($normaliser($name));
+        $normaliser = static fn(string $name): string =>
+            Str::pascal($entityClass::normaliseProperty($name));
+        $entityClass::flushStatic();
 
         $skip = [];
         foreach ($this->SkipProperties as $property) {
@@ -343,7 +342,7 @@ EOF)
                 }
 
                 // Don't limit `Id` to one type
-                if (array_key_exists($key, $properties)) {
+                if (isset($properties[$key])) {
                     continue;
                 }
 

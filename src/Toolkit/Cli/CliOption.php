@@ -536,7 +536,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             $lower = Arr::lower($this->AllowedValues);
             if (count(Arr::unique($lower)) === count($this->AllowedValues)) {
                 $this->CaseSensitive = false;
-                $this->AllowedValues = array_combine($lower, $this->AllowedValues);
+                $this->AllowedValues = Arr::combine($lower, $this->AllowedValues);
             }
         }
 

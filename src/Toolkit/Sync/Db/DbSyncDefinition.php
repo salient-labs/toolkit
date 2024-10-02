@@ -60,7 +60,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
         DbSyncProvider $provider,
         array $operations = [],
         ?string $table = null,
-        $conformity = ListConformity::PARTIAL,
+        int $conformity = ListConformity::PARTIAL,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,

@@ -7,7 +7,7 @@ use Salient\Utility\Str;
 
 class ResolvableA implements Normalisable
 {
-    public static function normalise(
+    public static function normaliseProperty(
         string $name,
         bool $greedy = true,
         string ...$hints

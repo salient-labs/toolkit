@@ -328,10 +328,9 @@ final class SyncIntrospector extends Introspector
         array $keyClosures = []
     ): IntrospectorKeyTargets {
         /** @var array<string,string> Normalised key => original key */
-        $keys =
-            $this->_Class->Normaliser
-                ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
-                : array_combine($keys, $keys);
+        $keys = $this->_Class->Normaliser
+            ? Arr::combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+            : Arr::combine($keys, $keys);
 
         foreach ([
             self::ID_KEY => self::ID_PROPERTY,
@@ -343,10 +342,9 @@ final class SyncIntrospector extends Introspector
             }
 
             if ($key === self::ID_KEY) {
-                $property =
-                    $this->_Class->Normaliser
-                        ? ($this->_Class->CarefulNormaliser)($property)
-                        : $property;
+                $property = $this->_Class->Normaliser
+                    ? ($this->_Class->CarefulNormaliser)($property)
+                    : $property;
             }
 
             // If receiving values for this property, add the relevant key to
@@ -459,10 +457,9 @@ final class SyncIntrospector extends Introspector
                 continue;
             }
 
-            $match =
-                $this->_Class->Normaliser
-                    ? ($this->_Class->CarefulNormaliser)($matches[1])
-                    : $matches[1];
+            $match = $this->_Class->Normaliser
+                ? ($this->_Class->CarefulNormaliser)($matches[1])
+                : $matches[1];
 
             // Don't use the same key twice
             if (isset($keys[$match]) || isset($keyClosures[$match])) {
@@ -602,7 +599,7 @@ final class SyncIntrospector extends Introspector
                     }
 
                     $entities =
-                        $relationship::provideList(
+                        $relationship::provideMultiple(
                             $data[$key],
                             $provider,
                             $context->getConformity(),

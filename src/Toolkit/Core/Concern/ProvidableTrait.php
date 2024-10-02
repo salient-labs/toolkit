@@ -133,14 +133,14 @@ trait ProvidableTrait
      * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
-    final public static function provideList(
+    final public static function provideMultiple(
         iterable $list,
         ProviderInterface $provider,
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?ProviderContextInterface $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
-            self::_provideList($list, $provider, $conformity, $context)
+            self::_provideMultiple($list, $provider, $conformity, $context)
         );
     }
 
@@ -151,7 +151,7 @@ trait ProvidableTrait
      * @param TContext|null $context
      * @return Generator<array-key,static>
      */
-    private static function _provideList(
+    private static function _provideMultiple(
         iterable $list,
         ProviderInterface $provider,
         $conformity,

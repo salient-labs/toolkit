@@ -8,9 +8,13 @@ namespace Salient\Contract\Core\Entity;
 interface Normalisable
 {
     /**
-     * Normalise the name of a property of the class
+     * Normalise a property name
      *
      * Arguments after `$name` may be ignored.
      */
-    public static function normalise(string $name, bool $greedy = true, string ...$hints): string;
+    public static function normaliseProperty(
+        string $name,
+        bool $greedy = true,
+        string ...$hints
+    ): string;
 }

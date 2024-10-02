@@ -43,10 +43,10 @@ interface Providable extends
      * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
-    public static function provideList(
+    public static function provideMultiple(
         iterable $list,
         ProviderInterface $provider,
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?ProviderContextInterface $context = null
     ): FluentIteratorInterface;
 

@@ -4,7 +4,6 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Normalisable;
-use Salient\Contract\Core\Entity\NormaliserFactory;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Relatable;
 use Salient\Contract\Core\Entity\Temporal;
@@ -12,6 +11,7 @@ use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Entity\Writable;
 use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\NormaliserFlag;
+use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -289,16 +289,16 @@ class IntrospectionClass
     /**
      * Normalises property names with $greedy = false
      *
-     * @var (Closure(string): string)|null
+     * @var Closure(string): string
      */
-    public $GentleNormaliser;
+    public Closure $GentleNormaliser;
 
     /**
      * Normalises property names with $hints = $this->NormalisedProperties
      *
-     * @var (Closure(string): string)|null
+     * @var Closure(string): string
      */
-    public $CarefulNormaliser;
+    public Closure $CarefulNormaliser;
 
     /**
      * Signature => closure
@@ -372,14 +372,10 @@ class IntrospectionClass
         $this->IsRelatable = $this->IsTreeable || $class->implementsInterface(Relatable::class);
         $this->HasDates = $class->implementsInterface(Temporal::class);
 
-        if ($class->implementsInterface(NormaliserFactory::class)) {
-            /** @var class-string<NormaliserFactory> $className */
-            $this->Normaliser = $className::getNormaliser();
-        } elseif ($class->implementsInterface(Normalisable::class)) {
-            $this->Normaliser = Closure::fromCallable([$className, 'normalise']);
-        }
-
-        if ($this->Normaliser) {
+        if ($class->implementsInterface(Normalisable::class)) {
+            /** @var class-string<Normalisable> $className */
+            $this->Normaliser = static fn(string $name, bool $greedy = true, string ...$hints) =>
+                $className::normaliseProperty($name, $greedy, ...$hints);
             $this->GentleNormaliser = fn(string $name): string => ($this->Normaliser)($name, false);
             $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedKeys);
         }
@@ -416,7 +412,7 @@ class IntrospectionClass
             }
         );
         $names = Reflect::getNames($properties);
-        $this->Properties = array_combine(
+        $this->Properties = Arr::combine(
             $this->maybeNormalise($names, NormaliserFlag::LAZY),
             $names
         );
@@ -561,7 +557,7 @@ class IntrospectionClass
         if ($this->IsRelatable) {
             /** @var class-string<Relatable> $className */
             $relationships = $className::getRelationships();
-            $relationships = array_combine(
+            $relationships = Arr::combine(
                 $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
                 $relationships
             );
@@ -667,7 +663,6 @@ class IntrospectionClass
      * @return T
      *
      * @see Normalisable::normalise()
-     * @see NormaliserFactory::getNormaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {

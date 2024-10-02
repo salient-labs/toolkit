@@ -3,44 +3,25 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Entity\Normalisable;
-use Salient\Contract\Core\Entity\NormaliserFactory;
 use Salient\Utility\Str;
-use Closure;
 
 /**
- * Implements NormaliserFactory and Normalisable
+ * Implements Normalisable
  *
- * @see NormaliserFactory
  * @see Normalisable
  *
- * @phpstan-require-implements NormaliserFactory
  * @phpstan-require-implements Normalisable
  */
 trait HasNormaliser
 {
-    /** @var array<string,Closure(string $name, bool $greedy=, string...$hints): string> */
-    private static $Normaliser = [];
-
     /**
      * @inheritDoc
      */
-    public static function getNormaliser(): Closure
-    {
-        return fn(string $name): string =>
-            Str::snake($name);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public static function normalise(
+    public static function normaliseProperty(
         string $name,
         bool $greedy = true,
         string ...$hints
     ): string {
-        $normaliser = self::$Normaliser[static::class]
-            ??= static::getNormaliser();
-
-        return $normaliser($name, $greedy, ...$hints);
+        return Str::snake($name);
     }
 }

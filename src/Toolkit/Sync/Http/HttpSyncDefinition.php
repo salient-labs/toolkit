@@ -261,7 +261,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
         ?callable $callback = null,
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,

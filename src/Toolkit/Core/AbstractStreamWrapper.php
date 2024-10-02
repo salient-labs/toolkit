@@ -3,6 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Contract\Polyfill\StreamWrapper;
+use Salient\Utility\Arr;
 
 /**
  * @api
@@ -59,6 +60,6 @@ abstract class AbstractStreamWrapper extends StreamWrapper
      */
     protected function buildStat(array $stat): array
     {
-        return $stat + array_combine(self::STAT_KEYS, $stat);
+        return $stat + Arr::combine(self::STAT_KEYS, $stat);
     }
 }

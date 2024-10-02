@@ -7,7 +7,6 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Constructible;
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Normalisable;
-use Salient\Contract\Core\Entity\NormaliserFactory;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Entity\Writable;
@@ -35,27 +34,28 @@ final class ConstructibleTraitTest extends TestCase
      * @param T[]|T|string $expected
      * @param class-string<T> $class
      * @param mixed[] $data
-     * @param ListConformity::*|null $conformity
+     * @param ListConformity::* $conformity
      * @param (Treeable&T)|null $parent
      */
     public function testConstruct(
         $expected,
         string $class,
         array $data,
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?ContainerInterface $container = null,
         $parent = null
     ): void {
         $this->maybeExpectException($expected);
 
         if (Arr::isList($data)) {
+            /** @var list<mixed[]> $data */
             $this->assertEquals(
                 $expected,
-                Get::array($class::constructList(
+                Get::array($class::constructMultiple(
                     $data,
                     $conformity,
-                    $container ?? new Container(),
                     $parent,
+                    $container ?? new Container(),
                 )),
             );
             return;
@@ -63,12 +63,12 @@ final class ConstructibleTraitTest extends TestCase
 
         $this->assertEquals(
             $expected,
-            $class::construct($data, $container ?? new Container(), $parent),
+            $class::construct($data, $parent, $container ?? new Container()),
         );
     }
 
     /**
-     * @return array<array{Constructible[]|Constructible|string,class-string<Constructible>,mixed[],3?:ListConformity::*|null,4?:ContainerInterface|null,5?:Treeable|null}>
+     * @return array<array{Constructible[]|Constructible|string,class-string<Constructible>,mixed[],3?:ListConformity::*,4?:ContainerInterface|null,5?:Treeable|null}>
      */
     public static function constructProvider(): array
     {
@@ -153,7 +153,7 @@ class A implements Constructible
  * @property string $Name
  * @property array-key $OtherId
  */
-class B implements Constructible, Readable, Writable, Normalisable, NormaliserFactory
+class B implements Constructible, Readable, Writable, Normalisable
 {
     use ConstructibleTrait;
     use HasReadableProperties;

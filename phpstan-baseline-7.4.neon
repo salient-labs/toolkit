@@ -36,43 +36,8 @@ parameters:
 			path: src/Toolkit/Console/ConsoleWriter.php
 
 		-
-			message: "#^Argument of an invalid type array\\<string, array\\<int, class\\-string\\<Salient\\\\Contract\\\\Core\\\\Entity\\\\Relatable\\>\\>\\>\\|false supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Parameter \\#1 \\$arr1 of function array_intersect expects array, array\\<mixed\\>\\|false given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Parameter \\#1 \\$arr1 of function array_intersect expects array, array\\<string, string\\>\\|false given\\.$#"
-			count: 3
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Parameter \\#1 \\$arr1 of function array_merge expects array, array\\<string\\>\\|false given\\.$#"
-			count: 2
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Parameter \\#1 \\$callback of static method Closure\\:\\:fromCallable\\(\\) expects callable\\(\\)\\: mixed, array\\{class\\-string\\<TClass of object\\>, 'normalise'\\} given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
 			message: "#^Parameter \\#1 \\$object_or_string of function is_a expects object\\|string, string\\|null given\\.$#"
 			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Parameter \\#2 \\$arr2 of function array_intersect expects array, array\\<mixed\\>\\|false given\\.$#"
-			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$args of function array_merge expects array, array\\<mixed\\>\\|false given\\.$#"
-			count: 2
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
@@ -86,28 +51,8 @@ parameters:
 			path: src/Toolkit/Core/IntrospectionClass.php
 
 		-
-			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$Properties \\(array\\<string, string\\>\\) does not accept array\\<string, string\\>\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Property Salient\\\\Core\\\\IntrospectionClass\\<TClass of object\\>\\:\\:\\$PublicProperties \\(array\\<string, string\\>\\) does not accept array\\<mixed\\>\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
-			message: "#^Trying to invoke \\(Closure\\(string\\)\\: string\\)\\|null but it might not be a callable\\.$#"
-			count: 1
-			path: src/Toolkit/Core/IntrospectionClass.php
-
-		-
 			message: "#^Cannot access offset class\\-string\\<TClass of object\\> on Salient\\\\Core\\\\IntrospectionClass\\<object\\>\\.$#"
 			count: 2
-			path: src/Toolkit/Core/Introspector.php
-
-		-
-			message: "#^Parameter \\#1 \\$arr1 of function array_diff_key expects array, array\\<string\\>\\|false given\\.$#"
-			count: 1
 			path: src/Toolkit/Core/Introspector.php
 
 		-
@@ -251,11 +196,6 @@ parameters:
 			path: src/Toolkit/Sli/TokenExtractor.php
 
 		-
-			message: "#^Method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:getDynamicProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/AbstractSyncEntity.php
-
-		-
 			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"
 			count: 2
 			path: src/Toolkit/Sync/Support/SyncEntityFuzzyResolver.php
@@ -304,16 +244,6 @@ parameters:
 			message: "#^Parameter \\#4 \\$forEntity of static method Salient\\\\Sync\\\\Support\\\\DeferredRelationship\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\:\\:defer\\(\\) expects class\\-string\\<Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>, string given\\.$#"
 			count: 2
 			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Trying to invoke \\(Closure\\(string\\)\\: string\\)\\|null but it might not be a callable\\.$#"
-			count: 2
-			path: src/Toolkit/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Method Salient\\\\Utility\\\\Arr\\:\\:spliceByKey\\(\\) should return array\\<TKey of \\(int\\|string\\), TValue\\> but returns array\\<TKey of \\(int\\|string\\), TValue\\>\\|false\\.$#"
-			count: 1
-			path: src/Toolkit/Utility/Arr.php
 
 		-
 			message: "#^Parameter \\#1 \\$value of static method Salient\\\\Utility\\\\Get\\:\\:value\\(\\) expects \\(Closure\\(mixed \\.\\.\\.\\)\\: string\\)\\|string, \\(Closure\\(string\\|null\\)\\: string\\)\\|string given\\.$#"
@@ -381,11 +311,6 @@ parameters:
 			path: tests/fixtures/Toolkit/Core/AbstractFacade/MyHasFacadeClass.php
 
 		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Introspector\\\\A\\:\\:getDynamicProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
-			count: 1
-			path: tests/fixtures/Toolkit/Core/Introspector/A.php
-
-		-
 			message: "#^Parameter \\#1 \\$data of static method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:provide\\(\\) expects array, mixed given\\.$#"
 			count: 1
 			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
@@ -399,21 +324,6 @@ parameters:
 			message: "#^Cannot access property \\$Foo on mixed\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Cache/CacheStoreTest.php
-
-		-
-			message: "#^Method Salient\\\\Tests\\\\Core\\\\Concern\\\\ConstructibleTrait\\\\D\\:\\:getDynamicProperties\\(\\) should return array\\<string, mixed\\> but returns array\\<string, mixed\\>\\|false\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$list of static method Salient\\\\Contract\\\\Core\\\\Entity\\\\Constructible\\:\\:constructList\\(\\) expects iterable\\<int, array\\>, array\\<int, mixed\\> given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$conformity of static method Salient\\\\Contract\\\\Core\\\\Entity\\\\Constructible\\:\\:constructList\\(\\) expects 0\\|1\\|2, 0\\|1\\|2\\|null given\\.$#"
-			count: 1
-			path: tests/unit/Toolkit/Core/Concern/ConstructibleTrait/ConstructibleTraitTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$iterator of function iterator_to_array expects Traversable, iterable given\\.$#"

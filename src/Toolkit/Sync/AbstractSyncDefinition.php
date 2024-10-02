@@ -229,7 +229,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         string $entity,
         SyncProviderInterface $provider,
         array $operations = [],
-        $conformity = ListConformity::NONE,
+        int $conformity = ListConformity::NONE,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
