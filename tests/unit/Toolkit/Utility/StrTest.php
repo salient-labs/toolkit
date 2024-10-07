@@ -793,12 +793,12 @@ EOF,
         string $string,
         string $break = \PHP_EOL,
         bool $ignoreEscapes = true,
-        bool $trimTrailingWhitespace = false,
+        bool $trimLines = false,
         bool $collapseBlankLines = false
     ): void {
         $this->assertSame(
             $expected,
-            Str::unwrap($string, $break, $ignoreEscapes, $trimTrailingWhitespace, $collapseBlankLines)
+            Str::unwrap($string, $break, $ignoreEscapes, $trimLines, $collapseBlankLines)
         );
     }
 
@@ -859,7 +859,9 @@ EOF,
             ],
             'leading + trailing + inner lines' => [
                 <<<'EOF'
- Est   esse sunt velit ea. 
+
+Est   esse sunt velit ea.
+
 EOF,
                 <<<'EOF'
 
@@ -894,83 +896,203 @@ EOF,
             ],
             'trimmed #1 (baseline)' => [
                 <<<'EOF'
-Est magna\  voluptate  minim est.
+Est magna\   voluptate   minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
  
 
+Qui\ exercitation elit.
+1. Item 1    Line 2    Line 3
+2. Item 2    Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
             ],
-            'trimmed #2 (+ trimTrailingWhitespace)' => [
+            'trimmed #2 (+ trimLines)' => [
                 <<<'EOF'
 Est magna\ voluptate minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
 
 
+Qui\ exercitation elit.
+1. Item 1 Line 2 Line 3
+2. Item 2 Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
                 true,
                 true,
             ],
-            'trimmed #3 (- ignoreEscapes)' => [
+            'trimmed #3 (- ignoreEscapes, + trimLines)' => [
                 <<<'EOF'
 Est magna\  voluptate minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
 
 
+Qui\
+exercitation elit.
+1. Item 1 Line 2 Line 3
+2. Item 2 Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
                 false,
                 true,
             ],
-            'trimmed #4 (+ collapseBlankLines)' => [
+            'trimmed #4 (- ignoreEscapes, + trimLines, + collapseBlankLines)' => [
                 <<<'EOF'
 Est magna\  voluptate minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
+Qui\
+exercitation elit.
+1. Item 1 Line 2 Line 3
+2. Item 2 Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
                 false,
                 true,
+                true,
+            ],
+            'trimmed #5 (- ignoreEscapes, + collapseBlankLines)' => [
+                <<<'EOF'
+Est magna\   voluptate   minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
+
+ 
+
+Qui\
+exercitation elit.
+1. Item 1    Line 2    Line 3
+2. Item 2    Line 2
+
+EOF,
+                <<<'EOF'
+Est magna\ 
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
+
+ 
+
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
+
+EOF,
+                \PHP_EOL,
+                false,
+                false,
                 true,
             ],
         ];

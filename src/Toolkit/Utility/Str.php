@@ -458,21 +458,20 @@ final class Str extends AbstractUtility
     public static function toStream(string $string)
     {
         $stream = File::open('php://temp', 'r+');
-        File::write($stream, $string);
+        File::writeAll($stream, $string);
         File::rewind($stream);
         return $stream;
     }
 
     /**
-     * Split a string by a string and remove whitespace from the beginning and
-     * end of each substring before removing empty strings
+     * Split a string by a string, trim substrings and remove any empty strings
      *
      * @param non-empty-string $separator
-     * @param int|null $limit Limit the number of substrings returned. Implies
-     * `$removeEmpty = false`.
-     * @param string|null $characters Specify characters to trim instead of
-     * whitespace. If an empty string is given, substrings are not trimmed.
-     * @return list<string>
+     * @param int|null $limit The maximum number of substrings to return. If
+     * given, empty strings are not removed.
+     * @param string|null $characters Characters to trim, `null` (the default)
+     * to trim whitespace, or an empty string to trim nothing.
+     * @return ($removeEmpty is true ? list<string> : non-empty-list<string>)
      */
     public static function split(
         string $separator,
@@ -493,20 +492,19 @@ final class Str extends AbstractUtility
     }
 
     /**
-     * Without splitting bracket-delimited or double-quoted substrings, split a
-     * string by a string and remove whitespace from the beginning and end of
-     * each substring before optionally removing empty strings
+     * Split a string by a string without splitting bracket-delimited or
+     * double-quoted substrings, trim substrings and remove any empty strings
      *
      * @param non-empty-string $separator
-     * @param string|null $characters Specify characters to trim instead of
-     * whitespace. If an empty string is given, substrings are not trimmed.
+     * @param string|null $characters Characters to trim, `null` (the default)
+     * to trim whitespace, or an empty string to trim nothing.
      * @param int-mask-of<Str::PRESERVE_*> $flags
      * @return ($removeEmpty is true ? list<string> : non-empty-list<string>)
      */
     public static function splitDelimited(
         string $separator,
         string $string,
-        bool $removeEmpty = false,
+        bool $removeEmpty = true,
         ?string $characters = null,
         int $flags = Str::PRESERVE_DOUBLE_QUOTED
     ): array {
@@ -518,11 +516,11 @@ final class Str extends AbstractUtility
         $regex = '';
         if ($flags & self::PRESERVE_DOUBLE_QUOTED) {
             $quotes .= '"';
-            $regex .= "|\n" . '    " (?: [^"\\\\] | \\\\ . )*+ " ';
+            $regex .= ' | " (?: [^"\\\\] | \\\\ . )*+ "';
         }
         if ($flags & self::PRESERVE_SINGLE_QUOTED) {
             $quotes .= "'";
-            $regex .= "|\n" . "    ' (?: [^'\\\\] | \\\\ . )*+ ' ";
+            $regex .= " | ' (?: [^'\\\\] | \\\\ . )*+ '";
         }
 
         if (strpos('()<>[]{}' . $quotes, $separator) !== false) {
@@ -538,7 +536,7 @@ final class Str extends AbstractUtility
   ( \( (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \) |
     <  (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ >  |
     \[ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \] |
-    \{ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \} {$regex}) |
+    \{ (?: [^{$quotes}()<>[\]{}]*+ (?-1)? )*+ \}{$regex} ) |
   # Match empty substrings
   (?<= $quoted | ^ ) (?= $quoted | \$ ) )+
 REGEX;
@@ -560,12 +558,10 @@ REGEX;
 
     /**
      * Wrap a string to a given number of characters, optionally varying the
-     * widths of the second and subsequent lines from the first
+     * width of the first line
      *
-     * If `$width` is an `array`, the first line of text is wrapped to the first
-     * value, and text in subsequent lines is wrapped to the second value.
-     *
-     * @param array{int,int}|int $width
+     * @param int|array{int,int} $width The number of characters at which the
+     * string will be wrapped, or `[ <first_line_width>, <width> ]`.
      */
     public static function wrap(
         string $string,
@@ -590,43 +586,44 @@ REGEX;
         // For first line indents, add and remove $delta characters
         return substr(
             wordwrap(str_repeat('x', $delta) . $string, $width, $break, $cutLongWords),
-            $delta
+            $delta,
         );
     }
 
     /**
      * Undo wordwrap(), preserving Markdown-style paragraphs and lists
      *
-     * Non-consecutive line breaks are converted to spaces unless they precede
-     * one of the following:
+     * Non-consecutive line breaks are converted to spaces except before:
      *
      * - four or more spaces
      * - one or more tabs
-     * - a Markdown-style list item (e.g. `- item`, `1. item`)
+     * - Markdown-style list items (e.g. `- item`, `1. item`)
      *
-     * If `$ignoreEscapes` is `false`, whitespace escaped with a backslash is
-     * preserved.
-     *
-     * If `$trimTrailingWhitespace` is `true`, whitespace is removed from the
-     * end of each line, and if `$collapseBlankLines` is `true`, three or more
-     * subsequent line breaks are collapsed to two.
+     * @param bool $ignoreEscapes If `false`, preserve escaped whitespace.
+     * @param bool $trimLines If `true`, remove whitespace from the end of each
+     * line and between unwrapped lines.
+     * @param bool $collapseBlankLines If `true`, collapse three or more
+     * subsequent line breaks to two.
      */
     public static function unwrap(
         string $string,
         string $break = "\n",
         bool $ignoreEscapes = true,
-        bool $trimTrailingWhitespace = false,
+        bool $trimLines = false,
         bool $collapseBlankLines = false
     ): string {
         $newline = preg_quote($break, '/');
-        $escapes = $ignoreEscapes ? '' : '(?<!\\\\)(?:\\\\\\\\)*\K';
+        $noEscape = $ignoreEscapes ? '' : '(?<!\\\\)(?:\\\\\\\\)*\K';
 
-        if ($trimTrailingWhitespace) {
-            $search[] = "/{$escapes}\h+{$newline}/";
-            $replace[] = $break;
+        if ($trimLines) {
+            $search[] = "/{$noEscape}\h+({$newline})/";
+            $replace[] = '$1';
+            $between = '\h*';
+        } else {
+            $between = '';
         }
 
-        $search[] = "/{$escapes}(?<!{$newline}){$newline}(?!{$newline}|    |\\t|(?:[-+*]|[0-9]+[).])\h)/";
+        $search[] = "/{$noEscape}(?<!{$newline}|^){$newline}(?!{$newline}|\$|    |\\t|(?:[-+*]|[0-9]+[).])\h){$between}/D";
         $replace[] = ' ';
 
         if ($collapseBlankLines) {

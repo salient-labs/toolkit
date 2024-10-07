@@ -78,9 +78,9 @@ trait HasHttpHeaders
     /**
      * @inheritDoc
      */
-    public function getOneHeaderLine(string $name): string
+    public function getOneHeaderLine(string $name, bool $orSame = false): string
     {
-        return $this->Headers->getOneHeaderLine($name);
+        return $this->Headers->getOneHeaderLine($name, $orSame);
     }
 
     /**

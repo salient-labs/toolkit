@@ -403,7 +403,14 @@ final class Arr extends AbstractUtility
      * @template TValue
      *
      * @param iterable<TKey,TValue> $array
-     * @return ($preserveKeys is true ? (TKey is array-key ? array<TKey,TValue> : array<array-key,TValue>) : list<TValue>)
+     * @return (
+     *     $preserveKeys is true
+     *     ? (TKey is array-key
+     *         ? ($array is non-empty-array ? non-empty-array<TKey,TValue> : array<TKey,TValue>)
+     *         : ($array is non-empty-array ? non-empty-array<array-key,TValue> : array<array-key,TValue>)
+     *     )
+     *     : ($array is non-empty-array ? non-empty-list<TValue> : list<TValue>)
+     * )
      */
     public static function unique(
         iterable $array,

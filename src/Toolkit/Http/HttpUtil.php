@@ -108,7 +108,7 @@ final class HttpUtil extends AbstractUtility
         bool $unquote = true,
         bool $strict = false
     ): array {
-        foreach (Str::splitDelimited(';', $value) as $i => $param) {
+        foreach (Str::splitDelimited(';', $value, false) as $i => $param) {
             if ($i === 0 && !$firstIsParameter) {
                 $params[] = $unquote
                     ? self::unquoteString($param)
