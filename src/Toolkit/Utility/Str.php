@@ -12,8 +12,8 @@ use InvalidArgumentException;
  */
 final class Str extends AbstractUtility
 {
-    public const ALPHA = self::LOWER . self::UPPER;
-    public const ALPHANUMERIC = self::ALPHA . self::NUMERIC;
+    public const ALPHA = Str::LOWER . Str::UPPER;
+    public const ALPHANUMERIC = Str::ALPHA . Str::NUMERIC;
     public const HEX = '0123456789abcdefABCDEF';
     public const LOWER = 'abcdefghijklmnopqrstuvwxyz';
     public const NUMERIC = '0123456789';
@@ -22,6 +22,11 @@ final class Str extends AbstractUtility
     public const PRESERVE_SINGLE_QUOTED = 2;
     public const PRESERVE_QUOTED = Str::PRESERVE_DOUBLE_QUOTED | Str::PRESERVE_SINGLE_QUOTED;
     public const ASCII_EXTENDED = "\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
+
+    /**
+     * Default value of mergeLists() parameter $itemRegex
+     */
+    public const DEFAULT_ITEM_REGEX = '/^(?<indent>\h*[-*] )/';
 
     /**
      * Get the first string that is not null or empty, or return the last value
@@ -373,16 +378,16 @@ final class Str extends AbstractUtility
      * @param int $column The starting column (1-based) of `$text`.
      */
     public static function expandTabs(
-        string $text,
+        string $string,
         int $tabSize = 8,
         int $column = 1
     ): string {
-        if (strpos($text, "\t") === false) {
-            return $text;
+        if (strpos($string, "\t") === false) {
+            return $string;
         }
-        $eol = Get::eol($text) ?? "\n";
+        $eol = Get::eol($string) ?? "\n";
         $expanded = '';
-        foreach (explode($eol, $text) as $i => $line) {
+        foreach (explode($eol, $string) as $i => $line) {
             !$i || $expanded .= $eol;
             $parts = explode("\t", $line);
             $last = array_key_last($parts);
@@ -410,18 +415,18 @@ final class Str extends AbstractUtility
      * @param int $column The starting column (1-based) of `$text`.
      */
     public static function expandLeadingTabs(
-        string $text,
+        string $string,
         int $tabSize = 8,
         bool $preserveLine1 = false,
         int $column = 1
     ): string {
-        if (strpos($text, "\t") === false) {
-            return $text;
+        if (strpos($string, "\t") === false) {
+            return $string;
         }
-        $eol = Get::eol($text) ?? "\n";
+        $eol = Get::eol($string) ?? "\n";
         $softTab = str_repeat(' ', $tabSize);
         $expanded = '';
-        foreach (explode($eol, $text) as $i => $line) {
+        foreach (explode($eol, $string) as $i => $line) {
             !$i || $expanded .= $eol;
             if ($i || (!$preserveLine1 && $column === 1)) {
                 $expanded .= Regex::replace('/(?<=\n|\G)\t/', $softTab, $line);
@@ -649,27 +654,26 @@ REGEX;
      * Get the Levenshtein distance between two strings relative to the length
      * of the longest string
      *
-     * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Str::normalise()} before comparing them.
+     * @param bool $normalise If `true`, call {@see Str::normalise()} to
+     * normalise `$string1` and `$string2` for comparison.
      * @return float A value between `0` and `1`, where `0` means the strings
      * are identical, and `1` means they have no similarities.
      */
     public static function distance(
         string $string1,
         string $string2,
-        bool $normalise = true
+        bool $normalise = false
     ): float {
-        if ($string1 === '' && $string2 === '') {
-            return 0.0;
-        }
-
         if ($normalise) {
             $string1 = self::normalise($string1);
             $string2 = self::normalise($string2);
         }
 
-        return
-            levenshtein($string1, $string2)
+        if ($string1 === '' && $string2 === '') {
+            return 0.0;
+        }
+
+        return levenshtein($string1, $string2)
             / max(strlen($string1), strlen($string2));
     }
 
@@ -677,66 +681,65 @@ REGEX;
      * Get the similarity of two strings relative to the length of the longest
      * string
      *
-     * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Str::normalise()} before comparing them.
+     * @param bool $normalise If `true`, call {@see Str::normalise()} to
+     * normalise `$string1` and `$string2` for comparison.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no similarities, and `1` means they are identical.
      */
     public static function similarity(
         string $string1,
         string $string2,
-        bool $normalise = true
+        bool $normalise = false
     ): float {
-        if ($string1 === '' && $string2 === '') {
-            return 1.0;
-        }
-
         if ($normalise) {
             $string1 = self::normalise($string1);
             $string2 = self::normalise($string2);
         }
 
-        return
-            max(
-                similar_text($string1, $string2),
-                similar_text($string2, $string1),
-            ) / max(
-                strlen($string1),
-                strlen($string2),
-            );
+        if ($string1 === '' && $string2 === '') {
+            return 1.0;
+        }
+
+        return max(
+            similar_text($string1, $string2),
+            similar_text($string2, $string1),
+        ) / max(
+            strlen($string1),
+            strlen($string2),
+        );
     }
 
     /**
-     * Get the ngrams shared between two strings relative to the number of
+     * Get ngrams shared between two strings relative to the number of
      * ngrams in the longest string
      *
-     * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Str::normalise()} before comparing them.
+     * @param bool $normalise If `true`, call {@see Str::normalise()} to
+     * normalise `$string1` and `$string2` for comparison.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no shared ngrams, and `1` means their ngrams are identical.
      */
     public static function ngramSimilarity(
         string $string1,
         string $string2,
-        bool $normalise = true,
+        bool $normalise = false,
         int $size = 2
     ): float {
         return self::ngramScore(true, $string1, $string2, $normalise, $size);
     }
 
     /**
-     * Get the ngrams shared between two strings relative to the number of
+     * Get ngrams shared between two strings relative to the number of
      * ngrams in the shortest string
      *
-     * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Str::normalise()} before comparing them.
+     * @param bool $normalise If `true`, call {@see Str::normalise()} to
+     * normalise `$string1` and `$string2` for comparison.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no shared ngrams, and `1` means their ngrams are identical.
      */
     public static function ngramIntersection(
         string $string1,
         string $string2,
-        bool $normalise = true,
+        bool $normalise = false,
         int $size = 2
     ): float {
         return self::ngramScore(false, $string1, $string2, $normalise, $size);
@@ -749,21 +752,20 @@ REGEX;
         bool $normalise,
         int $size
     ): float {
-        if (strlen($string1) < $size && strlen($string2) < $size) {
-            return 1.0;
-        }
-
         if ($normalise) {
             $string1 = self::normalise($string1);
             $string2 = self::normalise($string2);
         }
 
+        if (strlen($string1) < $size && strlen($string2) < $size) {
+            return 1.0;
+        }
+
         $ngrams1 = self::ngrams($string1, $size);
         $ngrams2 = self::ngrams($string2, $size);
-        $count =
-            $relativeToLongest
-                ? max(count($ngrams1), count($ngrams2))
-                : min(count($ngrams1), count($ngrams2));
+        $count = $relativeToLongest
+            ? max(count($ngrams1), count($ngrams2))
+            : min(count($ngrams1), count($ngrams2));
 
         $same = 0;
         foreach ($ngrams1 as $ngram) {
@@ -807,84 +809,95 @@ REGEX;
     }
 
     /**
-     * Remove duplicates in a string where top-level lines ("sections") are
-     * grouped with "list items" below
+     * Group lists in a string by heading and remove duplicate items
      *
-     * Lines that match `$regex` are regarded as list items, and other lines are
-     * used as the section name for subsequent list items. If `$loose` is
-     * `false` (the default), blank lines between list items clear the current
-     * section name.
+     * - Lines in `$text` are processed in order, from first to last
+     * - If a non-empty line matches `$itemRegex`, it is treated as a list item,
+     *   otherwise it becomes the current heading
+     * - The current heading is cleared when an empty line is encountered after
+     *   a list item (unless `$loose` is `true`)
+     * - Top-level lines (i.e. headings with no items, and items with no
+     *   heading) are returned before lists with headings
+     * - If `$itemRegex` has a named subpattern called `indent` that matches a
+     *   non-empty string, subsequent lines with indentation of the same width
+     *   are treated as a continuation of the item, along with any empty lines
+     *   between them
      *
-     * Top-level lines with no children, including any list items orphaned by
-     * blank lines above them, are returned before sections with children.
-     *
-     * If a named subpattern in `$regex` called `indent` matches a non-empty
-     * string, subsequent lines with the same number of spaces for indentation
-     * as there are characters in the match are treated as part of the item,
-     * including any blank lines.
-     *
-     * Line endings used in `$text` may be any combination of LF, CRLF and CR,
-     * but LF (`"\n"`) line endings are used in the return value.
-     *
-     * @param string $separator Used between top-level lines and sections. Has
-     * no effect on the end-of-line sequence used between items, which is always
-     * LF (`"\n"`).
-     * @param string|null $marker Added before each section name. Nested list
-     * items are indented by the equivalent number of spaces. To add a leading
-     * `"- "` to top-level lines and indent others with two spaces, set
-     * `$marker` to `"-"`.
-     * @param bool $clean If `true`, the first match of `$regex` in each section
-     * name is removed.
-     * @param bool $loose If `true`, blank lines between list items are ignored.
+     * @param string $listSeparator Inserted between headings and lists.
+     * @param string|null $headingPrefix Inserted before headings, e.g. `"-"`.
+     * Indentation of the same width is applied to subsequent list items.
+     * @param bool $clean If `true`, remove the first match of `$itemRegex` from
+     * the beginning of each item with no heading.
+     * @param bool $loose If `true`, do not clear the current heading when an
+     * empty line is encountered.
+     * @param bool $discardEmpty If `true`, discard headings with no items.
      */
     public static function mergeLists(
-        string $text,
-        string $separator = "\n",
-        ?string $marker = null,
-        string $regex = '/^(?<indent>\h*[-*] )/',
+        string $string,
+        string $listSeparator = "\n",
+        ?string $headingPrefix = null,
+        ?string $itemRegex = Str::DEFAULT_ITEM_REGEX,
         bool $clean = false,
-        bool $loose = false
+        bool $loose = false,
+        bool $discardEmpty = false,
+        string $eol = "\n",
+        int $tabSize = 4
     ): string {
-        $marker = (string) $marker !== '' ? $marker . ' ' : null;
-        $indent = $marker !== null ? str_repeat(' ', mb_strlen($marker)) : '';
-        $markerIsItem = $marker !== null && Regex::match($regex, $marker);
+        $prefix = self::coalesce($headingPrefix, null);
+        $regex = $itemRegex ?? self::DEFAULT_ITEM_REGEX;
 
-        /** @var array<string,string[]> */
-        $sections = [];
+        if ($prefix !== null) {
+            $prefixIsItem = (bool) Regex::match($regex, $prefix);
+            $prefixBytes = strlen($prefix);
+            $indent = str_repeat(' ', mb_strlen($prefix));
+        } else {
+            $indent = '';
+        }
+
+        $lines = Regex::split('/\r\n|\n|\r/', $string);
+        $count = count($lines);
+        $lists = [];
         $lastWasItem = false;
-        $lines = Regex::split('/\r\n|\n|\r/', $text);
-        for ($i = 0; $i < count($lines); $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $line = $lines[$i];
 
-            // Remove pre-existing markers early to ensure sections with the
-            // same name are combined
-            if ($marker !== null && !$markerIsItem && strpos($line, $marker) === 0) {
-                $line = substr($line, strlen($marker));
+            // Remove prefixes to ensure lists with the same heading are merged
+            if (
+                $prefix !== null
+                && !$prefixIsItem
+                && substr($line, 0, $prefixBytes) === $prefix
+            ) {
+                /** @var string */
+                $line = substr($line, $prefixBytes);
             }
 
-            // Treat blank lines between items as section breaks
+            // Clear the current heading if this is an empty line after an item
             if (trim($line) === '') {
                 if (!$loose && $lastWasItem) {
-                    unset($section);
+                    unset($list);
                 }
                 continue;
             }
 
-            // Collect any subsequent indented lines
-            if (Regex::match($regex, $line, $matches)) {
-                $matchIndent = $matches['indent'] ?? '';
-                if ($matchIndent !== '') {
-                    $matchIndent = str_repeat(' ', mb_strlen($matchIndent));
-                    $pendingWhitespace = '';
+            if (Regex::match($regex, $line, $matches, \PREG_OFFSET_CAPTURE)) {
+                // Collect subsequent lines with indentation of the same width
+                if (
+                    ($matches['indent'][1] ?? null) === 0
+                    && ($itemIndent = $matches['indent'][0]) !== ''
+                ) {
+                    $itemIndent = self::expandTabs($itemIndent, $tabSize);
+                    $itemIndentBytes = mb_strlen($itemIndent);
+                    $itemIndent = str_repeat(' ', $itemIndentBytes);
+                    $tentative = '';
                     $backtrack = 0;
-                    while ($i < count($lines) - 1) {
+                    while ($i < $count - 1) {
                         $nextLine = $lines[$i + 1];
                         if (trim($nextLine) === '') {
-                            $pendingWhitespace .= $nextLine . "\n";
+                            $tentative .= $nextLine . $eol;
                             $backtrack++;
-                        } elseif (substr($nextLine, 0, strlen($matchIndent)) === $matchIndent) {
-                            $line .= "\n" . $pendingWhitespace . $nextLine;
-                            $pendingWhitespace = '';
+                        } elseif (substr(self::expandTabs($nextLine, $tabSize), 0, $itemIndentBytes) === $itemIndent) {
+                            $line .= $eol . $tentative . $nextLine;
+                            $tentative = '';
                             $backtrack = 0;
                         } else {
                             $i -= $backtrack;
@@ -894,86 +907,83 @@ REGEX;
                     }
                 }
             } else {
-                $section = $line;
+                $list = $line;
             }
 
-            $key = $section ?? $line;
-
-            if (!array_key_exists($key, $sections)) {
-                $sections[$key] = [];
-            }
-
-            if ($key !== $line) {
-                if (!in_array($line, $sections[$key])) {
-                    $sections[$key][] = $line;
-                }
-                $lastWasItem = true;
-            } else {
-                $lastWasItem = false;
+            $key = $list ?? $line;
+            $lists[$key] ??= [];
+            $lastWasItem = $key !== $line;
+            if ($lastWasItem && !in_array($line, $lists[$key], true)) {
+                $lists[$key][] = $line;
             }
         }
 
-        // Move lines with no associated list to the top
-        /** @var array<string,string[]> */
+        // Move top-level lines to the top
         $top = [];
-        $last = null;
-        foreach ($sections as $section => $lines) {
+        $itemList = null;
+        foreach ($lists as $list => $lines) {
             if (count($lines)) {
                 continue;
             }
 
-            unset($sections[$section]);
+            unset($lists[$list]);
 
-            if ($clean) {
-                $top[$section] = [];
+            if ($discardEmpty && !Regex::match($regex, $list)) {
                 continue;
             }
 
-            // Collect second and subsequent consecutive top-level list items
-            // under the first so they don't form a loose list
-            if (Regex::match($regex, $section)) {
-                if ($last !== null) {
-                    $top[$last][] = $section;
+            if ($clean) {
+                $top[$list] = [];
+                continue;
+            }
+
+            // Move consecutive top-level items to their own list so
+            // `$listSeparator` isn't inserted between them
+            if (Regex::match($regex, $list)) {
+                if ($itemList !== null) {
+                    $top[$itemList][] = $list;
                     continue;
                 }
-                $last = $section;
+                $itemList = $list;
             } else {
-                $last = null;
+                $itemList = null;
             }
-            $top[$section] = [];
+            $top[$list] = [];
         }
-        /** @var array<string,string[]> */
-        $sections = array_merge($top, $sections);
+        $lists = $top + $lists;
 
-        $groups = [];
-        foreach ($sections as $section => $lines) {
+        $merged = [];
+        foreach ($lists as $list => $lines) {
             if ($clean) {
-                $section = Regex::replace($regex, '', $section, 1);
+                $list = Regex::replace($regex, '', $list, 1);
             }
 
-            $marked = false;
-            if ($marker !== null
-                    && !($markerIsItem && strpos($section, $marker) === 0)
-                    && !Regex::match($regex, $section)) {
-                $section = $marker . $section;
-                $marked = true;
+            if (
+                $prefix !== null
+                && !($prefixIsItem && substr($list, 0, $prefixBytes) === $prefix)
+                && !Regex::match($regex, $list)
+            ) {
+                $list = $prefix . $list;
+                $listHasPrefix = true;
+            } else {
+                $listHasPrefix = false;
             }
 
             if (!$lines) {
-                $groups[] = $section;
+                $merged[] = $list;
                 continue;
             }
 
-            // Don't separate or indent top-level list items collected above
-            if (!$marked && Regex::match($regex, $section)) {
-                $groups[] = implode("\n", [$section, ...$lines]);
+            // Don't separate or indent consecutive top-level items
+            if (!$listHasPrefix && Regex::match($regex, $list)) {
+                $merged[] = implode($eol, [$list, ...$lines]);
                 continue;
             }
 
-            $groups[] = $section;
-            $groups[] = $indent . implode("\n" . $indent, $lines);
+            $merged[] = $list;
+            $merged[] = $indent . implode($eol . $indent, $lines);
         }
 
-        return implode($separator, $groups);
+        return implode($listSeparator, $merged);
     }
 }

@@ -261,16 +261,16 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
                         : 1.0;
 
             case Algorithm::LEVENSHTEIN:
-                return Str::distance($string1, $string2, false);
+                return Str::distance($string1, $string2);
 
             case Algorithm::SIMILAR_TEXT:
-                return 1 - Str::similarity($string1, $string2, false);
+                return 1 - Str::similarity($string1, $string2);
 
             case Algorithm::NGRAM_SIMILARITY:
-                return 1 - Str::ngramSimilarity($string1, $string2, false);
+                return 1 - Str::ngramSimilarity($string1, $string2);
 
             case Algorithm::NGRAM_INTERSECTION:
-                return 1 - Str::ngramIntersection($string1, $string2, false);
+                return 1 - Str::ngramIntersection($string1, $string2);
 
             default:
                 throw new LogicException(sprintf(
