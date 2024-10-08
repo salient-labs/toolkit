@@ -173,7 +173,7 @@ interface HttpHeadersInterface extends
      *
      * An exception is thrown if the header has more than one value.
      */
-    public function getOneHeaderLine(string $name): string;
+    public function getOneHeaderLine(string $name, bool $orSame = false): string;
 
     /**
      * Get header names and values in their original order as a list of HTTP

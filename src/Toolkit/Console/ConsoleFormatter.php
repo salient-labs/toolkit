@@ -311,7 +311,8 @@ REGEX;
             if ($match['breaks'] !== null) {
                 $breaks = $match['breaks'];
                 if ($unwrap && strpos($breaks, "\n") !== false) {
-                    $breaks = Str::unwrap($breaks, "\n", false, true, true);
+                    /** @var string */
+                    $breaks = substr(Str::unwrap(".$breaks.", "\n", false, true, true), 1, -1);
                 }
                 $string .= $indent . $breaks;
                 continue;
@@ -328,7 +329,8 @@ REGEX;
             if ($match['text'] !== null) {
                 $text = $match['text'];
                 if ($unwrap && strpos($text, "\n") !== false) {
-                    $text = Str::unwrap($text, "\n", false, true, true);
+                    /** @var string */
+                    $text = substr(Str::unwrap(".$text.", "\n", false, true, true), 1, -1);
                 }
 
                 $adjust = 0;

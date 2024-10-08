@@ -63,7 +63,7 @@ interface HttpMessageInterface extends
      *
      * An exception is thrown if the header has more than one value.
      */
-    public function getOneHeaderLine(string $name): string;
+    public function getOneHeaderLine(string $name, bool $orSame = false): string;
 
     /**
      * Get the message as an HTTP payload

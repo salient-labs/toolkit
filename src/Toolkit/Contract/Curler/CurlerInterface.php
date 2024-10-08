@@ -278,7 +278,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      *
      * An exception is thrown if the request header has more than one value.
      */
-    public function getOneHeaderLine(string $name): string;
+    public function getOneHeaderLine(string $name, bool $orSame = false): string;
 
     /**
      * Get an instance with a value applied to a request header, replacing any

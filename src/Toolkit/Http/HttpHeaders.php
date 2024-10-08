@@ -760,6 +760,8 @@ REGEX;
         if (!$values) {
             return [];
         }
+        // [RFC7230], Section 7: "a recipient MUST parse and ignore a reasonable
+        // number of empty list elements"
         return Str::splitDelimited(',', implode(',', $values));
     }
 
@@ -790,36 +792,41 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function getOneHeaderLine(string $name): string
+    public function getOneHeaderLine(string $name, bool $orSame = false): string
     {
-        return $this->doGetHeaderLine($name, false, false, true);
+        return $this->doGetHeaderLine($name, false, false, true, $orSame);
     }
 
     private function doGetHeaderLine(
         string $name,
         bool $first = false,
         bool $last = false,
-        bool $one = false
+        bool $one = false,
+        bool $orSame = false
     ): string {
-        $values = $this->Items[Str::lower($name)] ?? [];
+        $values = $this->getHeaderValues($name);
         if (!$values) {
             return '';
         }
-        $line = implode(', ', $values);
-        if (!($first || $last || $one)) {
-            return $line;
-        }
-        $values = Str::splitDelimited(',', $line);
-        if ($one && count($values) > 1) {
-            throw new InvalidHeaderException(sprintf(
-                'HTTP header has more than one value: %s',
-                $name,
-            ));
+        if ($first) {
+            return reset($values);
         }
         if ($last) {
             return end($values);
         }
-        return reset($values);
+        if ($one) {
+            if ($orSame) {
+                $values = array_unique($values);
+            }
+            if (count($values) > 1) {
+                throw new InvalidHeaderException(sprintf(
+                    'HTTP header has more than one value: %s',
+                    $name,
+                ));
+            }
+            return reset($values);
+        }
+        return implode(', ', $values);
     }
 
     /**

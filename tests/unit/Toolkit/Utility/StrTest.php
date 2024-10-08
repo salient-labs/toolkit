@@ -7,7 +7,6 @@ use Salient\Utility\Get;
 use Salient\Utility\Str;
 use Closure;
 use InvalidArgumentException;
-use ReflectionParameter;
 
 /**
  * @covers \Salient\Utility\Str
@@ -793,12 +792,12 @@ EOF,
         string $string,
         string $break = \PHP_EOL,
         bool $ignoreEscapes = true,
-        bool $trimTrailingWhitespace = false,
+        bool $trimLines = false,
         bool $collapseBlankLines = false
     ): void {
         $this->assertSame(
             $expected,
-            Str::unwrap($string, $break, $ignoreEscapes, $trimTrailingWhitespace, $collapseBlankLines)
+            Str::unwrap($string, $break, $ignoreEscapes, $trimLines, $collapseBlankLines)
         );
     }
 
@@ -859,7 +858,9 @@ EOF,
             ],
             'leading + trailing + inner lines' => [
                 <<<'EOF'
- Est   esse sunt velit ea. 
+
+Est   esse sunt velit ea.
+
 EOF,
                 <<<'EOF'
 
@@ -894,83 +895,203 @@ EOF,
             ],
             'trimmed #1 (baseline)' => [
                 <<<'EOF'
-Est magna\  voluptate  minim est.
+Est magna\   voluptate   minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
  
 
+Qui\ exercitation elit.
+1. Item 1    Line 2    Line 3
+2. Item 2    Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
             ],
-            'trimmed #2 (+ trimTrailingWhitespace)' => [
+            'trimmed #2 (+ trimLines)' => [
                 <<<'EOF'
 Est magna\ voluptate minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
 
 
+Qui\ exercitation elit.
+1. Item 1 Line 2 Line 3
+2. Item 2 Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
                 true,
                 true,
             ],
-            'trimmed #3 (- ignoreEscapes)' => [
+            'trimmed #3 (- ignoreEscapes, + trimLines)' => [
                 <<<'EOF'
 Est magna\  voluptate minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
 
 
+Qui\
+exercitation elit.
+1. Item 1 Line 2 Line 3
+2. Item 2 Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
                 false,
                 true,
             ],
-            'trimmed #4 (+ collapseBlankLines)' => [
+            'trimmed #4 (- ignoreEscapes, + trimLines, + collapseBlankLines)' => [
                 <<<'EOF'
 Est magna\  voluptate minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
 
+Qui\
+exercitation elit.
+1. Item 1 Line 2 Line 3
+2. Item 2 Line 2
 
 EOF,
                 <<<'EOF'
 Est magna\ 
-voluptate 
-minim est.
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
 
  
 
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
 
 EOF,
                 \PHP_EOL,
                 false,
                 true,
+                true,
+            ],
+            'trimmed #5 (- ignoreEscapes, + collapseBlankLines)' => [
+                <<<'EOF'
+Est magna\   voluptate   minim est.
+- Item Line 2 Line 3
+    Quote
+    Line 2
+
+ 
+
+Qui\
+exercitation elit.
+1. Item 1    Line 2    Line 3
+2. Item 2    Line 2
+
+EOF,
+                <<<'EOF'
+Est magna\ 
+ voluptate 
+ minim est.
+- Item
+Line 2
+Line 3
+    Quote
+    Line 2
+
+ 
+
+Qui\
+exercitation
+elit.
+1. Item 1
+   Line 2
+   Line 3
+2. Item 2
+   Line 2
+
+EOF,
+                \PHP_EOL,
+                false,
+                false,
                 true,
             ],
         ];
@@ -1166,24 +1287,31 @@ EOF,
      */
     public function testMergeLists(
         string $expected,
-        string $text,
-        string $separator = "\n",
-        ?string $marker = null,
-        ?string $regex = null,
+        string $string,
+        string $listSeparator = "\n",
+        ?string $headingPrefix = null,
+        ?string $itemRegex = null,
         bool $clean = false,
-        bool $loose = false
+        bool $loose = false,
+        bool $discardEmpty = false,
+        string $eol = "\n",
+        int $tabSize = 4
     ): void {
-        if ($regex === null) {
-            /** @var string */
-            $regex = (
-                new ReflectionParameter([Str::class, 'mergeLists'], 'regex')
-            )->getDefaultValue();
-        }
-        $this->assertSame($expected, Str::eolToNative(Str::mergeLists($text, $separator, $marker, $regex, $clean, $loose)));
+        $this->assertSame($expected, Str::eolToNative(Str::mergeLists(
+            $string,
+            $listSeparator,
+            $headingPrefix,
+            $itemRegex,
+            $clean,
+            $loose,
+            $discardEmpty,
+            $eol,
+            $tabSize,
+        )));
     }
 
     /**
-     * @return array<string,array{string,string,2?:string,3?:string|null,4?:string|null,5?:bool,6?:bool}>
+     * @return array<string,array{string,string,2?:string,3?:string|null,4?:string|null,5?:bool,6?:bool,7?:bool,8?:string,9?:int}>
      */
     public static function mergeListsProvider(): array
     {
@@ -1344,7 +1472,30 @@ EOF,
 EOF,
                 $input1,
                 "\n\n",
-                '-',
+                '- ',
+            ],
+            'Nested (discard empty)' => [
+                <<<EOF
+- Before lists
+
+- Section:
+
+  - d
+  - a
+  - b
+  - c
+
+- Other section:
+
+  - <not a letter>
+EOF,
+                $input1,
+                "\n\n",
+                '- ',
+                null,
+                false,
+                false,
+                true,
             ],
             'Default (multibyte)' => [
                 <<<EOF
@@ -1361,7 +1512,7 @@ EOF,
 EOF,
                 $input2,
                 "\n",
-                '📍',
+                '📍 ',
             ],
             'Default (multibyte, clean)' => [
                 <<<EOF
@@ -1378,7 +1529,7 @@ EOF,
 EOF,
                 $input2,
                 "\n",
-                '📍',
+                '📍 ',
                 null,
                 true,
             ],
@@ -1402,7 +1553,7 @@ EOF,
 EOF,
                 $input2,
                 "\n\n",
-                '📍',
+                '📍 ',
             ],
             'Markdown (multiline #1, loose)' => [
                 <<<EOF
