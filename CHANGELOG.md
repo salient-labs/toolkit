@@ -10,6 +10,140 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.55] - 2024-10-08
+
+### Added
+
+#### `Contract`
+
+- Add `Flushable`
+- Add `Instantiable` and require facade services to implement it
+
+#### `Sync`
+
+- Add `ReflectionSyncEntity` and `ReflectionSyncProvider`
+- Add `SyncUtil` methods `getStore()`, `getEntityTypeProvider()`, `getProviderEntityTypes()`
+- Add context methods:
+  - `getEntityType()`
+  - `withEntityType()`
+  - `recursionDetected()`
+  - `hasFilter()`
+  - `getFilters()` (necessary after making `$key` required in `getFilter()`)
+  - `hasOperation()`
+  - `getOperation()`
+  - `withOffline()`
+- Add provider methods `runOperation()` and `filterOperationOutput()` to formalise policy enforcement
+
+#### `Utility`
+
+- Add `Arr::combine()` and adopt instead of `array_combine()`
+- Add `Arr::search()`
+- Add `Reflect::getConstantValue()`
+
+### Changed
+
+#### `Core`
+
+- Move exception interfaces to `Exception` namespace
+- Move entity-related interfaces to `Entity` namespace
+- Move provider-related interfaces to `Provider` namespace
+- Move `Cardinality` constants to `Relatable`
+- Rename `ArrayMapperFlag` to `ArrayMapperInterface`, add `map()` method, and implement in `ArrayMapper`
+- Rename `HierarchyInterface` to `Hierarchical`, and `Hierarchical::getDescendantCount()` to `countDescendants()`
+- Rename `Normalisable::normalise()` to `normaliseProperty()`
+- In `Constructible`:
+  - Rename `constructList()` to `constructMultiple()`
+  - Rearrange parameters in `construct()` and `constructMultiple()`
+- Rename `Providable::provideList()` to `provideMultiple()`
+- In `Extensible`:
+  - Add `getDynamicPropertiesProperty()` and `getDynamicPropertyNamesProperty()`
+  - Rename `getMetaProperties()` to `getDynamicProperties()`
+  - Replace `clearMetaProperties()` with `setDynamicProperties()`
+- Add native `int` type to `$conformity` parameters
+
+#### `Http`
+
+- Add `$orSame` parameter to `getOneHeaderLine()` methods
+
+#### `Sync`
+
+- Move `SyncIntrospector` methods `isListOperation()` and `isWriteOperation()` to `SyncUtil`
+- Rename `SyncNamespaceHelperInterface` methods for consistency (again):
+  - `getEntityProvider()` -> `getEntityTypeProvider()`
+  - `getProviderEntities()` -> `getProviderEntityTypes()`
+- Rename context methods:
+  - `stack()` -> `getEntities()`
+  - `last()` -> `getLastEntity()`
+  - `push()` -> `pushEntity()`
+  - `withFilter()` -> `withOperation()` and add `$entityType` parameter
+- In context method `withOperation()`:
+  - Allow associative array keys to be empty
+  - Normalise keys with any inner whitespace, not just `" "`
+  - Apply the provider's date formatter to `DateTimeInterface` instances
+- Merge received conformity levels when a context is passed to `Providable::provide()` or `provideMultiple()`
+
+#### `Utility`
+
+- In `Arr::pluck()`, simplify parameter names and return `null` for any items where the value is not found
+- In `Str::splitDelimited()`, remove empty strings by default (for consistency with similar methods)
+- In `Str::unwrap()`:
+  - Don't unwrap leading or trailing newlines
+  - Trim whitespace between unwrapped lines
+  - Rename `$trimTrailingWhitespace` to `$trimLines`
+- In `Str::mergeLists()`:
+  - Update parameter names
+  - **Don't add a space to `$headingPrefix`**
+  - Make `$itemRegex` nullable, and fall back to its default value when `null` is given
+  - Add `$discardEmpty`, `$eol`, `$tabSize` parameters
+- In string comparison methods:
+  - Don't normalise strings for comparison by default
+  - Normalise strings before checking their length
+
+### Removed
+
+#### `Core`
+
+- Remove enumeration- and dictionary-related interfaces and classes:
+  - `EnumerationInterface`
+  - `ConvertibleEnumerationInterface`
+  - `DictionaryInterface`
+  - `AbstractCatalog`
+  - `AbstractEnumeration`
+  - `AbstractConvertibleEnumeration`
+  - `AbstractReflectiveEnumeration`
+  - `AbstractDictionary`
+- Remove `Cardinality`
+- Remove `NormaliserFactory`
+- Remove `Extensible` methods: `setMetaProperty()`, `getMetaProperty()`, `isMetaPropertySet()`, `unsetMetaProperty()`
+- Remove `$container` parameter from `ProviderInterface::getContext()`
+
+#### `Sync`
+
+- Remove `SyncIntrospector` methods `isReadOperation()`, `getEntityProvider()`, `getProviderEntities()`
+- Remove context methods:
+  - `pushWithRecursionCheck()` (`pushEntity()` now has an optional `$detectRecursion` parameter)
+  - `maybeThrowRecursionException()` (replaced by `recursionDetected()`)
+  - `getFilter{Int,String,ArrayKey,IntList,StringList,ArrayKeyList}()`
+  - `claimFilter{Int,String,ArrayKey,IntList,StringList,ArrayKeyList}()`
+  - `online()`, `offline()`, `offlineFirst()` (replaced by `withOffline()`)
+  - `applyFilterPolicy()`, `withFilterPolicyCallback()`
+
+### Fixed
+
+#### `Core`
+
+- Fix issue where `ArrayMapper` ignores `REQUIRE_MAPPED` if `ADD_MISSING` is also applied
+- Fix `ExtensibleTrait` issue where dynamic property names are remembered after they are unset
+
+#### `Sync`
+
+- Fix hydration issue where entity providers may be resolved before sync namespaces are registered
+
+#### `Utility`
+
+- Fix `Str::mergeLists()` issue where tabs are not expanded for comparison when checking for item continuation
+- Fix `Str::toStream()` issue where long strings may not be fully written to the stream
+
 ## [v0.99.54] - 2024-09-24
 
 ### Added
@@ -3683,6 +3817,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.55]: https://github.com/salient-labs/toolkit/compare/v0.99.54...v0.99.55
 [v0.99.54]: https://github.com/salient-labs/toolkit/compare/v0.99.53...v0.99.54
 [v0.99.53]: https://github.com/salient-labs/toolkit/compare/v0.99.52...v0.99.53
 [v0.99.52]: https://github.com/salient-labs/toolkit/compare/v0.99.51...v0.99.52
