@@ -8,10 +8,6 @@ use Salient\Utility\Regex;
 use Generator;
 use UnexpectedValueException;
 
-defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);
-defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10008);
-defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10009);
-
 /**
  * Reflection for files
  */

@@ -19,6 +19,7 @@
         "salient/contracts": "self.version",
         "salient/core": "self.version",
         "salient/phpdoc": "self.version",
+        "salient/polyfills": "self.version",
         "salient/sync": "self.version",
         "salient/utils": "self.version"
     },
@@ -28,7 +29,10 @@
     "autoload": {
         "psr-4": {
             "Salient\\Sli\\": ""
-        }
+        },
+        "files": [
+            "bootstrap.php"
+        ]
     },
     "bin": [
         "sli"
