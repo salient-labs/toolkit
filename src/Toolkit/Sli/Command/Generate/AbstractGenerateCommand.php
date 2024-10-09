@@ -17,7 +17,7 @@ use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\Command\AbstractCommand;
-use Salient\Sli\TokenExtractor;
+use Salient\Sli\Internal\TokenExtractor;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Get;

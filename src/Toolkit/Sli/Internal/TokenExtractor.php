@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Sli;
+namespace Salient\Sli\Internal;
 
 use Salient\Utility\File;
 use Salient\Utility\Get;
