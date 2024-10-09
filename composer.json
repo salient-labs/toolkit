@@ -89,7 +89,8 @@
             "src/Toolkit/Utility/stubs/"
         ],
         "files": [
-            "src/Toolkit/Db/bootstrap.php"
+            "src/Toolkit/Db/bootstrap.php",
+            "src/Toolkit/Sli/bootstrap.php"
         ]
     },
     "autoload-dev": {

@@ -191,9 +191,9 @@ parameters:
 			path: src/Toolkit/Sli/Command/Generate/GenerateTests.php
 
 		-
-			message: "#^Method Salient\\\\Sli\\\\TokenExtractor\\:\\:getUseMap\\(\\) should return array\\<string, class\\-string\\> but returns array\\<string\\>\\.$#"
+			message: "#^Method Salient\\\\Sli\\\\Internal\\\\TokenExtractor\\:\\:getUseMap\\(\\) should return array\\<string, class\\-string\\> but returns array\\<string\\>\\.$#"
 			count: 1
-			path: src/Toolkit/Sli/TokenExtractor.php
+			path: src/Toolkit/Sli/Internal/TokenExtractor.php
 
 		-
 			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"
