@@ -1,5 +1,19 @@
 <?php
 
+$customTokens = [
+    'T_PROPERTY_C',
+    'T_OPEN_BRACE',
+    'T_OPEN_BRACKET',
+    'T_OPEN_PARENTHESIS',
+    'T_CLOSE_BRACE',
+    'T_CLOSE_BRACKET',
+    'T_CLOSE_PARENTHESIS',
+    'T_AND',
+    'T_COMMA',
+    'T_SEMICOLON',
+];
+
+/** @disregard P1009 */
 $finder = (new PhpCsFixer\Finder())
     ->in([
         __DIR__ . '/src',
@@ -20,11 +34,12 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__ . '/.php-cs-fixer.dist.php',
     ]);
 
+/** @disregard P1009 */
 return (new PhpCsFixer\Config())
     ->setRules([
         'fully_qualified_strict_types' => true,
         'is_null' => true,
-        'native_constant_invocation' => true,
+        'native_constant_invocation' => ['include' => $customTokens],
         'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
         'no_unneeded_import_alias' => true,
         'no_unused_imports' => true,

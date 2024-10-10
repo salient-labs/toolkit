@@ -25,6 +25,8 @@
       <directory>src/Toolkit/Contract/stubs</directory>
       <directory>src/Toolkit/Polyfill/stubs</directory>
       <directory>src/Toolkit/Utility/stubs</directory>
+      <file>src/Toolkit/Db/bootstrap.php</file>
+      <file>src/Toolkit/Sli/bootstrap.php</file>
     </exclude>
     <report>
       <html outputDirectory="build/coverage" />
