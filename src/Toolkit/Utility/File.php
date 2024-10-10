@@ -424,6 +424,15 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Get a unique identifier for a file from its device and inode numbers
+     */
+    public static function getIdentifier(string $filename): string
+    {
+        $stat = self::stat($filename);
+        return sprintf('%d:%d', $stat['dev'], $stat['ino']);
+    }
+
+    /**
      * Get the size of a file
      *
      * @phpstan-impure

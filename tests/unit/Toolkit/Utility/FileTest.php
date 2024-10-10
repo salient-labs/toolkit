@@ -505,6 +505,16 @@ final class FileTest extends TestCase
         $this->assertFalse(File::same("$dir/dir/file", "$dir/broken_symlink"));
     }
 
+    public function testGetIdentifier(): void
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        $identifier = File::getIdentifier("$dir/dir/file");
+        $this->assertNotSame('0:0', $identifier);
+        $this->assertSame($identifier, File::getIdentifier("$dir/dir/file"));
+        $this->assertSame($identifier, File::getIdentifier("$dir/file_symlink"));
+        $this->assertNotSame($identifier, File::getIdentifier("$dir/exists"));
+    }
+
     public function testReadAll(): void
     {
         // 1 MiB
