@@ -17,12 +17,16 @@ class A
 {
     const PUBLIC = 'public';
 
-    /* comment #1 */
+    /**
+     * comment #1
+     */
     function f(int $a): string
     {
-        /** comment #2 */
+        // comment #2
         return sprintf('0x%02x', $a);
     }
+
+    // comment #3
 }
 
 $b = f(77);
@@ -49,7 +53,7 @@ PHP;
         $this->assertSame(
             $expected,
             $actual ?? [],
-            'If $input changed, replace $expected with: ' . $actualCode
+            'If $input changed, replace $expected with: ' . $actualCode,
         );
     }
 
@@ -78,7 +82,7 @@ PHP;
                     'T_CONSTANT_ENCAPSED_STRING',
                     ';',
                     'T_WHITESPACE',
-                    'T_COMMENT',
+                    'T_DOC_COMMENT',
                     'T_WHITESPACE',
                     'T_FUNCTION',
                     'T_WHITESPACE',
@@ -94,7 +98,7 @@ PHP;
                     'T_WHITESPACE',
                     '{',
                     'T_WHITESPACE',
-                    'T_DOC_COMMENT',
+                    'T_COMMENT',
                     'T_WHITESPACE',
                     'T_RETURN',
                     'T_WHITESPACE',
@@ -108,6 +112,8 @@ PHP;
                     ';',
                     'T_WHITESPACE',
                     '}',
+                    'T_WHITESPACE',
+                    'T_COMMENT',
                     'T_WHITESPACE',
                     '}',
                     'T_WHITESPACE',
@@ -152,7 +158,7 @@ PHP;
      *
      * @param bool[]|class-string<Throwable> $expected
      * @param array<PhpToken|\PhpToken> $input
-     * @param int|string|false|array<int|string|false> $kind
+     * @param int|string|array<int|string> $kind
      */
     public function testIs($expected, array $input, $kind): void
     {
@@ -161,7 +167,6 @@ PHP;
         }
 
         foreach ($input as $token) {
-            // @phpstan-ignore-next-line
             $actual[] = $token->is($kind);
         }
         $actualCode = Get::code($actual ?? []);
@@ -169,12 +174,12 @@ PHP;
         $this->assertSame(
             $expected,
             $actual ?? [],
-            'If $input changed, replace $expected with: ' . $actualCode
+            'If $input changed, replace $expected with: ' . $actualCode,
         );
     }
 
     /**
-     * @return array<array{bool[]|class-string<Throwable>,array<PhpToken|\PhpToken>,int|string|false|array<int|string|false>}>
+     * @return array<array{bool[]|class-string<Throwable>,array<PhpToken|\PhpToken>,mixed}>
      */
     public static function isProvider(): array
     {
@@ -229,6 +234,8 @@ PHP;
                     true,
                     false,
                     true,
+                    true,
+                    true,
                     false,
                     true,
                     false,
@@ -274,6 +281,8 @@ PHP;
                     false,
                     false,
                     true,
+                    false,
+                    false,
                     false,
                     false,
                     false,
@@ -415,6 +424,8 @@ PHP;
                     false,
                     false,
                     false,
+                    false,
+                    false,
                 ],
                 static::$Token::tokenize(self::CODE, \TOKEN_PARSE),
                 '$a',
@@ -479,7 +490,7 @@ PHP;
         $this->assertSame(
             $expected,
             $actual ?? [],
-            'If $input changed, replace $expected with: ' . $actualCode
+            'If $input changed, replace $expected with: ' . $actualCode,
         );
     }
 
@@ -539,6 +550,8 @@ PHP;
                     true,
                     false,
                     true,
+                    true,
+                    true,
                     false,
                     true,
                     false,
@@ -588,13 +601,12 @@ PHP;
         $actual = static::$Token::tokenize(Str::setEol($input), $flags);
         $actualCode = array_reduce(
             $actual,
-            fn(string $code, $token) => sprintf(
-                "%s    new static::\$Token(%s, %s, %d, %d),\n",
-                $code,
+            fn($code, $token) => $code . sprintf(
+                "    new static::\$Token(%s, %s, %d, %d),\n",
                 $token->id < 128 ? $token->id : '\\' . $token->getTokenName(),
                 Get::code($token->text),
                 $token->line,
-                $token->pos
+                $token->pos,
             ),
             "[\n"
         ) . ']';
@@ -602,7 +614,7 @@ PHP;
         $this->assertEquals(
             $expected,
             $actual,
-            'If $input changed, replace $expected with: ' . $actualCode
+            'If $input changed, replace $expected with: ' . $actualCode,
         );
     }
 
@@ -631,61 +643,63 @@ PHP;
                     new static::$Token(\T_CONSTANT_ENCAPSED_STRING, "'public'", 4, 40),
                     new static::$Token(59, ';', 4, 48),
                     new static::$Token(\T_WHITESPACE, "\n\n    ", 4, 49),
-                    new static::$Token(\T_COMMENT, '/* comment #1 */', 6, 55),
-                    new static::$Token(\T_WHITESPACE, "\n    ", 6, 71),
-                    new static::$Token(\T_FUNCTION, 'function', 7, 76),
-                    new static::$Token(\T_WHITESPACE, ' ', 7, 84),
-                    new static::$Token(\T_STRING, 'f', 7, 85),
-                    new static::$Token(40, '(', 7, 86),
-                    new static::$Token(\T_STRING, 'int', 7, 87),
-                    new static::$Token(\T_WHITESPACE, ' ', 7, 90),
-                    new static::$Token(\T_VARIABLE, '$a', 7, 91),
-                    new static::$Token(41, ')', 7, 93),
-                    new static::$Token(58, ':', 7, 94),
-                    new static::$Token(\T_WHITESPACE, ' ', 7, 95),
-                    new static::$Token(\T_STRING, 'string', 7, 96),
-                    new static::$Token(\T_WHITESPACE, "\n    ", 7, 102),
-                    new static::$Token(123, '{', 8, 107),
-                    new static::$Token(\T_WHITESPACE, "\n        ", 8, 108),
-                    new static::$Token(\T_DOC_COMMENT, '/** comment #2 */', 9, 117),
-                    new static::$Token(\T_WHITESPACE, "\n        ", 9, 134),
-                    new static::$Token(\T_RETURN, 'return', 10, 143),
-                    new static::$Token(\T_WHITESPACE, ' ', 10, 149),
-                    new static::$Token(\T_STRING, 'sprintf', 10, 150),
-                    new static::$Token(40, '(', 10, 157),
-                    new static::$Token(\T_CONSTANT_ENCAPSED_STRING, "'0x%02x'", 10, 158),
-                    new static::$Token(44, ',', 10, 166),
-                    new static::$Token(\T_WHITESPACE, ' ', 10, 167),
-                    new static::$Token(\T_VARIABLE, '$a', 10, 168),
-                    new static::$Token(41, ')', 10, 170),
-                    new static::$Token(59, ';', 10, 171),
-                    new static::$Token(\T_WHITESPACE, "\n    ", 10, 172),
-                    new static::$Token(125, '}', 11, 177),
-                    new static::$Token(\T_WHITESPACE, "\n", 11, 178),
-                    new static::$Token(125, '}', 12, 179),
-                    new static::$Token(\T_WHITESPACE, "\n\n", 12, 180),
-                    new static::$Token(\T_VARIABLE, '$b', 14, 182),
-                    new static::$Token(\T_WHITESPACE, ' ', 14, 184),
-                    new static::$Token(61, '=', 14, 185),
-                    new static::$Token(\T_WHITESPACE, ' ', 14, 186),
-                    new static::$Token(\T_STRING, 'f', 14, 187),
-                    new static::$Token(40, '(', 14, 188),
-                    new static::$Token(\T_LNUMBER, '77', 14, 189),
-                    new static::$Token(41, ')', 14, 191),
-                    new static::$Token(59, ';', 14, 192),
-                    new static::$Token(\T_WHITESPACE, "\n", 14, 193),
-                    new static::$Token(\T_ECHO, 'echo', 15, 194),
-                    new static::$Token(\T_WHITESPACE, ' ', 15, 198),
-                    new static::$Token(34, '"', 15, 199),
-                    new static::$Token(\T_ENCAPSED_AND_WHITESPACE, 'Value: ', 15, 200),
-                    new static::$Token(\T_CURLY_OPEN, '{', 15, 207),
-                    new static::$Token(\T_VARIABLE, '$b', 15, 208),
-                    new static::$Token(125, '}', 15, 210),
-                    new static::$Token(34, '"', 15, 211),
-                    new static::$Token(59, ';', 15, 212),
-                    new static::$Token(\T_WHITESPACE, "\n", 15, 213),
-                    new static::$Token(\T_CLOSE_TAG, '?>', 16, 214),
-                    new static::$Token(\T_INLINE_HTML, '</div>', 16, 216),
+                    new static::$Token(\T_DOC_COMMENT, "/**\n     * comment #1\n     */", 6, 55),
+                    new static::$Token(\T_WHITESPACE, "\n    ", 8, 84),
+                    new static::$Token(\T_FUNCTION, 'function', 9, 89),
+                    new static::$Token(\T_WHITESPACE, ' ', 9, 97),
+                    new static::$Token(\T_STRING, 'f', 9, 98),
+                    new static::$Token(40, '(', 9, 99),
+                    new static::$Token(\T_STRING, 'int', 9, 100),
+                    new static::$Token(\T_WHITESPACE, ' ', 9, 103),
+                    new static::$Token(\T_VARIABLE, '$a', 9, 104),
+                    new static::$Token(41, ')', 9, 106),
+                    new static::$Token(58, ':', 9, 107),
+                    new static::$Token(\T_WHITESPACE, ' ', 9, 108),
+                    new static::$Token(\T_STRING, 'string', 9, 109),
+                    new static::$Token(\T_WHITESPACE, "\n    ", 9, 115),
+                    new static::$Token(123, '{', 10, 120),
+                    new static::$Token(\T_WHITESPACE, "\n        ", 10, 121),
+                    new static::$Token(\T_COMMENT, '// comment #2', 11, 130),
+                    new static::$Token(\T_WHITESPACE, "\n        ", 11, 143),
+                    new static::$Token(\T_RETURN, 'return', 12, 152),
+                    new static::$Token(\T_WHITESPACE, ' ', 12, 158),
+                    new static::$Token(\T_STRING, 'sprintf', 12, 159),
+                    new static::$Token(40, '(', 12, 166),
+                    new static::$Token(\T_CONSTANT_ENCAPSED_STRING, "'0x%02x'", 12, 167),
+                    new static::$Token(44, ',', 12, 175),
+                    new static::$Token(\T_WHITESPACE, ' ', 12, 176),
+                    new static::$Token(\T_VARIABLE, '$a', 12, 177),
+                    new static::$Token(41, ')', 12, 179),
+                    new static::$Token(59, ';', 12, 180),
+                    new static::$Token(\T_WHITESPACE, "\n    ", 12, 181),
+                    new static::$Token(125, '}', 13, 186),
+                    new static::$Token(\T_WHITESPACE, "\n\n    ", 13, 187),
+                    new static::$Token(\T_COMMENT, '// comment #3', 15, 193),
+                    new static::$Token(\T_WHITESPACE, "\n", 15, 206),
+                    new static::$Token(125, '}', 16, 207),
+                    new static::$Token(\T_WHITESPACE, "\n\n", 16, 208),
+                    new static::$Token(\T_VARIABLE, '$b', 18, 210),
+                    new static::$Token(\T_WHITESPACE, ' ', 18, 212),
+                    new static::$Token(61, '=', 18, 213),
+                    new static::$Token(\T_WHITESPACE, ' ', 18, 214),
+                    new static::$Token(\T_STRING, 'f', 18, 215),
+                    new static::$Token(40, '(', 18, 216),
+                    new static::$Token(\T_LNUMBER, '77', 18, 217),
+                    new static::$Token(41, ')', 18, 219),
+                    new static::$Token(59, ';', 18, 220),
+                    new static::$Token(\T_WHITESPACE, "\n", 18, 221),
+                    new static::$Token(\T_ECHO, 'echo', 19, 222),
+                    new static::$Token(\T_WHITESPACE, ' ', 19, 226),
+                    new static::$Token(34, '"', 19, 227),
+                    new static::$Token(\T_ENCAPSED_AND_WHITESPACE, 'Value: ', 19, 228),
+                    new static::$Token(\T_CURLY_OPEN, '{', 19, 235),
+                    new static::$Token(\T_VARIABLE, '$b', 19, 236),
+                    new static::$Token(125, '}', 19, 238),
+                    new static::$Token(34, '"', 19, 239),
+                    new static::$Token(59, ';', 19, 240),
+                    new static::$Token(\T_WHITESPACE, "\n", 19, 241),
+                    new static::$Token(\T_CLOSE_TAG, '?>', 20, 242),
+                    new static::$Token(\T_INLINE_HTML, '</div>', 20, 244),
                 ],
                 self::CODE,
                 \TOKEN_PARSE,
@@ -709,61 +723,63 @@ PHP;
                     new static::$Token(\T_CONSTANT_ENCAPSED_STRING, "'public'", 4, 40),
                     new static::$Token(59, ';', 4, 48),
                     new static::$Token(\T_WHITESPACE, "\n\n    ", 4, 49),
-                    new static::$Token(\T_COMMENT, '/* comment #1 */', 6, 55),
-                    new static::$Token(\T_WHITESPACE, "\n    ", 6, 71),
-                    new static::$Token(\T_FUNCTION, 'function', 7, 76),
-                    new static::$Token(\T_WHITESPACE, ' ', 7, 84),
-                    new static::$Token(\T_STRING, 'f', 7, 85),
-                    new static::$Token(40, '(', 7, 86),
-                    new static::$Token(\T_STRING, 'int', 7, 87),
-                    new static::$Token(\T_WHITESPACE, ' ', 7, 90),
-                    new static::$Token(\T_VARIABLE, '$a', 7, 91),
-                    new static::$Token(41, ')', 7, 93),
-                    new static::$Token(58, ':', 7, 94),
-                    new static::$Token(\T_WHITESPACE, ' ', 7, 95),
-                    new static::$Token(\T_STRING, 'string', 7, 96),
-                    new static::$Token(\T_WHITESPACE, "\n    ", 7, 102),
-                    new static::$Token(123, '{', 8, 107),
-                    new static::$Token(\T_WHITESPACE, "\n        ", 8, 108),
-                    new static::$Token(\T_DOC_COMMENT, '/** comment #2 */', 9, 117),
-                    new static::$Token(\T_WHITESPACE, "\n        ", 9, 134),
-                    new static::$Token(\T_RETURN, 'return', 10, 143),
-                    new static::$Token(\T_WHITESPACE, ' ', 10, 149),
-                    new static::$Token(\T_STRING, 'sprintf', 10, 150),
-                    new static::$Token(40, '(', 10, 157),
-                    new static::$Token(\T_CONSTANT_ENCAPSED_STRING, "'0x%02x'", 10, 158),
-                    new static::$Token(44, ',', 10, 166),
-                    new static::$Token(\T_WHITESPACE, ' ', 10, 167),
-                    new static::$Token(\T_VARIABLE, '$a', 10, 168),
-                    new static::$Token(41, ')', 10, 170),
-                    new static::$Token(59, ';', 10, 171),
-                    new static::$Token(\T_WHITESPACE, "\n    ", 10, 172),
-                    new static::$Token(125, '}', 11, 177),
-                    new static::$Token(\T_WHITESPACE, "\n", 11, 178),
-                    new static::$Token(125, '}', 12, 179),
-                    new static::$Token(\T_WHITESPACE, "\n\n", 12, 180),
-                    new static::$Token(\T_VARIABLE, '$b', 14, 182),
-                    new static::$Token(\T_WHITESPACE, ' ', 14, 184),
-                    new static::$Token(61, '=', 14, 185),
-                    new static::$Token(\T_WHITESPACE, ' ', 14, 186),
-                    new static::$Token(\T_STRING, 'f', 14, 187),
-                    new static::$Token(40, '(', 14, 188),
-                    new static::$Token(\T_LNUMBER, '77', 14, 189),
-                    new static::$Token(41, ')', 14, 191),
-                    new static::$Token(59, ';', 14, 192),
-                    new static::$Token(\T_WHITESPACE, "\n", 14, 193),
-                    new static::$Token(\T_ECHO, 'echo', 15, 194),
-                    new static::$Token(\T_WHITESPACE, ' ', 15, 198),
-                    new static::$Token(34, '"', 15, 199),
-                    new static::$Token(\T_ENCAPSED_AND_WHITESPACE, 'Value: ', 15, 200),
-                    new static::$Token(\T_CURLY_OPEN, '{', 15, 207),
-                    new static::$Token(\T_VARIABLE, '$b', 15, 208),
-                    new static::$Token(125, '}', 15, 210),
-                    new static::$Token(34, '"', 15, 211),
-                    new static::$Token(59, ';', 15, 212),
-                    new static::$Token(\T_WHITESPACE, "\n", 15, 213),
-                    new static::$Token(\T_CLOSE_TAG, '?>', 16, 214),
-                    new static::$Token(\T_INLINE_HTML, '</div>', 16, 216),
+                    new static::$Token(\T_DOC_COMMENT, "/**\n     * comment #1\n     */", 6, 55),
+                    new static::$Token(\T_WHITESPACE, "\n    ", 8, 84),
+                    new static::$Token(\T_FUNCTION, 'function', 9, 89),
+                    new static::$Token(\T_WHITESPACE, ' ', 9, 97),
+                    new static::$Token(\T_STRING, 'f', 9, 98),
+                    new static::$Token(40, '(', 9, 99),
+                    new static::$Token(\T_STRING, 'int', 9, 100),
+                    new static::$Token(\T_WHITESPACE, ' ', 9, 103),
+                    new static::$Token(\T_VARIABLE, '$a', 9, 104),
+                    new static::$Token(41, ')', 9, 106),
+                    new static::$Token(58, ':', 9, 107),
+                    new static::$Token(\T_WHITESPACE, ' ', 9, 108),
+                    new static::$Token(\T_STRING, 'string', 9, 109),
+                    new static::$Token(\T_WHITESPACE, "\n    ", 9, 115),
+                    new static::$Token(123, '{', 10, 120),
+                    new static::$Token(\T_WHITESPACE, "\n        ", 10, 121),
+                    new static::$Token(\T_COMMENT, '// comment #2', 11, 130),
+                    new static::$Token(\T_WHITESPACE, "\n        ", 11, 143),
+                    new static::$Token(\T_RETURN, 'return', 12, 152),
+                    new static::$Token(\T_WHITESPACE, ' ', 12, 158),
+                    new static::$Token(\T_STRING, 'sprintf', 12, 159),
+                    new static::$Token(40, '(', 12, 166),
+                    new static::$Token(\T_CONSTANT_ENCAPSED_STRING, "'0x%02x'", 12, 167),
+                    new static::$Token(44, ',', 12, 175),
+                    new static::$Token(\T_WHITESPACE, ' ', 12, 176),
+                    new static::$Token(\T_VARIABLE, '$a', 12, 177),
+                    new static::$Token(41, ')', 12, 179),
+                    new static::$Token(59, ';', 12, 180),
+                    new static::$Token(\T_WHITESPACE, "\n    ", 12, 181),
+                    new static::$Token(125, '}', 13, 186),
+                    new static::$Token(\T_WHITESPACE, "\n\n    ", 13, 187),
+                    new static::$Token(\T_COMMENT, '// comment #3', 15, 193),
+                    new static::$Token(\T_WHITESPACE, "\n", 15, 206),
+                    new static::$Token(125, '}', 16, 207),
+                    new static::$Token(\T_WHITESPACE, "\n\n", 16, 208),
+                    new static::$Token(\T_VARIABLE, '$b', 18, 210),
+                    new static::$Token(\T_WHITESPACE, ' ', 18, 212),
+                    new static::$Token(61, '=', 18, 213),
+                    new static::$Token(\T_WHITESPACE, ' ', 18, 214),
+                    new static::$Token(\T_STRING, 'f', 18, 215),
+                    new static::$Token(40, '(', 18, 216),
+                    new static::$Token(\T_LNUMBER, '77', 18, 217),
+                    new static::$Token(41, ')', 18, 219),
+                    new static::$Token(59, ';', 18, 220),
+                    new static::$Token(\T_WHITESPACE, "\n", 18, 221),
+                    new static::$Token(\T_ECHO, 'echo', 19, 222),
+                    new static::$Token(\T_WHITESPACE, ' ', 19, 226),
+                    new static::$Token(34, '"', 19, 227),
+                    new static::$Token(\T_ENCAPSED_AND_WHITESPACE, 'Value: ', 19, 228),
+                    new static::$Token(\T_CURLY_OPEN, '{', 19, 235),
+                    new static::$Token(\T_VARIABLE, '$b', 19, 236),
+                    new static::$Token(125, '}', 19, 238),
+                    new static::$Token(34, '"', 19, 239),
+                    new static::$Token(59, ';', 19, 240),
+                    new static::$Token(\T_WHITESPACE, "\n", 19, 241),
+                    new static::$Token(\T_CLOSE_TAG, '?>', 20, 242),
+                    new static::$Token(\T_INLINE_HTML, '</div>', 20, 244),
                 ],
                 self::CODE,
             ],

@@ -2,7 +2,7 @@
 
 namespace Salient\Polyfill;
 
-use Salient\Utility\Get;
+use Salient\Utility\Regex;
 use Stringable;
 use TypeError;
 
@@ -153,20 +153,43 @@ class PhpToken implements Stringable
     public static function tokenize(string $code, int $flags = 0): array
     {
         $_tokens = token_get_all($code, $flags);
-        $eol = Get::eol($code) ?: "\n";
+        $_count = count($_tokens);
         $pos = 0;
         $last = null;
         /** @var static[] */
         $tokens = [];
-        foreach ($_tokens as $_token) {
+        for ($i = 0; $i < $_count; $i++) {
+            $_token = $_tokens[$i];
             if (is_array($_token)) {
                 $token = new static($_token[0], $_token[1], $_token[2], $pos);
+                // If a comment has a trailing newline, move it to a whitespace
+                // token for consistency with the native implementation
+                if (
+                    $token->id === \T_COMMENT
+                    && substr($token->text, 0, 2) !== '/*'
+                    && Regex::match('/(?:\r\n|\n|\r)$/D', $token->text, $matches)
+                ) {
+                    $newline = $matches[0];
+                    $token->text = substr($token->text, 0, -strlen($newline));
+                    if (
+                        $i + 1 < $_count
+                        && is_array($_tokens[$i + 1])
+                        && $_tokens[$i + 1][0] === \T_WHITESPACE
+                    ) {
+                        $_tokens[$i + 1][1] = $newline . $_tokens[$i + 1][1];
+                        $_tokens[$i + 1][2]--;
+                    } else {
+                        $tokens[] = $token;
+                        $pos += strlen($token->text);
+                        $token = new static(\T_WHITESPACE, $newline, $token->line, $pos);
+                    }
+                }
             } else {
                 /** @var static $last */
                 $token = new static(
                     ord($_token),
                     $_token,
-                    $last->line + substr_count($last->text, $eol),
+                    $last->line + Regex::match('/\r\n|\n|\r/', $last->text),
                     $pos
                 );
             }
