@@ -336,10 +336,17 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         }
 
         foreach (array_keys($files) as $file) {
-            $extractor = new TokenExtractor($file);
-            $useMap = $extractor->getUseMap();
-            $this->InputFileUseMaps[$file] = array_change_key_case($useMap);
-            $this->InputFileTypeMaps[$file] = array_change_key_case(array_flip($useMap));
+            $extractor = TokenExtractor::fromFile($file);
+            foreach ($extractor->getImports() as $alias => [$type, $import]) {
+                if ($type !== \T_CLASS) {
+                    continue;
+                }
+                /** @var class-string $import */
+                $useMap[$alias] = $import;
+            }
+
+            $this->InputFileUseMaps[$file] = array_change_key_case($useMap ?? []);
+            $this->InputFileTypeMaps[$file] = array_change_key_case(array_flip($useMap ?? []));
         }
     }
 

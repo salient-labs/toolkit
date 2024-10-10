@@ -2,138 +2,145 @@
 
 namespace Salient\Sli\Internal;
 
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\File;
 use Salient\Utility\Get;
-use Salient\Utility\Regex;
-use Generator;
-use UnexpectedValueException;
 
 /**
- * Reflection for files
+ * @internal
  */
 final class TokenExtractor
 {
-    /** @var array<string|array{0:int,1:string,2:int}> */
-    private $Tokens;
+    /** @var NavigableToken[] */
+    private array $Tokens = [];
 
-    public function __construct(string $filename)
+    public function __construct(string $code)
     {
-        $this->Tokens = array_values(array_filter(
-            token_get_all(File::getContents($filename), \TOKEN_PARSE),
-            fn($t) => !is_array($t) || !in_array($t[0], [\T_WHITESPACE])
-        ));
+        $this->Tokens = NavigableToken::tokenize($code, \TOKEN_PARSE, true);
     }
 
-    public function dumpTokens(): void
+    public static function fromFile(string $filename): self
     {
-        foreach ($this->Tokens as $token) {
-            if (is_array($token)) {
-                printf("[%4d] %s: %s\n", $token[2], token_name($token[0]), Regex::replace('/\s+/', ' ', $token[1]));
+        return new self(File::getContents($filename));
+    }
+
+    /**
+     * Iterate over tokens in the extractor, optionally filtering them by ID
+     *
+     * @return iterable<int,NavigableToken>
+     */
+    public function getTokens(int ...$id): iterable
+    {
+        if ($id) {
+            $idx = array_fill_keys($id, true);
+            foreach ($this->Tokens as $index => $token) {
+                if ($idx[$token->id] ?? false) {
+                    yield $index => $token;
+                }
+            }
+        } else {
+            yield from $this->Tokens;
+        }
+    }
+
+    /**
+     * Iterate over imports in the extractor
+     *
+     * Namespaces are ignored.
+     *
+     * @return iterable<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}> An
+     * iterator that maps aliases to import type and name.
+     */
+    public function getImports(): iterable
+    {
+        foreach ($this->getTokens(\T_USE) as $token) {
+            // Exclude `function () use (<variable>) {}`
+            if ($token->PrevCode && $token->PrevCode->id === \T_CLOSE_PARENTHESIS) {
+                continue;
+            }
+            // Exclude `class <name> { use <trait>; }`
+            if ($token->Parent && (
+                $token->Parent->id !== \T_OPEN_BRACE
+                || !$token->Parent->PrevCode
+                || !$token->Parent->PrevCode->isDeclarationOf(\T_NAMESPACE)
+            )) {
+                continue;
+            }
+            // Detect `use function` and `use const`
+            if ($token->NextCode && (
+                $token->NextCode->id === \T_FUNCTION
+                || $token->NextCode->id === \T_CONST
+            )) {
+                $type = $token->NextCode->id;
+                $token = $token->NextCode;
             } else {
-                printf("[%'-4s] %s\n", '', $token);
+                $type = \T_CLASS;
+            }
+            if ($token = $token->NextCode) {
+                $imports = $this->doGetImports($type, $token);
+                foreach ($imports as $alias => [$type, $import]) {
+                    yield $alias => [$type, ltrim($import, '\\')];
+                }
             }
         }
     }
 
     /**
-     * Get an array that maps the file's import/alias names to qualified names
-     *
-     * Limitations:
-     * - `namespace` boundaries are ignored
-     * - processing halts at the first `class` or `trait` encountered
-     * - no distinction is made between `use`, `use function` and `use const`
-     *
-     * @return array<string,class-string>
+     * @param \T_CLASS|\T_FUNCTION|\T_CONST $type
+     * @return iterable<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}>
      */
-    public function getUseMap(): array
+    private function doGetImports(int $type, NavigableToken $token, string $prefix = ''): iterable
     {
-        /** @todo: Revisit this with navigable tokens */
-        $map = [];
-        foreach ($this->getTokensByType(\T_USE, \T_CLASS, \T_TRAIT) as $i) {
-            // Ignore:
-            // - `class <class> { use <trait> ...`
-            // - `trait <trait> { use <trait> ...`
-            // - `function() use (<variable> ...`
-            if (in_array($this->Tokens[$i][0], [\T_CLASS, \T_TRAIT], true)) {
-                break;
-            }
-            if ($this->Tokens[$i - 1] === ')') {
-                continue;
-            }
-            $index = $i + 1;
-            if (in_array($this->Tokens[$index][0] ?? null, [\T_CONST, \T_FUNCTION], true)) {
-                $index++;
-            }
-            $this->_getUseMap($index, $map);
-            unset($index);
-        }
-
-        return array_map(fn(string $import) => ltrim($import, '\\'), $map);
-    }
-
-    /**
-     * @return Generator<int>
-     */
-    private function getTokensByType(int ...$id): Generator
-    {
-        for ($i = 0; $i < count($this->Tokens); $i++) {
-            $token = $this->Tokens[$i];
-            if (!is_array($token) || !in_array($token[0], $id)) {
-                continue;
-            }
-
-            yield $i;
-        }
-    }
-
-    /**
-     * @param array<string,class-string> $map
-     */
-    private function _getUseMap(int &$index, array &$map, string $namespace = ''): void
-    {
-        $current = $namespace;
-        $pending = true;
+        $current = $prefix;
+        $saved = false;
         do {
-            $token = $this->Tokens[$index++];
-            switch ($token[0] ?? $token) {
+            switch ($token->id) {
                 case \T_NAME_FULLY_QUALIFIED:
                 case \T_NAME_QUALIFIED:
                 case \T_NAME_RELATIVE:
                 case \T_NS_SEPARATOR:
                 case \T_STRING:
-                    $current .= $token[1];
-                    break;
-
-                case '{':
-                    $this->_getUseMap($index, $map, $current);
-                    $pending = false;
-                    break;
-
-                case \T_CLOSE_TAG:
-                case '}':
-                case ';':
-                    if ($pending) {
-                        $map[Get::basename($current)] = $current;
-                    }
-                    break 2;
-
-                case ',':
-                    if ($pending) {
-                        $map[Get::basename($current)] = $current;
-                    }
-                    $current = $namespace;
-                    $pending = true;
+                    $current .= $token->text;
                     break;
 
                 case \T_AS:
-                    $token = $this->Tokens[$index++];
-                    if (($token[0] ?? null) !== \T_STRING) {
-                        throw new UnexpectedValueException('T_AS not followed by T_STRING');
+                    /** @var NavigableToken */
+                    $token = $token->NextCode;
+                    if ($token->id !== \T_STRING) {
+                        // @codeCoverageIgnoreStart
+                        throw new ShouldNotHappenException('T_AS not followed by T_STRING');
+                        // @codeCoverageIgnoreEnd
                     }
-                    $map[$token[1]] = $current;
-                    $pending = false;
+                    yield $token->text => [$type, $current];
+                    $saved = true;
                     break;
+
+                case \T_COMMA:
+                    if (!$saved) {
+                        yield Get::basename($current) => [$type, $current];
+                    }
+                    $current = $prefix;
+                    $saved = false;
+                    break;
+
+                case \T_OPEN_BRACE:
+                    /** @var NavigableToken */
+                    $next = $token->NextCode;
+                    /** @disregard P1006 */
+                    yield from $this->doGetImports($type, $next, $current);
+                    $saved = true;
+                    /** @var NavigableToken */
+                    $token = $token->ClosedBy;
+                    break;
+
+                case \T_CLOSE_BRACE:
+                case \T_SEMICOLON:
+                case \T_CLOSE_TAG:
+                    if (!$saved) {
+                        yield Get::basename($current) => [$type, $current];
+                    }
+                    return;
             }
-        } while (true);
+        } while ($token = $token->Next);
     }
 }
