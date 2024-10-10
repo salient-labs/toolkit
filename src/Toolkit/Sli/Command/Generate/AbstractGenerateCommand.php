@@ -17,7 +17,7 @@ use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\Command\AbstractCommand;
-use Salient\Sli\TokenExtractor;
+use Salient\Sli\Internal\TokenExtractor;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Get;
@@ -210,6 +210,13 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected array $InputFileTypeMaps;
 
     /**
+     * Filename => [ lowercase alias => type ]
+     *
+     * @var array<string,array<string,\T_CLASS|\T_FUNCTION|\T_CONST>>
+     */
+    protected array $InputFileUseTypes;
+
+    /**
      * @return array<CliOption|CliOptionBuilder>
      */
     protected function getGlobalOptionList(
@@ -336,10 +343,16 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         }
 
         foreach (array_keys($files) as $file) {
-            $extractor = new TokenExtractor($file);
-            $useMap = $extractor->getUseMap();
-            $this->InputFileUseMaps[$file] = array_change_key_case($useMap);
-            $this->InputFileTypeMaps[$file] = array_change_key_case(array_flip($useMap));
+            $extractor = TokenExtractor::fromFile($file);
+            /** @var class-string $import */
+            foreach ($extractor->getUseMap() as $alias => [$type, $import]) {
+                $useMap[$alias] = $import;
+                $useTypes[$alias] = $type;
+            }
+
+            $this->InputFileUseMaps[$file] = array_change_key_case($useMap ?? []);
+            $this->InputFileTypeMaps[$file] = array_change_key_case(array_flip($useMap ?? []));
+            $this->InputFileUseTypes[$file] = array_change_key_case($useTypes ?? []);
         }
     }
 
@@ -354,6 +367,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         unset($this->InputFiles);
         unset($this->InputFileUseMaps);
         unset($this->InputFileTypeMaps);
+        unset($this->InputFileUseTypes);
     }
 
     protected function getClassPrefix(): string

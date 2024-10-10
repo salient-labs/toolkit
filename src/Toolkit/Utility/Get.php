@@ -12,6 +12,7 @@ use Countable;
 use DateTimeInterface;
 use DateTimeZone;
 use InvalidArgumentException;
+use LogicException;
 use ReflectionClass;
 use ReflectionObject;
 use Stringable;
@@ -770,35 +771,39 @@ final class Get extends AbstractUtility
     }
 
     /**
-     * Get a deep copy of an object
+     * Get a deep copy of a value
      *
-     * @template T of object
+     * @template T
      *
-     * @param T $object
-     * @param class-string[] $skip
+     * @param T $value
+     * @param class-string[]|(Closure(object): (object|bool)) $skip A list of
+     * classes to skip, or a closure that returns:
+     * - `true` if the object should be skipped
+     * - `false` if the object should be copied normally, or
+     * - a copy of the object
      * @param int-mask-of<Get::COPY_*> $flags
      * @return T
      */
     public static function copy(
-        object $object,
-        array $skip = [],
+        $value,
+        $skip = [],
         int $flags = Get::COPY_SKIP_UNCLONEABLE | Get::COPY_BY_REFERENCE
-    ): object {
-        return self::doCopy($object, $skip, $flags);
+    ) {
+        return self::doCopy($value, $skip, $flags);
     }
 
     /**
      * @template T
      *
      * @param T $var
-     * @param class-string[] $skip
+     * @param class-string[]|(Closure(object): (object|bool)) $skip
      * @param int-mask-of<Get::COPY_*> $flags
      * @param array<int,object> $map
      * @return T
      */
     private static function doCopy(
         $var,
-        array $skip,
+        $skip,
         int $flags,
         array &$map = []
     ) {
@@ -835,10 +840,34 @@ final class Get extends AbstractUtility
             return $var;
         }
 
-        foreach ($skip as $class) {
-            if (is_a($var, $class)) {
-                $map[$id] = $var;
-                return $var;
+        if ($skip instanceof Closure) {
+            if (($result = $skip($var)) !== false) {
+                if ($result === true) {
+                    $map[$id] = $var;
+                    return $var;
+                }
+                if (
+                    !is_object($result)
+                    || get_class($result) !== get_class($var)
+                ) {
+                    throw new LogicException(sprintf(
+                        '$skip returned %s (%s|bool expected)',
+                        self::type($result),
+                        get_class($var),
+                    ));
+                }
+                $map[$id] = $result;
+                $id = spl_object_id($result);
+                $map[$id] = $result;
+                /** @var T */
+                return $result;
+            }
+        } else {
+            foreach ($skip as $class) {
+                if (is_a($var, $class)) {
+                    $map[$id] = $var;
+                    return $var;
+                }
             }
         }
 
@@ -891,7 +920,10 @@ final class Get extends AbstractUtility
             $value = $property->getValue($clone);
             $value = self::doCopy($value, $skip, $flags, $map);
 
-            if (!$byRef) {
+            if (
+                !$byRef
+                || ($declaring = $property->getDeclaringClass())->isInternal()
+            ) {
                 $property->setValue($clone, $value);
                 continue;
             }
@@ -899,7 +931,7 @@ final class Get extends AbstractUtility
             (function () use ($name, $value): void {
                 // @phpstan-ignore-next-line
                 $this->$name = &$value;
-            })->bindTo($clone, $property->getDeclaringClass()->getName())();
+            })->bindTo($clone, $declaring->getName())();
         }
 
         return $clone;
