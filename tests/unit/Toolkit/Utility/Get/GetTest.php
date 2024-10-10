@@ -18,6 +18,7 @@ use Closure;
 use Countable;
 use DateTimeImmutable;
 use InvalidArgumentException;
+use LogicException;
 use stdClass;
 use Traversable;
 
@@ -875,6 +876,36 @@ EOF,
 
         $g = new ClassWithValue(\STDOUT);
         $this->assertSame(\STDOUT, Get::copy($g)->Value);
+
+        $h = [
+            new SkippableClass(true),
+            new SkippableClass(false),
+            new stdClass(),
+        ];
+        $i = Get::copy(
+            $h,
+            fn($obj) => $obj instanceof SkippableClass ? $obj->Skip : false,
+        );
+        $this->assertSame($h[0], $i[0]);
+        $this->assertEquals($h[1], $i[1]);
+        $this->assertNotSame($h[1], $i[1]);
+        $this->assertEquals($h[2], $i[2]);
+        $this->assertNotSame($h[2], $i[2]);
+
+        $j = new ClassWithValue('J');
+        $k = Get::copy(
+            $j,
+            fn($obj) => $obj instanceof ClassWithValue ? new ClassWithValue($obj->Value) : false,
+        );
+        $this->assertEquals($j, $k);
+        $this->assertNotSame($j, $k);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('$skip returned class@anonymous (stdClass|bool expected)');
+        Get::copy(
+            $h,
+            fn($obj) => $obj instanceof stdClass ? new class() {} : false,
+        );
     }
 
     public function testCopyContainersAndSingletons(): void
@@ -1083,5 +1114,15 @@ class RefClass
     public function apply($value): void
     {
         $this->BindTo = $value;
+    }
+}
+
+class SkippableClass
+{
+    public bool $Skip;
+
+    public function __construct(bool $skip)
+    {
+        $this->Skip = $skip;
     }
 }
