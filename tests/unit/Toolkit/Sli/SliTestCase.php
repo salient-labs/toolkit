@@ -14,8 +14,8 @@ abstract class SliTestCase extends TestCase
      */
     protected static function serializeTokens(iterable $tokens): array
     {
-        foreach ($tokens as $token) {
-            $actual[$token->Index] = $actualToken = [
+        foreach ($tokens as $key => $token) {
+            $actual[$key] = $actualToken = [
                 $token->Index,
                 $token->id,
                 $token->text,
@@ -30,7 +30,7 @@ abstract class SliTestCase extends TestCase
                 $actualToken[1] = $tokenName;
                 $constants[$tokenName] = $tokenName;
             }
-            $actualCode[$token->Index] = $actualToken;
+            $actualCode[$key] = $actualToken;
         }
         $actualCode = Get::code(
             $actualCode ?? [],
