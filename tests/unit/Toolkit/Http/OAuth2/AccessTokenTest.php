@@ -1,7 +1,11 @@
 <?php declare(strict_types=1);
 
+namespace Salient\Tests\Http\OAuth2;
+
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Tests\TestCase;
+use DateTimeImmutable;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Http\OAuth2\AccessToken
