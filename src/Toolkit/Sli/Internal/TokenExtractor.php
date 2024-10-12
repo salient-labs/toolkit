@@ -13,6 +13,7 @@ final class TokenExtractor
 {
     /** @var NavigableToken[] */
     private array $Tokens = [];
+    private ?string $Namespace = null;
 
     public function __construct(string $code)
     {
@@ -40,6 +41,140 @@ final class TokenExtractor
             }
         } else {
             yield from $this->Tokens;
+        }
+    }
+
+    /**
+     * Get the namespace of the extractor
+     *
+     * Returns `null` unless the extractor was returned by
+     * {@see TokenExtractor::getNamespaces()}.
+     */
+    public function getNamespace(): ?string
+    {
+        return $this->Namespace;
+    }
+
+    /**
+     * Iterate over namespaces in the extractor
+     *
+     * @return iterable<string,static>
+     */
+    public function getNamespaces(): iterable
+    {
+        if (!$this->Tokens) {
+            return;
+        }
+
+        $start = reset($this->Tokens);
+        $namespace = '';
+        foreach ($this->getTokens(\T_NAMESPACE) as $token) {
+            // Exclude relative names
+            if ($token->NextCode && $token->NextCode->id === \T_NS_SEPARATOR) {
+                continue;
+            }
+
+            if ($start && $token->Prev && $start !== $token) {
+                $end = $token->Prev;
+                yield $namespace =>
+                    $this->getRange($start, $end)->applyNamespace($namespace);
+            }
+
+            $namespace = '';
+            while ($token = $token->NextCode) {
+                switch ($token->id) {
+                    case \T_NAME_FULLY_QUALIFIED:
+                    case \T_NAME_QUALIFIED:
+                    case \T_NAME_RELATIVE:
+                    case \T_NS_SEPARATOR:
+                    case \T_STRING:
+                        $namespace .= $token->text;
+                        break;
+
+                    case \T_OPEN_BRACE:
+                        yield $namespace =>
+                            $this->getBlock($token)->applyNamespace($namespace);
+                        /** @var NavigableToken */
+                        $token = $token->ClosedBy;
+                        $start = $token->Next;
+                        $namespace = '';
+                        break 2;
+
+                    case \T_SEMICOLON:
+                    case \T_CLOSE_TAG:
+                        $start = $token->Next;
+                        break 2;
+                }
+            }
+        }
+
+        if ($start) {
+            $end = end($this->Tokens);
+            yield $namespace =>
+                $this->getRange($start, $end)->applyNamespace($namespace);
+        }
+    }
+
+    private function applyNamespace(string $namespace): self
+    {
+        $this->Namespace = $namespace;
+        return $this;
+    }
+
+    /**
+     * Iterate over classes in the extractor
+     *
+     * @return iterable<string,NavigableToken> An iterator that maps `class`
+     * names to `T_CLASS` tokens.
+     */
+    public function getClasses(): iterable
+    {
+        yield from $this->doGetMembers(\T_CLASS);
+    }
+
+    /**
+     * Iterate over interfaces in the extractor
+     *
+     * @return iterable<string,NavigableToken> An iterator that maps `interface`
+     * names to `T_INTERFACE` tokens.
+     */
+    public function getInterfaces(): iterable
+    {
+        yield from $this->doGetMembers(\T_INTERFACE);
+    }
+
+    /**
+     * Iterate over traits in the extractor
+     *
+     * @return iterable<string,NavigableToken> An iterator that maps `trait`
+     * names to `T_TRAIT` tokens.
+     */
+    public function getTraits(): iterable
+    {
+        yield from $this->doGetMembers(\T_TRAIT);
+    }
+
+    /**
+     * Iterate over enumerations in the extractor
+     *
+     * @return iterable<string,NavigableToken> An iterator that maps `enum`
+     * names to `T_ENUM` tokens.
+     */
+    public function getEnums(): iterable
+    {
+        yield from $this->doGetMembers(\T_ENUM);
+    }
+
+    /**
+     * @return iterable<string,NavigableToken>
+     */
+    private function doGetMembers(int $id): iterable
+    {
+        foreach ($this->getTokens($id) as $token) {
+            $next = $token->NextCode;
+            if ($next && $next->id === \T_STRING) {
+                yield $next->text => $token;
+            }
         }
     }
 
@@ -142,5 +277,19 @@ final class TokenExtractor
                     return;
             }
         } while ($token = $token->Next);
+    }
+
+    private function getBlock(NavigableToken $bracket): self
+    {
+        $clone = clone $this;
+        $clone->Tokens = $bracket->getInnerTokens();
+        return $clone;
+    }
+
+    private function getRange(NavigableToken $from, NavigableToken $to): self
+    {
+        $clone = clone $this;
+        $clone->Tokens = $from->getTokens($to);
+        return $clone;
     }
 }

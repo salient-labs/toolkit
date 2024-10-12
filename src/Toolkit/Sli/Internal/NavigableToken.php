@@ -3,6 +3,7 @@
 namespace Salient\Sli\Internal;
 
 use Salient\Utility\Get;
+use LogicException;
 
 /**
  * @internal
@@ -157,29 +158,66 @@ class NavigableToken extends GenericToken
             return [];
         }
 
-        $open = $token = Get::copy($token);
         /** @var static */
-        $close = $open->ClosedBy;
+        $from = $token->Next;
+        /** @var static */
+        $to = $token->ClosedBy->Prev;
+
+        return $from->getTokens($to);
+    }
+
+    /**
+     * Get a detached copy of the token and its following tokens up to and
+     * including the given token
+     *
+     * @param static $to
+     * @return static[]
+     */
+    public function getTokens(self $to): array
+    {
+        if ($this->Parent !== $to->Parent) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Tokens must be siblings');
+            // @codeCoverageIgnoreEnd
+        }
+
+        $first = $this->Index;
+        $last = $to->Index;
+        if ($first > $last) {
+            return [];
+        }
+        $skip = fn($obj) => $obj instanceof static
+            ? $obj->Index < $first || $obj->Index > $last
+            : false;
+        [$from, $to] = Get::copy([$this, $to], $skip);
+
+        $from->Prev = null;
+        $to->Next = null;
+        $prevCode = $from->PrevCode;
+        $nextCode = $to->NextCode;
+        $parent = $from->Parent;
+
+        $token = $from;
         $nextIndex = 0;
         do {
-            /** @var static */
-            $token = $token->Next;
-            if (!$nextIndex) {
-                $token->Prev = null;
-            }
             $token->Index = $nextIndex++;
             $tokens[] = $token;
-            if ($token->PrevCode === $open) {
+            if ($prevCode && $token->PrevCode === $prevCode) {
                 $token->PrevCode = null;
             }
-            if ($token->NextCode === $close) {
+            if ($nextCode && $token->NextCode === $nextCode) {
                 $token->NextCode = null;
             }
-            if ($token->Parent === $open) {
+            if ($parent && $token->Parent === $parent) {
                 $token->Parent = null;
             }
-        } while ($token->Next !== $close);
-        $token->Next = null;
+        } while ($token !== $to && ($token = $token->Next));
+
+        if (!$token) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Tokens must belong to the same document');
+            // @codeCoverageIgnoreEnd
+        }
 
         return $tokens;
     }
