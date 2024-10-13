@@ -303,6 +303,84 @@ PHP,
         ];
     }
 
+    public function testGetName(): void
+    {
+        foreach ((new TokenExtractor(
+            <<<'PHP'
+<?php
+namespace Foo
+{
+    interface A {}
+    interface B {}
+}
+namespace Bar\Baz
+{
+    interface C extends \Foo\A, \foo\b {}
+    interface D {}
+    interface E {}
+}
+namespace Bar
+{
+    class F implements namespace\Baz\C, namespace\baz\d {}
+}
+namespace
+{
+    class G extends \Bar\F implements namespace\Bar\Baz\E {}
+}
+namespace
+{
+    use Bar\Baz\D as Foo;
+    use \Foo\A;
+    class H implements A, foo {}
+}
+PHP,
+        ))->getNamespaces() as $namespace => $extractor) {
+            foreach ([
+                $extractor->getClasses(),
+                $extractor->getInterfaces(),
+            ] as $classes) {
+                foreach ($classes as $class => $token) {
+                    if (
+                        ($token = $token->NextCode)
+                        && ($token = $token->NextCode)
+                    ) {
+                        while (
+                            ($token->id === \T_EXTENDS || $token->id === \T_COMMA)
+                            && ($token = $token->NextCode)
+                        ) {
+                            $actual[$namespace][$class]['extends'][] = $extractor->getName($token, $token);
+                        }
+                        while (
+                            $token
+                            && ($token->id === \T_IMPLEMENTS || $token->id === \T_COMMA)
+                            && ($token = $token->NextCode)
+                        ) {
+                            $actual[$namespace][$class]['implements'][] = $extractor->getName($token, $token);
+                        }
+                    }
+                }
+            }
+        }
+
+        $actualCode = Get::code($actual ?? []);
+        $this->assertSame(
+            [
+                'Bar\Baz' => [
+                    'C' => ['extends' => ['Foo\A', 'foo\b']],
+                ],
+                'Bar' => [
+                    'F' => ['implements' => ['Bar\Baz\C', 'Bar\baz\d']],
+                ],
+                '' => [
+                    'G' => ['extends' => ['Bar\F'], 'implements' => ['Bar\Baz\E']],
+                    'H' => ['implements' => ['Foo\A', 'Bar\Baz\D']],
+                ],
+            ],
+            $actual ?? [],
+            'If code changed, replace $expected with: ' . $actualCode,
+        );
+    }
+
     public function testGetImports(): void
     {
         $extractor = new TokenExtractor(

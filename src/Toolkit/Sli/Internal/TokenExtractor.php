@@ -5,6 +5,9 @@ namespace Salient\Sli\Internal;
 use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\File;
 use Salient\Utility\Get;
+use Salient\Utility\Str;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * @internal
@@ -12,8 +15,10 @@ use Salient\Utility\Get;
 final class TokenExtractor
 {
     /** @var NavigableToken[] */
-    private array $Tokens = [];
+    private array $Tokens;
     private ?string $Namespace = null;
+    /** @var array<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}> */
+    private array $Imports;
 
     public function __construct(string $code)
     {
@@ -66,10 +71,15 @@ final class TokenExtractor
             return;
         }
 
+        if ($this->Namespace !== null) {
+            yield $this->Namespace => $this;
+            return;
+        }
+
         $start = reset($this->Tokens);
         $namespace = '';
         foreach ($this->getTokens(\T_NAMESPACE) as $token) {
-            // Exclude relative names
+            // Exclude `T_NAMESPACE` in relative names
             if ($token->NextCode && $token->NextCode->id === \T_NS_SEPARATOR) {
                 continue;
             }
@@ -179,6 +189,63 @@ final class TokenExtractor
     }
 
     /**
+     * Get a fully-qualified name from a token in the extractor, optionally
+     * assigning the next code token to a variable
+     *
+     * @param-out NavigableToken $next
+     * @return class-string|null
+     */
+    public function getName(NavigableToken $token, ?NavigableToken &$next = null): ?string
+    {
+        if ($this->Namespace === null) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Extractor has no namespace');
+            // @codeCoverageIgnoreEnd
+        }
+        if (($this->Tokens[$token->Index] ?? null) !== $token) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidArgumentException('$token does not belong to extractor');
+            // @codeCoverageIgnoreEnd
+        }
+
+        $name = $this->doGetName($token);
+        $next = $token;
+
+        if ($name === '') {
+            return null;
+        }
+
+        if (Str::startsWith($name, 'namespace\\', true)) {
+            $name = $this->Namespace . substr($name, 9);
+        } elseif (strpos($name, '\\') === false) {
+            // @phpstan-ignore assign.propertyType
+            $this->Imports ??= array_change_key_case(Get::array(
+                $this->getImports(),
+            ));
+            $name = $this->Imports[Str::lower($name)][1]
+                ?? $this->Namespace . '\\' . $name;
+        }
+
+        /** @var class-string */
+        return ltrim($name, '\\');
+    }
+
+    /**
+     * @param-out NavigableToken $token
+     */
+    private function doGetName(NavigableToken &$token): string
+    {
+        $name = $token->getName($next);
+        if (!$next) {
+            // @codeCoverageIgnoreStart
+            throw new ShouldNotHappenException('No token after name');
+            // @codeCoverageIgnoreEnd
+        }
+        $token = $next;
+        return $name;
+    }
+
+    /**
      * Iterate over imports in the extractor
      *
      * Namespaces are ignored.
@@ -212,8 +279,8 @@ final class TokenExtractor
                 $type = \T_CLASS;
             }
             if ($token = $token->NextCode) {
-                $imports = $this->doGetImports($type, $token);
-                foreach ($imports as $alias => [$type, $import]) {
+                $imports = $this->doGetImports($token);
+                foreach ($imports as $alias => $import) {
                     yield $alias => [$type, ltrim($import, '\\')];
                 }
             }
@@ -221,23 +288,15 @@ final class TokenExtractor
     }
 
     /**
-     * @param \T_CLASS|\T_FUNCTION|\T_CONST $type
-     * @return iterable<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}>
+     * @return iterable<string,string>
      */
-    private function doGetImports(int $type, NavigableToken $token, string $prefix = ''): iterable
+    private function doGetImports(NavigableToken $token, string $prefix = ''): iterable
     {
         $current = $prefix;
         $saved = false;
         do {
+            $current .= $this->doGetName($token);
             switch ($token->id) {
-                case \T_NAME_FULLY_QUALIFIED:
-                case \T_NAME_QUALIFIED:
-                case \T_NAME_RELATIVE:
-                case \T_NS_SEPARATOR:
-                case \T_STRING:
-                    $current .= $token->text;
-                    break;
-
                 case \T_AS:
                     /** @var NavigableToken */
                     $token = $token->NextCode;
@@ -246,13 +305,13 @@ final class TokenExtractor
                         throw new ShouldNotHappenException('T_AS not followed by T_STRING');
                         // @codeCoverageIgnoreEnd
                     }
-                    yield $token->text => [$type, $current];
+                    yield $token->text => $current;
                     $saved = true;
                     break;
 
                 case \T_COMMA:
                     if (!$saved) {
-                        yield Get::basename($current) => [$type, $current];
+                        yield Get::basename($current) => $current;
                     }
                     $current = $prefix;
                     $saved = false;
@@ -261,8 +320,7 @@ final class TokenExtractor
                 case \T_OPEN_BRACE:
                     /** @var NavigableToken */
                     $next = $token->NextCode;
-                    /** @disregard P1006 */
-                    yield from $this->doGetImports($type, $next, $current);
+                    yield from $this->doGetImports($next, $current);
                     $saved = true;
                     /** @var NavigableToken */
                     $token = $token->ClosedBy;
@@ -272,7 +330,7 @@ final class TokenExtractor
                 case \T_SEMICOLON:
                 case \T_CLOSE_TAG:
                     if (!$saved) {
-                        yield Get::basename($current) => [$type, $current];
+                        yield Get::basename($current) => $current;
                     }
                     return;
             }

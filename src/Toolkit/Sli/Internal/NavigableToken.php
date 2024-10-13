@@ -34,6 +34,14 @@ class NavigableToken extends GenericToken
         \T_WHITESPACE => true,
     ];
 
+    private const NAME = [
+        \T_NAME_FULLY_QUALIFIED => true,
+        \T_NAME_QUALIFIED => true,
+        \T_NAME_RELATIVE => true,
+        \T_NS_SEPARATOR => true,
+        \T_STRING => true,
+    ];
+
     private const DECLARATION_PART = [
         \T_ABSTRACT => true,
         \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => true,
@@ -69,19 +77,19 @@ class NavigableToken extends GenericToken
 
     public int $Index = -1;
     /** @var static|null */
-    public ?NavigableToken $Prev = null;
+    public ?self $Prev = null;
     /** @var static|null */
-    public ?NavigableToken $Next = null;
+    public ?self $Next = null;
     /** @var static|null */
-    public ?NavigableToken $PrevCode = null;
+    public ?self $PrevCode = null;
     /** @var static|null */
-    public ?NavigableToken $NextCode = null;
+    public ?self $NextCode = null;
     /** @var static|null */
-    public ?NavigableToken $Parent = null;
+    public ?self $Parent = null;
     /** @var static|null */
-    public ?NavigableToken $OpenedBy = null;
+    public ?self $OpenedBy = null;
     /** @var static|null */
-    public ?NavigableToken $ClosedBy = null;
+    public ?self $ClosedBy = null;
 
     /**
      * @inheritDoc
@@ -189,6 +197,37 @@ class NavigableToken extends GenericToken
         // @codeCoverageIgnoreStart
         throw new LogicException('Tokens must belong to the same document');
         // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Get an identifier from a token and its following tokens, optionally
+     * assigning the next code token to a variable
+     *
+     * If the token is not a name token (`T_NAME_*`, `T_NS_SEPARATOR` or
+     * `T_STRING`), an empty string is returned and the token itself is assigned
+     * to `$next`.
+     *
+     * @param static|null $next
+     * @param-out static|null $next
+     */
+    public function getName(?self &$next = null): string
+    {
+        $name = '';
+        $token = $this;
+        do {
+            if ((self::NAME[$token->id] ?? false) || (
+                $token->id === \T_NAMESPACE
+                && $token->NextCode
+                && $token->NextCode->id === \T_NS_SEPARATOR
+            )) {
+                $name .= $token->text;
+                continue;
+            }
+            break;
+        } while ($token = $token->NextCode);
+
+        $next = $token;
+        return $name;
     }
 
     /**

@@ -298,6 +298,40 @@ PHP;
         ];
     }
 
+    public function testGetName(): void
+    {
+        $code = <<<'PHP'
+<?php
+namespace Foo\Bar;
+interface Baz extends \A\B {}
+PHP;
+        $tokens = NavigableToken::tokenize($code, \TOKEN_PARSE, true);
+        $this->assertSame('Foo\Bar', $tokens[2]->getName($next));
+        $this->assertNotNull($next);
+        $this->assertSame(\T_SEMICOLON, $next->id);
+        $this->assertNotNull($next = $next->NextCode);
+        $this->assertNotNull($next = $next->NextCode);
+        $this->assertSame('Baz', $next->getName($next));
+        $this->assertNotNull($next);
+        $this->assertNotNull($next = $next->NextCode);
+        $this->assertSame('\A\B', $next->getName());
+
+        $code = <<<'PHP'
+<?php
+namespace Foo
+{
+    interface Qux extends namespace\Bar\Baz {}
+}
+PHP;
+        $tokens = NavigableToken::tokenize($code, \TOKEN_PARSE, true);
+        $this->assertSame('Foo', $tokens[2]->getName());
+        $this->assertSame('', $tokens[4]->getName());
+        $this->assertSame('Qux', $tokens[5]->getName());
+        $this->assertSame('namespace\Bar\Baz', $tokens[7]->getName($next));
+        $this->assertNotNull($next);
+        $this->assertSame(\T_OPEN_BRACE, $next->id);
+    }
+
     public function testIsDeclarationOf(): void
     {
         $tokens = NavigableToken::tokenize(self::CODE, 0, true);
