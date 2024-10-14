@@ -346,12 +346,18 @@ namespace
 PHP,
         ))->getNamespaces() as $namespace => $extractor) {
             foreach ([
-                $extractor->getClasses(),
-                $extractor->getInterfaces(),
-                $extractor->getTraits(),
-                $extractor->getEnums(),
-            ] as $classes) {
-                foreach ($classes as $class => $token) {
+                \T_CLASS => $extractor->getClasses(),
+                \T_INTERFACE => $extractor->getInterfaces(),
+                \T_TRAIT => $extractor->getTraits(),
+                \T_ENUM => $extractor->getEnums(),
+            ] as $id => $classes) {
+                foreach ($classes as $class => $classExtractor) {
+                    $this->assertSame($extractor, $classExtractor->getParent());
+                    $this->assertTrue($classExtractor->hasClass());
+                    $this->assertSame($class, $classExtractor->getClass());
+                    $this->assertNotNull($token = $classExtractor->getClassToken());
+                    $this->assertSame($id, $token->id);
+                    $this->assertEmpty(Get::array($classExtractor->getClasses()));
                     $this->assertNull($extractor->getName($token));
                     if (
                         ($token = $token->NextCode)

@@ -16,7 +16,10 @@ final class TokenExtractor
 {
     /** @var NavigableToken[] */
     private array $Tokens;
+    private ?self $Parent = null;
     private ?string $Namespace = null;
+    private ?string $Class = null;
+    private ?NavigableToken $ClassToken = null;
     /** @var array<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}> */
     private array $Imports;
 
@@ -50,9 +53,17 @@ final class TokenExtractor
     }
 
     /**
+     * Get the parent of the extractor
+     */
+    public function getParent(): ?self
+    {
+        return $this->Parent;
+    }
+
+    /**
      * Get the namespace of the extractor
      *
-     * Returns `null` unless the extractor was returned by
+     * Returns `null` if the extractor does not have a namespace applied by
      * {@see TokenExtractor::getNamespaces()}.
      */
     public function getNamespace(): ?string
@@ -80,7 +91,9 @@ final class TokenExtractor
         $namespace = '';
         foreach ($this->getTokens(\T_NAMESPACE) as $token) {
             // Exclude `T_NAMESPACE` in relative names
-            if ($token->NextCode && $token->NextCode->id === \T_NS_SEPARATOR) {
+            /** @var NavigableToken */
+            $next = $token->NextCode;
+            if ($next->id === \T_NS_SEPARATOR) {
                 continue;
             }
 
@@ -90,31 +103,30 @@ final class TokenExtractor
                     $this->getRange($start, $end)->applyNamespace($namespace);
             }
 
-            $namespace = '';
-            while ($token = $token->NextCode) {
-                switch ($token->id) {
-                    case \T_NAME_FULLY_QUALIFIED:
-                    case \T_NAME_QUALIFIED:
-                    case \T_NAME_RELATIVE:
-                    case \T_NS_SEPARATOR:
-                    case \T_STRING:
-                        $namespace .= $token->text;
-                        break;
+            $token = $next;
+            $namespace = $this->doGetName($token);
+            switch ($token->id) {
+                case \T_OPEN_BRACE:
+                    yield $namespace =>
+                        $this->getBlock($token)->applyNamespace($namespace);
+                    /** @var NavigableToken */
+                    $token = $token->ClosedBy;
+                    $start = $token->Next;
+                    $namespace = '';
+                    break;
 
-                    case \T_OPEN_BRACE:
-                        yield $namespace =>
-                            $this->getBlock($token)->applyNamespace($namespace);
-                        /** @var NavigableToken */
-                        $token = $token->ClosedBy;
-                        $start = $token->Next;
-                        $namespace = '';
-                        break 2;
+                case \T_SEMICOLON:
+                case \T_CLOSE_TAG:
+                    $start = $token->Next;
+                    break;
 
-                    case \T_SEMICOLON:
-                    case \T_CLOSE_TAG:
-                        $start = $token->Next;
-                        break 2;
-                }
+                default:
+                    // @codeCoverageIgnoreStart
+                    throw new ShouldNotHappenException(sprintf(
+                        'Unexpected %s after namespace',
+                        $token->getTokenName(),
+                    ));
+                    // @codeCoverageIgnoreEnd
             }
         }
 
@@ -132,60 +144,115 @@ final class TokenExtractor
     }
 
     /**
+     * Check if the extractor represents a class
+     *
+     * @phpstan-assert-if-true !null $this->getClass()
+     * @phpstan-assert-if-true !null $this->getClassToken()
+     * @phpstan-assert-if-true !null $this->getParent()
+     */
+    public function hasClass(): bool
+    {
+        return $this->Class !== null;
+    }
+
+    /**
+     * Get the extractor's class
+     *
+     * Returns `null` if the extractor does not have a class applied by
+     * {@see TokenExtractor::getClasses()},
+     * {@see TokenExtractor::getInterfaces()},
+     * {@see TokenExtractor::getTraits()} or {@see TokenExtractor::getEnums()}.
+     */
+    public function getClass(): ?string
+    {
+        return $this->Class;
+    }
+
+    /**
+     * Get the T_CLASS, T_INTERFACE, T_TRAIT or T_ENUM token associated with the
+     * extractor's class
+     *
+     * Returns `null` if the extractor does not have a class applied by
+     * {@see TokenExtractor::getClasses()},
+     * {@see TokenExtractor::getInterfaces()},
+     * {@see TokenExtractor::getTraits()} or {@see TokenExtractor::getEnums()}.
+     */
+    public function getClassToken(): ?NavigableToken
+    {
+        return $this->ClassToken;
+    }
+
+    /**
      * Iterate over classes in the extractor
      *
-     * @return iterable<string,NavigableToken> An iterator that maps `class`
-     * names to `T_CLASS` tokens.
+     * @return iterable<string,static>
      */
     public function getClasses(): iterable
     {
-        yield from $this->doGetMembers(\T_CLASS);
+        yield from $this->doGetClasses(\T_CLASS);
     }
 
     /**
      * Iterate over interfaces in the extractor
      *
-     * @return iterable<string,NavigableToken> An iterator that maps `interface`
-     * names to `T_INTERFACE` tokens.
+     * @return iterable<string,static>
      */
     public function getInterfaces(): iterable
     {
-        yield from $this->doGetMembers(\T_INTERFACE);
+        yield from $this->doGetClasses(\T_INTERFACE);
     }
 
     /**
      * Iterate over traits in the extractor
      *
-     * @return iterable<string,NavigableToken> An iterator that maps `trait`
-     * names to `T_TRAIT` tokens.
+     * @return iterable<string,static>
      */
     public function getTraits(): iterable
     {
-        yield from $this->doGetMembers(\T_TRAIT);
+        yield from $this->doGetClasses(\T_TRAIT);
     }
 
     /**
      * Iterate over enumerations in the extractor
      *
-     * @return iterable<string,NavigableToken> An iterator that maps `enum`
-     * names to `T_ENUM` tokens.
+     * @return iterable<string,static>
      */
     public function getEnums(): iterable
     {
-        yield from $this->doGetMembers(\T_ENUM);
+        yield from $this->doGetClasses(\T_ENUM);
     }
 
     /**
-     * @return iterable<string,NavigableToken>
+     * @return iterable<string,static>
      */
-    private function doGetMembers(int $id): iterable
+    private function doGetClasses(int $id): iterable
     {
+        if ($this->Class !== null) {
+            return;
+        }
+
         foreach ($this->getTokens($id) as $token) {
             $next = $token->NextCode;
             if ($next && $next->id === \T_STRING) {
-                yield $next->text => $token;
+                $class = $next->text;
+                while ($next = ($next->ClosedBy ?? $next)->NextCode) {
+                    if ($next->id === \T_OPEN_BRACE) {
+                        yield $class => $this->getBlock($next)->applyClass($class, $token);
+                        continue 2;
+                    }
+                }
+                // @codeCoverageIgnoreStart
+                throw new ShouldNotHappenException(sprintf('No block for %s', $class));
+                // @codeCoverageIgnoreEnd
             }
         }
+    }
+
+    private function applyClass(string $class, NavigableToken $token): self
+    {
+        $this->Class = $class;
+        $this->ClassToken = $token;
+        return $this;
     }
 
     /**
@@ -197,16 +264,8 @@ final class TokenExtractor
      */
     public function getName(NavigableToken $token, ?NavigableToken &$next = null): ?string
     {
-        if ($this->Namespace === null) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('Extractor has no namespace');
-            // @codeCoverageIgnoreEnd
-        }
-        if (($this->Tokens[$token->Index] ?? null) !== $token) {
-            // @codeCoverageIgnoreStart
-            throw new InvalidArgumentException('$token does not belong to extractor');
-            // @codeCoverageIgnoreEnd
-        }
+        $this->assertHasNamespace();
+        $this->assertHasToken($token);
 
         $name = $this->doGetName($token);
         $next = $token;
@@ -247,8 +306,6 @@ final class TokenExtractor
 
     /**
      * Iterate over imports in the extractor
-     *
-     * Namespaces are ignored.
      *
      * @return iterable<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}> An
      * iterator that maps aliases to import type and name.
@@ -302,7 +359,7 @@ final class TokenExtractor
                     $token = $token->NextCode;
                     if ($token->id !== \T_STRING) {
                         // @codeCoverageIgnoreStart
-                        throw new ShouldNotHappenException('T_AS not followed by T_STRING');
+                        throw new ShouldNotHappenException('No T_STRING after T_AS');
                         // @codeCoverageIgnoreEnd
                     }
                     yield $token->text => $current;
@@ -339,15 +396,43 @@ final class TokenExtractor
 
     private function getBlock(NavigableToken $bracket): self
     {
-        $clone = clone $this;
-        $clone->Tokens = $bracket->getInnerTokens();
-        return $clone;
+        return $this->getChild($bracket->getInnerTokens());
     }
 
     private function getRange(NavigableToken $from, NavigableToken $to): self
     {
-        $clone = clone $this;
-        $clone->Tokens = $from->getTokens($to);
-        return $clone;
+        return $this->getChild($from->getTokens($to));
+    }
+
+    /**
+     * @param NavigableToken[] $tokens
+     */
+    private function getChild(array $tokens): self
+    {
+        $child = clone $this;
+        $child->Tokens = $tokens;
+        $child->Parent = $this;
+        return $child;
+    }
+
+    /**
+     * @phpstan-assert !null $this->Namespace
+     */
+    private function assertHasNamespace(): void
+    {
+        if ($this->Namespace === null) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Extractor has no namespace');
+            // @codeCoverageIgnoreEnd
+        }
+    }
+
+    private function assertHasToken(NavigableToken $token): void
+    {
+        if (($this->Tokens[$token->Index] ?? null) !== $token) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidArgumentException('$token does not belong to extractor');
+            // @codeCoverageIgnoreEnd
+        }
     }
 }
