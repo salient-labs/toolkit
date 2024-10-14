@@ -310,14 +310,15 @@ PHP,
         ];
     }
 
-    public function testGetName(): void
+    public function testGenerators(): void
     {
+        $tokensCode = null;
         foreach ((new TokenExtractor(
             <<<'PHP'
 <?php
 namespace Foo
 {
-    interface A {}
+    interface A { public function getFoo(): int; }
     interface B {}
 }
 namespace Bar\Baz
@@ -325,22 +326,27 @@ namespace Bar\Baz
     interface C extends \Foo\A, \foo\b {}
     interface D {}
     interface E {}
-    interface EE extends D, e {}
+    interface EE extends D, e { public function &getBaz(): int; }
 }
 namespace Bar
 {
-    class F implements namespace\Baz\C, namespace\baz\d {}
-    class FF extends F {}
+    abstract class F implements namespace\Baz\C, namespace\baz\d {}
+    class FF extends F { public function getFoo(): int { return -1; } }
 }
 namespace
 {
-    class G extends \Bar\F implements namespace\Bar\Baz\E {}
+    class G extends \Bar\FF implements namespace\Bar\Baz\E {}
 }
 namespace
 {
     use Bar\Baz\D as Foo;
     use \Foo\A;
-    class H implements A, foo {}
+    class H implements A, foo
+    {
+        public int $Foo;
+        public function getFoo(): int { return $this->Foo; }
+        protected static function bar(): void { (function &() {})(); }
+    }
     class HH extends H {}
 }
 PHP,
@@ -377,6 +383,20 @@ PHP,
                             $actual[$namespace][$class]['implements'][] = $extractor->getName($token, $token);
                         }
                     }
+                    foreach ($classExtractor->getFunctions() as $function => $functionExtractor) {
+                        $this->assertSame($classExtractor, $functionExtractor->getParent());
+                        $this->assertTrue($functionExtractor->hasMember());
+                        $this->assertSame($function, $functionExtractor->getMember());
+                        $this->assertNotNull($token = $functionExtractor->getMemberToken());
+                        $this->assertSame(\T_FUNCTION, $token->id);
+                        $this->assertEmpty(Get::array($functionExtractor->getFunctions()));
+                        [$tokens[$namespace][$class][$function]] = self::serializeTokens(
+                            $functionExtractor->getTokens(),
+                            // @phpstan-ignore offsetAccess.notFound
+                            $tokensCode[$namespace][$class][$function],
+                            $constants,
+                        );
+                    }
                 }
             }
         }
@@ -393,13 +413,74 @@ PHP,
                     'FF' => ['extends' => ['Bar\F']],
                 ],
                 '' => [
-                    'G' => ['extends' => ['Bar\F'], 'implements' => ['Bar\Baz\E']],
+                    'G' => ['extends' => ['Bar\FF'], 'implements' => ['Bar\Baz\E']],
                     'H' => ['implements' => ['Foo\A', 'Bar\Baz\D']],
                     'HH' => ['extends' => ['H']],
                 ],
             ],
             $actual ?? [],
             'If code changed, replace $expected with: ' . $actualCode,
+        );
+
+        $tokensCode = Get::code(
+            // @phpstan-ignore nullCoalesce.variable
+            $tokensCode ?? [],
+            ', ',
+            ' => ',
+            null,
+            '    ',
+            [],
+            $constants ?? [],
+        );
+        $this->assertSame(
+            [
+                'Foo' => [
+                    'A' => [
+                        'getFoo' => [],
+                    ],
+                ],
+                'Bar\Baz' => [
+                    'EE' => [
+                        'getBaz' => [],
+                    ],
+                ],
+                'Bar' => [
+                    'FF' => [
+                        'getFoo' => [
+                            83 => [83, \T_RETURN, 'return', [82, 84], [82, 84], 82, [null, null]],
+                            84 => [84, 45, '-', [83, 85], [83, 85], 82, [null, null]],
+                            85 => [85, \T_LNUMBER, '1', [84, 86], [84, 86], 82, [null, null]],
+                            86 => [86, 59, ';', [85, 87], [85, 87], 82, [null, null]],
+                        ],
+                    ],
+                ],
+                '' => [
+                    'H' => [
+                        'getFoo' => [
+                            130 => [130, \T_RETURN, 'return', [129, 131], [129, 131], 129, [null, null]],
+                            131 => [131, \T_VARIABLE, '$this', [130, 132], [130, 132], 129, [null, null]],
+                            132 => [132, \T_OBJECT_OPERATOR, '->', [131, 133], [131, 133], 129, [null, null]],
+                            133 => [133, \T_STRING, 'Foo', [132, 134], [132, 134], 129, [null, null]],
+                            134 => [134, 59, ';', [133, 135], [133, 135], 129, [null, null]],
+                        ],
+                        'bar' => [
+                            145 => [145, 40, '(', [144, 146], [144, 146], 144, [null, 152]],
+                            146 => [146, \T_FUNCTION, 'function', [145, 147], [145, 147], 145, [null, null]],
+                            147 => [147, \PHP_VERSION_ID < 80100 ? \T_AND : \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, '&', [146, 148], [146, 148], 145, [null, null]],
+                            148 => [148, 40, '(', [147, 149], [147, 149], 145, [null, 149]],
+                            149 => [149, 41, ')', [148, 150], [148, 150], 145, [148, null]],
+                            150 => [150, 123, '{', [149, 151], [149, 151], 145, [null, 151]],
+                            151 => [151, 125, '}', [150, 152], [150, 152], 145, [150, null]],
+                            152 => [152, 41, ')', [151, 153], [151, 153], 144, [145, null]],
+                            153 => [153, 40, '(', [152, 154], [152, 154], 144, [null, 154]],
+                            154 => [154, 41, ')', [153, 155], [153, 155], 144, [153, null]],
+                            155 => [155, 59, ';', [154, 156], [154, 156], 144, [null, null]],
+                        ],
+                    ],
+                ],
+            ],
+            $tokens ?? [],
+            'If code changed, replace $expected with: ' . $tokensCode,
         );
     }
 

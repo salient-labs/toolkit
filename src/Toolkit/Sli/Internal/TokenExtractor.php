@@ -20,6 +20,8 @@ final class TokenExtractor
     private ?string $Namespace = null;
     private ?string $Class = null;
     private ?NavigableToken $ClassToken = null;
+    private ?string $Member = null;
+    private ?NavigableToken $MemberToken = null;
     /** @var array<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}> */
     private array $Imports;
 
@@ -90,20 +92,14 @@ final class TokenExtractor
         $start = reset($this->Tokens);
         $namespace = '';
         foreach ($this->getTokens(\T_NAMESPACE) as $token) {
-            // Exclude `T_NAMESPACE` in relative names
-            /** @var NavigableToken */
-            $next = $token->NextCode;
-            if ($next->id === \T_NS_SEPARATOR) {
-                continue;
-            }
-
             if ($start && $token->Prev && $start !== $token) {
                 $end = $token->Prev;
                 yield $namespace =>
                     $this->getRange($start, $end)->applyNamespace($namespace);
             }
 
-            $token = $next;
+            /** @var NavigableToken */
+            $token = $token->NextCode;
             $namespace = $this->doGetName($token);
             switch ($token->id) {
                 case \T_OPEN_BRACE:
@@ -252,6 +248,82 @@ final class TokenExtractor
     {
         $this->Class = $class;
         $this->ClassToken = $token;
+        return $this;
+    }
+
+    /**
+     * Check if the extractor represents a function, property or constant
+     *
+     * @phpstan-assert-if-true !null $this->getMember()
+     * @phpstan-assert-if-true !null $this->getMemberToken()
+     * @phpstan-assert-if-true !null $this->getParent()
+     */
+    public function hasMember(): bool
+    {
+        return $this->Member !== null;
+    }
+
+    /**
+     * Get the name of the extractor's function, property or constant
+     *
+     * Returns `null` if the extractor does not have a member applied by
+     * {@see TokenExtractor::getFunctions()}.
+     */
+    public function getMember(): ?string
+    {
+        return $this->Member;
+    }
+
+    /**
+     * Get the token associated with the extractor's function, property or
+     * constant
+     *
+     * Returns `null` if the extractor does not have a member applied by
+     * {@see TokenExtractor::getFunctions()}.
+     */
+    public function getMemberToken(): ?NavigableToken
+    {
+        return $this->MemberToken;
+    }
+
+    /**
+     * Iterate over functions in the extractor
+     *
+     * @return iterable<string,static>
+     */
+    public function getFunctions(): iterable
+    {
+        foreach ($this->getTokens(\T_FUNCTION) as $token) {
+            $next = $token->NextCode;
+            if ($next && $next->text === '&') {
+                $next = $next->NextCode;
+            }
+            if ($next && $next->id === \T_STRING) {
+                $function = $next->text;
+                while ($next = ($next->ClosedBy ?? $next)->NextCode) {
+                    if ($next->id === \T_OPEN_BRACE) {
+                        yield $function => $this->getBlock($next)->applyMember($function, $token);
+                        continue 2;
+                    }
+                    if (
+                        $next->id === \T_SEMICOLON
+                        || $next->id === \T_CLOSE_TAG
+                    ) {
+                        yield $function => $this->getChild()->applyMember($function, $token);
+                        continue 2;
+                    }
+                }
+                // @codeCoverageIgnoreStart
+                throw new ShouldNotHappenException(sprintf('No block for %s()', $function));
+                // @codeCoverageIgnoreEnd
+            }
+        }
+    }
+
+    private function applyMember(string $member, NavigableToken $token): self
+    {
+        $this->Member = $member;
+        $this->MemberToken = $token;
         return $this;
     }
 
@@ -407,7 +479,7 @@ final class TokenExtractor
     /**
      * @param NavigableToken[] $tokens
      */
-    private function getChild(array $tokens): self
+    private function getChild(array $tokens = []): self
     {
         $child = clone $this;
         $child->Tokens = $tokens;

@@ -207,7 +207,7 @@ class NavigableToken extends GenericToken
      * `T_STRING`), an empty string is returned and the token itself is assigned
      * to `$next`.
      *
-     * @param static|null $next
+     * @phpstan-param static|null $next
      * @param-out static|null $next
      */
     public function getName(?self &$next = null): string

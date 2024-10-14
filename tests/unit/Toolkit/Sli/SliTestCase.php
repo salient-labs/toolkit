@@ -10,10 +10,15 @@ abstract class SliTestCase extends TestCase
 {
     /**
      * @param iterable<NavigableToken> $tokens
+     * @param array<array{int,string,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}>|null $actualCode
+     * @param-out array<array{int,string,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}> $actualCode
+     * @param array<non-empty-string,string>|null $constants
+     * @param-out array<non-empty-string,string>|null $constants
      * @return array{array<array{int,int,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}>,string}
      */
-    protected static function serializeTokens(iterable $tokens): array
+    protected static function serializeTokens(iterable $tokens, ?array &$actualCode = null, ?array &$constants = null): array
     {
+        $actualCode = [];
         foreach ($tokens as $key => $token) {
             $actual[$key] = $actualToken = [
                 $token->Index,
@@ -32,15 +37,17 @@ abstract class SliTestCase extends TestCase
             }
             $actualCode[$key] = $actualToken;
         }
-        $actualCode = Get::code(
-            $actualCode ?? [],
-            ', ',
-            ' => ',
-            null,
-            '    ',
-            [],
-            $constants ?? [],
-        );
-        return [$actual ?? [], $actualCode];
+        return [
+            $actual ?? [],
+            Get::code(
+                $actualCode,
+                ', ',
+                ' => ',
+                null,
+                '    ',
+                [],
+                $constants ?? [],
+            ),
+        ];
     }
 }
