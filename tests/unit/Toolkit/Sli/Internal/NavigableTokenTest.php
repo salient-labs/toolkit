@@ -298,6 +298,16 @@ PHP;
         ];
     }
 
+    public function testGetTokens(): void
+    {
+        $code = <<<'PHP'
+<?php
+$foo = 'bar';
+PHP;
+        $tokens = NavigableToken::tokenize($code, 0, true);
+        $this->assertSame([], $tokens[3]->getTokens($tokens[1]));
+    }
+
     public function testGetName(): void
     {
         $code = <<<'PHP'

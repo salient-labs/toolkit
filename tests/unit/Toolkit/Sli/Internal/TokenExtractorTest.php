@@ -32,6 +32,9 @@ final class TokenExtractorTest extends SliTestCase
     public function testGetNamespaces($expected, string $code): void
     {
         foreach ((new TokenExtractor(Str::eolFromNative($code)))->getNamespaces() as $namespace => $extractor) {
+            $this->assertSame($namespace, $extractor->getNamespace());
+            $this->assertSame([$extractor], Get::list($extractor->getNamespaces()));
+            $this->assertSame([$namespace => $extractor], Get::array($extractor->getNamespaces()));
             [$tokens, $tokensCode] = self::serializeTokens($extractor->getTokens());
             $actual[] = [$namespace, $tokens];
             $actualCode[] = sprintf('[%s, %s],', Get::code($namespace), $tokensCode);
@@ -50,6 +53,10 @@ final class TokenExtractorTest extends SliTestCase
     public static function getNamespacesProvider(): array
     {
         return [
+            'empty' => [
+                [],
+                '',
+            ],
             'simple combination syntax' => [
                 [
                     ['', [
@@ -318,10 +325,12 @@ namespace Bar\Baz
     interface C extends \Foo\A, \foo\b {}
     interface D {}
     interface E {}
+    interface EE extends D, e {}
 }
 namespace Bar
 {
     class F implements namespace\Baz\C, namespace\baz\d {}
+    class FF extends F {}
 }
 namespace
 {
@@ -332,14 +341,18 @@ namespace
     use Bar\Baz\D as Foo;
     use \Foo\A;
     class H implements A, foo {}
+    class HH extends H {}
 }
 PHP,
         ))->getNamespaces() as $namespace => $extractor) {
             foreach ([
                 $extractor->getClasses(),
                 $extractor->getInterfaces(),
+                $extractor->getTraits(),
+                $extractor->getEnums(),
             ] as $classes) {
                 foreach ($classes as $class => $token) {
+                    $this->assertNull($extractor->getName($token));
                     if (
                         ($token = $token->NextCode)
                         && ($token = $token->NextCode)
@@ -367,13 +380,16 @@ PHP,
             [
                 'Bar\Baz' => [
                     'C' => ['extends' => ['Foo\A', 'foo\b']],
+                    'EE' => ['extends' => ['Bar\Baz\D', 'Bar\Baz\e']],
                 ],
                 'Bar' => [
                     'F' => ['implements' => ['Bar\Baz\C', 'Bar\baz\d']],
+                    'FF' => ['extends' => ['Bar\F']],
                 ],
                 '' => [
                     'G' => ['extends' => ['Bar\F'], 'implements' => ['Bar\Baz\E']],
                     'H' => ['implements' => ['Foo\A', 'Bar\Baz\D']],
+                    'HH' => ['extends' => ['H']],
                 ],
             ],
             $actual ?? [],
