@@ -62,6 +62,18 @@ final class Reflect extends AbstractUtility
     }
 
     /**
+     * Get the prototype of a method, or null if it has no prototype
+     */
+    public static function getPrototype(ReflectionMethod $method): ?ReflectionMethod
+    {
+        try {
+            return $method->getPrototype();
+        } catch (ReflectionException $ex) {
+            return null;
+        }
+    }
+
+    /**
      * Get the declaring class of a method's prototype, falling back to the
      * method's declaring class if it has no prototype
      *
