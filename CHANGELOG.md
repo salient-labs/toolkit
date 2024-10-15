@@ -10,6 +10,45 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.56] - 2024-10-15
+
+### Added
+
+#### `Utility`
+
+- Add `File::getIdentifier()`
+- Add `Get::list()`
+- Add `Reflect::getPrototype()`
+- Add `ShouldNotHappenException`
+
+### Changed
+
+#### `PHPDoc`
+
+- Add optional `$includeInterfaces` parameter to `PHPDocUtil::getAllClassDocComments()`
+
+#### `Polyfill`
+
+- In `PhpToken::tokenize()`:
+  - Move trailing newlines from comments to whitespace tokens for consistency with native class
+  - Replace namespaced names with PHP 8.0 name tokens
+
+#### `Utility`
+
+- In `Get::copy()`:
+  - Copy anything, not just objects
+  - Allow object copying behaviour to be customised via a callback
+
+### Fixed
+
+#### `Polyfill`
+
+- Fix `PhpToken::tokenize()` issue where tokens in code with multiple end-of-line sequences may have incorrect line numbers
+
+#### `Utility`
+
+- Fix `Get::copy()` issue where classes that extend internal classes may trigger an exception when `COPY_BY_REFERENCE` is enabled
+
 ## [v0.99.55] - 2024-10-08
 
 ### Added
@@ -3817,6 +3856,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.56]: https://github.com/salient-labs/toolkit/compare/v0.99.55...v0.99.56
 [v0.99.55]: https://github.com/salient-labs/toolkit/compare/v0.99.54...v0.99.55
 [v0.99.54]: https://github.com/salient-labs/toolkit/compare/v0.99.53...v0.99.54
 [v0.99.53]: https://github.com/salient-labs/toolkit/compare/v0.99.52...v0.99.53
