@@ -41,4 +41,4 @@ run_with_php_versions 83 74 vendor/bin/phpstan
 run scripts/stop-mockoon.sh || (($? == 1)) || die 'error stopping mockoon'
 run scripts/start-mockoon.sh >/dev/null
 trap 'run scripts/stop-mockoon.sh' EXIT
-run_with_php_versions 83 82 81 80 74 vendor/bin/phpunit
+run_with_php_versions 83 74 82 81 80 vendor/bin/phpunit

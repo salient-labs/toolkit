@@ -2,7 +2,7 @@
 
 namespace Salient\Sli\Internal;
 
-use Salient\Utility\Get;
+use LogicException;
 
 /**
  * @internal
@@ -32,6 +32,14 @@ class NavigableToken extends GenericToken
         \T_DOC_COMMENT => true,
         \T_INLINE_HTML => true,
         \T_WHITESPACE => true,
+    ];
+
+    private const NAME = [
+        \T_NAME_FULLY_QUALIFIED => true,
+        \T_NAME_QUALIFIED => true,
+        \T_NAME_RELATIVE => true,
+        \T_NS_SEPARATOR => true,
+        \T_STRING => true,
     ];
 
     private const DECLARATION_PART = [
@@ -69,19 +77,19 @@ class NavigableToken extends GenericToken
 
     public int $Index = -1;
     /** @var static|null */
-    public ?NavigableToken $Prev = null;
+    public ?self $Prev = null;
     /** @var static|null */
-    public ?NavigableToken $Next = null;
+    public ?self $Next = null;
     /** @var static|null */
-    public ?NavigableToken $PrevCode = null;
+    public ?self $PrevCode = null;
     /** @var static|null */
-    public ?NavigableToken $NextCode = null;
+    public ?self $NextCode = null;
     /** @var static|null */
-    public ?NavigableToken $Parent = null;
+    public ?self $Parent = null;
     /** @var static|null */
-    public ?NavigableToken $OpenedBy = null;
+    public ?self $OpenedBy = null;
     /** @var static|null */
-    public ?NavigableToken $ClosedBy = null;
+    public ?self $ClosedBy = null;
 
     /**
      * @inheritDoc
@@ -145,7 +153,7 @@ class NavigableToken extends GenericToken
     }
 
     /**
-     * Get a detached copy of tokens enclosed by the token
+     * Get tokens enclosed by the token
      *
      * @return static[]
      */
@@ -157,31 +165,69 @@ class NavigableToken extends GenericToken
             return [];
         }
 
-        $open = $token = Get::copy($token);
         /** @var static */
-        $close = $open->ClosedBy;
-        $nextIndex = 0;
-        do {
-            /** @var static */
-            $token = $token->Next;
-            if (!$nextIndex) {
-                $token->Prev = null;
-            }
-            $token->Index = $nextIndex++;
-            $tokens[] = $token;
-            if ($token->PrevCode === $open) {
-                $token->PrevCode = null;
-            }
-            if ($token->NextCode === $close) {
-                $token->NextCode = null;
-            }
-            if ($token->Parent === $open) {
-                $token->Parent = null;
-            }
-        } while ($token->Next !== $close);
-        $token->Next = null;
+        $from = $token->Next;
+        /** @var static */
+        $to = $token->ClosedBy->Prev;
 
-        return $tokens;
+        return $from->getTokens($to);
+    }
+
+    /**
+     * Get the token and its following tokens up to and including the given
+     * token
+     *
+     * @param static $to
+     * @return static[]
+     */
+    public function getTokens(self $to): array
+    {
+        if ($this->Index > $to->Index) {
+            return [];
+        }
+
+        $token = $this;
+        do {
+            $tokens[$token->Index] = $token;
+            if ($token === $to) {
+                return $tokens;
+            }
+        } while ($token = $token->Next);
+
+        // @codeCoverageIgnoreStart
+        throw new LogicException('Tokens must belong to the same document');
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Get an identifier from a token and its following tokens, optionally
+     * assigning the next code token to a variable
+     *
+     * If the token is not a name token (`T_NAME_*`, `T_NS_SEPARATOR` or
+     * `T_STRING`), an empty string is returned and the token itself is assigned
+     * to `$next`.
+     *
+     * @phpstan-param static|null $next
+     * @param-out static|null $next
+     */
+    public function getName(?self &$next = null): string
+    {
+        $name = '';
+        $token = $this;
+        do {
+            if ((self::NAME[$token->id] ?? false) || (
+                $token->id === \T_NAMESPACE
+                && $token->NextCode
+                && $token->NextCode->id === \T_NS_SEPARATOR
+            )) {
+                $name .= $token->text;
+                continue;
+            }
+            break;
+        } while ($token = $token->NextCode);
+
+        $next = $token;
+        return $name;
     }
 
     /**

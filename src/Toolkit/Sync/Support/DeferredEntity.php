@@ -202,7 +202,6 @@ final class DeferredEntity implements DeferredEntityInterface
                 $context,
                 $entity,
                 $entityId,
-                // @phpstan-ignore offsetAccess.notFound
                 $list[$i++],
             );
         }

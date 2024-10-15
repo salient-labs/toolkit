@@ -236,6 +236,25 @@ final class Get extends AbstractUtility
     }
 
     /**
+     * Resolve a value to a list
+     *
+     * @template TValue
+     *
+     * @param Arrayable<array-key,TValue>|iterable<TValue> $value
+     * @return list<TValue>
+     */
+    public static function list($value): array
+    {
+        if (is_array($value)) {
+            return array_values($value);
+        }
+        if ($value instanceof Arrayable) {
+            return array_values($value->toArray());
+        }
+        return iterator_to_array($value, false);
+    }
+
+    /**
      * Resolve a value to an item count
      *
      * @param Arrayable<array-key,mixed>|iterable<array-key,mixed>|Countable|int $value

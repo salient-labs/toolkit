@@ -3,14 +3,13 @@
 namespace Salient\Tests\Sli\Internal;
 
 use Salient\Sli\Internal\NavigableToken;
-use Salient\Tests\TestCase;
-use Salient\Utility\Get;
+use Salient\Tests\Sli\SliTestCase;
 use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Sli\Internal\NavigableToken
  */
-final class NavigableTokenTest extends TestCase
+final class NavigableTokenTest extends SliTestCase
 {
     private const CODE = <<<'PHP'
 <?php
@@ -245,26 +244,26 @@ PHP;
         return [
             [
                 [
-                    [0, \T_DOC_COMMENT, "/**\n     * Get the answer\n     */", [null, 1], [null, 1], null, [null, null]],
-                    [1, \T_PUBLIC, 'public', [0, 2], [null, 2], null, [null, null]],
-                    [2, \T_FUNCTION, 'function', [1, 3], [1, 3], null, [null, null]],
-                    [3, \T_STRING, 'bar', [2, 4], [2, 4], null, [null, null]],
-                    [4, 40, '(', [3, 5], [3, 5], null, [null, 10]],
-                    [5, 63, '?', [4, 6], [4, 6], 4, [null, null]],
-                    [6, \T_STRING, 'string', [5, 7], [5, 7], 4, [null, null]],
-                    [7, \T_VARIABLE, '$question', [6, 8], [6, 8], 4, [null, null]],
-                    [8, 61, '=', [7, 9], [7, 9], 4, [null, null]],
-                    [9, \T_STRING, 'null', [8, 10], [8, 10], 4, [null, null]],
-                    [10, 41, ')', [9, 11], [9, 11], null, [4, null]],
-                    [11, 58, ':', [10, 12], [10, 12], null, [null, null]],
-                    [12, \T_STRING, 'int', [11, 13], [11, 13], null, [null, null]],
-                    [13, 123, '{', [12, 14], [12, 15], null, [null, 18]],
-                    [14, \T_COMMENT, '// Ignore the question', [13, 15], [13, 15], 13, [null, null]],
-                    [15, \T_RETURN, 'return', [14, 16], [13, 16], 13, [null, null]],
-                    [16, \T_LNUMBER, '42', [15, 17], [15, 17], 13, [null, null]],
-                    [17, 59, ';', [16, 18], [16, 18], 13, [null, null]],
-                    [18, 125, '}', [17, 19], [17, null], null, [13, null]],
-                    [19, \T_COMMENT, '//', [18, null], [18, null], null, [null, null]],
+                    4 => [4, \T_DOC_COMMENT, "/**\n     * Get the answer\n     */", [3, 5], [3, 5], 3, [null, null]],
+                    5 => [5, \T_PUBLIC, 'public', [4, 6], [3, 6], 3, [null, null]],
+                    6 => [6, \T_FUNCTION, 'function', [5, 7], [5, 7], 3, [null, null]],
+                    7 => [7, \T_STRING, 'bar', [6, 8], [6, 8], 3, [null, null]],
+                    8 => [8, 40, '(', [7, 9], [7, 9], 3, [null, 14]],
+                    9 => [9, 63, '?', [8, 10], [8, 10], 8, [null, null]],
+                    10 => [10, \T_STRING, 'string', [9, 11], [9, 11], 8, [null, null]],
+                    11 => [11, \T_VARIABLE, '$question', [10, 12], [10, 12], 8, [null, null]],
+                    12 => [12, 61, '=', [11, 13], [11, 13], 8, [null, null]],
+                    13 => [13, \T_STRING, 'null', [12, 14], [12, 14], 8, [null, null]],
+                    14 => [14, 41, ')', [13, 15], [13, 15], 3, [8, null]],
+                    15 => [15, 58, ':', [14, 16], [14, 16], 3, [null, null]],
+                    16 => [16, \T_STRING, 'int', [15, 17], [15, 17], 3, [null, null]],
+                    17 => [17, 123, '{', [16, 18], [16, 19], 3, [null, 22]],
+                    18 => [18, \T_COMMENT, '// Ignore the question', [17, 19], [17, 19], 17, [null, null]],
+                    19 => [19, \T_RETURN, 'return', [18, 20], [17, 20], 17, [null, null]],
+                    20 => [20, \T_LNUMBER, '42', [19, 21], [19, 21], 17, [null, null]],
+                    21 => [21, 59, ';', [20, 22], [20, 22], 17, [null, null]],
+                    22 => [22, 125, '}', [21, 23], [21, 24], 3, [17, null]],
+                    23 => [23, \T_COMMENT, '//', [22, 24], [22, 24], 3, [null, null]],
                 ],
                 self::CODE,
                 3,
@@ -277,26 +276,70 @@ PHP;
             ],
             [
                 [
-                    [0, 63, '?', [null, 1], [null, 1], null, [null, null]],
-                    [1, \T_STRING, 'string', [0, 2], [0, 2], null, [null, null]],
-                    [2, \T_VARIABLE, '$question', [1, 3], [1, 3], null, [null, null]],
-                    [3, 61, '=', [2, 4], [2, 4], null, [null, null]],
-                    [4, \T_STRING, 'null', [3, null], [3, null], null, [null, null]],
+                    9 => [9, 63, '?', [8, 10], [8, 10], 8, [null, null]],
+                    10 => [10, \T_STRING, 'string', [9, 11], [9, 11], 8, [null, null]],
+                    11 => [11, \T_VARIABLE, '$question', [10, 12], [10, 12], 8, [null, null]],
+                    12 => [12, 61, '=', [11, 13], [11, 13], 8, [null, null]],
+                    13 => [13, \T_STRING, 'null', [12, 14], [12, 14], 8, [null, null]],
                 ],
                 self::CODE,
                 8,
             ],
             [
                 [
-                    [0, \T_COMMENT, '// Ignore the question', [null, 1], [null, 1], null, [null, null]],
-                    [1, \T_RETURN, 'return', [0, 2], [null, 2], null, [null, null]],
-                    [2, \T_LNUMBER, '42', [1, 3], [1, 3], null, [null, null]],
-                    [3, 59, ';', [2, null], [2, null], null, [null, null]],
+                    18 => [18, \T_COMMENT, '// Ignore the question', [17, 19], [17, 19], 17, [null, null]],
+                    19 => [19, \T_RETURN, 'return', [18, 20], [17, 20], 17, [null, null]],
+                    20 => [20, \T_LNUMBER, '42', [19, 21], [19, 21], 17, [null, null]],
+                    21 => [21, 59, ';', [20, 22], [20, 22], 17, [null, null]],
                 ],
                 self::CODE,
                 22,
             ],
         ];
+    }
+
+    public function testGetTokens(): void
+    {
+        $code = <<<'PHP'
+<?php
+$foo = 'bar';
+PHP;
+        $tokens = NavigableToken::tokenize($code, 0, true);
+        $this->assertSame([], $tokens[3]->getTokens($tokens[1]));
+    }
+
+    public function testGetName(): void
+    {
+        $code = <<<'PHP'
+<?php
+namespace Foo\Bar;
+interface Baz extends \A\B {}
+PHP;
+        $tokens = NavigableToken::tokenize($code, \TOKEN_PARSE, true);
+        $this->assertSame('Foo\Bar', $tokens[2]->getName($next));
+        $this->assertNotNull($next);
+        $this->assertSame(\T_SEMICOLON, $next->id);
+        $this->assertNotNull($next = $next->NextCode);
+        $this->assertNotNull($next = $next->NextCode);
+        $this->assertSame('Baz', $next->getName($next));
+        $this->assertNotNull($next);
+        $this->assertNotNull($next = $next->NextCode);
+        $this->assertSame('\A\B', $next->getName());
+
+        $code = <<<'PHP'
+<?php
+namespace Foo
+{
+    interface Qux extends namespace\Bar\Baz {}
+}
+PHP;
+        $tokens = NavigableToken::tokenize($code, \TOKEN_PARSE, true);
+        $this->assertSame('Foo', $tokens[2]->getName());
+        $this->assertSame('', $tokens[4]->getName());
+        $this->assertSame('Qux', $tokens[5]->getName());
+        $this->assertSame('namespace\Bar\Baz', $tokens[7]->getName($next));
+        $this->assertNotNull($next);
+        $this->assertSame(\T_OPEN_BRACE, $next->id);
     }
 
     public function testIsDeclarationOf(): void
@@ -313,41 +356,5 @@ PHP;
         $this->assertFalse($tokens[6]->isDeclarationOf(\T_CLASS));
         $this->assertTrue($tokens[7]->isDeclarationOf(\T_FUNCTION));
         $this->assertFalse($tokens[8]->isDeclarationOf(\T_FUNCTION));
-    }
-
-    /**
-     * @param NavigableToken[] $tokens
-     * @return array{array<array{int,int,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}>,string}
-     */
-    private static function serializeTokens(array $tokens): array
-    {
-        foreach ($tokens as $token) {
-            $actual[$token->Index] = $actualToken = [
-                $token->Index,
-                $token->id,
-                $token->text,
-                [$token->Prev->Index ?? null, $token->Next->Index ?? null],
-                [$token->PrevCode->Index ?? null, $token->NextCode->Index ?? null],
-                $token->Parent->Index ?? null,
-                [$token->OpenedBy->Index ?? null, $token->ClosedBy->Index ?? null],
-            ];
-            $tokenName = $token->getTokenName();
-            if ($tokenName !== null && strlen($tokenName) > 1) {
-                $tokenName = '\\' . $tokenName;
-                $actualToken[1] = $tokenName;
-                $constants[$tokenName] = $tokenName;
-            }
-            $actualCode[$token->Index] = $actualToken;
-        }
-        $actualCode = Get::code(
-            $actualCode ?? [],
-            ', ',
-            ' => ',
-            null,
-            '    ',
-            [],
-            $constants ?? [],
-        );
-        return [$actual ?? [], $actualCode];
     }
 }

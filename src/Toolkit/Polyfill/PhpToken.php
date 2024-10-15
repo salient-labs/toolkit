@@ -11,6 +11,89 @@ use TypeError;
  */
 class PhpToken implements Stringable
 {
+    private const IDENTIFIER = [
+        \T_ABSTRACT => true,
+        \T_ARRAY => true,
+        \T_AS => true,
+        \T_BREAK => true,
+        \T_CALLABLE => true,
+        \T_CASE => true,
+        \T_CATCH => true,
+        \T_CLASS => true,
+        \T_CLASS_C => true,
+        \T_CLONE => true,
+        \T_CONST => true,
+        \T_CONTINUE => true,
+        \T_DECLARE => true,
+        \T_DEFAULT => true,
+        \T_DIR => true,
+        \T_DO => true,
+        \T_ECHO => true,
+        \T_ELSE => true,
+        \T_ELSEIF => true,
+        \T_EMPTY => true,
+        \T_ENDDECLARE => true,
+        \T_ENDFOR => true,
+        \T_ENDFOREACH => true,
+        \T_ENDIF => true,
+        \T_ENDSWITCH => true,
+        \T_ENDWHILE => true,
+        \T_ENUM => true,
+        \T_EVAL => true,
+        \T_EXIT => true,
+        \T_EXTENDS => true,
+        \T_FILE => true,
+        \T_FINAL => true,
+        \T_FINALLY => true,
+        \T_FN => true,
+        \T_FOR => true,
+        \T_FOREACH => true,
+        \T_FUNC_C => true,
+        \T_FUNCTION => true,
+        \T_GLOBAL => true,
+        \T_GOTO => true,
+        \T_HALT_COMPILER => true,
+        \T_IF => true,
+        \T_IMPLEMENTS => true,
+        \T_INCLUDE => true,
+        \T_INCLUDE_ONCE => true,
+        \T_INSTANCEOF => true,
+        \T_INSTEADOF => true,
+        \T_INTERFACE => true,
+        \T_ISSET => true,
+        \T_LINE => true,
+        \T_LIST => true,
+        \T_LOGICAL_AND => true,
+        \T_LOGICAL_OR => true,
+        \T_LOGICAL_XOR => true,
+        \T_MATCH => true,
+        \T_METHOD_C => true,
+        \T_NAMESPACE => true,
+        \T_NEW => true,
+        \T_NS_C => true,
+        \T_PRINT => true,
+        \T_PRIVATE => true,
+        \T_PROPERTY_C => true,
+        \T_PROTECTED => true,
+        \T_PUBLIC => true,
+        \T_READONLY => true,
+        \T_REQUIRE => true,
+        \T_REQUIRE_ONCE => true,
+        \T_RETURN => true,
+        \T_STATIC => true,
+        \T_STRING => true,
+        \T_SWITCH => true,
+        \T_THROW => true,
+        \T_TRAIT => true,
+        \T_TRAIT_C => true,
+        \T_TRY => true,
+        \T_UNSET => true,
+        \T_USE => true,
+        \T_VAR => true,
+        \T_WHILE => true,
+        \T_YIELD => true,
+    ];
+
     /**
      * One of the T_* constants, or an ASCII codepoint representing a
      * single-char token.
@@ -69,7 +152,22 @@ class PhpToken implements Stringable
         if ($this->id < 256) {
             return chr($this->id);
         }
-        if (($name = token_name($this->id)) === 'UNKNOWN') {
+
+        $name = [
+            \T_NAME_FULLY_QUALIFIED => 'T_NAME_FULLY_QUALIFIED',
+            \T_NAME_RELATIVE => 'T_NAME_RELATIVE',
+            \T_NAME_QUALIFIED => 'T_NAME_QUALIFIED',
+            \T_MATCH => 'T_MATCH',
+            \T_READONLY => 'T_READONLY',
+            \T_ENUM => 'T_ENUM',
+            \T_PROPERTY_C => 'T_PROPERTY_C',
+            \T_ATTRIBUTE => 'T_ATTRIBUTE',
+            \T_NULLSAFE_OBJECT_OPERATOR => 'T_NULLSAFE_OBJECT_OPERATOR',
+            \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => 'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG',
+            \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => 'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG',
+        ][$this->id] ?? token_name($this->id);
+
+        if ($name === 'UNKNOWN') {
             return null;
         }
 
@@ -155,6 +253,7 @@ class PhpToken implements Stringable
         $_tokens = token_get_all($code, $flags);
         $_count = count($_tokens);
         $pos = 0;
+        /** @var static|null */
         $last = null;
         /** @var static[] */
         $tokens = [];
@@ -182,6 +281,46 @@ class PhpToken implements Stringable
                         $tokens[] = $token;
                         $pos += strlen($token->text);
                         $token = new static(\T_WHITESPACE, $newline, $token->line, $pos);
+                    }
+                } elseif ($token->id === \T_NS_SEPARATOR) {
+                    // Replace namespaced names with PHP 8.0 name tokens
+                    if ($last && isset(self::IDENTIFIER[$last->id])) {
+                        $popLast = true;
+                        $text = $last->text . $token->text;
+                        $id = $last->id === \T_NAMESPACE
+                            ? \T_NAME_RELATIVE
+                            : \T_NAME_QUALIFIED;
+                    } else {
+                        $popLast = false;
+                        $text = $token->text;
+                        $id = \T_NAME_FULLY_QUALIFIED;
+                    }
+                    $lastWasSeparator = true;
+                    $j = $i + 1;
+                    while (
+                        $j < $_count
+                        && is_array($_tokens[$j])
+                        && (
+                            ($lastWasSeparator && isset(self::IDENTIFIER[$_tokens[$j][0]]))
+                            || (!$lastWasSeparator && $_tokens[$j][0] === \T_NS_SEPARATOR)
+                        )
+                    ) {
+                        $lastWasSeparator = !$lastWasSeparator;
+                        $text .= $_tokens[$j++][1];
+                    }
+                    if ($lastWasSeparator) {
+                        $text = substr($text, 0, -1);
+                        $j--;
+                    }
+                    if ($j > $i + 1) {
+                        if ($popLast) {
+                            array_pop($tokens);
+                            /** @var static $last */
+                            $token->pos = $pos = $last->pos;
+                        }
+                        $token->id = $id;
+                        $token->text = $text;
+                        $i = $j - 1;
                     }
                 }
             } else {

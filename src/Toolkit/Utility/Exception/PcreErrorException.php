@@ -109,10 +109,13 @@ class PcreErrorException extends AbstractUtilityException
      */
     private function getErrorNameMap(): array
     {
-        foreach (get_defined_constants(true)['pcre'] as $name => $value) {
+        /** @var array<string,mixed> */
+        $constants = get_defined_constants(true)['pcre'];
+        foreach ($constants as $name => $value) {
             if (substr($name, -6) !== '_ERROR') {
                 continue;
             }
+            /** @var int $value */
             $errors[$value] = $name;
         }
 
