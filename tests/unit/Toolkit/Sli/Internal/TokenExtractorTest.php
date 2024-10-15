@@ -338,7 +338,6 @@ PHP,
                         $this->assertEmpty(Get::array($functionExtractor->getFunctions()));
                         [$tokens[$namespace][$class][$function]] = self::serializeTokens(
                             $functionExtractor->getTokens(),
-                            // @phpstan-ignore offsetAccess.notFound
                             $tokensCode[$namespace][$class][$function],
                             $constants,
                         );
@@ -369,7 +368,6 @@ PHP,
         );
 
         $tokensCode = Get::code(
-            // @phpstan-ignore nullCoalesce.variable
             $tokensCode ?? [],
             ', ',
             ' => ',
