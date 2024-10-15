@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.57] - 2024-10-15
+
+### Fixed
+
+#### `Polyfill`
+
+- Fix line calculation regression in `PhpToken`
+
 ## [v0.99.56] - 2024-10-15
 
 ### Added
@@ -3856,6 +3864,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.57]: https://github.com/salient-labs/toolkit/compare/v0.99.56...v0.99.57
 [v0.99.56]: https://github.com/salient-labs/toolkit/compare/v0.99.55...v0.99.56
 [v0.99.55]: https://github.com/salient-labs/toolkit/compare/v0.99.54...v0.99.55
 [v0.99.54]: https://github.com/salient-labs/toolkit/compare/v0.99.53...v0.99.54
