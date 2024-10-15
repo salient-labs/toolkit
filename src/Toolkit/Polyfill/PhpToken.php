@@ -328,7 +328,7 @@ class PhpToken implements Stringable
                 $token = new static(
                     ord($_token),
                     $_token,
-                    $last->line + Regex::match('/\r\n|\n|\r/', $last->text),
+                    $last->line + Regex::matchAll('/\r\n|\n|\r/', $last->text),
                     $pos
                 );
             }
