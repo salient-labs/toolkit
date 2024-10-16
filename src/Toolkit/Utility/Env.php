@@ -218,14 +218,14 @@ final class Env extends AbstractUtility
         if (!Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
-            $match,
+            $matches,
             \PREG_UNMATCHED_AS_NULL
         )) {
             throw new InvalidEnvironmentException(
                 sprintf('Value is not boolean: %s', $name)
             );
         }
-        return $match['true'] === null ? false : true;
+        return $matches['true'] === null ? false : true;
     }
 
     /**
@@ -339,14 +339,14 @@ final class Env extends AbstractUtility
         if (!Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
-            $match,
+            $matches,
             \PREG_UNMATCHED_AS_NULL
         )) {
             throw new InvalidEnvironmentException(
                 sprintf('Value is not boolean: %s', $name)
             );
         }
-        return $match['true'] === null ? false : true;
+        return $matches['true'] === null ? false : true;
     }
 
     /**
@@ -512,7 +512,7 @@ final class Env extends AbstractUtility
 ' (?<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
   (?<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
 ) $ /xi
-REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
+REGEX, $line, $matches, \PREG_UNMATCHED_AS_NULL)) {
                 $errors[] = $filename === null
                     ? sprintf('invalid syntax at index %d', $i)
                     : sprintf('invalid syntax at %s:%d', $filename, $i + 1);
@@ -520,7 +520,7 @@ REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
             }
 
             /** @var string */
-            $name = $match['name'];
+            $name = $matches['name'];
             if (
                 array_key_exists($name, $_ENV)
                 || array_key_exists($name, $_SERVER)
@@ -529,20 +529,20 @@ REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
                 continue;
             }
 
-            $double = $match['double'];
+            $double = $matches['double'];
             if ($double !== null) {
                 $queue[$name] = Regex::replace('/\\\\(["$\\\\`])/', '$1', $double);
                 continue;
             }
 
-            $single = $match['single'];
+            $single = $matches['single'];
             if ($single !== null) {
                 $queue[$name] = str_replace("'\''", "'", $single);
                 continue;
             }
 
             /** @var string */
-            $none = $match['none'];
+            $none = $matches['none'];
             $queue[$name] = Regex::replace('/\\\\(.)/', '$1', $none);
         }
     }

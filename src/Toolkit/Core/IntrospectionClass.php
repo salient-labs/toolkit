@@ -474,11 +474,11 @@ class IntrospectionClass
             ]);
             $regex = "/^_(?<action>{$regex})(?<property>.+)\$/i";
             foreach ($methods as $method) {
-                if (!Regex::match($regex, $name = $method->getName(), $match)) {
+                if (!Regex::match($regex, $name = $method->getName(), $matches)) {
                     continue;
                 }
-                $action = Str::lower($match['action']);
-                $property = $this->maybeNormalise($match['property'], NormaliserFlag::LAZY);
+                $action = Str::lower($matches['action']);
+                $property = $this->maybeNormalise($matches['property'], NormaliserFlag::LAZY);
                 $this->Actions[$action][$property] = $name;
             }
         }

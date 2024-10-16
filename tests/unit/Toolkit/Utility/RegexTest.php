@@ -266,12 +266,12 @@ final class RegexTest extends TestCase
                 if (($fields[1] ?? null) !== $property || !Regex::match(
                     '/^([0-9a-f]{4,6})(?:\.\.([0-9a-f]{4,6}))?$/Di',
                     $fields[0],
-                    $match,
+                    $matches,
                 )) {
                     continue;
                 }
-                $start = (int) hexdec($match[1]);
-                $end = (int) hexdec($match[2] ?? $match[1]);
+                $start = (int) hexdec($matches[1]);
+                $end = (int) hexdec($matches[2] ?? $matches[1]);
                 $range = range($start, $end);
                 $codepoints += Arr::combine($range, $range);
             }

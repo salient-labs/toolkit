@@ -434,7 +434,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
         return PHPDoc::normaliseType(Regex::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
-            function ($match) use (
+            function ($matches) use (
                 $type,
                 $templates,
                 $namespace,
@@ -442,7 +442,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 &$inputClassTemplates,
                 $subject
             ) {
-                $t = $this->resolveTemplates($match[0][0], $templates, $template, $inputClassTemplates);
+                $t = $this->resolveTemplates($matches[0][0], $templates, $template, $inputClassTemplates);
                 $type = $template ?: $type;
                 if ($type instanceof AbstractTag && ($class = $type->getClass()) !== null) {
                     $class = new ReflectionClass($class);
@@ -453,7 +453,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                     }
                 }
                 // Recurse if template expansion occurred
-                if ($t !== $match[0][0]) {
+                if ($t !== $matches[0][0]) {
                     return $this->getPHPDocTypeAlias($t, $templates, $namespace, $filename);
                 }
                 // Leave reserved words and PHPDoc types (e.g. `class-string`)
@@ -467,7 +467,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                     // - before: `'array < int < 1, max > >'`
                     // - after: `['array', '<', 'int', '<', '1']`
                     /** @disregard P1006 */
-                    $before = substr($subject, 0, $match[0][1]);
+                    $before = substr($subject, 0, $matches[0][1]);
                     $before = Regex::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
                     $before = Arr::trim($before);
                     while ($before) {
