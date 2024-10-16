@@ -27,14 +27,14 @@ foreach ([
 ] as $tests) {
     foreach ($tests as $test) {
         if ($test[1] instanceof ParserException) {
-            $data[] = [$test[0], false];
+            $data[$test[0]] = [$test[0], false];
             continue;
         }
-        $data[] = [$test[0]];
+        $data[$test[0]] = [$test[0]];
     }
 }
 
 printf(
     '%s' . \PHP_EOL,
-    Get::code($data, ', ', ' => ', null, '    ', [], [\PHP_EOL => '\PHP_EOL']),
+    Get::code(array_values($data), ', ', ' => ', null, '    ', [], [\PHP_EOL => '\PHP_EOL']),
 );

@@ -3,7 +3,7 @@
 namespace Salient\PHPDoc\Tag;
 
 /**
- * A "@param" tag
+ * @api
  */
 class ParamTag extends AbstractTag
 {
@@ -51,5 +51,27 @@ class ParamTag extends AbstractTag
     public function isVariadic(): bool
     {
         return $this->IsVariadic;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        $string = "@{$this->Tag} ";
+        if (isset($this->Type)) {
+            $string .= "{$this->Type} ";
+        }
+        if ($this->IsPassedByReference) {
+            $string .= '&';
+        }
+        if ($this->IsVariadic) {
+            $string .= '...';
+        }
+        $string .= "\${$this->Name}";
+        if ($this->Description !== null) {
+            $string .= " {$this->Description}";
+        }
+        return $string;
     }
 }

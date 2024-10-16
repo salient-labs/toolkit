@@ -5,29 +5,36 @@ namespace Salient\PHPDoc\Tag;
 /**
  * @api
  */
-class ReturnTag extends AbstractTag
+class GenericTag extends AbstractTag
 {
     /**
-     * Creates a new ReturnTag object
+     * Creates a new GenericTag object
      *
      * @param class-string|null $class
      */
     public function __construct(
-        string $type,
-        ?string $description = null,
+        string $tag,
+        ?string $description,
         ?string $class = null,
         ?string $member = null
     ) {
-        parent::__construct('return', null, $type, $description, $class, $member);
-        $this->Type = $this->filterType($type);
+        parent::__construct($tag, null, null, $description, $class, $member);
     }
 
     /**
-     * @inheritDoc
+     * @return null
      */
-    public function getType(): string
+    public function getName(): ?string
     {
-        return $this->Type;
+        return null;
+    }
+
+    /**
+     * @return null
+     */
+    public function getType(): ?string
+    {
+        return null;
     }
 
     /**
@@ -35,7 +42,7 @@ class ReturnTag extends AbstractTag
      */
     public function __toString(): string
     {
-        $string = "@{$this->Tag} {$this->Type}";
+        $string = "@{$this->Tag}";
         if ($this->Description !== null) {
             $string .= " {$this->Description}";
         }

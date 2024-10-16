@@ -2,10 +2,11 @@
 
 namespace Salient\Tests\PHPDoc;
 
-use Salient\PHPDoc\Exception\InvalidTagValueException;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
+use Salient\Tests\Reflection\MyClass;
 use Salient\Tests\TestCase;
+use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
@@ -23,29 +24,34 @@ final class PHPDocTest extends TestCase
     /**
      * @dataProvider invalidDocBlockProvider
      */
-    public function testInvalidDocBlock(string $docBlock): void
+    public function testInvalidDocBlock(string $docBlock, string $expectedMessage = 'Invalid DocBlock'): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($expectedMessage);
         new PHPDoc($docBlock);
     }
 
     /**
-     * @return array<string,array{string}>
+     * @return array<array{string,1?:string}>
      */
     public static function invalidDocBlockProvider(): array
     {
         return [
-            'no whitespace after opening delimiter' => [
-                '/***/',
-            ],
-            'missing asterisk' => [
-                <<<'EOF'
+            ['/***/'],
+            [<<<'EOF'
 /**
  *
 
  */
-EOF,
-            ],
+EOF],
+            [<<<'EOF'
+/**
+ * Summary
+ *
+ * ```php
+ * $this->doSomething();
+ */
+EOF, 'Unterminated code fence in DocBlock'],
         ];
     }
 
@@ -55,8 +61,8 @@ EOF,
     public function testDocBlockWithNoSummary(string $docBlock): void
     {
         $phpDoc = new PHPDoc($docBlock);
-        $this->assertNull($phpDoc->Summary);
-        $this->assertNull($phpDoc->Description);
+        $this->assertNull($phpDoc->getSummary());
+        $this->assertNull($phpDoc->getDescription());
     }
 
     /**
@@ -65,29 +71,21 @@ EOF,
     public static function docBlockWithNoSummaryProvider(): array
     {
         return [
-            [
-                '/** */',
-            ],
-            [
-                <<<'EOF'
+            ['/** */'],
+            [<<<'EOF'
 /**
  */
-EOF,
-            ],
-            [
-                <<<'EOF'
+EOF],
+            [<<<'EOF'
 /**
  *
  */
-EOF,
-            ],
-            [
-                <<<'EOF'
+EOF],
+            [<<<'EOF'
 /**
  * @internal
  */
-EOF,
-            ],
+EOF],
         ];
     }
 
@@ -97,8 +95,8 @@ EOF,
     public function testDocBlockWithNoDescription(string $docBlock): void
     {
         $phpDoc = new PHPDoc($docBlock);
-        $this->assertSame('Summary', $phpDoc->Summary);
-        $this->assertNull($phpDoc->Description);
+        $this->assertSame('Summary', $phpDoc->getSummary());
+        $this->assertNull($phpDoc->getDescription());
     }
 
     /**
@@ -115,6 +113,12 @@ EOF],
             [<<<'EOF'
 /**
  * Summary
+ * @internal
+ */
+EOF],
+            [<<<'EOF'
+/**
+ * Summary
  *
  *
  *
@@ -122,6 +126,12 @@ EOF],
  */
 EOF],
         ];
+    }
+
+    public function testDocBlockWithLeadingAsterisk(): void
+    {
+        $phpDoc = new PHPDoc('/** * Summary */');
+        $this->assertSame('* Summary', $phpDoc->getSummary());
     }
 
     public function testFromDocBlocks(): void
@@ -166,195 +176,287 @@ EOF,
         $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
 
         $this->assertNotNull($phpDoc);
-        $this->assertSame('Summary from ClassB', $phpDoc->Summary);
-        $this->assertSame("Description from ClassA\n\n```php\n// code here\n```", $phpDoc->Description);
-        $this->assertSame([
-            '@param $arg1 Description from ClassC (untyped)',
-            '@param string[] $arg3',
-            '@param bool &$arg4',
-            '@param mixed ...$arg5',
-            '@return $this Description from ClassC',
-            '@param int|string $arg1',
-            '@param array $arg3',
-            '@return $this',
-            '@param mixed $arg1 Description from ClassA',
-            '@param string $arg2 Description from ClassA',
-            '@param array $arg3 Description from ClassA',
-        ], $phpDoc->Tags);
+        $this->assertSame('Summary from ClassB', $phpDoc->getSummary());
+        $this->assertSame("Description from ClassA\n\n```php\n// code here\n```", $phpDoc->getDescription());
         $this->assertSame([
             'param' => [
-                '$arg1 Description from ClassC (untyped)',
-                'string[] $arg3',
-                'bool &$arg4',
-                'mixed ...$arg5',
-                'int|string $arg1',
-                'array $arg3',
-                'mixed $arg1 Description from ClassA',
-                'string $arg2 Description from ClassA',
-                'array $arg3 Description from ClassA',
+                '@param $arg1 Description from ClassC (untyped)',
+                '@param string[] $arg3',
+                '@param bool &$arg4',
+                '@param mixed ...$arg5',
+                '@param int|string $arg1',
+                '@param array $arg3',
+                '@param mixed $arg1 Description from ClassA',
+                '@param string $arg2 Description from ClassA',
+                '@param array $arg3 Description from ClassA',
             ],
             'return' => [
-                '$this Description from ClassC',
-                '$this',
+                '@return $this Description from ClassC',
+                '@return $this',
             ],
-        ], $phpDoc->TagsByName);
+        ], array_map([Arr::class, 'toStrings'], $phpDoc->getTags()));
 
-        $this->assertSame(
-            ['arg1', 'arg3', 'arg4', 'arg5', 'arg2'],
-            array_keys($phpDoc->Params),
-        );
+        $params = $phpDoc->getParams();
+        $this->assertSame(['arg1', 'arg3', 'arg4', 'arg5', 'arg2'], array_keys($params));
 
-        $tag = $phpDoc->Params['arg1'];
+        $tag = $params['arg1'];
         $this->assertSame('arg1', $tag->getName());
         $this->assertSame('int|string', $tag->getType());
         $this->assertSame('Description from ClassC (untyped)', $tag->getDescription());
         $this->assertFalse($tag->isPassedByReference());
         $this->assertFalse($tag->isVariadic());
 
-        $tag = $phpDoc->Params['arg3'];
+        $tag = $params['arg3'];
         $this->assertSame('arg3', $tag->getName());
         $this->assertSame('string[]', $tag->getType());
         $this->assertSame('Description from ClassA', $tag->getDescription());
         $this->assertFalse($tag->isPassedByReference());
         $this->assertFalse($tag->isVariadic());
 
-        $tag = $phpDoc->Params['arg4'];
+        $tag = $params['arg4'];
         $this->assertSame('arg4', $tag->getName());
         $this->assertSame('bool', $tag->getType());
         $this->assertNull($tag->getDescription());
         $this->assertTrue($tag->isPassedByReference());
         $this->assertFalse($tag->isVariadic());
 
-        $tag = $phpDoc->Params['arg5'];
+        $tag = $params['arg5'];
         $this->assertSame('arg5', $tag->getName());
         $this->assertSame('mixed', $tag->getType());
         $this->assertNull($tag->getDescription());
         $this->assertFalse($tag->isPassedByReference());
         $this->assertTrue($tag->isVariadic());
 
-        $tag = $phpDoc->Params['arg2'];
+        $tag = $params['arg2'];
         $this->assertSame('arg2', $tag->getName());
         $this->assertSame('string', $tag->getType());
         $this->assertSame('Description from ClassA', $tag->getDescription());
         $this->assertFalse($tag->isPassedByReference());
         $this->assertFalse($tag->isVariadic());
 
-        $this->assertNotNull($tag = $phpDoc->Return);
+        $this->assertNotNull($tag = $phpDoc->getReturn());
         $this->assertSame('$this', $tag->getType());
         $this->assertSame('Description from ClassC', $tag->getDescription());
+        $this->assertSame('@return $this Description from ClassC', (string) $tag);
     }
 
     /**
      * @dataProvider paramTagsProvider
      *
-     * @param string[] $paramNames
-     * @param array<string|null> $paramTypes
-     * @param array<string|null> $paramDescriptions
-     * @param bool[] $paramIsReferenceValues
-     * @param bool[] $paramIsVariadicValues
+     * @param string[] $names
+     * @param array<string|null> $types
+     * @param array<string|null> $descriptions
+     * @param bool[] $isReferenceValues
+     * @param bool[] $isVariadicValues
+     * @param string[] $strings
      */
     public function testParamTags(
         string $docBlock,
-        array $paramNames,
-        array $paramTypes,
-        array $paramDescriptions,
-        array $paramIsReferenceValues,
-        array $paramIsVariadicValues
+        array $names,
+        array $types,
+        array $descriptions,
+        array $isReferenceValues,
+        array $isVariadicValues,
+        array $strings
     ): void {
         $phpDoc = new PHPDoc($docBlock);
-        $this->assertSame($paramNames, array_keys($phpDoc->Params));
-        foreach ($paramNames as $i => $name) {
-            $this->assertSame($name, ($param = $phpDoc->Params[$name])->getName());
-            $this->assertSame($paramTypes[$i], $param->getType());
-            $this->assertSame($paramDescriptions[$i], $param->getDescription());
-            $this->assertSame($paramIsReferenceValues[$i], $param->isPassedByReference());
-            $this->assertSame($paramIsVariadicValues[$i], $param->isVariadic());
+        $params = $phpDoc->getParams();
+        $this->assertSame($names, array_keys($params));
+        foreach ($names as $i => $name) {
+            $this->assertSame($name, ($param = $params[$name])->getName());
+            $this->assertSame($types[$i], $param->getType());
+            $this->assertSame($descriptions[$i], $param->getDescription());
+            $this->assertSame($isReferenceValues[$i], $param->isPassedByReference());
+            $this->assertSame($isVariadicValues[$i], $param->isVariadic());
+            $this->assertSame($strings[$i], (string) $param);
         }
     }
 
     /**
-     * @return array<array{string,string[],array<string|null>,array<string|null>,bool[],bool[]}>
+     * @return iterable<array{string,string[],array<string|null>,array<string|null>,bool[],bool[],string[]}>
      */
-    public static function paramTagsProvider(): array
+    public static function paramTagsProvider(): iterable
     {
-        return [
+        foreach ([
+            [
+                <<<'EOF'
+/**
+ * @param (int|string)[] &...$idListsByReference
+ */
+EOF,
+                null,
+            ],
             [
                 <<<'EOF'
 /**
  * @param (int|string)[] & ... $idListsByReference
  */
 EOF,
-                ['idListsByReference'],
-                ['(int|string)[]'],
-                [null],
-                [true],
-                [true],
+                null,
             ],
             [
                 <<<'EOF'
 /**
- * @param (int|string)[] & ... $idListsByReference Description of $idListsByReference
+ * @param (int|string)[] &...$idListsByReference Description of $idListsByReference
  */
 EOF,
+                'Description of $idListsByReference',
+            ],
+            [
+                <<<'EOF'
+/**
+ * @param (int|string)[] &...$idListsByReference
+ * Description of $idListsByReference
+ */
+EOF,
+                'Description of $idListsByReference',
+            ],
+        ] as [$docBlock, $description]) {
+            yield [
+                $docBlock,
                 ['idListsByReference'],
                 ['(int|string)[]'],
-                ['Description of $idListsByReference'],
+                [$description],
                 [true],
                 [true],
-            ],
-        ];
+                [Arr::implode(' ', ['@param (int|string)[] &...$idListsByReference', $description], '')],
+            ];
+        }
     }
 
     /**
      * @dataProvider varTagsProvider
      *
-     * @param array<int|string> $varKeys
-     * @param array<string|null> $varNames
-     * @param array<string|null> $varTypes
-     * @param array<string|null> $varDescriptions
+     * @param array<int|string> $keys
+     * @param array<string|null> $names
+     * @param array<string|null> $types
+     * @param array<string|null> $descriptions
+     * @param string[] $strings
      */
     public function testVarTags(
         string $docBlock,
         ?string $summary,
         ?string $description,
-        array $varKeys,
-        array $varNames,
-        array $varTypes,
-        array $varDescriptions
+        array $keys,
+        array $names,
+        array $types,
+        array $descriptions,
+        array $strings,
+        bool $normalise = true
     ): void {
         $phpDoc = new PHPDoc($docBlock);
-        $this->assertSame($summary, $phpDoc->Summary);
+        if ($normalise) {
+            $phpDoc = $phpDoc->normalise();
+        }
+        $this->assertSame($summary, $phpDoc->getSummary());
         $this->assertSame(
             $description,
-            $phpDoc->Description === null
+            $phpDoc->getDescription() === null
                 ? null
-                : Str::eolToNative($phpDoc->Description)
+                : Str::eolToNative($phpDoc->getDescription()),
         );
-        $this->assertCount(count($varKeys), $phpDoc->Vars);
-        foreach ($varKeys as $i => $key) {
-            $this->assertArrayHasKey($key, $phpDoc->Vars);
-            $this->assertSame($varNames[$i], ($var = $phpDoc->Vars[$key])->getName());
-            $this->assertSame($varTypes[$i], $var->getType());
-            $this->assertSame($varDescriptions[$i], $var->getDescription());
+        $vars = $phpDoc->getVars();
+        $this->assertCount(count($keys), $vars);
+        foreach ($keys as $i => $key) {
+            $this->assertArrayHasKey($key, $vars);
+            $this->assertSame($names[$i], ($var = $vars[$key])->getName());
+            $this->assertSame($types[$i], $var->getType());
+            $this->assertSame($descriptions[$i], $var->getDescription());
+            $this->assertSame($strings[$i], (string) $var);
         }
     }
 
     /**
-     * @return array<array{string,string|null,string|null,array<int|string>,array<string|null>,array<string|null>,array<string|null>}>
+     * @return array<array{string,string|null,string|null,array<int|string>,array<string|null>,array<string|null>,array<string|null>,string[],8?:bool}>
      */
     public static function varTagsProvider(): array
     {
         return [
             [
                 <<<'EOF'
-/** @var int $counter This is a counter. */
+/** @var int This is a counter. */
 EOF,
                 'This is a counter.',
+                null,
+                [0],
+                [null],
+                ['int'],
+                [null],
+                ['@var int'],
+            ],
+            [
+                <<<'EOF'
+/**
+ * @var int
+ * This is a counter.
+ */
+EOF,
+                null,
+                null,
+                [0],
+                [null],
+                ['int'],
+                ['This is a counter.'],
+                ['@var int This is a counter.'],
+                false,
+            ],
+            [
+                <<<'EOF'
+/**
+ * This is a counter.
+ *
+ * @var int This is a counter.
+ */
+EOF,
+                'This is a counter.',
+                null,
+                [0],
+                [null],
+                ['int'],
+                [null],
+                ['@var int'],
+            ],
+            [
+                <<<'EOF'
+/** @var int $counter This is a counter. */
+EOF,
+                null,
                 null,
                 ['counter'],
                 ['counter'],
                 ['int'],
-                [null],
+                ['This is a counter.'],
+                ['@var int $counter This is a counter.'],
+            ],
+            [
+                <<<'EOF'
+/**
+ * @var int $counter
+ * This is a counter.
+ */
+EOF,
+                null,
+                null,
+                ['counter'],
+                ['counter'],
+                ['int'],
+                ['This is a counter.'],
+                ['@var int $counter This is a counter.'],
+            ],
+            [
+                <<<'EOF'
+/**
+ * @var int This is a counter.
+ * @var string|null This is a nullable string.
+ */
+EOF,
+                null,
+                null,
+                [0, 1],
+                [null, null],
+                ['int', 'string|null'],
+                ['This is a counter.', 'This is a nullable string.'],
+                ['@var int This is a counter.', '@var string|null This is a nullable string.'],
             ],
             [
                 <<<'EOF'
@@ -376,6 +478,7 @@ EOF,
                 [null],
                 ['int'],
                 [null],
+                ['@var int'],
             ],
             [
                 <<<'EOF'
@@ -391,6 +494,7 @@ EOF,
                 [null],
                 ['int'],
                 [null],
+                ['@var int'],
             ],
             [
                 <<<'EOF'
@@ -406,17 +510,7 @@ EOF,
                 [null],
                 ['int'],
                 [null],
-            ],
-            [
-                <<<'EOF'
-/** @var string|null Short docblock, should have a summary. */
-EOF,
-                'Short docblock, should have a summary.',
-                null,
-                [0],
-                [null],
-                ['string|null'],
-                [null],
+                ['@var int'],
             ],
             [
                 <<<'EOF'
@@ -431,6 +525,7 @@ EOF,
                 ['name', 'description'],
                 ['string', 'string'],
                 ['Should contain a description of $name', 'Should contain a description of $description'],
+                ['@var string $name Should contain a description of $name', '@var string $description Should contain a description of $description'],
             ],
             [
                 <<<'EOF'
@@ -442,6 +537,7 @@ EOF,
                 [null],
                 ['int'],
                 [null],
+                ['@var int'],
             ],
         ];
     }
@@ -452,15 +548,45 @@ EOF,
 /**
  * Summary
  *
- * @template T
- * @param class-string<T> $id
- * @return T
+ * @template-covariant T0 foo
+ * @template T1 of int
+ * @template T2 = true
+ * @template T3 of array|null = array{}
+ * @param class-string<T0> $id
+ * @return T0
  */
 EOF;
         $phpDoc = new PHPDoc($docBlock);
-        $this->assertSame('Summary', $phpDoc->Summary);
-        $this->assertNull($phpDoc->Description);
-        $this->assertSame('mixed', $phpDoc->Templates['T']->getType());
+        $this->assertSame('Summary', $phpDoc->getSummary());
+        $this->assertNull($phpDoc->getDescription());
+        $this->assertCount(4, $templates = $phpDoc->getTemplates());
+        $this->assertNull($templates['T0']->getType());
+        $this->assertSame('int', $templates['T1']->getType());
+        $this->assertNull($templates['T2']->getType());
+        $this->assertSame('array|null', $templates['T3']->getType());
+        $this->assertNull($templates['T0']->getDefault());
+        $this->assertNull($templates['T1']->getDefault());
+        $this->assertSame('true', $templates['T2']->getDefault());
+        $this->assertSame('array{}', $templates['T3']->getDefault());
+        $this->assertSame('@template-covariant T0', (string) $templates['T0']);
+        $this->assertSame('@template T1 of int', (string) $templates['T1']);
+        $this->assertSame('@template T2 = true', (string) $templates['T2']);
+        $this->assertSame('@template T3 of array|null = array{}', (string) $templates['T3']);
+
+        $template = $templates['T0'];
+        $this->assertNull($template->getDescription());
+        $this->assertSame('covariant', $template->getVariance());
+        $this->assertNotSame($template, $template2 = $template->withName('TInvariant'));
+        $this->assertNotSame($template2, $template3 = $template2->withType('object|null'));
+        $this->assertSame($template3, $template3->withDescription(null));
+        $this->assertNotSame($template3, $template4 = $template3->withDefault('null'));
+        $this->assertNotSame($template4, $template5 = $template4->withVariance(null));
+        $this->assertSame('@template TInvariant of object|null = null', (string) $template5);
+        $this->assertNotSame($template5, $template6 = $template5->withType(null));
+        $this->assertSame('@template TInvariant = null', (string) $template6);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid description for @template in DocBlock');
+        $template6->withDescription('foo');
     }
 
     public function testTemplateInheritance(): void
@@ -470,7 +596,7 @@ EOF;
  * Summary
  *
  * @template T
- * @template TArray of array|null
+ * @template TArray as array|null = array{}
  * @param class-string<T> $id
  * @param TArray $array
  * @param TKey $key
@@ -482,23 +608,43 @@ EOF;
 /**
  * Class summary
  *
- * @template T of string
- * @template TKey of array-key
+ * @template T of string = ""
+ * @template TKey of array-key = int
  * @template TValue of object
  */
 EOF;
-        $phpDoc = new PHPDoc($docBlock, $classDocBlock);
-        $this->assertSame('Summary', $phpDoc->Summary);
-        $this->assertNull($phpDoc->Description);
-        $this->assertCount(4, $phpDoc->Templates);
-        $this->assertSame('T', $phpDoc->Templates['T']->getName());
-        $this->assertSame('mixed', $phpDoc->Templates['T']->getType());
-        $this->assertSame('TArray', $phpDoc->Templates['TArray']->getName());
-        $this->assertSame('array|null', $phpDoc->Templates['TArray']->getType());
-        $this->assertSame('TKey', $phpDoc->Templates['TKey']->getName());
-        $this->assertSame('array-key', $phpDoc->Templates['TKey']->getType());
-        $this->assertSame('TValue', $phpDoc->Templates['TValue']->getName());
-        $this->assertSame('object', $phpDoc->Templates['TValue']->getType());
+        $classPhpDoc = new PHPDoc($classDocBlock, null, MyClass::class);
+        $phpDoc = new PHPDoc($docBlock, $classPhpDoc, MyClass::class, 'myMethod()');
+        $this->assertSame(MyClass::class, $classPhpDoc->getClass());
+        $this->assertSame(MyClass::class, $phpDoc->getClass());
+        $this->assertNull($classPhpDoc->getMember());
+        $this->assertSame('myMethod()', $phpDoc->getMember());
+        $this->assertSame('Summary', $phpDoc->getSummary());
+        $this->assertNull($phpDoc->getDescription());
+        $this->assertCount(3, $classTemplates = $classPhpDoc->getTemplates());
+        $this->assertCount(2, $standaloneTemplates = $phpDoc->getTemplates(false));
+        $this->assertSame(['T', 'TArray'], array_keys($standaloneTemplates));
+        $this->assertCount(4, $templates = $phpDoc->getTemplates());
+        $this->assertSame('T', $classTemplates['T']->getName());
+        $this->assertSame('T', $templates['T']->getName());
+        $this->assertSame('TArray', $templates['TArray']->getName());
+        $this->assertSame('TKey', $templates['TKey']->getName());
+        $this->assertSame('TValue', $templates['TValue']->getName());
+        $this->assertSame('string', $classTemplates['T']->getType());
+        $this->assertNull($templates['T']->getType());
+        $this->assertSame('array|null', $templates['TArray']->getType());
+        $this->assertSame('array-key', $templates['TKey']->getType());
+        $this->assertSame('object', $templates['TValue']->getType());
+        $this->assertSame('""', $classTemplates['T']->getDefault());
+        $this->assertNull($templates['T']->getDefault());
+        $this->assertSame('array{}', $templates['TArray']->getDefault());
+        $this->assertSame('int', $templates['TKey']->getDefault());
+        $this->assertNull($templates['TValue']->getDefault());
+        $this->assertSame('@template T of string = ""', (string) $classTemplates['T']);
+        $this->assertSame('@template T', (string) $templates['T']);
+        $this->assertSame('@template TArray of array|null = array{}', (string) $templates['TArray']);
+        $this->assertSame('@template TKey of array-key = int', (string) $templates['TKey']);
+        $this->assertSame('@template TValue of object', (string) $templates['TValue']);
     }
 
     public function testFences(): void
@@ -529,8 +675,8 @@ EOF;
 
         $phpDoc = new PHPDoc($docBlock);
 
-        $this->assertSame('Summary', $phpDoc->Summary);
-        $this->assertSame(<<<'EOF'
+        $this->assertSame('Summary', $phpDoc->getSummary());
+        $this->assertSame($description = <<<'EOF'
 Description with multiple code blocks:
 
 ```php
@@ -542,16 +688,23 @@ Three, to be precise (including within the `@var`):
 ```
 @var Not this `@var`, though. It's in a fence.
 ```
+EOF, Str::eolToNative((string) $phpDoc->getDescription()));
+
+        $phpDoc = $phpDoc->normalise();
+
+        $this->assertSame($description . <<<'EOF'
+
 
 Something like this:
 ```php
 callback(string $value): string
 ```
-EOF, Str::eolToNative((string) $phpDoc->Description));
-        $this->assertCount(1, $phpDoc->Vars);
-        $this->assertNull($phpDoc->Vars[0]->getName());
-        $this->assertSame('callable|null', $phpDoc->Vars[0]->getType());
-        $this->assertNull($phpDoc->Vars[0]->getDescription());
+EOF, Str::eolToNative((string) $phpDoc->getDescription()));
+
+        $this->assertCount(1, $vars = $phpDoc->getVars());
+        $this->assertNull($vars[0]->getName());
+        $this->assertSame('callable|null', $vars[0]->getType());
+        $this->assertNull($vars[0]->getDescription());
     }
 
     public function testBlankLines(): void
@@ -565,68 +718,38 @@ EOF, Str::eolToNative((string) $phpDoc->Description));
  * Parts are surrounded by superfluous blank lines.
  *
  *
- * @internal
+ *     @internal
  *
  *
- * @template T0 of object
+ *     @template T0 of object
  *
  *
- * @template T1
+ *     @template T1
  *
  *
- * @var class-string<T0>|null $Class
+ *     @var class-string<T0>|null $Class
  *
  *
- * @param class-string<T0>|null $class
+ *     @param class-string<T0>|null $class
  *
  *
- * @inheritDoc
+ *     @inheritDoc
  *
  *
  */
 EOF;
         $phpDoc = new PHPDoc($docBlock);
-        $this->assertSame('Summary', $phpDoc->Summary);
-        $this->assertSame('Parts are surrounded by superfluous blank lines.', $phpDoc->Description);
-        $this->assertCount(2, $phpDoc->Templates);
-        $this->assertSame('T0', $phpDoc->Templates['T0']->getName());
-        $this->assertSame('object', $phpDoc->Templates['T0']->getType());
-        $this->assertSame('T1', $phpDoc->Templates['T1']->getName());
-        $this->assertSame('mixed', $phpDoc->Templates['T1']->getType());
-        $this->assertCount(1, $phpDoc->Vars);
-        $this->assertSame('class-string<T0>|null', $phpDoc->Vars['Class']->getType());
-        $this->assertCount(1, $phpDoc->Params);
-        $this->assertSame('class-string<T0>|null', $phpDoc->Params['class']->getType());
-    }
-
-    public function testNoBlankLineAfterSummary(): void
-    {
-        $docBlock = <<<'EOF'
-/**
- * Summary
- * @internal
- * @template T of object
- */
-EOF;
-        $phpDoc = new PHPDoc($docBlock);
-        $this->assertSame('Summary @internal @template T of object', $phpDoc->Summary);
-        $this->assertNull($phpDoc->Description);
-        $this->assertCount(0, $phpDoc->Templates);
-    }
-
-    public function testMultiLineTagDescription(): void
-    {
-        $docBlock = <<<'EOF'
-/**
- * @param $arg
- * Description of $arg
- */
-EOF;
-        $phpDoc = new PHPDoc($docBlock);
-        $this->assertCount(1, $phpDoc->Params);
-        $this->assertSame('arg', $phpDoc->Params['arg']->getName());
-        $this->assertNull($phpDoc->Params['arg']->getType());
-        $this->assertSame('Description of $arg', $phpDoc->Params['arg']->getDescription());
+        $this->assertSame('Summary', $phpDoc->getSummary());
+        $this->assertSame('Parts are surrounded by superfluous blank lines.', $phpDoc->getDescription());
+        $this->assertCount(2, $templates = $phpDoc->getTemplates());
+        $this->assertSame('T0', $templates['T0']->getName());
+        $this->assertSame('object', $templates['T0']->getType());
+        $this->assertSame('T1', $templates['T1']->getName());
+        $this->assertNull($templates['T1']->getType());
+        $this->assertCount(1, $vars = $phpDoc->getVars());
+        $this->assertSame('class-string<T0>|null', $vars['Class']->getType());
+        $this->assertCount(1, $params = $phpDoc->getParams());
+        $this->assertSame('class-string<T0>|null', $params['class']->getType());
     }
 
     /**
@@ -640,7 +763,7 @@ EOF;
         ?string $class = null,
         ?string $member = null
     ): void {
-        $this->expectException(InvalidTagValueException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectedMessage);
         new PHPDoc($docBlock, null, $class, $member);
     }
@@ -652,42 +775,42 @@ EOF;
     {
         return [
             [
-                'No name for @param in DocBlock',
+                'Invalid syntax for @param in DocBlock',
                 '/** @param */',
             ],
             [
-                'No name for @param in DocBlock of Foo',
+                'Invalid syntax for @param in DocBlock of Foo',
                 '/** @param */',
                 'Foo',
             ],
             [
-                'No name for @param in DocBlock of Foo::bar()',
+                'Invalid syntax for @param in DocBlock of Foo::bar()',
                 '/** @param */',
                 'Foo',
                 'bar()',
             ],
             [
-                "Invalid name 'notAVariable' for @param in DocBlock",
+                'Invalid syntax for @param in DocBlock',
                 '/** @param bool notAVariable */',
             ],
             [
-                'No type for @return in DocBlock',
+                'Invalid syntax for @return in DocBlock',
                 '/** @return */',
             ],
             [
-                'No type for @return in DocBlock',
+                'Invalid syntax for @return in DocBlock',
                 '/** @return /notAType */',
             ],
             [
-                'No type for @var in DocBlock',
+                'Invalid syntax for @var in DocBlock',
                 '/** @var */',
             ],
             [
-                'No type for @var in DocBlock',
+                'Invalid syntax for @var in DocBlock',
                 '/** @var $variable */',
             ],
             [
-                'No name for @template in DocBlock',
+                'Invalid syntax for @template in DocBlock',
                 '/** @template */',
             ],
         ];
@@ -699,8 +822,8 @@ EOF;
     public function testEol(string $docBlock, string $summary, string $description): void
     {
         $phpDoc = new PHPDoc($docBlock);
-        $this->assertSame($summary, $phpDoc->Summary);
-        $this->assertSame($description, $phpDoc->Description);
+        $this->assertSame($summary, $phpDoc->getSummary());
+        $this->assertSame($description, $phpDoc->getDescription());
     }
 
     /**
@@ -741,13 +864,18 @@ EOF;
     }
 
     /**
-     * @return array<array{string,1?:bool}>
+     * @return iterable<string,array{string,1?:bool}>
      */
-    public static function typeRegexProvider(): array
+    public static function typeRegexProvider(): iterable
     {
+        yield from [
+            'array{ }' => ['array{ }'],
+            'array{,}' => ['array{,}', false],
+        ];
+
         // Extracted from tests/PHPStan/Parser/TypeParserTest.php in
         // phpstan/phpdoc-parser
-        return [
+        $data = [
             ['string'],
             ['  string  '],
             [' ( string ) '],
@@ -808,7 +936,35 @@ EOF;
             ['array{' . \PHP_EOL . "\t\t\t\t\ta: int," . \PHP_EOL . "\t\t\t\t\t...," . \PHP_EOL . "\t\t\t\t}"],
             ['array{int, ..., string}', false],
             ['list{' . \PHP_EOL . "\t\t\t\t \tint," . \PHP_EOL . "\t\t\t\t \tstring" . \PHP_EOL . "\t\t\t\t }"],
+            ['non-empty-array{' . \PHP_EOL . "\t\t\t\t \tint," . \PHP_EOL . "\t\t\t\t \tstring" . \PHP_EOL . "\t\t\t\t }"],
+            ['callable(): non-empty-array{int, string}'],
+            ['callable(): non-empty-list{int, string}'],
+            ['non-empty-list{' . \PHP_EOL . "\t\t\t\t \tint," . \PHP_EOL . "\t\t\t\t \tstring" . \PHP_EOL . "\t\t\t\t }"],
+            ['array{...<string>}'],
+            ['array{a: int, b?: int, ...<string>}'],
+            ['array{a:int,b?:int,...<string>}'],
+            ['array{a: int, b?: int, ...  ' . \PHP_EOL . '  <  ' . \PHP_EOL . '  string  ' . \PHP_EOL . '  >  ' . \PHP_EOL . '  ,  ' . \PHP_EOL . ' }'],
+            ['array{...<int, string>}'],
+            ['array{a: int, b?: int, ...<int, string>}'],
+            ['array{a:int,b?:int,...<int,string>}'],
+            ['array{a: int, b?: int, ...  ' . \PHP_EOL . '  <  ' . \PHP_EOL . '  int  ' . \PHP_EOL . '  ,  ' . \PHP_EOL . '  string  ' . \PHP_EOL . '  >  ' . \PHP_EOL . '  ,  ' . \PHP_EOL . '  }'],
+            ['list{...<string>}'],
+            ['list{int, int, ...<string>}'],
+            ['list{int,int,...<string>}'],
+            ['list{int, int, ...  ' . \PHP_EOL . '  <  ' . \PHP_EOL . '  string  ' . \PHP_EOL . '  >  ' . \PHP_EOL . '  ,  ' . \PHP_EOL . '  }'],
+            ['list{0: int, 1?: int, ...<string>}'],
+            ['list{0:int,1?:int,...<string>}'],
+            ['list{0: int, 1?: int, ...  ' . \PHP_EOL . '  <  ' . \PHP_EOL . '  string  ' . \PHP_EOL . '  >  ' . \PHP_EOL . '  ,  ' . \PHP_EOL . '  }'],
+            ['array{...<>}', false],
+            ['array{...<int,>}', false],
+            ['array{...<int, string,>}', false],
+            ['array{...<int, string, string>}', false],
+            ['list{...<>}', false],
+            ['list{...<int,>}', false],
+            ['list{...<int, string>}' /* , false */],
             ['callable(): Foo'],
+            ['pure-callable(): Foo'],
+            ['pure-Closure(): Foo'],
             ['callable(): ?Foo'],
             ['callable(): Foo<Bar>'],
             ['callable(): Foo<Bar>[]'],
@@ -825,6 +981,7 @@ EOF;
             ['(Foo\Bar<array<mixed, string>, (int | (string<foo> & bar)[])> | Lorem)'],
             ['array [ int ]'],
             ['array[ int ]'],
+            ['self::TYPES[ int ]'],
             ["?\t\xa009"],
             ['Collection<array-key, int>[]'],
             ['int | Collection<array-key, int>[]'],
@@ -927,34 +1084,29 @@ EOF;
             ['2.5|3'],
             ['callable(): 3.5'],
             ['callable(): 3.5[]'],
-            ['callable(): Foo'],
             ['callable(): (Foo)[]'],
             ['callable(): Foo::BAR'],
             ['callable(): Foo::*'],
             ['?Foo[]'],
-            ['callable(): ?Foo'],
             ['callable(): ?Foo[]'],
             ['?(Foo|Bar)'],
             ['Foo | (Bar & Baz)'],
             ['(?Foo) | Bar'],
-            ['?(Foo|Bar)'],
             ['?(Foo&Bar)'],
-            ['?Foo[]'],
             ['(?Foo)[]'],
             ['Foo | Bar | (Baz | Lorem)'],
             ['Closure(Container):($serviceId is class-string<TService> ? TService : mixed)'],
-            ['int | object{foo: int}[]'],
             ['int | object{foo: int}[]    '],
             ['array{' . \PHP_EOL . "\t\t\t\ta: int," . \PHP_EOL . "\t\t\t\tb: string" . \PHP_EOL . "\t\t\t }"],
             ['callable(Foo, Bar): void'],
-            ['$this'],
             ['array{foo: int}'],
-            ['array{}'],
             ['object{foo: int}'],
-            ['object{}'],
             ['object{}[]'],
             ['int[][][]'],
             ['int[foo][bar][baz]'],
         ];
+        foreach ($data as $test) {
+            yield str_replace(\PHP_EOL, '<eol>', $test[0]) => $test;
+        }
     }
 }
