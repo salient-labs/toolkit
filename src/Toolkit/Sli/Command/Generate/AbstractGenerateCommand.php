@@ -308,7 +308,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $this->InputClassName = $this->InputClass->getName();
         $this->InputClassPHPDoc = PHPDoc::fromDocBlocks(PHPDocUtil::getAllClassDocComments($this->InputClass));
         $this->InputClassTemplates = $this->InputClassPHPDoc
-            ? $this->InputClassPHPDoc->getTemplates()
+            ? $this->InputClassPHPDoc->getTemplates(false)
             : [];
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
@@ -388,22 +388,29 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      *
      * @param array<string,TemplateTag> $templates
      * @param array<string,TemplateTag> $inputClassTemplates
+     * @param-out array<string,TemplateTag> $inputClassTemplates
      */
-    protected function resolveTemplates(string $type, array $templates, ?TemplateTag &$template = null, array &$inputClassTemplates = []): string
-    {
+    protected function resolveTemplates(
+        string $type,
+        array $templates,
+        ?TemplateTag &$template = null,
+        array &$inputClassTemplates = []
+    ): string {
         $seen = [];
         while ($tag = $templates[$type] ?? null) {
             $template = $tag;
             // Don't resolve templates that will appear in the output
-            if ($tag->getClass() === $this->InputClassName
-                    && $tag->getMember() === null
-                    && ($_template = $this->InputClassTemplates[$type] ?? null)) {
+            if (
+                $tag->getClass() === $this->InputClassName
+                && $tag->getMember() === null
+                && ($_template = $this->InputClassTemplates[$type] ?? null)
+            ) {
                 $inputClassTemplates[$type] = $_template;
                 return $type;
             }
             // Prevent recursion
-            $tagType = $tag->getType();
-            if ($tagType === null || ($seen[$tagType] ?? null)) {
+            $tagType = $tag->getType() ?? 'mixed';
+            if (isset($seen[$tagType])) {
                 break;
             }
             $seen[$tagType] = true;

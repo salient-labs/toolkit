@@ -640,6 +640,14 @@ REGEX;
     }
 
     /**
+     * Replace whitespace character sequences in a string with a single space
+     */
+    public static function collapse(string $string): string
+    {
+        return Regex::replace('/\s++/', ' ', $string);
+    }
+
+    /**
      * Enclose a string between delimiters
      *
      * @param string|null $after If `null`, `$before` is used before and after

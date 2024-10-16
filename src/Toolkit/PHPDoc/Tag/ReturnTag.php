@@ -3,7 +3,7 @@
 namespace Salient\PHPDoc\Tag;
 
 /**
- * A "@return" tag
+ * @api
  */
 class ReturnTag extends AbstractTag
 {
@@ -28,5 +28,17 @@ class ReturnTag extends AbstractTag
     public function getType(): string
     {
         return $this->Type;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        $string = "@{$this->Tag} {$this->Type}";
+        if ($this->Description !== null) {
+            $string .= " {$this->Description}";
+        }
+        return $string;
     }
 }
