@@ -8,6 +8,7 @@ use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Error;
 use Stringable;
 
 /**
@@ -91,7 +92,7 @@ final class RegexTest extends TestCase
                 \PREG_GREP_INVERT,
             ],
             [
-                \Error::class,
+                Error::class,
                 '/./',
                 [
                     new class {},
