@@ -2,15 +2,11 @@
 
 namespace Salient\PHPDoc\Tag;
 
-use Salient\Core\Concern\HasMutator;
-
 /**
- * A "@var" tag
+ * @api
  */
 class VarTag extends AbstractTag
 {
-    use HasMutator;
-
     /**
      * Creates a new VarTag object
      *
@@ -45,5 +41,20 @@ class VarTag extends AbstractTag
             return $this->without('Name');
         }
         return $this->with('Name', $this->filterString($name, 'name'));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        $string = "@{$this->Tag} {$this->Type}";
+        if (isset($this->Name)) {
+            $string .= " \${$this->Name}";
+        }
+        if ($this->Description !== null) {
+            $string .= " {$this->Description}";
+        }
+        return $string;
     }
 }

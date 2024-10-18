@@ -161,14 +161,14 @@ final class GenerateFacade extends AbstractGenerateCommand
                 fn(ReflectionParameter $p) =>
                     $p->isPassedByReference()
             );
-            $internal = isset($phpDoc->TagsByName['internal']);
+            $internal = $phpDoc && isset($phpDoc->getTagsByName()['internal']);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
             $returnsVoid = false;
 
             if ($_method->isConstructor()) {
                 continue;
             } else {
-                if (isset($phpDoc->TagsByName['deprecated'])) {
+                if ($phpDoc && isset($phpDoc->getTagsByName()['deprecated'])) {
                     continue;
                 }
                 $method = $methodName;
@@ -177,12 +177,12 @@ final class GenerateFacade extends AbstractGenerateCommand
                     continue;
                 }
 
-                $_type = $phpDoc && $phpDoc->Return ? $phpDoc->Return->getType() : null;
+                $_type = $phpDoc && $phpDoc->getReturn() ? $phpDoc->getReturn()->getType() : null;
                 if ($_type !== null) {
                     /** @var PHPDoc $phpDoc */
                     $type = $this->getPHPDocTypeAlias(
-                        $phpDoc->Return,
-                        $phpDoc->Templates,
+                        $phpDoc->getReturn(),
+                        $phpDoc->getTemplates(),
                         $methodNamespace,
                         $methodFilename
                     );
@@ -219,7 +219,7 @@ final class GenerateFacade extends AbstractGenerateCommand
                         $returnsVoid = true;
                         break;
                 }
-                $summary = $phpDoc->Summary ?? null;
+                $summary = $phpDoc ? $phpDoc->getSummary() : null;
                 $summary = $summary
                     ? ($declare || !$link ? $summary : "$summary (see {@see " . $getMethodFqsen() . '})')
                     : ($declare || !$link ? 'Call ' . $getMethodFqsen() . " on the facade's underlying instance, loading it if necessary" : 'See {@see ' . $getMethodFqsen() . '}');
@@ -232,13 +232,13 @@ final class GenerateFacade extends AbstractGenerateCommand
 
             $params = [];
             foreach ($_params as $_param) {
-                $tag = $phpDoc->Params[$_param->getName()] ?? null;
+                $tag = $phpDoc ? $phpDoc->getParams()[$_param->getName()] ?? null : null;
                 // Override the declared type if defined in the PHPDoc
                 if ($tag && $tag->getType() !== null) {
                     /** @var PHPDoc $phpDoc */
                     $_type = $this->getPHPDocTypeAlias(
                         $tag,
-                        $phpDoc->Templates,
+                        $phpDoc->getTemplates(),
                         $methodNamespace,
                         $methodFilename
                     );

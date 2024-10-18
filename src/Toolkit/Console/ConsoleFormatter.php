@@ -336,7 +336,7 @@ REGEX;
                 $adjust = 0;
                 $text = Regex::replaceCallback(
                     self::TAG,
-                    function (array $match) use (
+                    function ($matches) use (
                         &$replace,
                         $textFormats,
                         $formattedFormats,
@@ -344,7 +344,7 @@ REGEX;
                         &$adjust
                     ): string {
                         $text = $this->applyTags(
-                            $match,
+                            $matches,
                             true,
                             $textFormats->getUnescape(),
                             $textFormats
@@ -353,17 +353,17 @@ REGEX;
                         $formatted = $textFormats === $formattedFormats
                             ? $text
                             : $this->applyTags(
-                                $match,
+                                $matches,
                                 true,
                                 $formattedFormats->getUnescape(),
                                 $formattedFormats
                             );
                         $replace[] = [
-                            $baseOffset + $match[0][1] + $adjust,
+                            $baseOffset + $matches[0][1] + $adjust,
                             strlen($placeholder),
                             $formatted,
                         ];
-                        $adjust += strlen($placeholder) - strlen($match[0][0]);
+                        $adjust += strlen($placeholder) - strlen($matches[0][0]);
                         return $placeholder;
                     },
                     $text,
@@ -447,7 +447,7 @@ REGEX;
         $adjust = 0;
         $string = Regex::replaceCallback(
             self::ESCAPE,
-            function (array $match) use (
+            function ($matches) use (
                 $unformat,
                 $unescape,
                 $wrapAfterApply,
@@ -458,43 +458,43 @@ REGEX;
                 // If the escape character is being wrapped, do nothing other
                 // than temporarily replace "\ " with "\x"
                 if ($wrapAfterApply && !$unescape) {
-                    if ($match[1][0] !== ' ') {
-                        return $match[0][0];
+                    if ($matches[1][0] !== ' ') {
+                        return $matches[0][0];
                     }
                     $placeholder = '\x';
                     $replace[] = [
-                        $match[0][1] + $adjust,
+                        $matches[0][1] + $adjust,
                         strlen($placeholder),
-                        $match[0][0],
+                        $matches[0][0],
                     ];
                     return $placeholder;
                 }
 
-                $delta = strlen($match[1][0]) - strlen($match[0][0]);
+                $delta = strlen($matches[1][0]) - strlen($matches[0][0]);
                 foreach ($adjustable as $i => $offset) {
-                    if ($offset < $match[0][1]) {
+                    if ($offset < $matches[0][1]) {
                         continue;
                     }
                     $replace[$i][0] += $delta;
                 }
 
                 $placeholder = null;
-                if ($match[1][0] === ' ') {
+                if ($matches[1][0] === ' ') {
                     $placeholder = 'x';
                 }
 
                 if ($unformat || !$unescape || $placeholder !== null) {
                     // Use `$replace` to reinstate the escape after wrapping
                     $replace[] = [
-                        $match[0][1] + $adjust,
-                        strlen($match[1][0]),
-                        $unformat || !$unescape ? $match[0][0] : $match[1][0],
+                        $matches[0][1] + $adjust,
+                        strlen($matches[1][0]),
+                        $unformat || !$unescape ? $matches[0][0] : $matches[1][0],
                     ];
                 }
 
                 $adjust += $delta;
 
-                return $placeholder ?? $match[1][0];
+                return $placeholder ?? $matches[1][0];
             },
             $string,
             -1,
@@ -653,23 +653,23 @@ REGEX;
     }
 
     /**
-     * @param array<int|string,array{string,int}|string> $match
+     * @param array<int|string,array{string,int}|string> $matches
      */
     private function applyTags(
-        array $match,
-        bool $matchHasOffset,
+        array $matches,
+        bool $matchesHasOffset,
         bool $unescape,
         TagFormats $formats,
         int $depth = 0
     ): string {
         /** @var string */
-        $text = $matchHasOffset ? $match['text'][0] : $match['text'];
-        $tag = $matchHasOffset ? $match['tag'][0] : $match['tag'];
+        $text = $matchesHasOffset ? $matches['text'][0] : $matches['text'];
+        $tag = $matchesHasOffset ? $matches['tag'][0] : $matches['tag'];
 
         $text = Regex::replaceCallback(
             self::TAG,
-            fn(array $match): string =>
-                $this->applyTags($match, false, $unescape, $formats, $depth + 1),
+            fn(array $matches): string =>
+                $this->applyTags($matches, false, $unescape, $formats, $depth + 1),
             $text,
             -1,
             $count,

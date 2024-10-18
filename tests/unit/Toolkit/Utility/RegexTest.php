@@ -8,6 +8,7 @@ use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Error;
 use Stringable;
 
 /**
@@ -91,7 +92,7 @@ final class RegexTest extends TestCase
                 \PREG_GREP_INVERT,
             ],
             [
-                \Error::class,
+                Error::class,
                 '/./',
                 [
                     new class {},
@@ -266,12 +267,12 @@ final class RegexTest extends TestCase
                 if (($fields[1] ?? null) !== $property || !Regex::match(
                     '/^([0-9a-f]{4,6})(?:\.\.([0-9a-f]{4,6}))?$/Di',
                     $fields[0],
-                    $match,
+                    $matches,
                 )) {
                     continue;
                 }
-                $start = (int) hexdec($match[1]);
-                $end = (int) hexdec($match[2] ?? $match[1]);
+                $start = (int) hexdec($matches[1]);
+                $end = (int) hexdec($matches[2] ?? $matches[1]);
                 $range = range($start, $end);
                 $codepoints += Arr::combine($range, $range);
             }

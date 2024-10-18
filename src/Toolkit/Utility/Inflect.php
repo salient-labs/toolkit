@@ -181,9 +181,9 @@ final class Inflect extends AbstractUtility
 
         $format = Regex::replaceCallback(
             '/\{\{#(?::(?<word>[-a-z0-9_\h]*+|#)(?::(?<plural_word>[-a-z0-9_\h]*+))?)?\}\}/i',
-            function (array $match) use ($singular, $replace): string {
-                $word = $match['word'];
-                $plural = $match['plural_word'];
+            function ($matches) use ($singular, $replace): string {
+                $word = $matches['word'];
+                $plural = $matches['plural_word'];
                 if ($word === '') {
                     return $singular ? '' : (string) $plural;
                 }
@@ -192,9 +192,9 @@ final class Inflect extends AbstractUtility
                     ?? ($singular
                         ? $word
                         : ($plural ?? self::plural($word))), $plural);
-                return $word === $match['word'] || $match['word'] === null
+                return $word === $matches['word'] || $matches['word'] === null
                     ? $word
-                    : Str::matchCase($word, $match['word']);
+                    : Str::matchCase($word, $matches['word']);
             },
             $format,
             -1,

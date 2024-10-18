@@ -300,7 +300,7 @@ REGEX;
      * A wrapper for preg_split()
      *
      * @param int-mask-of<\PREG_SPLIT_NO_EMPTY|\PREG_SPLIT_DELIM_CAPTURE|\PREG_SPLIT_OFFSET_CAPTURE> $flags
-     * @return string[]
+     * @return ($flags is 1|3|5|7 ? string[] : non-empty-array<string>)
      */
     public static function split(
         string $pattern,

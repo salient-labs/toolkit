@@ -308,10 +308,10 @@ EOF)
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
-                $internal = isset($phpDoc->TagsByName['internal']);
+                $internal = $phpDoc && isset($phpDoc->getTagsByName()['internal']);
                 $link = !$internal && $phpDoc && $phpDoc->hasDetail();
 
-                $tag = $phpDoc->Vars[0] ?? $phpDoc->Vars[$_property->getName()] ?? null;
+                $tag = $phpDoc ? $phpDoc->getVars()[0] ?? $phpDoc->getVars()[$_property->getName()] ?? null : null;
                 $_type = $tag ? $tag->getType() : null;
 
                 if ($_type !== null) {
@@ -319,7 +319,7 @@ EOF)
                     $templates = [];
                     $type = $this->getPHPDocTypeAlias(
                         $tag,
-                        $phpDoc->Templates,
+                        $phpDoc->getTemplates(),
                         $propertyNamespace,
                         $propertyFile,
                         $templates
@@ -366,12 +366,16 @@ EOF)
                         }
                         break;
                 }
-                $summary = $phpDoc->Summary ?? null;
+                $summary = $phpDoc ? $phpDoc->getSummary() : null;
                 if ($summary === null && ($_param = $_params[$name] ?? null) !== null) {
                     $_name = $_param->getName();
-                    $summary = isset($_phpDoc->Params[$_name])
-                        ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->getDescription())
-                        : null;
+                    if (
+                        $_phpDoc
+                        && ($tag = $_phpDoc->getParams()[$_name] ?? null)
+                        && ($summary = $tag->getDescription()) !== null
+                    ) {
+                        $summary = Str::collapse($summary);
+                    }
                 }
 
                 $type = $type !== '' ? "$type " : '';
@@ -411,13 +415,13 @@ EOF)
             } else {
                 $phpDoc = null;
             }
-            $internal = isset($phpDoc->TagsByName['internal']);
+            $internal = $phpDoc && isset($phpDoc->getTagsByName()['internal']);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
 
             $_param = $_params[$name];
             $_name = $_param->getName();
 
-            $tag = $_phpDoc->Params[$_name] ?? null;
+            $tag = $_phpDoc ? $_phpDoc->getParams()[$_name] ?? null : null;
             $_type = $tag ? $tag->getType() : null;
             $fromPHPDoc = false;
             if ($_type !== null) {
@@ -426,7 +430,7 @@ EOF)
                 $templates = [];
                 $type = $this->getPHPDocTypeAlias(
                     $tag,
-                    $_phpDoc->Templates,
+                    $_phpDoc->getTemplates(),
                     $propertyNamespace,
                     $propertyFile,
                     $templates
@@ -485,11 +489,16 @@ EOF)
                 continue;
             }
 
-            $summary = isset($_phpDoc->Params[$_name])
-                ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->getDescription())
-                : null;
-            if ($summary === null && $phpDoc) {
-                $summary = $phpDoc->Summary;
+            if (
+                $_phpDoc
+                && ($tag = $_phpDoc->getParams()[$_name] ?? null)
+                && ($summary = $tag->getDescription()) !== null
+            ) {
+                $summary = Str::collapse($summary);
+            } elseif ($phpDoc) {
+                $summary = $phpDoc->getSummary();
+            } else {
+                $summary = null;
             }
 
             if ($declare) {
@@ -577,7 +586,7 @@ EOF)
                 if ($_method->isConstructor()
                         || $_method->isStatic()
                         || strpos($name, '__') === 0
-                        || isset($phpDoc->TagsByName['deprecated'])
+                        || ($phpDoc && isset($phpDoc->getTagsByName()['deprecated']))
                         || in_array(Str::camel($name), $names)
                         || in_array(Str::camel(Regex::replace('/^(with|get)/i', '', $name)), $names)
                         || in_array($name, $this->Skip)
@@ -597,7 +606,7 @@ EOF)
                     fn(ReflectionParameter $p) =>
                         $p->isPassedByReference()
                 ) && !in_array($name, $this->NoDeclare);
-                $internal = isset($phpDoc->TagsByName['internal']);
+                $internal = $phpDoc && isset($phpDoc->getTagsByName()['internal']);
                 $link = !$internal && $phpDoc && $phpDoc->hasDetail();
                 $returnsVoid = false;
 
@@ -605,13 +614,13 @@ EOF)
                     $this->ToDeclare[$name] = $_method;
                 }
 
-                $_type = $phpDoc && $phpDoc->Return ? $phpDoc->Return->getType() : null;
+                $_type = $phpDoc && $phpDoc->getReturn() ? $phpDoc->getReturn()->getType() : null;
                 if ($_type !== null) {
                     /** @var PHPDoc $phpDoc */
                     $templates = [];
                     $type = $this->getPHPDocTypeAlias(
-                        $phpDoc->Return,
-                        $phpDoc->Templates,
+                        $phpDoc->getReturn(),
+                        $phpDoc->getTemplates(),
                         $propertyNamespace,
                         $propertyFile,
                         $templates
@@ -653,18 +662,18 @@ EOF)
                         break;
                 }
 
-                $summary = $phpDoc->Summary ?? null;
+                $summary = $phpDoc ? $phpDoc->getSummary() : null;
 
                 $params = [];
                 foreach ($_params as $_param) {
                     /** @todo: check for templates here? */
-                    $tag = $phpDoc->Params[$_param->getName()] ?? null;
+                    $tag = $phpDoc ? $phpDoc->getParams()[$_param->getName()] ?? null : null;
                     // Override the declared type if defined in the PHPDoc
                     if ($tag && $tag->getType() !== null) {
                         /** @var PHPDoc $phpDoc */
                         $_type = $this->getPHPDocTypeAlias(
                             $tag,
-                            $phpDoc->Templates,
+                            $phpDoc->getTemplates(),
                             $propertyNamespace,
                             $propertyFile
                         );
