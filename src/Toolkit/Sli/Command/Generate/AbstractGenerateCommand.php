@@ -308,7 +308,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $this->InputClassName = $this->InputClass->getName();
         $this->InputClassPHPDoc = PHPDoc::fromDocBlocks(PHPDocUtil::getAllClassDocComments($this->InputClass));
         $this->InputClassTemplates = $this->InputClassPHPDoc
-            ? $this->InputClassPHPDoc->getTemplates()
+            ? $this->InputClassPHPDoc->getTemplates(false)
             : [];
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
@@ -388,22 +388,29 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      *
      * @param array<string,TemplateTag> $templates
      * @param array<string,TemplateTag> $inputClassTemplates
+     * @param-out array<string,TemplateTag> $inputClassTemplates
      */
-    protected function resolveTemplates(string $type, array $templates, ?TemplateTag &$template = null, array &$inputClassTemplates = []): string
-    {
+    protected function resolveTemplates(
+        string $type,
+        array $templates,
+        ?TemplateTag &$template = null,
+        array &$inputClassTemplates = []
+    ): string {
         $seen = [];
         while ($tag = $templates[$type] ?? null) {
             $template = $tag;
             // Don't resolve templates that will appear in the output
-            if ($tag->getClass() === $this->InputClassName
-                    && $tag->getMember() === null
-                    && ($_template = $this->InputClassTemplates[$type] ?? null)) {
+            if (
+                $tag->getClass() === $this->InputClassName
+                && $tag->getMember() === null
+                && ($_template = $this->InputClassTemplates[$type] ?? null)
+            ) {
                 $inputClassTemplates[$type] = $_template;
                 return $type;
             }
             // Prevent recursion
-            $tagType = $tag->getType();
-            if ($tagType === null || ($seen[$tagType] ?? null)) {
+            $tagType = $tag->getType() ?? 'mixed';
+            if (isset($seen[$tagType])) {
                 break;
             }
             $seen[$tagType] = true;
@@ -434,7 +441,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
         return PHPDoc::normaliseType(Regex::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
-            function ($match) use (
+            function ($matches) use (
                 $type,
                 $templates,
                 $namespace,
@@ -442,7 +449,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 &$inputClassTemplates,
                 $subject
             ) {
-                $t = $this->resolveTemplates($match[0][0], $templates, $template, $inputClassTemplates);
+                $t = $this->resolveTemplates($matches[0][0], $templates, $template, $inputClassTemplates);
                 $type = $template ?: $type;
                 if ($type instanceof AbstractTag && ($class = $type->getClass()) !== null) {
                     $class = new ReflectionClass($class);
@@ -453,7 +460,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                     }
                 }
                 // Recurse if template expansion occurred
-                if ($t !== $match[0][0]) {
+                if ($t !== $matches[0][0]) {
                     return $this->getPHPDocTypeAlias($t, $templates, $namespace, $filename);
                 }
                 // Leave reserved words and PHPDoc types (e.g. `class-string`)
@@ -467,7 +474,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                     // - before: `'array < int < 1, max > >'`
                     // - after: `['array', '<', 'int', '<', '1']`
                     /** @disregard P1006 */
-                    $before = substr($subject, 0, $match[0][1]);
+                    $before = substr($subject, 0, $matches[0][1]);
                     $before = Regex::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
                     $before = Arr::trim($before);
                     while ($before) {

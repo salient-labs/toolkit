@@ -16,6 +16,7 @@ use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use InvalidArgumentException;
 
 /**
  * A simple HTTP server
@@ -380,7 +381,7 @@ class HttpServer implements Immutable
 
                     try {
                         $targetUri = new Uri($target, true);
-                    } catch (\InvalidArgumentException $ex) {
+                    } catch (InvalidArgumentException $ex) {
                         throw new HttpServerException(sprintf(
                             'Invalid request target for %s from %s: %s',
                             $method,
@@ -408,7 +409,7 @@ class HttpServer implements Immutable
             }
             try {
                 $uri = new Uri($uri, true);
-            } catch (\InvalidArgumentException $ex) {
+            } catch (InvalidArgumentException $ex) {
                 throw new HttpServerException(sprintf(
                     'Invalid request URI from %s: %s',
                     $peer,

@@ -3,6 +3,7 @@
 namespace Salient\Iterator\Concern;
 
 use Salient\Iterator\GraphIterator;
+use RecursiveIterator;
 
 /**
  * Implements RecursiveIterator for GraphIterator subclasses
@@ -10,7 +11,7 @@ use Salient\Iterator\GraphIterator;
  * @api
  *
  * @phpstan-require-extends GraphIterator
- * @phpstan-require-implements \RecursiveIterator
+ * @phpstan-require-implements RecursiveIterator
  */
 trait RecursiveGraphIteratorTrait
 {

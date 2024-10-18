@@ -70,10 +70,10 @@ final class Get extends AbstractUtility
         if (is_string($value) && Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
-            $match,
+            $matches,
             \PREG_UNMATCHED_AS_NULL
         )) {
-            return $match['true'] !== null;
+            return $matches['true'] !== null;
         }
 
         return (bool) $value;
@@ -179,11 +179,11 @@ final class Get extends AbstractUtility
 
         $values = Regex::replaceCallback(
             '/^([^=]++)(?:=(.++))?/s',
-            fn(array $match) =>
-                rawurlencode((string) $match[1])
-                . ($match[2] === null
+            fn($matches) =>
+                rawurlencode((string) $matches[1])
+                . ($matches[2] === null
                     ? ''
-                    : '=' . rawurlencode($match[2])),
+                    : '=' . rawurlencode($matches[2])),
             $valid,
             -1,
             $count,
