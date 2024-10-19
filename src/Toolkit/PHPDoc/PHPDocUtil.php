@@ -277,14 +277,15 @@ final class PHPDocUtil extends AbstractUtility
      */
     public static function normaliseType(string $type, bool $strict = false): string
     {
-        if (!Regex::match(self::PHPDOC_TYPE, trim($type), $matches)) {
+        $type = trim($type);
+        if (!Regex::match(self::PHPDOC_TYPE, $type, $matches)) {
             if ($strict) {
                 throw new InvalidArgumentException(sprintf(
                     "Invalid PHPDoc type '%s'",
                     $type,
                 ));
             }
-            return self::replace([$type])[0];
+            return self::replaceTypes($type);
         }
 
         $types = Str::splitDelimited('|', $type, true, null, Str::PRESERVE_QUOTED);
@@ -311,7 +312,7 @@ final class PHPDocUtil extends AbstractUtility
                 $brackets = true;
                 $type = substr($type, 1, -1);
             }
-            $split = array_unique(self::replace(explode('&', $type)));
+            $split = array_unique(self::replaceTypes(explode('&', $type)));
             $type = implode('&', $split);
             if ($brackets && (
                 count($split) > 1
@@ -321,7 +322,7 @@ final class PHPDocUtil extends AbstractUtility
             }
         }
 
-        $types = array_unique(self::replace($types));
+        $types = array_unique(self::replaceTypes($types));
         if ($nullable ?? false) {
             $types[] = 'null';
         }
@@ -330,10 +331,12 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param string[] $types
-     * @return string[]
+     * @template T of string[]|string
+     *
+     * @param T $types
+     * @return T
      */
-    private static function replace(array $types): array
+    private static function replaceTypes($types)
     {
         return Regex::replace(
             ['/\bclass-string<(?:mixed|object)>/i', '/(?:\bmixed&|&mixed\b)/i'],

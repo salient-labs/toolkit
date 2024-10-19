@@ -13,6 +13,7 @@ use InvalidArgumentException;
 
 /**
  * @covers \Salient\PHPDoc\PHPDoc
+ * @covers \Salient\PHPDoc\PHPDocUtil
  * @covers \Salient\PHPDoc\Tag\AbstractTag
  * @covers \Salient\PHPDoc\Tag\ParamTag
  * @covers \Salient\PHPDoc\Tag\ReturnTag
