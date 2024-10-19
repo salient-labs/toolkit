@@ -4,18 +4,22 @@ namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
-use Salient\PHPDoc\Exception\InvalidTagValueException;
-use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
+use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Regex;
 use Salient\Utility\Test;
+use InvalidArgumentException;
+use Stringable;
 
 /**
- * Base class for PHPDoc tags
+ * @internal
  */
-abstract class AbstractTag implements Immutable
+abstract class AbstractTag implements Immutable, Stringable
 {
-    use HasMutator;
+    use HasMutator {
+        with as protected;
+        without as protected;
+    }
 
     protected string $Tag;
     protected string $Name;
@@ -107,7 +111,10 @@ abstract class AbstractTag implements Immutable
      */
     public function withDescription(?string $description)
     {
-        return $this->with('Description', $this->filterString($description, 'description'));
+        return $this->with(
+            'Description',
+            $this->filterString($description, 'description'),
+        );
     }
 
     /**
@@ -197,8 +204,8 @@ abstract class AbstractTag implements Immutable
         }
 
         try {
-            return PHPDoc::normaliseType($type, true);
-        } catch (\InvalidArgumentException $ex) {
+            return PHPDocUtil::normaliseType($type, true);
+        } catch (InvalidArgumentException $ex) {
             $this->throw('%s', $ex->getMessage());
         }
     }
@@ -239,6 +246,11 @@ abstract class AbstractTag implements Immutable
             }
         }
 
-        throw new InvalidTagValueException(sprintf($message, ...$args));
+        throw new InvalidArgumentException(sprintf($message, ...$args));
     }
+
+    /**
+     * @return non-empty-string
+     */
+    abstract function __toString();
 }

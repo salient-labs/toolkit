@@ -16,6 +16,7 @@ use Salient\Utility\Sys;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use stdClass;
+use Throwable;
 
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
@@ -274,7 +275,7 @@ final class HttpStreamTest extends TestCase
         $throws = function (callable $fn): void {
             try {
                 $fn();
-            } catch (\Exception $e) {
+            } catch (Throwable $e) {
                 $this->assertStringContainsString('Stream is detached', $e->getMessage());
 
                 return;

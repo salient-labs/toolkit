@@ -31,15 +31,15 @@ REGEX;
     public const PHPDOC_TAG = <<<'REGEX'
 (?x)
 (?<= ^ | \r\n | \n | \r )
-@ (?<tag> [[:alpha:]\\] [[:alnum:]\\_-]*+ ) (?= [\s(:] | $ )
+\h*+ @ (?<tag> [[:alpha:]\\] [[:alnum:]\\_-]*+ ) (?= [\s(:] | $ )
 REGEX;
 
     /**
      * A valid PHPDoc type
      *
-     * In some locales, `\s` matches non-breaking space (`\xA0`), so an
-     * alternative (`(?&sp)`) is used in contexts where the start of a PHP
-     * identifier would otherwise be parsed as whitespace.
+     * In some locales, `\s` matches non-breaking space (`\xA0`), so `(?&sp)` is
+     * used in contexts where the start of a PHP identifier would otherwise be
+     * treated as whitespace.
      */
     public const PHPDOC_TYPE = <<<'REGEX'
 (?xi)
@@ -52,9 +52,10 @@ REGEX;
   (?<php_type> \\ (?&php_identifier) (?: \\ (?&php_identifier) )* | (?&php_identifier) (?: \\ (?&php_identifier) )+ )
   (?<phpdoc_type> (?&php_identifier) (?: - [[:alnum:]_\x80-\xff]+ )+ )
   (?<variable> \$ (?&php_identifier) )
-  (?<variance> covariant | contravariant )
+  (?<variance_type> covariant | contravariant )
+  (?<variance> (?&sp)*+ (?: (?&variance_type) (?&sp)*+ )? (?! (?&variance_type) \b ) )
   (?<param> \s*+ (?: & \s*+ )? (?: \.\.\. \s*+ )? (?: (?&variable) \s*+ )? =? )
-  (?<trailing> (?: \s*+ , (?: \s*+ \.\.\. (?: \s*+ , )? )? )? \s*+ )
+  (?<trailing> (?: \s*+ , (?: \s*+ \.\.\. (?: \s*+ , )? )? )? )
 )
 (
   (?:
@@ -77,29 +78,30 @@ REGEX;
       0
     ) |
 
-    # Closure with optional "<Type,...>", and optional parameter and
-    # return types
-    (?: callable | \\? Closure ) \s*+
-    (?: \s* < (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1)
-        (?: \s*+ , (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1) )*+
-        (?&trailing) > )?
+    # Closure with optional "<Type,...>", and optional parameter and return
+    # types
+    (?: (?: pure- (?! \\ ) )? (?: callable | \\? Closure ) ) \s*+
+    (?: \s* < (?&variance) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1)
+        (?: \s*+ , (?&variance) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1) )*+
+        (?&trailing) \s*+ > )?
     \( (?&sp)*+ (?: (?-1) (?&param)
         (?: \s*+ , (?&sp)*+ (?-1) (?&param) )*+
-        (?&trailing) | \.\.\. \s*+ )? \)
+        (?&trailing) \s*+ | \.\.\. \s*+ )? \)
     (?: \s* : (?&sp)*+ (?-1) )? |
 
-    # Native or PHPDoc type, possibly nullable, with optional
-    # "::CONST_*", "<Type,...>", and/or "{0?:Type,...}"
+    # Native or PHPDoc type, possibly nullable, with optional "::CONST_*",
+    # "<Type,...>", and/or "{0?:Type,...<Type,Type>}"
     (?: \? (?&sp)*+ )?
     (?: (?&php_type) | (?&phpdoc_type) | (?&php_identifier) )
     (?: :: [[:alpha:]_\x80-\xff*] [[:alnum:]_\x80-\xff*]*+ )?
-    (?: \s* < (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?-1)
-        (?: \s*+ , (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?-1) )*+
-        (?&trailing) > )?
-    (?: \s* \{ (?&sp)*+ (?:
-        (?: (?-1) \s*+ (?: \? \s*+ )? : (?&sp)*+ )? (?-1)
-        (?: \s*+ , (?&sp)*+ (?: (?-1) \s*+ (?: \? \s*+ )? : (?&sp)*+ )? (?-1) )*+
-        (?&trailing) | \.\.\. \s*+ )? \} )*+ |
+    (?: \s* < (?&variance) (?-1)
+        (?: \s*+ , (?&variance) (?-1) )*+
+        (?&trailing) \s*+ > )?
+    (?: \s* \{ (?&sp)*+ (?: (?:
+          (?: (?-1) \s*+ (?: \? \s*+ )? : (?&sp)*+ )? (?-1)
+          (?: \s*+ , (?&sp)*+ (?: (?-1) \s*+ (?: \? \s*+ )? : (?&sp)*+ )? (?-1) )*+
+          (?&trailing) | \.\.\. )?
+        (?: (?<= \.\.\. ) \s*+ < (?&sp)*+ (?-1) (?: \s*+ , (?&sp)*+ (?-1) )? \s*+ > (?: \s*+ , )? )? \s*+ ) \} )*+ |
 
     # Conditional return type
     (?: (?&variable) | (?&php_identifier) ) \s+ is (?: \s++ not )? \b (?&sp)*+ (?-1)

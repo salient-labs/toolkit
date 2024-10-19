@@ -2,16 +2,12 @@
 
 namespace Salient\PHPDoc\Tag;
 
-use Salient\Core\Concern\HasMutator;
-use Stringable;
-
 /**
- * A "@template" tag
+ * @api
  */
-class TemplateTag extends AbstractTag implements Stringable
+class TemplateTag extends AbstractTag
 {
-    use HasMutator;
-
+    protected ?string $Default;
     /** @var "covariant"|"contravariant"|null */
     protected ?string $Variance;
 
@@ -24,11 +20,13 @@ class TemplateTag extends AbstractTag implements Stringable
     public function __construct(
         string $name,
         ?string $type = null,
+        ?string $default = null,
         ?string $variance = null,
         ?string $class = null,
         ?string $member = null
     ) {
         parent::__construct('template', $name, $type, null, $class, $member);
+        $this->Default = $this->filterType($default);
         $this->Variance = $this->filterVariance($variance);
     }
 
@@ -38,6 +36,22 @@ class TemplateTag extends AbstractTag implements Stringable
     public function getName(): string
     {
         return $this->Name;
+    }
+
+    /**
+     * @return null
+     */
+    public function getDescription(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Get the default value of the template
+     */
+    public function getDefault(): ?string
+    {
+        return $this->Default;
     }
 
     /**
@@ -74,6 +88,27 @@ class TemplateTag extends AbstractTag implements Stringable
     }
 
     /**
+     * @inheritDoc
+     */
+    public function withDescription(?string $description)
+    {
+        if ($description !== null) {
+            $this->throw('Invalid description');
+        }
+        return $this;
+    }
+
+    /**
+     * Get an instance with the given default value
+     *
+     * @return static
+     */
+    public function withDefault(?string $default)
+    {
+        return $this->with('Default', $this->filterType($default));
+    }
+
+    /**
      * Get an instance with the given variance
      *
      * @param "covariant"|"contravariant"|null $variance
@@ -84,14 +119,23 @@ class TemplateTag extends AbstractTag implements Stringable
         return $this->with('Variance', $this->filterVariance($variance));
     }
 
+    /**
+     * @inheritDoc
+     */
     public function __toString(): string
     {
-        return sprintf(
-            '@template%s %s%s',
-            $this->Variance === null ? '' : '-' . $this->Variance,
-            $this->Name,
-            !isset($this->Type) ? '' : ' of ' . $this->Type
-        );
+        $string = "@{$this->Tag}";
+        if ($this->Variance !== null) {
+            $string .= "-{$this->Variance}";
+        }
+        $string .= " {$this->Name}";
+        if (isset($this->Type)) {
+            $string .= " of {$this->Type}";
+        }
+        if ($this->Default !== null) {
+            $string .= " = {$this->Default}";
+        }
+        return $string;
     }
 
     /**
@@ -106,6 +150,8 @@ class TemplateTag extends AbstractTag implements Stringable
         ) {
             return $variance;
         }
+        // @codeCoverageIgnoreStart
         $this->throw("Invalid variance '%s'", $variance);
+        // @codeCoverageIgnoreEnd
     }
 }

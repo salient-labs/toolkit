@@ -356,7 +356,7 @@ final class Str extends AbstractUtility
         if ($callback !== null) {
             $string = Regex::replaceCallback(
                 "/$word/u",
-                fn($match) => $callback($match[0]),
+                fn($matches) => $callback($matches[0]),
                 $string,
             );
         }
@@ -637,6 +637,14 @@ REGEX;
         }
 
         return Regex::replace($search, $replace, $string);
+    }
+
+    /**
+     * Replace whitespace character sequences in a string with a single space
+     */
+    public static function collapse(string $string): string
+    {
+        return Regex::replace('/\s++/', ' ', $string);
     }
 
     /**

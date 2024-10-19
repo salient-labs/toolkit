@@ -2,46 +2,58 @@
 
 namespace Salient\PHPDoc;
 
-use Salient\Contract\Core\Entity\Readable;
-use Salient\Core\Concern\ReadsProtectedProperties;
-use Salient\PHPDoc\Exception\InvalidTagValueException;
+use Salient\Contract\Core\Immutable;
+use Salient\Core\Concern\HasMutator;
 use Salient\PHPDoc\Tag\AbstractTag;
+use Salient\PHPDoc\Tag\GenericTag;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\ReturnTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\Tag\VarTag;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
-use OutOfRangeException;
-use UnexpectedValueException;
 
 /**
  * A PSR-5 PHPDoc
  *
  * Summaries that break over multiple lines are unwrapped. Descriptions and tags
  * may contain Markdown, including fenced code blocks.
- *
- * @property-read string|null $Summary Summary (if provided)
- * @property-read string|null $Description Description (if provided)
- * @property-read string[] $Tags Original tags, in order of appearance
- * @property-read array<string,string[]> $TagsByName Original tag metadata, indexed by tag name
- * @property-read array<string,ParamTag> $Params "@param" tags, indexed by name
- * @property-read ReturnTag|null $Return "@return" tag (if provided)
- * @property-read VarTag[] $Vars "@var" tags
- * @property-read array<string,TemplateTag> $Templates "@template" tags, indexed by name
- * @property-read class-string|null $Class
- * @property-read string|null $Member
  */
-final class PHPDoc implements Readable
+final class PHPDoc implements Immutable
 {
-    use ReadsProtectedProperties;
+    use HasMutator;
 
     private const PHP_DOCBLOCK = '`^' . PHPDocRegex::PHP_DOCBLOCK . '$`D';
     private const PHPDOC_TAG = '`^' . PHPDocRegex::PHPDOC_TAG . '`';
-    private const PHPDOC_TYPE = '`^' . PHPDocRegex::PHPDOC_TYPE . '$`D';
-    private const NEXT_PHPDOC_TYPE = '`^' . PHPDocRegex::PHPDOC_TYPE . '`';
+    private const BLANK_OR_PHPDOC_TAG = '`^(?:$|' . PHPDocRegex::PHPDOC_TAG . ')`D';
+
+    private const PARAM_TAG = '`^'
+        . '(?:(?<param_type>' . PHPDocRegex::PHPDOC_TYPE . ')\h++)?'
+        . '(?<param_reference>&\h*+)?'
+        . '(?<param_variadic>\.\.\.\h*+)?'
+        . '\$(?<param_name>[^\s]++)'
+        . '\s*+(?<param_description>(?s).++)?'
+        . '`';
+
+    private const RETURN_TAG = '`^'
+        . '(?<return_type>' . PHPDocRegex::PHPDOC_TYPE . ')'
+        . '\s*+(?<return_description>(?s).++)?'
+        . '`';
+
+    private const VAR_TAG = '`^'
+        . '(?<var_type>' . PHPDocRegex::PHPDOC_TYPE . ')'
+        . '(?:\h++\$(?<var_name>[^\s]++))?'
+        . '\s*+(?<var_description>(?s).++)?'
+        . '`';
+
+    private const TEMPLATE_TAG = '`^'
+        . '(?<template_name>[^\s]++)'
+        . '(?:\h++(?:of|as)\h++(?<template_type>' . PHPDocRegex::PHPDOC_TYPE . '))?'
+        . '(?:\h++=\h++(?<template_default>(?&template_type)))?'
+        . '`';
 
     private const STANDARD_TAGS = [
         'param',
@@ -52,25 +64,28 @@ final class PHPDoc implements Readable
         'template',
         'template-covariant',
         'template-contravariant',
+        'api',
         'internal',
+        'inheritDoc',
     ];
 
-    protected ?string $Summary = null;
-    protected ?string $Description = null;
-    /** @var string[] */
-    protected array $Tags = [];
-    /** @var array<string,string[]> */
-    protected array $TagsByName = [];
+    private ?string $Summary = null;
+    private ?string $Description = null;
+    /** @var array<string,AbstractTag[]> */
+    private array $Tags = [];
     /** @var array<string,ParamTag> */
-    protected array $Params = [];
-    protected ?ReturnTag $Return = null;
+    private array $Params = [];
+    private ?ReturnTag $Return = null;
     /** @var VarTag[] */
-    protected array $Vars = [];
+    private array $Vars = [];
     /** @var array<string,TemplateTag> */
-    protected array $Templates = [];
+    private array $Templates = [];
     /** @var class-string|null */
-    protected ?string $Class;
-    protected ?string $Member;
+    private ?string $Class;
+    private ?string $Member;
+
+    // --
+
     /** @var string[] */
     private array $Lines;
     private ?string $NextLine;
@@ -78,11 +93,12 @@ final class PHPDoc implements Readable
     /**
      * Creates a new PHPDoc object from a PHP DocBlock
      *
+     * @param self|string|null $classDocBlock
      * @param class-string|null $class
      */
     public function __construct(
         string $docBlock,
-        ?string $classDocBlock = null,
+        $classDocBlock = null,
         ?string $class = null,
         ?string $member = null
     ) {
@@ -92,23 +108,346 @@ final class PHPDoc implements Readable
 
         $this->Class = $class;
         $this->Member = $member;
+        $this->parse($matches['content']);
 
-        // - Remove comment delimiters
-        // - Normalise line endings
-        // - Remove leading asterisks and trailing whitespace
+        // Merge templates from the declaring class, if possible
+        if ($classDocBlock !== null) {
+            $phpDoc = $classDocBlock instanceof self
+                ? $classDocBlock
+                : new self($classDocBlock, null, $this->Class);
+            foreach ($phpDoc->Templates as $name => $tag) {
+                $this->Templates[$name] ??= $tag;
+            }
+        }
+    }
+
+    /**
+     * Inherit values from an instance that represents the same structural
+     * element in a parent class or interface
+     *
+     * @return static
+     */
+    public function inherit(self $parent)
+    {
+        $tags = $this->Tags;
+        foreach (Arr::flatten($tags) as $tag) {
+            $idx[(string) $tag] = true;
+        }
+        foreach ($parent->Tags as $name => $theirs) {
+            foreach ($theirs as $tag) {
+                if ($name === 'template' || !isset($idx[(string) $tag])) {
+                    $tags[$name][] = $tag;
+                }
+            }
+        }
+
+        $params = $this->Params;
+        foreach ($parent->Params as $name => $theirs) {
+            $params[$name] = $this->mergeTag($params[$name] ?? null, $theirs);
+        }
+
+        $return = $this->mergeTag($this->Return, $parent->Return);
+
+        $vars = $this->Vars;
+        if (
+            count($parent->Vars) === 1
+            && array_key_first($parent->Vars) === 0
+        ) {
+            $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0]);
+        }
+
+        $templates = $this->Templates;
+        foreach ($parent->Templates as $name => $theirs) {
+            $templates[$name] ??= $theirs;
+        }
+
+        return $this
+            ->with('Summary', $this->Summary ?? $parent->Summary)
+            ->with('Description', $this->Description ?? $parent->Description)
+            ->with('Tags', $tags)
+            ->with('Params', $params)
+            ->with('Return', $return)
+            ->with('Vars', $vars)
+            ->with('Templates', $templates);
+    }
+
+    /**
+     * @template T of AbstractTag
+     *
+     * @param T|null $ours
+     * @param T|null $theirs
+     * @return ($ours is null ? ($theirs is null ? null : T) : T)
+     */
+    private function mergeTag(?AbstractTag $ours, ?AbstractTag $theirs): ?AbstractTag
+    {
+        if ($theirs === null) {
+            return $ours;
+        }
+
+        if ($ours === null) {
+            return $theirs;
+        }
+
+        return $ours->inherit($theirs);
+    }
+
+    /**
+     * Get a normalised instance
+     *
+     * If the PHPDoc has one `@var` tag with no variable name, its description
+     * is applied to the summary or description of the PHPDoc and removed from
+     * the tag.
+     *
+     * `@inheritDoc` tags are removed.
+     *
+     * @return static
+     */
+    public function normalise()
+    {
+        $tags = $this->Tags;
+        unset($tags['inheritDoc']);
+
+        $vars = $this->Vars;
+        if (count($vars) === 1 && array_key_first($vars) === 0) {
+            $var = $vars[0];
+            $varDesc = $var->getDescription();
+            if ($varDesc !== null) {
+                $varKey = Arr::keyOf($tags['var'] ?? [], $var);
+                $vars = [$var = $var->withDescription(null)];
+                $tags['var'][$varKey] = $var;
+                if ($this->Summary === null) {
+                    $summary = $varDesc;
+                } elseif ($this->Summary !== $varDesc) {
+                    $description = Arr::implode("\n\n", [
+                        $this->Description,
+                        $varDesc,
+                    ], '');
+                }
+            }
+        }
+        return $this
+            ->with('Summary', $summary ?? $this->Summary)
+            ->with('Description', $description ?? $this->Description)
+            ->with('Tags', $tags)
+            ->with('Vars', $vars);
+    }
+
+    /**
+     * Get the PHPDoc's summary (if provided)
+     */
+    public function getSummary(): ?string
+    {
+        return $this->Summary;
+    }
+
+    /**
+     * Get the PHPDoc's description (if provided)
+     */
+    public function getDescription(): ?string
+    {
+        return $this->Description;
+    }
+
+    /**
+     * Check if the PHPDoc has a tag with the given name
+     */
+    public function hasTag(string $name): bool
+    {
+        if ($name !== '' && $name[0] === '@') {
+            $name = substr($name, 1);
+        }
+        return isset($this->Tags[$name]);
+    }
+
+    /**
+     * Get the PHPDoc's tags, indexed by tag name
+     *
+     * @return array<string,AbstractTag[]>
+     */
+    public function getTags(): array
+    {
+        return $this->Tags;
+    }
+
+    /**
+     * Get the PHPDoc's "@param" tags, indexed by name
+     *
+     * @return array<string,ParamTag>
+     */
+    public function getParams(): array
+    {
+        return $this->Params;
+    }
+
+    /**
+     * Get the PHPDoc's "@return" tag (if provided)
+     */
+    public function getReturn(): ?ReturnTag
+    {
+        return $this->Return;
+    }
+
+    /**
+     * Get the PHPDoc's "@var" tags
+     *
+     * @return VarTag[]
+     */
+    public function getVars(): array
+    {
+        return $this->Vars;
+    }
+
+    /**
+     * Get the PHPDoc's "@template" tags, indexed by name
+     *
+     * @return array<string,TemplateTag>
+     */
+    public function getTemplates(bool $includeInherited = true): array
+    {
+        if ($includeInherited || $this->Class === null) {
+            return $this->Templates;
+        }
+
+        foreach ($this->Templates as $name => $template) {
+            if ($template->getClass() === $this->Class && (
+                $this->Member === null
+                || $template->getMember() === $this->Member
+            )) {
+                $templates[$name] = $template;
+            }
+        }
+
+        return $templates ?? [];
+    }
+
+    /**
+     * Get "@template" tags applicable to the given tag, indexed by name
+     *
+     * @return array<string,TemplateTag>
+     */
+    public function getTemplatesForTag(AbstractTag $tag): array
+    {
+        $class = $tag->getClass();
+        $member = $tag->getMember();
+        if ($class === null || $this->Class === null) {
+            return $this->Templates;
+        }
+
+        /** @var TemplateTag $template */
+        foreach ($this->Tags['template'] ?? [] as $template) {
+            $name = $template->getName();
+            if ($template->getClass() === $class && (
+                ($_member = $template->getMember()) === null
+                || $_member === $member
+            )) {
+                $templates[$name] = $template;
+            }
+        }
+
+        return $templates ?? [];
+    }
+
+    /**
+     * Get the name of the class associated with the PHPDoc
+     */
+    public function getClass(): ?string
+    {
+        return $this->Class;
+    }
+
+    /**
+     * Get the class member associated with the PHPDoc
+     */
+    public function getMember(): ?string
+    {
+        return $this->Member;
+    }
+
+    /**
+     * Check if the PHPDoc has no content
+     */
+    public function isEmpty(): bool
+    {
+        return $this->Summary === null
+            && $this->Description === null
+            && (!$this->Tags || array_keys($this->Tags) === ['inheritDoc']);
+    }
+
+    /**
+     * Check if the PHPDoc has data other than a summary and standard type
+     * information
+     */
+    public function hasDetail(): bool
+    {
+        if ($this->Description !== null) {
+            return true;
+        }
+
+        foreach ([...$this->Params, $this->Return, ...$this->Vars] as $tag) {
+            if (
+                $tag
+                && ($description = $tag->getDescription()) !== null
+                && $description !== $this->Summary
+            ) {
+                return true;
+            }
+        }
+
+        foreach (array_diff(
+            array_keys($this->Tags),
+            self::STANDARD_TAGS,
+        ) as $key) {
+            if (!Regex::match('/^(phpstan|psalm)-/', $key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Creates a new PHPDoc object from an array of PHP DocBlocks, each of which
+     * inherits from subsequent blocks
+     *
+     * @param array<class-string|int,string> $docBlocks
+     * @param array<class-string|int,self|string|null>|null $classDocBlocks
+     */
+    public static function fromDocBlocks(
+        array $docBlocks,
+        ?array $classDocBlocks = null,
+        ?string $member = null
+    ): self {
+        foreach ($docBlocks as $key => $docBlock) {
+            $_phpDoc = new self(
+                $docBlock,
+                $classDocBlocks[$key] ?? null,
+                is_string($key) ? $key : null,
+                $member,
+            );
+
+            $phpDoc ??= $_phpDoc;
+            if ($_phpDoc !== $phpDoc) {
+                $phpDoc = $phpDoc->inherit($_phpDoc);
+            }
+        }
+
+        return $phpDoc ?? new self('/** */');
+    }
+
+    private function parse(string $content): void
+    {
+        // - Remove leading asterisks after newlines
         // - Trim the entire PHPDoc
-        // - Split into string[]
-        $this->Lines = explode("\n", trim(Regex::replace(
-            '/(?:^\h*+\* ?|\h+$)/m',
-            '',
-            Str::setEol($matches['content']),
-        )));
-
-        $this->NextLine = reset($this->Lines);
+        // - Remove trailing whitespace and split into string[]
+        $this->Lines = Regex::split(
+            '/\h*+(?:\r\n|\n|\r)/',
+            trim(Regex::replace('/(?<=\r\n|\n|\r)\h*+\* ?/', '', $content)),
+        );
+        $this->NextLine = Arr::first($this->Lines);
 
         if (!Regex::match(self::PHPDOC_TAG, $this->NextLine)) {
             $this->Summary = Str::coalesce(
-                $this->getLinesUntil('/^$/', true, true),
+                $this->getLinesUntil(self::BLANK_OR_PHPDOC_TAG, true),
                 null,
             );
 
@@ -116,99 +455,70 @@ final class PHPDoc implements Readable
                 $this->NextLine !== null
                 && !Regex::match(self::PHPDOC_TAG, $this->NextLine)
             ) {
-                $this->Description = rtrim($this->getLinesUntil(self::PHPDOC_TAG));
+                $this->Description = Str::coalesce(
+                    trim($this->getLinesUntil(self::PHPDOC_TAG)),
+                    null,
+                );
             }
         }
 
-        $index = -1;
         while ($this->Lines && Regex::match(
             self::PHPDOC_TAG,
             $text = $this->getLinesUntil(self::PHPDOC_TAG),
             $matches,
         )) {
-            $this->Tags[++$index] = $text;
-
-            // Remove the tag name and any subsequent whitespace
-            $text = ltrim(substr($text, strlen($matches[0])));
+            // Remove the tag name and trim whatever remains
+            $text = trim(substr($text, strlen($matches[0])));
             $tag = ltrim($matches['tag'], '\\');
-            $this->TagsByName[$tag][] = $text;
 
-            // Use `strtok(" \t\n\r")` to extract metadata that may be followed
-            // by a multi-line description, otherwise the first word of any
-            // descriptions that start on the next line will be extracted too
-            $metaCount = 0;
             switch ($tag) {
                 // @param [type] $<name> [description]
                 case 'param':
-                    $text = $this->removeType($text, $type);
-                    $token = strtok($text, " \t\n\r");
-                    if ($token === false) {
-                        $this->throw('No name', $tag);
+                    if (!Regex::match(self::PARAM_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
                     }
-                    $reference = false;
-                    if ($token[0] === '&') {
-                        $reference = true;
-                        $token = $this->maybeExpandToken(substr($token, 1), $metaCount);
-                    }
-                    $variadic = false;
-                    if (substr($token, 0, 3) === '...') {
-                        $variadic = true;
-                        $token = $this->maybeExpandToken(substr($token, 3), $metaCount);
-                    }
-                    if ($token !== '' && $token[0] !== '$') {
-                        $this->throw("Invalid name '%s'", $tag, $token);
-                    }
-                    $name = rtrim(substr($token, 1));
-                    if ($name !== '') {
-                        $metaCount++;
-                        $this->Params[$name] = new ParamTag(
-                            $name,
-                            $type,
-                            $reference,
-                            $variadic,
-                            $this->removeValues($text, $metaCount),
-                            $class,
-                            $member,
-                        );
-                    }
+                    /** @var string */
+                    $name = $matches['param_name'];
+                    $this->Params[$name] = $this->Tags[$tag][] = new ParamTag(
+                        $name,
+                        $matches['param_type'],
+                        $matches['param_reference'] !== null,
+                        $matches['param_variadic'] !== null,
+                        $matches['param_description'],
+                        $this->Class,
+                        $this->Member,
+                    );
                     break;
 
                 // @return <type> [description]
                 case 'return':
-                    $text = $this->removeType($text, $type);
-                    if ($type === null) {
-                        $this->throw('No type', $tag);
+                    if (!Regex::match(self::RETURN_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
                     }
-                    $this->Return = new ReturnTag(
+                    /** @var string */
+                    $type = $matches['return_type'];
+                    $this->Return = $this->Tags[$tag][] = new ReturnTag(
                         $type,
-                        $this->removeValues($text, $metaCount),
-                        $class,
-                        $member,
+                        $matches['return_description'],
+                        $this->Class,
+                        $this->Member,
                     );
                     break;
 
                 // @var <type> [$<name>] [description]
                 case 'var':
-                    $name = null;
-                    // Assume the first token is a type
-                    $text = $this->removeType($text, $type);
-                    if ($type === null) {
-                        $this->throw('No type', $tag);
+                    if (!Regex::match(self::VAR_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
                     }
-                    $token = strtok($text, " \t");
-                    // Also assume that if a name is given, it's for a variable
-                    // and not a constant
-                    if ($token !== false && $token[0] === '$') {
-                        $name = rtrim(substr($token, 1));
-                        $metaCount++;
-                    }
-
-                    $var = new VarTag(
+                    /** @var string */
+                    $type = $matches['var_type'];
+                    $name = $matches['var_name'];
+                    $var = $this->Tags[$tag][] = new VarTag(
                         $type,
                         $name,
-                        $this->removeValues($text, $metaCount),
-                        $class,
-                        $member,
+                        $matches['var_description'],
+                        $this->Class,
+                        $this->Member,
                     );
                     if ($name !== null) {
                         $this->Vars[$name] = $var;
@@ -217,159 +527,65 @@ final class PHPDoc implements Readable
                     }
                     break;
 
-                // - @template <name> [of <type>]
-                // - @template-(covariant|contravariant) <name> [of <type>]
+                // - @template <name> [of <type>] [= <type>]
+                // - @template-(covariant|contravariant) <name> [of <type>] [= <type>]
                 case 'template-covariant':
                 case 'template-contravariant':
                 case 'template':
-                    $token = strtok($text, " \t");
-                    if ($token === false) {
-                        $this->throw('No name', $tag);
+                    if (!Regex::match(self::TEMPLATE_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
                     }
-                    $name = rtrim($token);
-                    $metaCount++;
-                    $token = strtok(" \t");
-                    $type = 'mixed';
-                    if ($token === 'of' || $token === 'as') {
-                        $metaCount++;
-                        $token = strtok('');
-                        if ($token !== false) {
-                            $metaCount++;
-                            $this->removeType($token, $type);
-                        }
-                    }
+                    /** @var string */
+                    $name = $matches['template_name'];
+                    $type = $matches['template_type'];
+                    $default = $matches['template_default'];
                     /** @var "covariant"|"contravariant"|null */
                     $variance = explode('-', $tag, 2)[1] ?? null;
-                    $this->Templates[$name] = new TemplateTag(
+                    $this->Templates[$name] = $this->Tags['template'][] = new TemplateTag(
                         $name,
                         $type,
+                        $default,
                         $variance,
-                        $class,
-                        $member,
+                        $this->Class,
+                        $this->Member,
+                    );
+                    break;
+
+                default:
+                    $this->Tags[$tag][] = new GenericTag(
+                        $tag,
+                        Str::coalesce($text, null),
+                        $this->Class,
+                        $this->Member,
                     );
                     break;
             }
         }
-
-        // Release strtok's copy of the string most recently passed to it
-        strtok('', '');
-
-        // Rearrange this:
-        //
-        //     /**
-        //      * Summary
-        //      *
-        //      * @var int Description.
-        //      */
-        //
-        // Like this:
-        //
-        //     /**
-        //      * Summary
-        //      *
-        //      * Description.
-        //      *
-        //      * @var int
-        //      */
-        //
-        if (count($this->Vars) === 1) {
-            $var = reset($this->Vars);
-            $description = $var->getDescription();
-            if ($description !== null) {
-                if ($this->Summary === null) {
-                    $this->Summary = $description;
-                } elseif ($this->Summary !== $description) {
-                    $this->Description
-                        .= ($this->Description !== null ? "\n\n" : '')
-                        . $description;
-                }
-                $key = key($this->Vars);
-                $this->Vars[$key] = $var->withDescription(null);
-            }
-        }
-
-        // Remove empty strings, reducing tags with no content to an empty array
-        foreach ($this->TagsByName as &$tags) {
-            $tags = Arr::whereNotEmpty($tags);
-        }
-        unset($tags);
-
-        // Merge @template types from the declaring class, if available
-        if ($classDocBlock !== null) {
-            $phpDoc = new self($classDocBlock, null, $class);
-            foreach ($phpDoc->Templates as $name => $tag) {
-                $this->Templates[$name] ??= $tag;
-            }
-        }
-    }
-
-    private function maybeExpandToken(
-        string $token,
-        int &$metaCount,
-        string $delimiters = " \t"
-    ): string {
-        if ($token === '') {
-            $token = strtok($delimiters);
-            if ($token === false) {
-                return '';
-            }
-            $metaCount++;
-        }
-        return $token;
     }
 
     /**
-     * Remove a PHPDoc type and any subsequent whitespace from the given text
+     * Consume and implode $this->Lines values up to, but not including, the
+     * next that matches $pattern and doesn't belong to a fenced code block
      *
-     * If a PHPDoc type is found at the start of `$text`, it is assigned to
-     * `$type` and removed from `$text` before it is left-trimmed and returned.
-     * Otherwise, `null` is assigned to `$type` and `$text` is returned as-is.
-     *
-     * @param-out string|null $type
-     */
-    private function removeType(string $text, ?string &$type): string
-    {
-        if (Regex::match(self::NEXT_PHPDOC_TYPE, $text, $matches, \PREG_OFFSET_CAPTURE)) {
-            [$type, $offset] = $matches[0];
-            return ltrim(substr_replace($text, '', $offset, strlen($type)));
-        }
-        $type = null;
-        return $text;
-    }
-
-    /**
-     * Remove whitespace-delimited values from the given text, then trim and
-     * return it if non-empty, otherwise return null
-     */
-    private function removeValues(string $text, int $count): ?string
-    {
-        return Str::coalesce(rtrim(Regex::split('/\s++/', $text, $count + 1)[$count] ?? ''), null);
-    }
-
-    /**
-     * Collect and implode $this->NextLine and subsequent lines until, but not
-     * including, the next line that matches $pattern
-     *
-     * If `$unwrap` is `false`, `$pattern` is ignored between code fences, which
-     * start and end when a line contains 3 or more backticks or tildes and no
-     * other text aside from an optional info string after the opening fence.
-     *
-     * @param bool $discard If `true`, lines matching `$pattern` are discarded,
-     * otherwise they are left in {@see $this->Lines}.
-     * @param bool $unwrap If `true`, lines are joined with " " instead of "\n".
+     * If `$unwrap` is `true`, fenced code blocks are ignored and lines are
+     * joined with `" "` instead of `"\n"`.
      *
      * @phpstan-impure
      */
-    private function getLinesUntil(
-        string $pattern,
-        bool $discard = false,
-        bool $unwrap = false
-    ): string {
+    private function getLinesUntil(string $pattern, bool $unwrap = false): string
+    {
+        if (!$this->Lines) {
+            // @codeCoverageIgnoreStart
+            throw new ShouldNotHappenException('No more lines');
+            // @codeCoverageIgnoreEnd
+        }
+
         $lines = [];
         $inFence = false;
 
         do {
-            $lines[] = $line = $this->getLine();
+            $lines[] = $line = array_shift($this->Lines);
+            $this->NextLine = Arr::first($this->Lines);
 
             if (!$unwrap) {
                 if (
@@ -389,264 +605,15 @@ final class PHPDoc implements Readable
             }
 
             if (Regex::match($pattern, $this->NextLine)) {
-                if (!$discard) {
-                    break;
-                }
-                do {
-                    $this->getLine();
-                    if (
-                        $this->NextLine === null
-                        || !Regex::match($pattern, $this->NextLine)
-                    ) {
-                        break 2;
-                    }
-                } while (true);
+                break;
             }
         } while ($this->Lines);
 
         if ($inFence) {
-            throw new UnexpectedValueException('Unterminated code fence in DocBlock');
+            throw new InvalidArgumentException('Unterminated code fence in DocBlock');
         }
 
         return implode($unwrap ? ' ' : "\n", $lines);
-    }
-
-    /**
-     * Shift the next line off the beginning of $this->Lines, assign its
-     * successor to $this->NextLine, and return it
-     *
-     * @phpstan-impure
-     */
-    private function getLine(): string
-    {
-        if (!$this->Lines) {
-            // @codeCoverageIgnoreStart
-            throw new OutOfRangeException('No more lines');
-            // @codeCoverageIgnoreEnd
-        }
-
-        $line = array_shift($this->Lines);
-        $this->NextLine = $this->Lines ? reset($this->Lines) : null;
-
-        return $line;
-    }
-
-    public function unwrap(?string $value): ?string
-    {
-        return $value === null
-            ? null
-            : Regex::replace('/\s++/', ' ', $value);
-    }
-
-    /**
-     * Get the PHPDoc's template tags, optionally including class templates and
-     * any templates inherited from parent classes
-     *
-     * @return array<string,TemplateTag>
-     */
-    public function getTemplates(bool $all = false): array
-    {
-        if ($this->Class === null || $all) {
-            return $this->Templates;
-        }
-
-        foreach ($this->Templates as $name => $template) {
-            if (
-                $template->getClass() !== $this->Class
-                || ($this->Member !== null && $template->getMember() !== $this->Member)
-            ) {
-                continue;
-            }
-            $templates[$name] = $template;
-        }
-
-        return $templates ?? [];
-    }
-
-    /**
-     * True if the PHPDoc contains more than a summary and/or variable type
-     * information
-     */
-    public function hasDetail(): bool
-    {
-        if ($this->Description !== null) {
-            return true;
-        }
-
-        foreach ([...$this->Params, $this->Return, ...$this->Vars] as $tag) {
-            if (
-                $tag
-                && ($description = $tag->getDescription()) !== null
-                && $description !== $this->Summary
-            ) {
-                return true;
-            }
-        }
-
-        if (array_filter(
-            array_diff_key($this->TagsByName, array_flip(self::STANDARD_TAGS)),
-            fn(string $key): bool =>
-                !Regex::match('/^(phpstan|psalm)-/', $key),
-            \ARRAY_FILTER_USE_KEY
-        )) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private function mergeTag(?AbstractTag &$ours, ?AbstractTag $theirs): void
-    {
-        if ($theirs === null) {
-            return;
-        }
-
-        if ($ours === null) {
-            $ours = $theirs;
-            return;
-        }
-
-        $ours = $ours->inherit($theirs);
-    }
-
-    /**
-     * Add missing values from an instance that represents the same structural
-     * element in a parent class or interface
-     */
-    public function mergeInherited(PHPDoc $parent): void
-    {
-        $this->Summary ??= $parent->Summary;
-        $this->Description ??= $parent->Description;
-        $this->Tags = Arr::extend($this->Tags, ...$parent->Tags);
-        foreach ($parent->TagsByName as $name => $tags) {
-            $this->TagsByName[$name] = Arr::extend(
-                $this->TagsByName[$name] ?? [],
-                ...$tags,
-            );
-        }
-        foreach ($parent->Params as $name => $theirs) {
-            $this->mergeTag($this->Params[$name], $theirs);
-        }
-        $this->mergeTag($this->Return, $parent->Return);
-        if (isset($parent->Vars[0])) {
-            $this->mergeTag($this->Vars[0], $parent->Vars[0]);
-        }
-        foreach ($parent->Templates as $name => $theirs) {
-            $this->Templates[$name] ??= $theirs;
-        }
-    }
-
-    /**
-     * @param array<class-string|int,string> $docBlocks
-     * @param array<class-string|int,string|null>|null $classDocBlocks
-     * @param class-string $fallbackClass
-     */
-    public static function fromDocBlocks(
-        array $docBlocks,
-        ?array $classDocBlocks = null,
-        ?string $member = null,
-        ?string $fallbackClass = null
-    ): ?self {
-        if (!$docBlocks) {
-            return null;
-        }
-        foreach ($docBlocks as $key => $docBlock) {
-            $class = is_string($key) ? $key : null;
-            $phpDoc = new self(
-                $docBlock,
-                $classDocBlocks[$key] ?? null,
-                $class ?? $fallbackClass,
-                $member,
-            );
-
-            if ($phpDoc->Summary === null
-                && $phpDoc->Description === null
-                && (!$phpDoc->Tags
-                    || array_keys($phpDoc->TagsByName) === ['inheritDoc'])) {
-                continue;
-            }
-
-            $parser ??= $phpDoc;
-
-            if ($phpDoc !== $parser) {
-                $parser->mergeInherited($phpDoc);
-            }
-        }
-
-        return $parser ?? null;
-    }
-
-    /**
-     * Normalise a PHPDoc type
-     *
-     * If `$strict` is `true`, an exception is thrown if `$type` is not a valid
-     * PHPDoc type.
-     */
-    public static function normaliseType(string $type, bool $strict = false): string
-    {
-        if (!Regex::match(self::PHPDOC_TYPE, trim($type), $matches)) {
-            if ($strict) {
-                throw new InvalidArgumentException(sprintf(
-                    "Invalid PHPDoc type '%s'",
-                    $type,
-                ));
-            }
-            return self::replace([$type])[0];
-        }
-
-        $types = Str::splitDelimited('|', $type, true, null, Str::PRESERVE_QUOTED);
-
-        // Move `null` to the end of union types
-        $notNull = [];
-        foreach ($types as $t) {
-            $t = ltrim($t, '?');
-            if (strcasecmp($t, 'null')) {
-                $notNull[] = $t;
-            }
-        }
-
-        if ($notNull !== $types) {
-            $types = $notNull;
-            $nullable = true;
-        }
-
-        // Simplify composite types
-        $phpTypeRegex = Regex::delimit('^' . Regex::PHP_TYPE . '$', '/');
-        foreach ($types as &$type) {
-            $brackets = false;
-            if ($type !== '' && $type[0] === '(' && $type[-1] === ')') {
-                $brackets = true;
-                $type = substr($type, 1, -1);
-            }
-            $split = array_unique(self::replace(explode('&', $type)));
-            $type = implode('&', $split);
-            if ($brackets && (
-                count($split) > 1
-                || !Regex::match($phpTypeRegex, $type)
-            )) {
-                $type = "($type)";
-            }
-        }
-
-        $types = array_unique(self::replace($types));
-        if ($nullable ?? false) {
-            $types[] = 'null';
-        }
-
-        return implode('|', $types);
-    }
-
-    /**
-     * @param string[] $types
-     * @return string[]
-     */
-    private static function replace(array $types): array
-    {
-        return Regex::replace(
-            ['/\bclass-string<(?:mixed|object)>/i', '/(?:\bmixed&|&mixed\b)/i'],
-            ['class-string', ''],
-            $types,
-        );
     }
 
     /**
@@ -671,6 +638,6 @@ final class PHPDoc implements Readable
             }
         }
 
-        throw new InvalidTagValueException(sprintf($message, ...$args));
+        throw new InvalidArgumentException(sprintf($message, ...$args));
     }
 }
