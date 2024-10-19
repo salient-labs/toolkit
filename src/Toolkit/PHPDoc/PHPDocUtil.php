@@ -8,6 +8,7 @@ use Salient\Utility\Get;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
 use ReflectionIntersectionType;
@@ -23,6 +24,8 @@ use ReflectionUnionType;
  */
 final class PHPDocUtil extends AbstractUtility
 {
+    private const PHPDOC_TYPE = '`^' . PHPDocRegex::PHPDOC_TYPE . '$`D';
+
     /**
      * Get an array of doc comments for a class and its parents
      *
@@ -264,6 +267,79 @@ final class PHPDocUtil extends AbstractUtility
             $property = $current->getProperty($name);
             $current = $property->getDeclaringClass();
         } while (true);
+    }
+
+    /**
+     * Normalise a PHPDoc type
+     *
+     * If `$strict` is `true`, an exception is thrown if `$type` is not a valid
+     * PHPDoc type.
+     */
+    public static function normaliseType(string $type, bool $strict = false): string
+    {
+        if (!Regex::match(self::PHPDOC_TYPE, trim($type), $matches)) {
+            if ($strict) {
+                throw new InvalidArgumentException(sprintf(
+                    "Invalid PHPDoc type '%s'",
+                    $type,
+                ));
+            }
+            return self::replace([$type])[0];
+        }
+
+        $types = Str::splitDelimited('|', $type, true, null, Str::PRESERVE_QUOTED);
+
+        // Move `null` to the end of union types
+        $notNull = [];
+        foreach ($types as $t) {
+            $t = ltrim($t, '?');
+            if (strcasecmp($t, 'null')) {
+                $notNull[] = $t;
+            }
+        }
+
+        if ($notNull !== $types) {
+            $types = $notNull;
+            $nullable = true;
+        }
+
+        // Simplify composite types
+        $phpTypeRegex = Regex::delimit('^' . Regex::PHP_TYPE . '$', '/');
+        foreach ($types as &$type) {
+            $brackets = false;
+            if ($type !== '' && $type[0] === '(' && $type[-1] === ')') {
+                $brackets = true;
+                $type = substr($type, 1, -1);
+            }
+            $split = array_unique(self::replace(explode('&', $type)));
+            $type = implode('&', $split);
+            if ($brackets && (
+                count($split) > 1
+                || !Regex::match($phpTypeRegex, $type)
+            )) {
+                $type = "($type)";
+            }
+        }
+
+        $types = array_unique(self::replace($types));
+        if ($nullable ?? false) {
+            $types[] = 'null';
+        }
+
+        return implode('|', $types);
+    }
+
+    /**
+     * @param string[] $types
+     * @return string[]
+     */
+    private static function replace(array $types): array
+    {
+        return Regex::replace(
+            ['/\bclass-string<(?:mixed|object)>/i', '/(?:\bmixed&|&mixed\b)/i'],
+            ['class-string', ''],
+            $types,
+        );
     }
 
     /**

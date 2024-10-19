@@ -29,7 +29,6 @@ final class PHPDoc implements Immutable
     private const PHP_DOCBLOCK = '`^' . PHPDocRegex::PHP_DOCBLOCK . '$`D';
     private const PHPDOC_TAG = '`^' . PHPDocRegex::PHPDOC_TAG . '`';
     private const BLANK_OR_PHPDOC_TAG = '`^(?:$|' . PHPDocRegex::PHPDOC_TAG . ')`D';
-    private const PHPDOC_TYPE = '`^' . PHPDocRegex::PHPDOC_TYPE . '$`D';
 
     private const PARAM_TAG = '`^'
         . '(?:(?<param_type>' . PHPDocRegex::PHPDOC_TYPE . ')\h++)?'
@@ -435,79 +434,6 @@ final class PHPDoc implements Immutable
         return $phpDoc ?? new self('/** */');
     }
 
-    /**
-     * Normalise a PHPDoc type
-     *
-     * If `$strict` is `true`, an exception is thrown if `$type` is not a valid
-     * PHPDoc type.
-     */
-    public static function normaliseType(string $type, bool $strict = false): string
-    {
-        if (!Regex::match(self::PHPDOC_TYPE, trim($type), $matches)) {
-            if ($strict) {
-                throw new InvalidArgumentException(sprintf(
-                    "Invalid PHPDoc type '%s'",
-                    $type,
-                ));
-            }
-            return self::replace([$type])[0];
-        }
-
-        $types = Str::splitDelimited('|', $type, true, null, Str::PRESERVE_QUOTED);
-
-        // Move `null` to the end of union types
-        $notNull = [];
-        foreach ($types as $t) {
-            $t = ltrim($t, '?');
-            if (strcasecmp($t, 'null')) {
-                $notNull[] = $t;
-            }
-        }
-
-        if ($notNull !== $types) {
-            $types = $notNull;
-            $nullable = true;
-        }
-
-        // Simplify composite types
-        $phpTypeRegex = Regex::delimit('^' . Regex::PHP_TYPE . '$', '/');
-        foreach ($types as &$type) {
-            $brackets = false;
-            if ($type !== '' && $type[0] === '(' && $type[-1] === ')') {
-                $brackets = true;
-                $type = substr($type, 1, -1);
-            }
-            $split = array_unique(self::replace(explode('&', $type)));
-            $type = implode('&', $split);
-            if ($brackets && (
-                count($split) > 1
-                || !Regex::match($phpTypeRegex, $type)
-            )) {
-                $type = "($type)";
-            }
-        }
-
-        $types = array_unique(self::replace($types));
-        if ($nullable ?? false) {
-            $types[] = 'null';
-        }
-
-        return implode('|', $types);
-    }
-
-    /**
-     * @param string[] $types
-     * @return string[]
-     */
-    private static function replace(array $types): array
-    {
-        return Regex::replace(
-            ['/\bclass-string<(?:mixed|object)>/i', '/(?:\bmixed&|&mixed\b)/i'],
-            ['class-string', ''],
-            $types,
-        );
-    }
-
     private function parse(string $content): void
     {
         // - Remove leading asterisks after newlines
@@ -638,26 +564,28 @@ final class PHPDoc implements Immutable
     }
 
     /**
-     * Collect and implode $this->NextLine and subsequent lines until, but not
-     * including, the next line that matches $pattern
+     * Consume and implode $this->Lines values up to, but not including, the
+     * next that matches $pattern and doesn't belong to a fenced code block
      *
-     * If `$unwrap` is `false`, `$pattern` is ignored between code fences, which
-     * start and end when a line contains 3 or more backticks or tildes and no
-     * other text aside from an optional info string after the opening fence.
-     *
-     * @param bool $unwrap If `true`, lines are joined with " " instead of "\n".
+     * If `$unwrap` is `true`, fenced code blocks are ignored and lines are
+     * joined with `" "` instead of `"\n"`.
      *
      * @phpstan-impure
      */
-    private function getLinesUntil(
-        string $pattern,
-        bool $unwrap = false
-    ): string {
+    private function getLinesUntil(string $pattern, bool $unwrap = false): string
+    {
+        if (!$this->Lines) {
+            // @codeCoverageIgnoreStart
+            throw new ShouldNotHappenException('No more lines');
+            // @codeCoverageIgnoreEnd
+        }
+
         $lines = [];
         $inFence = false;
 
         do {
-            $lines[] = $line = $this->getLine();
+            $lines[] = $line = array_shift($this->Lines);
+            $this->NextLine = Arr::first($this->Lines);
 
             if (!$unwrap) {
                 if (
@@ -686,26 +614,6 @@ final class PHPDoc implements Immutable
         }
 
         return implode($unwrap ? ' ' : "\n", $lines);
-    }
-
-    /**
-     * Shift the next line off the beginning of $this->Lines, assign its
-     * successor to $this->NextLine, and return it
-     *
-     * @phpstan-impure
-     */
-    private function getLine(): string
-    {
-        if (!$this->Lines) {
-            // @codeCoverageIgnoreStart
-            throw new ShouldNotHappenException('No more lines');
-            // @codeCoverageIgnoreEnd
-        }
-
-        $line = array_shift($this->Lines);
-        $this->NextLine = Arr::first($this->Lines);
-
-        return $line;
     }
 
     /**

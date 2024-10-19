@@ -4,8 +4,8 @@ namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
-use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
+use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Regex;
 use Salient\Utility\Test;
 use InvalidArgumentException;
@@ -204,7 +204,7 @@ abstract class AbstractTag implements Immutable, Stringable
         }
 
         try {
-            return PHPDoc::normaliseType($type, true);
+            return PHPDocUtil::normaliseType($type, true);
         } catch (InvalidArgumentException $ex) {
             $this->throw('%s', $ex->getMessage());
         }

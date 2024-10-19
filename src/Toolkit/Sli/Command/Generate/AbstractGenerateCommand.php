@@ -437,7 +437,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             ? $type->getType() ?? ''
             : $type;
 
-        return PHPDoc::normaliseType(Regex::replaceCallback(
+        return PHPDocUtil::normaliseType(Regex::replaceCallback(
             '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
             function ($matches) use (
                 $type,
