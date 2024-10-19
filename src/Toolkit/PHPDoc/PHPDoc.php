@@ -122,133 +122,74 @@ final class PHPDoc implements Immutable
         }
     }
 
-    private function parse(string $content): void
+    /**
+     * Inherit values from an instance that represents the same structural
+     * element in a parent class or interface
+     *
+     * @return static
+     */
+    public function inherit(self $parent)
     {
-        // - Remove leading asterisks after newlines
-        // - Trim the entire PHPDoc
-        // - Remove trailing whitespace and split into string[]
-        $this->Lines = Regex::split(
-            '/\h*+(?:\r\n|\n|\r)/',
-            trim(Regex::replace('/(?<=\r\n|\n|\r)\h*+\* ?/', '', $content)),
-        );
-        $this->NextLine = Arr::first($this->Lines);
-
-        if (!Regex::match(self::PHPDOC_TAG, $this->NextLine)) {
-            $this->Summary = Str::coalesce(
-                $this->getLinesUntil(self::BLANK_OR_PHPDOC_TAG, true),
-                null,
-            );
-
-            if (
-                $this->NextLine !== null
-                && !Regex::match(self::PHPDOC_TAG, $this->NextLine)
-            ) {
-                $this->Description = Str::coalesce(
-                    trim($this->getLinesUntil(self::PHPDOC_TAG)),
-                    null,
-                );
+        $tags = $this->Tags;
+        foreach (Arr::flatten($tags) as $tag) {
+            $idx[(string) $tag] = true;
+        }
+        foreach ($parent->Tags as $name => $theirs) {
+            foreach ($theirs as $tag) {
+                if ($name === 'template' || !isset($idx[(string) $tag])) {
+                    $tags[$name][] = $tag;
+                }
             }
         }
 
-        while ($this->Lines && Regex::match(
-            self::PHPDOC_TAG,
-            $text = $this->getLinesUntil(self::PHPDOC_TAG),
-            $matches,
-        )) {
-            // Remove the tag name and trim whatever remains
-            $text = trim(substr($text, strlen($matches[0])));
-            $tag = ltrim($matches['tag'], '\\');
-
-            switch ($tag) {
-                // @param [type] $<name> [description]
-                case 'param':
-                    if (!Regex::match(self::PARAM_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $name = $matches['param_name'];
-                    $this->Params[$name] = $this->Tags[$tag][] = new ParamTag(
-                        $name,
-                        $matches['param_type'],
-                        $matches['param_reference'] !== null,
-                        $matches['param_variadic'] !== null,
-                        $matches['param_description'],
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
-
-                // @return <type> [description]
-                case 'return':
-                    if (!Regex::match(self::RETURN_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $type = $matches['return_type'];
-                    $this->Return = $this->Tags[$tag][] = new ReturnTag(
-                        $type,
-                        $matches['return_description'],
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
-
-                // @var <type> [$<name>] [description]
-                case 'var':
-                    if (!Regex::match(self::VAR_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $type = $matches['var_type'];
-                    $name = $matches['var_name'];
-                    $var = $this->Tags[$tag][] = new VarTag(
-                        $type,
-                        $name,
-                        $matches['var_description'],
-                        $this->Class,
-                        $this->Member,
-                    );
-                    if ($name !== null) {
-                        $this->Vars[$name] = $var;
-                    } else {
-                        $this->Vars[] = $var;
-                    }
-                    break;
-
-                // - @template <name> [of <type>] [= <type>]
-                // - @template-(covariant|contravariant) <name> [of <type>] [= <type>]
-                case 'template-covariant':
-                case 'template-contravariant':
-                case 'template':
-                    if (!Regex::match(self::TEMPLATE_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $name = $matches['template_name'];
-                    $type = $matches['template_type'];
-                    $default = $matches['template_default'];
-                    /** @var "covariant"|"contravariant"|null */
-                    $variance = explode('-', $tag, 2)[1] ?? null;
-                    $this->Templates[$name] = $this->Tags['template'][] = new TemplateTag(
-                        $name,
-                        $type,
-                        $default,
-                        $variance,
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
-
-                default:
-                    $this->Tags[$tag][] = new GenericTag(
-                        $tag,
-                        Str::coalesce($text, null),
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
-            }
+        $params = $this->Params;
+        foreach ($parent->Params as $name => $theirs) {
+            $params[$name] = $this->mergeTag($params[$name] ?? null, $theirs);
         }
+
+        $return = $this->mergeTag($this->Return, $parent->Return);
+
+        $vars = $this->Vars;
+        if (
+            count($parent->Vars) === 1
+            && array_key_first($parent->Vars) === 0
+        ) {
+            $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0]);
+        }
+
+        $templates = $this->Templates;
+        foreach ($parent->Templates as $name => $theirs) {
+            $templates[$name] ??= $theirs;
+        }
+
+        return $this
+            ->with('Summary', $this->Summary ?? $parent->Summary)
+            ->with('Description', $this->Description ?? $parent->Description)
+            ->with('Tags', $tags)
+            ->with('Params', $params)
+            ->with('Return', $return)
+            ->with('Vars', $vars)
+            ->with('Templates', $templates);
+    }
+
+    /**
+     * @template T of AbstractTag
+     *
+     * @param T|null $ours
+     * @param T|null $theirs
+     * @return ($ours is null ? ($theirs is null ? null : T) : T)
+     */
+    private function mergeTag(?AbstractTag $ours, ?AbstractTag $theirs): ?AbstractTag
+    {
+        if ($theirs === null) {
+            return $ours;
+        }
+
+        if ($ours === null) {
+            return $theirs;
+        }
+
+        return $ours->inherit($theirs);
     }
 
     /**
@@ -290,77 +231,6 @@ final class PHPDoc implements Immutable
             ->with('Description', $description ?? $this->Description)
             ->with('Tags', $tags)
             ->with('Vars', $vars);
-    }
-
-    /**
-     * Collect and implode $this->NextLine and subsequent lines until, but not
-     * including, the next line that matches $pattern
-     *
-     * If `$unwrap` is `false`, `$pattern` is ignored between code fences, which
-     * start and end when a line contains 3 or more backticks or tildes and no
-     * other text aside from an optional info string after the opening fence.
-     *
-     * @param bool $unwrap If `true`, lines are joined with " " instead of "\n".
-     *
-     * @phpstan-impure
-     */
-    private function getLinesUntil(
-        string $pattern,
-        bool $unwrap = false
-    ): string {
-        $lines = [];
-        $inFence = false;
-
-        do {
-            $lines[] = $line = $this->getLine();
-
-            if (!$unwrap) {
-                if (
-                    (!$inFence && Regex::match('/^(```+|~~~+)/', $line, $fence))
-                    || ($inFence && isset($fence[0]) && $line === $fence[0])
-                ) {
-                    $inFence = !$inFence;
-                }
-
-                if ($inFence) {
-                    continue;
-                }
-            }
-
-            if ($this->NextLine === null) {
-                break;
-            }
-
-            if (Regex::match($pattern, $this->NextLine)) {
-                break;
-            }
-        } while ($this->Lines);
-
-        if ($inFence) {
-            throw new InvalidArgumentException('Unterminated code fence in DocBlock');
-        }
-
-        return implode($unwrap ? ' ' : "\n", $lines);
-    }
-
-    /**
-     * Shift the next line off the beginning of $this->Lines, assign its
-     * successor to $this->NextLine, and return it
-     *
-     * @phpstan-impure
-     */
-    private function getLine(): string
-    {
-        if (!$this->Lines) {
-            // @codeCoverageIgnoreStart
-            throw new ShouldNotHappenException('No more lines');
-            // @codeCoverageIgnoreEnd
-        }
-
-        $line = array_shift($this->Lines);
-        $this->NextLine = Arr::first($this->Lines);
-
-        return $line;
     }
 
     /**
@@ -537,76 +407,6 @@ final class PHPDoc implements Immutable
     }
 
     /**
-     * @template T of AbstractTag
-     *
-     * @param T|null $ours
-     * @param T|null $theirs
-     * @return ($ours is null ? ($theirs is null ? null : T) : T)
-     */
-    private function mergeTag(?AbstractTag $ours, ?AbstractTag $theirs): ?AbstractTag
-    {
-        if ($theirs === null) {
-            return $ours;
-        }
-
-        if ($ours === null) {
-            return $theirs;
-        }
-
-        return $ours->inherit($theirs);
-    }
-
-    /**
-     * Inherit values from an instance that represents the same structural
-     * element in a parent class or interface
-     *
-     * @return static
-     */
-    public function inherit(self $parent)
-    {
-        $tags = $this->Tags;
-        foreach (Arr::flatten($tags) as $tag) {
-            $idx[(string) $tag] = true;
-        }
-        foreach ($parent->Tags as $name => $theirs) {
-            foreach ($theirs as $tag) {
-                if ($name === 'template' || !isset($idx[(string) $tag])) {
-                    $tags[$name][] = $tag;
-                }
-            }
-        }
-
-        $params = $this->Params;
-        foreach ($parent->Params as $name => $theirs) {
-            $params[$name] = $this->mergeTag($params[$name] ?? null, $theirs);
-        }
-
-        $return = $this->mergeTag($this->Return, $parent->Return);
-
-        $vars = $this->Vars;
-        if (
-            count($parent->Vars) === 1
-            && array_key_first($parent->Vars) === 0
-        ) {
-            $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0]);
-        }
-
-        $templates = $this->Templates;
-        foreach ($parent->Templates as $name => $theirs) {
-            $templates[$name] ??= $theirs;
-        }
-
-        return $this
-            ->with('Summary', $this->Summary ?? $parent->Summary)
-            ->with('Description', $this->Description ?? $parent->Description)
-            ->with('Tags', $tags)
-            ->with('Params', $params)
-            ->with('Return', $return)
-            ->with('Vars', $vars)
-            ->with('Templates', $templates);
-    }
-
-    /**
      * Creates a new PHPDoc object from an array of PHP DocBlocks, each of which
      * inherits from subsequent blocks
      *
@@ -706,6 +506,206 @@ final class PHPDoc implements Immutable
             ['class-string', ''],
             $types,
         );
+    }
+
+    private function parse(string $content): void
+    {
+        // - Remove leading asterisks after newlines
+        // - Trim the entire PHPDoc
+        // - Remove trailing whitespace and split into string[]
+        $this->Lines = Regex::split(
+            '/\h*+(?:\r\n|\n|\r)/',
+            trim(Regex::replace('/(?<=\r\n|\n|\r)\h*+\* ?/', '', $content)),
+        );
+        $this->NextLine = Arr::first($this->Lines);
+
+        if (!Regex::match(self::PHPDOC_TAG, $this->NextLine)) {
+            $this->Summary = Str::coalesce(
+                $this->getLinesUntil(self::BLANK_OR_PHPDOC_TAG, true),
+                null,
+            );
+
+            if (
+                $this->NextLine !== null
+                && !Regex::match(self::PHPDOC_TAG, $this->NextLine)
+            ) {
+                $this->Description = Str::coalesce(
+                    trim($this->getLinesUntil(self::PHPDOC_TAG)),
+                    null,
+                );
+            }
+        }
+
+        while ($this->Lines && Regex::match(
+            self::PHPDOC_TAG,
+            $text = $this->getLinesUntil(self::PHPDOC_TAG),
+            $matches,
+        )) {
+            // Remove the tag name and trim whatever remains
+            $text = trim(substr($text, strlen($matches[0])));
+            $tag = ltrim($matches['tag'], '\\');
+
+            switch ($tag) {
+                // @param [type] $<name> [description]
+                case 'param':
+                    if (!Regex::match(self::PARAM_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
+                    }
+                    /** @var string */
+                    $name = $matches['param_name'];
+                    $this->Params[$name] = $this->Tags[$tag][] = new ParamTag(
+                        $name,
+                        $matches['param_type'],
+                        $matches['param_reference'] !== null,
+                        $matches['param_variadic'] !== null,
+                        $matches['param_description'],
+                        $this->Class,
+                        $this->Member,
+                    );
+                    break;
+
+                // @return <type> [description]
+                case 'return':
+                    if (!Regex::match(self::RETURN_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
+                    }
+                    /** @var string */
+                    $type = $matches['return_type'];
+                    $this->Return = $this->Tags[$tag][] = new ReturnTag(
+                        $type,
+                        $matches['return_description'],
+                        $this->Class,
+                        $this->Member,
+                    );
+                    break;
+
+                // @var <type> [$<name>] [description]
+                case 'var':
+                    if (!Regex::match(self::VAR_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
+                    }
+                    /** @var string */
+                    $type = $matches['var_type'];
+                    $name = $matches['var_name'];
+                    $var = $this->Tags[$tag][] = new VarTag(
+                        $type,
+                        $name,
+                        $matches['var_description'],
+                        $this->Class,
+                        $this->Member,
+                    );
+                    if ($name !== null) {
+                        $this->Vars[$name] = $var;
+                    } else {
+                        $this->Vars[] = $var;
+                    }
+                    break;
+
+                // - @template <name> [of <type>] [= <type>]
+                // - @template-(covariant|contravariant) <name> [of <type>] [= <type>]
+                case 'template-covariant':
+                case 'template-contravariant':
+                case 'template':
+                    if (!Regex::match(self::TEMPLATE_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
+                    }
+                    /** @var string */
+                    $name = $matches['template_name'];
+                    $type = $matches['template_type'];
+                    $default = $matches['template_default'];
+                    /** @var "covariant"|"contravariant"|null */
+                    $variance = explode('-', $tag, 2)[1] ?? null;
+                    $this->Templates[$name] = $this->Tags['template'][] = new TemplateTag(
+                        $name,
+                        $type,
+                        $default,
+                        $variance,
+                        $this->Class,
+                        $this->Member,
+                    );
+                    break;
+
+                default:
+                    $this->Tags[$tag][] = new GenericTag(
+                        $tag,
+                        Str::coalesce($text, null),
+                        $this->Class,
+                        $this->Member,
+                    );
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Collect and implode $this->NextLine and subsequent lines until, but not
+     * including, the next line that matches $pattern
+     *
+     * If `$unwrap` is `false`, `$pattern` is ignored between code fences, which
+     * start and end when a line contains 3 or more backticks or tildes and no
+     * other text aside from an optional info string after the opening fence.
+     *
+     * @param bool $unwrap If `true`, lines are joined with " " instead of "\n".
+     *
+     * @phpstan-impure
+     */
+    private function getLinesUntil(
+        string $pattern,
+        bool $unwrap = false
+    ): string {
+        $lines = [];
+        $inFence = false;
+
+        do {
+            $lines[] = $line = $this->getLine();
+
+            if (!$unwrap) {
+                if (
+                    (!$inFence && Regex::match('/^(```+|~~~+)/', $line, $fence))
+                    || ($inFence && isset($fence[0]) && $line === $fence[0])
+                ) {
+                    $inFence = !$inFence;
+                }
+
+                if ($inFence) {
+                    continue;
+                }
+            }
+
+            if ($this->NextLine === null) {
+                break;
+            }
+
+            if (Regex::match($pattern, $this->NextLine)) {
+                break;
+            }
+        } while ($this->Lines);
+
+        if ($inFence) {
+            throw new InvalidArgumentException('Unterminated code fence in DocBlock');
+        }
+
+        return implode($unwrap ? ' ' : "\n", $lines);
+    }
+
+    /**
+     * Shift the next line off the beginning of $this->Lines, assign its
+     * successor to $this->NextLine, and return it
+     *
+     * @phpstan-impure
+     */
+    private function getLine(): string
+    {
+        if (!$this->Lines) {
+            // @codeCoverageIgnoreStart
+            throw new ShouldNotHappenException('No more lines');
+            // @codeCoverageIgnoreEnd
+        }
+
+        $line = array_shift($this->Lines);
+        $this->NextLine = Arr::first($this->Lines);
+
+        return $line;
     }
 
     /**
