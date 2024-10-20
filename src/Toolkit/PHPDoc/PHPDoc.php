@@ -280,6 +280,16 @@ final class PHPDoc implements Immutable
     }
 
     /**
+     * Check if the PHPDoc has a "@return" tag
+     *
+     * @phpstan-assert-if-true !null $this->getReturn()
+     */
+    public function hasReturn(): bool
+    {
+        return $this->Return !== null;
+    }
+
+    /**
      * Get the PHPDoc's "@return" tag (if provided)
      */
     public function getReturn(): ?ReturnTag
