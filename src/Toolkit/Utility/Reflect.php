@@ -89,6 +89,46 @@ final class Reflect extends AbstractUtility
     }
 
     /**
+     * Get the trait method inserted into a class with the given name
+     *
+     * @param ReflectionClass<object> $class
+     */
+    public static function getTraitMethod(
+        ReflectionClass $class,
+        string $methodName
+    ): ?ReflectionMethod {
+        if ($inserted = self::getTraitAliases($class)[$methodName] ?? null) {
+            return new ReflectionMethod(...$inserted);
+        }
+
+        foreach ($class->getTraits() as $trait) {
+            if ($trait->hasMethod($methodName)) {
+                return $trait->getMethod($methodName);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the trait method aliases of a class as an array that maps aliases to
+     * [ trait, method ] arrays
+     *
+     * @param ReflectionClass<object> $class
+     * @return array<string,array{class-string,string}>
+     */
+    public static function getTraitAliases(ReflectionClass $class): array
+    {
+        foreach ($class->getTraitAliases() as $alias => $original) {
+            /** @var array{class-string,string} */
+            $original = explode('::', $original, 2);
+            $aliases[$alias] = $original;
+        }
+
+        return $aliases ?? [];
+    }
+
+    /**
      * Get the properties of a class, including private parent properties
      *
      * @param ReflectionClass<object> $class
