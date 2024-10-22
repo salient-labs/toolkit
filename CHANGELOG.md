@@ -10,6 +10,68 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.58] - 2024-10-22
+
+### Added
+
+#### `PHPDoc`
+
+- Add `PHPDoc::hasTag()`, `hasReturn()`, `getTemplatesForTag()` and `isEmpty()`
+- Add support for default template values (e.g. `@template T of object = stdClass`)
+
+#### `Sli`
+
+- **Add `AnalyseClass` command for code analysis via JSON, CSV or Markdown**
+
+#### `Utility`
+
+- Add `Reflect::getTraitMethod()` and `getTraitAliases()`
+
+### Changed
+
+#### `PHPDoc`
+
+- Make `$docBlock` parameter of `PHPDoc::__construct()` nullable and optional
+- Allow a `PHPDoc` instance to be passed to the `$classDocBlock` parameter of `PHPDoc::__construct()`
+- Remove `PHPDoc::$Tags` and rename `$TagsByName` to `$Tags`
+- **Replace `PHPDoc` properties with getters**
+- Don't move `@var` descriptions to the `PHPDoc` if they have a name
+- Normalise `@var` tags only when `PHPDoc::normalise()` is called
+- Add `GenericTag` and return instances via `PHPDoc::getTags()`
+- Make all PHPDoc tag classes `Stringable`
+- For `@template` tags with no type, return `null` instead of `"mixed"` from `TemplateTag::getType()`
+- **Allow horizontal whitespace before PHPDoc tags**
+- **Detect tags in DocBlocks with no blank line after the summary** (for consistency with other tools)
+- Ignore `@api` tags in `PHPDoc::hasDetail()`
+- Rename `PHPDoc::mergeInherited()` to `PHPDoc::inherit()` and return a modified instance
+- **Only inherit known inheritable tags as per PSR-19**
+- Improve trait method matching in `PHPDocUtil::isMethodInClass()`
+- Add `PHPDocUtil::getAllClassDocComments()` parameter `$includeAll`
+- Move `PHPDoc::normaliseType()` to `PHPDocUtil`
+- Move `PHPDoc::unwrap()` to `Str::collapse()`
+- Match `pure-callable`, `pure-Closure` and unsealed array shapes in `PHPDocRegex::PHPDOC_TYPE`
+
+#### `Utility`
+
+- Update `Arr::split()` return type annotation
+
+### Removed
+
+#### `PHPDoc`
+
+- Remove `InvalidTagValueException` (unused after refactoring)
+
+### Fixed
+
+#### `PHPDoc`
+
+- Fix issue where metadata is incorrectly taken from `@param` and `@var` descriptions that start on their own line
+- Fix issue where leading asterisks are removed from PHPDoc summaries
+
+#### `Utility`
+
+- Work around `ReflectionMethod::getPrototype()` bugs on PHP \< 8.2 in `Reflect::getPrototype()`
+
 ## [v0.99.57] - 2024-10-15
 
 ### Fixed
@@ -3864,6 +3926,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.58]: https://github.com/salient-labs/toolkit/compare/v0.99.57...v0.99.58
 [v0.99.57]: https://github.com/salient-labs/toolkit/compare/v0.99.56...v0.99.57
 [v0.99.56]: https://github.com/salient-labs/toolkit/compare/v0.99.55...v0.99.56
 [v0.99.55]: https://github.com/salient-labs/toolkit/compare/v0.99.54...v0.99.55
