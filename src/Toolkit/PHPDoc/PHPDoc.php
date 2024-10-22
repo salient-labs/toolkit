@@ -22,7 +22,7 @@ use InvalidArgumentException;
  * Summaries that break over multiple lines are unwrapped. Descriptions and tags
  * may contain Markdown, including fenced code blocks.
  */
-final class PHPDoc implements Immutable
+class PHPDoc implements Immutable
 {
     use HasMutator;
 
@@ -55,6 +55,42 @@ final class PHPDoc implements Immutable
         . '(?:\h++=\h++(?<template_default>(?&template_type)))?'
         . '`';
 
+    private const DEFAULT_TAG_PREFIXES = [
+        '',
+        'phpstan-',
+        'psalm-',
+    ];
+
+    private const INHERITABLE_TAGS = [
+        // PSR-19 Section 4
+        'author' => false,
+        'copyright' => false,
+        'version' => false,
+        'package' => false,
+        'param' => true,
+        'return' => true,
+        'throws' => true,
+        'var' => true,
+        // "Magic" methods and properties
+        'method' => true,
+        'property' => true,
+        'property-read' => true,
+        'property-write' => true,
+        'mixin' => true,
+        // Generics
+        'template' => true,
+        'template-covariant' => ['phpstan-', 'psalm-'],
+        'template-contravariant' => ['phpstan-', 'psalm-'],
+        // Special parameters
+        'param-out' => true,
+        'param-immediately-invoked-callable' => ['', 'phpstan-'],
+        'param-later-invoked-callable' => ['', 'phpstan-'],
+        'param-closure-this' => ['', 'phpstan-'],
+        // --
+        'deprecated' => false,
+        'readonly' => false,
+    ];
+
     private const STANDARD_TAGS = [
         'param',
         'readonly',
@@ -62,8 +98,6 @@ final class PHPDoc implements Immutable
         'throws',
         'var',
         'template',
-        'template-covariant',
-        'template-contravariant',
         'api',
         'internal',
         'inheritDoc',
@@ -86,9 +120,13 @@ final class PHPDoc implements Immutable
 
     // --
 
+    /** @var static */
+    private self $Original;
     /** @var string[] */
     private array $Lines;
     private ?string $NextLine;
+    /** @var array<string,true> */
+    private static array $InheritableTagIndex;
 
     /**
      * Creates a new PHPDoc object from a PHP DocBlock
@@ -97,17 +135,19 @@ final class PHPDoc implements Immutable
      * @param class-string|null $class
      */
     public function __construct(
-        string $docBlock,
+        ?string $docBlock = null,
         $classDocBlock = null,
         ?string $class = null,
         ?string $member = null
     ) {
+        $docBlock ??= '/** */';
         if (!Regex::match(self::PHP_DOCBLOCK, $docBlock, $matches)) {
             throw new InvalidArgumentException('Invalid DocBlock');
         }
 
         $this->Class = $class;
         $this->Member = $member;
+        $this->Original = $this;
         $this->parse($matches['content']);
 
         // Merge templates from the declaring class, if possible
@@ -133,7 +173,10 @@ final class PHPDoc implements Immutable
         foreach (Arr::flatten($tags) as $tag) {
             $idx[(string) $tag] = true;
         }
-        foreach ($parent->Tags as $name => $theirs) {
+        foreach (array_intersect_key(
+            $parent->Tags,
+            self::getInheritableTagIndex(),
+        ) as $name => $theirs) {
             foreach ($theirs as $tag) {
                 if ($name === 'template' || !isset($idx[(string) $tag])) {
                     $tags[$name][] = $tag;
@@ -169,6 +212,29 @@ final class PHPDoc implements Immutable
             ->with('Return', $return)
             ->with('Vars', $vars)
             ->with('Templates', $templates);
+    }
+
+    /**
+     * @return array<string,true>
+     */
+    private static function getInheritableTagIndex(): array
+    {
+        if (isset(self::$InheritableTagIndex)) {
+            return self::$InheritableTagIndex;
+        }
+
+        foreach (self::INHERITABLE_TAGS as $tag => $prefixes) {
+            if ($prefixes === false) {
+                $idx[$tag] = true;
+                continue;
+            } elseif ($prefixes === true) {
+                $prefixes = self::DEFAULT_TAG_PREFIXES;
+            }
+            foreach ($prefixes as $prefix) {
+                $idx[$prefix . $tag] = true;
+            }
+        }
+        return self::$InheritableTagIndex = $idx;
     }
 
     /**
@@ -378,9 +444,9 @@ final class PHPDoc implements Immutable
      */
     public function isEmpty(): bool
     {
-        return $this->Summary === null
-            && $this->Description === null
-            && (!$this->Tags || array_keys($this->Tags) === ['inheritDoc']);
+        return $this->Original->Summary === null
+            && $this->Original->Description === null
+            && !$this->Original->Tags;
     }
 
     /**
@@ -419,7 +485,7 @@ final class PHPDoc implements Immutable
      * Creates a new PHPDoc object from an array of PHP DocBlocks, each of which
      * inherits from subsequent blocks
      *
-     * @param array<class-string|int,string> $docBlocks
+     * @param array<class-string|int,string|null> $docBlocks
      * @param array<class-string|int,self|string|null>|null $classDocBlocks
      */
     public static function fromDocBlocks(
@@ -441,7 +507,7 @@ final class PHPDoc implements Immutable
             }
         }
 
-        return $phpDoc ?? new self('/** */');
+        return $phpDoc ?? new self();
     }
 
     private function parse(string $content): void
@@ -571,6 +637,8 @@ final class PHPDoc implements Immutable
                     break;
             }
         }
+
+        unset($this->Lines, $this->NextLine);
     }
 
     /**
