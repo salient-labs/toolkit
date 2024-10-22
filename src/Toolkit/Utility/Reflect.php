@@ -69,6 +69,24 @@ final class Reflect extends AbstractUtility
         try {
             return $method->getPrototype();
         } catch (ReflectionException $ex) {
+            if (\PHP_VERSION_ID >= 80200 || $method->isPrivate()) {
+                return null;
+            }
+            // Work around issue where PHP does not return a prototype for
+            // methods inserted from traits
+            $class = $method->getDeclaringClass();
+            $name = $method->getName();
+            if ($method->isPublic()) {
+                foreach ($class->getInterfaces() as $interface) {
+                    if ($interface->hasMethod($name)) {
+                        return $interface->getMethod($name);
+                    }
+                }
+            }
+            $class = $class->getParentClass();
+            if ($class && $class->hasMethod($name)) {
+                return $class->getMethod($name);
+            }
             return null;
         }
     }
@@ -81,11 +99,7 @@ final class Reflect extends AbstractUtility
      */
     public static function getPrototypeClass(ReflectionMethod $method): ReflectionClass
     {
-        try {
-            return $method->getPrototype()->getDeclaringClass();
-        } catch (ReflectionException $ex) {
-            return $method->getDeclaringClass();
-        }
+        return (self::getPrototype($method) ?? $method)->getDeclaringClass();
     }
 
     /**
