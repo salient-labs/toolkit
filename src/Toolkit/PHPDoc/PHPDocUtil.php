@@ -33,10 +33,13 @@ final class PHPDocUtil extends AbstractUtility
      * inherited classes or interfaces.
      *
      * @param ReflectionClass<object> $class
-     * @return array<class-string,string>
+     * @param bool $includeAll If `true`, entries are returned for `$class` and
+     * every parent, including any without doc comments.
+     * @return ($includeAll is false ? array<class-string,string> : array<class-string,string|null>)
      */
     public static function getAllClassDocComments(
         ReflectionClass $class,
+        bool $includeAll = false,
         bool $includeInterfaces = true
     ): array {
         if ($includeInterfaces) {
@@ -45,9 +48,14 @@ final class PHPDocUtil extends AbstractUtility
 
         $comments = [];
         do {
+            $name = $class->getName();
             $comment = $class->getDocComment();
-            if ($comment !== false) {
-                $comments[$class->getName()] = Str::setEol($comment);
+            if ($comment === false) {
+                if ($includeAll) {
+                    $comments[$name] = null;
+                }
+            } else {
+                $comments[$name] = Str::setEol($comment);
             }
         } while ($class = $class->getParentClass());
 
@@ -57,7 +65,11 @@ final class PHPDocUtil extends AbstractUtility
 
         foreach ($interfaces as $name => $interface) {
             $comment = $interface->getDocComment();
-            if ($comment !== false) {
+            if ($comment === false) {
+                if ($includeAll) {
+                    $comments[$name] = null;
+                }
+            } else {
                 $comments[$name] = Str::setEol($comment);
             }
         }
@@ -628,12 +640,14 @@ final class PHPDocUtil extends AbstractUtility
         }
 
         // Check if the method belongs to an adjacent trait on the same line
-        $aliases = self::getTraitAliases($class);
-        foreach ($traits as $traitName => $trait) {
-            $originalName = $aliases[$traitName][$name] ?? $name;
+        if ($inserted = Reflect::getTraitAliases($class)[$name] ?? null) {
+            $traits = array_intersect_key($traits, [$inserted[0] => null]);
+            $name = $inserted[1];
+        }
+        foreach ($traits as $trait) {
             if (
-                $trait->hasMethod($originalName)
-                && ($traitMethod = $trait->getMethod($originalName))->getFileName() === $file
+                $trait->hasMethod($name)
+                && ($traitMethod = $trait->getMethod($name))->getFileName() === $file
                 && $traitMethod->getStartLine() === $line
             ) {
                 throw new LogicException(sprintf(
@@ -641,7 +655,7 @@ final class PHPDocUtil extends AbstractUtility
                     $class->getName(),
                     $method->getName(),
                     $traitMethod->getDeclaringClass()->getName(),
-                    $originalName,
+                    $name,
                 ));
             }
         }
@@ -653,15 +667,14 @@ final class PHPDocUtil extends AbstractUtility
 
     /**
      * Get an array that maps traits to [ alias => method ] arrays for the trait
-     * aliases of a class
+     * method aliases of a class
      *
      * @param ReflectionClass<object> $class
-     * @return array<string,array<string,string>>
+     * @return array<class-string,array<string,string>>
      */
     private static function getTraitAliases(ReflectionClass $class): array
     {
-        foreach ($class->getTraitAliases() as $alias => $original) {
-            $original = explode('::', $original, 2);
+        foreach (Reflect::getTraitAliases($class) as $alias => $original) {
             $aliases[$original[0]][$alias] = $original[1];
         }
         return $aliases ?? [];

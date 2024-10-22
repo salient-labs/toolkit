@@ -69,6 +69,24 @@ final class Reflect extends AbstractUtility
         try {
             return $method->getPrototype();
         } catch (ReflectionException $ex) {
+            if (\PHP_VERSION_ID >= 80200 || $method->isPrivate()) {
+                return null;
+            }
+            // Work around issue where PHP does not return a prototype for
+            // methods inserted from traits
+            $class = $method->getDeclaringClass();
+            $name = $method->getName();
+            if ($method->isPublic()) {
+                foreach ($class->getInterfaces() as $interface) {
+                    if ($interface->hasMethod($name)) {
+                        return $interface->getMethod($name);
+                    }
+                }
+            }
+            $class = $class->getParentClass();
+            if ($class && $class->hasMethod($name)) {
+                return $class->getMethod($name);
+            }
             return null;
         }
     }
@@ -81,11 +99,47 @@ final class Reflect extends AbstractUtility
      */
     public static function getPrototypeClass(ReflectionMethod $method): ReflectionClass
     {
-        try {
-            return $method->getPrototype()->getDeclaringClass();
-        } catch (ReflectionException $ex) {
-            return $method->getDeclaringClass();
+        return (self::getPrototype($method) ?? $method)->getDeclaringClass();
+    }
+
+    /**
+     * Get the trait method inserted into a class with the given name
+     *
+     * @param ReflectionClass<object> $class
+     */
+    public static function getTraitMethod(
+        ReflectionClass $class,
+        string $methodName
+    ): ?ReflectionMethod {
+        if ($inserted = self::getTraitAliases($class)[$methodName] ?? null) {
+            return new ReflectionMethod(...$inserted);
         }
+
+        foreach ($class->getTraits() as $trait) {
+            if ($trait->hasMethod($methodName)) {
+                return $trait->getMethod($methodName);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the trait method aliases of a class as an array that maps aliases to
+     * [ trait, method ] arrays
+     *
+     * @param ReflectionClass<object> $class
+     * @return array<string,array{class-string,string}>
+     */
+    public static function getTraitAliases(ReflectionClass $class): array
+    {
+        foreach ($class->getTraitAliases() as $alias => $original) {
+            /** @var array{class-string,string} */
+            $original = explode('::', $original, 2);
+            $aliases[$alias] = $original;
+        }
+
+        return $aliases ?? [];
     }
 
     /**

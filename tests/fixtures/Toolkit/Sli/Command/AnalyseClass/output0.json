@@ -1,0 +1,517 @@
+{
+    "Salient\\Tests\\Sli\\Command\\AnalyseClass": {
+        "MyBaseClass": {
+            "type": "class",
+            "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+            "templates": [],
+            "summary": "MyBaseClass",
+            "extends": [],
+            "implements": [
+                "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                "Stringable"
+            ],
+            "api": false,
+            "internal": true,
+            "deprecated": false,
+            "hasDocComment": true,
+            "abstract": true,
+            "final": false,
+            "readonly": false,
+            "modifiers": [
+                "abstract"
+            ],
+            "methods": {
+                "MyStaticMethod": {
+                    "templates": [],
+                    "summary": "MyInterface::MyStaticMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyStaticMethod"
+                    ],
+                    "abstract": false,
+                    "final": true,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": true,
+                    "modifiers": [
+                        "final",
+                        "public",
+                        "static"
+                    ],
+                    "parameters": {
+                        "instance": [
+                            "static ",
+                            ""
+                        ]
+                    },
+                    "returnType": "void",
+                    "line": 17,
+                    "lines": 4
+                },
+                "MyOverriddenMethod": {
+                    "templates": [],
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "parameters": [],
+                    "returnType": "int",
+                    "line": 22,
+                    "lines": 4
+                },
+                "__toString": {
+                    "templates": [],
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Stringable",
+                        "__toString"
+                    ],
+                    "prototype": null,
+                    "abstract": true,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "abstract",
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "string",
+                    "line": null,
+                    "lines": null
+                },
+                "MyMethod": {
+                    "templates": [],
+                    "summary": "MyInterface::MyMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyMethod"
+                    ],
+                    "prototype": null,
+                    "abstract": true,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "abstract",
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "mixed",
+                    "line": null,
+                    "lines": null
+                }
+            },
+            "file": "./MyBaseClass.php",
+            "line": 12,
+            "lines": 15
+        },
+        "MyClass": {
+            "type": "class",
+            "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyClass",
+            "templates": {
+                "T": " of int|string"
+            },
+            "summary": "MyClass",
+            "extends": [
+                "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass"
+            ],
+            "implements": [],
+            "api": false,
+            "internal": false,
+            "deprecated": false,
+            "hasDocComment": true,
+            "abstract": false,
+            "final": true,
+            "readonly": false,
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "__construct": {
+                    "templates": [],
+                    "summary": null,
+                    "api": true,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": {
+                        "myProperty": [
+                            "T ",
+                            ""
+                        ]
+                    },
+                    "returnType": null,
+                    "line": 26,
+                    "lines": 4
+                },
+                "MyTemplateMethod": {
+                    "templates": {
+                        "TInstance": " of MyInterface"
+                    },
+                    "summary": "MyClass::MyTemplateMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "parameters": {
+                        "instance": [
+                            "TInstance ",
+                            ""
+                        ],
+                        "myProperty": [
+                            "T|null ",
+                            " = null"
+                        ]
+                    },
+                    "returnType": "array<T,TInstance>",
+                    "line": 40,
+                    "lines": 4
+                },
+                "__toString": {
+                    "templates": [],
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": [
+                        "Stringable",
+                        "__toString"
+                    ],
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "string",
+                    "line": 45,
+                    "lines": 4
+                },
+                "MyMethod": {
+                    "templates": [],
+                    "summary": "MyTrait::MyMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
+                        "MyMethod"
+                    ],
+                    "prototype": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyMethod"
+                    ],
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "mixed",
+                    "line": null,
+                    "lines": null
+                },
+                "MyOverriddenMethod": {
+                    "templates": [],
+                    "summary": "MyTrait::MyOverriddenMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
+                        "MyOverriddenMethod"
+                    ],
+                    "prototype": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MyOverriddenMethod"
+                    ],
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "int",
+                    "line": null,
+                    "lines": null
+                },
+                "MyStaticMethod": {
+                    "templates": [],
+                    "summary": "MyInterface::MyStaticMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MyStaticMethod"
+                    ],
+                    "prototype": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyStaticMethod"
+                    ],
+                    "abstract": false,
+                    "final": true,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": true,
+                    "modifiers": [
+                        "final",
+                        "public",
+                        "static"
+                    ],
+                    "parameters": {
+                        "instance": [
+                            "static ",
+                            ""
+                        ]
+                    },
+                    "returnType": "void",
+                    "line": null,
+                    "lines": null
+                }
+            },
+            "file": "./MyClass.php",
+            "line": 10,
+            "lines": 40
+        },
+        "MyInterface": {
+            "type": "interface",
+            "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+            "templates": [],
+            "summary": "MyInterface",
+            "extends": [],
+            "implements": [],
+            "api": true,
+            "internal": false,
+            "deprecated": false,
+            "hasDocComment": true,
+            "abstract": false,
+            "final": false,
+            "readonly": false,
+            "modifiers": [],
+            "methods": {
+                "MyMethod": {
+                    "templates": [],
+                    "summary": "MyInterface::MyMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "mixed",
+                    "line": 17,
+                    "lines": 1
+                },
+                "MyStaticMethod": {
+                    "templates": [],
+                    "summary": "MyInterface::MyStaticMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": true,
+                    "modifiers": [
+                        "public",
+                        "static"
+                    ],
+                    "parameters": {
+                        "instance": [
+                            "static ",
+                            ""
+                        ]
+                    },
+                    "returnType": "void",
+                    "line": 24,
+                    "lines": 1
+                }
+            },
+            "file": "./MyInterface.php",
+            "line": 10,
+            "lines": 16
+        },
+        "MyTrait": {
+            "type": "trait",
+            "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
+            "templates": [],
+            "summary": "MyTrait",
+            "extends": [],
+            "implements": [],
+            "api": false,
+            "internal": true,
+            "deprecated": false,
+            "hasDocComment": true,
+            "abstract": false,
+            "final": false,
+            "readonly": false,
+            "modifiers": [],
+            "methods": {
+                "MyMethod": {
+                    "templates": [],
+                    "summary": "MyTrait::MyMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "mixed",
+                    "line": 17,
+                    "lines": 1
+                },
+                "MyOverriddenMethod": {
+                    "templates": [],
+                    "summary": "MyTrait::MyOverriddenMethod()",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": [],
+                    "returnType": "int",
+                    "line": 22,
+                    "lines": 4
+                }
+            },
+            "file": "./MyTrait.php",
+            "line": 10,
+            "lines": 17
+        }
+    }
+}
