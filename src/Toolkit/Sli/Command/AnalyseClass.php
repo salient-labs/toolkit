@@ -35,10 +35,22 @@ class AnalyseClass extends AbstractCommand
     /** @var string[] */
     private array $Path = [];
     private string $Format = '';
+    /** @var string[] */
+    private array $Skip = [];
     private string $Exclude = '';
     /** @var string[] */
     private array $Autoload = [];
     private bool $Debug = false;
+
+    // --
+
+    /**
+     * @var array<string,bool>
+     */
+    private array $SkipIndex = [
+        'internal' => false,
+        'private' => false,
+    ];
 
     public function getDescription(): string
     {
@@ -66,6 +78,14 @@ class AnalyseClass extends AbstractCommand
                 ->allowedValues(['json', 'csv', 'md'])
                 ->defaultValue('json')
                 ->bindTo($this->Format),
+            CliOption::build()
+                ->long('skip')
+                ->short('k')
+                ->description('Exclude items from the output')
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(array_keys($this->SkipIndex))
+                ->multipleAllowed()
+                ->bindTo($this->Skip),
             CliOption::build()
                 ->long('exclude')
                 ->short('X')
@@ -105,6 +125,11 @@ class AnalyseClass extends AbstractCommand
         foreach ($this->Autoload as $file) {
             require_once $file;
         }
+
+        $this->SkipIndex = array_merge(
+            array_fill_keys(array_keys($this->SkipIndex), false),
+            array_fill_keys($this->Skip, true),
+        );
 
         $dirs = [];
         $files = [];
@@ -190,6 +215,10 @@ class AnalyseClass extends AbstractCommand
                         $classData = $this->getClassData($_class, $extractor);
                         $classData->File = $file;
                         $index[$_fqcn] = $classData;
+
+                        if (!$this->filterEntity($classData)) {
+                            continue;
+                        }
 
                         if ($csv) {
                             $row = array_merge(
@@ -519,6 +548,9 @@ class AnalyseClass extends AbstractCommand
     {
         $row['m_type'] = $type;
         foreach ($members as $name => $data) {
+            if (!$this->filterEntity($data)) {
+                continue;
+            }
             $row['m_name'] = $name;
             $row['m_templates'] = $data instanceof MethodData
                 ? $this->implodeWithKeys(', ', $data->Templates)
@@ -641,6 +673,13 @@ class AnalyseClass extends AbstractCommand
         if (!$data) {
             return;
         }
+
+        foreach ($data as $name => $member) {
+            if (!$this->filterEntity($member)) {
+                unset($data[$name]);
+            }
+        }
+
         uasort(
             $data,
             fn($a, $b) =>
@@ -1025,5 +1064,25 @@ class AnalyseClass extends AbstractCommand
             }
             $data->Templates[$name] = $template;
         }
+    }
+
+    /**
+     * @param ClassData|ConstantData|PropertyData|MethodData $entity
+     */
+    private function filterEntity($entity): bool
+    {
+        if ($this->SkipIndex['internal'] && $entity->Internal) {
+            return false;
+        }
+
+        if ($entity instanceof ClassData) {
+            return true;
+        }
+
+        if ($this->SkipIndex['private'] && $entity->IsPrivate) {
+            return false;
+        }
+
+        return true;
     }
 }
