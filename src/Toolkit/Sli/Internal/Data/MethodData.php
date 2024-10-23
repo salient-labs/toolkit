@@ -3,6 +3,7 @@
 namespace Salient\Sli\Internal\Data;
 
 use JsonSerializable;
+use stdClass;
 
 /**
  * @internal
@@ -48,7 +49,7 @@ class MethodData implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'templates' => $this->Templates,
+            'templates' => $this->Templates ?: new stdClass(),
             'summary' => $this->Summary,
             'api' => $this->Api,
             'internal' => $this->Internal,
@@ -65,7 +66,7 @@ class MethodData implements JsonSerializable
             'private' => $this->IsPrivate,
             'static' => $this->IsStatic,
             'modifiers' => $this->Modifiers,
-            'parameters' => $this->Parameters,
+            'parameters' => $this->Parameters ?: new stdClass(),
             'returnType' => $this->ReturnType,
             'line' => $this->Line,
             'lines' => $this->Lines,
