@@ -11,6 +11,8 @@ final class MyClass extends MyBaseClass
 {
     use MyTrait;
 
+    protected const MY_FLOAT = 3.0;
+
     /**
      * MyClass::$MyProperty
      *

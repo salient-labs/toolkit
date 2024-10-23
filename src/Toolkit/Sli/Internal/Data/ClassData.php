@@ -17,6 +17,8 @@ class ClassData implements JsonSerializable
     public array $Extends = [];
     /** @var class-string[] */
     public array $Implements = [];
+    /** @var class-string[] */
+    public array $Uses = [];
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
@@ -26,6 +28,10 @@ class ClassData implements JsonSerializable
     public bool $IsReadOnly = false;
     /** @var string[] */
     public array $Modifiers = [];
+    /** @var array<string,ConstantData> */
+    public array $Constants = [];
+    /** @var array<string,PropertyData> */
+    public array $Properties = [];
     /** @var array<string,MethodData> */
     public array $Methods = [];
     public ?string $File = null;
@@ -47,6 +53,7 @@ class ClassData implements JsonSerializable
             'summary' => $this->Summary,
             'extends' => $this->Extends,
             'implements' => $this->Implements,
+            'uses' => $this->Uses,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,
@@ -55,6 +62,8 @@ class ClassData implements JsonSerializable
             'final' => $this->IsFinal,
             'readonly' => $this->IsReadOnly,
             'modifiers' => $this->Modifiers,
+            'constants' => $this->Constants,
+            'properties' => $this->Properties,
             'methods' => $this->Methods,
             'file' => $this->File,
             'line' => $this->Line,

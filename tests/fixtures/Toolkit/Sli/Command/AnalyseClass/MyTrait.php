@@ -9,6 +9,8 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
  */
 trait MyTrait
 {
+    private int $MyIntProperty = 2;
+
     /**
      * MyTrait::MyMethod()
      *

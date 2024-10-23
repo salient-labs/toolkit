@@ -9,8 +9,10 @@ use Salient\Utility\File;
 /**
  * @covers \Salient\Sli\Command\AnalyseClass
  * @covers \Salient\Sli\Internal\Data\ClassData
+ * @covers \Salient\Sli\Internal\Data\ConstantData
  * @covers \Salient\Sli\Internal\Data\MethodData
  * @covers \Salient\Sli\Internal\Data\NamespaceData
+ * @covers \Salient\Sli\Internal\Data\PropertyData
  */
 final class AnalyseClassTest extends CommandTestCase
 {

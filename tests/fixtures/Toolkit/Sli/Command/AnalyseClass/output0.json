@@ -10,6 +10,7 @@
                 "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
                 "Stringable"
             ],
+            "uses": [],
             "api": false,
             "internal": true,
             "deprecated": false,
@@ -20,6 +21,134 @@
             "modifiers": [
                 "abstract"
             ],
+            "constants": {
+                "MY_INT": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "type": null,
+                    "value": "1",
+                    "line": 15
+                },
+                "MY_FLOAT": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "type": "float",
+                    "value": "1.0",
+                    "line": 17
+                },
+                "MY_LONG_STRING": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "type": null,
+                    "value": "'string_with_more_than_20_characters'",
+                    "line": 18
+                },
+                "MY_ARRAY": {
+                    "summary": "MyInterface::MY_ARRAY",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "array<class-string,int>",
+                    "value": "[\n    'Stringable' => 0,\n    'JsonSerializable' => 1,\n]",
+                    "line": 20
+                },
+                "MY_SHORT_STRING": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MY_SHORT_STRING"
+                    ],
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": null,
+                    "value": "'short'",
+                    "line": null
+                }
+            },
+            "properties": {
+                "MyVarProperty": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": null,
+                    "defaultValue": null,
+                    "line": 25
+                }
+            },
             "methods": {
                 "MyStaticMethod": {
                     "templates": [],
@@ -53,7 +182,7 @@
                         ]
                     },
                     "returnType": "void",
-                    "line": 17,
+                    "line": 30,
                     "lines": 4
                 },
                 "MyOverriddenMethod": {
@@ -78,7 +207,7 @@
                     ],
                     "parameters": [],
                     "returnType": "int",
-                    "line": 22,
+                    "line": 35,
                     "lines": 4
                 },
                 "__toString": {
@@ -141,8 +270,8 @@
                 }
             },
             "file": "./MyBaseClass.php",
-            "line": 12,
-            "lines": 15
+            "line": 13,
+            "lines": 27
         },
         "MyClass": {
             "type": "class",
@@ -155,6 +284,9 @@
                 "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass"
             ],
             "implements": [],
+            "uses": [
+                "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait"
+            ],
             "api": false,
             "internal": false,
             "deprecated": false,
@@ -165,6 +297,191 @@
             "modifiers": [
                 "final"
             ],
+            "constants": {
+                "MY_FLOAT": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "type": "float",
+                    "value": "3.0",
+                    "line": 14
+                },
+                "MY_ARRAY": {
+                    "summary": "MyInterface::MY_ARRAY",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MY_ARRAY"
+                    ],
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "array<class-string,int>",
+                    "value": "<array>",
+                    "line": null
+                },
+                "MY_INT": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MY_INT"
+                    ],
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "type": null,
+                    "value": "1",
+                    "line": null
+                },
+                "MY_LONG_STRING": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MY_LONG_STRING"
+                    ],
+                    "final": false,
+                    "public": false,
+                    "protected": true,
+                    "private": false,
+                    "modifiers": [
+                        "protected"
+                    ],
+                    "type": null,
+                    "value": "<string>",
+                    "line": null
+                },
+                "MY_SHORT_STRING": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MY_SHORT_STRING"
+                    ],
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": null,
+                    "value": "'short'",
+                    "line": null
+                }
+            },
+            "properties": {
+                "MyProperty": {
+                    "summary": "MyClass::$MyProperty",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "T",
+                    "defaultValue": null,
+                    "line": 21
+                },
+                "MyIntProperty": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
+                        "MyIntProperty"
+                    ],
+                    "public": false,
+                    "protected": false,
+                    "private": true,
+                    "static": false,
+                    "readonly": false,
+                    "modifiers": [
+                        "private"
+                    ],
+                    "type": "int",
+                    "defaultValue": "2",
+                    "line": null
+                },
+                "MyVarProperty": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MyVarProperty"
+                    ],
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": null,
+                    "defaultValue": null,
+                    "line": null
+                }
+            },
             "methods": {
                 "__construct": {
                     "templates": [],
@@ -193,7 +510,7 @@
                         ]
                     },
                     "returnType": null,
-                    "line": 26,
+                    "line": 28,
                     "lines": 4
                 },
                 "MyTemplateMethod": {
@@ -229,7 +546,7 @@
                         ]
                     },
                     "returnType": "array<T,TInstance>",
-                    "line": 40,
+                    "line": 42,
                     "lines": 4
                 },
                 "__toString": {
@@ -257,7 +574,7 @@
                     ],
                     "parameters": [],
                     "returnType": "string",
-                    "line": 45,
+                    "line": 47,
                     "lines": 4
                 },
                 "MyMethod": {
@@ -363,7 +680,7 @@
             },
             "file": "./MyClass.php",
             "line": 10,
-            "lines": 40
+            "lines": 42
         },
         "MyInterface": {
             "type": "interface",
@@ -372,6 +689,7 @@
             "summary": "MyInterface",
             "extends": [],
             "implements": [],
+            "uses": [],
             "api": true,
             "internal": false,
             "deprecated": false,
@@ -380,6 +698,49 @@
             "final": false,
             "readonly": false,
             "modifiers": [],
+            "constants": {
+                "MY_SHORT_STRING": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": null,
+                    "value": "'short'",
+                    "line": 14
+                },
+                "MY_ARRAY": {
+                    "summary": "MyInterface::MY_ARRAY",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": true,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "array<class-string,int>",
+                    "value": "['Stringable' => 0]",
+                    "line": 21
+                }
+            },
+            "properties": [],
             "methods": {
                 "MyMethod": {
                     "templates": [],
@@ -403,7 +764,7 @@
                     ],
                     "parameters": [],
                     "returnType": "mixed",
-                    "line": 17,
+                    "line": 30,
                     "lines": 1
                 },
                 "MyStaticMethod": {
@@ -434,13 +795,13 @@
                         ]
                     },
                     "returnType": "void",
-                    "line": 24,
+                    "line": 37,
                     "lines": 1
                 }
             },
             "file": "./MyInterface.php",
-            "line": 10,
-            "lines": 16
+            "line": 12,
+            "lines": 27
         },
         "MyTrait": {
             "type": "trait",
@@ -449,6 +810,7 @@
             "summary": "MyTrait",
             "extends": [],
             "implements": [],
+            "uses": [],
             "api": false,
             "internal": true,
             "deprecated": false,
@@ -457,6 +819,30 @@
             "final": false,
             "readonly": false,
             "modifiers": [],
+            "constants": [],
+            "properties": {
+                "MyIntProperty": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": false,
+                    "protected": false,
+                    "private": true,
+                    "static": false,
+                    "readonly": false,
+                    "modifiers": [
+                        "private"
+                    ],
+                    "type": "int",
+                    "defaultValue": "2",
+                    "line": 12
+                }
+            },
             "methods": {
                 "MyMethod": {
                     "templates": [],
@@ -480,7 +866,7 @@
                     ],
                     "parameters": [],
                     "returnType": "mixed",
-                    "line": 17,
+                    "line": 19,
                     "lines": 1
                 },
                 "MyOverriddenMethod": {
@@ -505,13 +891,13 @@
                     ],
                     "parameters": [],
                     "returnType": "int",
-                    "line": 22,
+                    "line": 24,
                     "lines": 4
                 }
             },
             "file": "./MyTrait.php",
             "line": 10,
-            "lines": 17
+            "lines": 19
         }
     }
 }

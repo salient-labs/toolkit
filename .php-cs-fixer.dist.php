@@ -11,6 +11,7 @@ $customTokens = [
     'T_AND',
     'T_COMMA',
     'T_SEMICOLON',
+    'T_EQUAL',
 ];
 
 /** @disregard P1009 */

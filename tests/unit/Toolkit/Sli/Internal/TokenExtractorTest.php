@@ -253,6 +253,110 @@ namespace
 }
 PHP,
             ],
+            'close tag' => [
+                [
+                    ['', [
+                        [0, \T_OPEN_TAG, "<?php\n", [null, 1], [null, 1], null, [null, null]],
+                    ]],
+                    ['MyProject', [
+                        4 => [4, \T_CLOSE_TAG, '?>', [3, null], [3, null], null, [null, null]],
+                    ]],
+                ],
+                <<<'PHP'
+<?php
+namespace MyProject;
+?>
+PHP,
+            ],
+            'close tag terminator' => [
+                [
+                    ['', [
+                        [0, \T_OPEN_TAG, "<?php\n", [null, 1], [null, 1], null, [null, null]],
+                    ]],
+                ],
+                <<<'PHP'
+<?php
+namespace MyProject
+?>
+PHP,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getFunctionsProvider
+     *
+     * @param array<array{string,array<array{int,int,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}>}> $expected
+     */
+    public function testGetFunctions($expected, string $code): void
+    {
+        foreach ((new TokenExtractor(Str::eolFromNative($code)))->getFunctions() as $function => $extractor) {
+            $this->assertSame($function, $extractor->getMember());
+            $this->assertEmpty(Get::array($extractor->getFunctions()));
+            [$tokens, $tokensCode] = self::serializeTokens($extractor->getTokens());
+            $actual[] = [$function, $tokens];
+            $actualCode[] = sprintf('[%s, %s],', Get::code($function), $tokensCode);
+        }
+        $actualCode = sprintf('[%s]', implode(' ', $actualCode ?? []));
+        $this->assertSame(
+            $expected,
+            $actual ?? [],
+            'If $code changed, replace $expected with: ' . $actualCode,
+        );
+    }
+
+    /**
+     * @return array<array{array<array{string,array<array{int,int,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}>}>,string}>
+     */
+    public static function getFunctionsProvider(): array
+    {
+        return [
+            'empty' => [
+                [],
+                '',
+            ],
+            'imported functions' => [
+                [],
+                <<<'PHP'
+<?php
+use function functionName;
+use function My\Full\functionName as func;
+PHP,
+            ],
+            'anonymous functions' => [
+                [],
+                <<<'PHP'
+<?php
+function () {};
+function &() {};
+PHP,
+            ],
+            'global functions' => [
+                [
+                    ['foo', [
+                        6 => [6, \T_RETURN, 'return', [5, 7], [5, 7], 5, [null, null]],
+                        7 => [7, 59, ';', [6, 8], [6, 8], 5, [null, null]],
+                    ]],
+                    ['bar', [
+                        15 => [15, \T_RETURN, 'return', [14, 16], [14, 16], 14, [null, null]],
+                        16 => [16, \T_STRING, 'foo', [15, 17], [15, 17], 14, [null, null]],
+                        17 => [17, 40, '(', [16, 18], [16, 18], 14, [null, 18]],
+                        18 => [18, 41, ')', [17, 19], [17, 19], 14, [17, null]],
+                        19 => [19, 59, ';', [18, 20], [18, 20], 14, [null, null]],
+                    ]],
+                ],
+                <<<'PHP'
+<?php
+function foo()
+{
+    return;
+}
+function &bar()
+{
+    return foo();
+}
+PHP,
+            ],
         ];
     }
 
@@ -264,7 +368,11 @@ PHP,
 <?php
 namespace Foo
 {
-    interface A { public function getFoo(): int; }
+    interface A
+    {
+        public const DEFAULT_FOO = -1;
+        public function getFoo(): int;
+    }
     interface B {}
 }
 namespace Bar\Baz
@@ -277,7 +385,11 @@ namespace Bar\Baz
 namespace Bar
 {
     abstract class F implements namespace\Baz\C, namespace\baz\d {}
-    class FF extends F { public function getFoo(): int { return -1; } }
+    class FF extends F
+    {
+        private int $Foo = self::DEFAULT_FOO;
+        public function getFoo(): int { return $this->Foo; }
+    }
 }
 namespace
 {
@@ -289,7 +401,9 @@ namespace
     use \Foo\A;
     class H implements A, foo
     {
+        public const DEFAULT_FOO = 0;
         public int $Foo;
+        public string $Bar = 'baz';
         public function getFoo(): int { return $this->Foo; }
         protected static function bar(): void { (function &() {})(); }
     }
@@ -329,18 +443,24 @@ PHP,
                             $actual[$namespace][$class]['implements'][] = $extractor->getName($token, $token);
                         }
                     }
-                    foreach ($classExtractor->getFunctions() as $function => $functionExtractor) {
-                        $this->assertSame($classExtractor, $functionExtractor->getParent());
-                        $this->assertTrue($functionExtractor->hasMember());
-                        $this->assertSame($function, $functionExtractor->getMember());
-                        $this->assertNotNull($token = $functionExtractor->getMemberToken());
-                        $this->assertSame(\T_FUNCTION, $token->id);
-                        $this->assertEmpty(Get::array($functionExtractor->getFunctions()));
-                        [$tokens[$namespace][$class][$function]] = self::serializeTokens(
-                            $functionExtractor->getTokens(),
-                            $tokensCode[$namespace][$class][$function],
-                            $constants,
-                        );
+                    foreach ([
+                        [$classExtractor->getFunctions(), \T_FUNCTION, '', '()'],
+                        [$classExtractor->getProperties(), \T_VARIABLE, '$', ''],
+                        [$classExtractor->getConstants(), \T_CONST, '', ''],
+                    ] as [$members, $tokenId, $prefix, $suffix]) {
+                        foreach ($members as $member => $memberExtractor) {
+                            $this->assertSame($classExtractor, $memberExtractor->getParent());
+                            $this->assertTrue($memberExtractor->hasMember());
+                            $this->assertSame($member, $memberExtractor->getMember());
+                            $this->assertNotNull($token = $memberExtractor->getMemberToken());
+                            $this->assertSame($tokenId, $token->id);
+                            $key = $prefix . $member . $suffix;
+                            [$tokens[$namespace][$class][$key]] = self::serializeTokens(
+                                $memberExtractor->getTokens(),
+                                $tokensCode[$namespace][$class][$key],
+                                $constants,
+                            );
+                        }
                     }
                 }
             }
@@ -380,45 +500,62 @@ PHP,
             [
                 'Foo' => [
                     'A' => [
-                        'getFoo' => [],
+                        'getFoo()' => [],
+                        'DEFAULT_FOO' => [
+                            11 => [11, 45, '-', [10, 12], [10, 12], 6, [null, null]],
+                            12 => [12, \T_LNUMBER, '1', [11, 13], [11, 13], 6, [null, null]],
+                        ],
                     ],
                 ],
                 'Bar\Baz' => [
                     'EE' => [
-                        'getBaz' => [],
+                        'getBaz()' => [],
                     ],
                 ],
                 'Bar' => [
                     'FF' => [
-                        'getFoo' => [
-                            83 => [83, \T_RETURN, 'return', [82, 84], [82, 84], 82, [null, null]],
-                            84 => [84, 45, '-', [83, 85], [83, 85], 82, [null, null]],
-                            85 => [85, \T_LNUMBER, '1', [84, 86], [84, 86], 82, [null, null]],
-                            86 => [86, 59, ';', [85, 87], [85, 87], 82, [null, null]],
+                        'getFoo()' => [
+                            98 => [98, \T_RETURN, 'return', [97, 99], [97, 99], 97, [null, null]],
+                            99 => [99, \T_VARIABLE, '$this', [98, 100], [98, 100], 97, [null, null]],
+                            100 => [100, \T_OBJECT_OPERATOR, '->', [99, 101], [99, 101], 97, [null, null]],
+                            101 => [101, \T_STRING, 'Foo', [100, 102], [100, 102], 97, [null, null]],
+                            102 => [102, 59, ';', [101, 103], [101, 103], 97, [null, null]],
+                        ],
+                        '$Foo' => [
+                            86 => [86, \T_STRING, 'self', [85, 87], [85, 87], 81, [null, null]],
+                            87 => [87, \T_DOUBLE_COLON, '::', [86, 88], [86, 88], 81, [null, null]],
+                            88 => [88, \T_STRING, 'DEFAULT_FOO', [87, 89], [87, 89], 81, [null, null]],
                         ],
                     ],
                 ],
                 '' => [
                     'H' => [
-                        'getFoo' => [
-                            130 => [130, \T_RETURN, 'return', [129, 131], [129, 131], 129, [null, null]],
-                            131 => [131, \T_VARIABLE, '$this', [130, 132], [130, 132], 129, [null, null]],
-                            132 => [132, \T_OBJECT_OPERATOR, '->', [131, 133], [131, 133], 129, [null, null]],
-                            133 => [133, \T_STRING, 'Foo', [132, 134], [132, 134], 129, [null, null]],
-                            134 => [134, 59, ';', [133, 135], [133, 135], 129, [null, null]],
+                        'getFoo()' => [
+                            158 => [158, \T_RETURN, 'return', [157, 159], [157, 159], 157, [null, null]],
+                            159 => [159, \T_VARIABLE, '$this', [158, 160], [158, 160], 157, [null, null]],
+                            160 => [160, \T_OBJECT_OPERATOR, '->', [159, 161], [159, 161], 157, [null, null]],
+                            161 => [161, \T_STRING, 'Foo', [160, 162], [160, 162], 157, [null, null]],
+                            162 => [162, 59, ';', [161, 163], [161, 163], 157, [null, null]],
                         ],
-                        'bar' => [
-                            145 => [145, 40, '(', [144, 146], [144, 146], 144, [null, 152]],
-                            146 => [146, \T_FUNCTION, 'function', [145, 147], [145, 147], 145, [null, null]],
-                            147 => [147, \PHP_VERSION_ID < 80100 ? \T_AND : \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, '&', [146, 148], [146, 148], 145, [null, null]],
-                            148 => [148, 40, '(', [147, 149], [147, 149], 145, [null, 149]],
-                            149 => [149, 41, ')', [148, 150], [148, 150], 145, [148, null]],
-                            150 => [150, 123, '{', [149, 151], [149, 151], 145, [null, 151]],
-                            151 => [151, 125, '}', [150, 152], [150, 152], 145, [150, null]],
-                            152 => [152, 41, ')', [151, 153], [151, 153], 144, [145, null]],
-                            153 => [153, 40, '(', [152, 154], [152, 154], 144, [null, 154]],
-                            154 => [154, 41, ')', [153, 155], [153, 155], 144, [153, null]],
-                            155 => [155, 59, ';', [154, 156], [154, 156], 144, [null, null]],
+                        'bar()' => [
+                            173 => [173, 40, '(', [172, 174], [172, 174], 172, [null, 180]],
+                            174 => [174, \T_FUNCTION, 'function', [173, 175], [173, 175], 173, [null, null]],
+                            175 => [175, \PHP_VERSION_ID < 80100 ? \T_AND : \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, '&', [174, 176], [174, 176], 173, [null, null]],
+                            176 => [176, 40, '(', [175, 177], [175, 177], 173, [null, 177]],
+                            177 => [177, 41, ')', [176, 178], [176, 178], 173, [176, null]],
+                            178 => [178, 123, '{', [177, 179], [177, 179], 173, [null, 179]],
+                            179 => [179, 125, '}', [178, 180], [178, 180], 173, [178, null]],
+                            180 => [180, 41, ')', [179, 181], [179, 181], 172, [173, null]],
+                            181 => [181, 40, '(', [180, 182], [180, 182], 172, [null, 182]],
+                            182 => [182, 41, ')', [181, 183], [181, 183], 172, [181, null]],
+                            183 => [183, 59, ';', [182, 184], [182, 184], 172, [null, null]],
+                        ],
+                        '$Foo' => [],
+                        '$Bar' => [
+                            148 => [148, \T_CONSTANT_ENCAPSED_STRING, "'baz'", [147, 149], [147, 149], 133, [null, null]],
+                        ],
+                        'DEFAULT_FOO' => [
+                            138 => [138, \T_LNUMBER, '0', [137, 139], [137, 139], 133, [null, null]],
                         ],
                     ],
                 ],

@@ -2,6 +2,8 @@
 
 namespace Salient\Tests\Sli\Command\AnalyseClass;
 
+use Stringable;
+
 /**
  * MyInterface
  *
@@ -9,6 +11,17 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
  */
 interface MyInterface
 {
+    public const MY_SHORT_STRING = 'short';
+
+    /**
+     * MyInterface::MY_ARRAY
+     *
+     * @var array<class-string,int>
+     */
+    public const MY_ARRAY = [
+        Stringable::class => 0,
+    ];
+
     /**
      * MyInterface::MyMethod()
      *

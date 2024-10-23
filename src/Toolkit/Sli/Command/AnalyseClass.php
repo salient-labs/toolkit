@@ -10,8 +10,10 @@ use Salient\Core\Facade\Console;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\Internal\Data\ClassData;
+use Salient\Sli\Internal\Data\ConstantData;
 use Salient\Sli\Internal\Data\MethodData;
 use Salient\Sli\Internal\Data\NamespaceData;
+use Salient\Sli\Internal\Data\PropertyData;
 use Salient\Sli\Internal\NavigableToken;
 use Salient\Sli\Internal\TokenExtractor;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -24,7 +26,9 @@ use Salient\Utility\Json;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 use ReflectionClass;
+use ReflectionClassConstant;
 use ReflectionMethod;
+use ReflectionProperty;
 
 class AnalyseClass extends AbstractCommand
 {
@@ -200,18 +204,27 @@ class AnalyseClass extends AbstractCommand
                                 ],
                                 Arr::unset(
                                     $classData->jsonSerialize(),
+                                    'constants',
+                                    'properties',
                                     'methods',
                                 ),
                                 [
                                     'templates' => $this->implodeWithKeys(', ', $classData->Templates),
                                     'extends' => implode(', ', $classData->Extends),
                                     'implements' => implode(', ', $classData->Implements),
+                                    'uses' => implode(', ', $classData->Uses),
                                     'modifiers' => implode(' ', $classData->Modifiers),
                                 ],
                             );
 
-                            foreach ($this->applyMemberData($row, 'method', $classData->Methods) as $methodRow) {
-                                $data[] = $methodRow;
+                            foreach ([
+                                'constant' => $classData->Constants,
+                                'property' => $classData->Properties,
+                                'method' => $classData->Methods,
+                            ] as $memberType => $members) {
+                                foreach ($this->applyMemberData($row, $memberType, $members) as $memberRow) {
+                                    $data[] = $memberRow;
+                                }
                             }
                         } else {
                             $tree[$ns] ??= new NamespaceData($ns);
@@ -327,6 +340,102 @@ class AnalyseClass extends AbstractCommand
                         ], '');
                         $printBlock('```');
 
+                        if ($classData->Uses) {
+                            $printBlock('##### Uses');
+
+                            foreach ($classData->Uses as $trait) {
+                                $block[] = "- `{$trait}`";
+                            }
+                            $printBlock();
+                        }
+
+                        if ($classData->Constants) {
+                            $printBlock('##### Constants');
+
+                            foreach ($classData->Constants as $constantName => $constantData) {
+                                $block[] = "###### {$constantName}";
+                                $block[] = '';
+
+                                $meta = [];
+                                if ($constantData->Inherited || $constantData->InheritedFrom) {
+                                    $blockPrefix = '> ';
+                                    if ($original = $constantData->InheritedFrom) {
+                                        $meta[] = "from `{$original[0]}::{$original[1]}`";
+                                    }
+                                }
+
+                                if ($meta = array_merge($meta, array_keys(array_filter([
+                                    'in API' => $constantData->Api,
+                                    'internal' => $constantData->Internal,
+                                    'deprecated' => $constantData->Deprecated,
+                                ])))) {
+                                    $block[] = '<small>(' . implode(', ', $meta) . ')</small>';
+                                    $block[] = '';
+                                }
+
+                                if ($constantData->Summary !== null) {
+                                    $block[] = $constantData->Summary;
+                                    $block[] = '';
+                                }
+
+                                $block[] = '```php';
+                                $block[] = Arr::implode(' ', [
+                                    implode(' ', $constantData->Modifiers),
+                                    'const',
+                                    $constantData->Type,
+                                    "{$constantName} = {$constantData->Value}",
+                                ], '');
+                                $block[] = '```';
+
+                                $printBlock();
+                            }
+                        }
+
+                        if ($classData->Properties) {
+                            $printBlock('##### Properties');
+
+                            foreach ($classData->Properties as $propertyName => $propertyData) {
+                                $block[] = "###### {$propertyName}";
+                                $block[] = '';
+
+                                $meta = [];
+                                if ($propertyData->Inherited || $propertyData->InheritedFrom) {
+                                    $blockPrefix = '> ';
+                                    if ($original = $propertyData->InheritedFrom) {
+                                        $meta[] = "from `{$original[0]}::{$original[1]}`";
+                                    }
+                                }
+
+                                if ($meta = array_merge($meta, array_keys(array_filter([
+                                    'in API' => $propertyData->Api,
+                                    'internal' => $propertyData->Internal,
+                                    'deprecated' => $propertyData->Deprecated,
+                                ])))) {
+                                    $block[] = '<small>(' . implode(', ', $meta) . ')</small>';
+                                    $block[] = '';
+                                }
+
+                                if ($propertyData->Summary !== null) {
+                                    $block[] = $propertyData->Summary;
+                                    $block[] = '';
+                                }
+
+                                $block[] = '```php';
+                                $block[] = Arr::implode(' ', [
+                                    Str::coalesce(implode(' ', $propertyData->Modifiers), 'var'),
+                                    $propertyData->Type,
+                                    "\${$propertyName}" . (
+                                        $propertyData->DefaultValue === null
+                                            ? ''
+                                            : " = {$propertyData->DefaultValue}"
+                                    ),
+                                ], '');
+                                $block[] = '```';
+
+                                $printBlock();
+                            }
+                        }
+
                         if ($classData->Methods) {
                             $printBlock('##### Methods');
 
@@ -385,6 +494,7 @@ class AnalyseClass extends AbstractCommand
                                 $block[] = '```php';
                                 $block[] = Arr::implode(' ', [
                                     $modifiers,
+                                    'function',
                                     $methodName . $templates . $params . $return,
                                 ], '');
                                 $block[] = '```';
@@ -402,7 +512,7 @@ class AnalyseClass extends AbstractCommand
 
     /**
      * @param array<string,mixed> $row
-     * @param array<string,MethodData> $members
+     * @param array<string,ConstantData|PropertyData|MethodData> $members
      * @return iterable<array<string,mixed>>
      */
     private function applyMemberData(array $row, string $type, array $members): iterable
@@ -410,7 +520,9 @@ class AnalyseClass extends AbstractCommand
         $row['m_type'] = $type;
         foreach ($members as $name => $data) {
             $row['m_name'] = $name;
-            $row['m_templates'] = $this->implodeWithKeys(', ', $data->Templates);
+            $row['m_templates'] = $data instanceof MethodData
+                ? $this->implodeWithKeys(', ', $data->Templates)
+                : null;
             $row['m_summary'] = $data->Summary;
             $row['m_api'] = $data->Api;
             $row['m_internal'] = $data->Internal;
@@ -422,17 +534,21 @@ class AnalyseClass extends AbstractCommand
             $row['m_inheritedFrom_method'] = $data->InheritedFrom[1] ?? null;
             $row['m_prototype_class'] = $data->Prototype[0] ?? null;
             $row['m_prototype_method'] = $data->Prototype[1] ?? null;
-            $row['m_abstract'] = $data->IsAbstract;
-            $row['m_final'] = $data->IsFinal;
+            $row['m_abstract'] = $data->IsAbstract ?? false;
+            $row['m_final'] = $data->IsFinal ?? false;
             $row['m_public'] = $data->IsPublic;
             $row['m_protected'] = $data->IsProtected;
             $row['m_private'] = $data->IsPrivate;
-            $row['m_static'] = $data->IsStatic;
+            $row['m_static'] = $data->IsStatic ?? false;
+            $row['m_readonly'] = $data->IsReadOnly ?? false;
             $row['m_modifiers'] = implode(' ', $data->Modifiers);
-            $row['m_parameters'] = $this->implodeWithKeys(', ', $data->Parameters, true, '$');
-            $row['m_returnType'] = $data->ReturnType;
+            $row['m_parameters'] = $data instanceof MethodData
+                ? $this->implodeWithKeys(', ', $data->Parameters, true, '$')
+                : null;
+            $row['m_type'] = $data->Type ?? $data->ReturnType ?? null;
+            $row['m_value'] = $data->Value ?? $data->DefaultValue ?? null;
             $row['m_line'] = $data->Line;
-            $row['m_lines'] = $data->Lines;
+            $row['m_lines'] = $data->Lines ?? null;
 
             foreach ($row as $key => $value) {
                 if (is_bool($value)) {
@@ -511,12 +627,14 @@ class AnalyseClass extends AbstractCommand
                 strcasecmp($a, $b),
         );
         foreach ($data as $classData) {
+            $this->sortMembers($classData->Constants);
+            $this->sortMembers($classData->Properties);
             $this->sortMembers($classData->Methods);
         }
     }
 
     /**
-     * @param array<string,MethodData> $data
+     * @param array<string,ConstantData|PropertyData|MethodData> $data
      */
     private function sortMembers(array &$data): void
     {
@@ -589,6 +707,10 @@ class AnalyseClass extends AbstractCommand
             }
         }
 
+        if ($token->id !== \T_INTERFACE) {
+            $data->Uses = $class->getTraitNames();
+        }
+
         foreach ($class->getMethods() as $method) {
             $functions ??= array_change_key_case(Get::array($extractor->getFunctions()));
             $name = $method->getName();
@@ -597,9 +719,15 @@ class AnalyseClass extends AbstractCommand
         }
 
         foreach ($class->getProperties() as $property) {
+            $properties ??= Get::array($extractor->getProperties());
+            $name = $property->getName();
+            $data->Properties[$name] = $this->getPropertyData($property, $class, $properties[$name] ?? null);
         }
 
         foreach ($class->getReflectionConstants() as $constant) {
+            $constants ??= Get::array($extractor->getConstants());
+            $name = $constant->getName();
+            $data->Constants[$name] = $this->getConstantData($constant, $class, $constants[$name] ?? null);
         }
 
         return $data;
@@ -738,7 +866,142 @@ class AnalyseClass extends AbstractCommand
     }
 
     /**
-     * @param ClassData|MethodData $data
+     * @param ReflectionClass<object> $class
+     */
+    private function getPropertyData(
+        ReflectionProperty $property,
+        ReflectionClass $class,
+        ?TokenExtractor $extractor
+    ): PropertyData {
+        $propertyName = $property->getName();
+        $docBlocks = PHPDocUtil::getAllPropertyDocComments($property, $class, $classDocBlocks);
+        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "\${$propertyName}");
+        $declaring = $property->getDeclaringClass();
+        $className = $class->getName();
+        $declaringName = $declaring->getName();
+        $declared = (bool) $extractor;
+
+        $data = new PropertyData($propertyName);
+        $data->Declared = $declared;
+        $data->Inherited = $declaringName !== $className;
+
+        $this->applyPhpDocData($phpDoc, $data, $declared);
+
+        if ($extractor) {
+            /** @var NavigableToken */
+            $token = $extractor->getMemberToken();
+            $data->Line = $token->line;
+        } elseif ($declaringName !== $className) {
+            $data->InheritedFrom = [$declaringName, $propertyName];
+        } elseif ($inserted = Reflect::getTraitProperty($declaring, $propertyName)) {
+            $data->InheritedFrom = [
+                $inserted->getDeclaringClass()->getName(),
+                $inserted->getName(),
+            ];
+        }
+
+        $data->Modifiers = array_keys(array_filter([
+            'public' => $data->IsPublic = $property->isPublic(),
+            'protected' => $data->IsProtected = $property->isProtected(),
+            'private' => $data->IsPrivate = $property->isPrivate(),
+            'static' => $data->IsStatic = $property->isStatic(),
+            'readonly' => $data->IsReadOnly = \PHP_VERSION_ID >= 80100 && $property->isReadOnly(),
+        ]));
+
+        $vars = $phpDoc->getVars();
+        if (count($vars) === 1 && array_key_first($vars) === 0) {
+            $data->Type = $vars[0]->getType();
+        } elseif ($property->hasType()) {
+            $data->Type = PHPDocUtil::getTypeDeclaration(
+                $property->getType(),
+                '\\',
+                fn($fqcn) => Get::basename($fqcn),
+            );
+        }
+
+        if ($property->hasDefaultValue() && (
+            ($value = $property->getDefaultValue()) !== null
+            || $property->hasType()
+        )) {
+            if (mb_strlen($code = Get::code($value)) > 20) {
+                if ($declared) {
+                    if (is_array($value)) {
+                        $code = Get::code($value, ",\n");
+                    }
+                } elseif (is_array($value) || is_string($value)) {
+                    $code = '<' . Get::type($value) . '>';
+                }
+            }
+            $data->DefaultValue = $code;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param ReflectionClass<object> $class
+     */
+    private function getConstantData(
+        ReflectionClassConstant $constant,
+        ReflectionClass $class,
+        ?TokenExtractor $extractor
+    ): ConstantData {
+        $constantName = $constant->getName();
+        $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, $classDocBlocks);
+        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $constantName);
+        $declaring = $constant->getDeclaringClass();
+        $className = $class->getName();
+        $declaringName = $declaring->getName();
+        $declared = (bool) $extractor;
+
+        $data = new ConstantData($constantName);
+        $data->Declared = $declared;
+        $data->Inherited = $declaringName !== $className;
+
+        $this->applyPhpDocData($phpDoc, $data, $declared);
+
+        if ($extractor) {
+            /** @var NavigableToken */
+            $token = $extractor->getMemberToken();
+            $data->Line = $token->line;
+        } elseif ($declaringName !== $className) {
+            $data->InheritedFrom = [$declaringName, $constantName];
+        } elseif ($inserted = Reflect::getTraitConstant($declaring, $constantName)) {
+            $data->InheritedFrom = [
+                $inserted->getDeclaringClass()->getName(),
+                $inserted->getName(),
+            ];
+        }
+
+        $data->Modifiers = array_keys(array_filter([
+            'final' => $data->IsFinal = \PHP_VERSION_ID >= 80100 && $constant->isFinal(),
+            'public' => $data->IsPublic = $constant->isPublic(),
+            'protected' => $data->IsProtected = $constant->isProtected(),
+            'private' => $data->IsPrivate = $constant->isPrivate(),
+        ]));
+
+        $vars = $phpDoc->getVars();
+        if (count($vars) === 1 && array_key_first($vars) === 0) {
+            $data->Type = $vars[0]->getType();
+        }
+
+        $value = $constant->getValue();
+        if (mb_strlen($code = Get::code($value)) > 20) {
+            if ($declared) {
+                if (is_array($value)) {
+                    $code = Get::code($value, ",\n");
+                }
+            } elseif (is_array($value) || is_string($value)) {
+                $code = '<' . Get::type($value) . '>';
+            }
+        }
+        $data->Value = $code;
+
+        return $data;
+    }
+
+    /**
+     * @param ClassData|ConstantData|PropertyData|MethodData $data
      */
     private function applyPhpDocData(PHPDoc $phpDoc, $data, bool $declared = true): void
     {
@@ -747,6 +1010,10 @@ class AnalyseClass extends AbstractCommand
         $data->Internal = $declared && $phpDoc->hasTag('internal');
         $data->Deprecated = $phpDoc->hasTag('deprecated');
         $data->HasDocComment = $declared && !$phpDoc->isEmpty();
+
+        if (!$data instanceof ClassData && !$data instanceof MethodData) {
+            return;
+        }
 
         foreach ($phpDoc->getTemplates(false) as $name => $tag) {
             $template = '';

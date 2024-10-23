@@ -4,7 +4,7 @@
 
 #### MyBaseClass
 
-<small>(15 lines, internal)</small>
+<small>(27 lines, internal)</small>
 
 MyBaseClass
 
@@ -12,6 +12,53 @@ MyBaseClass
 abstract class MyBaseClass implements
     Salient\Tests\Sli\Command\AnalyseClass\MyInterface,
     Stringable
+```
+
+##### Constants
+
+###### MY_INT
+
+```php
+protected const MY_INT = 1
+```
+
+###### MY_FLOAT
+
+```php
+protected const float MY_FLOAT = 1.0
+```
+
+###### MY_LONG_STRING
+
+```php
+protected const MY_LONG_STRING = 'string_with_more_than_20_characters'
+```
+
+###### MY_ARRAY
+
+MyInterface::MY_ARRAY
+
+```php
+public const array<class-string,int> MY_ARRAY = [
+    'Stringable' => 0,
+    'JsonSerializable' => 1,
+]
+```
+
+> ###### MY_SHORT_STRING
+> 
+> <small>(from `Salient\Tests\Sli\Command\AnalyseClass\MyInterface::MY_SHORT_STRING`)</small>
+> 
+> ```php
+> public const MY_SHORT_STRING = 'short'
+> ```
+
+##### Properties
+
+###### MyVarProperty
+
+```php
+public $MyVarProperty
 ```
 
 ##### Methods
@@ -23,7 +70,7 @@ abstract class MyBaseClass implements
 MyInterface::MyStaticMethod()
 
 ```php
-final public static MyStaticMethod(static $instance): void
+final public static function MyStaticMethod(static $instance): void
 ```
 
 ###### MyOverriddenMethod()
@@ -31,7 +78,7 @@ final public static MyStaticMethod(static $instance): void
 <small>(4 lines, no DocBlock)</small>
 
 ```php
-protected MyOverriddenMethod(): int
+protected function MyOverriddenMethod(): int
 ```
 
 > ###### __toString()
@@ -39,7 +86,7 @@ protected MyOverriddenMethod(): int
 > <small>(from `Stringable::__toString()`)</small>
 > 
 > ```php
-> abstract public __toString(): string
+> abstract public function __toString(): string
 > ```
 
 > ###### MyMethod()
@@ -49,12 +96,12 @@ protected MyOverriddenMethod(): int
 > MyInterface::MyMethod()
 > 
 > ```php
-> abstract public MyMethod(): mixed
+> abstract public function MyMethod(): mixed
 > ```
 
 #### MyClass
 
-<small>(40 lines)</small>
+<small>(42 lines)</small>
 
 MyClass
 
@@ -63,6 +110,78 @@ final class MyClass<T of int|string> extends
     Salient\Tests\Sli\Command\AnalyseClass\MyBaseClass
 ```
 
+##### Uses
+
+- `Salient\Tests\Sli\Command\AnalyseClass\MyTrait`
+
+##### Constants
+
+###### MY_FLOAT
+
+```php
+protected const float MY_FLOAT = 3.0
+```
+
+> ###### MY_ARRAY
+> 
+> <small>(from `Salient\Tests\Sli\Command\AnalyseClass\MyBaseClass::MY_ARRAY`)</small>
+> 
+> MyInterface::MY_ARRAY
+> 
+> ```php
+> public const array<class-string,int> MY_ARRAY = <array>
+> ```
+
+> ###### MY_INT
+> 
+> <small>(from `Salient\Tests\Sli\Command\AnalyseClass\MyBaseClass::MY_INT`)</small>
+> 
+> ```php
+> protected const MY_INT = 1
+> ```
+
+> ###### MY_LONG_STRING
+> 
+> <small>(from `Salient\Tests\Sli\Command\AnalyseClass\MyBaseClass::MY_LONG_STRING`)</small>
+> 
+> ```php
+> protected const MY_LONG_STRING = <string>
+> ```
+
+> ###### MY_SHORT_STRING
+> 
+> <small>(from `Salient\Tests\Sli\Command\AnalyseClass\MyInterface::MY_SHORT_STRING`)</small>
+> 
+> ```php
+> public const MY_SHORT_STRING = 'short'
+> ```
+
+##### Properties
+
+###### MyProperty
+
+MyClass::$MyProperty
+
+```php
+public T $MyProperty
+```
+
+> ###### MyIntProperty
+> 
+> <small>(from `Salient\Tests\Sli\Command\AnalyseClass\MyTrait::MyIntProperty`)</small>
+> 
+> ```php
+> private int $MyIntProperty = 2
+> ```
+
+> ###### MyVarProperty
+> 
+> <small>(from `Salient\Tests\Sli\Command\AnalyseClass\MyBaseClass::MyVarProperty`)</small>
+> 
+> ```php
+> public $MyVarProperty
+> ```
+
 ##### Methods
 
 ###### __construct()
@@ -70,7 +189,7 @@ final class MyClass<T of int|string> extends
 <small>(4 lines, in API)</small>
 
 ```php
-public __construct(T $myProperty)
+public function __construct(T $myProperty)
 ```
 
 ###### MyTemplateMethod()
@@ -80,7 +199,7 @@ public __construct(T $myProperty)
 MyClass::MyTemplateMethod()
 
 ```php
-protected MyTemplateMethod<TInstance of MyInterface>(
+protected function MyTemplateMethod<TInstance of MyInterface>(
     TInstance $instance,
     T|null $myProperty = null
 ): array<T,TInstance>
@@ -91,7 +210,7 @@ protected MyTemplateMethod<TInstance of MyInterface>(
 <small>(4 lines, no DocBlock)</small>
 
 ```php
-public __toString(): string
+public function __toString(): string
 ```
 
 > ###### MyMethod()
@@ -101,7 +220,7 @@ public __toString(): string
 > MyTrait::MyMethod()
 > 
 > ```php
-> public MyMethod(): mixed
+> public function MyMethod(): mixed
 > ```
 
 > ###### MyOverriddenMethod()
@@ -111,7 +230,7 @@ public __toString(): string
 > MyTrait::MyOverriddenMethod()
 > 
 > ```php
-> public MyOverriddenMethod(): int
+> public function MyOverriddenMethod(): int
 > ```
 
 > ###### MyStaticMethod()
@@ -121,19 +240,35 @@ public __toString(): string
 > MyInterface::MyStaticMethod()
 > 
 > ```php
-> final public static MyStaticMethod(static $instance): void
+> final public static function MyStaticMethod(static $instance): void
 > ```
 
 ### Interfaces
 
 #### MyInterface
 
-<small>(16 lines, in API)</small>
+<small>(27 lines, in API)</small>
 
 MyInterface
 
 ```php
 interface MyInterface
+```
+
+##### Constants
+
+###### MY_SHORT_STRING
+
+```php
+public const MY_SHORT_STRING = 'short'
+```
+
+###### MY_ARRAY
+
+MyInterface::MY_ARRAY
+
+```php
+public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
 ```
 
 ##### Methods
@@ -145,7 +280,7 @@ interface MyInterface
 MyInterface::MyMethod()
 
 ```php
-public MyMethod(): mixed
+public function MyMethod(): mixed
 ```
 
 ###### MyStaticMethod()
@@ -155,19 +290,27 @@ public MyMethod(): mixed
 MyInterface::MyStaticMethod()
 
 ```php
-public static MyStaticMethod(static $instance): void
+public static function MyStaticMethod(static $instance): void
 ```
 
 ### Traits
 
 #### MyTrait
 
-<small>(17 lines, internal)</small>
+<small>(19 lines, internal)</small>
 
 MyTrait
 
 ```php
 trait MyTrait
+```
+
+##### Properties
+
+###### MyIntProperty
+
+```php
+private int $MyIntProperty = 2
 ```
 
 ##### Methods
@@ -179,7 +322,7 @@ trait MyTrait
 MyTrait::MyMethod()
 
 ```php
-public MyMethod(): mixed
+public function MyMethod(): mixed
 ```
 
 ###### MyOverriddenMethod()
@@ -189,6 +332,6 @@ public MyMethod(): mixed
 MyTrait::MyOverriddenMethod()
 
 ```php
-public MyOverriddenMethod(): int
+public function MyOverriddenMethod(): int
 ```
 
