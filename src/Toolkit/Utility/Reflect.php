@@ -143,6 +143,49 @@ final class Reflect extends AbstractUtility
     }
 
     /**
+     * Get the trait property inserted into a class with the given name
+     *
+     * @param ReflectionClass<object> $class
+     */
+    public static function getTraitProperty(
+        ReflectionClass $class,
+        string $propertyName
+    ): ?ReflectionProperty {
+        foreach ($class->getTraits() as $trait) {
+            if ($trait->hasProperty($propertyName)) {
+                return $trait->getProperty($propertyName);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the trait constant inserted into a class with the given name
+     *
+     * @param ReflectionClass<object> $class
+     */
+    public static function getTraitConstant(
+        ReflectionClass $class,
+        string $constantName
+    ): ?ReflectionClassConstant {
+        if (\PHP_VERSION_ID < 80200) {
+            return null;
+        }
+
+        foreach ($class->getTraits() as $trait) {
+            if (
+                $trait->hasConstant($constantName)
+                && ($constant = $trait->getReflectionConstant($constantName))
+            ) {
+                return $constant;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get the properties of a class, including private parent properties
      *
      * @param ReflectionClass<object> $class
