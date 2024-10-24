@@ -287,18 +287,20 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Remove a key from an array
+     * Remove keys from an array
      *
      * @template TKey of array-key
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param TKey $key
+     * @param TKey ...$keys
      * @return array<TKey,TValue>
      */
-    public static function unset(array $array, $key): array
+    public static function unset(array $array, ...$keys): array
     {
-        unset($array[$key]);
+        foreach ($keys as $key) {
+            unset($array[$key]);
+        }
         return $array;
     }
 
