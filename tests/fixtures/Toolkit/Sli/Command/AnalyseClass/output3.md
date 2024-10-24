@@ -2,8 +2,6 @@
 
 ### Class `MyBaseClass`
 
-<small>(27 lines, internal)</small>
-
 Summary of MyBaseClass
 
 ```php
@@ -70,8 +68,6 @@ public $MyVarProperty
 
 ##### `MyStaticMethod()`
 
-<small>(4 lines)</small>
-
 Summary of MyInterface::MyStaticMethod\(\)
 
 ```php
@@ -79,8 +75,6 @@ final public static function MyStaticMethod(static $instance): void
 ```
 
 ##### `MyOverriddenMethod()`
-
-<small>(4 lines, no DocBlock)</small>
 
 ```php
 protected function MyOverriddenMethod(): int
@@ -105,8 +99,6 @@ protected function MyOverriddenMethod(): int
 > ```
 
 ### Class `MyClass`
-
-<small>(57 lines)</small>
 
 Summary of MyClass
 
@@ -226,15 +218,11 @@ private static ?int $MyNullableStaticTypedPropertyWithDefault = null
 
 ##### `__construct()`
 
-<small>(4 lines, in API)</small>
-
 ```php
 public function __construct(T $myProperty)
 ```
 
 ##### `MyTemplateMethod()`
-
-<small>(4 lines)</small>
 
 Summary of MyClass::MyTemplateMethod\(\)
 
@@ -246,8 +234,6 @@ protected function MyTemplateMethod<TInstance of MyInterface>(
 ```
 
 ##### `__toString()`
-
-<small>(4 lines, no DocBlock)</small>
 
 ```php
 public function __toString(): string
@@ -285,8 +271,6 @@ public function __toString(): string
 
 ### Interface `MyInterface`
 
-<small>(27 lines, in API)</small>
-
 Summary of MyInterface
 
 ```php
@@ -313,8 +297,6 @@ public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
 
 ##### `MyMethod()`
 
-<small>(1 line)</small>
-
 Summary of MyInterface::MyMethod\(\)
 
 ```php
@@ -323,8 +305,6 @@ public function MyMethod(): mixed
 
 ##### `MyStaticMethod()`
 
-<small>(1 line)</small>
-
 Summary of MyInterface::MyStaticMethod\(\)
 
 ```php
@@ -332,8 +312,6 @@ public static function MyStaticMethod(static $instance): void
 ```
 
 ### Trait `MyTrait`
-
-<small>(19 lines, internal)</small>
 
 Summary of MyTrait
 
@@ -353,8 +331,6 @@ private int $MyIntProperty = 2
 
 ##### `MyMethod()`
 
-<small>(1 line)</small>
-
 Summary of MyTrait::MyMethod\(\)
 
 ```php
@@ -362,8 +338,6 @@ public function MyMethod(): mixed
 ```
 
 ##### `MyOverriddenMethod()`
-
-<small>(4 lines)</small>
 
 Summary of MyTrait::MyOverriddenMethod\(\)
 

@@ -2,15 +2,28 @@
 
 namespace Salient\Tests\Sli\Command\AnalyseClass;
 
+use JsonSerializable;
 use Stringable;
 
 /**
- * MyBaseClass
+ * Summary of MyBaseClass
  *
  * @internal
  */
 abstract class MyBaseClass implements MyInterface, Stringable
 {
+    protected const MY_INT = 1;
+    /** @var float */
+    protected const MY_FLOAT = 1.0;
+    protected const MY_LONG_STRING = 'string_with_more_than_20_characters';
+
+    public const MY_LONGER_ARRAY = MyInterface::MY_ARRAY + [
+        JsonSerializable::class => 1,
+    ];
+
+    // @phpstan-ignore missingType.property
+    var $MyVarProperty;
+
     /**
      * @inheritDoc
      */

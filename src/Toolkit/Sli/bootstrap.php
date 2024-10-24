@@ -27,3 +27,4 @@ defined('T_CLOSE_PARENTHESIS') || define('T_CLOSE_PARENTHESIS', ord(')'));
 defined('T_AND') || define('T_AND', ord('&'));
 defined('T_COMMA') || define('T_COMMA', ord(','));
 defined('T_SEMICOLON') || define('T_SEMICOLON', ord(';'));
+defined('T_EQUAL') || define('T_EQUAL', ord('='));

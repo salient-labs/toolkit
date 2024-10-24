@@ -291,7 +291,7 @@ EOF)
             }
 
             if ($_property = $_properties[$name] ?? null) {
-                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, $classDocBlocks);
+                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, null, $classDocBlocks);
                 $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
@@ -392,7 +392,7 @@ EOF)
 
             // If the parameter has a matching property, retrieve its DocBlock
             if ($_property = $_allProperties[$name] ?? null) {
-                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, $classDocBlocks);
+                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, null, $classDocBlocks);
                 $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
             } else {
                 $phpDoc = null;

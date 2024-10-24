@@ -30,6 +30,12 @@ if (\PHP_VERSION_ID < 80000) {
                 [
                     'message' => '#^Call to an undefined method ReflectionClass\<object\>\:\:isReadOnly\(\)\.$#',
                 ],
+                [
+                    'message' => '#^Call to an undefined method ReflectionClassConstant\:\:isFinal\(\)\.$#',
+                ],
+                [
+                    'message' => '#^Call to an undefined method ReflectionProperty\:\:(getDefaultValue|hasDefaultValue|isReadOnly)\(\)\.$#',
+                ],
             ],
         ] + $parameters,
     ];

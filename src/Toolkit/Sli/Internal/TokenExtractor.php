@@ -17,6 +17,7 @@ final class TokenExtractor
     /** @var NavigableToken[] */
     private array $Tokens;
     private ?self $Parent = null;
+    private ?NavigableToken $ParentToken = null;
     private ?string $Namespace = null;
     private ?string $Class = null;
     private ?NavigableToken $ClassToken = null;
@@ -99,7 +100,7 @@ final class TokenExtractor
             }
 
             /** @var NavigableToken */
-            $token = $token->NextCode;
+            $token = $token->getNextCodeOrCloseTag();
             $namespace = $this->doGetName($token);
             switch ($token->id) {
                 case \T_OPEN_BRACE:
@@ -231,11 +232,9 @@ final class TokenExtractor
             $next = $token->NextCode;
             if ($next && $next->id === \T_STRING) {
                 $class = $next->text;
-                while ($next = ($next->ClosedBy ?? $next)->NextCode) {
-                    if ($next->id === \T_OPEN_BRACE) {
-                        yield $class => $this->getBlock($next)->applyClass($class, $token);
-                        continue 2;
-                    }
+                if ($next = $next->getNextSibling(\T_OPEN_BRACE)) {
+                    yield $class => $this->getBlock($next)->applyClass($class, $token);
+                    continue;
                 }
                 // @codeCoverageIgnoreStart
                 throw new ShouldNotHappenException(sprintf('No block for %s', $class));
@@ -266,8 +265,11 @@ final class TokenExtractor
     /**
      * Get the name of the extractor's function, property or constant
      *
-     * Returns `null` if the extractor does not have a member applied by
-     * {@see TokenExtractor::getFunctions()}.
+     * Returns `null` if the extractor does not have a member applied by:
+     *
+     * - {@see TokenExtractor::getFunctions()}
+     * - {@see TokenExtractor::getProperties()}, or
+     * - {@see TokenExtractor::getConstants()}
      */
     public function getMember(): ?string
     {
@@ -278,8 +280,11 @@ final class TokenExtractor
      * Get the token associated with the extractor's function, property or
      * constant
      *
-     * Returns `null` if the extractor does not have a member applied by
-     * {@see TokenExtractor::getFunctions()}.
+     * Returns `null` if the extractor does not have a member applied by:
+     *
+     * - {@see TokenExtractor::getFunctions()}
+     * - {@see TokenExtractor::getProperties()}, or
+     * - {@see TokenExtractor::getConstants()}
      */
     public function getMemberToken(): ?NavigableToken
     {
@@ -294,29 +299,97 @@ final class TokenExtractor
     public function getFunctions(): iterable
     {
         foreach ($this->getTokens(\T_FUNCTION) as $token) {
+            // Exclude `use function ...`
+            if ($token->PrevCode && $token->PrevCode->id === \T_USE) {
+                continue;
+            }
             $next = $token->NextCode;
             if ($next && $next->text === '&') {
                 $next = $next->NextCode;
             }
+            // Exclude anonymous functions
             if ($next && $next->id === \T_STRING) {
                 $function = $next->text;
-                while ($next = ($next->ClosedBy ?? $next)->NextCode) {
+                if ($next = $next->getNextSibling(\T_OPEN_BRACE, \T_SEMICOLON, \T_CLOSE_TAG)) {
                     if ($next->id === \T_OPEN_BRACE) {
                         yield $function => $this->getBlock($next)->applyMember($function, $token);
-                        continue 2;
-                    }
-                    if (
-                        $next->id === \T_SEMICOLON
-                        || $next->id === \T_CLOSE_TAG
-                    ) {
+                    } else {
                         yield $function => $this->getChild()->applyMember($function, $token);
-                        continue 2;
                     }
+                    continue;
                 }
                 // @codeCoverageIgnoreStart
                 throw new ShouldNotHappenException(sprintf('No block for %s()', $function));
                 // @codeCoverageIgnoreEnd
             }
+        }
+    }
+
+    /**
+     * Iterate over properties in the extractor
+     *
+     * @return iterable<string,static>
+     */
+    public function getProperties(): iterable
+    {
+        if (
+            !$this->ParentToken
+            || !$this->ClassToken
+            || $this->ClassToken->getNextSibling(\T_OPEN_BRACE) !== $this->ParentToken
+        ) {
+            throw new LogicException('Extractor does not represent a class');
+        }
+
+        foreach ($this->getTokens(\T_VARIABLE) as $token) {
+            if ($token->Parent !== $this->ParentToken) {
+                continue;
+            }
+            $property = substr($token->text, 1);
+            if (
+                ($next = $token->NextCode)
+                && $next->id === \T_EQUAL
+                && ($from = $next->NextCode)
+                && ($next = $from->getNextSibling(\T_COMMA, \T_SEMICOLON, \T_CLOSE_TAG))
+                && ($to = $next->PrevCode)
+            ) {
+                yield $property => $this->getRange($from, $to)->applyMember($property, $token);
+            } else {
+                yield $property => $this->getChild()->applyMember($property, $token);
+            }
+        }
+    }
+
+    /**
+     * Iterate over constants in the extractor
+     *
+     * @return iterable<string,static>
+     */
+    public function getConstants(): iterable
+    {
+        foreach ($this->getTokens(\T_CONST) as $token) {
+            // Exclude `use const ...`
+            if ($token->PrevCode && $token->PrevCode->id === \T_USE) {
+                continue;
+            }
+            if (
+                ($next = $token->getNextSibling(\T_EQUAL, \T_COMMA, \T_SEMICOLON, \T_CLOSE_TAG))
+                && $next->id === \T_EQUAL
+                && $next->PrevCode
+            ) {
+                $constant = $next->PrevCode->text;
+                $from = $next->NextCode;
+                if (
+                    $from
+                    && ($next = $from->getNextSibling(\T_COMMA, \T_SEMICOLON, \T_CLOSE_TAG))
+                    && ($to = $next->PrevCode)
+                ) {
+                    yield $constant => $this->getRange($from, $to)->applyMember($constant, $token);
+                    continue;
+                }
+            }
+            // @codeCoverageIgnoreStart
+            throw new ShouldNotHappenException('No value for constant');
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -468,7 +541,7 @@ final class TokenExtractor
 
     private function getBlock(NavigableToken $bracket): self
     {
-        return $this->getChild($bracket->getInnerTokens());
+        return $this->getChild($bracket->getInnerTokens(), $bracket);
     }
 
     private function getRange(NavigableToken $from, NavigableToken $to): self
@@ -479,11 +552,12 @@ final class TokenExtractor
     /**
      * @param NavigableToken[] $tokens
      */
-    private function getChild(array $tokens = []): self
+    private function getChild(array $tokens = [], ?NavigableToken $parentToken = null): self
     {
         $child = clone $this;
         $child->Tokens = $tokens;
         $child->Parent = $this;
+        $child->ParentToken = $parentToken;
         return $child;
     }
 

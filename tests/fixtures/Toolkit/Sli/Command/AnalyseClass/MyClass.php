@@ -3,7 +3,7 @@
 namespace Salient\Tests\Sli\Command\AnalyseClass;
 
 /**
- * MyClass
+ * Summary of MyClass
  *
  * @template T of int|string
  */
@@ -11,12 +11,29 @@ final class MyClass extends MyBaseClass
 {
     use MyTrait;
 
+    protected const MY_FLOAT = 3.0;
+
     /**
-     * MyClass::$MyProperty
+     * Summary of MyClass::$MyProperty
      *
      * @var T
      */
     public $MyProperty;
+
+    // @phpstan-ignore property.unused, missingType.property
+    private static $MyStaticProperty;
+
+    // @phpstan-ignore property.onlyWritten, missingType.property
+    private static $MyStaticPropertyWithDefault = 0;
+
+    // @phpstan-ignore property.unused
+    private static int $MyStaticTypedProperty;
+
+    // @phpstan-ignore property.unused
+    private static ?int $MyNullableStaticTypedProperty;
+
+    // @phpstan-ignore property.onlyWritten
+    private static ?int $MyNullableStaticTypedPropertyWithDefault = null;
 
     /**
      * @api
@@ -29,7 +46,7 @@ final class MyClass extends MyBaseClass
     }
 
     /**
-     * MyClass::MyTemplateMethod()
+     * Summary of MyClass::MyTemplateMethod()
      *
      * @template TInstance of MyInterface
      *

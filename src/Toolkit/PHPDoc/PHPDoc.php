@@ -459,13 +459,15 @@ class PHPDoc implements Immutable
             return true;
         }
 
-        foreach ([...$this->Params, $this->Return, ...$this->Vars] as $tag) {
-            if (
-                $tag
-                && ($description = $tag->getDescription()) !== null
-                && $description !== $this->Summary
-            ) {
-                return true;
+        foreach ([$this->Params, [$this->Return], $this->Vars] as $tags) {
+            foreach ($tags as $tag) {
+                if (
+                    $tag
+                    && ($description = $tag->getDescription()) !== null
+                    && $description !== $this->Summary
+                ) {
+                    return true;
+                }
             }
         }
 

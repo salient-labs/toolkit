@@ -76,6 +76,7 @@ class NavigableToken extends GenericToken
     ];
 
     public int $Index = -1;
+    public int $Flags = 0;
     /** @var static|null */
     public ?self $Prev = null;
     /** @var static|null */
@@ -108,6 +109,7 @@ class NavigableToken extends GenericToken
             }
 
             $token->Index = $nextIndex++;
+            $token->Flags = $flags;
             $tokens[] = $token;
 
             if ($prev) {
@@ -200,6 +202,59 @@ class NavigableToken extends GenericToken
     }
 
     /**
+     * Get the token's next sibling, or its next sibling with a given ID
+     *
+     * @return static|null
+     */
+    public function getNextSibling(int ...$id): ?self
+    {
+        if (!($this->Flags & \TOKEN_PARSE)) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Token must belong to a parsed document');
+            // @codeCoverageIgnoreEnd
+        }
+
+        if (!$id) {
+            return ($this->ClosedBy ?? $this)->NextCode;
+        }
+
+        $idx = array_fill_keys($id, true);
+        $token = $this;
+        if ($idx[\T_CLOSE_TAG] ?? false) {
+            while ($token = ($token->ClosedBy ?? $token)->getNextCodeOrCloseTag()) {
+                if ($idx[$token->id] ?? false) {
+                    return $token;
+                }
+            }
+        } else {
+            while ($token = ($token->ClosedBy ?? $token)->NextCode) {
+                if ($idx[$token->id] ?? false) {
+                    return $token;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the next code or T_CLOSE_TAG token, whichever comes first
+     *
+     * @return static|null
+     */
+    public function getNextCodeOrCloseTag(): ?self
+    {
+        $token = $this;
+        while ($token = $token->Next) {
+            if ($token->id === \T_CLOSE_TAG || $token === $this->NextCode) {
+                return $token;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get an identifier from a token and its following tokens, optionally
      * assigning the next code token to a variable
      *
@@ -224,7 +279,7 @@ class NavigableToken extends GenericToken
                 continue;
             }
             break;
-        } while ($token = $token->NextCode);
+        } while ($token = $token->getNextCodeOrCloseTag());
 
         $next = $token;
         return $name;
