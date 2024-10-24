@@ -82,8 +82,8 @@
                     "value": "'string_with_more_than_20_characters'",
                     "line": 18
                 },
-                "MY_ARRAY": {
-                    "summary": "Summary of MyInterface::MY_ARRAY",
+                "MY_LONGER_ARRAY": {
+                    "summary": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -98,9 +98,32 @@
                     "modifiers": [
                         "public"
                     ],
-                    "type": "array<class-string,int>",
+                    "type": null,
                     "value": "[\n    'Stringable' => 0,\n    'JsonSerializable' => 1,\n]",
                     "line": 20
+                },
+                "MY_ARRAY": {
+                    "summary": "Summary of MyInterface::MY_ARRAY",
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MY_ARRAY"
+                    ],
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "array<class-string,int>",
+                    "value": "['Stringable' => 0]",
+                    "line": null
                 },
                 "MY_SHORT_STRING": {
                     "summary": null,
@@ -327,7 +350,7 @@
                     "hasDocComment": false,
                     "inherited": true,
                     "inheritedFrom": [
-                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
                         "MY_ARRAY"
                     ],
                     "final": false,
@@ -338,7 +361,7 @@
                         "public"
                     ],
                     "type": "array<class-string,int>",
-                    "value": "<array>",
+                    "value": "['Stringable' => 0]",
                     "line": null
                 },
                 "MY_INT": {
@@ -387,6 +410,29 @@
                     "value": "<string>",
                     "line": null
                 },
+                "MY_LONGER_ARRAY": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": true,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MY_LONGER_ARRAY"
+                    ],
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": null,
+                    "value": "<array>",
+                    "line": null
+                },
                 "MY_SHORT_STRING": {
                     "summary": null,
                     "api": false,
@@ -432,6 +478,116 @@
                     "type": "T",
                     "defaultValue": null,
                     "line": 21
+                },
+                "MyStaticProperty": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": false,
+                    "protected": false,
+                    "private": true,
+                    "static": true,
+                    "readonly": false,
+                    "modifiers": [
+                        "private",
+                        "static"
+                    ],
+                    "type": null,
+                    "defaultValue": null,
+                    "line": 24
+                },
+                "MyStaticPropertyWithDefault": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": false,
+                    "protected": false,
+                    "private": true,
+                    "static": true,
+                    "readonly": false,
+                    "modifiers": [
+                        "private",
+                        "static"
+                    ],
+                    "type": null,
+                    "defaultValue": "0",
+                    "line": 27
+                },
+                "MyStaticTypedProperty": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": false,
+                    "protected": false,
+                    "private": true,
+                    "static": true,
+                    "readonly": false,
+                    "modifiers": [
+                        "private",
+                        "static"
+                    ],
+                    "type": "int",
+                    "defaultValue": null,
+                    "line": 30
+                },
+                "MyNullableStaticTypedProperty": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": false,
+                    "protected": false,
+                    "private": true,
+                    "static": true,
+                    "readonly": false,
+                    "modifiers": [
+                        "private",
+                        "static"
+                    ],
+                    "type": "?int",
+                    "defaultValue": null,
+                    "line": 33
+                },
+                "MyNullableStaticTypedPropertyWithDefault": {
+                    "summary": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "declared": true,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": false,
+                    "protected": false,
+                    "private": true,
+                    "static": true,
+                    "readonly": false,
+                    "modifiers": [
+                        "private",
+                        "static"
+                    ],
+                    "type": "?int",
+                    "defaultValue": "null",
+                    "line": 36
                 },
                 "MyIntProperty": {
                     "summary": null,
@@ -510,7 +666,7 @@
                         ]
                     },
                     "returnType": null,
-                    "line": 28,
+                    "line": 43,
                     "lines": 4
                 },
                 "MyTemplateMethod": {
@@ -546,7 +702,7 @@
                         ]
                     },
                     "returnType": "array<T,TInstance>",
-                    "line": 42,
+                    "line": 57,
                     "lines": 4
                 },
                 "__toString": {
@@ -574,7 +730,7 @@
                     ],
                     "parameters": {},
                     "returnType": "string",
-                    "line": 47,
+                    "line": 62,
                     "lines": 4
                 },
                 "MyMethod": {
@@ -680,7 +836,7 @@
             },
             "file": "./MyClass.php",
             "line": 10,
-            "lines": 42
+            "lines": 57
         },
         "MyInterface": {
             "type": "interface",

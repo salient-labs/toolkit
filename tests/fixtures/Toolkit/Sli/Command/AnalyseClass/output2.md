@@ -31,16 +31,24 @@ protected const float MY_FLOAT = 1.0
 protected const MY_LONG_STRING = 'string_with_more_than_20_characters'
 ```
 
-##### `MY_ARRAY`
-
-Summary of MyInterface::MY\_ARRAY
+##### `MY_LONGER_ARRAY`
 
 ```php
-public const array<class-string,int> MY_ARRAY = [
+public const MY_LONGER_ARRAY = [
     'Stringable' => 0,
     'JsonSerializable' => 1,
 ]
 ```
+
+> ##### `MY_ARRAY`
+> 
+> <small>(from `MyInterface`)</small>
+> 
+> Summary of MyInterface::MY\_ARRAY
+> 
+> ```php
+> public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
+> ```
 
 > ##### `MY_SHORT_STRING`
 > 
@@ -98,7 +106,7 @@ protected function MyOverriddenMethod(): int
 
 ### Class `MyClass`
 
-<small>(42 lines)</small>
+<small>(57 lines)</small>
 
 Summary of MyClass
 
@@ -118,12 +126,12 @@ protected const float MY_FLOAT = 3.0
 
 > ##### `MY_ARRAY`
 > 
-> <small>(from `MyBaseClass`)</small>
+> <small>(from `MyInterface`)</small>
 > 
 > Summary of MyInterface::MY\_ARRAY
 > 
 > ```php
-> public const array<class-string,int> MY_ARRAY = <array>
+> public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
 > ```
 
 > ##### `MY_INT`
@@ -142,6 +150,14 @@ protected const float MY_FLOAT = 3.0
 > protected const MY_LONG_STRING = <string>
 > ```
 
+> ##### `MY_LONGER_ARRAY`
+> 
+> <small>(from `MyBaseClass`)</small>
+> 
+> ```php
+> public const MY_LONGER_ARRAY = <array>
+> ```
+
 > ##### `MY_SHORT_STRING`
 > 
 > <small>(from `MyInterface`)</small>
@@ -158,6 +174,36 @@ Summary of MyClass::$MyProperty
 
 ```php
 public T $MyProperty
+```
+
+##### `$MyStaticProperty`
+
+```php
+private static $MyStaticProperty
+```
+
+##### `$MyStaticPropertyWithDefault`
+
+```php
+private static $MyStaticPropertyWithDefault = 0
+```
+
+##### `$MyStaticTypedProperty`
+
+```php
+private static int $MyStaticTypedProperty
+```
+
+##### `$MyNullableStaticTypedProperty`
+
+```php
+private static ?int $MyNullableStaticTypedProperty
+```
+
+##### `$MyNullableStaticTypedPropertyWithDefault`
+
+```php
+private static ?int $MyNullableStaticTypedPropertyWithDefault = null
 ```
 
 > ##### `$MyIntProperty`

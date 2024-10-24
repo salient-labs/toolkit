@@ -965,10 +965,25 @@ class AnalyseClass extends AbstractCommand
             );
         }
 
-        if ($property->hasDefaultValue() && (
-            ($value = $property->getDefaultValue()) !== null
+        $hasDefaultValue = false;
+        $value = null;
+        if (\PHP_VERSION_ID >= 80000) {
+            if ($property->hasDefaultValue() && (
+                ($value = $property->getDefaultValue()) !== null
+                || $property->hasType()
+            )) {
+                $hasDefaultValue = true;
+            }
+        } elseif (array_key_exists(
+            $propertyName,
+            $values = $class->getDefaultProperties()
+        ) && (
+            ($value = $values[$propertyName]) !== null
             || $property->hasType()
         )) {
+            $hasDefaultValue = true;
+        }
+        if ($hasDefaultValue) {
             if (mb_strlen($code = Get::code($value)) > 20) {
                 if ($declared) {
                     if (is_array($value)) {

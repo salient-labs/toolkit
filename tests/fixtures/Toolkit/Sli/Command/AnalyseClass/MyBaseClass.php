@@ -17,7 +17,7 @@ abstract class MyBaseClass implements MyInterface, Stringable
     protected const MY_FLOAT = 1.0;
     protected const MY_LONG_STRING = 'string_with_more_than_20_characters';
 
-    public const MY_ARRAY = MyInterface::MY_ARRAY + [
+    public const MY_LONGER_ARRAY = MyInterface::MY_ARRAY + [
         JsonSerializable::class => 1,
     ];
 

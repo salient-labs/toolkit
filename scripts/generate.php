@@ -275,6 +275,8 @@ foreach (File::find()
     generated((string) $file);
 }
 
+$debug = Env::getDebug();
+$mockTarget = null;
 foreach ($commands as $class => $runs) {
     $command = new $class($app);
     foreach ($runs as $file => $run) {
@@ -289,16 +291,20 @@ foreach ($commands as $class => $runs) {
         if (isset($run[1])) {
             File::chdir("$dir/{$run[1]}");
         }
-        foreach (Console::getTargets() as $target) {
-            Console::deregisterTarget($target);
+        if (!$debug) {
+            foreach (Console::getTargets() as $target) {
+                Console::deregisterTarget($target);
+            }
+            Console::registerTarget($mockTarget = new MockTarget());
         }
-        Console::registerTarget($mockTarget = new MockTarget());
         ob_start();
         $status |= $result = $command(...$run[0]);
         /** @var string */
         $content = ob_get_clean();
-        Console::deregisterTarget($mockTarget);
-        Console::registerStdioTargets();
+        if ($mockTarget) {
+            Console::deregisterTarget($mockTarget);
+            Console::registerStdioTargets();
+        }
         if ($result !== 0) {
             continue;
         }
