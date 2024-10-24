@@ -44,6 +44,7 @@
 /tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output0.json linguist-generated
 /tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output1.csv linguist-generated
 /tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output2.md linguist-generated
+/tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output3.md linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Album.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Comment.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/Photo.php linguist-generated

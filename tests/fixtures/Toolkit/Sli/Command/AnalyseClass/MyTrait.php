@@ -3,7 +3,7 @@
 namespace Salient\Tests\Sli\Command\AnalyseClass;
 
 /**
- * MyTrait
+ * Summary of MyTrait
  *
  * @internal
  */
@@ -12,14 +12,14 @@ trait MyTrait
     private int $MyIntProperty = 2;
 
     /**
-     * MyTrait::MyMethod()
+     * Summary of MyTrait::MyMethod()
      *
      * @return mixed
      */
     public function MyMethod() {}
 
     /**
-     * MyTrait::MyOverriddenMethod()
+     * Summary of MyTrait::MyOverriddenMethod()
      */
     public function MyOverriddenMethod(): int
     {

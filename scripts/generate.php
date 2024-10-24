@@ -137,6 +137,9 @@ $commands = [
         'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output2.md' => [
             ['--format', 'md', '.'],
         ],
+        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output3.md' => [
+            ['--format', 'md', '--skip', 'meta', '.'],
+        ],
     ],
 ];
 

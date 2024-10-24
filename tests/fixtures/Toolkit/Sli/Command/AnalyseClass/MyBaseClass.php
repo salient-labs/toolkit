@@ -6,7 +6,7 @@ use JsonSerializable;
 use Stringable;
 
 /**
- * MyBaseClass
+ * Summary of MyBaseClass
  *
  * @internal
  */

@@ -4,7 +4,7 @@
             "type": "class",
             "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
             "templates": {},
-            "summary": "MyBaseClass",
+            "summary": "Summary of MyBaseClass",
             "extends": [],
             "implements": [
                 "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
@@ -83,7 +83,7 @@
                     "line": 18
                 },
                 "MY_ARRAY": {
-                    "summary": "MyInterface::MY_ARRAY",
+                    "summary": "Summary of MyInterface::MY_ARRAY",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -152,7 +152,7 @@
             "methods": {
                 "MyStaticMethod": {
                     "templates": {},
-                    "summary": "MyInterface::MyStaticMethod()",
+                    "summary": "Summary of MyInterface::MyStaticMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -241,7 +241,7 @@
                 },
                 "MyMethod": {
                     "templates": {},
-                    "summary": "MyInterface::MyMethod()",
+                    "summary": "Summary of MyInterface::MyMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -279,7 +279,7 @@
             "templates": {
                 "T": " of int|string"
             },
-            "summary": "MyClass",
+            "summary": "Summary of MyClass",
             "extends": [
                 "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass"
             ],
@@ -319,7 +319,7 @@
                     "line": 14
                 },
                 "MY_ARRAY": {
-                    "summary": "MyInterface::MY_ARRAY",
+                    "summary": "Summary of MyInterface::MY_ARRAY",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -413,7 +413,7 @@
             },
             "properties": {
                 "MyProperty": {
-                    "summary": "MyClass::$MyProperty",
+                    "summary": "Summary of MyClass::$MyProperty",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -517,7 +517,7 @@
                     "templates": {
                         "TInstance": " of MyInterface"
                     },
-                    "summary": "MyClass::MyTemplateMethod()",
+                    "summary": "Summary of MyClass::MyTemplateMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -579,7 +579,7 @@
                 },
                 "MyMethod": {
                     "templates": {},
-                    "summary": "MyTrait::MyMethod()",
+                    "summary": "Summary of MyTrait::MyMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -610,7 +610,7 @@
                 },
                 "MyOverriddenMethod": {
                     "templates": {},
-                    "summary": "MyTrait::MyOverriddenMethod()",
+                    "summary": "Summary of MyTrait::MyOverriddenMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -641,7 +641,7 @@
                 },
                 "MyStaticMethod": {
                     "templates": {},
-                    "summary": "MyInterface::MyStaticMethod()",
+                    "summary": "Summary of MyInterface::MyStaticMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -686,7 +686,7 @@
             "type": "interface",
             "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
             "templates": {},
-            "summary": "MyInterface",
+            "summary": "Summary of MyInterface",
             "extends": [],
             "implements": [],
             "uses": [],
@@ -720,7 +720,7 @@
                     "line": 14
                 },
                 "MY_ARRAY": {
-                    "summary": "MyInterface::MY_ARRAY",
+                    "summary": "Summary of MyInterface::MY_ARRAY",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -744,7 +744,7 @@
             "methods": {
                 "MyMethod": {
                     "templates": {},
-                    "summary": "MyInterface::MyMethod()",
+                    "summary": "Summary of MyInterface::MyMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -769,7 +769,7 @@
                 },
                 "MyStaticMethod": {
                     "templates": {},
-                    "summary": "MyInterface::MyStaticMethod()",
+                    "summary": "Summary of MyInterface::MyStaticMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -807,7 +807,7 @@
             "type": "trait",
             "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
             "templates": {},
-            "summary": "MyTrait",
+            "summary": "Summary of MyTrait",
             "extends": [],
             "implements": [],
             "uses": [],
@@ -846,7 +846,7 @@
             "methods": {
                 "MyMethod": {
                     "templates": {},
-                    "summary": "MyTrait::MyMethod()",
+                    "summary": "Summary of MyTrait::MyMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -871,7 +871,7 @@
                 },
                 "MyOverriddenMethod": {
                     "templates": {},
-                    "summary": "MyTrait::MyOverriddenMethod()",
+                    "summary": "Summary of MyTrait::MyOverriddenMethod()",
                     "api": false,
                     "internal": false,
                     "deprecated": false,

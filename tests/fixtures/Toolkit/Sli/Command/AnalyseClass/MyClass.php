@@ -3,7 +3,7 @@
 namespace Salient\Tests\Sli\Command\AnalyseClass;
 
 /**
- * MyClass
+ * Summary of MyClass
  *
  * @template T of int|string
  */
@@ -14,7 +14,7 @@ final class MyClass extends MyBaseClass
     protected const MY_FLOAT = 3.0;
 
     /**
-     * MyClass::$MyProperty
+     * Summary of MyClass::$MyProperty
      *
      * @var T
      */
@@ -31,7 +31,7 @@ final class MyClass extends MyBaseClass
     }
 
     /**
-     * MyClass::MyTemplateMethod()
+     * Summary of MyClass::MyTemplateMethod()
      *
      * @template TInstance of MyInterface
      *

@@ -158,6 +158,14 @@ final class Str extends AbstractUtility
     }
 
     /**
+     * Escape special characters in a string for use in Markdown
+     */
+    public static function toMarkdown(string $string): string
+    {
+        return addcslashes($string, '!#()*+-.<>[\]_`{|}');
+    }
+
+    /**
      * Normalise a string for comparison
      *
      * The return value of this method is not covered by the Salient toolkit's

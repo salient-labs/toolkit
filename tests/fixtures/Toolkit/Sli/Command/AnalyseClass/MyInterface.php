@@ -5,7 +5,7 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
 use Stringable;
 
 /**
- * MyInterface
+ * Summary of MyInterface
  *
  * @api
  */
@@ -14,7 +14,7 @@ interface MyInterface
     public const MY_SHORT_STRING = 'short';
 
     /**
-     * MyInterface::MY_ARRAY
+     * Summary of MyInterface::MY_ARRAY
      *
      * @var array<class-string,int>
      */
@@ -23,14 +23,14 @@ interface MyInterface
     ];
 
     /**
-     * MyInterface::MyMethod()
+     * Summary of MyInterface::MyMethod()
      *
      * @return mixed
      */
     public function MyMethod();
 
     /**
-     * MyInterface::MyStaticMethod()
+     * Summary of MyInterface::MyStaticMethod()
      *
      * @param static $instance
      */

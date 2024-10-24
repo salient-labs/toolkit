@@ -65,6 +65,11 @@ final class AnalyseClassTest extends CommandTestCase
                 0,
                 ['--format', 'md', '.'],
             ],
+            [
+                File::getContents("$dir/output3.md"),
+                0,
+                ['--format', 'md', '--skip', 'meta', '.'],
+            ],
         ];
     }
 }

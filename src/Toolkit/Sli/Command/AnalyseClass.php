@@ -50,6 +50,7 @@ class AnalyseClass extends AbstractCommand
     private array $SkipIndex = [
         'internal' => false,
         'private' => false,
+        'meta' => false,
     ];
 
     public function getDescription(): string
@@ -319,14 +320,20 @@ class AnalyseClass extends AbstractCommand
                 $blockPrefix = '';
             };
 
+            $noMeta = $this->SkipIndex['meta'];
+
             foreach ($tree as $ns => $nsData) {
-                $printBlock('## ' . Str::coalesce($ns, 'Global'));
+                if ($ns === '') {
+                    $printBlock('## Global space');
+                } else {
+                    $printBlock("## `{$ns}`");
+                }
 
                 foreach ([
-                    'class' => ['Classes', 'Classes'],
-                    'interface' => ['Interfaces', 'Interfaces'],
-                    'trait' => ['Traits', 'Traits'],
-                    'enum' => ['Enums', 'Enumerations'],
+                    'class' => ['Classes', 'Class'],
+                    'interface' => ['Interfaces', 'Interface'],
+                    'trait' => ['Traits', 'Trait'],
+                    'enum' => ['Enums', 'Enumeration'],
                 ] as $type => [$nsProperty, $typeHeading]) {
                     /** @var array<string,ClassData> */
                     $classes = $nsData->{$nsProperty};
@@ -334,17 +341,15 @@ class AnalyseClass extends AbstractCommand
                         continue;
                     }
 
-                    $printBlock("### {$typeHeading}");
-
                     foreach ($classes as $className => $classData) {
-                        $printBlock("#### {$className}");
+                        $printBlock("### {$typeHeading} `{$className}`");
 
                         $meta = [];
-                        if ($classData->Lines !== null) {
+                        if (!$noMeta && $classData->Lines !== null) {
                             $meta[] = Inflect::format($classData->Lines, '{{#}} {{#:line}}');
                         }
 
-                        if ($meta = array_merge($meta, array_keys(array_filter([
+                        if ($meta = array_merge($meta, $noMeta ? [] : array_keys(array_filter([
                             'no DocBlock' => !$classData->HasDocComment,
                             'in API' => $classData->Api,
                             'internal' => $classData->Internal,
@@ -354,7 +359,7 @@ class AnalyseClass extends AbstractCommand
                         }
 
                         if ($classData->Summary !== null) {
-                            $printBlock($classData->Summary);
+                            $printBlock(Str::toMarkdown($classData->Summary));
                         }
 
                         $block[] = '```php';
@@ -362,38 +367,39 @@ class AnalyseClass extends AbstractCommand
                             implode(' ', $classData->Modifiers),
                             $type,
                             $className . $this->implodeTemplates($classData->Templates, $eol),
-                            Arr::implode("\n", [
-                                $this->implodeInherited('extends', $classData->Extends, $eol),
-                                $this->implodeInherited('implements', $classData->Implements, $eol),
-                            ], ''),
                         ], '');
+                        foreach ([
+                            'extends' => $classData->Extends,
+                            'implements' => $classData->Implements,
+                            'uses' => $classData->Uses,
+                        ] as $keyword => $inherited) {
+                            if (!$inherited) {
+                                continue;
+                            }
+                            $names = [];
+                            foreach ($inherited as $name) {
+                                $names[] = Get::basename($name);
+                            }
+                            $block[] = "{$keyword} " . implode(', ', $names);
+                        }
                         $printBlock('```');
 
-                        if ($classData->Uses) {
-                            $printBlock('##### Uses');
-
-                            foreach ($classData->Uses as $trait) {
-                                $block[] = "- `{$trait}`";
-                            }
-                            $printBlock();
-                        }
-
                         if ($classData->Constants) {
-                            $printBlock('##### Constants');
+                            $printBlock('#### Constants');
 
                             foreach ($classData->Constants as $constantName => $constantData) {
-                                $block[] = "###### {$constantName}";
+                                $block[] = "##### `{$constantName}`";
                                 $block[] = '';
 
                                 $meta = [];
                                 if ($constantData->Inherited || $constantData->InheritedFrom) {
                                     $blockPrefix = '> ';
-                                    if ($original = $constantData->InheritedFrom) {
-                                        $meta[] = "from `{$original[0]}::{$original[1]}`";
+                                    if ($from = $constantData->InheritedFrom) {
+                                        $meta[] = 'from `' . $this->implodeFrom($from, $constantName) . '`';
                                     }
                                 }
 
-                                if ($meta = array_merge($meta, array_keys(array_filter([
+                                if ($meta = array_merge($meta, $noMeta ? [] : array_keys(array_filter([
                                     'in API' => $constantData->Api,
                                     'internal' => $constantData->Internal,
                                     'deprecated' => $constantData->Deprecated,
@@ -403,7 +409,7 @@ class AnalyseClass extends AbstractCommand
                                 }
 
                                 if ($constantData->Summary !== null) {
-                                    $block[] = $constantData->Summary;
+                                    $block[] = Str::toMarkdown($constantData->Summary);
                                     $block[] = '';
                                 }
 
@@ -421,21 +427,21 @@ class AnalyseClass extends AbstractCommand
                         }
 
                         if ($classData->Properties) {
-                            $printBlock('##### Properties');
+                            $printBlock('#### Properties');
 
                             foreach ($classData->Properties as $propertyName => $propertyData) {
-                                $block[] = "###### {$propertyName}";
+                                $block[] = "##### `\${$propertyName}`";
                                 $block[] = '';
 
                                 $meta = [];
                                 if ($propertyData->Inherited || $propertyData->InheritedFrom) {
                                     $blockPrefix = '> ';
-                                    if ($original = $propertyData->InheritedFrom) {
-                                        $meta[] = "from `{$original[0]}::{$original[1]}`";
+                                    if ($from = $propertyData->InheritedFrom) {
+                                        $meta[] = 'from `' . $this->implodeFrom($from, $propertyName) . '`';
                                     }
                                 }
 
-                                if ($meta = array_merge($meta, array_keys(array_filter([
+                                if ($meta = array_merge($meta, $noMeta ? [] : array_keys(array_filter([
                                     'in API' => $propertyData->Api,
                                     'internal' => $propertyData->Internal,
                                     'deprecated' => $propertyData->Deprecated,
@@ -445,7 +451,7 @@ class AnalyseClass extends AbstractCommand
                                 }
 
                                 if ($propertyData->Summary !== null) {
-                                    $block[] = $propertyData->Summary;
+                                    $block[] = Str::toMarkdown($propertyData->Summary);
                                     $block[] = '';
                                 }
 
@@ -466,28 +472,28 @@ class AnalyseClass extends AbstractCommand
                         }
 
                         if ($classData->Methods) {
-                            $printBlock('##### Methods');
+                            $printBlock('#### Methods');
 
                             foreach ($classData->Methods as $methodName => $methodData) {
-                                $block[] = "###### {$methodName}()";
+                                $block[] = "##### `{$methodName}()`";
                                 $block[] = '';
 
                                 $meta = [];
                                 if ($methodData->Inherited || $methodData->InheritedFrom) {
                                     $blockPrefix = '> ';
-                                    if ($original = $methodData->InheritedFrom) {
-                                        $meta[] = "from `{$original[0]}::{$original[1]}()`";
+                                    if ($from = $methodData->InheritedFrom) {
+                                        $meta[] = 'from `' . $this->implodeFrom($from, $methodName) . '`';
                                     }
                                 } else {
-                                    if ($methodData->Lines !== null) {
+                                    if (!$noMeta && $methodData->Lines !== null) {
                                         $meta[] = Inflect::format($methodData->Lines, '{{#}} {{#:line}}');
                                     }
-                                    if (!$methodData->HasDocComment) {
+                                    if (!$noMeta && !$methodData->HasDocComment) {
                                         $meta[] = 'no DocBlock';
                                     }
                                 }
 
-                                if ($meta = array_merge($meta, array_keys(array_filter([
+                                if ($meta = array_merge($meta, $noMeta ? [] : array_keys(array_filter([
                                     'in API' => $methodData->Api,
                                     'internal' => $methodData->Internal,
                                     'deprecated' => $methodData->Deprecated,
@@ -497,7 +503,7 @@ class AnalyseClass extends AbstractCommand
                                 }
 
                                 if ($methodData->Summary !== null) {
-                                    $block[] = $methodData->Summary;
+                                    $block[] = Str::toMarkdown($methodData->Summary);
                                     $block[] = '';
                                 }
 
@@ -593,15 +599,16 @@ class AnalyseClass extends AbstractCommand
     }
 
     /**
-     * @param string[] $inherited
+     * @param array{class-string,string} $from
      */
-    private function implodeInherited(string $keyword, array $inherited, string $eol): string
+    private function implodeFrom(array $from, string $toName): string
     {
-        if (!$inherited) {
-            return '';
+        $from[0] = Get::basename($from[0]);
+        if ($from[1] === $toName) {
+            return $from[0];
+        } else {
+            return implode('::', $from);
         }
-
-        return "{$keyword}{$eol}    " . implode(",{$eol}    ", $inherited);
     }
 
     /**
