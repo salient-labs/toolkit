@@ -259,7 +259,7 @@ final class PHPDocUtilTest extends TestCase
             return;
         }
 
-        $comments = PHPDocUtil::getAllPropertyDocComments($property, $classDocComments);
+        $comments = PHPDocUtil::getAllPropertyDocComments($property, null, $classDocComments);
         $this->assertSame($expected, $comments);
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
