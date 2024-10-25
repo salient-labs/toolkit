@@ -56,25 +56,25 @@ final class AnalyseClassTest extends CommandTestCase
             [
                 "$dir/output0.json",
                 0,
-                ['.'],
+                ['--json', '.'],
                 $dir,
             ],
             [
                 "$dir/output1.csv",
                 0,
-                ['--format', 'csv', '.'],
+                ['--csv', '.'],
                 $dir,
             ],
             [
                 "$dir/output2.md",
                 0,
-                ['--format', 'md', '.'],
+                ['--markdown', '.'],
                 $dir,
             ],
             [
                 "$dir/output3.md",
                 0,
-                ['--format', 'md', '--skip', 'meta', '.'],
+                ['--markdown', '--skip', 'meta,from', '.'],
                 $dir,
             ],
         ];
