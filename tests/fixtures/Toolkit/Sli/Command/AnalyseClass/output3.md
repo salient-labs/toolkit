@@ -42,7 +42,7 @@ public const MY_LONGER_ARRAY = [
 > 
 > <small>(from `MyInterface`)</small>
 > 
-> Summary of MyInterface::MY\_ARRAY
+> Summary of MyInterface::MY_ARRAY
 > 
 > ```php
 > public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
@@ -68,7 +68,7 @@ public $MyVarProperty
 
 ##### `MyStaticMethod()`
 
-Summary of MyInterface::MyStaticMethod\(\)
+Summary of MyInterface::MyStaticMethod()
 
 ```php
 final public static function MyStaticMethod(static $instance): void
@@ -92,7 +92,7 @@ protected function MyOverriddenMethod(): int
 > 
 > <small>(from `MyInterface`)</small>
 > 
-> Summary of MyInterface::MyMethod\(\)
+> Summary of MyInterface::MyMethod()
 > 
 > ```php
 > abstract public function MyMethod(): mixed
@@ -120,7 +120,7 @@ protected const float MY_FLOAT = 3.0
 > 
 > <small>(from `MyInterface`)</small>
 > 
-> Summary of MyInterface::MY\_ARRAY
+> Summary of MyInterface::MY_ARRAY
 > 
 > ```php
 > public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
@@ -224,7 +224,7 @@ public function __construct(T $myProperty)
 
 ##### `MyTemplateMethod()`
 
-Summary of MyClass::MyTemplateMethod\(\)
+Summary of MyClass::MyTemplateMethod()
 
 ```php
 protected function MyTemplateMethod<TInstance of MyInterface>(
@@ -243,7 +243,7 @@ public function __toString(): string
 > 
 > <small>(from `MyTrait`)</small>
 > 
-> Summary of MyTrait::MyMethod\(\)
+> Summary of MyTrait::MyMethod()
 > 
 > ```php
 > public function MyMethod(): mixed
@@ -253,7 +253,7 @@ public function __toString(): string
 > 
 > <small>(from `MyTrait`)</small>
 > 
-> Summary of MyTrait::MyOverriddenMethod\(\)
+> Summary of MyTrait::MyOverriddenMethod()
 > 
 > ```php
 > public function MyOverriddenMethod(): int
@@ -263,7 +263,7 @@ public function __toString(): string
 > 
 > <small>(from `MyBaseClass`)</small>
 > 
-> Summary of MyInterface::MyStaticMethod\(\)
+> Summary of MyInterface::MyStaticMethod()
 > 
 > ```php
 > final public static function MyStaticMethod(static $instance): void
@@ -287,7 +287,7 @@ public const MY_SHORT_STRING = 'short'
 
 ##### `MY_ARRAY`
 
-Summary of MyInterface::MY\_ARRAY
+Summary of MyInterface::MY_ARRAY
 
 ```php
 public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
@@ -297,7 +297,7 @@ public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
 
 ##### `MyMethod()`
 
-Summary of MyInterface::MyMethod\(\)
+Summary of MyInterface::MyMethod()
 
 ```php
 public function MyMethod(): mixed
@@ -305,7 +305,7 @@ public function MyMethod(): mixed
 
 ##### `MyStaticMethod()`
 
-Summary of MyInterface::MyStaticMethod\(\)
+Summary of MyInterface::MyStaticMethod()
 
 ```php
 public static function MyStaticMethod(static $instance): void
@@ -331,7 +331,7 @@ private int $MyIntProperty = 2
 
 ##### `MyMethod()`
 
-Summary of MyTrait::MyMethod\(\)
+Summary of MyTrait::MyMethod()
 
 ```php
 public function MyMethod(): mixed
@@ -339,7 +339,7 @@ public function MyMethod(): mixed
 
 ##### `MyOverriddenMethod()`
 
-Summary of MyTrait::MyOverriddenMethod\(\)
+Summary of MyTrait::MyOverriddenMethod()
 
 ```php
 public function MyOverriddenMethod(): int

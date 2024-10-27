@@ -359,7 +359,7 @@ class AnalyseClass extends AbstractCommand
                         }
 
                         if ($classData->Summary !== null) {
-                            $printBlock(Str::toMarkdown($classData->Summary));
+                            $printBlock(Str::escapeMarkdown($classData->Summary));
                         }
 
                         $block[] = '```php';
@@ -409,7 +409,7 @@ class AnalyseClass extends AbstractCommand
                                 }
 
                                 if ($constantData->Summary !== null) {
-                                    $block[] = Str::toMarkdown($constantData->Summary);
+                                    $block[] = Str::escapeMarkdown($constantData->Summary);
                                     $block[] = '';
                                 }
 
@@ -451,7 +451,7 @@ class AnalyseClass extends AbstractCommand
                                 }
 
                                 if ($propertyData->Summary !== null) {
-                                    $block[] = Str::toMarkdown($propertyData->Summary);
+                                    $block[] = Str::escapeMarkdown($propertyData->Summary);
                                     $block[] = '';
                                 }
 
@@ -503,7 +503,7 @@ class AnalyseClass extends AbstractCommand
                                 }
 
                                 if ($methodData->Summary !== null) {
-                                    $block[] = Str::toMarkdown($methodData->Summary);
+                                    $block[] = Str::escapeMarkdown($methodData->Summary);
                                     $block[] = '';
                                 }
 

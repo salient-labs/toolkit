@@ -373,6 +373,177 @@ EOF,
     }
 
     /**
+     * @dataProvider escapeMarkdownProvider
+     */
+    public function testEscapeMarkdown(string $expected, string $string): void
+    {
+        $this->assertSame($expected, Str::escapeMarkdown($string));
+    }
+
+    /**
+     * @return array<array{string,string}>
+     */
+    public function escapeMarkdownProvider(): array
+    {
+        return [
+            'headings' => [
+                <<<'EOF'
+\# Foo #
+\## Bar ##
+\###### Baz ######
+####### Qux #######
+#quux
+EOF,
+                <<<'EOF'
+# Foo #
+## Bar ##
+###### Baz ######
+####### Qux #######
+#quux
+EOF,
+            ],
+            'block quotes' => [
+                <<<'EOF'
+\> Foo >
+\> > bar
+\>
+\>Foo
+\>>bar
+EOF,
+                <<<'EOF'
+> Foo >
+> > bar
+>
+>Foo
+>>bar
+EOF,
+            ],
+            'lists' => [
+                <<<'EOF'
+1\. Foo.
+   \- bar - baz
+2.Foo
+\+ bar + baz
+\* foo \* bar
+EOF,
+                <<<'EOF'
+1. Foo.
+   - bar - baz
+2.Foo
++ bar + baz
+* foo * bar
+EOF,
+            ],
+            'emphasis' => [
+                <<<'EOF'
+foo_bar
+\_foo bar\_
+\_ foo bar \_
+foo\_"bar"\_baz
+foo__bar
+\_\_foo bar\_\_
+\_\_ foo bar \_\_
+foo\_\_"bar"\_\_baz
+foo\*bar
+\*foo bar\*
+\* foo bar \*
+foo\*"bar"\*baz
+foo\*\*bar
+\*\*foo bar\*\*
+\*\* foo bar \*\*
+foo\*\*"bar"\*\*baz
+\*\_foo\_\*
+\*foo \_bar\* baz\_
+EOF,
+                <<<'EOF'
+foo_bar
+_foo bar_
+_ foo bar _
+foo_"bar"_baz
+foo__bar
+__foo bar__
+__ foo bar __
+foo__"bar"__baz
+foo*bar
+*foo bar*
+* foo bar *
+foo*"bar"*baz
+foo**bar
+**foo bar**
+** foo bar **
+foo**"bar"**baz
+*_foo_*
+*foo _bar* baz_
+EOF,
+            ],
+            'code + GFM strikethrough' => [
+                <<<'EOF'
+Foo \`bar\` baz
+Foo ~bar~ baz
+Foo \~~bar\~~ baz
+Foo ~~~bar~~~ baz
+~
+\~~
+\~~~
+\~~~~
+\`
+\`\`
+\`\`\`
+\`\`\`\`
+EOF,
+                <<<'EOF'
+Foo `bar` baz
+Foo ~bar~ baz
+Foo ~~bar~~ baz
+Foo ~~~bar~~~ baz
+~
+~~
+~~~
+~~~~
+`
+``
+```
+````
+EOF,
+            ],
+            'brackets' => [
+                <<<'EOF'
+\[bar](#baz)
+\[bar]\[]
+\[bar]\[baz]
+\<https://example.com>
+foo \[bar](#baz)
+foo \[bar]\[]
+foo \[bar]\[baz]
+foo \<https://example.com>
+EOF,
+                <<<'EOF'
+[bar](#baz)
+[bar][]
+[bar][baz]
+<https://example.com>
+foo [bar](#baz)
+foo [bar][]
+foo [bar][baz]
+foo <https://example.com>
+EOF,
+            ],
+            'tables' => [
+                <<<'EOF'
+\| Foo \| Bar \|
+\| --- \| --- \|
+\| baz \| qux \|
+EOF,
+                <<<'EOF'
+| Foo | Bar |
+| --- | --- |
+| baz | qux |
+EOF,
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider normaliseProvider
      */
     public function testNormalise(

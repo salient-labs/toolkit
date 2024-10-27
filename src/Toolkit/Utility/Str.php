@@ -160,9 +160,19 @@ final class Str extends AbstractUtility
     /**
      * Escape special characters in a string for use in Markdown
      */
-    public static function toMarkdown(string $string): string
+    public static function escapeMarkdown(string $string): string
     {
-        return addcslashes($string, '!#()*+-.<>[\]_`{|}');
+        return Regex::replace(
+            <<<'REGEX'
+/ [*<[\\`|] |
+  (?<= [\h[:punct:]] (?: (?<! _ ) | (?<= \G ) ) | ^ ) _ |
+  _ (?= _*+ (?: [\h[:punct:]] | $ ) ) |
+  (?<! ~ ) ~ (?= ~ (?! ~ ) ) |
+  ^ \h* \K (?: > | ~ (?= ~~+ ) | (?: \# {1,6} | [+-] | [0-9]+ \K \. ) (?= \h ) ) /mx
+REGEX,
+            '\\\\$0',
+            $string,
+        );
     }
 
     /**
