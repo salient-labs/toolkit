@@ -25,6 +25,7 @@ final class Test extends AbstractUtility
      * - `"enabled"`, `"disabled"`
      *
      * @param mixed $value
+     * @phpstan-assert-if-true bool|non-empty-string $value
      */
     public static function isBoolean($value): bool
     {
@@ -38,6 +39,7 @@ final class Test extends AbstractUtility
      * Check if a value is an integer or integer string
      *
      * @param mixed $value
+     * @phpstan-assert-if-true int|non-empty-string $value
      */
     public static function isInteger($value): bool
     {
@@ -53,6 +55,7 @@ final class Test extends AbstractUtility
      * Returns `false` if `$value` is an integer string.
      *
      * @param mixed $value
+     * @phpstan-assert-if-true float|non-empty-string $value
      */
     public static function isFloat($value): bool
     {
@@ -68,6 +71,7 @@ final class Test extends AbstractUtility
      * an array key
      *
      * @param mixed $value
+     * @phpstan-assert-if-true int|float|bool|non-empty-string $value
      */
     public static function isNumericKey($value): bool
     {
@@ -81,6 +85,7 @@ final class Test extends AbstractUtility
      * Check if a value is a valid date string
      *
      * @param mixed $value
+     * @phpstan-assert-if-true non-empty-string $value
      */
     public static function isDateString($value): bool
     {
