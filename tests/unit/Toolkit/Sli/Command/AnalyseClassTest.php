@@ -23,13 +23,16 @@ final class AnalyseClassTest extends CommandTestCase
      * @param string[] $args
      */
     public function testRun(
-        string $output,
+        string $filename,
         int $exitStatus,
-        array $args
+        array $args,
+        ?string $dir = null
     ): void {
-        File::chdir(self::getFixturesPath(__CLASS__));
+        if ($dir !== null) {
+            File::chdir($dir);
+        }
         $this->assertCommandProduces(
-            self::normaliseConsoleOutput($output),
+            self::normaliseConsoleOutput(File::getContents($filename)),
             $exitStatus,
             AnalyseClass::class,
             $args,
@@ -44,31 +47,35 @@ final class AnalyseClassTest extends CommandTestCase
     }
 
     /**
-     * @return array<array{string,int,string[]}>
+     * @return array<array{string,int,string[],3?:string|null}>
      */
     public static function runProvider(): array
     {
         $dir = self::getFixturesPath(__CLASS__);
         return [
             [
-                File::getContents("$dir/output0.json"),
+                "$dir/output0.json",
                 0,
                 ['.'],
+                $dir,
             ],
             [
-                File::getContents("$dir/output1.csv"),
+                "$dir/output1.csv",
                 0,
                 ['--format', 'csv', '.'],
+                $dir,
             ],
             [
-                File::getContents("$dir/output2.md"),
+                "$dir/output2.md",
                 0,
                 ['--format', 'md', '.'],
+                $dir,
             ],
             [
-                File::getContents("$dir/output3.md"),
+                "$dir/output3.md",
                 0,
                 ['--format', 'md', '--skip', 'meta', '.'],
+                $dir,
             ],
         ];
     }

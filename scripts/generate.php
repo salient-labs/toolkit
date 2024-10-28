@@ -50,6 +50,7 @@ use Salient\Tests\Core\AbstractFacade\MyHasFacadeClass;
 use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
 use Salient\Tests\Core\AbstractFacade\MyServiceClass;
 use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
+use Salient\Tests\Sli\Command\AnalyseClassTest;
 use Salient\Tests\Sync\Entity\Album;
 use Salient\Tests\Sync\Entity\Comment;
 use Salient\Tests\Sync\Entity\Photo;
@@ -126,21 +127,7 @@ $data = [
 ];
 
 $commands = [
-    AnalyseClass::class => [
-        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output0.json' => [
-            ['.'],
-            'tests/fixtures/Toolkit/Sli/Command/AnalyseClass',
-        ],
-        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output1.csv' => [
-            ['--format', 'csv', '.'],
-        ],
-        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output2.md' => [
-            ['--format', 'md', '.'],
-        ],
-        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output3.md' => [
-            ['--format', 'md', '--skip', 'meta', '.'],
-        ],
-    ],
+    AnalyseClass::class => AnalyseClassTest::runProvider(),
 ];
 
 $app = new CliApplication($dir);
@@ -277,10 +264,10 @@ foreach (File::find()
 
 $debug = Env::getDebug();
 $mockTarget = null;
-foreach ($commands as $class => $runs) {
+foreach ($commands as $class => $tests) {
     $command = new $class($app);
-    foreach ($runs as $file => $run) {
-        $file = "$dir/$file";
+    foreach ($tests as $dataSet => $test) {
+        [$file, $exitStatus, $commandArgs] = $test;
         $exists = file_exists($file);
         if (in_array('--check', $args)) {
             if ($exists) {
@@ -288,8 +275,8 @@ foreach ($commands as $class => $runs) {
             }
             continue;
         }
-        if (isset($run[1])) {
-            File::chdir("$dir/{$run[1]}");
+        if (isset($test[3])) {
+            File::chdir($test[3]);
         }
         if (!$debug) {
             foreach (Console::getTargets() as $target) {
@@ -298,14 +285,22 @@ foreach ($commands as $class => $runs) {
             Console::registerTarget($mockTarget = new MockTarget());
         }
         ob_start();
-        $status |= $result = $command(...$run[0]);
+        $result = $command(...$commandArgs);
         /** @var string */
         $content = ob_get_clean();
         if ($mockTarget) {
             Console::deregisterTarget($mockTarget);
             Console::registerStdioTargets();
         }
-        if ($result !== 0) {
+        if ($result !== $exitStatus) {
+            $status |= 1;
+            Console::error(
+                sprintf('Exit status %d (expected %d):', $result, $exitStatus),
+                sprintf('%s with data set %s', $class, is_int($dataSet) ? "#$dataSet" : "\"$dataSet\""),
+            );
+            if ($exists) {
+                generated($file);
+            }
             continue;
         }
         if (!$exists || File::getContents($file) !== $content) {
