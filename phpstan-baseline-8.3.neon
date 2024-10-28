@@ -91,11 +91,6 @@ parameters:
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\MetricCollector\\:\\:count\\(\\) should return int\\<1, max\\> but returns int\\.$#"
-			count: 1
-			path: src/Toolkit/Core/MetricCollector.php
-
-		-
 			message: "#^Parameter \\#1 \\$where of method Salient\\\\Core\\\\SqlQuery\\:\\:buildWhere\\(\\) expects array\\<int\\|string, array\\|string\\>, array given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/SqlQuery.php
