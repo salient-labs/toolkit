@@ -19,6 +19,7 @@ use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
+use Salient\Utility\File;
 use Salient\Utility\Format;
 use Salient\Utility\Get;
 use Salient\Utility\Inflect;
@@ -46,7 +47,7 @@ use LogicException;
  * @property-read bool $ValueRequired True if the option has a mandatory value
  * @property-read bool $ValueOptional True if the option has an optional value
  * @property-read CliOptionValueType::* $ValueType The data type of the option's value
- * @property-read array<string|int|bool>|null $AllowedValues The option's possible values, indexed by lowercase value if not case-sensitive
+ * @property-read array<string|int|bool|float>|null $AllowedValues The option's possible values, indexed by lowercase value if not case-sensitive
  * @property-read bool $CaseSensitive True if the option's values are case-sensitive
  * @property-read CliOptionValueUnknownPolicy::*|null $UnknownValuePolicy The action taken if an unknown value is given
  * @property-read bool $Required True if the option is mandatory
@@ -54,12 +55,12 @@ use LogicException;
  * @property-read bool $MultipleAllowed True if the option may be given more than once
  * @property-read bool $Unique True if the same value may not be given more than once
  * @property-read bool $AddAll True if "ALL" should be added to the list of possible values when the option can be given more than once
- * @property-read array<string|int|bool>|string|int|bool|null $DefaultValue Assigned to the option if no value is given on the command line
- * @property-read array<string|int|bool>|string|int|bool|null $OriginalDefaultValue The option's default value before applying values from the environment
+ * @property-read array<string|int|bool|float>|string|int|bool|float|null $DefaultValue Assigned to the option if no value is given on the command line
+ * @property-read array<string|int|bool|float>|string|int|bool|float|null $OriginalDefaultValue The option's default value before applying values from the environment
  * @property-read bool $Nullable True if the option's value should be null if it is not given on the command line
  * @property-read string|null $EnvVariable The name of a value in the environment that replaces the option's default value
  * @property-read non-empty-string|null $Delimiter The separator between values passed to the option as a single argument
- * @property-read (callable(array<string|int|bool>|string|int|bool): mixed)|null $ValueCallback Applied to the option's value as it is assigned
+ * @property-read (callable(array<string|int|bool|float>|string|int|bool|float): mixed)|null $ValueCallback Applied to the option's value as it is assigned
  * @property-read int-mask-of<CliOptionVisibility::*> $Visibility The option's visibility to users
  * @property-read bool $IsBound True if the option is bound to a variable
  *
@@ -104,12 +105,20 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
         CliOptionValueType::BOOLEAN => 'boolean',
         CliOptionValueType::INTEGER => 'integer',
         CliOptionValueType::STRING => 'string',
+        CliOptionValueType::FLOAT => 'number',
         CliOptionValueType::DATE => 'string',
         CliOptionValueType::PATH => 'string',
         CliOptionValueType::FILE => 'string',
         CliOptionValueType::DIRECTORY => 'string',
         CliOptionValueType::PATH_OR_DASH => 'string',
         CliOptionValueType::FILE_OR_DASH => 'string',
+        CliOptionValueType::DIRECTORY_OR_DASH => 'string',
+        CliOptionValueType::NEW_PATH => 'string',
+        CliOptionValueType::NEW_FILE => 'string',
+        CliOptionValueType::NEW_DIRECTORY => 'string',
+        CliOptionValueType::NEW_PATH_OR_DASH => 'string',
+        CliOptionValueType::NEW_FILE_OR_DASH => 'string',
+        CliOptionValueType::NEW_DIRECTORY_OR_DASH => 'string',
     ];
 
     /**
@@ -190,7 +199,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * The option's possible values, indexed by lowercase value if not
      * case-sensitive
      *
-     * @var array<string|int|bool>|null
+     * @var array<string|int|bool|float>|null
      */
     protected ?array $AllowedValues;
 
@@ -239,14 +248,14 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     /**
      * Assigned to the option if no value is given on the command line
      *
-     * @var array<string|int|bool>|string|int|bool|null
+     * @var array<string|int|bool|float>|string|int|bool|float|null
      */
     protected $DefaultValue;
 
     /**
      * The option's default value before applying values from the environment
      *
-     * @var array<string|int|bool>|string|int|bool|null
+     * @var array<string|int|bool|float>|string|int|bool|float|null
      */
     protected $OriginalDefaultValue;
 
@@ -276,7 +285,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * option's value to {@see CliOption::$ValueType}. The callback should
      * return a value of the expected type.
      *
-     * @var (callable(array<string|int|bool>|string|int|bool): mixed)|null
+     * @var (callable(array<string|int|bool|float>|string|int|bool|float): mixed)|null
      */
     protected $ValueCallback;
 
@@ -314,12 +323,12 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * if positional; must contain one letter, number or underscore)
      * @param CliOptionType::* $optionType
      * @param CliOptionValueType::* $valueType
-     * @param array<string|int|bool>|null $allowedValues
+     * @param array<string|int|bool|float>|null $allowedValues
      * @param CliOptionValueUnknownPolicy::* $unknownValuePolicy
-     * @param array<string|int|bool>|string|int|bool|null $defaultValue
+     * @param array<string|int|bool|float>|string|int|bool|float|null $defaultValue
      * @param string|null $envVariable The name of a value in the environment
      * that replaces the option's default value (ignored if positional)
-     * @param (callable(array<string|int|bool>|string|int|bool): mixed)|null $valueCallback
+     * @param (callable(array<string|int|bool|float>|string|int|bool|float): mixed)|null $valueCallback
      * @param int-mask-of<CliOptionVisibility::*> $visibility
      * @param bool $inSchema True if the option should be included when
      * generating a JSON Schema.
@@ -610,7 +619,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     /**
      * Get the option's JSON Schema
      *
-     * @return array{description?:string,type?:string[]|string,enum?:array<string|int|bool|null>,items?:array{type?:string[]|string,enum?:array<string|int|bool|null>},uniqueItems?:bool,default?:array<string|int|bool>|string|int|bool}
+     * @return array{description?:string,type?:string[]|string,enum?:array<string|int|bool|float|null>,items?:array{type?:string[]|string,enum?:array<string|int|bool|float|null>},uniqueItems?:bool,default?:array<string|int|bool|float>|string|int|bool|float}
      */
     public function getJsonSchema(): array
     {
@@ -803,7 +812,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      *
      * If `$value` is `null` or an empty string, an empty array is returned.
      *
-     * @template T of string|int|bool
+     * @template T of DateTimeImmutable|string|int|bool|float
      *
      * @param T[]|T|null $value
      * @return T[]
@@ -826,7 +835,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * Normalise a value, assign it to the option's bound variable, and return
      * it to the caller
      *
-     * @param array<string|int|bool>|string|int|bool|null $value
+     * @param array<string|int|bool|float>|string|int|bool|float|null $value
      * @param bool $normalise `false` if `$value` has already been normalised.
      * @param bool $expand If `true` and the option has an optional value,
      * expand `null` or `true` to the default value of the option. Ignored if
@@ -848,7 +857,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * If the option has a callback, apply it to a value, otherwise convert the
      * value to the option's value type
      *
-     * @param array<string|int|bool>|string|int|bool|null $value
+     * @param array<string|int|bool|float>|string|int|bool|float|null $value
      * @param bool $expand If `true` and the option has an optional value,
      * expand `null` or `true` to the default value of the option.
      * @return mixed
@@ -883,9 +892,10 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
                 )) {
                     $this->throwValueTypeException($value);
                 } elseif (!$this->MultipleAllowed) {
-                    throw new CliInvalidArgumentsException(
-                        sprintf('%s does not accept multiple values', $this->DisplayName)
-                    );
+                    throw new CliInvalidArgumentsException(sprintf(
+                        '%s does not accept multiple values',
+                        $this->DisplayName,
+                    ));
                 }
             }
             if ($this->IsFlag && $this->MultipleAllowed && !is_int($value)) {
@@ -899,6 +909,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
         if ($this->ValueCallback !== null) {
             $this->maybeCheckUnique($value);
+            // @phpstan-ignore callable.nonCallable
             return ($this->ValueCallback)($value);
         }
 
@@ -906,23 +917,22 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             return $this->normaliseValueType($value);
         }
 
-        foreach ($value as &$_value) {
-            $_value = $this->normaliseValueType($_value);
+        $values = [];
+        foreach ($value as $value) {
+            $values[] = $this->normaliseValueType($value);
         }
-        $this->maybeCheckUnique($value);
-        return $value;
+        $this->maybeCheckUnique($values);
+        return $values;
     }
 
     /**
      * If the option has allowed values, check a given value is valid and apply
      * the option's unknown value policy if not
      *
-     * @template T of array<string|int|bool>|string|int|bool|null
-     *
-     * @param T $value
+     * @param array<string|int|bool|float>|string|int|bool|float|null $value
      * @param CliOptionValueUnknownPolicy::*|null $policy Overrides the option's
      * unknown value policy if given.
-     * @return T
+     * @return ($value is null ? null : array<string|int|bool|float>|string|int|bool|float)
      */
     private function filterValue($value, ?string $source = null, ?int $policy = null)
     {
@@ -971,33 +981,31 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             }
         }
 
-        /** @var T */
         return $this->MultipleAllowed ? $value : Arr::first($value);
     }
 
     /**
      * Normalise a value for inclusion in a help message
      *
-     * @param string|int|bool|null $value
+     * @param string|int|bool|float|null $value
      */
     public function normaliseValueForHelp($value): string
     {
-        if (
-            $this->ValueType === CliOptionValueType::BOOLEAN
-            && !$this->IsFlag
-            && $value !== null
-        ) {
-            $value = Get::boolean($value);
-            return Format::yn($value);
+        switch ($this->ValueType) {
+            case CliOptionValueType::BOOLEAN:
+                if (!$this->IsFlag && $value !== null) {
+                    $value = Get::boolean($value);
+                    return Format::yn($value);
+                }
+                break;
         }
+
         return (string) $value;
     }
 
     /**
-     * @template T of array<string|int|bool>|string|int|bool
-     *
-     * @param T $value
-     * @return (T is array ? array<string|int|bool> : string|int|bool)
+     * @param array<string|int|bool|float>|string|int|bool|float $value
+     * @return ($value is array ? array<string|int|bool|float> : string|int|bool|float)
      */
     private function normaliseForSchema($value)
     {
@@ -1008,16 +1016,22 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             return $value;
         }
 
-        $values = (array) $value;
-        foreach ($values as &$_value) {
-            $_value = $this->normaliseValueType($_value, false);
+        if (!is_array($value)) {
+            /** @var string|int|bool|float */
+            return $this->normaliseValueType($value, false);
         }
-        return is_array($value) ? $values : reset($values);
+
+        foreach ($value as $value) {
+            /** @var string|int|bool|float */
+            $value = $this->normaliseValueType($value, false);
+            $values[] = $value;
+        }
+        return $values ?? [];
     }
 
     /**
-     * @param string|int|bool $value
-     * @return DateTimeImmutable|string|int|bool
+     * @param string|int|bool|float $value
+     * @return DateTimeImmutable|string|int|bool|float
      */
     private function normaliseValueType($value, bool $checkPathExists = true)
     {
@@ -1035,48 +1049,96 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             case CliOptionValueType::STRING:
                 return (string) $value;
 
+            case CliOptionValueType::FLOAT:
+                return (float) $value;
+
             case CliOptionValueType::DATE:
                 return new DateTimeImmutable((string) $value);
 
             case CliOptionValueType::PATH:
-                return $this->checkPath($value, $checkPathExists, 'path', 'file_exists');
+                return $this->checkPath((string) $value, $checkPathExists, 'path', 'file_exists');
 
             case CliOptionValueType::FILE:
-                return $this->checkPath($value, $checkPathExists, 'file', 'is_file');
+                return $this->checkPath((string) $value, $checkPathExists, 'file', 'is_file');
 
             case CliOptionValueType::DIRECTORY:
-                return $this->checkPath($value, $checkPathExists, 'directory', 'is_dir');
+                return $this->checkPath((string) $value, $checkPathExists, 'directory', 'is_dir');
 
             case CliOptionValueType::PATH_OR_DASH:
-                return $this->checkPath($value, $checkPathExists, 'path', 'file_exists', true);
+                return $this->checkPath((string) $value, $checkPathExists, 'path', 'file_exists', true);
 
             case CliOptionValueType::FILE_OR_DASH:
-                return $this->checkPath($value, $checkPathExists, 'file', 'is_file', true);
+                return $this->checkPath((string) $value, $checkPathExists, 'file', 'is_file', true);
+
+            case CliOptionValueType::DIRECTORY_OR_DASH:
+                return $this->checkPath((string) $value, $checkPathExists, 'directory', 'is_dir', true);
+
+            case CliOptionValueType::NEW_PATH:
+                return $this->checkNewPath((string) $value, $checkPathExists, 'path', 'file_exists');
+
+            case CliOptionValueType::NEW_FILE:
+                return $this->checkNewPath((string) $value, $checkPathExists, 'file', 'is_file');
+
+            case CliOptionValueType::NEW_DIRECTORY:
+                return $this->checkNewPath((string) $value, $checkPathExists, 'directory', 'is_dir');
+
+            case CliOptionValueType::NEW_PATH_OR_DASH:
+                return $this->checkNewPath((string) $value, $checkPathExists, 'path', 'file_exists', true);
+
+            case CliOptionValueType::NEW_FILE_OR_DASH:
+                return $this->checkNewPath((string) $value, $checkPathExists, 'file', 'is_file', true);
+
+            case CliOptionValueType::NEW_DIRECTORY_OR_DASH:
+                return $this->checkNewPath((string) $value, $checkPathExists, 'directory', 'is_dir', true);
         }
     }
 
     /**
-     * @template T of string|int|bool
-     *
-     * @param T $value
      * @param callable(string): bool $callback
-     * @return T
      */
-    private function checkPath($value, bool $checkExists, string $fileType, callable $callback, bool $dashOk = false)
+    private function checkPath(string $value, bool $checkExists, string $fileType, callable $callback, bool $dashOk = false): string
     {
-        if ($dashOk && $value === '-') {
+        if (
+            !$checkExists
+            || ($dashOk && $value === '-')
+            || $callback((string) $value)
+        ) {
             return $value;
         }
-        if ($checkExists && !$callback((string) $value)) {
-            throw new CliInvalidArgumentsException(
-                sprintf('%s not found: %s', $fileType, $value)
-            );
-        }
-        return $value;
+
+        throw new CliInvalidArgumentsException(sprintf(
+            '%s not found: %s',
+            $fileType,
+            $value,
+        ));
     }
 
     /**
-     * @param array<string|int|bool> $values
+     * @param callable(string): bool $callback
+     */
+    private function checkNewPath(string $value, bool $checkExists, string $fileType, callable $callback, bool $dashOk = false): string
+    {
+        if (!$checkExists || ($dashOk && $value === '-')) {
+            return $value;
+        }
+
+        if ($callback((string) $value)) {
+            if (is_writable((string) $value)) {
+                return $value;
+            }
+        } elseif (File::isCreatable((string) $value)) {
+            return $value;
+        }
+
+        throw new CliInvalidArgumentsException(sprintf(
+            '%s not writable: %s',
+            $fileType,
+            $value,
+        ));
+    }
+
+    /**
+     * @param array<string|int|bool|float> $values
      */
     private function checkValueTypes(array $values): bool
     {
@@ -1089,7 +1151,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     }
 
     /**
-     * @param string|int|bool $value
+     * @param string|int|bool|float $value
      */
     private function checkValueType($value): bool
     {
@@ -1103,6 +1165,9 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             case CliOptionValueType::STRING:
                 return is_scalar($value);
 
+            case CliOptionValueType::FLOAT:
+                return Test::isFloat($value) || Test::isInteger($value);
+
             case CliOptionValueType::DATE:
                 return Test::isDateString($value);
 
@@ -1111,6 +1176,13 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             case CliOptionValueType::DIRECTORY:
             case CliOptionValueType::PATH_OR_DASH:
             case CliOptionValueType::FILE_OR_DASH:
+            case CliOptionValueType::DIRECTORY_OR_DASH:
+            case CliOptionValueType::NEW_PATH:
+            case CliOptionValueType::NEW_FILE:
+            case CliOptionValueType::NEW_DIRECTORY:
+            case CliOptionValueType::NEW_PATH_OR_DASH:
+            case CliOptionValueType::NEW_FILE_OR_DASH:
+            case CliOptionValueType::NEW_DIRECTORY_OR_DASH:
                 return is_string($value);
 
             default:
@@ -1119,7 +1191,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     }
 
     /**
-     * @param array<string|int|bool>|string|int|bool $value
+     * @param array<string|int|bool|float>|string|int|bool|float $value
      * @return never
      */
     private function throwValueTypeException($value): void
@@ -1138,23 +1210,29 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     }
 
     /**
-     * @param array<string|int|bool>|string|int|bool|null $value
-     * @return true|never
+     * @param array<DateTimeImmutable|string|int|bool|float>|DateTimeImmutable|string|int|bool|float|null $value
+     *
+     * @phpstan-pure
      */
-    private function maybeCheckUnique($value): bool
+    private function maybeCheckUnique($value): void
     {
-        if ($value === null || $value === '' || $value === [] || !$this->Unique) {
-            return true;
+        if (
+            $value === null
+            || $value === ''
+            || $value === []
+            || !$this->Unique
+        ) {
+            return;
         }
 
         $value = $this->maybeSplitValue($value);
 
-        if (count(Arr::unique($value)) !== count($value)) {
-            throw new CliInvalidArgumentsException(
-                sprintf('%s does not accept the same value multiple times', $this->DisplayName)
-            );
+        $strict = $this->ValueType !== CliOptionValueType::DATE;
+        if (count(Arr::unique($value, false, $strict)) !== count($value)) {
+            throw new CliInvalidArgumentsException(sprintf(
+                '%s does not accept the same value multiple times',
+                $this->DisplayName,
+            ));
         }
-
-        return true;
     }
 }

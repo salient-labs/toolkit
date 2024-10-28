@@ -73,8 +73,6 @@ class GenerateSyncProvider extends AbstractGenerateCommand
                 ->allowedValues(array_keys(self::OPERATION_MAP))
                 ->multipleAllowed()
                 ->defaultValue(self::DEFAULT_OPERATIONS)
-                ->valueCallback(fn(array $value) =>
-                    array_intersect(array_keys(self::OPERATION_MAP), $value))
                 ->bindTo($this->Operations),
             CliOption::build()
                 ->long('plural')
@@ -139,7 +137,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
 
         $ops = array_map(
             fn($op) => self::OPERATION_MAP[$op],
-            $this->Operations
+            array_intersect(array_keys(self::OPERATION_MAP), $this->Operations),
         );
 
         $camelClass = Str::camel($class);

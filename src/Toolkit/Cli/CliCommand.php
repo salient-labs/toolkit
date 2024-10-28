@@ -44,7 +44,7 @@ abstract class CliCommand implements CliCommandInterface
     private array $DeferredOptionErrors = [];
     /** @var string[] */
     private array $Arguments = [];
-    /** @var array<string,array<string|int|bool>|string|int|bool|null> */
+    /** @var array<string,array<string|int|bool|float>|string|int|bool|float|null> */
     private array $ArgumentValues = [];
     /** @var array<string,mixed>|null */
     private ?array $OptionValues = null;
@@ -128,8 +128,8 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Override to modify schema option values before they are normalised
      *
-     * @param array<array<string|int|bool>|string|int|bool|null> $values
-     * @return array<array<string|int|bool>|string|int|bool|null>
+     * @param array<array<string|int|bool|float>|string|int|bool|float|null> $values
+     * @return array<array<string|int|bool|float>|string|int|bool|float|null>
      */
     protected function filterNormaliseSchemaValues(array $values): array
     {
@@ -143,10 +143,10 @@ abstract class CliCommand implements CliCommandInterface
      * {@see filterNormaliseSchemaValues()} is always applied to `$values`
      * before {@see filterApplySchemaValues()}.
      *
-     * @param array<array<string|int|bool>|string|int|bool|null> $values
+     * @param array<array<string|int|bool|float>|string|int|bool|float|null> $values
      * @param bool $normalised `true` if `$values` have been normalised,
      * otherwise `false`.
-     * @return array<array<string|int|bool>|string|int|bool|null>
+     * @return array<array<string|int|bool|float>|string|int|bool|float|null>
      */
     protected function filterApplySchemaValues(array $values, bool $normalised): array
     {
@@ -716,7 +716,7 @@ abstract class CliCommand implements CliCommandInterface
      * Normalise an array of option values, apply them to the command, and
      * return them to the caller
      *
-     * @param array<array<string|int|bool>|string|int|bool|null> $values
+     * @param array<array<string|int|bool|float>|string|int|bool|float|null> $values
      * @param bool $normalise `false` if `$values` have already been normalised.
      * @param bool $expand If `true` and an option has an optional value, expand
      * `null` or `true` to the default value of the option. Ignored if
@@ -782,7 +782,7 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Normalise an array of option values
      *
-     * @param array<array<string|int|bool>|string|int|bool|null> $values
+     * @param array<array<string|int|bool|float>|string|int|bool|float|null> $values
      * @param bool $expand If `true` and an option has an optional value, expand
      * `null` or `true` to the default value of the option.
      * @param bool $schema If `true`, only normalise schema options.
@@ -812,7 +812,7 @@ abstract class CliCommand implements CliCommandInterface
      * Check that an array of option values is valid
      *
      * @param mixed[] $values
-     * @phpstan-assert-if-true array<array<string|int|bool>|string|int|bool|null> $values
+     * @phpstan-assert-if-true array<array<string|int|bool|float>|string|int|bool|float|null> $values
      */
     final protected function checkOptionValues(array $values): bool
     {
@@ -822,6 +822,7 @@ abstract class CliCommand implements CliCommandInterface
                 || is_string($value)
                 || is_int($value)
                 || is_bool($value)
+                || is_float($value)
             ) {
                 continue;
             }
@@ -829,7 +830,7 @@ abstract class CliCommand implements CliCommandInterface
                 return false;
             }
             foreach ($value as $v) {
-                if (!(is_string($v) || is_int($v) || is_bool($v))) {
+                if (!(is_string($v) || is_int($v) || is_bool($v) || is_float($v))) {
                     return false;
                 }
             }
@@ -846,7 +847,7 @@ abstract class CliCommand implements CliCommandInterface
      * values is returned.
      * @param bool $unexpand If `true` and an option has an optional value not
      * given on the command line, replace its value with `null` or `true`.
-     * @return array<array<string|int|bool>|string|int|bool|null>
+     * @return array<array<string|int|bool|float>|string|int|bool|float|null>
      */
     final protected function getOptionValues(
         bool $export = false,
@@ -880,7 +881,7 @@ abstract class CliCommand implements CliCommandInterface
             $values[$name] = $value;
         }
 
-        /** @var array<array<string|int|bool>|string|int|bool|null> */
+        /** @var array<array<string|int|bool|float>|string|int|bool|float|null> */
         return $schema
             ? $this->filterGetSchemaValues($values ?? [])
             : $values ?? [];
@@ -891,7 +892,7 @@ abstract class CliCommand implements CliCommandInterface
      *
      * @param bool $schema If `true`, an array that maps schema option names to
      * default values is returned.
-     * @return array<array<string|int|bool>|string|int|bool|null>
+     * @return array<array<string|int|bool|float>|string|int|bool|float|null>
      */
     final protected function getDefaultOptionValues(bool $schema = false): array
     {
@@ -905,7 +906,7 @@ abstract class CliCommand implements CliCommandInterface
             $values[$name] = $option->OriginalDefaultValue;
         }
 
-        /** @var array<array<string|int|bool>|string|int|bool|null> */
+        /** @var array<array<string|int|bool|float>|string|int|bool|float|null> */
         return $schema
             ? $this->filterGetSchemaValues($values ?? [])
             : $values ?? [];
@@ -1035,8 +1036,8 @@ abstract class CliCommand implements CliCommandInterface
 
     /**
      * @param string[] $args
-     * @param array<string,array<string|int|bool>|string|int|bool|null> $argValues
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @param array<string,array<string|int|bool|float>|string|int|bool|float|null> $argValues
+     * @return array<string,array<string|int|bool|float>|string|int|bool|float|null>
      */
     private function mergeArguments(
         array $args,

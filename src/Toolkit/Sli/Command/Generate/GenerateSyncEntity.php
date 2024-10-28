@@ -43,7 +43,6 @@ class GenerateSyncEntity extends AbstractGenerateCommand
     /** @var string[] */
     private array $RemovablePrefixes = [];
     private ?string $ReferenceEntityFile = null;
-    /** @var class-string<HttpSyncProvider>|null */
     private ?string $Provider = null;
     private ?string $HttpEndpoint = null;
     private string $HttpMethod = '';
@@ -132,7 +131,6 @@ EOF)
                 ->valueName('provider')
                 ->description('The HttpSyncProvider class to retrieve a reference entity from')
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue('provider', $value))
                 ->bindTo($this->Provider),
             CliOption::build()
                 ->long('endpoint')
