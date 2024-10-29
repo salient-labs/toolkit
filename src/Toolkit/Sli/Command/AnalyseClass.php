@@ -38,6 +38,8 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
     private ?string $Markdown = null;
     /** @var string[] */
     private array $Skip = [];
+    /** @var class-string[] */
+    private array $SkipFrom = [];
     private string $Exclude = '';
     /** @var string[] */
     private array $Autoload = [];
@@ -51,10 +53,13 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
     private array $SkipIndex = [
         'internal' => false,
         'private' => false,
+        'inherited' => false,
         'meta' => false,
         'from' => false,
     ];
 
+    /** @var array<class-string,true> */
+    private array $SkipFromIndex;
     /** @var array<class-string,ClassData> */
     private array $Index;
     /** @var array<string,NamespaceData> */
@@ -118,6 +123,14 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                 ->multipleAllowed()
                 ->bindTo($this->Skip),
             CliOption::build()
+                ->long('skip-from')
+                ->short('K')
+                ->valueName('class')
+                ->description('Exclude members inherited from a class')
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()
+                ->bindTo($this->SkipFrom),
+            CliOption::build()
                 ->long('exclude')
                 ->short('X')
                 ->valueName('regex')
@@ -160,6 +173,11 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
         $this->SkipIndex = array_merge(
             array_fill_keys(array_keys($this->SkipIndex), false),
             array_fill_keys($this->Skip, true),
+        );
+
+        $this->SkipFromIndex = array_fill_keys(
+            array_map([Get::class, 'fqcn'], $this->SkipFrom),
+            true,
         );
 
         $dirs = [];
@@ -461,6 +479,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                             $declarationCallback,
                             $metaCallback,
                         ]) {
+                            $members = ClassData::filterMembers($members);
                             if (!$members) {
                                 continue;
                             }
@@ -805,6 +824,13 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
         }
 
         if ($this->SkipIndex['private'] && $entity->IsPrivate) {
+            return false;
+        }
+
+        if ($entity->InheritedFrom && (
+            $this->SkipIndex['inherited']
+            || ($this->SkipFromIndex[Get::fqcn($entity->InheritedFrom[0])] ?? false)
+        )) {
             return false;
         }
 

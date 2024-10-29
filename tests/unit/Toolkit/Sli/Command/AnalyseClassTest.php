@@ -62,7 +62,7 @@ final class AnalyseClassTest extends CommandTestCase
             [
                 "$dir/output1.csv",
                 0,
-                ['--csv', '.'],
+                ['--csv', '--skip', 'inherited', '.'],
                 $dir,
             ],
             [
