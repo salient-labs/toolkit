@@ -17,6 +17,7 @@ if (\PHP_VERSION_ID < 80000) {
                 'analyseAndScan' => [
                     'tests/fixtures/Toolkit/Reflection/callbacksWithDnfTypes.php',
                     'tests/fixtures/Toolkit/Reflection/callbacksWithUnionsAndIntersections.php',
+                    'tests/fixtures/Toolkit/Reflection/MyBackedEnum.php',
                     'tests/fixtures/Toolkit/Reflection/MyClassWithDnfTypes.php',
                     'tests/fixtures/Toolkit/Reflection/MyClassWithUnionsAndIntersections.php',
                     'tests/unit/Toolkit/Core/EventDispatcher/listenerWithDnfType.php',
@@ -28,13 +29,16 @@ if (\PHP_VERSION_ID < 80000) {
                     'message' => '#^Parameter \#1 \$ch of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects resource, CurlHandle\|resource(\|null)? given\.$#',
                 ],
                 [
-                    'message' => '#^Call to an undefined method ReflectionClass\<object\>\:\:isReadOnly\(\)\.$#',
+                    'message' => '#^Call to an undefined method ReflectionClass\<object\>\:\:(isEnum|isReadOnly)\(\)\.$#',
                 ],
                 [
                     'message' => '#^Call to an undefined method ReflectionClassConstant\:\:isFinal\(\)\.$#',
                 ],
                 [
                     'message' => '#^Call to an undefined method ReflectionProperty\:\:(getDefaultValue|hasDefaultValue|isReadOnly)\(\)\.$#',
+                ],
+                [
+                    'message' => '#^Class Salient\\\\Tests\\\\Reflection\\\\MyBackedEnum not found\.$#',
                 ],
             ],
         ] + $parameters,
