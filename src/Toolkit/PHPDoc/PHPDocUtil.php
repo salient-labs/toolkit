@@ -499,6 +499,18 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
+     * Remove PHP namespaces from a PHPDoc type
+     */
+    public static function removeTypeNamespaces(string $type): string
+    {
+        return Regex::replace(
+            '/\\\\?(?:' . Regex::PHP_IDENTIFIER . '\\\\)++(?=' . Regex::PHP_IDENTIFIER . ')/',
+            '',
+            $type,
+        );
+    }
+
+    /**
      * Convert a ReflectionParameter to a PHPDoc tag
      *
      * Returns `null` if:
@@ -748,6 +760,10 @@ final class PHPDocUtil extends AbstractUtility
         ReflectionClass $class,
         string $name
     ): bool {
+        if ($method->isInternal() && !$class->isInternal()) {
+            return false;
+        }
+
         $traits = $class->getTraits();
         if (!$traits) {
             return true;
