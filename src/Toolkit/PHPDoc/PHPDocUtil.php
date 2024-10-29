@@ -32,7 +32,7 @@ final class PHPDocUtil extends AbstractUtility
      * Get an array of doc comments for a class and its parents
      *
      * Returns an empty array if no doc comments are found for the class or any
-     * inherited classes or interfaces.
+     * extended classes or interfaces.
      *
      * @param ReflectionClass<object> $class
      * @param bool $includeAll If `true`, entries are returned for `$class` and
@@ -43,12 +43,11 @@ final class PHPDocUtil extends AbstractUtility
         ReflectionClass $class,
         bool $includeAll = false
     ): array {
-        $interfaces = self::getInterfaces($class);
-
         $comments = [];
+        $current = $class;
         do {
-            $name = $class->getName();
-            $comment = $class->getDocComment();
+            $name = $current->getName();
+            $comment = $current->getDocComment();
             if ($comment === false) {
                 if ($includeAll) {
                     $comments[$name] = null;
@@ -56,9 +55,13 @@ final class PHPDocUtil extends AbstractUtility
             } else {
                 $comments[$name] = Str::setEol($comment);
             }
-        } while ($class = $class->getParentClass());
+        } while ($current = $current->getParentClass());
 
-        foreach ($interfaces as $name => $interface) {
+        if (!$class->isInterface()) {
+            return $comments;
+        }
+
+        foreach (self::getInterfaces($class) as $name => $interface) {
             $comment = $interface->getDocComment();
             if ($comment === false) {
                 if ($includeAll) {

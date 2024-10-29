@@ -15,6 +15,7 @@ use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * A PSR-5 PHPDoc
@@ -22,7 +23,7 @@ use InvalidArgumentException;
  * Summaries that break over multiple lines are unwrapped. Descriptions and tags
  * may contain Markdown, including fenced code blocks.
  */
-class PHPDoc implements Immutable
+class PHPDoc implements Immutable, Stringable
 {
     use HasMutator;
 
@@ -89,6 +90,12 @@ class PHPDoc implements Immutable
         // --
         'deprecated' => false,
         'readonly' => false,
+    ];
+
+    private const MERGED_TAGS = [
+        'param' => true,
+        'return' => true,
+        'var' => true,
     ];
 
     private const STANDARD_TAGS = [
@@ -186,17 +193,17 @@ class PHPDoc implements Immutable
 
         $params = $this->Params;
         foreach ($parent->Params as $name => $theirs) {
-            $params[$name] = $this->mergeTag($params[$name] ?? null, $theirs);
+            $params[$name] = $this->mergeTag($params[$name] ?? null, $theirs, $tags);
         }
 
-        $return = $this->mergeTag($this->Return, $parent->Return);
+        $return = $this->mergeTag($this->Return, $parent->Return, $tags);
 
         $vars = $this->Vars;
         if (
             count($parent->Vars) === 1
             && array_key_first($parent->Vars) === 0
         ) {
-            $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0]);
+            $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0], $tags);
         }
 
         $templates = $this->Templates;
@@ -204,9 +211,22 @@ class PHPDoc implements Immutable
             $templates[$name] ??= $theirs;
         }
 
+        $summary = $this->Summary;
+        $description = $this->Description;
+        if ($description !== null && $parent->Description !== null) {
+            $description = Regex::replace(
+                '/\{@inherit[Dd]oc\}/',
+                $parent->Description,
+                $description,
+            );
+        } else {
+            $summary ??= $parent->Summary;
+            $description ??= $parent->Description;
+        }
+
         return $this
-            ->with('Summary', $this->Summary ?? $parent->Summary)
-            ->with('Description', $this->Description ?? $parent->Description)
+            ->with('Summary', $summary)
+            ->with('Description', $description)
             ->with('Tags', $tags)
             ->with('Params', $params)
             ->with('Return', $return)
@@ -234,7 +254,8 @@ class PHPDoc implements Immutable
                 $idx[$prefix . $tag] = true;
             }
         }
-        return self::$InheritableTagIndex = $idx;
+
+        return self::$InheritableTagIndex = array_diff_key($idx, self::MERGED_TAGS);
     }
 
     /**
@@ -242,19 +263,25 @@ class PHPDoc implements Immutable
      *
      * @param T|null $ours
      * @param T|null $theirs
+     * @param array<string,AbstractTag[]> $tags
+     * @param-out array<string,AbstractTag[]> $tags
      * @return ($ours is null ? ($theirs is null ? null : T) : T)
      */
-    private function mergeTag(?AbstractTag $ours, ?AbstractTag $theirs): ?AbstractTag
+    private function mergeTag(?AbstractTag $ours, ?AbstractTag $theirs, array &$tags): ?AbstractTag
     {
         if ($theirs === null) {
             return $ours;
         }
 
         if ($ours === null) {
+            $tag = $theirs->getTag();
+            $tags[$tag][] = $theirs;
             return $theirs;
         }
 
-        return $ours->inherit($theirs);
+        $tag = $ours->getTag();
+        $key = Arr::keyOf($tags[$tag], $ours);
+        return $tags[$tag][$key] = $ours->inherit($theirs);
     }
 
     /**
@@ -296,6 +323,16 @@ class PHPDoc implements Immutable
             ->with('Description', $description ?? $this->Description)
             ->with('Tags', $tags)
             ->with('Vars', $vars);
+    }
+
+    /**
+     * Get the state of the PHPDoc before inheriting values from other instances
+     *
+     * @return static
+     */
+    public function getOriginal()
+    {
+        return $this->Original;
     }
 
     /**
@@ -481,6 +518,35 @@ class PHPDoc implements Immutable
         }
 
         return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        $tags = Arr::flatten(Arr::unset($this->Tags, 'template'));
+
+        $text = Arr::implode("\n\n", [
+            $this->Summary,
+            $this->Description,
+            Arr::implode("\n", $this->getTemplates(false), ''),
+            Arr::implode("\n", $tags, ''),
+        ], '');
+
+        if ($text === '') {
+            return '/** */';
+        }
+
+        if (strpos($text, "\n") === false && $text[0] === '@') {
+            return "/** {$text} */";
+        }
+
+        return "/**\n * " . Regex::replace(
+            ["/\n(?!\n)/", "/\n(?=\n)/"],
+            ["\n * ", "\n *"],
+            $text,
+        ) . "\n */";
     }
 
     /**

@@ -34,31 +34,64 @@ final class PHPDocUtilTest extends TestCase
     /**
      * @dataProvider getAllClassDocCommentsProvider
      *
+     * @param array<class-string,string|null> $expected
      * @param ReflectionClass<object> $class
-     * @param array<string,string> $expected
      */
-    public function testGetAllClassDocComments(ReflectionClass $class, array $expected): void
-    {
-        $comments = PHPDocUtil::getAllClassDocComments($class);
-        $this->assertSame($expected, $comments);
+    public function testGetAllClassDocComments(
+        array $expected,
+        ReflectionClass $class,
+        bool $includeAll = false
+    ): void {
+        $actual = PHPDocUtil::getAllClassDocComments($class, $includeAll);
+        $this->assertSame($expected, $actual);
     }
 
     /**
-     * @return array<string,array{ReflectionClass<object>,array<string,string>}>
+     * @return array<array{array<class-string,string|null>,ReflectionClass<object>,2?:bool}>
      */
     public static function getAllClassDocCommentsProvider(): array
     {
         return [
-            MySubclass::class => [
-                new ReflectionClass(MySubclass::class),
+            [
                 [
                     MySubclass::class => "/**\n * MySubclass\n */",
                     MyClass::class => "/**\n * MyClass\n */",
                     MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                ],
+                new ReflectionClass(MySubclass::class),
+            ],
+            [
+                [
+                    MySubclass::class => "/**\n * MySubclass\n */",
+                    MyUndocumentedClass::class => null,
+                    MyClass::class => "/**\n * MyClass\n */",
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                ],
+                new ReflectionClass(MySubclass::class),
+                true,
+            ],
+            [
+                [
+                    MyClass::class => "/**\n * MyClass\n */",
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                ],
+                new ReflectionClass(MyUndocumentedClass::class),
+            ],
+            [
+                [
+                    MyUndocumentedClass::class => null,
+                    MyClass::class => "/**\n * MyClass\n */",
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                ],
+                new ReflectionClass(MyUndocumentedClass::class),
+                true,
+            ],
+            [
+                [
                     MyInterface::class => "/**\n * MyInterface\n */",
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
-                    MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
                 ],
+                new ReflectionClass(MyInterface::class),
             ],
         ];
     }

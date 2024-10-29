@@ -151,8 +151,13 @@ EOF,
 /**
  * Summary from ClassB
  *
+ * {@inheritDoc}
+ *
+ * More information from ClassB
+ *
+ *
  * @param int|string $arg1
- * @param array $arg3
+ * @param array $arg3 Description from ClassB
  * @return $this
  */
 EOF,
@@ -176,24 +181,57 @@ EOF,
 
         $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
 
-        $this->assertNotNull($phpDoc);
+        $this->assertSame(implode("\n", [
+            '/**',
+            ' * @param $arg1 Description from ClassC (untyped)',
+            ' * @param string[] $arg3',
+            ' * @param bool &$arg4',
+            ' * @param mixed ...$arg5',
+            ' * @return $this Description from ClassC',
+            ' */'
+        ]), (string) $phpDoc->getOriginal());
+
+        $this->assertSame(implode("\n", [
+            '/**',
+            ' * Summary from ClassB',
+            ' *',
+            ' * Description from ClassA',
+            ' *',
+            ' * ```php',
+            ' * // code here',
+            ' * ```',
+            ' *',
+            ' * More information from ClassB',
+            ' *',
+            ' * @param int|string $arg1 Description from ClassC (untyped)',
+            ' * @param string[] $arg3 Description from ClassB',
+            ' * @param bool &$arg4',
+            ' * @param mixed ...$arg5',
+            ' * @param string $arg2 Description from ClassA',
+            ' * @return $this Description from ClassC',
+            ' */',
+        ]), (string) $phpDoc);
+
         $this->assertSame('Summary from ClassB', $phpDoc->getSummary());
-        $this->assertSame("Description from ClassA\n\n```php\n// code here\n```", $phpDoc->getDescription());
+        $this->assertSame(implode("\n", [
+            'Description from ClassA',
+            '',
+            '```php',
+            '// code here',
+            '```',
+            '',
+            'More information from ClassB',
+        ]), $phpDoc->getDescription());
         $this->assertSame([
             'param' => [
-                '@param $arg1 Description from ClassC (untyped)',
-                '@param string[] $arg3',
+                '@param int|string $arg1 Description from ClassC (untyped)',
+                '@param string[] $arg3 Description from ClassB',
                 '@param bool &$arg4',
                 '@param mixed ...$arg5',
-                '@param int|string $arg1',
-                '@param array $arg3',
-                '@param mixed $arg1 Description from ClassA',
                 '@param string $arg2 Description from ClassA',
-                '@param array $arg3 Description from ClassA',
             ],
             'return' => [
                 '@return $this Description from ClassC',
-                '@return $this',
             ],
         ], array_map([Arr::class, 'toStrings'], $phpDoc->getTags()));
 
@@ -210,7 +248,7 @@ EOF,
         $tag = $params['arg3'];
         $this->assertSame('arg3', $tag->getName());
         $this->assertSame('string[]', $tag->getType());
-        $this->assertSame('Description from ClassA', $tag->getDescription());
+        $this->assertSame('Description from ClassB', $tag->getDescription());
         $this->assertFalse($tag->isPassedByReference());
         $this->assertFalse($tag->isVariadic());
 
@@ -252,6 +290,7 @@ EOF,
      * @param string[] $strings
      */
     public function testParamTags(
+        string $expected,
         string $docBlock,
         array $names,
         array $types,
@@ -261,6 +300,7 @@ EOF,
         array $strings
     ): void {
         $phpDoc = new PHPDoc($docBlock);
+        $this->assertSame($expected, (string) $phpDoc);
         $params = $phpDoc->getParams();
         $this->assertSame($names, array_keys($params));
         foreach ($names as $i => $name) {
@@ -274,7 +314,7 @@ EOF,
     }
 
     /**
-     * @return iterable<array{string,string[],array<string|null>,array<string|null>,bool[],bool[],string[]}>
+     * @return iterable<array{string,string,string[],array<string|null>,array<string|null>,bool[],bool[],string[]}>
      */
     public static function paramTagsProvider(): iterable
     {
@@ -314,6 +354,7 @@ EOF,
             ],
         ] as [$docBlock, $description]) {
             yield [
+                Arr::implode(' ', ['/** @param (int|string)[] &...$idListsByReference', $description, '*/']),
                 $docBlock,
                 ['idListsByReference'],
                 ['(int|string)[]'],
