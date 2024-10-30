@@ -30,6 +30,7 @@ trait HasMutator
 
         $clone = clone $this;
         $clone->$property = $value;
+        $clone->handlePropertyChanged($property);
         return $clone;
     }
 
@@ -50,9 +51,19 @@ trait HasMutator
 
         $clone = clone $this;
         unset($clone->$property);
+        $clone->handlePropertyChanged($property);
         return $clone;
     }
 
+    /**
+     * Called after a property of the object is changed or unset via one of its
+     * mutator methods
+     */
+    private function handlePropertyChanged(string $property): void {}
+
+    /**
+     * @internal
+     */
     private function propertyIsInitialized(string $property): bool
     {
         if (!property_exists($this, $property)) {
