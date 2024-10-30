@@ -10,6 +10,83 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.60] - 2024-10-30
+
+### Added
+
+#### `Cli`
+
+- Add new `CliOption` value types:
+  - `FLOAT`
+  - `DIRECTORY_OR_DASH`
+  - `NEW_PATH`
+  - `NEW_FILE`
+  - `NEW_DIRECTORY`
+  - `NEW_PATH_OR_DASH`
+  - `NEW_FILE_OR_DASH`
+  - `NEW_DIRECTORY_OR_DASH`
+
+#### `Core`
+
+- Add `HasMutator::handlePropertyChanged()`
+- Add `MetricCollector::add()`
+
+#### `PHPDoc`
+
+- **Add support for `@method` tags**
+- Add `PHPDoc` methods `fromTags()`, `getOriginal()`, `flatten()`
+
+### Changed
+
+#### `PHPDoc`
+
+- In `PHPDoc::inherit()`:
+  - Inherit descriptions via inline `{@inheritDoc}` tags
+  - Sync merged `@param`/`@return`/`@var` tags with tags returned by `PHPDoc::getTags()` instead of inheriting every unique tag
+  - Simplify `@template` inheritance
+- Implement `Stringable` in `PHPDoc`
+- In `PHPDocUtil::getAllClassDocComments()`, only return interfaces when `$class` is an interface (to prevent classes inheriting interface DocBlocks)
+
+#### `Sli`
+
+- In `AnalyseClass`:
+  - Replace `--format` option with `--json`, `--csv` and `--markdown` options
+  - Add `--skip=inherited` and `--skip-from` options
+  - Sort inherited members by declaring class and line number (if known)
+  - Sort classes and members consistently across all output types
+  - Remove namespaces from constant parameter default values
+  - Improve readability of Markdown output, e.g. by rendering declarations in member headers where possible
+  - Add `m_needsDocComment` to CSV output
+  - Collect and report statistics
+
+#### `Utility`
+
+- Rename `Str::toMarkdown()` to `escapeMarkdown()` and escape Markdown tags only where necessary
+- Add optional `$strict` parameter to `Arr::unique()` and others
+
+### Fixed
+
+#### `Cli`
+
+- Fix issue where `CliOption` value uniqueness is not enforced when value type is `DATE`
+
+#### `Container`
+
+- Fix metric reporting regression in `Application`
+
+#### `PHPDoc`
+
+- Fix `PHPDocUtil::getAllMethodDocComments()` issue where internal `enum` methods fail to resolve
+
+#### `Sli`
+
+- Fix `AnalyseClass` issue where `m_type` is overwritten in CSV output
+- Fix inconsistent handling of line endings in `AnalyseClass`
+
+#### `Utility`
+
+- Fix inconsistent `Str::escapeMarkdown()` output with CRLF input
+
 ## [v0.99.59] - 2024-10-24
 
 ### Added
@@ -3967,6 +4044,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.60]: https://github.com/salient-labs/toolkit/compare/v0.99.59...v0.99.60
 [v0.99.59]: https://github.com/salient-labs/toolkit/compare/v0.99.58...v0.99.59
 [v0.99.58]: https://github.com/salient-labs/toolkit/compare/v0.99.57...v0.99.58
 [v0.99.57]: https://github.com/salient-labs/toolkit/compare/v0.99.56...v0.99.57
