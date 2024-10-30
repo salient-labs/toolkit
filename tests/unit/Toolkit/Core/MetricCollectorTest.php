@@ -11,7 +11,7 @@ use LogicException;
  */
 final class MetricCollectorTest extends TestCase
 {
-    public function testCount(): void
+    public function testCounters(): void
     {
         $collector = new MetricCollector();
 
@@ -21,10 +21,10 @@ final class MetricCollectorTest extends TestCase
             } else {
                 $collector->count('even', 'type');
             }
-            if ($i % 3) {
-                continue;
+            if ($i % 3 === 0) {
+                $collector->count('divisible-by-three');
             }
-            $collector->count('divisible-by-three');
+            $collector->add($i, 'sum');
         }
 
         $all = [
@@ -34,6 +34,7 @@ final class MetricCollectorTest extends TestCase
             ],
             'general' => [
                 'divisible-by-three' => 5,
+                'sum' => 78,
             ]
         ];
         $this->assertSame($all, $collector->getCounters());
@@ -122,7 +123,7 @@ final class MetricCollectorTest extends TestCase
     public function testStartTimerWithCounterName(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Not a Metric::TIMER: counter (group=general)');
+        $this->expectExceptionMessage('Not a timer: counter (group=general)');
         $collector = new MetricCollector();
         $collector->count('counter');
         $collector->startTimer('counter');
@@ -131,7 +132,7 @@ final class MetricCollectorTest extends TestCase
     public function testCountWithTimerName(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Not a Metric::COUNTER: timer (group=general)');
+        $this->expectExceptionMessage('Not a counter: timer (group=general)');
         $collector = new MetricCollector();
         $collector->startTimer('timer');
         $collector->count('timer');

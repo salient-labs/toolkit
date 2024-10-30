@@ -712,7 +712,10 @@ class Application extends Container implements ApplicationInterface
         $groups,
         ?int $limit
     ): void {
-        $groupCounters = Profile::getInstance()->getCounters((array) $groups);
+        if ($groups !== null) {
+            $groups = (array) $groups;
+        }
+        $groupCounters = Profile::getInstance()->getCounters($groups);
         foreach ($groupCounters as $group => $counters) {
             // Sort by counter value, in descending order
             uasort($counters, fn(int $a, int $b) => $b <=> $a);
@@ -731,7 +734,7 @@ class Application extends Container implements ApplicationInterface
             $lines = [];
             $lines[] = Inflect::format(
                 $totalValue,
-                "Metrics: **{{#}}** {{#:event}} recorded by %s in group '**%s**':",
+                "**{{#}}** {{#:event}} recorded by %s in group '**%s**':",
                 Inflect::format($count, '**{{#}}** {{#:counter}}'),
                 $group,
             );
@@ -750,7 +753,7 @@ class Application extends Container implements ApplicationInterface
             $report[] = implode("\n", $lines);
         }
 
-        $groupTimers = Profile::getInstance()->getTimers($includeRunningTimers, (array) $groups);
+        $groupTimers = Profile::getInstance()->getTimers($includeRunningTimers, $groups);
         foreach ($groupTimers as $group => $timers) {
             // Sort by milliseconds elapsed, in descending order
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);
@@ -770,7 +773,7 @@ class Application extends Container implements ApplicationInterface
             $lines = [];
             $lines[] = Inflect::format(
                 $count,
-                "Metrics: **%.3fms** recorded by **{{#}}** {{#:timer}} in group '**%s**':",
+                "**%.3fms** recorded by **{{#}}** {{#:timer}} in group '**%s**':",
                 $totalTime,
                 $group,
             );

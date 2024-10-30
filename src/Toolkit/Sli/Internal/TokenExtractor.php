@@ -8,6 +8,7 @@ use Salient\Utility\Get;
 use Salient\Utility\Str;
 use InvalidArgumentException;
 use LogicException;
+use ReflectionClass;
 
 /**
  * @internal
@@ -16,6 +17,7 @@ final class TokenExtractor
 {
     /** @var NavigableToken[] */
     private array $Tokens;
+    private ?string $Filename;
     private ?self $Parent = null;
     private ?NavigableToken $ParentToken = null;
     private ?string $Namespace = null;
@@ -26,14 +28,70 @@ final class TokenExtractor
     /** @var array<string,array{\T_CLASS|\T_FUNCTION|\T_CONST,string}> */
     private array $Imports;
 
-    public function __construct(string $code)
+    /**
+     * Creates a new TokenExtractor object from PHP code
+     */
+    public function __construct(string $code, ?string $filename = null)
     {
         $this->Tokens = NavigableToken::tokenize($code, \TOKEN_PARSE, true);
+        $this->Filename = $filename;
     }
 
-    public static function fromFile(string $filename): self
+    /**
+     * Creates a new TokenExtractor object from a file, optionally applying an
+     * end-of-line sequence to its contents before they are tokenized
+     */
+    public static function fromFile(string $filename, ?string $eol = null): self
     {
-        return new self(File::getContents($filename));
+        $code = File::getContents($filename);
+        if ($eol !== null) {
+            $code = Str::setEol($code, $eol);
+        }
+        return new self($code, $filename);
+    }
+
+    /**
+     * Creates a new TokenExtractor object for a class from the file in which it
+     * is declared
+     *
+     * @param ReflectionClass<object>|class-string $class
+     */
+    public static function forClass($class, ?string $eol = null): self
+    {
+        if (!$class instanceof ReflectionClass) {
+            $class = new ReflectionClass($class);
+        }
+
+        $file = $class->getFileName();
+        if ($file === false) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException(sprintf(
+                '%s not loaded from file',
+                $class->getName(),
+            ));
+            // @codeCoverageIgnoreEnd
+        }
+
+        $name = $class->getShortName();
+        $namespace = $class->getNamespaceName();
+        foreach (self::fromFile($file, $eol)->getNamespaces() as $ns => $extractor) {
+            if (strcasecmp($ns, $namespace)) {
+                continue;
+            }
+            foreach ($extractor->getClasses() as $className => $extractor) {
+                if (!strcasecmp($className, $name)) {
+                    return $extractor;
+                }
+            }
+        }
+
+        // @codeCoverageIgnoreStart
+        throw new ShouldNotHappenException(sprintf(
+            '%s not found in %s',
+            $class->getName(),
+            $file,
+        ));
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -56,11 +114,30 @@ final class TokenExtractor
     }
 
     /**
+     * Get the filename of the extractor if one was passed to the constructor
+     */
+    public function getFilename(): ?string
+    {
+        return $this->Filename;
+    }
+
+    /**
      * Get the parent of the extractor
      */
     public function getParent(): ?self
     {
         return $this->Parent;
+    }
+
+    /**
+     * Check if the extractor represents a namespace
+     *
+     * @phpstan-assert-if-true !null $this->getNamespace()
+     * @phpstan-assert-if-true !null $this->getParent()
+     */
+    public function hasNamespace(): bool
+    {
+        return $this->Namespace !== null;
     }
 
     /**
@@ -81,12 +158,7 @@ final class TokenExtractor
      */
     public function getNamespaces(): iterable
     {
-        if (!$this->Tokens) {
-            return;
-        }
-
-        if ($this->Namespace !== null) {
-            yield $this->Namespace => $this;
+        if (!$this->Tokens || $this->Namespace !== null) {
             return;
         }
 
@@ -156,9 +228,7 @@ final class TokenExtractor
      * Get the extractor's class
      *
      * Returns `null` if the extractor does not have a class applied by
-     * {@see TokenExtractor::getClasses()},
-     * {@see TokenExtractor::getInterfaces()},
-     * {@see TokenExtractor::getTraits()} or {@see TokenExtractor::getEnums()}.
+     * {@see TokenExtractor::getClasses()}.
      */
     public function getClass(): ?string
     {
@@ -170,9 +240,7 @@ final class TokenExtractor
      * extractor's class
      *
      * Returns `null` if the extractor does not have a class applied by
-     * {@see TokenExtractor::getClasses()},
-     * {@see TokenExtractor::getInterfaces()},
-     * {@see TokenExtractor::getTraits()} or {@see TokenExtractor::getEnums()}.
+     * {@see TokenExtractor::getClasses()}.
      */
     public function getClassToken(): ?NavigableToken
     {
@@ -180,55 +248,17 @@ final class TokenExtractor
     }
 
     /**
-     * Iterate over classes in the extractor
+     * Iterate over classes, interfaces, traits and enums in the extractor
      *
      * @return iterable<string,static>
      */
     public function getClasses(): iterable
     {
-        yield from $this->doGetClasses(\T_CLASS);
-    }
-
-    /**
-     * Iterate over interfaces in the extractor
-     *
-     * @return iterable<string,static>
-     */
-    public function getInterfaces(): iterable
-    {
-        yield from $this->doGetClasses(\T_INTERFACE);
-    }
-
-    /**
-     * Iterate over traits in the extractor
-     *
-     * @return iterable<string,static>
-     */
-    public function getTraits(): iterable
-    {
-        yield from $this->doGetClasses(\T_TRAIT);
-    }
-
-    /**
-     * Iterate over enumerations in the extractor
-     *
-     * @return iterable<string,static>
-     */
-    public function getEnums(): iterable
-    {
-        yield from $this->doGetClasses(\T_ENUM);
-    }
-
-    /**
-     * @return iterable<string,static>
-     */
-    private function doGetClasses(int $id): iterable
-    {
-        if ($this->Class !== null) {
+        if (!$this->Tokens || $this->Class !== null) {
             return;
         }
 
-        foreach ($this->getTokens($id) as $token) {
+        foreach ($this->getTokens(\T_CLASS, \T_INTERFACE, \T_TRAIT, \T_ENUM) as $token) {
             $next = $token->NextCode;
             if ($next && $next->id === \T_STRING) {
                 $class = $next->text;

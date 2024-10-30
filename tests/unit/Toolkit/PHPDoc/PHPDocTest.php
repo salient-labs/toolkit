@@ -2,6 +2,8 @@
 
 namespace Salient\Tests\PHPDoc;
 
+use Salient\PHPDoc\Tag\MethodParam;
+use Salient\PHPDoc\Tag\MethodTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
 use Salient\Tests\Reflection\MyClass;
@@ -15,6 +17,8 @@ use InvalidArgumentException;
  * @covers \Salient\PHPDoc\PHPDoc
  * @covers \Salient\PHPDoc\PHPDocUtil
  * @covers \Salient\PHPDoc\Tag\AbstractTag
+ * @covers \Salient\PHPDoc\Tag\MethodParam
+ * @covers \Salient\PHPDoc\Tag\MethodTag
  * @covers \Salient\PHPDoc\Tag\ParamTag
  * @covers \Salient\PHPDoc\Tag\ReturnTag
  * @covers \Salient\PHPDoc\Tag\TemplateTag
@@ -151,8 +155,13 @@ EOF,
 /**
  * Summary from ClassB
  *
+ * {@inheritDoc}
+ *
+ * More information from ClassB
+ *
+ *
  * @param int|string $arg1
- * @param array $arg3
+ * @param array $arg3 Description from ClassB
  * @return $this
  */
 EOF,
@@ -174,26 +183,44 @@ EOF,
 EOF,
         ];
 
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+        $merged = <<<'EOF'
+/**
+ * Summary from ClassB
+ *
+ * Description from ClassA
+ *
+ * ```php
+ * // code here
+ * ```
+ *
+ * More information from ClassB
+ *
+ * @param int|string $arg1 Description from ClassC (untyped)
+ * @param string[] $arg3 Description from ClassB
+ * @param bool &$arg4
+ * @param mixed ...$arg5
+ * @param string $arg2 Description from ClassA
+ * @return $this Description from ClassC
+ */
+EOF;
 
-        $this->assertNotNull($phpDoc);
+        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+        $original = $phpDoc->getOriginal();
+
+        $this->assertSame(Str::eolFromNative($docBlocks[0]), (string) $original);
+        $this->assertSame(Str::eolFromNative($merged), (string) $phpDoc);
         $this->assertSame('Summary from ClassB', $phpDoc->getSummary());
-        $this->assertSame("Description from ClassA\n\n```php\n// code here\n```", $phpDoc->getDescription());
+        $this->assertSame("Description from ClassA\n\n```php\n// code here\n```\n\nMore information from ClassB", $phpDoc->getDescription());
         $this->assertSame([
             'param' => [
-                '@param $arg1 Description from ClassC (untyped)',
-                '@param string[] $arg3',
+                '@param int|string $arg1 Description from ClassC (untyped)',
+                '@param string[] $arg3 Description from ClassB',
                 '@param bool &$arg4',
                 '@param mixed ...$arg5',
-                '@param int|string $arg1',
-                '@param array $arg3',
-                '@param mixed $arg1 Description from ClassA',
                 '@param string $arg2 Description from ClassA',
-                '@param array $arg3 Description from ClassA',
             ],
             'return' => [
                 '@return $this Description from ClassC',
-                '@return $this',
             ],
         ], array_map([Arr::class, 'toStrings'], $phpDoc->getTags()));
 
@@ -210,7 +237,7 @@ EOF,
         $tag = $params['arg3'];
         $this->assertSame('arg3', $tag->getName());
         $this->assertSame('string[]', $tag->getType());
-        $this->assertSame('Description from ClassA', $tag->getDescription());
+        $this->assertSame('Description from ClassB', $tag->getDescription());
         $this->assertFalse($tag->isPassedByReference());
         $this->assertFalse($tag->isVariadic());
 
@@ -242,6 +269,69 @@ EOF,
     }
 
     /**
+     * @dataProvider phpDocProvider
+     *
+     * @param PHPDoc|string|null $classDocBlock
+     * @param class-string|null $class
+     */
+    public function testPHPDoc(
+        PHPDoc $expected,
+        ?string $docBlock = null,
+        $classDocBlock = null,
+        ?string $class = null,
+        ?string $member = null,
+        ?string $string = null
+    ): void {
+        $phpDoc = new PHPDoc($docBlock, $classDocBlock, $class, $member);
+        $this->assertEquals($expected, $phpDoc);
+        $this->assertSame(Str::eolFromNative($string ?? $docBlock ?? ''), (string) $phpDoc);
+    }
+
+    /**
+     * @return array<array{PHPDoc,1?:string|null,2?:PHPDoc|string|null,3?:class-string|null,4?:string|null,5?:string|null}>
+     */
+    public static function phpDocProvider(): array
+    {
+        return [
+            [
+                PHPDoc::fromTags([
+                    new MethodTag('getString', false, 'string', [], 'Description of getString()'),
+                    new MethodTag('setInteger', false, 'void', [
+                        'integer' => new MethodParam('integer', 'int'),
+                    ], 'Description of setInteger()'),
+                    new MethodTag('setString', false, null, [
+                        'string' => new MethodParam('string', 'string'),
+                    ], 'Description of setString()'),
+                    new MethodTag('setBoth', false, '$this', [
+                        'integer' => new MethodParam('integer', 'int'),
+                        'string' => new MethodParam('string', 'string'),
+                    ], 'Description of setBoth()'),
+                    new MethodTag('setAny', false, 'static', [
+                        'integerOrString' => new MethodParam('integerOrString', 'int|string', true),
+                    ], 'Description of setAny()'),
+                    new MethodTag('staticGetter', true, 'int|string', [], 'Description of staticGetter()'),
+                    new MethodTag('staticFactory', true, 'static[]', [
+                        'id' => new MethodParam('id', null, true),
+                    ], 'Description of staticFactory()'),
+                    new MethodTag('getChildren', false, 'static[]', [], 'Description of getChildren()'),
+                ]),
+                <<<'EOF'
+/**
+ * @method string getString() Description of getString()
+ * @method void setInteger(int $integer) Description of setInteger()
+ * @method setString(string $string) Description of setString()
+ * @method $this setBoth(int $integer, string $string) Description of setBoth()
+ * @method static setAny(int|string ...$integerOrString) Description of setAny()
+ * @method static int|string staticGetter() Description of staticGetter()
+ * @method static static[] staticFactory(...$id) Description of staticFactory()
+ * @method static[] getChildren() Description of getChildren()
+ */
+EOF,
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider paramTagsProvider
      *
      * @param string[] $names
@@ -252,6 +342,7 @@ EOF,
      * @param string[] $strings
      */
     public function testParamTags(
+        string $expected,
         string $docBlock,
         array $names,
         array $types,
@@ -261,6 +352,7 @@ EOF,
         array $strings
     ): void {
         $phpDoc = new PHPDoc($docBlock);
+        $this->assertSame($expected, (string) $phpDoc);
         $params = $phpDoc->getParams();
         $this->assertSame($names, array_keys($params));
         foreach ($names as $i => $name) {
@@ -274,7 +366,7 @@ EOF,
     }
 
     /**
-     * @return iterable<array{string,string[],array<string|null>,array<string|null>,bool[],bool[],string[]}>
+     * @return iterable<array{string,string,string[],array<string|null>,array<string|null>,bool[],bool[],string[]}>
      */
     public static function paramTagsProvider(): iterable
     {
@@ -314,6 +406,7 @@ EOF,
             ],
         ] as [$docBlock, $description]) {
             yield [
+                Arr::implode(' ', ['/** @param (int|string)[] &...$idListsByReference', $description, '*/']),
                 $docBlock,
                 ['idListsByReference'],
                 ['(int|string)[]'],

@@ -91,11 +91,6 @@ parameters:
 			path: src/Toolkit/Core/Introspector.php
 
 		-
-			message: "#^Method Salient\\\\Core\\\\MetricCollector\\:\\:count\\(\\) should return int\\<1, max\\> but returns int\\.$#"
-			count: 1
-			path: src/Toolkit/Core/MetricCollector.php
-
-		-
 			message: "#^Parameter \\#1 \\$where of method Salient\\\\Core\\\\SqlQuery\\:\\:buildWhere\\(\\) expects array\\<int\\|string, array\\|string\\>, array given\\.$#"
 			count: 1
 			path: src/Toolkit/Core/SqlQuery.php
@@ -176,19 +171,9 @@ parameters:
 			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
 
 		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(string\\)\\: \\(''\\|class\\-string\\) given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
 			message: "#^Property Salient\\\\Sli\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$Entity \\(array\\|null\\) does not accept mixed\\.$#"
 			count: 1
 			path: src/Toolkit/Sli/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Parameter \\#1 \\$value of method Salient\\\\Cli\\\\CliOptionBuilder\\:\\:valueCallback\\(\\) expects \\(callable\\(array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\)\\: mixed\\)\\|null, Closure\\(array\\)\\: array\\<0\\|1\\|2\\|3\\|4\\|5\\|6\\|7, 'create'\\|'create\\-list'\\|'delete'\\|'delete\\-list'\\|'get'\\|'get\\-list'\\|'update'\\|'update\\-list'\\> given\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Generate/GenerateSyncProvider.php
 
 		-
 			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"

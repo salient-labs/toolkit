@@ -14,7 +14,7 @@ final class TokenExtractorTest extends SliTestCase
 {
     public function testFromFile(): void
     {
-        $extractor = TokenExtractor::fromFile(__FILE__);
+        $extractor = TokenExtractor::fromFile(__FILE__, "\n");
         $this->assertInstanceOf(TokenExtractor::class, $extractor);
         foreach ($extractor->getTokens() as $token) {
             if ($token->line === __LINE__ && $token->id === \T_LINE) {
@@ -32,9 +32,9 @@ final class TokenExtractorTest extends SliTestCase
     public function testGetNamespaces($expected, string $code): void
     {
         foreach ((new TokenExtractor(Str::eolFromNative($code)))->getNamespaces() as $namespace => $extractor) {
+            $this->assertTrue($extractor->hasNamespace());
             $this->assertSame($namespace, $extractor->getNamespace());
-            $this->assertSame([$extractor], Get::list($extractor->getNamespaces()));
-            $this->assertSame([$namespace => $extractor], Get::array($extractor->getNamespaces()));
+            $this->assertEmpty(Get::array($extractor->getNamespaces()));
             [$tokens, $tokensCode] = self::serializeTokens($extractor->getTokens());
             $actual[] = [$namespace, $tokens];
             $actualCode[] = sprintf('[%s, %s],', Get::code($namespace), $tokensCode);
@@ -291,7 +291,10 @@ PHP,
     public function testGetFunctions($expected, string $code): void
     {
         foreach ((new TokenExtractor(Str::eolFromNative($code)))->getFunctions() as $function => $extractor) {
+            $this->assertTrue($extractor->hasMember());
             $this->assertSame($function, $extractor->getMember());
+            $this->assertNotNull($token = $extractor->getMemberToken());
+            $this->assertSame(\T_FUNCTION, $token->id);
             $this->assertEmpty(Get::array($extractor->getFunctions()));
             [$tokens, $tokensCode] = self::serializeTokens($extractor->getTokens());
             $actual[] = [$function, $tokens];
@@ -362,9 +365,7 @@ PHP,
 
     public function testGenerators(): void
     {
-        $tokensCode = null;
-        foreach ((new TokenExtractor(
-            <<<'PHP'
+        $code = <<<'PHP'
 <?php
 namespace Foo
 {
@@ -409,58 +410,52 @@ namespace
     }
     class HH extends H {}
 }
-PHP,
-        ))->getNamespaces() as $namespace => $extractor) {
-            foreach ([
-                \T_CLASS => $extractor->getClasses(),
-                \T_INTERFACE => $extractor->getInterfaces(),
-                \T_TRAIT => $extractor->getTraits(),
-                \T_ENUM => $extractor->getEnums(),
-            ] as $id => $classes) {
-                foreach ($classes as $class => $classExtractor) {
-                    $this->assertSame($extractor, $classExtractor->getParent());
-                    $this->assertTrue($classExtractor->hasClass());
-                    $this->assertSame($class, $classExtractor->getClass());
-                    $this->assertNotNull($token = $classExtractor->getClassToken());
-                    $this->assertSame($id, $token->id);
-                    $this->assertEmpty(Get::array($classExtractor->getClasses()));
-                    $this->assertNull($extractor->getName($token));
-                    if (
-                        ($token = $token->NextCode)
+PHP;
+        $tokensCode = null;
+        foreach ((new TokenExtractor(Str::eolFromNative($code)))->getNamespaces() as $namespace => $extractor) {
+            foreach ($extractor->getClasses() as $class => $classExtractor) {
+                $this->assertSame($extractor, $classExtractor->getParent());
+                $this->assertTrue($classExtractor->hasClass());
+                $this->assertSame($class, $classExtractor->getClass());
+                $this->assertNotNull($token = $classExtractor->getClassToken());
+                $this->assertContains($token->id, [\T_CLASS, \T_INTERFACE, \T_TRAIT, \T_ENUM]);
+                $this->assertEmpty(Get::array($classExtractor->getClasses()));
+                $this->assertNull($extractor->getName($token));
+                if (
+                    ($token = $token->NextCode)
+                    && ($token = $token->NextCode)
+                ) {
+                    while (
+                        ($token->id === \T_EXTENDS || $token->id === \T_COMMA)
                         && ($token = $token->NextCode)
                     ) {
-                        while (
-                            ($token->id === \T_EXTENDS || $token->id === \T_COMMA)
-                            && ($token = $token->NextCode)
-                        ) {
-                            $actual[$namespace][$class]['extends'][] = $extractor->getName($token, $token);
-                        }
-                        while (
-                            $token
-                            && ($token->id === \T_IMPLEMENTS || $token->id === \T_COMMA)
-                            && ($token = $token->NextCode)
-                        ) {
-                            $actual[$namespace][$class]['implements'][] = $extractor->getName($token, $token);
-                        }
+                        $actual[$namespace][$class]['extends'][] = $extractor->getName($token, $token);
                     }
-                    foreach ([
-                        [$classExtractor->getFunctions(), \T_FUNCTION, '', '()'],
-                        [$classExtractor->getProperties(), \T_VARIABLE, '$', ''],
-                        [$classExtractor->getConstants(), \T_CONST, '', ''],
-                    ] as [$members, $tokenId, $prefix, $suffix]) {
-                        foreach ($members as $member => $memberExtractor) {
-                            $this->assertSame($classExtractor, $memberExtractor->getParent());
-                            $this->assertTrue($memberExtractor->hasMember());
-                            $this->assertSame($member, $memberExtractor->getMember());
-                            $this->assertNotNull($token = $memberExtractor->getMemberToken());
-                            $this->assertSame($tokenId, $token->id);
-                            $key = $prefix . $member . $suffix;
-                            [$tokens[$namespace][$class][$key]] = self::serializeTokens(
-                                $memberExtractor->getTokens(),
-                                $tokensCode[$namespace][$class][$key],
-                                $constants,
-                            );
-                        }
+                    while (
+                        $token
+                        && ($token->id === \T_IMPLEMENTS || $token->id === \T_COMMA)
+                        && ($token = $token->NextCode)
+                    ) {
+                        $actual[$namespace][$class]['implements'][] = $extractor->getName($token, $token);
+                    }
+                }
+                foreach ([
+                    [$classExtractor->getFunctions(), \T_FUNCTION, '', '()'],
+                    [$classExtractor->getProperties(), \T_VARIABLE, '$', ''],
+                    [$classExtractor->getConstants(), \T_CONST, '', ''],
+                ] as [$members, $tokenId, $prefix, $suffix]) {
+                    foreach ($members as $member => $memberExtractor) {
+                        $this->assertSame($classExtractor, $memberExtractor->getParent());
+                        $this->assertTrue($memberExtractor->hasMember());
+                        $this->assertSame($member, $memberExtractor->getMember());
+                        $this->assertNotNull($token = $memberExtractor->getMemberToken());
+                        $this->assertSame($tokenId, $token->id);
+                        $key = $prefix . $member . $suffix;
+                        [$tokens[$namespace][$class][$key]] = self::serializeTokens(
+                            $memberExtractor->getTokens(),
+                            $tokensCode[$namespace][$class][$key],
+                            $constants,
+                        );
                     }
                 }
             }
@@ -567,10 +562,9 @@ PHP,
 
     public function testGetImports(): void
     {
-        $extractor = new TokenExtractor(
-            // Based on:
-            // https://www.php.net/manual/en/language.namespaces.importing.php
-            <<<'PHP'
+        // Based on:
+        // https://www.php.net/manual/en/language.namespaces.importing.php
+        $code = <<<'PHP'
 <?php
 
 use ArrayObject;
@@ -591,8 +585,7 @@ function () use (&$baz) {
     return $baz++;
 };
 
-PHP,
-        );
+PHP;
 
         $this->assertSame([
             'ArrayObject' => [\T_CLASS, 'ArrayObject'],
@@ -610,6 +603,6 @@ PHP,
             'ConstA' => [\T_CONST, 'some\_namespace\ConstA'],
             'ConstB' => [\T_CONST, 'some\_namespace\ConstB'],
             'ConstC' => [\T_CONST, 'some\_namespace\ConstC'],
-        ], Get::array($extractor->getImports()));
+        ], Get::array((new TokenExtractor($code))->getImports()));
     }
 }

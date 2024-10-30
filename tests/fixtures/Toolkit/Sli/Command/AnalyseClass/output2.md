@@ -40,69 +40,39 @@ public const MY_LONGER_ARRAY = [
 ]
 ```
 
-> ##### `MY_ARRAY`
-> 
-> <small>(from `MyInterface`)</small>
-> 
-> Summary of MyInterface::MY\_ARRAY
-> 
-> ```php
-> public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
-> ```
+##### Inherited from `MyInterface`
 
-> ##### `MY_SHORT_STRING`
-> 
-> <small>(from `MyInterface`)</small>
-> 
-> ```php
-> public const MY_SHORT_STRING = 'short'
-> ```
+> ###### `public MY_SHORT_STRING = 'short'`
+>
+> ###### `public MY_ARRAY = ['Stringable' => 0]`
+>
+> Summary of MyInterface::MY_ARRAY
 
 #### Properties
 
-##### `$MyVarProperty`
-
-```php
-public $MyVarProperty
-```
+##### `public $MyVarProperty`
 
 #### Methods
 
-##### `MyStaticMethod()`
+##### `final public static MyStaticMethod(static $instance): void`
 
 <small>(4 lines)</small>
 
-Summary of MyInterface::MyStaticMethod\(\)
+Summary of MyInterface::MyStaticMethod()
 
-```php
-final public static function MyStaticMethod(static $instance): void
-```
-
-##### `MyOverriddenMethod()`
+##### `protected MyOverriddenMethod(): int`
 
 <small>(4 lines, no DocBlock)</small>
 
-```php
-protected function MyOverriddenMethod(): int
-```
+##### Inherited from `MyInterface`
 
-> ##### `__toString()`
-> 
-> <small>(from `Stringable`)</small>
-> 
-> ```php
-> abstract public function __toString(): string
-> ```
+> ###### `abstract public MyMethod(): mixed`
+>
+> Summary of MyInterface::MyMethod()
 
-> ##### `MyMethod()`
-> 
-> <small>(from `MyInterface`)</small>
-> 
-> Summary of MyInterface::MyMethod\(\)
-> 
-> ```php
-> abstract public function MyMethod(): mixed
-> ```
+##### Inherited from `Stringable`
+
+> ###### `abstract public __toString(): string`
 
 ### Class `MyClass`
 
@@ -118,109 +88,47 @@ uses MyTrait
 
 #### Constants
 
-##### `MY_FLOAT`
+##### `protected float MY_FLOAT = 3.0`
 
-```php
-protected const float MY_FLOAT = 3.0
-```
+##### Inherited from `MyBaseClass`
 
-> ##### `MY_ARRAY`
-> 
-> <small>(from `MyInterface`)</small>
-> 
-> Summary of MyInterface::MY\_ARRAY
-> 
-> ```php
-> public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
-> ```
+> ###### `protected MY_INT = 1`
+>
+> ###### `protected MY_LONG_STRING = <string>`
+>
+> ###### `public MY_LONGER_ARRAY = <array>`
 
-> ##### `MY_INT`
-> 
-> <small>(from `MyBaseClass`)</small>
-> 
-> ```php
-> protected const MY_INT = 1
-> ```
+##### Inherited from `MyInterface`
 
-> ##### `MY_LONG_STRING`
-> 
-> <small>(from `MyBaseClass`)</small>
-> 
-> ```php
-> protected const MY_LONG_STRING = <string>
-> ```
-
-> ##### `MY_LONGER_ARRAY`
-> 
-> <small>(from `MyBaseClass`)</small>
-> 
-> ```php
-> public const MY_LONGER_ARRAY = <array>
-> ```
-
-> ##### `MY_SHORT_STRING`
-> 
-> <small>(from `MyInterface`)</small>
-> 
-> ```php
-> public const MY_SHORT_STRING = 'short'
-> ```
+> ###### `public MY_SHORT_STRING = 'short'`
+>
+> ###### `public MY_ARRAY = ['Stringable' => 0]`
+>
+> Summary of MyInterface::MY_ARRAY
 
 #### Properties
 
-##### `$MyProperty`
+##### `public T $MyProperty`
 
 Summary of MyClass::$MyProperty
 
-```php
-public T $MyProperty
-```
+##### `private static $MyStaticProperty`
 
-##### `$MyStaticProperty`
+##### `private static $MyStaticPropertyWithDefault = 0`
 
-```php
-private static $MyStaticProperty
-```
+##### `private static int $MyStaticTypedProperty`
 
-##### `$MyStaticPropertyWithDefault`
+##### `private static ?int $MyNullableStaticTypedProperty`
 
-```php
-private static $MyStaticPropertyWithDefault = 0
-```
+##### `private static ?int $MyNullableStaticTypedPropertyWithDefault = null`
 
-##### `$MyStaticTypedProperty`
+##### Inherited from `MyBaseClass`
 
-```php
-private static int $MyStaticTypedProperty
-```
+> ###### `public $MyVarProperty`
 
-##### `$MyNullableStaticTypedProperty`
+##### Inherited from `MyTrait`
 
-```php
-private static ?int $MyNullableStaticTypedProperty
-```
-
-##### `$MyNullableStaticTypedPropertyWithDefault`
-
-```php
-private static ?int $MyNullableStaticTypedPropertyWithDefault = null
-```
-
-> ##### `$MyIntProperty`
-> 
-> <small>(from `MyTrait`)</small>
-> 
-> ```php
-> private int $MyIntProperty = 2
-> ```
-
-> ##### `$MyVarProperty`
-> 
-> <small>(from `MyBaseClass`)</small>
-> 
-> ```php
-> public $MyVarProperty
-> ```
+> ###### `private int $MyIntProperty = 2`
 
 #### Methods
 
@@ -236,7 +144,7 @@ public function __construct(T $myProperty)
 
 <small>(4 lines)</small>
 
-Summary of MyClass::MyTemplateMethod\(\)
+Summary of MyClass::MyTemplateMethod()
 
 ```php
 protected function MyTemplateMethod<TInstance of MyInterface>(
@@ -253,83 +161,49 @@ protected function MyTemplateMethod<TInstance of MyInterface>(
 public function __toString(): string
 ```
 
-> ##### `MyMethod()`
-> 
-> <small>(from `MyTrait`)</small>
-> 
-> Summary of MyTrait::MyMethod\(\)
-> 
-> ```php
-> public function MyMethod(): mixed
-> ```
+##### Inherited from `MyBaseClass`
 
-> ##### `MyOverriddenMethod()`
-> 
-> <small>(from `MyTrait`)</small>
-> 
-> Summary of MyTrait::MyOverriddenMethod\(\)
-> 
-> ```php
-> public function MyOverriddenMethod(): int
-> ```
+> ###### `final public static MyStaticMethod(static $instance): void`
+>
+> Summary of MyInterface::MyStaticMethod()
 
-> ##### `MyStaticMethod()`
-> 
-> <small>(from `MyBaseClass`)</small>
-> 
-> Summary of MyInterface::MyStaticMethod\(\)
-> 
-> ```php
-> final public static function MyStaticMethod(static $instance): void
-> ```
+##### Inherited from `MyTrait`
+
+> ###### `public MyMethod(): mixed`
+>
+> Summary of MyTrait::MyMethod()
+>
+> ###### `public MyOverriddenMethod(): int`
+>
+> Summary of MyTrait::MyOverriddenMethod()
 
 ### Interface `MyInterface`
 
-<small>(27 lines, in API)</small>
+<small>(25 lines, in API)</small>
 
 Summary of MyInterface
 
-```php
-interface MyInterface
-```
-
 #### Constants
 
-##### `MY_SHORT_STRING`
+##### `public MY_SHORT_STRING = 'short'`
 
-```php
-public const MY_SHORT_STRING = 'short'
-```
+##### `public MY_ARRAY = ['Stringable' => 0]`
 
-##### `MY_ARRAY`
-
-Summary of MyInterface::MY\_ARRAY
-
-```php
-public const array<class-string,int> MY_ARRAY = ['Stringable' => 0]
-```
+Summary of MyInterface::MY_ARRAY
 
 #### Methods
 
-##### `MyMethod()`
+##### `public MyMethod(): mixed`
 
 <small>(1 line)</small>
 
-Summary of MyInterface::MyMethod\(\)
+Summary of MyInterface::MyMethod()
 
-```php
-public function MyMethod(): mixed
-```
-
-##### `MyStaticMethod()`
+##### `public static MyStaticMethod(static $instance): void`
 
 <small>(1 line)</small>
 
-Summary of MyInterface::MyStaticMethod\(\)
-
-```php
-public static function MyStaticMethod(static $instance): void
-```
+Summary of MyInterface::MyStaticMethod()
 
 ### Trait `MyTrait`
 
@@ -337,37 +211,21 @@ public static function MyStaticMethod(static $instance): void
 
 Summary of MyTrait
 
-```php
-trait MyTrait
-```
-
 #### Properties
 
-##### `$MyIntProperty`
-
-```php
-private int $MyIntProperty = 2
-```
+##### `private int $MyIntProperty = 2`
 
 #### Methods
 
-##### `MyMethod()`
+##### `public MyMethod(): mixed`
 
 <small>(1 line)</small>
 
-Summary of MyTrait::MyMethod\(\)
+Summary of MyTrait::MyMethod()
 
-```php
-public function MyMethod(): mixed
-```
-
-##### `MyOverriddenMethod()`
+##### `public MyOverriddenMethod(): int`
 
 <small>(4 lines)</small>
 
-Summary of MyTrait::MyOverriddenMethod\(\)
-
-```php
-public function MyOverriddenMethod(): int
-```
+Summary of MyTrait::MyOverriddenMethod()
 

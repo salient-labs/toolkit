@@ -3,19 +3,27 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\Instantiable;
-use Salient\Contract\Core\Metric;
-use Salient\Utility\Reflect;
 use LogicException;
 
 /**
  * Collects runtime performance metrics
+ *
+ * @api
  */
 final class MetricCollector implements Instantiable
 {
+    private const COUNTER = 0;
+    private const TIMER = 1;
+
+    private const METRIC_NAME = [
+        self::COUNTER => 'counter',
+        self::TIMER => 'timer',
+    ];
+
     /**
      * Group => name => metric
      *
-     * @var array<string,array<string,Metric::*>>
+     * @var array<string,array<string,int>>
      */
     private array $Metrics = [];
 
@@ -47,7 +55,7 @@ final class MetricCollector implements Instantiable
      */
     private array $ElapsedTime = [];
 
-    /** @var array<array{array<string,array<string,Metric::*>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}> */
+    /** @var array<array{array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}> */
     private array $Stack = [];
 
     /**
@@ -57,14 +65,22 @@ final class MetricCollector implements Instantiable
 
     /**
      * Increment a counter and return its value
-     *
-     * @return int<1,max>
      */
     public function count(string $counter, string $group = 'general'): int
     {
-        $this->assertMetricIs($counter, $group, Metric::COUNTER);
+        $this->assertMetricIs($counter, $group, self::COUNTER);
         $this->Counters[$group][$counter] ??= 0;
         return ++$this->Counters[$group][$counter];
+    }
+
+    /**
+     * Add a value to a counter and return its value
+     */
+    public function add(int $value, string $counter, string $group = 'general'): int
+    {
+        $this->assertMetricIs($counter, $group, self::COUNTER);
+        $this->Counters[$group][$counter] ??= 0;
+        return $this->Counters[$group][$counter] += $value;
     }
 
     /**
@@ -73,7 +89,7 @@ final class MetricCollector implements Instantiable
     public function startTimer(string $timer, string $group = 'general'): void
     {
         $now = hrtime(true);
-        $this->assertMetricIs($timer, $group, Metric::TIMER);
+        $this->assertMetricIs($timer, $group, self::TIMER);
         if (isset($this->RunningTimers[$group][$timer])) {
             throw new LogicException(sprintf('Timer already running: %s', $timer));
         }
@@ -144,20 +160,10 @@ final class MetricCollector implements Instantiable
     /**
      * Get counter values
      *
-     * @template T of string[]|string|null
-     *
-     * @param T $groups If `null` or `["*"]`, all counters are returned,
-     * otherwise only counters in the given groups are returned.
-     * @phpstan-return (T is string ? array<string,int> : array<string,array<string,int>>)
-     * @return array<string,array<string,int>>|array<string,int> An array that
-     * maps groups to counters:
+     * Returns an array that maps groups to counters:
      *
      * ```
-     * [
-     *   <group> => [
-     *     <counter> => <value>, ...
-     *   ], ...
-     * ]
+     * [ <group> => [ <counter> => <value>, ... ], ... ]
      * ```
      *
      * Or, if `$groups` is a string:
@@ -165,6 +171,13 @@ final class MetricCollector implements Instantiable
      * ```
      * [ <counter> => <value>, ... ]
      * ```
+     *
+     * @template T of string[]|string|null
+     *
+     * @param T $groups If `null` or `["*"]`, all counters are returned,
+     * otherwise only counters in the given groups are returned.
+     * @return array<string,array<string,int>>|array<string,int>
+     * @phpstan-return (T is string ? array<string,int> : array<string,array<string,int>>)
      */
     public function getCounters($groups = null): array
     {
@@ -187,26 +200,16 @@ final class MetricCollector implements Instantiable
         string $group = 'general',
         bool $includeRunning = true
     ): array {
-        return $this->doGetTimer($timer, $group, $includeRunning) ?: [0.0, 0];
+        return $this->doGetTimer($timer, $group, $includeRunning) ?? [0.0, 0];
     }
 
     /**
      * Get timer start counts and elapsed milliseconds
      *
-     * @template T of string[]|string|null
-     *
-     * @param T $groups If `null` or `["*"]`, all timers are returned, otherwise
-     * only timers in the given groups are returned.
-     * @phpstan-return (T is string ? array<string,array{float,int}> : array<string,array<string,array{float,int}>>)
-     * @return array<string,array<string,array{float,int}>>|array<string,array{float,int}>
-     * An array that maps groups to timers:
+     * Returns an array that maps groups to timers:
      *
      * ```
-     * [
-     *   <group> => [
-     *     <timer> => [ <elapsed_ms>, <start_count> ], ...
-     *   ], ...
-     * ]
+     * [ <group> => [ <timer> => [ <elapsed_ms>, <start_count> ], ... ], ... ]
      * ```
      *
      * Or, if `$groups` is a string:
@@ -214,6 +217,13 @@ final class MetricCollector implements Instantiable
      * ```
      * [ <timer> => [ <elapsed_ms>, <start_count> ], ... ]
      * ```
+     *
+     * @template T of string[]|string|null
+     *
+     * @param T $groups If `null` or `["*"]`, all timers are returned, otherwise
+     * only timers in the given groups are returned.
+     * @return array<string,array<string,array{float,int}>>|array<string,array{float,int}>
+     * @phpstan-return (T is string ? array<string,array{float,int}> : array<string,array<string,array{float,int}>>)
      */
     public function getTimers(bool $includeRunning = true, $groups = null): array
     {
@@ -239,7 +249,8 @@ final class MetricCollector implements Instantiable
     }
 
     /**
-     * @param int|float $now
+     * @param int|float|null $now
+     * @param-out int|float|null $now
      * @return array{float,int}|null
      */
     private function doGetTimer(
@@ -248,7 +259,7 @@ final class MetricCollector implements Instantiable
         bool $includeRunning,
         ?int $count = null,
         &$now = null
-    ) {
+    ): ?array {
         $count ??= $this->TimerRuns[$group][$timer] ?? null;
         if ($count === null) {
             return null;
@@ -265,15 +276,15 @@ final class MetricCollector implements Instantiable
     }
 
     /**
-     * @param Metric::* $metric
+     * @param self::COUNTER|self::TIMER $metric
      */
     private function assertMetricIs(string $name, string $group, int $metric): void
     {
         $this->Metrics[$group][$name] ??= $metric;
         if ($this->Metrics[$group][$name] !== $metric) {
             throw new LogicException(sprintf(
-                'Not a Metric::%s: %s (group=%s)',
-                Reflect::getConstantName(Metric::class, $metric),
+                'Not a %s: %s (group=%s)',
+                self::METRIC_NAME[$metric],
                 $name,
                 $group,
             ));

@@ -2,14 +2,23 @@
 
 namespace Salient\Sli\Internal\Data;
 
+use Salient\PHPDoc\PHPDoc;
+use Salient\PHPDoc\PHPDocUtil;
+use Salient\Utility\Reflect;
 use JsonSerializable;
+use ReflectionClass;
+use ReflectionClassConstant;
 
 /**
  * @internal
  */
 class ConstantData implements JsonSerializable
 {
+    use HasPHPDoc;
+    use MemberDataTrait;
+
     public string $Name;
+    public ClassData $Class;
     public ?string $Summary = null;
     public bool $Api = false;
     public bool $Internal = false;
@@ -29,9 +38,69 @@ class ConstantData implements JsonSerializable
     public string $Value = '';
     public ?int $Line = null;
 
-    public function __construct(string $name)
+    final public function __construct(string $name, ClassData $class)
     {
         $this->Name = $name;
+        $this->Class = $class;
+    }
+
+    /**
+     * @param ReflectionClass<object> $class
+     */
+    public static function fromReflection(
+        ReflectionClassConstant $constant,
+        ReflectionClass $class,
+        ClassData $classData,
+        ?bool $declared = null,
+        ?int $line = null
+    ): self {
+        $constantName = $constant->getName();
+        $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, $classDocBlocks);
+        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $constantName);
+        $declaring = $constant->getDeclaringClass();
+        $className = $class->getName();
+        $declaringName = $declaring->getName();
+
+        $data = (new static($constantName, $classData))->applyPHPDoc($phpDoc);
+        $data->Declared = $declared ??= ($declaringName === $className);
+        $data->Inherited = $declaringName !== $className;
+
+        if ($declared) {
+            $data->Line = $line;
+        } elseif ($declaringName !== $className) {
+            $data->InheritedFrom = [$declaringName, $constantName];
+        } elseif ($inserted = Reflect::getTraitConstant($declaring, $constantName)) {
+            $data->InheritedFrom = [
+                $inserted->getDeclaringClass()->getName(),
+                $inserted->getName(),
+            ];
+        }
+
+        $data->Modifiers = array_keys(array_filter([
+            'final' => $data->IsFinal = \PHP_VERSION_ID >= 80100 && $constant->isFinal(),
+            'public' => $data->IsPublic = $constant->isPublic(),
+            'protected' => $data->IsProtected = $constant->isProtected(),
+            'private' => $data->IsPrivate = $constant->isPrivate(),
+        ]));
+
+        $vars = $phpDoc->getVars();
+        if (count($vars) === 1 && array_key_first($vars) === 0) {
+            $data->Type = $vars[0]->getType();
+        }
+
+        $data->Value = self::getValueCode($constant->getValue(), $declared);
+
+        return $data;
+    }
+
+    public function getFqsen(): string
+    {
+        return "{$this->Class->getFqcn()}::{$this->Name}";
+    }
+
+    public function getStructuralElementName(): string
+    {
+        return $this->Name;
     }
 
     /**

@@ -225,6 +225,7 @@ final class TestTest extends TestCase
     public static function isDateStringProvider(): array
     {
         return [
+            [false, ''],
             [false, '0'],
             [false, '1'],
             [false, 'not a date'],

@@ -26,6 +26,7 @@ class TestOptions extends CliCommand
 
     private ?string $Action = null;
     private ?string $Data = null;
+    private bool $DataAsObject = false;
     /** @var string[] */
     private array $Print = [];
     private bool $Flag = false;
@@ -93,6 +94,10 @@ class TestOptions extends CliCommand
                 ->optionType(CliOptionType::VALUE)
                 ->hide()
                 ->bindTo($this->Data),
+            CliOption::build()
+                ->long('data-as-object')
+                ->hide()
+                ->bindTo($this->DataAsObject),
             CliOption::build()
                 ->long('print')
                 ->optionType(CliOptionType::ONE_OF)
@@ -198,11 +203,18 @@ class TestOptions extends CliCommand
     {
         $this->Args = $args;
 
+        $data = $this->Data;
+        if ($data !== null) {
+            $data = $this->DataAsObject
+                ? Json::parse($data)
+                : Json::parseObjectAsArray($data);
+            if ($this->DataAsObject && is_object($data)) {
+                $data = (array) $data;
+            }
+        }
+
         switch ($this->Action) {
             case self::ACTION_APPLY_VALUES:
-                /** @var string */
-                $data = $this->Data;
-                $data = Json::parseObjectAsArray($data);
                 if (!is_array($data) || !$this->checkOptionValues($data)) {
                     throw new CliInvalidArgumentsException('Invalid option values');
                 }
@@ -210,9 +222,6 @@ class TestOptions extends CliCommand
                 break;
 
             case self::ACTION_APPLY_SCHEMA_VALUES:
-                /** @var string */
-                $data = $this->Data;
-                $data = Json::parseObjectAsArray($data);
                 if (!is_array($data) || !$this->checkOptionValues($data)) {
                     throw new CliInvalidArgumentsException('Invalid option values');
                 }
@@ -276,6 +285,7 @@ class TestOptions extends CliCommand
     {
         unset($values['action']);
         unset($values['data']);
+        unset($values['data-as-object']);
         unset($values['print']);
         return $values;
     }

@@ -119,9 +119,9 @@ final class Arr extends AbstractUtility
      * @return TKey
      * @throws OutOfRangeException if `$value` is not found in `$array`.
      */
-    public static function keyOf(array $array, $value)
+    public static function keyOf(array $array, $value, bool $strict = true)
     {
-        $key = array_search($value, $array, true);
+        $key = array_search($value, $array, $strict);
         if ($key === false) {
             throw new OutOfRangeException('Value not found in array');
         }
@@ -139,9 +139,9 @@ final class Arr extends AbstractUtility
      * @param TValue $value
      * @return TKey|null
      */
-    public static function search(array $array, $value)
+    public static function search(array $array, $value, bool $strict = true)
     {
-        $key = array_search($value, $array, true);
+        $key = array_search($value, $array, $strict);
         return $key === false
             ? null
             : $key;
@@ -416,11 +416,12 @@ final class Arr extends AbstractUtility
      */
     public static function unique(
         iterable $array,
-        bool $preserveKeys = false
+        bool $preserveKeys = false,
+        bool $strict = true
     ): array {
         $unique = [];
         foreach ($array as $key => $value) {
-            if (in_array($value, $unique, true)) {
+            if (in_array($value, $unique, $strict)) {
                 continue;
             }
             if ($preserveKeys) {

@@ -501,7 +501,8 @@ EOF,
                 1,
                 [
                     '--action=apply-values',
-                    '--data=' . Json::stringify(['value' => 3.14]),
+                    '--data=' . Json::stringify(['value' => new stdClass()]),
+                    '--data-as-object',
                 ],
                 [
                     [Level::ERROR, 'Error: Invalid option values'],

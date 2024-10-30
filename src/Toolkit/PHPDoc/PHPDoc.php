@@ -6,6 +6,8 @@ use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\GenericTag;
+use Salient\PHPDoc\Tag\MethodParam;
+use Salient\PHPDoc\Tag\MethodTag;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\ReturnTag;
 use Salient\PHPDoc\Tag\TemplateTag;
@@ -15,6 +17,7 @@ use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * A PSR-5 PHPDoc
@@ -22,7 +25,7 @@ use InvalidArgumentException;
  * Summaries that break over multiple lines are unwrapped. Descriptions and tags
  * may contain Markdown, including fenced code blocks.
  */
-class PHPDoc implements Immutable
+class PHPDoc implements Immutable, Stringable
 {
     use HasMutator;
 
@@ -49,19 +52,33 @@ class PHPDoc implements Immutable
         . '\s*+(?<var_description>(?s).++)?'
         . '`';
 
+    private const METHOD_TAG = '`^'
+        . '(?<method_static>static\h++)?'
+        . '(?:(?<method_type>' . PHPDocRegex::PHPDOC_TYPE . ')\h++)?'
+        . '(?<method_name>[^\s(]++)'
+        . '\h*+\(\h*+(?:(?<method_params>(?:(?&method_type)\h++)?(?:\.\.\.\h*+)?\$[^\s,)$]++(?:\h*+,\h*+(?:(?&method_type)\h++)?(?:\.\.\.\h*+)?\$[^\s,)$]++)*+)\h*+(?:,\h*+)?)?\)'
+        . '\s*+(?<method_description>(?s).++)?'
+        . '`';
+
     private const TEMPLATE_TAG = '`^'
         . '(?<template_name>[^\s]++)'
         . '(?:\h++(?:of|as)\h++(?<template_type>' . PHPDocRegex::PHPDOC_TYPE . '))?'
         . '(?:\h++=\h++(?<template_default>(?&template_type)))?'
         . '`';
 
-    private const DEFAULT_TAG_PREFIXES = [
+    /**
+     * @var non-empty-array<string>
+     */
+    protected const DEFAULT_TAG_PREFIXES = [
         '',
         'phpstan-',
         'psalm-',
     ];
 
-    private const INHERITABLE_TAGS = [
+    /**
+     * @var non-empty-array<string,non-empty-array<string>|bool>
+     */
+    protected const INHERITABLE_TAGS = [
         // PSR-19 Section 4
         'author' => false,
         'copyright' => false,
@@ -91,7 +108,21 @@ class PHPDoc implements Immutable
         'readonly' => false,
     ];
 
-    private const STANDARD_TAGS = [
+    /**
+     * @var array<string,true>
+     */
+    protected const MERGED_TAGS = [
+        'param' => true,
+        'return' => true,
+        'var' => true,
+        'method' => true,
+        'template' => true,
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected const STANDARD_TAGS = [
         'param',
         'readonly',
         'return',
@@ -112,8 +143,12 @@ class PHPDoc implements Immutable
     private ?ReturnTag $Return = null;
     /** @var VarTag[] */
     private array $Vars = [];
+    /** @var array<string,MethodTag> */
+    private array $Methods = [];
     /** @var array<string,TemplateTag> */
     private array $Templates = [];
+    /** @var array<class-string,array<string,TemplateTag>> */
+    private array $InheritedTemplates = [];
     /** @var class-string|null */
     private ?string $Class;
     private ?string $Member;
@@ -125,7 +160,7 @@ class PHPDoc implements Immutable
     /** @var string[] */
     private array $Lines;
     private ?string $NextLine;
-    /** @var array<string,true> */
+    /** @var array<class-string<self>,array<string,true>> */
     private static array $InheritableTagIndex;
 
     /**
@@ -134,7 +169,7 @@ class PHPDoc implements Immutable
      * @param self|string|null $classDocBlock
      * @param class-string|null $class
      */
-    public function __construct(
+    final public function __construct(
         ?string $docBlock = null,
         $classDocBlock = null,
         ?string $class = null,
@@ -148,17 +183,90 @@ class PHPDoc implements Immutable
         $this->Class = $class;
         $this->Member = $member;
         $this->Original = $this;
-        $this->parse($matches['content']);
+        $this->parse($matches['content'], $tags);
 
         // Merge templates from the declaring class, if possible
-        if ($classDocBlock !== null) {
+        if ($classDocBlock !== null && $class !== null && $member !== null) {
             $phpDoc = $classDocBlock instanceof self
                 ? $classDocBlock
-                : new self($classDocBlock, null, $this->Class);
+                : new static($classDocBlock, null, $class);
             foreach ($phpDoc->Templates as $name => $tag) {
                 $this->Templates[$name] ??= $tag;
             }
         }
+
+        if ($tags) {
+            $this->updateTags();
+        }
+    }
+
+    /**
+     * Creates a new PHPDoc object from an array of tag objects
+     *
+     * @param AbstractTag[] $tags
+     * @param class-string|null $class
+     * @return static
+     */
+    public static function fromTags(
+        array $tags,
+        ?string $summary = null,
+        ?string $description = null,
+        ?string $class = null,
+        ?string $member = null
+    ): self {
+        if ($summary !== null) {
+            $summary = Str::coalesce(trim($summary), null);
+        }
+        if ($description !== null) {
+            $description = Str::coalesce(trim($description), null);
+        }
+        if ($summary === null && $description !== null) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidArgumentException('$description must be empty if $summary is empty');
+            // @codeCoverageIgnoreEnd
+        }
+
+        $phpDoc = new static(null, null, $class, $member);
+        $phpDoc->Summary = $summary;
+        $phpDoc->Description = $description;
+
+        $count = 0;
+        foreach ($tags as $tag) {
+            if ($tag instanceof ParamTag) {
+                $phpDoc->Params[$tag->getName()] = $tag;
+            } elseif ($tag instanceof ReturnTag) {
+                $phpDoc->Return = $tag;
+            } elseif ($tag instanceof VarTag) {
+                $name = $tag->getName();
+                if ($name !== null) {
+                    $phpDoc->Vars[$name] = $tag;
+                } else {
+                    $phpDoc->Vars[] = $tag;
+                }
+            } elseif ($tag instanceof MethodTag) {
+                $phpDoc->Methods[$tag->getName()] = $tag;
+            } elseif ($tag instanceof TemplateTag) {
+                $_class = $tag->getClass();
+                if ($_class === $class || $_class === null || $class === null) {
+                    $phpDoc->Templates[$tag->getName()] = $tag;
+                } else {
+                    $phpDoc->InheritedTemplates[$_class][$tag->getName()] = $tag;
+                    continue;
+                }
+            } else {
+                $phpDoc->Tags[$tag->getTag()][] = $tag;
+                continue;
+            }
+
+            $phpDoc->Tags[$tag->getTag()] ??= [];
+            $count++;
+        }
+
+        if ($count) {
+            $phpDoc->updateTags();
+        }
+
+        return $phpDoc;
     }
 
     /**
@@ -178,7 +286,7 @@ class PHPDoc implements Immutable
             self::getInheritableTagIndex(),
         ) as $name => $theirs) {
             foreach ($theirs as $tag) {
-                if ($name === 'template' || !isset($idx[(string) $tag])) {
+                if (!isset($idx[(string) $tag])) {
                     $tags[$name][] = $tag;
                 }
             }
@@ -199,19 +307,38 @@ class PHPDoc implements Immutable
             $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0]);
         }
 
-        $templates = $this->Templates;
-        foreach ($parent->Templates as $name => $theirs) {
-            $templates[$name] ??= $theirs;
+        $methods = $this->Methods;
+        foreach ($parent->Methods as $name => $theirs) {
+            $methods[$name] = $this->mergeTag($methods[$name] ?? null, $theirs);
+        }
+
+        $templates = $this->InheritedTemplates;
+        if ($parent->Class !== null && $parent->Class !== $this->Class) {
+            unset($templates[$parent->Class]);
+            $templates[$parent->Class] = $parent->Templates;
+        }
+
+        $summary = $this->Summary;
+        $description = $this->Description;
+        if ($description !== null && $parent->Description !== null) {
+            $description = Regex::replace(
+                '/\{@inherit[Dd]oc\}/',
+                $parent->Description,
+                $description,
+            );
+        } else {
+            $summary ??= $parent->Summary;
+            $description ??= $parent->Description;
         }
 
         return $this
-            ->with('Summary', $this->Summary ?? $parent->Summary)
-            ->with('Description', $this->Description ?? $parent->Description)
+            ->with('Summary', $summary)
+            ->with('Description', $description)
             ->with('Tags', $tags)
             ->with('Params', $params)
             ->with('Return', $return)
             ->with('Vars', $vars)
-            ->with('Templates', $templates);
+            ->with('InheritedTemplates', $templates);
     }
 
     /**
@@ -219,22 +346,26 @@ class PHPDoc implements Immutable
      */
     private static function getInheritableTagIndex(): array
     {
-        if (isset(self::$InheritableTagIndex)) {
-            return self::$InheritableTagIndex;
+        if (isset(self::$InheritableTagIndex[static::class])) {
+            return self::$InheritableTagIndex[static::class];
         }
 
-        foreach (self::INHERITABLE_TAGS as $tag => $prefixes) {
+        foreach (static::INHERITABLE_TAGS as $tag => $prefixes) {
             if ($prefixes === false) {
                 $idx[$tag] = true;
                 continue;
             } elseif ($prefixes === true) {
-                $prefixes = self::DEFAULT_TAG_PREFIXES;
+                $prefixes = static::DEFAULT_TAG_PREFIXES;
             }
             foreach ($prefixes as $prefix) {
                 $idx[$prefix . $tag] = true;
             }
         }
-        return self::$InheritableTagIndex = $idx;
+
+        return self::$InheritableTagIndex[static::class] = array_diff_key(
+            $idx,
+            static::MERGED_TAGS,
+        );
     }
 
     /**
@@ -278,9 +409,7 @@ class PHPDoc implements Immutable
             $var = $vars[0];
             $varDesc = $var->getDescription();
             if ($varDesc !== null) {
-                $varKey = Arr::keyOf($tags['var'] ?? [], $var);
-                $vars = [$var = $var->withDescription(null)];
-                $tags['var'][$varKey] = $var;
+                $vars = [$var->withDescription(null)];
                 if ($this->Summary === null) {
                     $summary = $varDesc;
                 } elseif ($this->Summary !== $varDesc) {
@@ -291,11 +420,98 @@ class PHPDoc implements Immutable
                 }
             }
         }
+
         return $this
             ->with('Summary', $summary ?? $this->Summary)
             ->with('Description', $description ?? $this->Description)
             ->with('Tags', $tags)
             ->with('Vars', $vars);
+    }
+
+    /**
+     * Flatten values inherited from other instances and forget the initial
+     * state of the PHPDoc
+     *
+     * @return static
+     */
+    public function flatten()
+    {
+        $phpDoc = clone $this;
+        $phpDoc->Original = $phpDoc;
+        $phpDoc->InheritedTemplates = [];
+
+        return $phpDoc;
+    }
+
+    /**
+     * Called after a property of the PHPDoc is changed via with()
+     */
+    private function handlePropertyChanged(string $property): void
+    {
+        $tag = [
+            'Params' => 'param',
+            'Return' => 'return',
+            'Vars' => 'var',
+            'Methods' => 'method',
+            'Templates' => 'template',
+        ][$property] ?? null;
+
+        if ($tag !== null) {
+            $this->updateTags($tag);
+        }
+    }
+
+    private function updateTags(?string $tag = null): void
+    {
+        if ($tag === 'param' || $tag === null) {
+            if ($this->Params) {
+                $this->Tags['param'] = array_values($this->Params);
+            } else {
+                unset($this->Tags['param']);
+            }
+        }
+
+        if ($tag === 'return' || $tag === null) {
+            if ($this->Return) {
+                $this->Tags['return'] = [$this->Return];
+            } else {
+                unset($this->Tags['return']);
+            }
+        }
+
+        if ($tag === 'var' || $tag === null) {
+            if ($this->Vars) {
+                $this->Tags['var'] = array_values($this->Vars);
+            } else {
+                unset($this->Tags['var']);
+            }
+        }
+
+        if ($tag === 'method' || $tag === null) {
+            if ($this->Methods) {
+                $this->Tags['method'] = array_values($this->Methods);
+            } else {
+                unset($this->Tags['method']);
+            }
+        }
+
+        if ($tag === 'template' || $tag === null) {
+            if ($templates = $this->getTemplates(false)) {
+                $this->Tags['template'] = array_values($templates);
+            } else {
+                unset($this->Tags['template']);
+            }
+        }
+    }
+
+    /**
+     * Get the state of the PHPDoc before inheriting values from other instances
+     *
+     * @return static
+     */
+    public function getOriginal()
+    {
+        return $this->Original;
     }
 
     /**
@@ -374,21 +590,32 @@ class PHPDoc implements Immutable
     }
 
     /**
+     * Get the PHPDoc's "@method" tags, indexed by name
+     *
+     * @return array<string,MethodTag>
+     */
+    public function getMethods(): array
+    {
+        return $this->Methods;
+    }
+
+    /**
      * Get the PHPDoc's "@template" tags, indexed by name
      *
      * @return array<string,TemplateTag>
      */
     public function getTemplates(bool $includeInherited = true): array
     {
-        if ($includeInherited || $this->Class === null) {
+        if (
+            $includeInherited
+            || $this->Class === null
+            || $this->Member === null
+        ) {
             return $this->Templates;
         }
 
         foreach ($this->Templates as $name => $template) {
-            if ($template->getClass() === $this->Class && (
-                $this->Member === null
-                || $template->getMember() === $this->Member
-            )) {
+            if ($template->getMember() !== null) {
                 $templates[$name] = $template;
             }
         }
@@ -404,23 +631,15 @@ class PHPDoc implements Immutable
     public function getTemplatesForTag(AbstractTag $tag): array
     {
         $class = $tag->getClass();
-        $member = $tag->getMember();
-        if ($class === null || $this->Class === null) {
+        if (
+            $class === $this->Class
+            || $class === null
+            || $this->Class === null
+        ) {
             return $this->Templates;
         }
 
-        /** @var TemplateTag $template */
-        foreach ($this->Tags['template'] ?? [] as $template) {
-            $name = $template->getName();
-            if ($template->getClass() === $class && (
-                ($_member = $template->getMember()) === null
-                || $_member === $member
-            )) {
-                $templates[$name] = $template;
-            }
-        }
-
-        return $templates ?? [];
+        return $this->InheritedTemplates[$class] ?? [];
     }
 
     /**
@@ -473,7 +692,7 @@ class PHPDoc implements Immutable
 
         foreach (array_diff(
             array_keys($this->Tags),
-            self::STANDARD_TAGS,
+            static::STANDARD_TAGS,
         ) as $key) {
             if (!Regex::match('/^(phpstan|psalm)-/', $key)) {
                 return true;
@@ -484,11 +703,41 @@ class PHPDoc implements Immutable
     }
 
     /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        $tags = Arr::flatten(Arr::unset($this->Tags, 'template'));
+
+        $text = Arr::implode("\n\n", [
+            $this->Summary,
+            $this->Description,
+            Arr::implode("\n", $this->getTemplates(false), ''),
+            Arr::implode("\n", $tags, ''),
+        ], '');
+
+        if ($text === '') {
+            return '/** */';
+        }
+
+        if (strpos($text, "\n") === false && $text[0] === '@') {
+            return "/** {$text} */";
+        }
+
+        return "/**\n * " . Regex::replace(
+            ["/\n(?!\n)/", "/\n(?=\n)/"],
+            ["\n * ", "\n *"],
+            $text,
+        ) . "\n */";
+    }
+
+    /**
      * Creates a new PHPDoc object from an array of PHP DocBlocks, each of which
      * inherits from subsequent blocks
      *
      * @param array<class-string|int,string|null> $docBlocks
      * @param array<class-string|int,self|string|null>|null $classDocBlocks
+     * @return static
      */
     public static function fromDocBlocks(
         array $docBlocks,
@@ -496,7 +745,7 @@ class PHPDoc implements Immutable
         ?string $member = null
     ): self {
         foreach ($docBlocks as $key => $docBlock) {
-            $_phpDoc = new self(
+            $_phpDoc = new static(
                 $docBlock,
                 $classDocBlocks[$key] ?? null,
                 is_string($key) ? $key : null,
@@ -509,10 +758,10 @@ class PHPDoc implements Immutable
             }
         }
 
-        return $phpDoc ?? new self();
+        return $phpDoc ?? new static();
     }
 
-    private function parse(string $content): void
+    private function parse(string $content, ?int &$tags): void
     {
         // - Remove leading asterisks after newlines
         // - Trim the entire PHPDoc
@@ -540,6 +789,7 @@ class PHPDoc implements Immutable
             }
         }
 
+        $tags = 0;
         while ($this->Lines && Regex::match(
             self::PHPDOC_TAG,
             $text = $this->getLinesUntil(self::PHPDOC_TAG),
@@ -557,7 +807,7 @@ class PHPDoc implements Immutable
                     }
                     /** @var string */
                     $name = $matches['param_name'];
-                    $this->Params[$name] = $this->Tags[$tag][] = new ParamTag(
+                    $this->Params[$name] = new ParamTag(
                         $name,
                         $matches['param_type'],
                         $matches['param_reference'] !== null,
@@ -575,7 +825,7 @@ class PHPDoc implements Immutable
                     }
                     /** @var string */
                     $type = $matches['return_type'];
-                    $this->Return = $this->Tags[$tag][] = new ReturnTag(
+                    $this->Return = new ReturnTag(
                         $type,
                         $matches['return_description'],
                         $this->Class,
@@ -591,7 +841,7 @@ class PHPDoc implements Immutable
                     /** @var string */
                     $type = $matches['var_type'];
                     $name = $matches['var_name'];
-                    $var = $this->Tags[$tag][] = new VarTag(
+                    $var = new VarTag(
                         $type,
                         $name,
                         $matches['var_description'],
@@ -603,6 +853,58 @@ class PHPDoc implements Immutable
                     } else {
                         $this->Vars[] = $var;
                     }
+                    break;
+
+                case 'method':
+                    if (!Regex::match(self::METHOD_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
+                    }
+                    /** @var string */
+                    $name = $matches['method_name'];
+                    $isStatic = $matches['method_static'] !== null;
+                    $type = $matches['method_type'];
+                    if ($isStatic && $type === null) {
+                        $isStatic = false;
+                        $type = 'static';
+                    }
+                    $params = [];
+                    if ($matches['method_params'] !== null) {
+                        foreach (Str::splitDelimited(
+                            ',',
+                            $matches['method_params'],
+                            false,
+                            null,
+                            Str::PRESERVE_QUOTED,
+                        ) as $param) {
+                            $pos = strrpos($param, '$');
+                            if ($pos === false) {
+                                // @codeCoverageIgnoreStart
+                                $this->throw('Invalid parameters', $tag);
+                                // @codeCoverageIgnoreEnd
+                            }
+                            $_name = substr($param, $pos + 1);
+                            $_type = rtrim(substr($param, 0, $pos));
+                            $_isVariadic = false;
+                            if (substr($_type, -3) === '...') {
+                                $_isVariadic = true;
+                                $_type = rtrim(substr($_type, 0, -3));
+                            }
+                            $params[$_name] = new MethodParam(
+                                $_name,
+                                Str::coalesce($_type, null),
+                                $_isVariadic,
+                            );
+                        }
+                    }
+                    $this->Methods[$name] = new MethodTag(
+                        $name,
+                        $isStatic,
+                        $type,
+                        $params,
+                        $matches['method_description'],
+                        $this->Class,
+                        $this->Member,
+                    );
                     break;
 
                 // - @template <name> [of <type>] [= <type>]
@@ -619,7 +921,8 @@ class PHPDoc implements Immutable
                     $default = $matches['template_default'];
                     /** @var "covariant"|"contravariant"|null */
                     $variance = explode('-', $tag, 2)[1] ?? null;
-                    $this->Templates[$name] = $this->Tags['template'][] = new TemplateTag(
+                    $tag = 'template';
+                    $this->Templates[$name] = new TemplateTag(
                         $name,
                         $type,
                         $default,
@@ -636,8 +939,11 @@ class PHPDoc implements Immutable
                         $this->Class,
                         $this->Member,
                     );
-                    break;
+                    continue 2;
             }
+
+            $this->Tags[$tag] ??= [];
+            $tags++;
         }
 
         unset($this->Lines, $this->NextLine);

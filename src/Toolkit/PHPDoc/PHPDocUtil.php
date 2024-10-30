@@ -32,7 +32,7 @@ final class PHPDocUtil extends AbstractUtility
      * Get an array of doc comments for a class and its parents
      *
      * Returns an empty array if no doc comments are found for the class or any
-     * inherited classes or interfaces.
+     * extended classes or interfaces.
      *
      * @param ReflectionClass<object> $class
      * @param bool $includeAll If `true`, entries are returned for `$class` and
@@ -43,12 +43,11 @@ final class PHPDocUtil extends AbstractUtility
         ReflectionClass $class,
         bool $includeAll = false
     ): array {
-        $interfaces = self::getInterfaces($class);
-
         $comments = [];
+        $current = $class;
         do {
-            $name = $class->getName();
-            $comment = $class->getDocComment();
+            $name = $current->getName();
+            $comment = $current->getDocComment();
             if ($comment === false) {
                 if ($includeAll) {
                     $comments[$name] = null;
@@ -56,9 +55,13 @@ final class PHPDocUtil extends AbstractUtility
             } else {
                 $comments[$name] = Str::setEol($comment);
             }
-        } while ($class = $class->getParentClass());
+        } while ($current = $current->getParentClass());
 
-        foreach ($interfaces as $name => $interface) {
+        if (!$class->isInterface()) {
+            return $comments;
+        }
+
+        foreach (self::getInterfaces($class) as $name => $interface) {
             $comment = $interface->getDocComment();
             if ($comment === false) {
                 if ($includeAll) {
@@ -499,6 +502,18 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
+     * Remove PHP namespaces from a PHPDoc type
+     */
+    public static function removeTypeNamespaces(string $type): string
+    {
+        return Regex::replace(
+            '/\\\\?(?:' . Regex::PHP_IDENTIFIER . '\\\\)++(?=' . Regex::PHP_IDENTIFIER . ')/',
+            '',
+            $type,
+        );
+    }
+
+    /**
      * Convert a ReflectionParameter to a PHPDoc tag
      *
      * Returns `null` if:
@@ -748,6 +763,10 @@ final class PHPDocUtil extends AbstractUtility
         ReflectionClass $class,
         string $name
     ): bool {
+        if ($method->isInternal() && !$class->isInternal()) {
+            return false;
+        }
+
         $traits = $class->getTraits();
         if (!$traits) {
             return true;

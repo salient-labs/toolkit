@@ -15,8 +15,6 @@ interface MyInterface
 
     /**
      * Summary of MyInterface::MY_ARRAY
-     *
-     * @var array<class-string,int>
      */
     public const MY_ARRAY = [
         Stringable::class => 0,
