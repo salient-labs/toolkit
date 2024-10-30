@@ -56,13 +56,19 @@ class PHPDoc implements Immutable, Stringable
         . '(?:\h++=\h++(?<template_default>(?&template_type)))?'
         . '`';
 
-    private const DEFAULT_TAG_PREFIXES = [
+    /**
+     * @var non-empty-array<string>
+     */
+    protected const DEFAULT_TAG_PREFIXES = [
         '',
         'phpstan-',
         'psalm-',
     ];
 
-    private const INHERITABLE_TAGS = [
+    /**
+     * @var non-empty-array<string,non-empty-array<string>|bool>
+     */
+    protected const INHERITABLE_TAGS = [
         // PSR-19 Section 4
         'author' => false,
         'copyright' => false,
@@ -92,13 +98,19 @@ class PHPDoc implements Immutable, Stringable
         'readonly' => false,
     ];
 
-    private const MERGED_TAGS = [
+    /**
+     * @var array<string,true>
+     */
+    protected const MERGED_TAGS = [
         'param' => true,
         'return' => true,
         'var' => true,
     ];
 
-    private const STANDARD_TAGS = [
+    /**
+     * @var string[]
+     */
+    protected const STANDARD_TAGS = [
         'param',
         'readonly',
         'return',
@@ -132,7 +144,7 @@ class PHPDoc implements Immutable, Stringable
     /** @var string[] */
     private array $Lines;
     private ?string $NextLine;
-    /** @var array<string,true> */
+    /** @var array<class-string<self>,array<string,true>> */
     private static array $InheritableTagIndex;
 
     /**
@@ -141,7 +153,7 @@ class PHPDoc implements Immutable, Stringable
      * @param self|string|null $classDocBlock
      * @param class-string|null $class
      */
-    public function __construct(
+    final public function __construct(
         ?string $docBlock = null,
         $classDocBlock = null,
         ?string $class = null,
@@ -161,7 +173,7 @@ class PHPDoc implements Immutable, Stringable
         if ($classDocBlock !== null) {
             $phpDoc = $classDocBlock instanceof self
                 ? $classDocBlock
-                : new self($classDocBlock, null, $this->Class);
+                : new static($classDocBlock, null, $class);
             foreach ($phpDoc->Templates as $name => $tag) {
                 $this->Templates[$name] ??= $tag;
             }
@@ -239,23 +251,26 @@ class PHPDoc implements Immutable, Stringable
      */
     private static function getInheritableTagIndex(): array
     {
-        if (isset(self::$InheritableTagIndex)) {
-            return self::$InheritableTagIndex;
+        if (isset(self::$InheritableTagIndex[static::class])) {
+            return self::$InheritableTagIndex[static::class];
         }
 
-        foreach (self::INHERITABLE_TAGS as $tag => $prefixes) {
+        foreach (static::INHERITABLE_TAGS as $tag => $prefixes) {
             if ($prefixes === false) {
                 $idx[$tag] = true;
                 continue;
             } elseif ($prefixes === true) {
-                $prefixes = self::DEFAULT_TAG_PREFIXES;
+                $prefixes = static::DEFAULT_TAG_PREFIXES;
             }
             foreach ($prefixes as $prefix) {
                 $idx[$prefix . $tag] = true;
             }
         }
 
-        return self::$InheritableTagIndex = array_diff_key($idx, self::MERGED_TAGS);
+        return self::$InheritableTagIndex[static::class] = array_diff_key(
+            $idx,
+            static::MERGED_TAGS,
+        );
     }
 
     /**
@@ -510,7 +525,7 @@ class PHPDoc implements Immutable, Stringable
 
         foreach (array_diff(
             array_keys($this->Tags),
-            self::STANDARD_TAGS,
+            static::STANDARD_TAGS,
         ) as $key) {
             if (!Regex::match('/^(phpstan|psalm)-/', $key)) {
                 return true;
@@ -555,6 +570,7 @@ class PHPDoc implements Immutable, Stringable
      *
      * @param array<class-string|int,string|null> $docBlocks
      * @param array<class-string|int,self|string|null>|null $classDocBlocks
+     * @return static
      */
     public static function fromDocBlocks(
         array $docBlocks,
@@ -562,7 +578,7 @@ class PHPDoc implements Immutable, Stringable
         ?string $member = null
     ): self {
         foreach ($docBlocks as $key => $docBlock) {
-            $_phpDoc = new self(
+            $_phpDoc = new static(
                 $docBlock,
                 $classDocBlocks[$key] ?? null,
                 is_string($key) ? $key : null,
@@ -575,7 +591,7 @@ class PHPDoc implements Immutable, Stringable
             }
         }
 
-        return $phpDoc ?? new self();
+        return $phpDoc ?? new static();
     }
 
     private function parse(string $content): void
