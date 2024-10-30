@@ -6,6 +6,8 @@ use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\GenericTag;
+use Salient\PHPDoc\Tag\MethodParam;
+use Salient\PHPDoc\Tag\MethodTag;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\ReturnTag;
 use Salient\PHPDoc\Tag\TemplateTag;
@@ -48,6 +50,14 @@ class PHPDoc implements Immutable, Stringable
         . '(?<var_type>' . PHPDocRegex::PHPDOC_TYPE . ')'
         . '(?:\h++\$(?<var_name>[^\s]++))?'
         . '\s*+(?<var_description>(?s).++)?'
+        . '`';
+
+    private const METHOD_TAG = '`^'
+        . '(?<method_static>static\h++)?'
+        . '(?:(?<method_type>' . PHPDocRegex::PHPDOC_TYPE . ')\h++)?'
+        . '(?<method_name>[^\s(]++)'
+        . '\h*+\(\h*+(?:(?<method_params>(?:(?&method_type)\h++)?(?:\.\.\.\h*+)?\$[^\s,)$]++(?:\h*+,\h*+(?:(?&method_type)\h++)?(?:\.\.\.\h*+)?\$[^\s,)$]++)*+)\h*+(?:,\h*+)?)?\)'
+        . '\s*+(?<method_description>(?s).++)?'
         . '`';
 
     private const TEMPLATE_TAG = '`^'
@@ -105,6 +115,7 @@ class PHPDoc implements Immutable, Stringable
         'param' => true,
         'return' => true,
         'var' => true,
+        'method' => true,
         'template' => true,
     ];
 
@@ -132,6 +143,8 @@ class PHPDoc implements Immutable, Stringable
     private ?ReturnTag $Return = null;
     /** @var VarTag[] */
     private array $Vars = [];
+    /** @var array<string,MethodTag> */
+    private array $Methods = [];
     /** @var array<string,TemplateTag> */
     private array $Templates = [];
     /** @var array<class-string,array<string,TemplateTag>> */
@@ -230,6 +243,8 @@ class PHPDoc implements Immutable, Stringable
                 } else {
                     $phpDoc->Vars[] = $tag;
                 }
+            } elseif ($tag instanceof MethodTag) {
+                $phpDoc->Methods[$tag->getName()] = $tag;
             } elseif ($tag instanceof TemplateTag) {
                 $_class = $tag->getClass();
                 if ($_class === $class || $_class === null || $class === null) {
@@ -290,6 +305,11 @@ class PHPDoc implements Immutable, Stringable
             && array_key_first($parent->Vars) === 0
         ) {
             $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0]);
+        }
+
+        $methods = $this->Methods;
+        foreach ($parent->Methods as $name => $theirs) {
+            $methods[$name] = $this->mergeTag($methods[$name] ?? null, $theirs);
         }
 
         $templates = $this->InheritedTemplates;
@@ -432,6 +452,7 @@ class PHPDoc implements Immutable, Stringable
             'Params' => 'param',
             'Return' => 'return',
             'Vars' => 'var',
+            'Methods' => 'method',
             'Templates' => 'template',
         ][$property] ?? null;
 
@@ -463,6 +484,14 @@ class PHPDoc implements Immutable, Stringable
                 $this->Tags['var'] = array_values($this->Vars);
             } else {
                 unset($this->Tags['var']);
+            }
+        }
+
+        if ($tag === 'method' || $tag === null) {
+            if ($this->Methods) {
+                $this->Tags['method'] = array_values($this->Methods);
+            } else {
+                unset($this->Tags['method']);
             }
         }
 
@@ -558,6 +587,16 @@ class PHPDoc implements Immutable, Stringable
     public function getVars(): array
     {
         return $this->Vars;
+    }
+
+    /**
+     * Get the PHPDoc's "@method" tags, indexed by name
+     *
+     * @return array<string,MethodTag>
+     */
+    public function getMethods(): array
+    {
+        return $this->Methods;
     }
 
     /**
@@ -814,6 +853,58 @@ class PHPDoc implements Immutable, Stringable
                     } else {
                         $this->Vars[] = $var;
                     }
+                    break;
+
+                case 'method':
+                    if (!Regex::match(self::METHOD_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                        $this->throw('Invalid syntax', $tag);
+                    }
+                    /** @var string */
+                    $name = $matches['method_name'];
+                    $isStatic = $matches['method_static'] !== null;
+                    $type = $matches['method_type'];
+                    if ($isStatic && $type === null) {
+                        $isStatic = false;
+                        $type = 'static';
+                    }
+                    $params = [];
+                    if ($matches['method_params'] !== null) {
+                        foreach (Str::splitDelimited(
+                            ',',
+                            $matches['method_params'],
+                            false,
+                            null,
+                            Str::PRESERVE_QUOTED,
+                        ) as $param) {
+                            $pos = strrpos($param, '$');
+                            if ($pos === false) {
+                                // @codeCoverageIgnoreStart
+                                $this->throw('Invalid parameters', $tag);
+                                // @codeCoverageIgnoreEnd
+                            }
+                            $_name = substr($param, $pos + 1);
+                            $_type = rtrim(substr($param, 0, $pos));
+                            $_isVariadic = false;
+                            if (substr($_type, -3) === '...') {
+                                $_isVariadic = true;
+                                $_type = rtrim(substr($_type, 0, -3));
+                            }
+                            $params[$_name] = new MethodParam(
+                                $_name,
+                                Str::coalesce($_type, null),
+                                $_isVariadic,
+                            );
+                        }
+                    }
+                    $this->Methods[$name] = new MethodTag(
+                        $name,
+                        $isStatic,
+                        $type,
+                        $params,
+                        $matches['method_description'],
+                        $this->Class,
+                        $this->Member,
+                    );
                     break;
 
                 // - @template <name> [of <type>] [= <type>]
