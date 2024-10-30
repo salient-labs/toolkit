@@ -188,6 +188,73 @@ class PHPDoc implements Immutable, Stringable
     }
 
     /**
+     * Creates a new PHPDoc object from an array of tag objects
+     *
+     * @param AbstractTag[] $tags
+     * @param class-string|null $class
+     * @return static
+     */
+    public static function fromTags(
+        array $tags,
+        ?string $summary = null,
+        ?string $description = null,
+        ?string $class = null,
+        ?string $member = null
+    ): self {
+        if ($summary !== null) {
+            $summary = Str::coalesce(trim($summary), null);
+        }
+        if ($description !== null) {
+            $description = Str::coalesce(trim($description), null);
+        }
+        if ($summary === null && $description !== null) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidArgumentException('$description must be empty if $summary is empty');
+            // @codeCoverageIgnoreEnd
+        }
+
+        $phpDoc = new static(null, null, $class, $member);
+        $phpDoc->Summary = $summary;
+        $phpDoc->Description = $description;
+
+        $count = 0;
+        foreach ($tags as $tag) {
+            if ($tag instanceof ParamTag) {
+                $phpDoc->Params[$tag->getName()] = $tag;
+            } elseif ($tag instanceof ReturnTag) {
+                $phpDoc->Return = $tag;
+            } elseif ($tag instanceof VarTag) {
+                $name = $tag->getName();
+                if ($name !== null) {
+                    $phpDoc->Vars[$name] = $tag;
+                } else {
+                    $phpDoc->Vars[] = $tag;
+                }
+            } elseif ($tag instanceof TemplateTag) {
+                $_class = $tag->getClass();
+                if ($_class === $class || $_class === null || $class === null) {
+                    $phpDoc->Templates[$tag->getName()] = $tag;
+                } else {
+                    $phpDoc->InheritedTemplates[$_class][$tag->getName()] = $tag;
+                    continue;
+                }
+            } else {
+                $phpDoc->Tags[$tag->getTag()][] = $tag;
+                continue;
+            }
+
+            $phpDoc->Tags[$tag->getTag()] ??= [];
+            $count++;
+        }
+
+        if ($count) {
+            $phpDoc->updateTags();
+        }
+
+        return $phpDoc;
+    }
+
+    /**
      * Inherit values from an instance that represents the same structural
      * element in a parent class or interface
      *
@@ -339,6 +406,21 @@ class PHPDoc implements Immutable, Stringable
             ->with('Description', $description ?? $this->Description)
             ->with('Tags', $tags)
             ->with('Vars', $vars);
+    }
+
+    /**
+     * Flatten values inherited from other instances and forget the initial
+     * state of the PHPDoc
+     *
+     * @return static
+     */
+    public function flatten()
+    {
+        $phpDoc = clone $this;
+        $phpDoc->Original = $phpDoc;
+        $phpDoc->InheritedTemplates = [];
+
+        return $phpDoc;
     }
 
     /**
