@@ -105,6 +105,7 @@ class PHPDoc implements Immutable, Stringable
         'param' => true,
         'return' => true,
         'var' => true,
+        'template' => true,
     ];
 
     /**
@@ -133,6 +134,8 @@ class PHPDoc implements Immutable, Stringable
     private array $Vars = [];
     /** @var array<string,TemplateTag> */
     private array $Templates = [];
+    /** @var array<class-string,array<string,TemplateTag>> */
+    private array $InheritedTemplates = [];
     /** @var class-string|null */
     private ?string $Class;
     private ?string $Member;
@@ -167,16 +170,20 @@ class PHPDoc implements Immutable, Stringable
         $this->Class = $class;
         $this->Member = $member;
         $this->Original = $this;
-        $this->parse($matches['content']);
+        $this->parse($matches['content'], $tags);
 
         // Merge templates from the declaring class, if possible
-        if ($classDocBlock !== null) {
+        if ($classDocBlock !== null && $class !== null && $member !== null) {
             $phpDoc = $classDocBlock instanceof self
                 ? $classDocBlock
                 : new static($classDocBlock, null, $class);
             foreach ($phpDoc->Templates as $name => $tag) {
                 $this->Templates[$name] ??= $tag;
             }
+        }
+
+        if ($tags) {
+            $this->updateTags();
         }
     }
 
@@ -197,7 +204,7 @@ class PHPDoc implements Immutable, Stringable
             self::getInheritableTagIndex(),
         ) as $name => $theirs) {
             foreach ($theirs as $tag) {
-                if ($name === 'template' || !isset($idx[(string) $tag])) {
+                if (!isset($idx[(string) $tag])) {
                     $tags[$name][] = $tag;
                 }
             }
@@ -205,22 +212,23 @@ class PHPDoc implements Immutable, Stringable
 
         $params = $this->Params;
         foreach ($parent->Params as $name => $theirs) {
-            $params[$name] = $this->mergeTag($params[$name] ?? null, $theirs, $tags);
+            $params[$name] = $this->mergeTag($params[$name] ?? null, $theirs);
         }
 
-        $return = $this->mergeTag($this->Return, $parent->Return, $tags);
+        $return = $this->mergeTag($this->Return, $parent->Return);
 
         $vars = $this->Vars;
         if (
             count($parent->Vars) === 1
             && array_key_first($parent->Vars) === 0
         ) {
-            $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0], $tags);
+            $vars[0] = $this->mergeTag($vars[0] ?? null, $parent->Vars[0]);
         }
 
-        $templates = $this->Templates;
-        foreach ($parent->Templates as $name => $theirs) {
-            $templates[$name] ??= $theirs;
+        $templates = $this->InheritedTemplates;
+        if ($parent->Class !== null && $parent->Class !== $this->Class) {
+            unset($templates[$parent->Class]);
+            $templates[$parent->Class] = $parent->Templates;
         }
 
         $summary = $this->Summary;
@@ -243,7 +251,7 @@ class PHPDoc implements Immutable, Stringable
             ->with('Params', $params)
             ->with('Return', $return)
             ->with('Vars', $vars)
-            ->with('Templates', $templates);
+            ->with('InheritedTemplates', $templates);
     }
 
     /**
@@ -278,25 +286,19 @@ class PHPDoc implements Immutable, Stringable
      *
      * @param T|null $ours
      * @param T|null $theirs
-     * @param array<string,AbstractTag[]> $tags
-     * @param-out array<string,AbstractTag[]> $tags
      * @return ($ours is null ? ($theirs is null ? null : T) : T)
      */
-    private function mergeTag(?AbstractTag $ours, ?AbstractTag $theirs, array &$tags): ?AbstractTag
+    private function mergeTag(?AbstractTag $ours, ?AbstractTag $theirs): ?AbstractTag
     {
         if ($theirs === null) {
             return $ours;
         }
 
         if ($ours === null) {
-            $tag = $theirs->getTag();
-            $tags[$tag][] = $theirs;
             return $theirs;
         }
 
-        $tag = $ours->getTag();
-        $key = Arr::keyOf($tags[$tag], $ours);
-        return $tags[$tag][$key] = $ours->inherit($theirs);
+        return $ours->inherit($theirs);
     }
 
     /**
@@ -320,9 +322,7 @@ class PHPDoc implements Immutable, Stringable
             $var = $vars[0];
             $varDesc = $var->getDescription();
             if ($varDesc !== null) {
-                $varKey = Arr::keyOf($tags['var'] ?? [], $var);
-                $vars = [$var = $var->withDescription(null)];
-                $tags['var'][$varKey] = $var;
+                $vars = [$var->withDescription(null)];
                 if ($this->Summary === null) {
                     $summary = $varDesc;
                 } elseif ($this->Summary !== $varDesc) {
@@ -333,11 +333,64 @@ class PHPDoc implements Immutable, Stringable
                 }
             }
         }
+
         return $this
             ->with('Summary', $summary ?? $this->Summary)
             ->with('Description', $description ?? $this->Description)
             ->with('Tags', $tags)
             ->with('Vars', $vars);
+    }
+
+    /**
+     * Called after a property of the PHPDoc is changed via with()
+     */
+    private function handlePropertyChanged(string $property): void
+    {
+        $tag = [
+            'Params' => 'param',
+            'Return' => 'return',
+            'Vars' => 'var',
+            'Templates' => 'template',
+        ][$property] ?? null;
+
+        if ($tag !== null) {
+            $this->updateTags($tag);
+        }
+    }
+
+    private function updateTags(?string $tag = null): void
+    {
+        if ($tag === 'param' || $tag === null) {
+            if ($this->Params) {
+                $this->Tags['param'] = array_values($this->Params);
+            } else {
+                unset($this->Tags['param']);
+            }
+        }
+
+        if ($tag === 'return' || $tag === null) {
+            if ($this->Return) {
+                $this->Tags['return'] = [$this->Return];
+            } else {
+                unset($this->Tags['return']);
+            }
+        }
+
+        if ($tag === 'var' || $tag === null) {
+            if ($this->Vars) {
+                $this->Tags['var'] = array_values($this->Vars);
+            } else {
+                unset($this->Tags['var']);
+            }
+        }
+
+        if ($tag === 'template' || $tag === null) {
+            if ($templates = $this->getTemplates(false)) {
+                $this->Tags['template'] = array_values($templates);
+            } else {
+                unset($this->Tags['template']);
+            }
+        }
     }
 
     /**
@@ -432,15 +485,16 @@ class PHPDoc implements Immutable, Stringable
      */
     public function getTemplates(bool $includeInherited = true): array
     {
-        if ($includeInherited || $this->Class === null) {
+        if (
+            $includeInherited
+            || $this->Class === null
+            || $this->Member === null
+        ) {
             return $this->Templates;
         }
 
         foreach ($this->Templates as $name => $template) {
-            if ($template->getClass() === $this->Class && (
-                $this->Member === null
-                || $template->getMember() === $this->Member
-            )) {
+            if ($template->getMember() !== null) {
                 $templates[$name] = $template;
             }
         }
@@ -456,23 +510,15 @@ class PHPDoc implements Immutable, Stringable
     public function getTemplatesForTag(AbstractTag $tag): array
     {
         $class = $tag->getClass();
-        $member = $tag->getMember();
-        if ($class === null || $this->Class === null) {
+        if (
+            $class === $this->Class
+            || $class === null
+            || $this->Class === null
+        ) {
             return $this->Templates;
         }
 
-        /** @var TemplateTag $template */
-        foreach ($this->Tags['template'] ?? [] as $template) {
-            $name = $template->getName();
-            if ($template->getClass() === $class && (
-                ($_member = $template->getMember()) === null
-                || $_member === $member
-            )) {
-                $templates[$name] = $template;
-            }
-        }
-
-        return $templates ?? [];
+        return $this->InheritedTemplates[$class] ?? [];
     }
 
     /**
@@ -594,7 +640,7 @@ class PHPDoc implements Immutable, Stringable
         return $phpDoc ?? new static();
     }
 
-    private function parse(string $content): void
+    private function parse(string $content, ?int &$tags): void
     {
         // - Remove leading asterisks after newlines
         // - Trim the entire PHPDoc
@@ -622,6 +668,7 @@ class PHPDoc implements Immutable, Stringable
             }
         }
 
+        $tags = 0;
         while ($this->Lines && Regex::match(
             self::PHPDOC_TAG,
             $text = $this->getLinesUntil(self::PHPDOC_TAG),
@@ -639,7 +686,7 @@ class PHPDoc implements Immutable, Stringable
                     }
                     /** @var string */
                     $name = $matches['param_name'];
-                    $this->Params[$name] = $this->Tags[$tag][] = new ParamTag(
+                    $this->Params[$name] = new ParamTag(
                         $name,
                         $matches['param_type'],
                         $matches['param_reference'] !== null,
@@ -657,7 +704,7 @@ class PHPDoc implements Immutable, Stringable
                     }
                     /** @var string */
                     $type = $matches['return_type'];
-                    $this->Return = $this->Tags[$tag][] = new ReturnTag(
+                    $this->Return = new ReturnTag(
                         $type,
                         $matches['return_description'],
                         $this->Class,
@@ -673,7 +720,7 @@ class PHPDoc implements Immutable, Stringable
                     /** @var string */
                     $type = $matches['var_type'];
                     $name = $matches['var_name'];
-                    $var = $this->Tags[$tag][] = new VarTag(
+                    $var = new VarTag(
                         $type,
                         $name,
                         $matches['var_description'],
@@ -701,7 +748,8 @@ class PHPDoc implements Immutable, Stringable
                     $default = $matches['template_default'];
                     /** @var "covariant"|"contravariant"|null */
                     $variance = explode('-', $tag, 2)[1] ?? null;
-                    $this->Templates[$name] = $this->Tags['template'][] = new TemplateTag(
+                    $tag = 'template';
+                    $this->Templates[$name] = new TemplateTag(
                         $name,
                         $type,
                         $default,
@@ -718,8 +766,11 @@ class PHPDoc implements Immutable, Stringable
                         $this->Class,
                         $this->Member,
                     );
-                    break;
+                    continue 2;
             }
+
+            $this->Tags[$tag] ??= [];
+            $tags++;
         }
 
         unset($this->Lines, $this->NextLine);
