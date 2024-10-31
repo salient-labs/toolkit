@@ -2,16 +2,24 @@
 
 namespace Salient\Tests\PHPDoc;
 
+use Salient\PHPDoc\Tag\GenericTag;
 use Salient\PHPDoc\Tag\MethodParam;
 use Salient\PHPDoc\Tag\MethodTag;
+use Salient\PHPDoc\Tag\ParamTag;
+use Salient\PHPDoc\Tag\PropertyTag;
+use Salient\PHPDoc\Tag\ReturnTag;
+use Salient\PHPDoc\Tag\TemplateTag;
+use Salient\PHPDoc\Tag\VarTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
+use Salient\Tests\Reflection\MyBaseClass;
 use Salient\Tests\Reflection\MyClass;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
+use stdClass;
 
 /**
  * @covers \Salient\PHPDoc\PHPDoc
@@ -20,6 +28,7 @@ use InvalidArgumentException;
  * @covers \Salient\PHPDoc\Tag\MethodParam
  * @covers \Salient\PHPDoc\Tag\MethodTag
  * @covers \Salient\PHPDoc\Tag\ParamTag
+ * @covers \Salient\PHPDoc\Tag\PropertyTag
  * @covers \Salient\PHPDoc\Tag\ReturnTag
  * @covers \Salient\PHPDoc\Tag\TemplateTag
  * @covers \Salient\PHPDoc\Tag\VarTag
@@ -137,6 +146,51 @@ EOF],
     {
         $phpDoc = new PHPDoc('/** * Summary */');
         $this->assertSame('* Summary', $phpDoc->getSummary());
+    }
+
+    public function testFromTags(): void
+    {
+        $phpDoc = PHPDoc::fromTags([
+            new GenericTag('api'),
+            new ParamTag('id', 'int|string', false, true, 'Foo'),
+            new ReturnTag('static', 'Bar'),
+            $var = new VarTag('int', null, 'Foo', MyBaseClass::class),
+            new VarTag('string', 'Baz', 'Description of Baz'),
+            new MethodTag('run', 'int', [], false, 'Perform the operation'),
+            new PropertyTag('LastResult', 'int', true, false, 'Result of last operation'),
+            new TemplateTag('TObject', 'object', stdClass::class, null, MyClass::class),
+            new TemplateTag('T', null, null, null, MyBaseClass::class),
+        ], 'Summary', 'Description', MyClass::class);
+
+        $docBlock = <<<'EOF'
+/**
+ * Summary
+ *
+ * Description
+ *
+ * @template TObject of object = stdClass
+ *
+ * @api
+ * @param int|string ...$id Foo
+ * @return static Bar
+ * @var int Foo
+ * @var string $Baz Description of Baz
+ * @method int run() Perform the operation
+ * @property-read int $LastResult Result of last operation
+ */
+EOF;
+
+        $this->assertSame(Str::eolFromNative($docBlock), (string) $phpDoc);
+        $this->assertSame(['T' => '@template T'], Arr::toStrings($phpDoc->getTemplatesForTag($var)));
+
+        $this->assertSame('/** */', (string) PHPDoc::fromTags([]));
+        $this->assertSame("/**\n * Summary\n */", (string) PHPDoc::fromTags([], 'Summary'));
+        $this->assertSame('/** @var int Foo */', (string) PHPDoc::fromTags([$var]));
+        $this->assertSame("/**\n * Summary\n *\n * @var int Foo\n */", (string) PHPDoc::fromTags([$var], 'Summary'));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$description must be empty if $summary is empty');
+        PHPDoc::fromTags([], '', 'Description');
     }
 
     public function testFromDocBlocks(): void
@@ -295,36 +349,50 @@ EOF;
         return [
             [
                 PHPDoc::fromTags([
-                    new MethodTag('getString', false, 'string', [], 'Description of getString()'),
-                    new MethodTag('setInteger', false, 'void', [
+                    new MethodTag('getString', 'string', [], false, 'Description of getString()'),
+                    new MethodTag('setInteger', 'void', [
                         'integer' => new MethodParam('integer', 'int'),
-                    ], 'Description of setInteger()'),
-                    new MethodTag('setString', false, null, [
+                    ], false, 'Description of setInteger()'),
+                    new MethodTag('setString', null, [
                         'string' => new MethodParam('string', 'string'),
-                    ], 'Description of setString()'),
-                    new MethodTag('setBoth', false, '$this', [
-                        'integer' => new MethodParam('integer', 'int'),
-                        'string' => new MethodParam('string', 'string'),
-                    ], 'Description of setBoth()'),
-                    new MethodTag('setAny', false, 'static', [
-                        'integerOrString' => new MethodParam('integerOrString', 'int|string', true),
-                    ], 'Description of setAny()'),
-                    new MethodTag('staticGetter', true, 'int|string', [], 'Description of staticGetter()'),
-                    new MethodTag('staticFactory', true, 'static[]', [
-                        'id' => new MethodParam('id', null, true),
-                    ], 'Description of staticFactory()'),
-                    new MethodTag('getChildren', false, 'static[]', [], 'Description of getChildren()'),
+                    ]),
+                    new MethodTag('setBoth', '$this', [
+                        'integer' => new MethodParam('integer', 'int', '-1'),
+                        'string' => new MethodParam('string', 'string', "''"),
+                    ]),
+                    new MethodTag('setAny', 'static', [
+                        'integerOrString' => new MethodParam('integerOrString', 'int|string', null, true),
+                    ], false, 'Description of setAny()'),
+                    new MethodTag('staticGetter', 'int|string', [], true, 'Description of staticGetter()'),
+                    new MethodTag('staticFactory', 'static[]', [
+                        'id' => new MethodParam('id', null, null, true),
+                    ], true, 'Description of staticFactory()'),
+                    new MethodTag('getChildren', 'static[]', [], false, 'Description of getChildren()'),
                 ]),
                 <<<'EOF'
 /**
  * @method string getString() Description of getString()
  * @method void setInteger(int $integer) Description of setInteger()
- * @method setString(string $string) Description of setString()
- * @method $this setBoth(int $integer, string $string) Description of setBoth()
+ * @method setString(string $string)
+ * @method $this setBoth(int $integer = -1, string $string = '')
  * @method static setAny(int|string ...$integerOrString) Description of setAny()
  * @method static int|string staticGetter() Description of staticGetter()
  * @method static static[] staticFactory(...$id) Description of staticFactory()
  * @method static[] getChildren() Description of getChildren()
+ */
+EOF,
+            ],
+            [
+                PHPDoc::fromTags([
+                    new PropertyTag('full_name', 'string', true, false),
+                    new PropertyTag('children', 'static[]', false, false, 'Description of $children'),
+                    new PropertyTag('writable', null, false, true),
+                ]),
+                <<<'EOF'
+/**
+ * @property-read string $full_name
+ * @property static[] $children Description of $children
+ * @property-write $writable
  */
 EOF,
             ],
@@ -634,6 +702,13 @@ EOF,
                 ['@var int'],
             ],
         ];
+    }
+
+    public function testInvalidPropertyTag(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$isReadOnly and $isWriteOnly cannot both be true');
+        new PropertyTag('foo', null, true, true);
     }
 
     public function testTemplateTags(): void

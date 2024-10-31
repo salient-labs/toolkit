@@ -14,7 +14,7 @@ class GenericTag extends AbstractTag
      */
     public function __construct(
         string $tag,
-        ?string $description,
+        ?string $description = null,
         ?string $class = null,
         ?string $member = null
     ) {
