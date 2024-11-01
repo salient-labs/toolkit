@@ -46,6 +46,7 @@ class ClassData implements JsonSerializable
     /** @var array<string,string> */
     public array $Templates = [];
     public ?string $Summary = null;
+    public ?string $Description = null;
     /** @var class-string[] */
     public array $Extends = [];
     /** @var class-string[] */
@@ -434,6 +435,7 @@ class ClassData implements JsonSerializable
         return [
             'templates' => $this->Templates ?: new stdClass(),
             'summary' => $this->Summary,
+            'description' => $this->Description,
             'extends' => $this->Extends,
             'implements' => $this->Implements,
             'uses' => $this->Uses,

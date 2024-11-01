@@ -54,6 +54,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
         'internal' => false,
         'private' => false,
         'inherited' => false,
+        'desc' => false,
         'meta' => false,
         'from' => false,
     ];
@@ -347,6 +348,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                 }
             };
 
+            $noDesc = $this->SkipIndex['desc'];
             $noMeta = $this->SkipIndex['meta'];
             $noFrom = $this->SkipIndex['from'];
 
@@ -386,6 +388,9 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
                         if ($classData->Summary !== null) {
                             $printBlock(Str::escapeMarkdown($classData->Summary));
+                            if (!$noDesc && $classData->Description !== null) {
+                                $printBlock($classData->Description);
+                            }
                         }
 
                         if (
@@ -564,6 +569,9 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
                                 if ($memberData->Summary !== null) {
                                     $printBlock(Str::escapeMarkdown($memberData->Summary), true);
+                                    if (!$noDesc && $memberData->Description !== null) {
+                                        $printBlock($memberData->Description);
+                                    }
                                 }
 
                                 if ($collapsed === null) {
@@ -628,6 +636,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                 ? $this->implodeWithKeys(', ', $data->Templates)
                 : null;
             $row['m_summary'] = $data->Summary;
+            $row['m_description'] = $data->Description;
             $row['m_api'] = $data->Api;
             $row['m_internal'] = $data->Internal;
             $row['m_deprecated'] = $data->Deprecated;

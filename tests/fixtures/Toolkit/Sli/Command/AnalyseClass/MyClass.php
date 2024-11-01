@@ -5,6 +5,8 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
 /**
  * Summary of MyClass
  *
+ * Extended description of `MyClass`.
+ *
  * @template T of int|string
  */
 final class MyClass extends MyBaseClass
@@ -15,6 +17,8 @@ final class MyClass extends MyBaseClass
 
     /**
      * Summary of MyClass::$MyProperty
+     *
+     * Extended description of `MyClass::$MyProperty`.
      *
      * @var T
      */

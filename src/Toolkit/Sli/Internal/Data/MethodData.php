@@ -28,6 +28,7 @@ class MethodData implements JsonSerializable
     /** @var array<string,string> */
     public array $Templates = [];
     public ?string $Summary = null;
+    public ?string $Description = null;
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
@@ -193,6 +194,7 @@ class MethodData implements JsonSerializable
         return [
             'templates' => $this->Templates ?: new stdClass(),
             'summary' => $this->Summary,
+            'description' => $this->Description,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,

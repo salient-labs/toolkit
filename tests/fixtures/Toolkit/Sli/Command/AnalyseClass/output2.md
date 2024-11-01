@@ -76,9 +76,11 @@ Summary of MyInterface::MyStaticMethod()
 
 ### Class `MyClass`
 
-<small>(57 lines)</small>
+<small>(59 lines)</small>
 
 Summary of MyClass
+
+Extended description of `MyClass`.
 
 ```php
 final class MyClass<T of int|string>
@@ -111,6 +113,8 @@ uses MyTrait
 ##### `public T $MyProperty`
 
 Summary of MyClass::$MyProperty
+
+Extended description of `MyClass::$MyProperty`.
 
 ##### `private static $MyStaticProperty`
 

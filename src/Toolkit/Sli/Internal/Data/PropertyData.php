@@ -24,6 +24,7 @@ class PropertyData implements JsonSerializable
     public string $Name;
     public ClassData $Class;
     public ?string $Summary = null;
+    public ?string $Description = null;
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
@@ -150,6 +151,7 @@ class PropertyData implements JsonSerializable
     {
         return [
             'summary' => $this->Summary,
+            'description' => $this->Description,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,

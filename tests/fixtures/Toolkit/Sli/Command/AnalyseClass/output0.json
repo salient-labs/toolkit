@@ -5,6 +5,7 @@
             "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
             "templates": {},
             "summary": "Summary of MyBaseClass",
+            "description": null,
             "extends": [],
             "implements": [
                 "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
@@ -24,6 +25,7 @@
             "constants": {
                 "MY_INT": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -44,6 +46,7 @@
                 },
                 "MY_FLOAT": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -64,6 +67,7 @@
                 },
                 "MY_LONG_STRING": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -84,6 +88,7 @@
                 },
                 "MY_LONGER_ARRAY": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -104,6 +109,7 @@
                 },
                 "MY_SHORT_STRING": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -127,6 +133,7 @@
                 },
                 "MY_ARRAY": {
                     "summary": "Summary of MyInterface::MY_ARRAY",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -152,6 +159,7 @@
             "properties": {
                 "MyVarProperty": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -176,6 +184,7 @@
                 "MyStaticMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyStaticMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -211,6 +220,7 @@
                 "MyOverriddenMethod": {
                     "templates": {},
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -236,6 +246,7 @@
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -265,6 +276,7 @@
                 "__toString": {
                     "templates": {},
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -303,6 +315,7 @@
                 "T": " of int|string"
             },
             "summary": "Summary of MyClass",
+            "description": "Extended description of `MyClass`.",
             "extends": [
                 "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass"
             ],
@@ -323,6 +336,7 @@
             "constants": {
                 "MY_FLOAT": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -339,10 +353,11 @@
                     ],
                     "type": "float",
                     "value": "3.0",
-                    "line": 14
+                    "line": 16
                 },
                 "MY_INT": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -366,6 +381,7 @@
                 },
                 "MY_LONG_STRING": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -389,6 +405,7 @@
                 },
                 "MY_LONGER_ARRAY": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -412,6 +429,7 @@
                 },
                 "MY_SHORT_STRING": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -435,6 +453,7 @@
                 },
                 "MY_ARRAY": {
                     "summary": "Summary of MyInterface::MY_ARRAY",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -460,6 +479,7 @@
             "properties": {
                 "MyProperty": {
                     "summary": "Summary of MyClass::$MyProperty",
+                    "description": "Extended description of `MyClass::$MyProperty`.",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -477,10 +497,11 @@
                     ],
                     "type": "T",
                     "defaultValue": null,
-                    "line": 21
+                    "line": 25
                 },
                 "MyStaticProperty": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -499,10 +520,11 @@
                     ],
                     "type": null,
                     "defaultValue": null,
-                    "line": 24
+                    "line": 28
                 },
                 "MyStaticPropertyWithDefault": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -521,10 +543,11 @@
                     ],
                     "type": null,
                     "defaultValue": "0",
-                    "line": 27
+                    "line": 31
                 },
                 "MyStaticTypedProperty": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -543,10 +566,11 @@
                     ],
                     "type": "int",
                     "defaultValue": null,
-                    "line": 30
+                    "line": 34
                 },
                 "MyNullableStaticTypedProperty": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -565,10 +589,11 @@
                     ],
                     "type": "?int",
                     "defaultValue": null,
-                    "line": 33
+                    "line": 37
                 },
                 "MyNullableStaticTypedPropertyWithDefault": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -587,10 +612,11 @@
                     ],
                     "type": "?int",
                     "defaultValue": "null",
-                    "line": 36
+                    "line": 40
                 },
                 "MyVarProperty": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -615,6 +641,7 @@
                 },
                 "MyIntProperty": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -642,6 +669,7 @@
                 "__construct": {
                     "templates": {},
                     "summary": null,
+                    "description": null,
                     "api": true,
                     "internal": false,
                     "deprecated": false,
@@ -666,7 +694,7 @@
                         ]
                     },
                     "returnType": null,
-                    "line": 43,
+                    "line": 47,
                     "lines": 4
                 },
                 "MyTemplateMethod": {
@@ -674,6 +702,7 @@
                         "TInstance": " of MyInterface"
                     },
                     "summary": "Summary of MyClass::MyTemplateMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -702,12 +731,13 @@
                         ]
                     },
                     "returnType": "array<T,TInstance>",
-                    "line": 57,
+                    "line": 61,
                     "lines": 4
                 },
                 "__toString": {
                     "templates": {},
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -730,12 +760,13 @@
                     ],
                     "parameters": {},
                     "returnType": "string",
-                    "line": 62,
+                    "line": 66,
                     "lines": 4
                 },
                 "MyStaticMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyStaticMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -774,6 +805,7 @@
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyTrait::MyMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -805,6 +837,7 @@
                 "MyOverriddenMethod": {
                     "templates": {},
                     "summary": "Summary of MyTrait::MyOverriddenMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -835,14 +868,15 @@
                 }
             },
             "file": "./MyClass.php",
-            "line": 10,
-            "lines": 57
+            "line": 12,
+            "lines": 59
         },
         "MyInterface": {
             "type": "interface",
             "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
             "templates": {},
             "summary": "Summary of MyInterface",
+            "description": null,
             "extends": [],
             "implements": [],
             "uses": [],
@@ -857,6 +891,7 @@
             "constants": {
                 "MY_SHORT_STRING": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -877,6 +912,7 @@
                 },
                 "MY_ARRAY": {
                     "summary": "Summary of MyInterface::MY_ARRAY",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -901,6 +937,7 @@
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -926,6 +963,7 @@
                 "MyStaticMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyStaticMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -964,6 +1002,7 @@
             "name": "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
             "templates": {},
             "summary": "Summary of MyTrait",
+            "description": null,
             "extends": [],
             "implements": [],
             "uses": [],
@@ -979,6 +1018,7 @@
             "properties": {
                 "MyIntProperty": {
                     "summary": null,
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -1003,6 +1043,7 @@
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyTrait::MyMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
@@ -1028,6 +1069,7 @@
                 "MyOverriddenMethod": {
                     "templates": {},
                     "summary": "Summary of MyTrait::MyOverriddenMethod()",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
