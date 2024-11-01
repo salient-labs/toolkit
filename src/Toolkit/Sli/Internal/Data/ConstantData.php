@@ -2,12 +2,15 @@
 
 namespace Salient\Sli\Internal\Data;
 
+use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Reflect;
 use JsonSerializable;
 use ReflectionClass;
 use ReflectionClassConstant;
+use Throwable;
 
 /**
  * @internal
@@ -52,11 +55,19 @@ class ConstantData implements JsonSerializable
         ReflectionClass $class,
         ClassData $classData,
         ?bool $declared = null,
-        ?int $line = null
+        ?int $line = null,
+        ?ConsoleWriterInterface $console = null
     ): self {
         $constantName = $constant->getName();
-        $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, $classDocBlocks);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $constantName);
+        try {
+            $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, $classDocBlocks);
+            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $constantName);
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
+
         $declaring = $constant->getDeclaringClass();
         $className = $class->getName();
         $declaringName = $declaring->getName();

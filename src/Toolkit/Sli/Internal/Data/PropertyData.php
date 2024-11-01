@@ -2,6 +2,8 @@
 
 namespace Salient\Sli\Internal\Data;
 
+use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Get;
@@ -9,6 +11,7 @@ use Salient\Utility\Reflect;
 use JsonSerializable;
 use ReflectionClass;
 use ReflectionProperty;
+use Throwable;
 
 /**
  * @internal
@@ -54,11 +57,19 @@ class PropertyData implements JsonSerializable
         ReflectionClass $class,
         ClassData $classData,
         ?bool $declared = null,
-        ?int $line = null
+        ?int $line = null,
+        ?ConsoleWriterInterface $console = null
     ): self {
         $propertyName = $property->getName();
-        $docBlocks = PHPDocUtil::getAllPropertyDocComments($property, $class, $classDocBlocks);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "\${$propertyName}");
+        try {
+            $docBlocks = PHPDocUtil::getAllPropertyDocComments($property, $class, $classDocBlocks);
+            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "\${$propertyName}");
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
+
         $declaring = $property->getDeclaringClass();
         $className = $class->getName();
         $declaringName = $declaring->getName();

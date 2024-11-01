@@ -3,6 +3,7 @@
 namespace Salient\Sli\Internal\Data;
 
 use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Get;
@@ -11,6 +12,7 @@ use JsonSerializable;
 use ReflectionClass;
 use ReflectionMethod;
 use stdClass;
+use Throwable;
 
 /**
  * @internal
@@ -68,8 +70,14 @@ class MethodData implements JsonSerializable
         ?ConsoleWriterInterface $console = null
     ): self {
         $methodName = $method->getName();
-        $docBlocks = PHPDocUtil::getAllMethodDocComments($method, $class, $classDocBlocks);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "{$methodName}()");
+        try {
+            $docBlocks = PHPDocUtil::getAllMethodDocComments($method, $class, $classDocBlocks);
+            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "{$methodName}()");
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
         $declaring = $method->getDeclaringClass();
         $className = $class->getName();
         $declaringName = $declaring->getName();

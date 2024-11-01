@@ -3,6 +3,7 @@
 namespace Salient\Sli\Internal\Data;
 
 use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\Internal\NavigableToken;
@@ -18,6 +19,7 @@ use ReflectionClassConstant;
 use ReflectionMethod;
 use ReflectionProperty;
 use stdClass;
+use Throwable;
 use UnitEnum;
 
 /**
@@ -102,8 +104,14 @@ class ClassData implements JsonSerializable
         }
 
         $token = $extractor->getClassToken();
-        $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+        try {
+            $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
+            $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
 
         $data = (new static(
             $extractor->getClass(),
@@ -228,8 +236,14 @@ class ClassData implements JsonSerializable
                     ? \T_ENUM
                     : \T_CLASS));
 
-        $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+        try {
+            $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
+            $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
 
         $data = (new static(
             $class->getShortName(),
