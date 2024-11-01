@@ -91,3 +91,32 @@ class MyDynamicClassWithMutator extends stdClass implements Immutable
         return $this->with('Foo', $foo);
     }
 }
+
+class MyClassWithProtectedMutator implements Immutable
+{
+    use HasMutator {
+        with as protected;
+        without as protected;
+    }
+}
+
+class MyClassWithInheritedMutator extends MyClassWithProtectedMutator
+{
+    private string $Foo;
+
+    /**
+     * @return static
+     */
+    public function withFoo(string $foo)
+    {
+        return $this->with('Foo', $foo);
+    }
+
+    /**
+     * @return static
+     */
+    public function withoutFoo()
+    {
+        return $this->without('Foo');
+    }
+}
