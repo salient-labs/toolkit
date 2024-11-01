@@ -42,7 +42,7 @@
                     ],
                     "type": null,
                     "value": "1",
-                    "line": 15
+                    "line": 23
                 },
                 "MY_FLOAT": {
                     "summary": null,
@@ -63,7 +63,7 @@
                     ],
                     "type": "float",
                     "value": "1.0",
-                    "line": 17
+                    "line": 25
                 },
                 "MY_LONG_STRING": {
                     "summary": null,
@@ -84,7 +84,7 @@
                     ],
                     "type": null,
                     "value": "'string_with_more_than_20_characters'",
-                    "line": 18
+                    "line": 26
                 },
                 "MY_LONGER_ARRAY": {
                     "summary": null,
@@ -105,7 +105,7 @@
                     ],
                     "type": null,
                     "value": "[\n    'Stringable' => 0,\n    'JsonSerializable' => 1,\n]",
-                    "line": 20
+                    "line": 28
                 },
                 "MY_SHORT_STRING": {
                     "summary": null,
@@ -157,12 +157,86 @@
                 }
             },
             "properties": {
+                "MyMagicProperty": {
+                    "summary": "Description of MyBaseClass::$MyMagicProperty",
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "writeonly": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": null,
+                    "defaultValue": null,
+                    "line": -3
+                },
+                "MyMagicReadOnlyInt": {
+                    "summary": null,
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": true,
+                    "writeonly": false,
+                    "modifiers": [
+                        "public",
+                        "readonly"
+                    ],
+                    "type": "int",
+                    "defaultValue": null,
+                    "line": -2
+                },
+                "MyMagicWriteOnlyArray": {
+                    "summary": null,
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "writeonly": true,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "mixed[]",
+                    "defaultValue": null,
+                    "line": -1
+                },
                 "MyVarProperty": {
                     "summary": null,
                     "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -172,15 +246,44 @@
                     "private": false,
                     "static": false,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "public"
                     ],
                     "type": null,
                     "defaultValue": null,
-                    "line": 25
+                    "line": 33
                 }
             },
             "methods": {
+                "MyStaticMagicMethod": {
+                    "templates": {},
+                    "summary": "Description of MyBaseClass::MyStaticMagicMethod()",
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": true,
+                    "modifiers": [
+                        "public",
+                        "static"
+                    ],
+                    "parameters": {},
+                    "returnType": "void",
+                    "line": -1,
+                    "lines": null
+                },
                 "MyStaticMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyStaticMethod()",
@@ -188,6 +291,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,
@@ -214,7 +318,7 @@
                         ]
                     },
                     "returnType": "void",
-                    "line": 30,
+                    "line": 38,
                     "lines": 4
                 },
                 "MyOverriddenMethod": {
@@ -224,6 +328,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -240,16 +345,17 @@
                     ],
                     "parameters": {},
                     "returnType": "int",
-                    "line": 35,
+                    "line": 43,
                     "lines": 4
                 },
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyMethod()",
-                    "description": null,
+                    "description": "Extended description of `MyInterface::MyMethod()`.",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": false,
                     "hasDocComment": false,
                     "inherited": true,
@@ -280,6 +386,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": false,
                     "hasDocComment": false,
                     "inherited": true,
@@ -305,7 +412,7 @@
                 }
             },
             "file": "./MyBaseClass.php",
-            "line": 13,
+            "line": 21,
             "lines": 27
         },
         "MyClass": {
@@ -353,7 +460,7 @@
                     ],
                     "type": "float",
                     "value": "3.0",
-                    "line": 16
+                    "line": 21
                 },
                 "MY_INT": {
                     "summary": null,
@@ -477,12 +584,37 @@
                 }
             },
             "properties": {
-                "MyProperty": {
-                    "summary": "Summary of MyClass::$MyProperty",
-                    "description": "Extended description of `MyClass::$MyProperty`.",
+                "MyMagicProperty": {
+                    "summary": "Description of MyBaseClass::$MyMagicProperty",
+                    "description": null,
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "writeonly": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "int",
+                    "defaultValue": null,
+                    "line": -3
+                },
+                "MyProperty": {
+                    "summary": "Summary of MyClass::$MyProperty",
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,
@@ -492,12 +624,13 @@
                     "private": false,
                     "static": false,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "public"
                     ],
                     "type": "T",
                     "defaultValue": null,
-                    "line": 25
+                    "line": 28
                 },
                 "MyStaticProperty": {
                     "summary": null,
@@ -505,6 +638,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -514,13 +648,14 @@
                     "private": true,
                     "static": true,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "private",
                         "static"
                     ],
                     "type": null,
                     "defaultValue": null,
-                    "line": 28
+                    "line": 31
                 },
                 "MyStaticPropertyWithDefault": {
                     "summary": null,
@@ -528,6 +663,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -537,13 +673,14 @@
                     "private": true,
                     "static": true,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "private",
                         "static"
                     ],
                     "type": null,
                     "defaultValue": "0",
-                    "line": 31
+                    "line": 34
                 },
                 "MyStaticTypedProperty": {
                     "summary": null,
@@ -551,6 +688,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -560,13 +698,14 @@
                     "private": true,
                     "static": true,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "private",
                         "static"
                     ],
                     "type": "int",
                     "defaultValue": null,
-                    "line": 34
+                    "line": 37
                 },
                 "MyNullableStaticTypedProperty": {
                     "summary": null,
@@ -574,6 +713,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -583,13 +723,14 @@
                     "private": true,
                     "static": true,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "private",
                         "static"
                     ],
                     "type": "?int",
                     "defaultValue": null,
-                    "line": 37
+                    "line": 40
                 },
                 "MyNullableStaticTypedPropertyWithDefault": {
                     "summary": null,
@@ -597,6 +738,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -606,13 +748,69 @@
                     "private": true,
                     "static": true,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "private",
                         "static"
                     ],
                     "type": "?int",
                     "defaultValue": "null",
-                    "line": 40
+                    "line": 43
+                },
+                "MyMagicReadOnlyInt": {
+                    "summary": null,
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MyMagicReadOnlyInt"
+                    ],
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": true,
+                    "writeonly": false,
+                    "modifiers": [
+                        "public",
+                        "readonly"
+                    ],
+                    "type": "int",
+                    "defaultValue": null,
+                    "line": null
+                },
+                "MyMagicWriteOnlyArray": {
+                    "summary": null,
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyBaseClass",
+                        "MyMagicWriteOnlyArray"
+                    ],
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "writeonly": true,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "mixed[]",
+                    "defaultValue": null,
+                    "line": null
                 },
                 "MyVarProperty": {
                     "summary": null,
@@ -620,6 +818,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": false,
                     "hasDocComment": false,
                     "inherited": true,
@@ -632,6 +831,7 @@
                     "private": false,
                     "static": false,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "public"
                     ],
@@ -645,6 +845,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": false,
                     "hasDocComment": false,
                     "inherited": false,
@@ -657,6 +858,7 @@
                     "private": true,
                     "static": false,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "private"
                     ],
@@ -666,6 +868,75 @@
                 }
             },
             "methods": {
+                "MyMagicMethod": {
+                    "templates": {},
+                    "summary": null,
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": {
+                        "name": [
+                            "string ",
+                            ""
+                        ],
+                        "values": [
+                            "mixed ...",
+                            ""
+                        ]
+                    },
+                    "returnType": "int",
+                    "line": -2,
+                    "lines": null
+                },
+                "MyStaticMagicMethod": {
+                    "templates": {},
+                    "summary": "Description of MyBaseClass::MyStaticMagicMethod()",
+                    "description": null,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": true,
+                    "modifiers": [
+                        "public",
+                        "static"
+                    ],
+                    "parameters": {
+                        "id": [
+                            "int ",
+                            " = null"
+                        ]
+                    },
+                    "returnType": "void",
+                    "line": -1,
+                    "lines": null
+                },
                 "__construct": {
                     "templates": {},
                     "summary": null,
@@ -673,6 +944,7 @@
                     "api": true,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,
@@ -694,7 +966,7 @@
                         ]
                     },
                     "returnType": null,
-                    "line": 47,
+                    "line": 50,
                     "lines": 4
                 },
                 "MyTemplateMethod": {
@@ -706,6 +978,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,
@@ -731,7 +1004,7 @@
                         ]
                     },
                     "returnType": "array<T,TInstance>",
-                    "line": 61,
+                    "line": 64,
                     "lines": 4
                 },
                 "__toString": {
@@ -741,6 +1014,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -760,7 +1034,7 @@
                     ],
                     "parameters": {},
                     "returnType": "string",
-                    "line": 66,
+                    "line": 69,
                     "lines": 4
                 },
                 "MyStaticMethod": {
@@ -770,6 +1044,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": false,
                     "hasDocComment": false,
                     "inherited": true,
@@ -805,10 +1080,11 @@
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyTrait::MyMethod()",
-                    "description": null,
+                    "description": "Extended description of `MyInterface::MyMethod()`.",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": false,
                     "hasDocComment": false,
                     "inherited": false,
@@ -841,6 +1117,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": false,
                     "hasDocComment": false,
                     "inherited": false,
@@ -868,8 +1145,8 @@
                 }
             },
             "file": "./MyClass.php",
-            "line": 12,
-            "lines": 59
+            "line": 17,
+            "lines": 57
         },
         "MyInterface": {
             "type": "interface",
@@ -937,10 +1214,11 @@
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyMethod()",
-                    "description": null,
+                    "description": "Extended description of `MyInterface::MyMethod()`.",
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,
@@ -957,7 +1235,7 @@
                     ],
                     "parameters": {},
                     "returnType": "mixed",
-                    "line": 28,
+                    "line": 30,
                     "lines": 1
                 },
                 "MyStaticMethod": {
@@ -967,6 +1245,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,
@@ -989,13 +1268,13 @@
                         ]
                     },
                     "returnType": "void",
-                    "line": 35,
+                    "line": 37,
                     "lines": 1
                 }
             },
             "file": "./MyInterface.php",
             "line": 12,
-            "lines": 25
+            "lines": 27
         },
         "MyTrait": {
             "type": "trait",
@@ -1022,6 +1301,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": false,
                     "inherited": false,
@@ -1031,6 +1311,7 @@
                     "private": true,
                     "static": false,
                     "readonly": false,
+                    "writeonly": false,
                     "modifiers": [
                         "private"
                     ],
@@ -1047,6 +1328,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,
@@ -1073,6 +1355,7 @@
                     "api": false,
                     "internal": false,
                     "deprecated": false,
+                    "magic": false,
                     "declared": true,
                     "hasDocComment": true,
                     "inherited": false,

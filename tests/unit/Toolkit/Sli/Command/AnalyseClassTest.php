@@ -74,7 +74,7 @@ final class AnalyseClassTest extends CommandTestCase
             [
                 "$dir/output3.md",
                 0,
-                ['--markdown', '--skip', 'desc,meta,from', '.'],
+                ['--markdown', '--skip', 'desc,from,meta,star', '.'],
                 $dir,
             ],
         ];

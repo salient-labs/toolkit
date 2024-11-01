@@ -210,7 +210,7 @@ class ClassData implements JsonSerializable
             }
         }
 
-        return $data;
+        return $data->applyPHPDocTags($phpDoc);
     }
 
     /**
@@ -317,7 +317,7 @@ class ClassData implements JsonSerializable
             }
         }
 
-        return $data;
+        return $data->applyPHPDocTags($phpDoc);
     }
 
     /**
@@ -354,6 +354,26 @@ class ClassData implements JsonSerializable
         ]));
         $this->IsFinal = $this->IsFinal || $phpDoc->hasTag('final');
         $this->IsReadOnly = $this->IsReadOnly || $phpDoc->hasTag('readonly');
+    }
+
+    /**
+     * @return static
+     */
+    private function applyPHPDocTags(PHPDoc $phpDoc): self
+    {
+        $properties = $phpDoc->getProperties();
+        $i = -count($properties);
+        foreach ($properties as $name => $property) {
+            $this->Properties[$name] = PropertyData::fromPropertyTag($property, $this, $i++);
+        }
+
+        $methods = $phpDoc->getMethods();
+        $i = -count($methods);
+        foreach ($methods as $name => $method) {
+            $this->Methods[$name] = MethodData::fromMethodTag($method, $this, $i++);
+        }
+
+        return $this;
     }
 
     /**

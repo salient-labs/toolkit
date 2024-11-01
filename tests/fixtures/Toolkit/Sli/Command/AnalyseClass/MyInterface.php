@@ -23,6 +23,8 @@ interface MyInterface
     /**
      * Summary of MyInterface::MyMethod()
      *
+     * Extended description of `MyInterface::MyMethod()`.
+     *
      * @return mixed
      */
     public function MyMethod();

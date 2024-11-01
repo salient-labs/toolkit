@@ -4,6 +4,7 @@ namespace Salient\Sli\Internal\Data;
 
 use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\MessageLevel as Level;
+use Salient\PHPDoc\Tag\MethodTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Get;
@@ -32,6 +33,7 @@ class MethodData implements JsonSerializable
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
+    public bool $Magic = false;
     public bool $Declared = false;
     public bool $HasDocComment = false;
     public bool $Inherited = false;
@@ -176,6 +178,50 @@ class MethodData implements JsonSerializable
         return $data;
     }
 
+    public static function fromMethodTag(
+        MethodTag $method,
+        ClassData $classData,
+        ?int $line = null
+    ): self {
+        $methodName = $method->getName();
+
+        $data = new static($methodName, $classData);
+        $data->Summary = $method->getDescription();
+        $data->Magic = true;
+
+        $class = $method->getClass();
+        if ($class !== null && $class !== $classData->getFqcn()) {
+            $data->InheritedFrom = [$class, $methodName];
+        } else {
+            $data->Line = $line;
+        }
+
+        $data->Modifiers = array_keys(array_filter([
+            'public' => $data->IsPublic = true,
+            'static' => $data->IsStatic = $method->isStatic(),
+        ]));
+
+        foreach ($method->getParams() as $param) {
+            $name = $param->getName();
+            $type = (string) $param->getType();
+            if ($type !== '') {
+                $type .= ' ';
+            }
+            if ($param->isVariadic()) {
+                $type .= '...';
+            }
+            $default = (string) $param->getDefault();
+            if ($default !== '') {
+                $default = " = {$default}";
+            }
+            $data->Parameters[$name] = [$type, $default];
+        }
+
+        $data->ReturnType = $method->getType();
+
+        return $data;
+    }
+
     public function getFqsen(): string
     {
         return "{$this->Class->getFqcn()}::{$this->Name}()";
@@ -198,6 +244,7 @@ class MethodData implements JsonSerializable
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,
+            'magic' => $this->Magic,
             'declared' => $this->Declared,
             'hasDocComment' => $this->HasDocComment,
             'inherited' => $this->Inherited,

@@ -46,9 +46,21 @@ public const MY_LONGER_ARRAY = [
 
 #### Properties
 
+##### `public $MyMagicProperty`
+
+Description of MyBaseClass::$MyMagicProperty
+
+##### `public readonly int $MyMagicReadOnlyInt`
+
+##### `public mixed[] $MyMagicWriteOnlyArray` (write-only)
+
 ##### `public $MyVarProperty`
 
 #### Methods
+
+##### `public static MyStaticMagicMethod(): void`
+
+Description of MyBaseClass::MyStaticMagicMethod()
 
 ##### `final public static MyStaticMethod(static $instance): void`
 
@@ -90,6 +102,10 @@ uses MyTrait
 
 #### Properties
 
+##### `public int $MyMagicProperty`
+
+Description of MyBaseClass::$MyMagicProperty
+
 ##### `public T $MyProperty`
 
 Summary of MyClass::$MyProperty
@@ -104,11 +120,29 @@ Summary of MyClass::$MyProperty
 
 ##### `private static ?int $MyNullableStaticTypedPropertyWithDefault = null`
 
+> ###### `public readonly int $MyMagicReadOnlyInt`
+>
+> ###### `public mixed[] $MyMagicWriteOnlyArray` (write-only)
+>
 > ###### `public $MyVarProperty`
 >
 > ###### `private int $MyIntProperty = 2`
 
 #### Methods
+
+##### `MyMagicMethod()`
+
+```php
+public function MyMagicMethod(string $name, mixed ...$values): int
+```
+
+##### `MyStaticMagicMethod()`
+
+Description of MyBaseClass::MyStaticMagicMethod()
+
+```php
+public static function MyStaticMagicMethod(int $id = null): void
+```
 
 ##### `__construct()`
 
