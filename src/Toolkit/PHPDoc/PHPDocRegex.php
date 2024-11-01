@@ -35,7 +35,37 @@ REGEX;
 REGEX;
 
     /**
+     * A value in a PHPDoc tag, e.g. the default value of a "@method" parameter
+     */
+    public const PHPDOC_VALUE = <<<'REGEX'
+(?x)
+(?(DEFINE)
+  (?<no_comma>   [^"'()<>[\]{}\s,]++ )
+  (?<no_bracket> [^"'()<>[\]{}]++ )
+)
+(?: \s*+ (?: (?&no_comma) | (
+  \( (?: (?&no_bracket) | (?-1) )*+ \) |
+   < (?: (?&no_bracket) | (?-1) )*+ >  |
+  \[ (?: (?&no_bracket) | (?-1) )*+ \] |
+  \{ (?: (?&no_bracket) | (?-1) )*+ \} |
+   " (?: [^"\\] | \\ . )*+ " |
+   ' (?: [^'\\] | \\ . )*+ '
+) ) )+
+REGEX;
+
+    /**
      * A valid PHPDoc type
+     *
+     * Recursively matches plain, union and intersection types comprised of:
+     *
+     * - `*` (used in star projections like `Collection<*>`)
+     * - `$this`
+     * - string, float or integer literals
+     * - callables with optional template, parameter and/or return types
+     * - native or PHPDoc types with optional `::CONST_*`, `<Type,...>` and/or
+     *   `{Foo?: string, ...<int>}`
+     * - conditional return types
+     * - enclosing parentheses
      *
      * In some locales, `\s` matches non-breaking space (`\xA0`), so `(?&sp)` is
      * used in contexts where the start of a PHP identifier would otherwise be
@@ -60,14 +90,10 @@ REGEX;
 (
   (?:
     \* |
-
     \$this |
+    " (?: [^"\\] | \\ . )*+ " |
+    ' (?: [^'\\] | \\ . )*+ ' |
 
-    # String
-    ' (?: [^'\\]*+ | \\' | \\ )*+ ' |
-    " (?: [^"\\]*+ | \\" | \\ )*+ " |
-
-    # Number
     [+-]? (?:
       (?&exponent_dnum) |
       (?&dnum) |
@@ -78,8 +104,6 @@ REGEX;
       0
     ) |
 
-    # Closure with optional "<Type,...>", and optional parameter and return
-    # types
     (?: (?: pure- (?! \\ ) )? (?: callable | \\? Closure ) ) \s*+
     (?: \s* < (?&variance) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1)
         (?: \s*+ , (?&variance) (?: (?&php_identifier) \s++ (?: of | as ) \b (?&sp)*+ )? (?-1) )*+
@@ -89,8 +113,6 @@ REGEX;
         (?&trailing) \s*+ | \.\.\. \s*+ )? \)
     (?: \s* : (?&sp)*+ (?-1) )? |
 
-    # Native or PHPDoc type, possibly nullable, with optional "::CONST_*",
-    # "<Type,...>", and/or "{0?:Type,...<Type,Type>}"
     (?: \? (?&sp)*+ )?
     (?: (?&php_type) | (?&phpdoc_type) | (?&php_identifier) )
     (?: :: [[:alpha:]_\x80-\xff*] [[:alnum:]_\x80-\xff*]*+ )?
@@ -103,12 +125,10 @@ REGEX;
           (?&trailing) | \.\.\. )?
         (?: (?<= \.\.\. ) \s*+ < (?&sp)*+ (?-1) (?: \s*+ , (?&sp)*+ (?-1) )? \s*+ > (?: \s*+ , )? )? \s*+ ) \} )*+ |
 
-    # Conditional return type
     (?: (?&variable) | (?&php_identifier) ) \s+ is (?: \s++ not )? \b (?&sp)*+ (?-1)
         \s*+ \? (?&sp)*+ (?-1)
         \s*+ :  (?&sp)*+ (?-1) |
 
-    # Enclosing parentheses
     (?: \? \s*+ )? \( (?&sp)*+ (?-1) \s*+ \)
   )
   (?: \s* \[ (?&sp)*+ (?: (?-1) \s*+ )? \] )*+

@@ -10,7 +10,7 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\Type;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use Salient\Core\Concern\HasMutator;
 
@@ -81,7 +81,7 @@ class TypesAssignedByHasMutatorRule implements Rule
         /** @var string */
         $propertyName = $propertyName->getConstantScalarValues()[0];
         $has = $calledOnType->hasProperty($propertyName);
-        if (!$has->yes() /* && !($has->maybe() && $this->allowsDynamicProperties($calledOnType)) */) {
+        if (!$has->yes()) {
             return [
                 RuleErrorBuilder::message(sprintf(
                     'Access to an undefined property %s::$%s.',
@@ -92,10 +92,31 @@ class TypesAssignedByHasMutatorRule implements Rule
                     ->build(),
             ];
         }
+        $propertyReflection = $calledOnType->getProperty($propertyName, $scope);
+        if (
+            $propertyReflection->isPrivate()
+            && ($scopeClass = $scope->getClassReflection())
+            && !(new ObjectType($scopeClass->getName()))->equals(
+                new ObjectType($methodReflection->getDeclaringClass()->getName())
+            )
+        ) {
+            return [
+                RuleErrorBuilder::message(sprintf(
+                    'Access to an inaccessible property %s::$%s.',
+                    $calledOnType->describe(VerbosityLevel::typeOnly()),
+                    $propertyName,
+                ))
+                    ->identifier('salient.property.private')
+                    ->tip(sprintf(
+                        'Insert %s or change the visibility of the property.',
+                        HasMutator::class,
+                    ))
+                    ->build(),
+            ];
+        }
         if ($name !== 'with' || count($args) < 2) {
             return [];
         }
-        $propertyReflection = $calledOnType->getProperty($propertyName, $scope);
         $propertyType = $propertyReflection->getWritableType();
         if ($propertyType instanceof NeverType) {
             $propertyType = $propertyReflection->getReadableType();
@@ -117,14 +138,4 @@ class TypesAssignedByHasMutatorRule implements Rule
         }
         return [];
     }
-
-    /* private function allowsDynamicProperties(Type $type): bool
-    {
-        foreach ($type->getObjectClassReflections() as $reflection) {
-            if ($reflection->allowsDynamicProperties()) {
-                return true;
-            }
-        }
-        return false;
-    } */
 }

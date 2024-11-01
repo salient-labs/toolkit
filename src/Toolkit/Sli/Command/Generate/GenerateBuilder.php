@@ -520,7 +520,7 @@ EOF)
                             $i++;
                         } while (array_key_exists($T, $this->InputClassTemplates)
                             || array_key_exists(Str::lower($T), $this->AliasMap));
-                        $lines[] = (string) $templateTag->withName($T)->withVariance(null);
+                        $lines[] = (string) $templateTag->withName($T)->withoutVariance();
                         $returnType[$template] = $T;
                         $param = Regex::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
                     }

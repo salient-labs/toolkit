@@ -21,9 +21,9 @@ class MethodTag extends AbstractTag
      */
     public function __construct(
         string $name,
-        bool $isStatic = false,
         ?string $type = null,
         array $params = [],
+        bool $isStatic = false,
         ?string $description = null,
         ?string $class = null,
         ?string $member = null

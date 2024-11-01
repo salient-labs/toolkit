@@ -8,26 +8,30 @@ namespace Salient\PHPDoc\Tag;
 class TemplateTag extends AbstractTag
 {
     protected ?string $Default;
-    /** @var "covariant"|"contravariant"|null */
-    protected ?string $Variance;
+    protected bool $IsCovariant;
+    protected bool $IsContravariant;
 
     /**
      * Creates a new TemplateTag object
      *
-     * @param "covariant"|"contravariant"|null $variance
      * @param class-string|null $class
      */
     public function __construct(
         string $name,
         ?string $type = null,
         ?string $default = null,
-        ?string $variance = null,
+        bool $isCovariant = false,
+        bool $isContravariant = false,
         ?string $class = null,
         ?string $member = null
     ) {
+        if ($isCovariant && $isContravariant) {
+            $this->throw('$isCovariant and $isContravariant cannot both be true');
+        }
         parent::__construct('template', $name, $type, null, $class, $member);
         $this->Default = $this->filterType($default);
-        $this->Variance = $this->filterVariance($variance);
+        $this->IsCovariant = $isCovariant;
+        $this->IsContravariant = $isContravariant;
     }
 
     /**
@@ -55,13 +59,19 @@ class TemplateTag extends AbstractTag
     }
 
     /**
-     * Get the variance of the template
-     *
-     * @return "covariant"|"contravariant"|null
+     * Check if the template is covariant
      */
-    public function getVariance(): ?string
+    public function isCovariant(): bool
     {
-        return $this->Variance;
+        return $this->IsCovariant;
+    }
+
+    /**
+     * Check if the template is contravariant
+     */
+    public function isContravariant(): bool
+    {
+        return $this->IsContravariant;
     }
 
     /**
@@ -109,14 +119,15 @@ class TemplateTag extends AbstractTag
     }
 
     /**
-     * Get an instance with the given variance
+     * Get an instance without covariance or contravariance
      *
-     * @param "covariant"|"contravariant"|null $variance
      * @return static
      */
-    public function withVariance(?string $variance)
+    public function withoutVariance()
     {
-        return $this->with('Variance', $this->filterVariance($variance));
+        return $this
+            ->with('IsCovariant', false)
+            ->with('IsContravariant', false);
     }
 
     /**
@@ -125,8 +136,10 @@ class TemplateTag extends AbstractTag
     public function __toString(): string
     {
         $string = "@{$this->Tag}";
-        if ($this->Variance !== null) {
-            $string .= "-{$this->Variance}";
+        if ($this->IsCovariant) {
+            $string .= '-covariant';
+        } elseif ($this->IsContravariant) {
+            $string .= '-contravariant';
         }
         $string .= " {$this->Name}";
         if (isset($this->Type)) {
@@ -136,22 +149,5 @@ class TemplateTag extends AbstractTag
             $string .= " = {$this->Default}";
         }
         return $string;
-    }
-
-    /**
-     * @return "covariant"|"contravariant"|null
-     */
-    protected function filterVariance(?string $variance): ?string
-    {
-        if (
-            $variance === null
-            || $variance === 'covariant'
-            || $variance === 'contravariant'
-        ) {
-            return $variance;
-        }
-        // @codeCoverageIgnoreStart
-        $this->throw("Invalid variance '%s'", $variance);
-        // @codeCoverageIgnoreEnd
     }
 }

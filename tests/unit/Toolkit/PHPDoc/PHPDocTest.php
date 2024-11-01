@@ -2,24 +2,35 @@
 
 namespace Salient\Tests\PHPDoc;
 
+use Salient\PHPDoc\Tag\ErrorTag;
+use Salient\PHPDoc\Tag\GenericTag;
 use Salient\PHPDoc\Tag\MethodParam;
 use Salient\PHPDoc\Tag\MethodTag;
+use Salient\PHPDoc\Tag\ParamTag;
+use Salient\PHPDoc\Tag\PropertyTag;
+use Salient\PHPDoc\Tag\ReturnTag;
+use Salient\PHPDoc\Tag\TemplateTag;
+use Salient\PHPDoc\Tag\VarTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocRegex;
+use Salient\Tests\Reflection\MyBaseClass;
 use Salient\Tests\Reflection\MyClass;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
+use stdClass;
 
 /**
  * @covers \Salient\PHPDoc\PHPDoc
  * @covers \Salient\PHPDoc\PHPDocUtil
  * @covers \Salient\PHPDoc\Tag\AbstractTag
+ * @covers \Salient\PHPDoc\Tag\ErrorTag
  * @covers \Salient\PHPDoc\Tag\MethodParam
  * @covers \Salient\PHPDoc\Tag\MethodTag
  * @covers \Salient\PHPDoc\Tag\ParamTag
+ * @covers \Salient\PHPDoc\Tag\PropertyTag
  * @covers \Salient\PHPDoc\Tag\ReturnTag
  * @covers \Salient\PHPDoc\Tag\TemplateTag
  * @covers \Salient\PHPDoc\Tag\VarTag
@@ -29,15 +40,15 @@ final class PHPDocTest extends TestCase
     /**
      * @dataProvider invalidDocBlockProvider
      */
-    public function testInvalidDocBlock(string $docBlock, string $expectedMessage = 'Invalid DocBlock'): void
+    public function testInvalidDocBlock(string $docBlock): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage($expectedMessage);
+        $this->expectExceptionMessage('Invalid DocBlock');
         new PHPDoc($docBlock);
     }
 
     /**
-     * @return array<array{string,1?:string}>
+     * @return array<array{string}>
      */
     public static function invalidDocBlockProvider(): array
     {
@@ -49,15 +60,23 @@ final class PHPDocTest extends TestCase
 
  */
 EOF],
-            [<<<'EOF'
+        ];
+    }
+
+    public function testUnterminatedCodeFence(): void
+    {
+        $docBlock = <<<'EOF'
 /**
  * Summary
  *
  * ```php
  * $this->doSomething();
  */
-EOF, 'Unterminated code fence in DocBlock'],
-        ];
+EOF;
+
+        $phpDoc = new PHPDoc($docBlock);
+        $this->assertSame('Summary', $phpDoc->getSummary());
+        $this->assertSame("```php\n\$this->doSomething();\n```", $phpDoc->getDescription());
     }
 
     /**
@@ -137,6 +156,51 @@ EOF],
     {
         $phpDoc = new PHPDoc('/** * Summary */');
         $this->assertSame('* Summary', $phpDoc->getSummary());
+    }
+
+    public function testFromTags(): void
+    {
+        $phpDoc = PHPDoc::fromTags([
+            new GenericTag('api'),
+            new ParamTag('id', 'int|string', false, true, 'Foo'),
+            new ReturnTag('static', 'Bar'),
+            $var = new VarTag('int', null, 'Foo', MyBaseClass::class),
+            new VarTag('string', 'Baz', 'Description of Baz'),
+            new MethodTag('run', 'int', [], false, 'Perform the operation'),
+            new PropertyTag('LastResult', 'int', true, false, 'Result of last operation'),
+            new TemplateTag('TObject', 'object', stdClass::class, false, false, MyClass::class),
+            new TemplateTag('T', null, null, false, false, MyBaseClass::class),
+        ], 'Summary', 'Description', MyClass::class);
+
+        $docBlock = <<<'EOF'
+/**
+ * Summary
+ *
+ * Description
+ *
+ * @template TObject of object = stdClass
+ *
+ * @api
+ * @param int|string ...$id Foo
+ * @return static Bar
+ * @var int Foo
+ * @var string $Baz Description of Baz
+ * @method int run() Perform the operation
+ * @property-read int $LastResult Result of last operation
+ */
+EOF;
+
+        $this->assertSame(Str::eolFromNative($docBlock), (string) $phpDoc);
+        $this->assertSame(['T' => '@template T'], Arr::toStrings($phpDoc->getTemplatesForTag($var)));
+
+        $this->assertSame('/** */', (string) PHPDoc::fromTags([]));
+        $this->assertSame("/**\n * Summary\n */", (string) PHPDoc::fromTags([], 'Summary'));
+        $this->assertSame("/**\n * @var int Foo\n */", (string) PHPDoc::fromTags([$var]));
+        $this->assertSame("/**\n * Summary\n *\n * @var int Foo\n */", (string) PHPDoc::fromTags([$var], 'Summary'));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$description must be empty if $summary is empty');
+        PHPDoc::fromTags([], '', 'Description');
     }
 
     public function testFromDocBlocks(): void
@@ -280,53 +344,163 @@ EOF;
         $classDocBlock = null,
         ?string $class = null,
         ?string $member = null,
+        bool $normalise = false,
         ?string $string = null
     ): void {
         $phpDoc = new PHPDoc($docBlock, $classDocBlock, $class, $member);
+        if ($normalise) {
+            $phpDoc = $phpDoc->normalise()->flatten();
+        }
         $this->assertEquals($expected, $phpDoc);
         $this->assertSame(Str::eolFromNative($string ?? $docBlock ?? ''), (string) $phpDoc);
     }
 
     /**
-     * @return array<array{PHPDoc,1?:string|null,2?:PHPDoc|string|null,3?:class-string|null,4?:string|null,5?:string|null}>
+     * @return array<array{PHPDoc,1?:string|null,2?:PHPDoc|string|null,3?:class-string|null,4?:string|null,5?:bool,6?:string|null}>
      */
     public static function phpDocProvider(): array
     {
         return [
             [
                 PHPDoc::fromTags([
-                    new MethodTag('getString', false, 'string', [], 'Description of getString()'),
-                    new MethodTag('setInteger', false, 'void', [
+                    new MethodTag('getString', 'string', [], false, 'Description of getString()'),
+                    new MethodTag('setInteger', 'void', [
                         'integer' => new MethodParam('integer', 'int'),
-                    ], 'Description of setInteger()'),
-                    new MethodTag('setString', false, null, [
+                    ], false, 'Description of setInteger()'),
+                    new MethodTag('setString', null, [
                         'string' => new MethodParam('string', 'string'),
-                    ], 'Description of setString()'),
-                    new MethodTag('setBoth', false, '$this', [
-                        'integer' => new MethodParam('integer', 'int'),
-                        'string' => new MethodParam('string', 'string'),
-                    ], 'Description of setBoth()'),
-                    new MethodTag('setAny', false, 'static', [
-                        'integerOrString' => new MethodParam('integerOrString', 'int|string', true),
-                    ], 'Description of setAny()'),
-                    new MethodTag('staticGetter', true, 'int|string', [], 'Description of staticGetter()'),
-                    new MethodTag('staticFactory', true, 'static[]', [
-                        'id' => new MethodParam('id', null, true),
-                    ], 'Description of staticFactory()'),
-                    new MethodTag('getChildren', false, 'static[]', [], 'Description of getChildren()'),
+                    ]),
+                    new MethodTag('setBoth', '$this', [
+                        'integer' => new MethodParam('integer', 'int', '-1'),
+                        'string' => new MethodParam('string', 'string', "''"),
+                    ]),
+                    new MethodTag('setAny', 'static', [
+                        'integerOrString' => new MethodParam('integerOrString', 'int|string', null, true),
+                    ], false, 'Description of setAny()'),
+                    new MethodTag('staticGetter', 'int|string', [], true, 'Description of staticGetter()'),
+                    new MethodTag('staticFactory', 'static[]', [
+                        'id' => new MethodParam('id', null, null, true),
+                    ], true, 'Description of staticFactory()'),
+                    new MethodTag('getChildren', 'static[]', [], false, 'Description of getChildren()'),
                 ]),
                 <<<'EOF'
 /**
  * @method string getString() Description of getString()
  * @method void setInteger(int $integer) Description of setInteger()
- * @method setString(string $string) Description of setString()
- * @method $this setBoth(int $integer, string $string) Description of setBoth()
+ * @method setString(string $string)
+ * @method $this setBoth(int $integer = -1, string $string = '')
  * @method static setAny(int|string ...$integerOrString) Description of setAny()
  * @method static int|string staticGetter() Description of staticGetter()
  * @method static static[] staticFactory(...$id) Description of staticFactory()
  * @method static[] getChildren() Description of getChildren()
  */
 EOF,
+            ],
+            [
+                PHPDoc::fromTags([
+                    new PropertyTag('FullName', 'string', true, false),
+                    new PropertyTag('Children', 'static[]', false, false, 'Description of $Children'),
+                    new PropertyTag('Writable', null, false, true),
+                ]),
+                <<<'EOF'
+/**
+ * @property-read string $FullName
+ * @property static[] $Children Description of $Children
+ * @property-write $Writable
+ */
+EOF,
+            ],
+            [
+                PHPDoc::fromTags([
+                    new VarTag('string', 'Name', 'Description of $Name', MyClass::class, '$Name'),
+                ], null, null, MyClass::class, '$Name'),
+                <<<'EOF'
+/**
+ * @var string $Name Description of $Name
+ */
+EOF,
+                null,
+                MyClass::class,
+                '$Name',
+            ],
+            [
+                PHPDoc::fromTags([
+                    new VarTag('string', null, null, MyClass::class, '$Name'),
+                ], 'Description of $Name', null, MyClass::class, '$Name'),
+                <<<'EOF'
+/**
+ * @var string $Name Description of $Name
+ */
+EOF,
+                null,
+                MyClass::class,
+                '$Name',
+                true,
+                <<<'EOF'
+/**
+ * Description of $Name
+ *
+ * @var string
+ */
+EOF,
+            ],
+            [
+                PHPDoc::fromTags([
+                    new ErrorTag('param', 'Invalid syntax for @param in DocBlock'),
+                ]),
+                '/** @param */',
+                null,
+                null,
+                null,
+                false,
+                '/** */',
+            ],
+            [
+                PHPDoc::fromTags([
+                    new ErrorTag('param', 'Invalid syntax for @param in DocBlock of ' . MyClass::class, null, MyClass::class),
+                ], null, null, MyClass::class),
+                '/** @param */',
+                null,
+                MyClass::class,
+                null,
+                false,
+                '/** */',
+            ],
+            [
+                PHPDoc::fromTags([
+                    new ErrorTag('param', 'Invalid syntax for @param in DocBlock of ' . MyClass::class . '::bar()', null, MyClass::class, 'bar()'),
+                ], null, null, MyClass::class, 'bar()'),
+                '/** @param */',
+                null,
+                MyClass::class,
+                'bar()',
+                false,
+                '/** */',
+            ],
+            [
+                PHPDoc::fromTags([
+                    new ErrorTag('param', 'Invalid syntax for @param in DocBlock', 'bool notAVariable'),
+                    new ErrorTag('return', 'Invalid syntax for @return in DocBlock'),
+                    new ErrorTag('return', 'Invalid syntax for @return in DocBlock', '/notAType'),
+                    new ErrorTag('var', 'Invalid syntax for @var in DocBlock'),
+                    new ErrorTag('var', 'Invalid syntax for @var in DocBlock', '$variable'),
+                    new ErrorTag('template', 'Invalid syntax for @template in DocBlock'),
+                ]),
+                <<<'EOF'
+/**
+ * @param bool notAVariable
+ * @return
+ * @return /notAType
+ * @var
+ * @var $variable
+ * @template
+ */
+EOF,
+                null,
+                null,
+                null,
+                false,
+                '/** */',
             ],
         ];
     }
@@ -405,15 +579,16 @@ EOF,
                 'Description of $idListsByReference',
             ],
         ] as [$docBlock, $description]) {
+            $tag = Arr::implode(' ', ['@param (int|string)[] &...$idListsByReference', $description], '');
             yield [
-                Arr::implode(' ', ['/** @param (int|string)[] &...$idListsByReference', $description, '*/']),
+                "/**\n * $tag\n */",
                 $docBlock,
                 ['idListsByReference'],
                 ['(int|string)[]'],
                 [$description],
                 [true],
                 [true],
-                [Arr::implode(' ', ['@param (int|string)[] &...$idListsByReference', $description], '')],
+                [$tag],
             ];
         }
     }
@@ -636,6 +811,13 @@ EOF,
         ];
     }
 
+    public function testInvalidPropertyTag(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$isReadOnly and $isWriteOnly cannot both be true');
+        new PropertyTag('foo', null, true, true);
+    }
+
     public function testTemplateTags(): void
     {
         $docBlock = <<<'EOF'
@@ -669,12 +851,13 @@ EOF;
 
         $template = $templates['T0'];
         $this->assertNull($template->getDescription());
-        $this->assertSame('covariant', $template->getVariance());
+        $this->assertTrue($template->isCovariant());
+        $this->assertFalse($template->isContravariant());
         $this->assertNotSame($template, $template2 = $template->withName('TInvariant'));
         $this->assertNotSame($template2, $template3 = $template2->withType('object|null'));
         $this->assertSame($template3, $template3->withDescription(null));
         $this->assertNotSame($template3, $template4 = $template3->withDefault('null'));
-        $this->assertNotSame($template4, $template5 = $template4->withVariance(null));
+        $this->assertNotSame($template4, $template5 = $template4->withoutVariance());
         $this->assertSame('@template TInvariant of object|null = null', (string) $template5);
         $this->assertNotSame($template5, $template6 = $template5->withType(null));
         $this->assertSame('@template TInvariant = null', (string) $template6);
@@ -844,70 +1027,6 @@ EOF;
         $this->assertSame('class-string<T0>|null', $vars['Class']->getType());
         $this->assertCount(1, $params = $phpDoc->getParams());
         $this->assertSame('class-string<T0>|null', $params['class']->getType());
-    }
-
-    /**
-     * @dataProvider invalidTagProvider
-     *
-     * @param class-string|null $class
-     */
-    public function testInvalidTag(
-        string $expectedMessage,
-        string $docBlock,
-        ?string $class = null,
-        ?string $member = null
-    ): void {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage($expectedMessage);
-        new PHPDoc($docBlock, null, $class, $member);
-    }
-
-    /**
-     * @return array<array{string,string,2?:string|null,3?:string|null}>
-     */
-    public static function invalidTagProvider(): array
-    {
-        return [
-            [
-                'Invalid syntax for @param in DocBlock',
-                '/** @param */',
-            ],
-            [
-                'Invalid syntax for @param in DocBlock of Foo',
-                '/** @param */',
-                'Foo',
-            ],
-            [
-                'Invalid syntax for @param in DocBlock of Foo::bar()',
-                '/** @param */',
-                'Foo',
-                'bar()',
-            ],
-            [
-                'Invalid syntax for @param in DocBlock',
-                '/** @param bool notAVariable */',
-            ],
-            [
-                'Invalid syntax for @return in DocBlock',
-                '/** @return */',
-            ],
-            [
-                'Invalid syntax for @return in DocBlock',
-                '/** @return /notAType */',
-            ],
-            [
-                'Invalid syntax for @var in DocBlock',
-                '/** @var */',
-            ],
-            [
-                'Invalid syntax for @var in DocBlock',
-                '/** @var $variable */',
-            ],
-            [
-                'Invalid syntax for @template in DocBlock',
-                '/** @template */',
-            ],
-        ];
     }
 
     /**

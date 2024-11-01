@@ -11,6 +11,7 @@ class MethodParam implements Stringable
 {
     protected string $Name;
     protected ?string $Type;
+    protected ?string $Default;
     protected bool $IsVariadic;
 
     /**
@@ -19,10 +20,12 @@ class MethodParam implements Stringable
     public function __construct(
         string $name,
         ?string $type = null,
+        ?string $default = null,
         bool $isVariadic = false
     ) {
         $this->Name = $name;
         $this->Type = $type;
+        $this->Default = $default;
         $this->IsVariadic = $isVariadic;
     }
 
@@ -40,6 +43,14 @@ class MethodParam implements Stringable
     public function getType(): ?string
     {
         return $this->Type;
+    }
+
+    /**
+     * Get the default value of the parameter
+     */
+    public function getDefault(): ?string
+    {
+        return $this->Default;
     }
 
     /**
@@ -63,6 +74,9 @@ class MethodParam implements Stringable
             $string .= '...';
         }
         $string .= "\${$this->Name}";
+        if ($this->Default !== null) {
+            $string .= " = {$this->Default}";
+        }
         return $string;
     }
 }

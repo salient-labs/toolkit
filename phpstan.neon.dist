@@ -31,6 +31,10 @@ parameters:
 			paths:
 				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
 		-
+			identifier: salient.property.private
+			paths:
+				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+		-
 			identifier: salient.property.type
 			paths:
 				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
@@ -56,3 +60,7 @@ parameters:
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrFlattenReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php
+		-
+			identifier: property.unused
+			paths:
+				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php

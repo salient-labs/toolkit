@@ -434,7 +434,7 @@ final class PHPDocUtil extends AbstractUtility
     public static function normaliseType(string $type, bool $strict = false): string
     {
         $type = trim($type);
-        if (!Regex::match(self::PHPDOC_TYPE, $type, $matches)) {
+        if (!Regex::match(self::PHPDOC_TYPE, $type)) {
             if ($strict) {
                 throw new InvalidArgumentException(sprintf(
                     "Invalid PHPDoc type '%s'",

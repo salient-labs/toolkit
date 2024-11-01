@@ -5,10 +5,12 @@ namespace Salient\PHPDoc;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\PHPDoc\Tag\AbstractTag;
+use Salient\PHPDoc\Tag\ErrorTag;
 use Salient\PHPDoc\Tag\GenericTag;
 use Salient\PHPDoc\Tag\MethodParam;
 use Salient\PHPDoc\Tag\MethodTag;
 use Salient\PHPDoc\Tag\ParamTag;
+use Salient\PHPDoc\Tag\PropertyTag;
 use Salient\PHPDoc\Tag\ReturnTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\Tag\VarTag;
@@ -30,7 +32,7 @@ class PHPDoc implements Immutable, Stringable
     use HasMutator;
 
     private const PHP_DOCBLOCK = '`^' . PHPDocRegex::PHP_DOCBLOCK . '$`D';
-    private const PHPDOC_TAG = '`^' . PHPDocRegex::PHPDOC_TAG . '`';
+    private const PHPDOC_TAG = '`^' . PHPDocRegex::PHPDOC_TAG . '`D';
     private const BLANK_OR_PHPDOC_TAG = '`^(?:$|' . PHPDocRegex::PHPDOC_TAG . ')`D';
 
     private const PARAM_TAG = '`^'
@@ -56,8 +58,24 @@ class PHPDoc implements Immutable, Stringable
         . '(?<method_static>static\h++)?'
         . '(?:(?<method_type>' . PHPDocRegex::PHPDOC_TYPE . ')\h++)?'
         . '(?<method_name>[^\s(]++)'
-        . '\h*+\(\h*+(?:(?<method_params>(?:(?&method_type)\h++)?(?:\.\.\.\h*+)?\$[^\s,)$]++(?:\h*+,\h*+(?:(?&method_type)\h++)?(?:\.\.\.\h*+)?\$[^\s,)$]++)*+)\h*+(?:,\h*+)?)?\)'
+        . '\h*+\(\h*+(?:(?<method_params>'
+        . '(?<method_param>(?:(?&method_type)\h++)?(?:\.\.\.\h*+)?\$[^\s=,)$]++(?:\h*+=\h*+' . PHPDocRegex::PHPDOC_VALUE . ')?)'
+        . '(?:\h*+,\h*+(?&method_param))*+'
+        . ')\h*+(?:,\h*+)?)?\)'
         . '\s*+(?<method_description>(?s).++)?'
+        . '`';
+
+    private const METHOD_PARAM = '`^'
+        . '(?:(?<param_type>' . PHPDocRegex::PHPDOC_TYPE . ')\h++)?'
+        . '(?<param_variadic>\.\.\.\h*+)?'
+        . '\$(?<param_name>[^\s=,)$]++)'
+        . '(?:\h*+=\h*+(?<param_default>' . PHPDocRegex::PHPDOC_VALUE . '))?'
+        . '`';
+
+    private const PROPERTY_TAG = '`^'
+        . '(?:(?<property_type>' . PHPDocRegex::PHPDOC_TYPE . ')\h++)?'
+        . '\$(?<property_name>[^\s]++)'
+        . '\s*+(?<property_description>(?s).++)?'
         . '`';
 
     private const TEMPLATE_TAG = '`^'
@@ -91,8 +109,8 @@ class PHPDoc implements Immutable, Stringable
         // "Magic" methods and properties
         'method' => true,
         'property' => true,
-        'property-read' => true,
-        'property-write' => true,
+        'property-read' => ['phpstan-', 'psalm-'],
+        'property-write' => ['phpstan-', 'psalm-'],
         'mixin' => true,
         // Generics
         'template' => true,
@@ -116,6 +134,7 @@ class PHPDoc implements Immutable, Stringable
         'return' => true,
         'var' => true,
         'method' => true,
+        'property' => true,
         'template' => true,
     ];
 
@@ -145,10 +164,14 @@ class PHPDoc implements Immutable, Stringable
     private array $Vars = [];
     /** @var array<string,MethodTag> */
     private array $Methods = [];
+    /** @var array<string,PropertyTag> */
+    private array $Properties = [];
     /** @var array<string,TemplateTag> */
     private array $Templates = [];
     /** @var array<class-string,array<string,TemplateTag>> */
     private array $InheritedTemplates = [];
+    /** @var ErrorTag[] */
+    private array $Errors = [];
     /** @var class-string|null */
     private ?string $Class;
     private ?string $Member;
@@ -175,15 +198,19 @@ class PHPDoc implements Immutable, Stringable
         ?string $class = null,
         ?string $member = null
     ) {
-        $docBlock ??= '/** */';
-        if (!Regex::match(self::PHP_DOCBLOCK, $docBlock, $matches)) {
-            throw new InvalidArgumentException('Invalid DocBlock');
-        }
-
         $this->Class = $class;
         $this->Member = $member;
         $this->Original = $this;
-        $this->parse($matches['content'], $tags);
+
+        if ($docBlock !== null) {
+            if (!Regex::match(self::PHP_DOCBLOCK, $docBlock, $matches)) {
+                throw new InvalidArgumentException('Invalid DocBlock');
+            }
+            $this->parse($matches['content'], $tags);
+            if ($tags) {
+                $this->updateTags();
+            }
+        }
 
         // Merge templates from the declaring class, if possible
         if ($classDocBlock !== null && $class !== null && $member !== null) {
@@ -193,10 +220,6 @@ class PHPDoc implements Immutable, Stringable
             foreach ($phpDoc->Templates as $name => $tag) {
                 $this->Templates[$name] ??= $tag;
             }
-        }
-
-        if ($tags) {
-            $this->updateTags();
         }
     }
 
@@ -221,9 +244,7 @@ class PHPDoc implements Immutable, Stringable
             $description = Str::coalesce(trim($description), null);
         }
         if ($summary === null && $description !== null) {
-            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException('$description must be empty if $summary is empty');
-            // @codeCoverageIgnoreEnd
         }
 
         $phpDoc = new static(null, null, $class, $member);
@@ -245,6 +266,8 @@ class PHPDoc implements Immutable, Stringable
                 }
             } elseif ($tag instanceof MethodTag) {
                 $phpDoc->Methods[$tag->getName()] = $tag;
+            } elseif ($tag instanceof PropertyTag) {
+                $phpDoc->Properties[$tag->getName()] = $tag;
             } elseif ($tag instanceof TemplateTag) {
                 $_class = $tag->getClass();
                 if ($_class === $class || $_class === null || $class === null) {
@@ -253,6 +276,9 @@ class PHPDoc implements Immutable, Stringable
                     $phpDoc->InheritedTemplates[$_class][$tag->getName()] = $tag;
                     continue;
                 }
+            } elseif ($tag instanceof ErrorTag) {
+                $phpDoc->Errors[] = $tag;
+                continue;
             } else {
                 $phpDoc->Tags[$tag->getTag()][] = $tag;
                 continue;
@@ -312,6 +338,11 @@ class PHPDoc implements Immutable, Stringable
             $methods[$name] = $this->mergeTag($methods[$name] ?? null, $theirs);
         }
 
+        $properties = $this->Properties;
+        foreach ($parent->Properties as $name => $theirs) {
+            $properties[$name] = $this->mergeTag($properties[$name] ?? null, $theirs);
+        }
+
         $templates = $this->InheritedTemplates;
         if ($parent->Class !== null && $parent->Class !== $this->Class) {
             unset($templates[$parent->Class]);
@@ -338,6 +369,8 @@ class PHPDoc implements Immutable, Stringable
             ->with('Params', $params)
             ->with('Return', $return)
             ->with('Vars', $vars)
+            ->with('Methods', $methods)
+            ->with('Properties', $properties)
             ->with('InheritedTemplates', $templates);
     }
 
@@ -391,9 +424,12 @@ class PHPDoc implements Immutable, Stringable
     /**
      * Get a normalised instance
      *
-     * If the PHPDoc has one `@var` tag with no variable name, its description
-     * is applied to the summary or description of the PHPDoc and removed from
-     * the tag.
+     * If the PHPDoc has one `@var` tag:
+     *
+     * 1. if the class member associated with the PHPDoc is a property with the
+     *    same name as the tag, the name is removed from the tag
+     * 2. if the tag has no name, its description is applied to the summary or
+     *    description of the PHPDoc and removed from the tag
      *
      * `@inheritDoc` tags are removed.
      *
@@ -405,10 +441,18 @@ class PHPDoc implements Immutable, Stringable
         unset($tags['inheritDoc']);
 
         $vars = $this->Vars;
-        if (count($vars) === 1 && array_key_first($vars) === 0) {
-            $var = $vars[0];
-            $varDesc = $var->getDescription();
-            if ($varDesc !== null) {
+        if (count($vars) === 1) {
+            $key = array_key_first($vars);
+            $var = $vars[$key];
+            if (
+                $this->Class !== null
+                && ($name = $var->getName()) !== null
+                && "\${$name}" === $this->Member
+            ) {
+                $vars = [$var = $var->withName(null)];
+                $key = 0;
+            }
+            if ($key === 0 && ($varDesc = $var->getDescription()) !== null) {
                 $vars = [$var->withDescription(null)];
                 if ($this->Summary === null) {
                     $summary = $varDesc;
@@ -453,6 +497,7 @@ class PHPDoc implements Immutable, Stringable
             'Return' => 'return',
             'Vars' => 'var',
             'Methods' => 'method',
+            'Properties' => 'property',
             'Templates' => 'template',
         ][$property] ?? null;
 
@@ -492,6 +537,14 @@ class PHPDoc implements Immutable, Stringable
                 $this->Tags['method'] = array_values($this->Methods);
             } else {
                 unset($this->Tags['method']);
+            }
+        }
+
+        if ($tag === 'property' || $tag === null) {
+            if ($this->Properties) {
+                $this->Tags['property'] = array_values($this->Properties);
+            } else {
+                unset($this->Tags['property']);
             }
         }
 
@@ -600,6 +653,16 @@ class PHPDoc implements Immutable, Stringable
     }
 
     /**
+     * Get the PHPDoc's "@property" tags, indexed by name
+     *
+     * @return array<string,PropertyTag>
+     */
+    public function getProperties(): array
+    {
+        return $this->Properties;
+    }
+
+    /**
      * Get the PHPDoc's "@template" tags, indexed by name
      *
      * @return array<string,TemplateTag>
@@ -640,6 +703,26 @@ class PHPDoc implements Immutable, Stringable
         }
 
         return $this->InheritedTemplates[$class] ?? [];
+    }
+
+    /**
+     * Check if any tags in the PHPDoc's original DocBlock failed to parse
+     *
+     * @phpstan-assert-if-true non-empty-array<ErrorTag> $this->getErrors()
+     */
+    public function hasErrors(): bool
+    {
+        return (bool) $this->Errors;
+    }
+
+    /**
+     * Get any tags that failed to parse
+     *
+     * @return ErrorTag[]
+     */
+    public function getErrors(): array
+    {
+        return $this->Errors;
     }
 
     /**
@@ -720,10 +803,6 @@ class PHPDoc implements Immutable, Stringable
             return '/** */';
         }
 
-        if (strpos($text, "\n") === false && $text[0] === '@') {
-            return "/** {$text} */";
-        }
-
         return "/**\n * " . Regex::replace(
             ["/\n(?!\n)/", "/\n(?=\n)/"],
             ["\n * ", "\n *"],
@@ -799,147 +878,174 @@ class PHPDoc implements Immutable, Stringable
             $text = trim(substr($text, strlen($matches[0])));
             $tag = ltrim($matches['tag'], '\\');
 
-            switch ($tag) {
-                // @param [type] $<name> [description]
-                case 'param':
-                    if (!Regex::match(self::PARAM_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $name = $matches['param_name'];
-                    $this->Params[$name] = new ParamTag(
-                        $name,
-                        $matches['param_type'],
-                        $matches['param_reference'] !== null,
-                        $matches['param_variadic'] !== null,
-                        $matches['param_description'],
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
-
-                // @return <type> [description]
-                case 'return':
-                    if (!Regex::match(self::RETURN_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $type = $matches['return_type'];
-                    $this->Return = new ReturnTag(
-                        $type,
-                        $matches['return_description'],
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
-
-                // @var <type> [$<name>] [description]
-                case 'var':
-                    if (!Regex::match(self::VAR_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $type = $matches['var_type'];
-                    $name = $matches['var_name'];
-                    $var = new VarTag(
-                        $type,
-                        $name,
-                        $matches['var_description'],
-                        $this->Class,
-                        $this->Member,
-                    );
-                    if ($name !== null) {
-                        $this->Vars[$name] = $var;
-                    } else {
-                        $this->Vars[] = $var;
-                    }
-                    break;
-
-                case 'method':
-                    if (!Regex::match(self::METHOD_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $name = $matches['method_name'];
-                    $isStatic = $matches['method_static'] !== null;
-                    $type = $matches['method_type'];
-                    if ($isStatic && $type === null) {
-                        $isStatic = false;
-                        $type = 'static';
-                    }
-                    $params = [];
-                    if ($matches['method_params'] !== null) {
-                        foreach (Str::splitDelimited(
-                            ',',
-                            $matches['method_params'],
-                            false,
-                            null,
-                            Str::PRESERVE_QUOTED,
-                        ) as $param) {
-                            $pos = strrpos($param, '$');
-                            if ($pos === false) {
-                                // @codeCoverageIgnoreStart
-                                $this->throw('Invalid parameters', $tag);
-                                // @codeCoverageIgnoreEnd
-                            }
-                            $_name = substr($param, $pos + 1);
-                            $_type = rtrim(substr($param, 0, $pos));
-                            $_isVariadic = false;
-                            if (substr($_type, -3) === '...') {
-                                $_isVariadic = true;
-                                $_type = rtrim(substr($_type, 0, -3));
-                            }
-                            $params[$_name] = new MethodParam(
-                                $_name,
-                                Str::coalesce($_type, null),
-                                $_isVariadic,
-                            );
+            try {
+                switch ($tag) {
+                    // @param [type] $<name> [description]
+                    case 'param':
+                        if (!Regex::match(self::PARAM_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                            $this->throw('Invalid syntax', $tag);
                         }
-                    }
-                    $this->Methods[$name] = new MethodTag(
-                        $name,
-                        $isStatic,
-                        $type,
-                        $params,
-                        $matches['method_description'],
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
+                        /** @var string */
+                        $name = $matches['param_name'];
+                        $this->Params[$name] = new ParamTag(
+                            $name,
+                            $matches['param_type'],
+                            $matches['param_reference'] !== null,
+                            $matches['param_variadic'] !== null,
+                            $matches['param_description'],
+                            $this->Class,
+                            $this->Member,
+                        );
+                        break;
 
-                // - @template <name> [of <type>] [= <type>]
-                // - @template-(covariant|contravariant) <name> [of <type>] [= <type>]
-                case 'template-covariant':
-                case 'template-contravariant':
-                case 'template':
-                    if (!Regex::match(self::TEMPLATE_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
-                        $this->throw('Invalid syntax', $tag);
-                    }
-                    /** @var string */
-                    $name = $matches['template_name'];
-                    $type = $matches['template_type'];
-                    $default = $matches['template_default'];
-                    /** @var "covariant"|"contravariant"|null */
-                    $variance = explode('-', $tag, 2)[1] ?? null;
-                    $tag = 'template';
-                    $this->Templates[$name] = new TemplateTag(
-                        $name,
-                        $type,
-                        $default,
-                        $variance,
-                        $this->Class,
-                        $this->Member,
-                    );
-                    break;
+                    // @return <type> [description]
+                    case 'return':
+                        if (!Regex::match(self::RETURN_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                            $this->throw('Invalid syntax', $tag);
+                        }
+                        /** @var string */
+                        $type = $matches['return_type'];
+                        $this->Return = new ReturnTag(
+                            $type,
+                            $matches['return_description'],
+                            $this->Class,
+                            $this->Member,
+                        );
+                        break;
 
-                default:
-                    $this->Tags[$tag][] = new GenericTag(
-                        $tag,
-                        Str::coalesce($text, null),
-                        $this->Class,
-                        $this->Member,
-                    );
-                    continue 2;
+                    // @var <type> [$<name>] [description]
+                    case 'var':
+                        if (!Regex::match(self::VAR_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                            $this->throw('Invalid syntax', $tag);
+                        }
+                        /** @var string */
+                        $type = $matches['var_type'];
+                        $name = $matches['var_name'];
+                        $var = new VarTag(
+                            $type,
+                            $name,
+                            $matches['var_description'],
+                            $this->Class,
+                            $this->Member,
+                        );
+                        if ($name !== null) {
+                            $this->Vars[$name] = $var;
+                        } else {
+                            $this->Vars[] = $var;
+                        }
+                        break;
+
+                    // @method [[static] <return_type>] <name>([<param_type>] $<param_name> [= <default_value>], ...) [description]
+                    case 'method':
+                        if (!Regex::match(self::METHOD_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                            $this->throw('Invalid syntax', $tag);
+                        }
+                        /** @var string */
+                        $name = $matches['method_name'];
+                        $isStatic = $matches['method_static'] !== null;
+                        $type = $matches['method_type'];
+                        if ($isStatic && $type === null) {
+                            $isStatic = false;
+                            $type = 'static';
+                        }
+                        $params = [];
+                        if ($matches['method_params'] !== null) {
+                            foreach (Str::splitDelimited(
+                                ',',
+                                $matches['method_params'],
+                                false,
+                                null,
+                                Str::PRESERVE_QUOTED,
+                            ) as $param) {
+                                if (!Regex::match(self::METHOD_PARAM, $param, $paramMatches, \PREG_UNMATCHED_AS_NULL)) {
+                                    // @codeCoverageIgnoreStart
+                                    throw new ShouldNotHappenException(sprintf(
+                                        '@method parameter parsing failed: %s',
+                                        $text,
+                                    ));
+                                    // @codeCoverageIgnoreEnd
+                                }
+                                /** @var string */
+                                $_name = $paramMatches['param_name'];
+                                $params[$_name] = new MethodParam(
+                                    $_name,
+                                    $paramMatches['param_type'],
+                                    $paramMatches['param_default'],
+                                    $paramMatches['param_variadic'] !== null,
+                                );
+                            }
+                        }
+                        $this->Methods[$name] = new MethodTag(
+                            $name,
+                            $type,
+                            $params,
+                            $isStatic,
+                            $matches['method_description'],
+                            $this->Class,
+                            $this->Member,
+                        );
+                        break;
+
+                    // @property[-(read|write)] [type] $<name> [description]
+                    case 'property-read':
+                    case 'property-write':
+                    case 'property':
+                        if (!Regex::match(self::PROPERTY_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                            $this->throw('Invalid syntax', $tag);
+                        }
+                        /** @var string */
+                        $name = $matches['property_name'];
+                        $this->Properties[$name] = new PropertyTag(
+                            $name,
+                            $matches['property_type'],
+                            $tag === 'property-read',
+                            $tag === 'property-write',
+                            $matches['property_description'],
+                            $this->Class,
+                            $this->Member,
+                        );
+                        $tag = 'property';
+                        break;
+
+                    // @template[-(covariant|contravariant)] <name> [(of|as) <type>] [= <type>]
+                    case 'template-covariant':
+                    case 'template-contravariant':
+                    case 'template':
+                        if (!Regex::match(self::TEMPLATE_TAG, $text, $matches, \PREG_UNMATCHED_AS_NULL)) {
+                            $this->throw('Invalid syntax', $tag);
+                        }
+                        /** @var string */
+                        $name = $matches['template_name'];
+                        $this->Templates[$name] = new TemplateTag(
+                            $name,
+                            $matches['template_type'],
+                            $matches['template_default'],
+                            $tag === 'template-covariant',
+                            $tag === 'template-contravariant',
+                            $this->Class,
+                            $this->Member,
+                        );
+                        $tag = 'template';
+                        break;
+
+                    default:
+                        $this->Tags[$tag][] = new GenericTag(
+                            $tag,
+                            Str::coalesce($text, null),
+                            $this->Class,
+                            $this->Member,
+                        );
+                        continue 2;
+                }
+            } catch (InvalidArgumentException $ex) {
+                $this->Errors[] = new ErrorTag(
+                    $tag,
+                    $ex->getMessage(),
+                    Str::coalesce($text, null),
+                    $this->Class,
+                    $this->Member,
+                );
+                continue;
             }
 
             $this->Tags[$tag] ??= [];
@@ -995,8 +1101,8 @@ class PHPDoc implements Immutable, Stringable
             }
         } while ($this->Lines);
 
-        if ($inFence) {
-            throw new InvalidArgumentException('Unterminated code fence in DocBlock');
+        if ($inFence && isset($fence[0])) {
+            $lines[] = $fence[0];
         }
 
         return implode($unwrap ? ' ' : "\n", $lines);
