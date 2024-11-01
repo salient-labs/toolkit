@@ -81,8 +81,6 @@ Summary of MyInterface::MyStaticMethod()
 > ###### `abstract public MyMethod(): mixed`
 >
 > Summary of MyInterface::MyMethod()
->
-> Extended description of `MyInterface::MyMethod()`.
 
 ##### Inherited from `Stringable`
 
@@ -211,11 +209,9 @@ public function __toString(): string
 >
 > Summary of MyTrait::MyMethod()
 >
-> Extended description of `MyInterface::MyMethod()`.
-
-###### `public MyOverriddenMethod(): int`
-
-Summary of MyTrait::MyOverriddenMethod()
+> ###### `public MyOverriddenMethod(): int`
+>
+> Summary of MyTrait::MyOverriddenMethod()
 
 ### Interface `MyInterface`
 

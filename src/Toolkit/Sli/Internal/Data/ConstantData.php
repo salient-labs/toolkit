@@ -24,6 +24,8 @@ class ConstantData implements JsonSerializable
     public ClassData $Class;
     public ?string $Summary = null;
     public ?string $Description = null;
+    public bool $SummaryInherited = false;
+    public bool $DescriptionInherited = false;
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
@@ -123,6 +125,8 @@ class ConstantData implements JsonSerializable
         return [
             'summary' => $this->Summary,
             'description' => $this->Description,
+            'summaryInherited' => $this->SummaryInherited,
+            'descriptionInherited' => $this->DescriptionInherited,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,

@@ -47,6 +47,8 @@ class ClassData implements JsonSerializable
     public array $Templates = [];
     public ?string $Summary = null;
     public ?string $Description = null;
+    public bool $SummaryInherited = false;
+    public bool $DescriptionInherited = false;
     /** @var class-string[] */
     public array $Extends = [];
     /** @var class-string[] */
@@ -364,13 +366,13 @@ class ClassData implements JsonSerializable
         $properties = $phpDoc->getProperties();
         $i = -count($properties);
         foreach ($properties as $name => $property) {
-            $this->Properties[$name] = PropertyData::fromPropertyTag($property, $this, $i++);
+            $this->Properties[$name] = PropertyData::fromPropertyTag($property, $phpDoc, $this, $i++);
         }
 
         $methods = $phpDoc->getMethods();
         $i = -count($methods);
         foreach ($methods as $name => $method) {
-            $this->Methods[$name] = MethodData::fromMethodTag($method, $this, $i++);
+            $this->Methods[$name] = MethodData::fromMethodTag($method, $phpDoc, $this, $i++);
         }
 
         return $this;
@@ -456,6 +458,8 @@ class ClassData implements JsonSerializable
             'templates' => $this->Templates ?: new stdClass(),
             'summary' => $this->Summary,
             'description' => $this->Description,
+            'summaryInherited' => $this->SummaryInherited,
+            'descriptionInherited' => $this->DescriptionInherited,
             'extends' => $this->Extends,
             'implements' => $this->Implements,
             'uses' => $this->Uses,

@@ -27,8 +27,12 @@ trait HasPHPDoc
      */
     private function applyPHPDoc(PHPDoc $phpDoc): self
     {
+        $original = $phpDoc->getOriginal();
+
         $this->Summary = $phpDoc->getSummary();
         $this->Description = $phpDoc->getDescription();
+        $this->SummaryInherited = $this->Summary !== null && $original->getSummary() === null;
+        $this->DescriptionInherited = $this->Description !== null && $original->getDescription() === null;
         $this->Api = $phpDoc->hasTag('api');
         $this->Internal = $phpDoc->hasTag('internal');
         $this->Deprecated = $phpDoc->hasTag('deprecated');

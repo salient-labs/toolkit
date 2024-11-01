@@ -251,11 +251,15 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                             ],
                             Arr::unset(
                                 $classData->jsonSerialize(),
+                                'summaryInherited',
+                                'descriptionInherited',
                                 'constants',
                                 'properties',
                                 'methods',
                             ),
                             [
+                                'summary' => $classData->SummaryInherited ? null : $classData->Summary,
+                                'description' => $classData->DescriptionInherited ? null : $classData->Description,
                                 'templates' => $this->implodeWithKeys(', ', $classData->Templates),
                                 'extends' => implode(', ', $classData->Extends),
                                 'implements' => implode(', ', $classData->Implements),
@@ -390,7 +394,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
                         if ($classData->Summary !== null) {
                             $printBlock(Str::escapeMarkdown($classData->Summary));
-                            if (!$noDesc && $classData->Description !== null) {
+                            if (!$noDesc && $classData->Description !== null && !$classData->DescriptionInherited) {
                                 $printBlock($classData->Description);
                             }
                         }
@@ -576,7 +580,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
                                 if ($memberData->Summary !== null) {
                                     $printBlock(Str::escapeMarkdown($memberData->Summary), true);
-                                    if (!$noDesc && $memberData->Description !== null) {
+                                    if (!$noDesc && $memberData->Description !== null && !$memberData->DescriptionInherited) {
                                         $printBlock($memberData->Description);
                                     }
                                 }
@@ -642,8 +646,8 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
             $row['m_templates'] = $data instanceof MethodData
                 ? $this->implodeWithKeys(', ', $data->Templates)
                 : null;
-            $row['m_summary'] = $data->Summary;
-            $row['m_description'] = $data->Description;
+            $row['m_summary'] = $data->SummaryInherited ? null : $data->Summary;
+            $row['m_description'] = $data->DescriptionInherited ? null : $data->Description;
             $row['m_api'] = $data->Api;
             $row['m_internal'] = $data->Internal;
             $row['m_deprecated'] = $data->Deprecated;

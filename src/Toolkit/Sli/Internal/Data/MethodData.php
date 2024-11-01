@@ -30,6 +30,8 @@ class MethodData implements JsonSerializable
     public array $Templates = [];
     public ?string $Summary = null;
     public ?string $Description = null;
+    public bool $SummaryInherited = false;
+    public bool $DescriptionInherited = false;
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
@@ -180,13 +182,18 @@ class MethodData implements JsonSerializable
 
     public static function fromMethodTag(
         MethodTag $method,
+        PHPDoc $classPhpDoc,
         ClassData $classData,
         ?int $line = null
     ): self {
         $methodName = $method->getName();
+        $original = $classPhpDoc->getOriginal()->getMethods()[$methodName] ?? null;
 
         $data = new static($methodName, $classData);
         $data->Summary = $method->getDescription();
+        $data->SummaryInherited = $data->Summary !== null
+            && $original
+            && $original->getDescription() === null;
         $data->Magic = true;
 
         $class = $method->getClass();
@@ -241,6 +248,8 @@ class MethodData implements JsonSerializable
             'templates' => $this->Templates ?: new stdClass(),
             'summary' => $this->Summary,
             'description' => $this->Description,
+            'summaryInherited' => $this->SummaryInherited,
+            'descriptionInherited' => $this->DescriptionInherited,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,

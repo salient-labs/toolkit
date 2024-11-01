@@ -26,6 +26,8 @@ class PropertyData implements JsonSerializable
     public ClassData $Class;
     public ?string $Summary = null;
     public ?string $Description = null;
+    public bool $SummaryInherited = false;
+    public bool $DescriptionInherited = false;
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
@@ -139,13 +141,18 @@ class PropertyData implements JsonSerializable
 
     public static function fromPropertyTag(
         PropertyTag $property,
+        PHPDoc $classPhpDoc,
         ClassData $classData,
         ?int $line = null
     ): self {
         $propertyName = $property->getName();
+        $original = $classPhpDoc->getOriginal()->getProperties()[$propertyName] ?? null;
 
         $data = new static($propertyName, $classData);
         $data->Summary = $property->getDescription();
+        $data->SummaryInherited = $data->Summary !== null
+            && $original
+            && $original->getDescription() === null;
         $data->Magic = true;
 
         $class = $property->getClass();
@@ -184,6 +191,8 @@ class PropertyData implements JsonSerializable
         return [
             'summary' => $this->Summary,
             'description' => $this->Description,
+            'summaryInherited' => $this->SummaryInherited,
+            'descriptionInherited' => $this->DescriptionInherited,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,
