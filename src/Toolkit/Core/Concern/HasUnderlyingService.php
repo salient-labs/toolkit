@@ -95,8 +95,8 @@ trait HasUnderlyingService
 
     /**
      * @param class-string<TService> $serviceName
-     * @param-out class-string<TService> $serviceName
      * @param array<class-string<TService>> $serviceList
+     * @param-out class-string<TService> $serviceName
      * @param-out array<class-string<TService>> $serviceList
      */
     private static function doLoadServiceList(?string &$serviceName, ?array &$serviceList): void

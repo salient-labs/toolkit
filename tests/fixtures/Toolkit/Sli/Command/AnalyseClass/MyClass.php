@@ -7,10 +7,10 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
  *
  * Extended description of `MyClass`.
  *
+ * @property int $MyMagicProperty
+ *
  * @method int MyMagicMethod(string $name, mixed ...$values)
  * @method static void MyStaticMagicMethod(int $id = null)
- *
- * @property int $MyMagicProperty
  *
  * @template T of int|string
  */

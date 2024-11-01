@@ -11,8 +11,8 @@ abstract class SliTestCase extends TestCase
     /**
      * @param iterable<NavigableToken> $tokens
      * @param array<array{int,string,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}>|null $actualCode
-     * @param-out array<array{int,string,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}> $actualCode
      * @param array<non-empty-string,string>|null $constants
+     * @param-out array<array{int,string,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}> $actualCode
      * @param-out array<non-empty-string,string>|null $constants
      * @return array{array<array{int,int,string,array{int|null,int|null},array{int|null,int|null},int|null,array{int|null,int|null}}>,string}
      */

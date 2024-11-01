@@ -820,9 +820,9 @@ final class File extends AbstractUtility
      * Write to an open stream and apply any unwritten data to a buffer
      *
      * @param resource $stream
-     * @param-out string $buffer
      * @param int<0,max>|null $length
      * @param Stringable|string|null $uri
+     * @param-out string $buffer
      */
     public static function maybeWrite($stream, string $data, ?string &$buffer, ?int $length = null, $uri = null): int
     {
@@ -1088,8 +1088,8 @@ final class File extends AbstractUtility
      * @param (callable(TValue, int $index): mixed[])|null $callback Apply a
      * callback to each entry before it is written.
      * @param int|null $count Receives the number of entries written.
-     * @param-out int $count
      * @param Stringable|string|null $uri
+     * @param-out int $count
      */
     public static function writeCsv(
         $resource,

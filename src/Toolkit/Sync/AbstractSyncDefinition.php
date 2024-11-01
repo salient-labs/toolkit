@@ -30,9 +30,6 @@ use Closure;
 use LogicException;
 
 /**
- * @template TEntity of SyncEntityInterface
- * @template TProvider of SyncProviderInterface
- *
  * @phpstan-type SyncOperationClosure (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
  * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
  *
@@ -49,6 +46,9 @@ use LogicException;
  * @property-read PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $PipelineToBackend Pipeline that maps a serialized entity to provider data, or `null` if mapping is not required
  * @property-read bool $ReadFromList Perform READ operations by iterating over entities returned by READ_LIST
  * @property-read EntitySource::*|null $ReturnEntitiesFrom Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ *
+ * @template TEntity of SyncEntityInterface
+ * @template TProvider of SyncProviderInterface
  *
  * @implements SyncDefinitionInterface<TEntity,TProvider>
  */
