@@ -802,15 +802,19 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
                 $message = $this->escape($ex->getMessage());
             }
 
-            $file = $this->escape($ex->getFile());
-            $line = $ex->getLine();
-            $msg2 .= sprintf('%s ~~in %s:%d~~', $message, $file, $line);
+            if ($level <= Level::ERROR || ($debug ??= Env::getDebug())) {
+                $file = $this->escape($ex->getFile());
+                $line = $ex->getLine();
+                $msg2 .= sprintf('%s ~~in %s:%d~~', $message, $file, $line);
+            } else {
+                $msg2 .= $message;
+            }
         } while ($ex = $ex->getPrevious());
 
         $class = $this->escape(Get::basename(get_class($exception)));
         $this->count($level)->write(
             $level,
-            sprintf('__%s__:', $class),
+            "{$class}:",
             $msg2,
             MessageType::STANDARD,
             $exception,
@@ -821,13 +825,13 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
         }
         $this->write(
             $traceLevel,
-            '__Stack trace:__',
+            'Stack trace:',
             "\n" . $exception->getTraceAsString()
         );
         if ($exception instanceof ExceptionInterface) {
             foreach ($exception->getMetadata() as $key => $value) {
                 $value = rtrim((string) $value, "\n");
-                $this->write($traceLevel, "__{$key}:__", "\n{$value}");
+                $this->write($traceLevel, "{$key}:", "\n{$value}");
             }
         }
 
