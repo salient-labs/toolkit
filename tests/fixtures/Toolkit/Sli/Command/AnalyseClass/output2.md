@@ -68,7 +68,7 @@ Description of MyBaseClass::MyStaticMagicMethod()
 
 ##### `final public static MyStaticMethod(static $instance): void`
 
-<small>(4 lines)</small>
+<small>(implements `MyInterface::MyStaticMethod()`, 4 lines)</small>
 
 Summary of MyInterface::MyStaticMethod()
 
@@ -191,7 +191,7 @@ protected function MyTemplateMethod<TInstance of MyInterface>(
 
 ##### `__toString()`
 
-<small>(4 lines, no DocBlock)</small>
+<small>(implements `Stringable::__toString()`, 4 lines, no DocBlock)</small>
 
 ```php
 public function __toString(): string
@@ -231,15 +231,11 @@ Summary of MyInterface::MY_ARRAY
 
 ##### `public MyMethod(): mixed`
 
-<small>(1 line)</small>
-
 Summary of MyInterface::MyMethod()
 
 Extended description of `MyInterface::MyMethod()`.
 
 ##### `public static MyStaticMethod(static $instance): void`
-
-<small>(1 line)</small>
 
 Summary of MyInterface::MyStaticMethod()
 

@@ -57,6 +57,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
         // Markdown-specific
         'desc' => false,
         'from' => false,
+        'lines' => false,
         'meta' => false,
         'star' => false,
     ];
@@ -356,6 +357,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
             $noDesc = $this->SkipIndex['desc'];
             $noFrom = $this->SkipIndex['from'];
+            $noLines = $this->SkipIndex['lines'];
             $noMeta = $this->SkipIndex['meta'];
 
             foreach ($this->Data as $ns => $nsData) {
@@ -379,7 +381,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                         $printBlock("### {$typeHeading} `{$class}`");
 
                         $meta = [];
-                        if (!$noMeta && $classData->Lines !== null) {
+                        if (!$noMeta && !$noLines && $classData->Lines !== null) {
                             $meta[] = Inflect::format($classData->Lines, '{{#}} {{#:line}}');
                         }
 
@@ -469,11 +471,16 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                                 fn(MethodData $data) => $data->getStructuralElementName(),
                                 fn(MethodData $data) => $this->getMethodParts($data, true),
                                 fn(MethodData $data) => $this->getMethodParts($data),
-                                function (MethodData $data) use ($noMeta) {
+                                function (MethodData $data) use ($noLines, $noMeta) {
                                     if ($noMeta || $data->InheritedFrom) {
                                         return [];
                                     }
-                                    if ($data->Lines !== null) {
+                                    if ($prototype = $data->Prototype) {
+                                        $verb = interface_exists($prototype[0]) ? 'implements' : 'overrides';
+                                        $prototype[0] = Get::basename($prototype[0]);
+                                        $meta[] = sprintf('%s `%s::%s()`', $verb, ...$prototype);
+                                    }
+                                    if (!$noLines && $data->Class->Type !== 'interface' && $data->Lines !== null) {
                                         $meta[] = Inflect::format($data->Lines, '{{#}} {{#:line}}');
                                     }
                                     if (!$data->HasDocComment && !$data->Magic) {
