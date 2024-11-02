@@ -9,17 +9,15 @@ class ReturnTag extends AbstractTag
 {
     /**
      * Creates a new ReturnTag object
-     *
-     * @param class-string|null $class
      */
     public function __construct(
         string $type,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null
+        ?string $member = null,
+        array $aliases = []
     ) {
-        parent::__construct('return', null, $type, $description, $class, $member);
-        $this->Type = $this->filterType($type);
+        parent::__construct('return', null, $type, $description, $class, $member, $aliases);
     }
 
     /**

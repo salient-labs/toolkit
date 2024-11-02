@@ -2,13 +2,17 @@
 
 namespace Salient\PHPDoc\Tag;
 
+use Salient\Contract\Core\Immutable;
+use Salient\Core\Concern\HasMutator;
 use Stringable;
 
 /**
  * @api
  */
-class MethodParam implements Stringable
+class MethodParam implements Immutable, Stringable
 {
+    use HasMutator;
+
     protected string $Name;
     protected ?string $Type;
     protected ?string $Default;
@@ -59,6 +63,16 @@ class MethodParam implements Stringable
     public function isVariadic(): bool
     {
         return $this->IsVariadic;
+    }
+
+    /**
+     * Get an instance with the given PHPDoc type
+     *
+     * @return static
+     */
+    public function withType(?string $type)
+    {
+        return $this->with('Type', $type);
     }
 
     /**

@@ -9,8 +9,6 @@ class GenericTag extends AbstractTag
 {
     /**
      * Creates a new GenericTag object
-     *
-     * @param class-string|null $class
      */
     public function __construct(
         string $tag,

@@ -5,7 +5,16 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
 /**
  * Summary of MyClass
  *
+ * Extended description of `MyClass`.
+ *
+ * @property int $MyMagicProperty
+ *
+ * @method int MyMagicMethod(string $name, mixed ...$values)
+ * @method static void MyStaticMagicMethod(int $id = null)
+ *
  * @template T of int|string
+ *
+ * @disregard P1037
  */
 final class MyClass extends MyBaseClass
 {

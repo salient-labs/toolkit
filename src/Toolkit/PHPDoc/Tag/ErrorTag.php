@@ -11,8 +11,6 @@ class ErrorTag extends GenericTag
 
     /**
      * Creates a new ErrorTag object
-     *
-     * @param class-string|null $class
      */
     public function __construct(
         string $tag,

@@ -57,9 +57,6 @@ use UnexpectedValueException;
  * If no implementations are found, {@see SyncOperationNotImplementedException}
  * is thrown.
  *
- * @template TEntity of SyncEntityInterface
- * @template TProvider of HttpSyncProvider
- *
  * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
  *
  * @property-read string[]|string|null $Path Path or paths to the endpoint servicing the entity, e.g. "/v1/user"
@@ -73,6 +70,9 @@ use UnexpectedValueException;
  * @property-read bool $SyncOneEntityPerRequest Perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
  * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback Callback applied to the definition before each sync operation
  * @property-read mixed[]|null $Args Arguments passed to each sync operation
+ *
+ * @template TEntity of SyncEntityInterface
+ * @template TProvider of HttpSyncProvider
  *
  * @extends AbstractSyncDefinition<TEntity,TProvider>
  * @implements Buildable<HttpSyncDefinitionBuilder<TEntity,TProvider>>

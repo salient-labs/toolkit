@@ -3,8 +3,8 @@
 namespace Salient\Sli\Internal\Data;
 
 use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\Internal\NavigableToken;
 use Salient\Sli\Internal\TokenExtractor;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -18,6 +18,7 @@ use ReflectionClassConstant;
 use ReflectionMethod;
 use ReflectionProperty;
 use stdClass;
+use Throwable;
 use UnitEnum;
 
 /**
@@ -44,6 +45,9 @@ class ClassData implements JsonSerializable
     /** @var array<string,string> */
     public array $Templates = [];
     public ?string $Summary = null;
+    public ?string $Description = null;
+    public bool $SummaryInherited = false;
+    public bool $DescriptionInherited = false;
     /** @var class-string[] */
     public array $Extends = [];
     /** @var class-string[] */
@@ -82,11 +86,13 @@ class ClassData implements JsonSerializable
     /**
      * @param (callable(ConstantData|PropertyData|MethodData $data, string $type): bool)|null $filter
      * @param ReflectionClass<object> $class
+     * @param array<string,class-string> $aliases
      * @return static
      */
     public static function fromExtractor(
         TokenExtractor $extractor,
         ReflectionClass $class,
+        array $aliases = [],
         ?callable $filter = null,
         ?ConsoleWriterInterface $console = null
     ): self {
@@ -102,8 +108,13 @@ class ClassData implements JsonSerializable
         }
 
         $token = $extractor->getClassToken();
-        $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+        try {
+            $phpDoc = PHPDoc::forClass($class, true, $aliases);
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
 
         $data = (new static(
             $extractor->getClass(),
@@ -190,6 +201,7 @@ class ClassData implements JsonSerializable
                     $member,
                     $class,
                     $data,
+                    $aliases,
                     (bool) $memberExtractor,
                     $line,
                     $console,
@@ -201,7 +213,7 @@ class ClassData implements JsonSerializable
             }
         }
 
-        return $data;
+        return $data->applyPHPDocTags($phpDoc);
     }
 
     /**
@@ -228,8 +240,13 @@ class ClassData implements JsonSerializable
                     ? \T_ENUM
                     : \T_CLASS));
 
-        $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+        try {
+            $phpDoc = PHPDoc::forClass($class, true);
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
 
         $data = (new static(
             $class->getShortName(),
@@ -291,6 +308,7 @@ class ClassData implements JsonSerializable
                     $member,
                     $class,
                     $data,
+                    [],
                     null,
                     null,
                     $console,
@@ -302,7 +320,7 @@ class ClassData implements JsonSerializable
             }
         }
 
-        return $data;
+        return $data->applyPHPDocTags($phpDoc);
     }
 
     /**
@@ -339,6 +357,26 @@ class ClassData implements JsonSerializable
         ]));
         $this->IsFinal = $this->IsFinal || $phpDoc->hasTag('final');
         $this->IsReadOnly = $this->IsReadOnly || $phpDoc->hasTag('readonly');
+    }
+
+    /**
+     * @return static
+     */
+    private function applyPHPDocTags(PHPDoc $phpDoc): self
+    {
+        $properties = $phpDoc->getProperties();
+        $i = -count($properties);
+        foreach ($properties as $name => $property) {
+            $this->Properties[$name] = PropertyData::fromPropertyTag($property, $phpDoc, $this, $i++);
+        }
+
+        $methods = $phpDoc->getMethods();
+        $i = -count($methods);
+        foreach ($methods as $name => $method) {
+            $this->Methods[$name] = MethodData::fromMethodTag($method, $phpDoc, $this, $i++);
+        }
+
+        return $this;
     }
 
     /**
@@ -420,6 +458,9 @@ class ClassData implements JsonSerializable
         return [
             'templates' => $this->Templates ?: new stdClass(),
             'summary' => $this->Summary,
+            'description' => $this->Description,
+            'summaryInherited' => $this->SummaryInherited,
+            'descriptionInherited' => $this->DescriptionInherited,
             'extends' => $this->Extends,
             'implements' => $this->Implements,
             'uses' => $this->Uses,

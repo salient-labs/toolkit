@@ -54,8 +54,12 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
         'internal' => false,
         'private' => false,
         'inherited' => false,
-        'meta' => false,
+        // Markdown-specific
+        'desc' => false,
         'from' => false,
+        'lines' => false,
+        'meta' => false,
+        'star' => false,
     ];
 
     /** @var array<class-string,true> */
@@ -248,11 +252,15 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                             ],
                             Arr::unset(
                                 $classData->jsonSerialize(),
+                                'summaryInherited',
+                                'descriptionInherited',
                                 'constants',
                                 'properties',
                                 'methods',
                             ),
                             [
+                                'summary' => $classData->SummaryInherited ? null : $classData->Summary,
+                                'description' => $classData->DescriptionInherited ? null : $classData->Description,
                                 'templates' => $this->implodeWithKeys(', ', $classData->Templates),
                                 'extends' => implode(', ', $classData->Extends),
                                 'implements' => implode(', ', $classData->Implements),
@@ -347,8 +355,10 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                 }
             };
 
-            $noMeta = $this->SkipIndex['meta'];
+            $noDesc = $this->SkipIndex['desc'];
             $noFrom = $this->SkipIndex['from'];
+            $noLines = $this->SkipIndex['lines'];
+            $noMeta = $this->SkipIndex['meta'];
 
             foreach ($this->Data as $ns => $nsData) {
                 if ($ns === '') {
@@ -371,7 +381,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                         $printBlock("### {$typeHeading} `{$class}`");
 
                         $meta = [];
-                        if (!$noMeta && $classData->Lines !== null) {
+                        if (!$noMeta && !$noLines && $classData->Lines !== null) {
                             $meta[] = Inflect::format($classData->Lines, '{{#}} {{#:line}}');
                         }
 
@@ -386,6 +396,9 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
                         if ($classData->Summary !== null) {
                             $printBlock(Str::escapeMarkdown($classData->Summary));
+                            if (!$noDesc && $classData->Description !== null && !$classData->DescriptionInherited) {
+                                $printBlock($classData->Description);
+                            }
                         }
 
                         if (
@@ -458,14 +471,19 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                                 fn(MethodData $data) => $data->getStructuralElementName(),
                                 fn(MethodData $data) => $this->getMethodParts($data, true),
                                 fn(MethodData $data) => $this->getMethodParts($data),
-                                function (MethodData $data) use ($noMeta) {
+                                function (MethodData $data) use ($noLines, $noMeta) {
                                     if ($noMeta || $data->InheritedFrom) {
                                         return [];
                                     }
-                                    if ($data->Lines !== null) {
+                                    if ($prototype = $data->Prototype) {
+                                        $verb = interface_exists($prototype[0]) ? 'implements' : 'overrides';
+                                        $prototype[0] = Get::basename($prototype[0]);
+                                        $meta[] = sprintf('%s `%s::%s()`', $verb, ...$prototype);
+                                    }
+                                    if (!$noLines && $data->Class->Type !== 'interface' && $data->Lines !== null) {
                                         $meta[] = Inflect::format($data->Lines, '{{#}} {{#:line}}');
                                     }
-                                    if (!$data->HasDocComment) {
+                                    if (!$data->HasDocComment && !$data->Magic) {
                                         $meta[] = 'no DocBlock';
                                     }
                                     return $meta ?? [];
@@ -550,8 +568,13 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
                                 $collapsed = $collapsedHeadings[$from][$memberName] ?? null;
                                 $heading = $collapsed ?? $headingCallback($memberData);
+                                $tag = $memberData instanceof PropertyData
+                                    && $memberData->IsWriteOnly ? ' (write-only)' : '';
+                                $tag .= !$this->SkipIndex['star']
+                                    && ($memberData instanceof PropertyData || $memberData instanceof MethodData)
+                                    && $memberData->Magic ? ' ★' : '';
 
-                                $printBlock("{$headingTag} `{$heading}`", true);
+                                $printBlock("{$headingTag} `{$heading}`{$tag}", true);
 
                                 $meta = $metaCallback($memberData);
                                 if ($meta = array_merge($meta, $noMeta ? [] : array_keys(array_filter([
@@ -564,6 +587,9 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
 
                                 if ($memberData->Summary !== null) {
                                     $printBlock(Str::escapeMarkdown($memberData->Summary), true);
+                                    if (!$noDesc && $memberData->Description !== null && !$memberData->DescriptionInherited) {
+                                        $printBlock($memberData->Description);
+                                    }
                                 }
 
                                 if ($collapsed === null) {
@@ -627,13 +653,15 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
             $row['m_templates'] = $data instanceof MethodData
                 ? $this->implodeWithKeys(', ', $data->Templates)
                 : null;
-            $row['m_summary'] = $data->Summary;
+            $row['m_summary'] = $data->SummaryInherited ? null : $data->Summary;
+            $row['m_description'] = $data->DescriptionInherited ? null : $data->Description;
             $row['m_api'] = $data->Api;
             $row['m_internal'] = $data->Internal;
             $row['m_deprecated'] = $data->Deprecated;
+            $row['m_magic'] = $magic = $data->Magic ?? false;
             $row['m_declared'] = $data->Declared;
             $row['m_hasDocComment'] = $data->HasDocComment;
-            $row['m_needsDocComment'] = !$data->HasDocComment && !$data->InheritedFrom;
+            $row['m_needsDocComment'] = !$data->InheritedFrom && !$data->HasDocComment && !$magic;
             $row['m_inherited'] = $data->Inherited;
             $row['m_inheritedFrom_class'] = $data->InheritedFrom[0] ?? null;
             $row['m_inheritedFrom_method'] = $data->InheritedFrom[1] ?? null;
@@ -646,6 +674,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
             $row['m_private'] = $data->IsPrivate;
             $row['m_static'] = $data->IsStatic ?? false;
             $row['m_readonly'] = $data->IsReadOnly ?? false;
+            $row['m_writeonly'] = $data->IsWriteOnly ?? false;
             $row['m_modifiers'] = implode(' ', $data->Modifiers);
             $row['m_parameters'] = $data instanceof MethodData
                 ? $this->implodeWithKeys(', ', $data->Parameters, true, '$')

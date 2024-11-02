@@ -2,6 +2,9 @@
 
 namespace Salient\Sli\Internal\Data;
 
+use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\PHPDoc\Tag\PropertyTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Get;
@@ -9,6 +12,7 @@ use Salient\Utility\Reflect;
 use JsonSerializable;
 use ReflectionClass;
 use ReflectionProperty;
+use Throwable;
 
 /**
  * @internal
@@ -21,9 +25,13 @@ class PropertyData implements JsonSerializable
     public string $Name;
     public ClassData $Class;
     public ?string $Summary = null;
+    public ?string $Description = null;
+    public bool $SummaryInherited = false;
+    public bool $DescriptionInherited = false;
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
+    public bool $Magic = false;
     public bool $Declared = false;
     public bool $HasDocComment = false;
     public bool $Inherited = false;
@@ -34,6 +42,7 @@ class PropertyData implements JsonSerializable
     public bool $IsPrivate = false;
     public bool $IsStatic = false;
     public bool $IsReadOnly = false;
+    public bool $IsWriteOnly = false;
     /** @var string[] */
     public array $Modifiers = [];
     public ?string $Type = null;
@@ -48,17 +57,26 @@ class PropertyData implements JsonSerializable
 
     /**
      * @param ReflectionClass<object> $class
+     * @param array<string,class-string> $aliases
      */
     public static function fromReflection(
         ReflectionProperty $property,
         ReflectionClass $class,
         ClassData $classData,
+        array $aliases = [],
         ?bool $declared = null,
-        ?int $line = null
+        ?int $line = null,
+        ?ConsoleWriterInterface $console = null
     ): self {
         $propertyName = $property->getName();
-        $docBlocks = PHPDocUtil::getAllPropertyDocComments($property, $class, $classDocBlocks);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "\${$propertyName}");
+        try {
+            $phpDoc = PHPDoc::forProperty($property, $class, $aliases);
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
+
         $declaring = $property->getDeclaringClass();
         $className = $class->getName();
         $declaringName = $declaring->getName();
@@ -122,6 +140,40 @@ class PropertyData implements JsonSerializable
         return $data;
     }
 
+    public static function fromPropertyTag(
+        PropertyTag $property,
+        PHPDoc $classPhpDoc,
+        ClassData $classData,
+        ?int $line = null
+    ): self {
+        $propertyName = $property->getName();
+        $original = $classPhpDoc->getOriginal()->getProperties()[$propertyName] ?? null;
+
+        $data = new static($propertyName, $classData);
+        $data->Summary = $property->getDescription();
+        $data->SummaryInherited = $data->Summary !== null
+            && $original
+            && $original->getDescription() === null;
+        $data->Magic = true;
+
+        $class = $property->getClass();
+        if ($class !== null && $class !== $classData->getFqcn()) {
+            $data->InheritedFrom = [$class, $propertyName];
+        } else {
+            $data->Line = $line;
+        }
+
+        $data->Modifiers = array_keys(array_filter([
+            'public' => $data->IsPublic = true,
+            'readonly' => $data->IsReadOnly = $property->isReadOnly(),
+        ]));
+        $data->IsWriteOnly = $property->isWriteOnly();
+
+        $data->Type = $property->getType();
+
+        return $data;
+    }
+
     public function getFqsen(): string
     {
         return "{$this->Class->getFqcn()}::\${$this->Name}";
@@ -139,9 +191,13 @@ class PropertyData implements JsonSerializable
     {
         return [
             'summary' => $this->Summary,
+            'description' => $this->Description,
+            'summaryInherited' => $this->SummaryInherited,
+            'descriptionInherited' => $this->DescriptionInherited,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,
+            'magic' => $this->Magic,
             'declared' => $this->Declared,
             'hasDocComment' => $this->HasDocComment,
             'inherited' => $this->Inherited,
@@ -151,6 +207,7 @@ class PropertyData implements JsonSerializable
             'private' => $this->IsPrivate,
             'static' => $this->IsStatic,
             'readonly' => $this->IsReadOnly,
+            'writeonly' => $this->IsWriteOnly,
             'modifiers' => $this->Modifiers,
             'type' => $this->Type,
             'defaultValue' => $this->DefaultValue,

@@ -50,13 +50,29 @@ public const MY_LONGER_ARRAY = [
 
 #### Properties
 
+##### `public $MyMagicProperty` ★
+
+Description of MyBaseClass::$MyMagicProperty
+
+##### `public readonly int $MyMagicReadOnlyInt` ★
+
+##### `public mixed[] $MyMagicWriteOnlyArray` (write-only) ★
+
 ##### `public $MyVarProperty`
+
+##### Inherited from `MyInterface`
+
+> ###### `public readonly int $MyMagicInterfaceProperty` ★
 
 #### Methods
 
+##### `public static MyStaticMagicMethod(): void` ★
+
+Description of MyBaseClass::MyStaticMagicMethod()
+
 ##### `final public static MyStaticMethod(static $instance): void`
 
-<small>(4 lines)</small>
+<small>(implements `MyInterface::MyStaticMethod()`, 4 lines)</small>
 
 Summary of MyInterface::MyStaticMethod()
 
@@ -66,6 +82,8 @@ Summary of MyInterface::MyStaticMethod()
 
 ##### Inherited from `MyInterface`
 
+> ###### `public MyMagicInterfaceMethod(): mixed` ★
+>
 > ###### `abstract public MyMethod(): mixed`
 >
 > Summary of MyInterface::MyMethod()
@@ -79,6 +97,8 @@ Summary of MyInterface::MyStaticMethod()
 <small>(57 lines)</small>
 
 Summary of MyClass
+
+Extended description of `MyClass`.
 
 ```php
 final class MyClass<T of int|string>
@@ -108,6 +128,10 @@ uses MyTrait
 
 #### Properties
 
+##### `public int $MyMagicProperty` ★
+
+Description of MyBaseClass::$MyMagicProperty
+
 ##### `public T $MyProperty`
 
 Summary of MyClass::$MyProperty
@@ -124,13 +148,37 @@ Summary of MyClass::$MyProperty
 
 ##### Inherited from `MyBaseClass`
 
+> ###### `public readonly int $MyMagicReadOnlyInt` ★
+>
+> ###### `public mixed[] $MyMagicWriteOnlyArray` (write-only) ★
+>
 > ###### `public $MyVarProperty`
+
+##### Inherited from `MyInterface`
+
+> ###### `public readonly int $MyMagicInterfaceProperty` ★
 
 ##### Inherited from `MyTrait`
 
+> ###### `public mixed[] $MyMagicTraitProperty` (write-only) ★
+>
 > ###### `private int $MyIntProperty = 2`
 
 #### Methods
+
+##### `MyMagicMethod()` ★
+
+```php
+public function MyMagicMethod(string $name, mixed ...$values): int
+```
+
+##### `MyStaticMagicMethod()` ★
+
+Description of MyBaseClass::MyStaticMagicMethod()
+
+```php
+public static function MyStaticMagicMethod(int $id = null): void
+```
 
 ##### `__construct()`
 
@@ -155,7 +203,7 @@ protected function MyTemplateMethod<TInstance of MyInterface>(
 
 ##### `__toString()`
 
-<small>(4 lines, no DocBlock)</small>
+<small>(implements `Stringable::__toString()`, 4 lines, no DocBlock)</small>
 
 ```php
 public function __toString(): string
@@ -167,8 +215,14 @@ public function __toString(): string
 >
 > Summary of MyInterface::MyStaticMethod()
 
+##### Inherited from `MyInterface`
+
+> ###### `public MyMagicInterfaceMethod(): mixed` ★
+
 ##### Inherited from `MyTrait`
 
+> ###### `public MyMagicTraitMethod(): string` ★
+>
 > ###### `public MyMethod(): mixed`
 >
 > Summary of MyTrait::MyMethod()
@@ -179,7 +233,7 @@ public function __toString(): string
 
 ### Interface `MyInterface`
 
-<small>(25 lines, in API)</small>
+<small>(27 lines, in API)</small>
 
 Summary of MyInterface
 
@@ -191,17 +245,21 @@ Summary of MyInterface
 
 Summary of MyInterface::MY_ARRAY
 
+#### Properties
+
+##### `public readonly int $MyMagicInterfaceProperty` ★
+
 #### Methods
+
+##### `public MyMagicInterfaceMethod(): mixed` ★
 
 ##### `public MyMethod(): mixed`
 
-<small>(1 line)</small>
-
 Summary of MyInterface::MyMethod()
 
-##### `public static MyStaticMethod(static $instance): void`
+Extended description of `MyInterface::MyMethod()`.
 
-<small>(1 line)</small>
+##### `public static MyStaticMethod(static $instance): void`
 
 Summary of MyInterface::MyStaticMethod()
 
@@ -213,9 +271,13 @@ Summary of MyTrait
 
 #### Properties
 
+##### `public mixed[] $MyMagicTraitProperty` (write-only) ★
+
 ##### `private int $MyIntProperty = 2`
 
 #### Methods
+
+##### `public MyMagicTraitMethod(): string` ★
 
 ##### `public MyMethod(): mixed`
 

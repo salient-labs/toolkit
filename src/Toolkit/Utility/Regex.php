@@ -123,6 +123,7 @@ REGEX;
      * @template TFlags of int-mask-of<\PREG_OFFSET_CAPTURE|\PREG_UNMATCHED_AS_NULL>
      *
      * @param mixed[]|null $matches
+     * @param TFlags $flags
      * @param-out (
      *     TFlags is 256
      *     ? array<array{string,int}>
@@ -134,7 +135,6 @@ REGEX;
      *         )
      *     )
      * ) $matches
-     * @param TFlags $flags
      */
     public static function match(
         string $pattern,
@@ -156,6 +156,7 @@ REGEX;
      * @template TFlags of int-mask-of<\PREG_PATTERN_ORDER|\PREG_SET_ORDER|\PREG_OFFSET_CAPTURE|\PREG_UNMATCHED_AS_NULL>
      *
      * @param mixed[]|null $matches
+     * @param TFlags $flags
      * @param-out (
      *     TFlags is 1
      *     ? array<list<string>>
@@ -182,7 +183,6 @@ REGEX;
      *         )
      *     )
      * ) $matches
-     * @param TFlags $flags
      */
     public static function matchAll(
         string $pattern,

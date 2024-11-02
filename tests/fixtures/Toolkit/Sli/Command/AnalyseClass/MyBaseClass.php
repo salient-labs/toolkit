@@ -8,7 +8,15 @@ use Stringable;
 /**
  * Summary of MyBaseClass
  *
+ * @property $MyMagicProperty Description of MyBaseClass::$MyMagicProperty
+ * @property-read int $MyMagicReadOnlyInt
+ * @property-write mixed[] $MyMagicWriteOnlyArray
+ *
+ * @method static void MyStaticMagicMethod() Description of MyBaseClass::MyStaticMagicMethod()
+ *
  * @internal
+ *
+ * @phpstan-ignore phpDoc.parseError
  */
 abstract class MyBaseClass implements MyInterface, Stringable
 {

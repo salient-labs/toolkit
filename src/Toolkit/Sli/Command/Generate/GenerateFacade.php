@@ -148,8 +148,7 @@ final class GenerateFacade extends AbstractGenerateCommand
             $methodName = $_method->getName();
             $getMethodFqsen = fn() => $this->getTypeAlias($declaring) . "::{$methodName}()";
             $_params = $_method->getParameters();
-            $docBlocks = PHPDocUtil::getAllMethodDocComments($_method, null, $classDocBlocks);
-            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
+            $phpDoc = PHPDoc::forMethod($_method);
             $methodFilename = $_method->getFileName() ?: null;
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
 
@@ -248,7 +247,7 @@ final class GenerateFacade extends AbstractGenerateCommand
                 }
                 $params[] =
                     $declare
-                        ? PHPDocUtil::getParameterPHPDoc(
+                        ? PHPDocUtil::getParameterTag(
                             $_param,
                             $classPrefix,
                             fn(string $type): ?string =>

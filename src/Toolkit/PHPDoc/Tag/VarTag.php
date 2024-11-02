@@ -9,17 +9,16 @@ class VarTag extends AbstractTag
 {
     /**
      * Creates a new VarTag object
-     *
-     * @param class-string|null $class
      */
     public function __construct(
         string $type,
         ?string $name = null,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null
+        ?string $member = null,
+        array $aliases = []
     ) {
-        parent::__construct('var', $name, $type, $description, $class, $member);
+        parent::__construct('var', $name, $type, $description, $class, $member, $aliases);
     }
 
     /**

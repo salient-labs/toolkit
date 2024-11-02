@@ -2,12 +2,14 @@
 
 namespace Salient\Sli\Internal\Data;
 
+use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Reflect;
 use JsonSerializable;
 use ReflectionClass;
 use ReflectionClassConstant;
+use Throwable;
 
 /**
  * @internal
@@ -20,6 +22,9 @@ class ConstantData implements JsonSerializable
     public string $Name;
     public ClassData $Class;
     public ?string $Summary = null;
+    public ?string $Description = null;
+    public bool $SummaryInherited = false;
+    public bool $DescriptionInherited = false;
     public bool $Api = false;
     public bool $Internal = false;
     public bool $Deprecated = false;
@@ -46,17 +51,26 @@ class ConstantData implements JsonSerializable
 
     /**
      * @param ReflectionClass<object> $class
+     * @param array<string,class-string> $aliases
      */
     public static function fromReflection(
         ReflectionClassConstant $constant,
         ReflectionClass $class,
         ClassData $classData,
+        array $aliases = [],
         ?bool $declared = null,
-        ?int $line = null
+        ?int $line = null,
+        ?ConsoleWriterInterface $console = null
     ): self {
         $constantName = $constant->getName();
-        $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, $classDocBlocks);
-        $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $constantName);
+        try {
+            $phpDoc = PHPDoc::forConstant($constant, $class, $aliases);
+            self::checkPHPDoc($phpDoc, $console);
+        } catch (Throwable $ex) {
+            !$console || $console->exception($ex, Level::WARNING, null);
+            $phpDoc = new PHPDoc();
+        }
+
         $declaring = $constant->getDeclaringClass();
         $className = $class->getName();
         $declaringName = $declaring->getName();
@@ -110,6 +124,9 @@ class ConstantData implements JsonSerializable
     {
         return [
             'summary' => $this->Summary,
+            'description' => $this->Description,
+            'summaryInherited' => $this->SummaryInherited,
+            'descriptionInherited' => $this->DescriptionInherited,
             'api' => $this->Api,
             'internal' => $this->Internal,
             'deprecated' => $this->Deprecated,

@@ -21,12 +21,12 @@ use LogicException;
  * Generates closures that use a DbSyncProvider to perform sync operations on an
  * entity
  *
- * @template TEntity of SyncEntityInterface
- * @template TProvider of DbSyncProvider
- *
  * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
  *
  * @property-read string|null $Table
+ *
+ * @template TEntity of SyncEntityInterface
+ * @template TProvider of DbSyncProvider
  *
  * @extends AbstractSyncDefinition<TEntity,TProvider>
  * @implements Buildable<DbSyncDefinitionBuilder<TEntity,TProvider>>

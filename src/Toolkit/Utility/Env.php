@@ -490,8 +490,8 @@ final class Env extends AbstractUtility
     /**
      * @param string[] $lines
      * @param array<string,string> $queue
-     * @param-out array<string,string> $queue
      * @param string[] $errors
+     * @param-out array<string,string> $queue
      * @param-out string[] $errors
      */
     private static function parseLines(

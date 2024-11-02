@@ -7,6 +7,10 @@ use Stringable;
 /**
  * Summary of MyInterface
  *
+ * @property-read int $MyMagicInterfaceProperty
+ *
+ * @method mixed MyMagicInterfaceMethod()
+ *
  * @api
  */
 interface MyInterface
@@ -22,6 +26,8 @@ interface MyInterface
 
     /**
      * Summary of MyInterface::MyMethod()
+     *
+     * Extended description of `MyInterface::MyMethod()`.
      *
      * @return mixed
      */

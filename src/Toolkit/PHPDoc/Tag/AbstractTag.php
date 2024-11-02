@@ -31,6 +31,7 @@ abstract class AbstractTag implements Immutable, Stringable
 
     /**
      * @param class-string|null $class
+     * @param array<string,class-string> $aliases
      */
     protected function __construct(
         string $tag,
@@ -38,7 +39,8 @@ abstract class AbstractTag implements Immutable, Stringable
         ?string $type = null,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null
+        ?string $member = null,
+        array $aliases = []
     ) {
         // Apply values least likely to be invalid--and most likely to be useful
         // in debug output--first
@@ -49,7 +51,7 @@ abstract class AbstractTag implements Immutable, Stringable
             $this->Name = $this->filterString($name, 'name');
         }
         if ($type !== null) {
-            $this->Type = $this->filterType($type);
+            $this->Type = $this->filterType($type, $aliases);
         }
         $this->Description = $this->filterString($description, 'description');
     }
@@ -195,16 +197,17 @@ abstract class AbstractTag implements Immutable, Stringable
      * @template T of string|null
      *
      * @param T $type
+     * @param array<string,class-string> $aliases
      * @return T
      */
-    final protected function filterType(?string $type): ?string
+    final protected function filterType(?string $type, array $aliases = []): ?string
     {
         if ($type === null) {
             return null;
         }
 
         try {
-            return PHPDocUtil::normaliseType($type, true);
+            return PHPDocUtil::normaliseType($type, $aliases, true);
         } catch (InvalidArgumentException $ex) {
             $this->throw('%s', $ex->getMessage());
         }

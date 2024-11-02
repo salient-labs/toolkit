@@ -281,8 +281,7 @@ EOF)
             $_properties[$name] = $_allProperties[$name];
         }
 
-        $_docBlocks = PHPDocUtil::getAllMethodDocComments($_constructor, null, $classDocBlocks);
-        $_phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $_constructor->getName() . '()');
+        $_phpDoc = $_constructor ? PHPDoc::forMethod($_constructor) : new PHPDoc();
 
         $names = array_keys($_params + $_properties);
         foreach ($names as $name) {
@@ -291,8 +290,7 @@ EOF)
             }
 
             if ($_property = $_properties[$name] ?? null) {
-                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, null, $classDocBlocks);
-                $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
+                $phpDoc = PHPDoc::forProperty($_property);
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
@@ -384,6 +382,7 @@ EOF)
             }
 
             // If we end up here, we're dealing with a constructor parameter
+            /** @var ReflectionMethod $_constructor */
             $maps = $this->getMaps();
             $propertyFile = $_constructor->getFileName();
             $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
@@ -392,8 +391,7 @@ EOF)
 
             // If the parameter has a matching property, retrieve its DocBlock
             if ($_property = $_allProperties[$name] ?? null) {
-                $_docBlocks = PHPDocUtil::getAllPropertyDocComments($_property, null, $classDocBlocks);
-                $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
+                $phpDoc = PHPDoc::forProperty($_property);
             } else {
                 $phpDoc = null;
             }
@@ -484,7 +482,7 @@ EOF)
 
             if ($declare) {
                 $templates = $declareTemplates[$name] ?? null;
-                $param = PHPDocUtil::getParameterPHPDoc(
+                $param = PHPDocUtil::getParameterTag(
                     $_param,
                     $classPrefix,
                     fn(string $type): ?string =>
@@ -561,8 +559,7 @@ EOF)
 
             foreach ($_methods as $_method) {
                 $name = $_method->getName();
-                $_docBlocks = PHPDocUtil::getAllMethodDocComments($_method, null, $classDocBlocks);
-                $phpDoc = PHPDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $name . '()');
+                $phpDoc = PHPDoc::forMethod($_method);
 
                 if ($_method->isConstructor()
                         || $_method->isStatic()
@@ -664,7 +661,7 @@ EOF)
                     }
                     $params[] =
                         $declare
-                            ? PHPDocUtil::getParameterPHPDoc(
+                            ? PHPDocUtil::getParameterTag(
                                 $_param,
                                 $classPrefix,
                                 fn(string $type): ?string =>

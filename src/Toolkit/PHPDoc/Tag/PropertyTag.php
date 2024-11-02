@@ -14,8 +14,6 @@ class PropertyTag extends AbstractTag
 
     /**
      * Creates a new PropertyTag object
-     *
-     * @param class-string|null $class
      */
     public function __construct(
         string $name,
@@ -24,12 +22,13 @@ class PropertyTag extends AbstractTag
         bool $isWriteOnly = false,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null
+        ?string $member = null,
+        array $aliases = []
     ) {
         if ($isReadOnly && $isWriteOnly) {
             throw new InvalidArgumentException('$isReadOnly and $isWriteOnly cannot both be true');
         }
-        parent::__construct('property', $name, $type, $description, $class, $member);
+        parent::__construct('property', $name, $type, $description, $class, $member, $aliases);
         $this->IsReadOnly = $isReadOnly;
         $this->IsWriteOnly = $isWriteOnly;
     }
