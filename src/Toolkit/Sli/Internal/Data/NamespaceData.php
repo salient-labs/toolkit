@@ -69,6 +69,7 @@ class NamespaceData implements JsonSerializable
         $file = $extractor->getFilename();
         foreach ($extractor->getNamespaces() as $ns => $extractor) {
             $delimiter = $ns === '' ? '' : '\\';
+            unset($aliases);
             foreach ($extractor->getClasses() as $className => $classExtractor) {
                 /** @var NavigableToken */
                 $token = $classExtractor->getClassToken();
@@ -109,6 +110,7 @@ class NamespaceData implements JsonSerializable
                 $classData = ClassData::fromExtractor(
                     $classExtractor,
                     $class,
+                    $aliases ??= self::getAliases($extractor),
                     $filter,
                     $console,
                 );
@@ -123,6 +125,21 @@ class NamespaceData implements JsonSerializable
                 $data[$ns]->$property[$className] = $classData;
             }
         }
+    }
+
+    /**
+     * @return array<string,class-string>
+     */
+    private static function getAliases(TokenExtractor $extractor): array
+    {
+        foreach ($extractor->getImports() as $alias => [$type, $import]) {
+            if ($type !== \T_CLASS) {
+                continue;
+            }
+            /** @var class-string $import */
+            $aliases[$alias] = $import;
+        }
+        return $aliases ?? [];
     }
 
     public function sort(ClassDataFactory $factory): void

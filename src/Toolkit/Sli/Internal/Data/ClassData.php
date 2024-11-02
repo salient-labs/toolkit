@@ -86,11 +86,13 @@ class ClassData implements JsonSerializable
     /**
      * @param (callable(ConstantData|PropertyData|MethodData $data, string $type): bool)|null $filter
      * @param ReflectionClass<object> $class
+     * @param array<string,class-string> $aliases
      * @return static
      */
     public static function fromExtractor(
         TokenExtractor $extractor,
         ReflectionClass $class,
+        array $aliases = [],
         ?callable $filter = null,
         ?ConsoleWriterInterface $console = null
     ): self {
@@ -107,7 +109,7 @@ class ClassData implements JsonSerializable
 
         $token = $extractor->getClassToken();
         try {
-            $phpDoc = PHPDoc::forClass($class, true);
+            $phpDoc = PHPDoc::forClass($class, true, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);
@@ -199,6 +201,7 @@ class ClassData implements JsonSerializable
                     $member,
                     $class,
                     $data,
+                    $aliases,
                     (bool) $memberExtractor,
                     $line,
                     $console,
@@ -305,6 +308,7 @@ class ClassData implements JsonSerializable
                     $member,
                     $class,
                     $data,
+                    [],
                     null,
                     null,
                     $console,

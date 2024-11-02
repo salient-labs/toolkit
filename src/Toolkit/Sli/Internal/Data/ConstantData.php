@@ -51,18 +51,20 @@ class ConstantData implements JsonSerializable
 
     /**
      * @param ReflectionClass<object> $class
+     * @param array<string,class-string> $aliases
      */
     public static function fromReflection(
         ReflectionClassConstant $constant,
         ReflectionClass $class,
         ClassData $classData,
+        array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
         ?ConsoleWriterInterface $console = null
     ): self {
         $constantName = $constant->getName();
         try {
-            $phpDoc = PHPDoc::forConstant($constant, $class);
+            $phpDoc = PHPDoc::forConstant($constant, $class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);

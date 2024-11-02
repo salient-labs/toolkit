@@ -65,18 +65,20 @@ class MethodData implements JsonSerializable
 
     /**
      * @param ReflectionClass<object> $class
+     * @param array<string,class-string> $aliases
      */
     public static function fromReflection(
         ReflectionMethod $method,
         ReflectionClass $class,
         ClassData $classData,
+        array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
         ?ConsoleWriterInterface $console = null
     ): self {
         $methodName = $method->getName();
         try {
-            $phpDoc = PHPDoc::forMethod($method, $class);
+            $phpDoc = PHPDoc::forMethod($method, $class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);

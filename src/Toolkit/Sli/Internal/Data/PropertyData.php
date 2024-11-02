@@ -57,18 +57,20 @@ class PropertyData implements JsonSerializable
 
     /**
      * @param ReflectionClass<object> $class
+     * @param array<string,class-string> $aliases
      */
     public static function fromReflection(
         ReflectionProperty $property,
         ReflectionClass $class,
         ClassData $classData,
+        array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
         ?ConsoleWriterInterface $console = null
     ): self {
         $propertyName = $property->getName();
         try {
-            $phpDoc = PHPDoc::forProperty($property, $class);
+            $phpDoc = PHPDoc::forProperty($property, $class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);
