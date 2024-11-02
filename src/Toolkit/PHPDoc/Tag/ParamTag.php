@@ -12,8 +12,6 @@ class ParamTag extends AbstractTag
 
     /**
      * Creates a new ParamTag object
-     *
-     * @param class-string|null $class
      */
     public function __construct(
         string $name,
@@ -22,9 +20,10 @@ class ParamTag extends AbstractTag
         bool $isVariadic = false,
         ?string $description = null,
         ?string $class = null,
-        ?string $member = null
+        ?string $member = null,
+        array $aliases = []
     ) {
-        parent::__construct('param', $name, $type, $description, $class, $member);
+        parent::__construct('param', $name, $type, $description, $class, $member, $aliases);
         $this->IsPassedByReference = $isPassedByReference;
         $this->IsVariadic = $isVariadic;
     }

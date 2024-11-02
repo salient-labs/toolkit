@@ -5,7 +5,6 @@ namespace Salient\Sli\Internal\Data;
 use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Reflect;
 use JsonSerializable;
 use ReflectionClass;
@@ -63,8 +62,7 @@ class ConstantData implements JsonSerializable
     ): self {
         $constantName = $constant->getName();
         try {
-            $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, $classDocBlocks);
-            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, $constantName);
+            $phpDoc = PHPDoc::forConstant($constant, $class);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);

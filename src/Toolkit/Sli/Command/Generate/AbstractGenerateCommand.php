@@ -306,7 +306,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     {
         $this->InputClass = new ReflectionClass($fqcn);
         $this->InputClassName = $this->InputClass->getName();
-        $this->InputClassPHPDoc = PHPDoc::fromDocBlocks(PHPDocUtil::getAllClassDocComments($this->InputClass));
+        $this->InputClassPHPDoc = PHPDoc::forClass($this->InputClass);
         $this->InputClassTemplates = $this->InputClassPHPDoc->getTemplates(false);
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'

@@ -101,27 +101,7 @@ parameters:
 			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
 
 		-
-			message: "#^Cannot call method getDeclaringClass\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 2
-			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
-
-		-
 			message: "#^Cannot call method getFileName\\(\\) on ReflectionClass\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Cannot call method getFileName\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Cannot call method getName\\(\\) on ReflectionMethod\\|null\\.$#"
-			count: 1
-			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
-
-		-
-			message: "#^Parameter \\#1 \\$method of static method Salient\\\\PHPDoc\\\\PHPDocUtil\\:\\:getAllMethodDocComments\\(\\) expects ReflectionMethod, ReflectionMethod\\|null given\\.$#"
 			count: 1
 			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
 

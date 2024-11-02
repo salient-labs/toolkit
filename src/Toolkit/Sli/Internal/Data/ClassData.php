@@ -5,7 +5,6 @@ namespace Salient\Sli\Internal\Data;
 use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
-use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\Internal\NavigableToken;
 use Salient\Sli\Internal\TokenExtractor;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -108,8 +107,7 @@ class ClassData implements JsonSerializable
 
         $token = $extractor->getClassToken();
         try {
-            $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
-            $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+            $phpDoc = PHPDoc::forClass($class, true);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);
@@ -240,8 +238,7 @@ class ClassData implements JsonSerializable
                     : \T_CLASS));
 
         try {
-            $docBlocks = PHPDocUtil::getAllClassDocComments($class, true);
-            $phpDoc = PHPDoc::fromDocBlocks($docBlocks);
+            $phpDoc = PHPDoc::forClass($class, true);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);

@@ -57,10 +57,6 @@ final class PHPDocUtil extends AbstractUtility
             }
         } while ($current = $current->getParentClass());
 
-        if (!$class->isInterface()) {
-            return $comments;
-        }
-
         foreach (self::getInterfaces($class) as $name => $interface) {
             $comment = $interface->getDocComment();
             if ($comment === false) {
@@ -430,8 +426,10 @@ final class PHPDocUtil extends AbstractUtility
      *
      * If `$strict` is `true`, an exception is thrown if `$type` is not a valid
      * PHPDoc type.
+     *
+     * @param array<string,class-string> $aliases
      */
-    public static function normaliseType(string $type, bool $strict = false): string
+    public static function normaliseType(string $type, array $aliases = [], bool $strict = false): string
     {
         $type = trim($type);
         if (!Regex::match(self::PHPDOC_TYPE, $type)) {
@@ -442,6 +440,20 @@ final class PHPDocUtil extends AbstractUtility
                 ));
             }
             return self::replaceTypes($type);
+        }
+
+        if ($aliases) {
+            $regex = implode('|', array_keys($aliases));
+            if (count($aliases) > 1) {
+                $regex = "(?:{$regex})";
+            }
+            $regex = "/(?<![\$\\\\-])\b{$regex}\b(?![\\\\-])/i";
+            $aliases = array_change_key_case($aliases);
+            $type = Regex::replaceCallback(
+                $regex,
+                fn($matches) => $aliases[Str::lower($matches[0])],
+                $type,
+            );
         }
 
         $types = Str::splitDelimited('|', $type, true, null, Str::PRESERVE_QUOTED);
@@ -527,7 +539,7 @@ final class PHPDocUtil extends AbstractUtility
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead.
      */
-    public static function getParameterPHPDoc(
+    public static function getParameterTag(
         ReflectionParameter $parameter,
         string $classPrefix = '\\',
         ?callable $callback = null,

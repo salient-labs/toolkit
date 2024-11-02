@@ -76,8 +76,7 @@ class MethodData implements JsonSerializable
     ): self {
         $methodName = $method->getName();
         try {
-            $docBlocks = PHPDocUtil::getAllMethodDocComments($method, $class, $classDocBlocks);
-            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "{$methodName}()");
+            $phpDoc = PHPDoc::forMethod($method, $class);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);

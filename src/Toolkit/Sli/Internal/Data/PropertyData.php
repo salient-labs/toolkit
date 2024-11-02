@@ -68,8 +68,7 @@ class PropertyData implements JsonSerializable
     ): self {
         $propertyName = $property->getName();
         try {
-            $docBlocks = PHPDocUtil::getAllPropertyDocComments($property, $class, $classDocBlocks);
-            $phpDoc = PHPDoc::fromDocBlocks($docBlocks, $classDocBlocks, "\${$propertyName}");
+            $phpDoc = PHPDoc::forProperty($property, $class);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);

@@ -13,8 +13,6 @@ class TemplateTag extends AbstractTag
 
     /**
      * Creates a new TemplateTag object
-     *
-     * @param class-string|null $class
      */
     public function __construct(
         string $name,
@@ -23,13 +21,14 @@ class TemplateTag extends AbstractTag
         bool $isCovariant = false,
         bool $isContravariant = false,
         ?string $class = null,
-        ?string $member = null
+        ?string $member = null,
+        array $aliases = []
     ) {
         if ($isCovariant && $isContravariant) {
             $this->throw('$isCovariant and $isContravariant cannot both be true');
         }
-        parent::__construct('template', $name, $type, null, $class, $member);
-        $this->Default = $this->filterType($default);
+        parent::__construct('template', $name, $type, null, $class, $member, $aliases);
+        $this->Default = $this->filterType($default, $aliases);
         $this->IsCovariant = $isCovariant;
         $this->IsContravariant = $isContravariant;
     }
