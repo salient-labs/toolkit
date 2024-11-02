@@ -5,6 +5,10 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
 /**
  * Summary of MyTrait
  *
+ * @property-write mixed[] $MyMagicTraitProperty
+ *
+ * @method string MyMagicTraitMethod()
+ *
  * @internal
  */
 trait MyTrait

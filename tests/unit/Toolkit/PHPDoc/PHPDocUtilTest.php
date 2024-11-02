@@ -56,6 +56,9 @@ final class PHPDocUtilTest extends TestCase
                 [
                     MySubclass::class => "/**\n * MySubclass\n */",
                     MyClass::class => "/**\n * MyClass\n */",
+                    MyTrait::class => "/**\n * MyTrait\n */",
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
                     MyBaseClass::class => "/**\n * MyBaseClass\n */",
                     MyInterface::class => "/**\n * MyInterface\n */",
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
@@ -68,6 +71,9 @@ final class PHPDocUtilTest extends TestCase
                     MySubclass::class => "/**\n * MySubclass\n */",
                     MyUndocumentedClass::class => null,
                     MyClass::class => "/**\n * MyClass\n */",
+                    MyTrait::class => "/**\n * MyTrait\n */",
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
                     MyBaseClass::class => "/**\n * MyBaseClass\n */",
                     MyInterface::class => "/**\n * MyInterface\n */",
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
@@ -79,6 +85,9 @@ final class PHPDocUtilTest extends TestCase
             [
                 [
                     MyClass::class => "/**\n * MyClass\n */",
+                    MyTrait::class => "/**\n * MyTrait\n */",
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
                     MyBaseClass::class => "/**\n * MyBaseClass\n */",
                     MyInterface::class => "/**\n * MyInterface\n */",
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
@@ -89,6 +98,9 @@ final class PHPDocUtilTest extends TestCase
                 [
                     MyUndocumentedClass::class => null,
                     MyClass::class => "/**\n * MyClass\n */",
+                    MyTrait::class => "/**\n * MyTrait\n */",
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
                     MyBaseClass::class => "/**\n * MyBaseClass\n */",
                     MyInterface::class => "/**\n * MyInterface\n */",
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",

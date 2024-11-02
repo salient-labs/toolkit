@@ -129,7 +129,7 @@ class PHPDoc implements Immutable, Stringable
     /**
      * @var non-empty-array<string,non-empty-array<string>|bool>
      */
-    protected const INHERITABLE_FROM_INTERFACE_TAGS = [
+    protected const INHERITABLE_BY_CLASS_TAGS = [
         'method' => true,
         'property' => true,
         'property-read' => ['phpstan-', 'psalm-'],
@@ -195,7 +195,7 @@ class PHPDoc implements Immutable, Stringable
     /** @var array<class-string<self>,array<string,true>> */
     private static array $InheritableTagIndex;
     /** @var array<class-string<self>,array<string,true>> */
-    private static array $InheritableFromInterfaceTagIndex;
+    private static array $InheritableByClassTagIndex;
 
     /**
      * Creates a new PHPDoc object from a PHP DocBlock
@@ -383,14 +383,14 @@ class PHPDoc implements Immutable, Stringable
      */
     public function inherit(self $parent)
     {
-        // Check if this is a class inheriting an interface
-        $fromInterface = $this->Class !== null
+        // Check if this is a class inheriting from an interface or trait
+        $byClass = $this->Class !== null
             && $parent->Class !== null
             && $this->Class !== $parent->Class
             && $this->Member === null
             && $parent->Member === null
-            && interface_exists($parent->Class)
-            && !interface_exists($this->Class);
+            && ((interface_exists($parent->Class) && !interface_exists($this->Class))
+                || (trait_exists($parent->Class) && !trait_exists($this->Class)));
 
         $tags = $this->Tags;
         foreach (Arr::flatten($tags) as $tag) {
@@ -398,8 +398,8 @@ class PHPDoc implements Immutable, Stringable
         }
         foreach (array_intersect_key(
             $parent->Tags,
-            $fromInterface
-                ? self::getInheritableFromInterfaceTagIndex()
+            $byClass
+                ? self::getInheritableByClassTagIndex()
                 : self::getInheritableTagIndex(),
         ) as $name => $theirs) {
             foreach ($theirs as $tag) {
@@ -444,7 +444,7 @@ class PHPDoc implements Immutable, Stringable
             $templates[$parent->Class] = $parent->Templates;
         }
 
-        if (!$fromInterface) {
+        if (!$byClass) {
             $summary = $this->Summary;
             $description = $this->Description;
             if ($description !== null && $parent->Description !== null) {
@@ -483,10 +483,10 @@ class PHPDoc implements Immutable, Stringable
     /**
      * @return array<string,true>
      */
-    private static function getInheritableFromInterfaceTagIndex(): array
+    private static function getInheritableByClassTagIndex(): array
     {
-        return self::$InheritableFromInterfaceTagIndex[static::class]
-            ??= self::doGetInheritableTagIndex(static::INHERITABLE_FROM_INTERFACE_TAGS);
+        return self::$InheritableByClassTagIndex[static::class]
+            ??= self::doGetInheritableTagIndex(static::INHERITABLE_BY_CLASS_TAGS);
     }
 
     /**
@@ -887,7 +887,7 @@ class PHPDoc implements Immutable, Stringable
             array_keys($this->Tags),
             static::STANDARD_TAGS,
         ) as $key) {
-            if (!Regex::match('/^(phpstan|psalm)-/', $key)) {
+            if (!Regex::match('/^(?:phpstan|psalm)-|^disregard$/D', $key)) {
                 return true;
             }
         }

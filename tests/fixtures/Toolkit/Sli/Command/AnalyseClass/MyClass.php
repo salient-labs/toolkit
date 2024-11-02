@@ -13,6 +13,8 @@ namespace Salient\Tests\Sli\Command\AnalyseClass;
  * @method static void MyStaticMagicMethod(int $id = null)
  *
  * @template T of int|string
+ *
+ * @disregard P1037
  */
 final class MyClass extends MyBaseClass
 {

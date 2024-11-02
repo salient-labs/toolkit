@@ -56,6 +56,8 @@ Description of MyBaseClass::$MyMagicProperty
 
 ##### `public $MyVarProperty`
 
+> ###### `public readonly int $MyMagicInterfaceProperty`
+
 #### Methods
 
 ##### `public static MyStaticMagicMethod(): void`
@@ -68,6 +70,8 @@ Summary of MyInterface::MyStaticMethod()
 
 ##### `protected MyOverriddenMethod(): int`
 
+> ###### `public MyMagicInterfaceMethod(): mixed`
+>
 > ###### `abstract public MyMethod(): mixed`
 >
 > Summary of MyInterface::MyMethod()
@@ -126,6 +130,10 @@ Summary of MyClass::$MyProperty
 >
 > ###### `public $MyVarProperty`
 >
+> ###### `public readonly int $MyMagicInterfaceProperty`
+>
+> ###### `public mixed[] $MyMagicTraitProperty` (write-only)
+>
 > ###### `private int $MyIntProperty = 2`
 
 #### Methods
@@ -171,6 +179,10 @@ public function __toString(): string
 >
 > Summary of MyInterface::MyStaticMethod()
 >
+> ###### `public MyMagicInterfaceMethod(): mixed`
+>
+> ###### `public MyMagicTraitMethod(): string`
+>
 > ###### `public MyMethod(): mixed`
 >
 > Summary of MyTrait::MyMethod()
@@ -191,7 +203,13 @@ Summary of MyInterface
 
 Summary of MyInterface::MY_ARRAY
 
+#### Properties
+
+##### `public readonly int $MyMagicInterfaceProperty`
+
 #### Methods
+
+##### `public MyMagicInterfaceMethod(): mixed`
 
 ##### `public MyMethod(): mixed`
 
@@ -207,9 +225,13 @@ Summary of MyTrait
 
 #### Properties
 
+##### `public mixed[] $MyMagicTraitProperty` (write-only)
+
 ##### `private int $MyIntProperty = 2`
 
 #### Methods
+
+##### `public MyMagicTraitMethod(): string`
 
 ##### `public MyMethod(): mixed`
 

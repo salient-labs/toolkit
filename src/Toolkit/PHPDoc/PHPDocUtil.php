@@ -55,7 +55,23 @@ final class PHPDocUtil extends AbstractUtility
             } else {
                 $comments[$name] = Str::setEol($comment);
             }
+
+            if ($current->isInterface()) {
+                break;
+            }
+
+            foreach ($current->getTraits() as $trait) {
+                // Recurse into inserted traits
+                $comments = array_merge(
+                    $comments,
+                    self::getAllClassDocComments($trait, $includeAll),
+                );
+            }
         } while ($current = $current->getParentClass());
+
+        if ($class->isTrait()) {
+            return $comments;
+        }
 
         foreach (self::getInterfaces($class) as $name => $interface) {
             $comment = $interface->getDocComment();
@@ -159,8 +175,6 @@ final class PHPDocUtil extends AbstractUtility
                 }
             }
 
-            // Interfaces don't have traits and their parents don't need to be
-            // retrieved separately, so there's nothing else to do here
             if ($current->isInterface()) {
                 return $comments;
             }

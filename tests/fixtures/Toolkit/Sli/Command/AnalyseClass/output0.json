@@ -195,7 +195,7 @@
                     ],
                     "type": null,
                     "defaultValue": null,
-                    "line": -3
+                    "line": -4
                 },
                 "MyMagicReadOnlyInt": {
                     "summary": null,
@@ -222,7 +222,7 @@
                     ],
                     "type": "int",
                     "defaultValue": null,
-                    "line": -2
+                    "line": -3
                 },
                 "MyMagicWriteOnlyArray": {
                     "summary": null,
@@ -248,7 +248,7 @@
                     ],
                     "type": "mixed[]",
                     "defaultValue": null,
-                    "line": -1
+                    "line": -2
                 },
                 "MyVarProperty": {
                     "summary": null,
@@ -275,6 +275,36 @@
                     "type": null,
                     "defaultValue": null,
                     "line": 33
+                },
+                "MyMagicInterfaceProperty": {
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyMagicInterfaceProperty"
+                    ],
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": true,
+                    "writeonly": false,
+                    "modifiers": [
+                        "public",
+                        "readonly"
+                    ],
+                    "type": "int",
+                    "defaultValue": null,
+                    "line": null
                 }
             },
             "methods": {
@@ -305,7 +335,7 @@
                     ],
                     "parameters": {},
                     "returnType": "void",
-                    "line": -1,
+                    "line": -2,
                     "lines": null
                 },
                 "MyStaticMethod": {
@@ -375,6 +405,38 @@
                     "returnType": "int",
                     "line": 43,
                     "lines": 4
+                },
+                "MyMagicInterfaceMethod": {
+                    "templates": {},
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyMagicInterfaceMethod"
+                    ],
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": {},
+                    "returnType": "mixed",
+                    "line": null,
+                    "lines": null
                 },
                 "MyMethod": {
                     "templates": {},
@@ -496,7 +558,7 @@
                     ],
                     "type": "float",
                     "value": "3.0",
-                    "line": 21
+                    "line": 23
                 },
                 "MY_INT": {
                     "summary": null,
@@ -654,7 +716,7 @@
                     ],
                     "type": "int",
                     "defaultValue": null,
-                    "line": -3
+                    "line": -5
                 },
                 "MyProperty": {
                     "summary": "Summary of MyClass::$MyProperty",
@@ -680,7 +742,7 @@
                     ],
                     "type": "T",
                     "defaultValue": null,
-                    "line": 28
+                    "line": 30
                 },
                 "MyStaticProperty": {
                     "summary": null,
@@ -707,7 +769,7 @@
                     ],
                     "type": null,
                     "defaultValue": null,
-                    "line": 31
+                    "line": 33
                 },
                 "MyStaticPropertyWithDefault": {
                     "summary": null,
@@ -734,7 +796,7 @@
                     ],
                     "type": null,
                     "defaultValue": "0",
-                    "line": 34
+                    "line": 36
                 },
                 "MyStaticTypedProperty": {
                     "summary": null,
@@ -761,7 +823,7 @@
                     ],
                     "type": "int",
                     "defaultValue": null,
-                    "line": 37
+                    "line": 39
                 },
                 "MyNullableStaticTypedProperty": {
                     "summary": null,
@@ -788,7 +850,7 @@
                     ],
                     "type": "?int",
                     "defaultValue": null,
-                    "line": 40
+                    "line": 42
                 },
                 "MyNullableStaticTypedPropertyWithDefault": {
                     "summary": null,
@@ -815,7 +877,7 @@
                     ],
                     "type": "?int",
                     "defaultValue": "null",
-                    "line": 43
+                    "line": 45
                 },
                 "MyMagicReadOnlyInt": {
                     "summary": null,
@@ -905,6 +967,65 @@
                     "defaultValue": null,
                     "line": null
                 },
+                "MyMagicInterfaceProperty": {
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyMagicInterfaceProperty"
+                    ],
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": true,
+                    "writeonly": false,
+                    "modifiers": [
+                        "public",
+                        "readonly"
+                    ],
+                    "type": "int",
+                    "defaultValue": null,
+                    "line": null
+                },
+                "MyMagicTraitProperty": {
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
+                        "MyMagicTraitProperty"
+                    ],
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "writeonly": true,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "mixed[]",
+                    "defaultValue": null,
+                    "line": null
+                },
                 "MyIntProperty": {
                     "summary": null,
                     "description": null,
@@ -971,7 +1092,7 @@
                         ]
                     },
                     "returnType": "int",
-                    "line": -2,
+                    "line": -4,
                     "lines": null
                 },
                 "MyStaticMagicMethod": {
@@ -1006,7 +1127,7 @@
                         ]
                     },
                     "returnType": "void",
-                    "line": -1,
+                    "line": -3,
                     "lines": null
                 },
                 "__construct": {
@@ -1040,7 +1161,7 @@
                         ]
                     },
                     "returnType": null,
-                    "line": 50,
+                    "line": 52,
                     "lines": 4
                 },
                 "MyTemplateMethod": {
@@ -1080,7 +1201,7 @@
                         ]
                     },
                     "returnType": "array<T,TInstance>",
-                    "line": 64,
+                    "line": 66,
                     "lines": 4
                 },
                 "__toString": {
@@ -1112,7 +1233,7 @@
                     ],
                     "parameters": {},
                     "returnType": "string",
-                    "line": 69,
+                    "line": 71,
                     "lines": 4
                 },
                 "MyStaticMethod": {
@@ -1154,6 +1275,70 @@
                         ]
                     },
                     "returnType": "void",
+                    "line": null,
+                    "lines": null
+                },
+                "MyMagicInterfaceMethod": {
+                    "templates": {},
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyInterface",
+                        "MyMagicInterfaceMethod"
+                    ],
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": {},
+                    "returnType": "mixed",
+                    "line": null,
+                    "lines": null
+                },
+                "MyMagicTraitMethod": {
+                    "templates": {},
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": [
+                        "Salient\\Tests\\Sli\\Command\\AnalyseClass\\MyTrait",
+                        "MyMagicTraitMethod"
+                    ],
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": {},
+                    "returnType": "string",
                     "line": null,
                     "lines": null
                 },
@@ -1229,7 +1414,7 @@
                 }
             },
             "file": "./MyClass.php",
-            "line": 17,
+            "line": 19,
             "lines": 57
         },
         "MyInterface": {
@@ -1273,7 +1458,7 @@
                     ],
                     "type": null,
                     "value": "'short'",
-                    "line": 14
+                    "line": 18
                 },
                 "MY_ARRAY": {
                     "summary": "Summary of MyInterface::MY_ARRAY",
@@ -1296,11 +1481,68 @@
                     ],
                     "type": null,
                     "value": "['Stringable' => 0]",
-                    "line": 19
+                    "line": 23
                 }
             },
-            "properties": {},
+            "properties": {
+                "MyMagicInterfaceProperty": {
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": true,
+                    "writeonly": false,
+                    "modifiers": [
+                        "public",
+                        "readonly"
+                    ],
+                    "type": "int",
+                    "defaultValue": null,
+                    "line": -1
+                }
+            },
             "methods": {
+                "MyMagicInterfaceMethod": {
+                    "templates": {},
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": {},
+                    "returnType": "mixed",
+                    "line": -1,
+                    "lines": null
+                },
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyInterface::MyMethod()",
@@ -1327,7 +1569,7 @@
                     ],
                     "parameters": {},
                     "returnType": "mixed",
-                    "line": 30,
+                    "line": 34,
                     "lines": 1
                 },
                 "MyStaticMethod": {
@@ -1362,12 +1604,12 @@
                         ]
                     },
                     "returnType": "void",
-                    "line": 37,
+                    "line": 41,
                     "lines": 1
                 }
             },
             "file": "./MyInterface.php",
-            "line": 12,
+            "line": 16,
             "lines": 27
         },
         "MyTrait": {
@@ -1391,6 +1633,32 @@
             "modifiers": [],
             "constants": {},
             "properties": {
+                "MyMagicTraitProperty": {
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "readonly": false,
+                    "writeonly": true,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "type": "mixed[]",
+                    "defaultValue": null,
+                    "line": -1
+                },
                 "MyIntProperty": {
                     "summary": null,
                     "description": null,
@@ -1415,10 +1683,39 @@
                     ],
                     "type": "int",
                     "defaultValue": "2",
-                    "line": 12
+                    "line": 16
                 }
             },
             "methods": {
+                "MyMagicTraitMethod": {
+                    "templates": {},
+                    "summary": null,
+                    "description": null,
+                    "summaryInherited": false,
+                    "descriptionInherited": false,
+                    "api": false,
+                    "internal": false,
+                    "deprecated": false,
+                    "magic": true,
+                    "declared": false,
+                    "hasDocComment": false,
+                    "inherited": false,
+                    "inheritedFrom": null,
+                    "prototype": null,
+                    "abstract": false,
+                    "final": false,
+                    "public": true,
+                    "protected": false,
+                    "private": false,
+                    "static": false,
+                    "modifiers": [
+                        "public"
+                    ],
+                    "parameters": {},
+                    "returnType": "string",
+                    "line": -1,
+                    "lines": null
+                },
                 "MyMethod": {
                     "templates": {},
                     "summary": "Summary of MyTrait::MyMethod()",
@@ -1445,7 +1742,7 @@
                     ],
                     "parameters": {},
                     "returnType": "mixed",
-                    "line": 19,
+                    "line": 23,
                     "lines": 1
                 },
                 "MyOverriddenMethod": {
@@ -1474,12 +1771,12 @@
                     ],
                     "parameters": {},
                     "returnType": "int",
-                    "line": 24,
+                    "line": 28,
                     "lines": 4
                 }
             },
             "file": "./MyTrait.php",
-            "line": 10,
+            "line": 14,
             "lines": 19
         }
     }
