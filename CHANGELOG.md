@@ -10,6 +10,57 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.61] - 2024-11-02
+
+### Added
+
+#### `PHPDoc`
+
+- Add support for `@property` tags and their `-read`/`-write` variants
+- Add and adopt `PHPDoc` factory methods: `forClass()`, `forMethod()`, `forProperty()`, `forConstant()`
+
+#### `Sli`
+
+- Add PHPDoc descriptions and "magic" properties and methods to `AnalyseClass` output
+
+### Changed
+
+#### `Console`
+
+- Simplify `ConsoleWriter::exception()` output
+
+#### `PHPDoc`
+
+- **Add an `ErrorTag` to the `PHPDoc` instead of throwing an exception when an invalid tag is encountered**
+- Close unterminated code fences instead of throwing an exception
+- Expand aliases (optionally passed to `PHPDoc::__construct()`) when parsing DocBlocks
+- In `PHPDoc::normalise()`, if the PHPDoc has one `@var` tag with the same name as the property the instance is associated with, remove the name from the tag
+- Allow `@method`, `@property*` and `@mixin` tags to be inherited from interfaces and traits by classes
+- Don't return one-line DocBlocks from `PHPDoc::__toString()`
+- Don't inherit specialised `@template` tags
+- Rename `PHPDocUtil::getParameterPHPDoc()` to `getParameterTag()`
+- Handle `@template` variance via boolean values instead of a string
+- Improve consistency of tag constructors
+
+#### `PHPStan`
+
+- Add property visibility check to `HasMutator` rule
+
+#### `Sli`
+
+In `AnalyseClass`:
+
+- Catch and report PHPDoc errors
+- Suppress inherited summaries and descriptions
+- Improve Markdown output
+- Propagate imports to `PHPDoc` for type expansion
+
+### Fixed
+
+#### `PHPDoc`
+
+- Fix regression where DocBlocks with default values in `@method` parameters trigger an exception
+
 ## [v0.99.60] - 2024-10-30
 
 ### Added
@@ -4044,6 +4095,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.61]: https://github.com/salient-labs/toolkit/compare/v0.99.60...v0.99.61
 [v0.99.60]: https://github.com/salient-labs/toolkit/compare/v0.99.59...v0.99.60
 [v0.99.59]: https://github.com/salient-labs/toolkit/compare/v0.99.58...v0.99.59
 [v0.99.58]: https://github.com/salient-labs/toolkit/compare/v0.99.57...v0.99.58
