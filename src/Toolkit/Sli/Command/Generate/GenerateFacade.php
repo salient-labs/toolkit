@@ -199,7 +199,7 @@ final class GenerateFacade extends AbstractGenerateCommand
                     // If the underlying method has more type information,
                     // provide a link to it
                     //
-                    // @phpstan-ignore-next-line
+                    // @phpstan-ignore if.alwaysFalse
                     if ($_type) {
                         $link = !$internal;
                     }

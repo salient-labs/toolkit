@@ -452,7 +452,6 @@ final class TokenExtractor
         if (Str::startsWith($name, 'namespace\\', true)) {
             $name = $this->Namespace . substr($name, 9);
         } elseif (strpos($name, '\\') === false) {
-            // @phpstan-ignore assign.propertyType
             $this->Imports ??= array_change_key_case(Get::array(
                 $this->getImports(),
             ));

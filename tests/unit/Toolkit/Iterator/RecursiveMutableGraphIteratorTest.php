@@ -87,7 +87,12 @@ final class RecursiveMutableGraphIteratorTest extends TestCase
     }
 
     /**
-     * @return mixed[]
+     * @param-out stdClass $a
+     * @param-out stdClass $d1
+     * @param-out stdClass $d2
+     * @param-out stdClass $e
+     * @param-out stdClass $l
+     * @return array{stdClass,int[]}
      */
     private function getArrayWithNestedObjectsAndArrays(
         ?stdClass &$a = null,

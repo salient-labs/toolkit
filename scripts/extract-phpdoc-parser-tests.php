@@ -15,14 +15,14 @@ $loader->addPsr4(
     InstalledVersions::getInstallPath('phpstan/phpdoc-parser') . '/tests/PHPStan/'
 );
 
-// @phpstan-ignore-next-line
+// @phpstan-ignore class.notFound
 $typeParserTest = new TypeParserTest();
 
 $data = [];
 foreach ([
-    // @phpstan-ignore-next-line
+    // @phpstan-ignore class.notFound
     $typeParserTest->provideParseData(),
-    // @phpstan-ignore-next-line
+    // @phpstan-ignore class.notFound
     $typeParserTest->dataLinesAndIndexes(),
 ] as $tests) {
     foreach ($tests as $test) {

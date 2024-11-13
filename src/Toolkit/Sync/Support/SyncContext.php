@@ -132,6 +132,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
             array_key_exists($key, $this->Filters)
             || array_key_exists($key = Str::snake($key), $this->Filters)
         ) {
+            // @phpstan-ignore parameterByRef.type
             $altKey = Arr::search($this->FilterKeys, $key);
             return $key;
         }
@@ -241,7 +242,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
     /**
      * @param array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> $filters
      * @param array<string,string> $filterKeys
-     * @return $this
+     * @return static
      */
     private function applyFilters(array $filters, array $filterKeys = [])
     {
@@ -290,6 +291,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 ));
             }
 
+            /** @var (int|string|float|bool|null)[] */
             return $value;
         }
 
@@ -378,7 +380,7 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         ?string $entityType = null,
         $depth = null
     ) {
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore smaller.alwaysFalse, booleanAnd.rightAlwaysFalse
         if ($depth !== null && array_filter((array) $depth, fn($depth) => $depth < 1)) {
             throw new LogicException('$depth must be greater than 0');
         }

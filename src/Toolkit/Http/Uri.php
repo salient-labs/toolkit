@@ -174,7 +174,7 @@ REGEX;
 
         $name = $noComponent
             ? null
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore nullCoalesce.offset
             : self::COMPONENT_NAME[$component] ?? null;
 
         if (!$noComponent && $name === null) {

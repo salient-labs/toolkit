@@ -47,7 +47,7 @@ trait RecursiveGraphIteratorTrait
         if ($this->IsObject) {
             $current = &$this->Graph->{$key};
         } else {
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore offsetAccess.nonOffsetAccessible, offsetAccess.nonOffsetAccessible
             $current = &$this->Graph[$key];
         }
 

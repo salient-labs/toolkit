@@ -1,4 +1,5 @@
 includes:
+	- phar://phpstan.phar/conf/bleedingEdge.neon
 	- src/Toolkit/PHPStan/phpstan.extension.neon
 	- tests/phpstan-conditional.php
 
@@ -21,6 +22,27 @@ parameters:
 	universalObjectCratesClasses:
 		- Salient\Contract\Core\Entity\Extensible
 	ignoreErrors:
+		-
+			identifier: property.unusedType
+		-
+			identifier: trait.unused
+		-
+			identifier: method.alreadyNarrowedType
+			paths:
+				- tests/unit/*
+		-
+			identifier: offsetAccess.nonOffsetAccessible
+			paths:
+				- tests/unit/Toolkit/Core/GraphTest.php
+		-
+			identifier: property.nonObject
+			paths:
+				- tests/unit/Toolkit/Core/GraphTest.php
+		-
+			identifier: return.unusedType
+			paths:
+				- src/Toolkit/Core/Facade/*
+				- tests/fixtures/Toolkit/Core/AbstractFacade/*
 		-
 			identifier: salient.needless.coalesce
 			paths:

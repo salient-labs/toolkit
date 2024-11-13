@@ -218,7 +218,7 @@ final class AbstractTypedListTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($offset) must be of type int, string given');
         $list = new MyList();
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore offsetAssign.dimType
         $list['foo'] = new MyClass('bar');
     }
 
@@ -227,7 +227,7 @@ final class AbstractTypedListTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($key) must be of type int, string given');
         $list = new MyList();
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         $list->set('foo', new MyClass('bar'));
     }
 

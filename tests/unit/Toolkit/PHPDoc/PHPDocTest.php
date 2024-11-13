@@ -191,7 +191,7 @@ EOF],
 EOF;
 
         $this->assertSame(Str::eolFromNative($docBlock), (string) $phpDoc);
-        $this->assertSame(['T' => '@template T'], Arr::toStrings($phpDoc->getTemplatesForTag($var)));
+        $this->assertSame(['T' => '@template T'], Arr::toStrings($phpDoc->getTagTemplates($var)));
 
         $this->assertSame('/** */', (string) PHPDoc::fromTags([]));
         $this->assertSame("/**\n * Summary\n */", (string) PHPDoc::fromTags([], 'Summary'));

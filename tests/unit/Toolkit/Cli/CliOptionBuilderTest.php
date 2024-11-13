@@ -264,7 +264,7 @@ final class CliOptionBuilderTest extends TestCase
         ));
         $this->assertNull($bound);
         $option->applyValue([]);
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.impossibleType
         $this->assertSame([], $bound);
     }
 

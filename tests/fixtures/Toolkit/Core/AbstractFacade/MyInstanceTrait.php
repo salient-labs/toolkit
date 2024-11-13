@@ -22,6 +22,7 @@ trait MyInstanceTrait
     {
         $this->Clones++;
 
+        // @phpstan-ignore function.alreadyNarrowedType
         if (method_exists($this, 'updateFacade')) {
             $this->updateFacade();
         }
@@ -61,8 +62,6 @@ trait MyInstanceTrait
 
     /**
      * @return static[]
-     *
-     * @phpstan-impure
      */
     public static function getUnloaded(): array
     {

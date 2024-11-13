@@ -490,10 +490,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     }
 
     /**
-     * @param AbstractSyncEntity|DeferredEntityInterface<AbstractSyncEntity>|DeferredRelationshipInterface<AbstractSyncEntity>|DateTimeInterface|mixed[] $node
+     * @param self|DeferredEntityInterface<self>|DeferredRelationshipInterface<self>|DateTimeInterface|mixed[] $node
      * @param string[] $path
      * @param SyncSerializeRulesInterface<self> $rules
      * @param array<int,true> $parents
+     * @param-out ($node is self ? array<string,mixed> : mixed[]|string|null) $node
      */
     private function _serialize(
         &$node,
@@ -504,7 +505,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
         array $parents = []
     ): void {
         $maxDepth = $rules->getMaxDepth();
-        if ($maxDepth !== null && count($path) > $maxDepth) {
+        if (count($path) > $maxDepth) {
             throw new UnexpectedValueException('In too deep: ' . implode('.', $path));
         }
 
@@ -574,9 +575,10 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
                     continue;
                 }
 
-                $_path = $path;
-                $_path[] = (string) $key;
-                $this->_serializeId($node[$key], $_path);
+                /** @var self[]|self|null */
+                $child = &$node[$key];
+                $this->_serializeId($child);
+                unset($child);
                 continue;
             }
 
@@ -597,8 +599,9 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
             $_path = $path;
             $last = array_pop($_path) . '[]';
             $_path[] = $last;
+            /** @var self|null $child */
             foreach ($node as &$child) {
-                $this->_serializeId($child, $_path);
+                $this->_serializeId($child);
             }
             unset($child);
         }
@@ -619,6 +622,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
                 $_path = $path;
                 $_path[] = (string) $key;
             }
+            /** @var self|DeferredEntityInterface<self>|DeferredRelationshipInterface<self>|DateTimeInterface|mixed[] $child */
             $this->_serialize(
                 $child,
                 $_path ?? $path,
@@ -631,26 +635,21 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     }
 
     /**
-     * @param AbstractSyncEntity[]|AbstractSyncEntity|null $node
-     * @param string[] $path
+     * @param self[]|self|null $node
+     * @param-out ($node is self[] ? array<int|string|null> : ($node is self ? int|string|null : null)) $node
      */
-    private function _serializeId(&$node, array $path): void
+    private function _serializeId(&$node): void
     {
         if ($node === null) {
             return;
         }
 
-        if (Arr::of($node, AbstractSyncEntity::class, true) && Arr::isIndexed($node, true)) {
-            /** @var AbstractSyncEntity $child */
-            foreach ($node as &$child) {
-                $child = $child->Id;
+        if (is_array($node)) {
+            foreach ($node as $key => $child) {
+                $children[$key] = $child->Id;
             }
-
+            $node = $children ?? [];
             return;
-        }
-
-        if (!$node instanceof AbstractSyncEntity) {
-            throw new UnexpectedValueException('Cannot replace (not an AbstractSyncEntity): ' . implode('.', $path));
         }
 
         $node = $node->Id;

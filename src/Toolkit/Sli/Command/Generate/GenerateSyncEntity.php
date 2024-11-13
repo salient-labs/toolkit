@@ -275,6 +275,7 @@ EOF)
             public static array $Prefixes;
             public static bool $Expand = true;
 
+            // @phpstan-ignore return.unusedType
             protected static function getRemovablePrefixes(): ?array
             {
                 return self::$Expand

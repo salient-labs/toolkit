@@ -181,7 +181,7 @@ final class SyncIntrospector extends Introspector
      *   {@see SyncEntityInterface} class serviced by the
      *   {@see SyncProviderInterface} class
      *
-     * @return Closure(SyncContextInterface, mixed...)|null
+     * @return (Closure(SyncContextInterface, mixed...): (iterable<SyncEntityInterface>|SyncEntityInterface))|null
      */
     public function getMagicSyncOperationClosure(string $method, SyncProviderInterface $provider): ?Closure
     {
@@ -203,6 +203,7 @@ final class SyncIntrospector extends Introspector
                 $closure =
                     function (SyncContextInterface $ctx, ...$args) use ($entity, $operation) {
                         /** @var SyncProviderInterface $this */
+                        // @phpstan-ignore varTag.nativeType
                         return $this->with($entity, $ctx)->run($operation, ...$args);
                     };
             }

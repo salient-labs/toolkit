@@ -683,11 +683,10 @@ class IntrospectionClass
             default:
                 $normaliser = $this->Normaliser;
         }
-        if (is_array($value)) {
-            return array_map($normaliser, $value);
-        }
-
-        return ($normaliser)($value);
+        /** @var T */
+        return is_array($value)
+            ? array_map($normaliser, $value)
+            : ($normaliser)($value);
     }
 
     /**

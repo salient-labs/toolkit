@@ -259,9 +259,11 @@ class Container implements ContainerInterface, FacadeAwareInterface
      */
     private function bindDefaultService(string $id): void
     {
-        /** @var array{class-string,ServiceLifetime::*} */
         $defaultService = self::DEFAULT_SERVICES[$id];
-        [$class, $lifetime] = $defaultService;
+        /** @var class-string */
+        $class = $defaultService[0];
+        /** @var ServiceLifetime::* */
+        $lifetime = $defaultService[1];
         if (
             $lifetime === ServiceLifetime::SINGLETON || (
                 $lifetime === ServiceLifetime::INHERIT

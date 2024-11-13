@@ -147,7 +147,7 @@ trait ListTrait
     }
 
     /**
-     * @param int $key
+     * @param array-key $key
      * @throws InvalidArgumentException if `$key` is not an integer, or does not
      * resolve to an existing item and is not the next numeric key in the list.
      */

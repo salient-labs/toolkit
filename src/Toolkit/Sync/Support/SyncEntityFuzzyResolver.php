@@ -2,9 +2,7 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Contract\Core\TextComparisonAlgorithm;
 use Salient\Contract\Core\TextComparisonAlgorithm as Algorithm;
-use Salient\Contract\Core\TextComparisonFlag;
 use Salient\Contract\Core\TextComparisonFlag as Flag;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
@@ -35,7 +33,7 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
     private $EntityProvider;
     /** @var string|Closure(TEntity): (string|null) */
     private $NameProperty;
-    /** @var int-mask-of<Algorithm::*> */
+    /** @var int-mask-of<Algorithm::*|Flag::*> */
     private $Algorithm;
     /** @var array<Algorithm::*,float>|float|null */
     private $UncertaintyThreshold;
@@ -47,9 +45,9 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
     /**
      * [ [ Entity, normalised name, weight ] ]
      *
-     * @var array<array{TEntity,string,mixed|null}>|null
+     * @var array<array{TEntity,string,mixed|null}>
      */
-    private $Entities;
+    private array $Entities;
 
     /**
      * Query => [ entity, uncertainty ]
@@ -62,8 +60,8 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
      * Creates a new SyncEntityFuzzyResolver object
      *
      * @param SyncEntityProviderInterface<TEntity> $entityProvider
-     * @param int-mask-of<TextComparisonAlgorithm::*|TextComparisonFlag::*> $algorithm
-     * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
+     * @param int-mask-of<Algorithm::*|Flag::*> $algorithm
+     * @param array<Algorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      */
@@ -71,10 +69,10 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
         SyncEntityProviderInterface $entityProvider,
         ?string $nameProperty = null,
         int $algorithm =
-            TextComparisonAlgorithm::SAME
-            | TextComparisonAlgorithm::CONTAINS
-            | TextComparisonAlgorithm::NGRAM_SIMILARITY
-            | TextComparisonFlag::NORMALISE,
+            Algorithm::SAME
+            | Algorithm::CONTAINS
+            | Algorithm::NGRAM_SIMILARITY
+            | Flag::NORMALISE,
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
         bool $requireOneMatch = false
@@ -123,9 +121,7 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
      */
     public function getByName(string $name, ?float &$uncertainty = null): ?SyncEntityInterface
     {
-        if ($this->Entities === null) {
-            $this->loadEntities();
-        }
+        $this->Entities ??= $this->getEntities();
 
         if (!$this->Entities) {
             $uncertainty = null;
@@ -142,7 +138,6 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             return $entity;
         }
 
-        /** @var array<array{TEntity,string,mixed|null,...}> */
         $entries = $this->Entities;
         $applied = 0;
 
@@ -204,6 +199,7 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             return $this->cacheResult($name, null, $uncertainty);
         }
 
+        /** @var array<array{TEntity,string,mixed|null,float,...<float>}> $entries */
         usort(
             $entries,
             function ($e1, $e2) use ($applied) {
@@ -222,15 +218,16 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
         return $this->cacheResult($name, $entries[0], $uncertainty);
     }
 
-    private function loadEntities(): void
+    /**
+     * @return array<array{TEntity,string,mixed|null}>
+     */
+    private function getEntities(): array
     {
-        $this->Entities = [];
         foreach ($this->EntityProvider->getList() as $entity) {
-            $name =
-                is_string($this->NameProperty)
-                    ? $entity->{$this->NameProperty}
-                    : ($this->NameProperty)($entity);
-            $this->Entities[] = [
+            $name = is_string($this->NameProperty)
+                ? $entity->{$this->NameProperty}
+                : ($this->NameProperty)($entity);
+            $entities[] = [
                 $entity,
                 $this->Algorithm & Flag::NORMALISE
                     ? Str::normalise($name)
@@ -240,6 +237,7 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
                     : $entity->{$this->WeightProperty},
             ];
         }
+        return $entities ?? [];
     }
 
     /**
@@ -281,8 +279,8 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
     }
 
     /**
-     * @param array{TEntity,string,mixed|null,...} $entry
-     * @return TEntity
+     * @param array{TEntity,string,mixed|null,float,...<float>}|null $entry
+     * @return TEntity|null
      */
     private function cacheResult(string $name, ?array $entry, ?float &$uncertainty): ?SyncEntityInterface
     {
@@ -292,6 +290,7 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             return null;
         }
 
+        // @phpstan-ignore parameterByRef.type
         $uncertainty = array_pop($entry);
         $this->Cache[$name] = [$entry[0], $uncertainty];
         return $entry[0];

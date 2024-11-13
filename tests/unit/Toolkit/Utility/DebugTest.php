@@ -119,9 +119,10 @@ final class DebugTest extends TestCase
         $this->assertIsCaller($expected, (Salient_Tests_Core_Utility_Debug_getFunctionCallback())(1));
         $this->assertIsCaller($thisMethod, (Salient_Tests_Core_Utility_Debug_getFunctionCallback())(2));
 
-        /** @var non-empty-array<array{file:string,...}> */
         $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
         $last = end($backtrace);
+        $this->assertIsArray($last);
+        $this->assertArrayHasKey('file', $last);
         $expected = [
             'file' => $last['file'],
             0 => ':',

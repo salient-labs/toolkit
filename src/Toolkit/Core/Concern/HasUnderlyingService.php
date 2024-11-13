@@ -109,21 +109,17 @@ trait HasUnderlyingService
             return;
         }
 
-        if (is_array($service) && count($service) === 1) {
+        if (count($service) === 1) {
             $name = array_key_first($service);
-            if (is_string($name)) {
-                $value = $service[$name];
-                if (is_string($value)) {
-                    $serviceName = $name;
-                    $serviceList = Arr::extend([$name], $value);
-                    return;
-                }
-                if (Arr::ofString($value)) {
-                    $serviceName = $name;
-                    $serviceList = Arr::extend([$name], ...array_values($value));
-                    return;
-                }
+            $value = $service[$name];
+            if (is_string($value)) {
+                $serviceName = $name;
+                $serviceList = Arr::extend([$name], $value);
+                return;
             }
+            $serviceName = $name;
+            $serviceList = Arr::extend([$name], ...array_values($value));
+            return;
         }
 
         // @codeCoverageIgnoreStart

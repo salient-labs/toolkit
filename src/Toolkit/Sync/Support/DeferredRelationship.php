@@ -42,14 +42,15 @@ final class DeferredRelationship implements DeferredRelationshipInterface
     private ?array $Resolved = null;
 
     /**
-     * Creates a new DeferredRelationship object
+     * @template TReplace of TEntity[]|static|null
      *
      * @param class-string<TEntity> $entity
      * @param class-string<SyncEntityInterface> $forEntity
      * @param int|string $forEntityId
      * @param array<string,mixed>|null $filter
-     * @param TEntity[]|static|null $replace
+     * @param TReplace $replace
      * @param (Closure(TEntity[]): void)|null $callback
+     * @param-out ($callback is null ? TEntity[]|static : TReplace) $replace
      */
     private function __construct(
         SyncProviderInterface $provider,

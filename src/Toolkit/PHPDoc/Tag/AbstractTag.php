@@ -203,10 +203,12 @@ abstract class AbstractTag implements Immutable, Stringable
     final protected function filterType(?string $type, array $aliases = []): ?string
     {
         if ($type === null) {
+            // @phpstan-ignore return.type
             return null;
         }
 
         try {
+            // @phpstan-ignore return.type
             return PHPDocUtil::normaliseType($type, $aliases, true);
         } catch (InvalidArgumentException $ex) {
             $this->throw('%s', $ex->getMessage());

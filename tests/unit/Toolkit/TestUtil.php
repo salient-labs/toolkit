@@ -16,6 +16,8 @@ final class TestUtil extends AbstractUtility
      * Read an HTTP message from a stream and write it to STDOUT
      *
      * @param resource $stream
+     * @param-out HttpHeaders $headers
+     * @param-out string $body
      */
     public static function dumpHttpMessage(
         $stream,

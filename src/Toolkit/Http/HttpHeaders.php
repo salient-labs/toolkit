@@ -549,6 +549,7 @@ REGEX;
 
         foreach ($index as $nextLower => $headerIndex) {
             $nextValue = null;
+            // @phpstan-ignore notIdentical.alwaysTrue
             if ($mode & CollectionInterface::CALLBACK_USE_BOTH !== CollectionInterface::CALLBACK_USE_KEY) {
                 foreach ($headerIndex as $i) {
                     $nextValue[] = Arr::first($this->Headers[$i]);

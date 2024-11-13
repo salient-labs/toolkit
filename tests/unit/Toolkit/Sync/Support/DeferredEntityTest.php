@@ -27,26 +27,26 @@ final class DeferredEntityTest extends SyncTestCase
         $post = $postProvider->get(1);
         $this->assertInstanceOf(DeferredEntity::class, $post->User);
         $this->assertSame('Leanne Graham', $post->User->Name);
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(User::class, $post->User);
 
         // Same with __isset(), __set(), __unset()
         $post = $postProvider->get(11);
         $this->assertInstanceOf(DeferredEntity::class, $post->User);
         $this->assertTrue(isset($post->User->Email));
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(User::class, $post->User);
 
         $post = $postProvider->get(21);
         $this->assertInstanceOf(DeferredEntity::class, $post->User);
         $post->User->Phone = null;
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(User::class, $post->User);
 
         $post = $postProvider->get(31);
         $this->assertInstanceOf(DeferredEntity::class, $post->User);
         unset($post->User->Address);
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(User::class, $post->User);
     }
 
@@ -82,7 +82,7 @@ final class DeferredEntityTest extends SyncTestCase
 
         $userName = $post->User->Name;
         $this->assertSame('Leanne Graham', $userName);
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(User::class, $post->User);
     }
 

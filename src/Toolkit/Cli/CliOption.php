@@ -303,7 +303,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
     /**
      * @var mixed
-     * @phpstan-ignore-next-line
+     * @phpstan-ignore property.onlyWritten
      */
     private $BindTo;
 
@@ -311,6 +311,8 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
     /**
      * @internal
+     *
+     * @template TValue
      *
      * @param string|null $name The name of the option (ignored if not
      * positional; must start with a letter, number or underscore, followed by
@@ -328,13 +330,13 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      * @param array<string|int|bool|float>|string|int|bool|float|null $defaultValue
      * @param string|null $envVariable The name of a value in the environment
      * that replaces the option's default value (ignored if positional)
-     * @param (callable(array<string|int|bool|float>|string|int|bool|float): mixed)|null $valueCallback
+     * @param (callable(array<string|int|bool|float>|string|int|bool|float): TValue)|null $valueCallback
      * @param int-mask-of<CliOptionVisibility::*> $visibility
      * @param bool $inSchema True if the option should be included when
      * generating a JSON Schema.
      * @param bool $hide True if the option's visibility should be
      * {@see CliOptionVisibility::NONE}.
-     * @param mixed $bindTo Bind the option's value to a variable.
+     * @param TValue $bindTo Bind the option's value to a variable.
      */
     public function __construct(
         ?string $name,
@@ -826,6 +828,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
             return [];
         }
         if ($this->Delimiter !== null && is_string($value)) {
+            // @phpstan-ignore return.type
             return explode($this->Delimiter, $value);
         }
         return [$value];
@@ -1151,7 +1154,7 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
     }
 
     /**
-     * @param string|int|bool|float $value
+     * @param mixed $value
      */
     private function checkValueType($value): bool
     {
@@ -1211,8 +1214,6 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
 
     /**
      * @param array<DateTimeImmutable|string|int|bool|float>|DateTimeImmutable|string|int|bool|float|null $value
-     *
-     * @phpstan-pure
      */
     private function maybeCheckUnique($value): void
     {

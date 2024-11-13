@@ -88,10 +88,10 @@ $facades = [
 ];
 
 $builders = [
-    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--api'],
+    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--no-declare=valueCallback', '--api'],
     Curler::class => [CurlerBuilder::class, '--forward=head,get,post,put,patch,delete,getP,postP,putP,patchP,deleteP,postR,putR,patchR,deleteR', '--api'],
-    DbSyncDefinition::class => DbSyncDefinitionBuilder::class,
-    HttpSyncDefinition::class => HttpSyncDefinitionBuilder::class,
+    DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--no-declare=overrides'],
+    HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--no-declare=callback,curlerCallback,overrides'],
     SyncError::class => SyncErrorBuilder::class,
     SyncSerializeRules::class => [SyncSerializeRulesBuilder::class, '--no-declare=remove,replace'],
 ];
@@ -146,11 +146,12 @@ foreach ($class->getReflectionConstants() as $constant) {
     Env::unset($value);
 }
 
-/** @disregard P1006 */
+/** @var string[] */
+$args = $_SERVER['argv'];
 $args = [
     '--collapse',
     '--force',
-    ...array_slice($_SERVER['argv'], 1),
+    ...array_slice($args, 1),
 ];
 
 $online = array_search('--online', $args);
@@ -183,15 +184,13 @@ $generated = [];
 foreach ($facades as $facade => $class) {
     $facadeArgs = [];
     $aliases = [];
-    if (is_array($class)) {
-        $facadeArgs = $class;
-        $class = array_shift($facadeArgs);
-        $first = reset($facadeArgs);
-        if (is_array($first)) {
-            $aliases = $first;
-            array_shift($facadeArgs);
-        }
+    // if (is_array($class)) {
+    $facadeArgs = $class;
+    $class = array_shift($facadeArgs);
+    if (is_array($facadeArgs[0])) {
+        $aliases = array_shift($facadeArgs);
     }
+    // }
     $status |= $generateFacade(...[...$args, ...$facadeArgs, $class, ...$aliases, $facade]);
     generated($generateFacade);
 }
@@ -320,7 +319,7 @@ $attributes = Regex::grep(
     Arr::trim(File::getLines($file)),
     \PREG_GREP_INVERT
 );
-// @phpstan-ignore-next-line
+// @phpstan-ignore foreach.emptyArray
 foreach ($generated as $generated) {
     $attributes[] = sprintf('%s linguist-generated', $generated);
 }

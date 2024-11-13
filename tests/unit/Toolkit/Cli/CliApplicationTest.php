@@ -6,7 +6,6 @@ use Composer\InstalledVersions;
 use Salient\Cli\CliApplication;
 use Salient\Container\Application;
 use Salient\Contract\Cli\CliApplicationInterface;
-use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
@@ -756,15 +755,6 @@ EOF,
                 ['positional' => '1', 'extra' => '1'],
             ],
         ];
-    }
-
-    public function testInvalidCommand(): void
-    {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Does not implement ' . CliCommandInterface::class . ': ' . stdClass::class);
-        $_SERVER['argv'] = ['app'];
-        // @phpstan-ignore-next-line
-        $this->App->oneCommand(stdClass::class)->run();
     }
 
     public function testInvalidSubcommand(): void

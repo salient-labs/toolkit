@@ -36,12 +36,13 @@ final class DeferredEntity implements DeferredEntityInterface
     private ?SyncEntityInterface $Resolved = null;
 
     /**
-     * Creates a new DeferredEntity object
+     * @template TReplace of TEntity|static|null
      *
      * @param class-string<TEntity> $entity
      * @param int|string $entityId
-     * @param TEntity|static|null $replace
+     * @param TReplace $replace
      * @param (Closure(TEntity): void)|null $callback
+     * @param-out ($callback is null ? TEntity|static : TReplace) $replace
      */
     private function __construct(
         SyncProviderInterface $provider,
@@ -195,14 +196,15 @@ final class DeferredEntity implements DeferredEntityInterface
         }
 
         $list = [];
-        $i = 0;
+        $i = -1;
         foreach ($entityIds as $entityId) {
+            $i++;
             new self(
                 $provider,
                 $context,
                 $entity,
                 $entityId,
-                $list[$i++],
+                $list[$i],
             );
         }
         $replace = $list;

@@ -46,7 +46,7 @@
                     ],
                     "type": null,
                     "value": "1",
-                    "line": 23
+                    "line": 21
                 },
                 "MY_FLOAT": {
                     "summary": null,
@@ -69,7 +69,7 @@
                     ],
                     "type": "float",
                     "value": "1.0",
-                    "line": 25
+                    "line": 23
                 },
                 "MY_LONG_STRING": {
                     "summary": null,
@@ -92,7 +92,7 @@
                     ],
                     "type": null,
                     "value": "'string_with_more_than_20_characters'",
-                    "line": 26
+                    "line": 24
                 },
                 "MY_LONGER_ARRAY": {
                     "summary": null,
@@ -115,7 +115,7 @@
                     ],
                     "type": null,
                     "value": "[\n    'Stringable' => 0,\n    'JsonSerializable' => 1,\n]",
-                    "line": 28
+                    "line": 26
                 },
                 "MY_SHORT_STRING": {
                     "summary": null,
@@ -274,7 +274,7 @@
                     ],
                     "type": null,
                     "defaultValue": null,
-                    "line": 33
+                    "line": 31
                 },
                 "MyMagicInterfaceProperty": {
                     "summary": null,
@@ -374,7 +374,7 @@
                         ]
                     },
                     "returnType": "void",
-                    "line": 38,
+                    "line": 36,
                     "lines": 4
                 },
                 "MyOverriddenMethod": {
@@ -403,7 +403,7 @@
                     ],
                     "parameters": {},
                     "returnType": "int",
-                    "line": 43,
+                    "line": 41,
                     "lines": 4
                 },
                 "MyMagicInterfaceMethod": {
@@ -506,7 +506,7 @@
                 }
             },
             "file": "./MyBaseClass.php",
-            "line": 21,
+            "line": 19,
             "lines": 27
         },
         "MyClass": {

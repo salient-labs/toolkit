@@ -47,7 +47,7 @@ use LogicException;
  * or an `array` with up to 3 values:
  *
  * 1. the path or key to act upon (`string`; required; must be the first value)
- * 2. a new key for the value (`int|string`; optional)
+ * 2. a new key for the value (`string`; optional)
  * 3. a closure to return a new value for the key (`Closure($value, $store,
  *    $rules): mixed`; optional)
  *
@@ -109,9 +109,9 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     private array $Remove;
     /** @var array<array<array<array{string,...}|string>|array{string,...}|string>> */
     private array $Replace;
-    /** @var array<self::TYPE_*,array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>> */
+    /** @var array<self::TYPE_*,array<0|string,array<array{class-string,string,string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>> */
     private array $FlattenCache;
-    /** @var array{0:array<string,array<string,string>>,1:array<string,array<string,array{int|string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>>} */
+    /** @var array{0:array<string,array<string,string>>,1:array<string,array<string,array{string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>>} */
     private array $CompileCache;
     /** @var array<string,array<class-string,true>> */
     private array $EntityPathIndex;
@@ -130,8 +130,8 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
      * @param bool|null $recurseRules Apply path-based rules to nested instances of the entity? (default: true)
      * @param bool|null $forSyncStore Are values being serialized for an entity store? (default: false)
      * @param bool|null $includeCanonicalId Serialize canonical identifiers of sync entities? (default: false)
-     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string> $remove Values to remove, e.g. `[OrgUnit::class => ['users']]` to remove `users` from `OrgUnit` objects
-     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|int|string|null>)|string> $replace Values to replace, e.g. `[User::class => [['org_unit', 'org_unit_id', fn($ou) => $ou->Id]]]` to replace `"org_unit" => $entity` with `"org_unit_id" => $entity->Id` in `User` objects
+     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string> $remove Values to remove, e.g. `[OrgUnit::class => ['users']]` to remove `users` from `OrgUnit` objects
+     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string> $replace Values to replace, e.g. `[User::class => [['org_unit', 'org_unit_id', fn($ou) => $ou->Id]]]` to replace `"org_unit" => $entity` with `"org_unit_id" => $entity->Id` in `User` objects
      * @param SyncSerializeRules<TEntity>|null $inherit Inherit rules from another instance
      */
     public function __construct(
@@ -178,14 +178,10 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     }
 
     /**
-     * @template T of TEntity
-     *
-     * @param static<T> $rules
-     * @return static<T>
+     * @inheritDoc
      */
     public function merge(SerializeRulesInterface $rules): SerializeRulesInterface
     {
-        /** @var static<T> */
         $clone = clone $this;
         $clone->applyRules($rules);
         return $clone;
@@ -250,7 +246,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     }
 
     /**
-     * @return array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
+     * @return array<0|string,array<array{class-string,string,string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
      */
     private function getRemove(): array
     {
@@ -258,7 +254,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     }
 
     /**
-     * @return array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
+     * @return array<0|string,array<array{class-string,string,string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
      */
     private function getReplace(): array
     {
@@ -269,7 +265,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
      * Merge and normalise rules and property names
      *
      * @param array<array<array{string,...}|string>|array{string,...}|string> ...$merge
-     * @return array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
+     * @return array<0|string,array<array{class-string,string,string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>>
      */
     private function flattenRules(array ...$merge): array
     {
@@ -306,9 +302,9 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
      * @param class-string|null $class
      * @param class-string|null $untilClass
      * @param string[] $path
-     * @param array<0|string,array<array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>> $rules
+     * @param array<0|string,array<array{class-string,string,string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}>> $rules
      * @param self::TYPE_* $ruleType
-     * @return ($ruleType is 0 ? array<string,string> : array<string,array{int|string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>)
+     * @return ($ruleType is 0 ? array<string,string> : array<string,array{string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>)
      */
     private function compileRules(
         ?string $class,
@@ -431,7 +427,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @param array{string,...}|string $rule
      * @param class-string $entity
-     * @return array{class-string,string,int|string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}
+     * @return array{class-string,string,string|null,(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|null}
      */
     private function normaliseRule($rule, string $target, string $entity): array
     {
@@ -439,7 +435,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         if (!is_array($rule)) {
             return $normalised;
         }
-        /** @var array<Closure|int|string|null> */
+        /** @var array<Closure|string|null> */
         $rule = array_slice($rule, 1);
         foreach ($rule as $value) {
             if ($value === null) {
@@ -449,9 +445,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
                 $normalised[3] = $value;
                 continue;
             }
-            $normalised[2] = is_string($value)
-                ? $this->Introspector->maybeNormalise($value, NormaliserFlag::LAZY)
-                : $value;
+            $normalised[2] = $this->Introspector->maybeNormalise($value, NormaliserFlag::LAZY);
         }
         return $normalised;
     }

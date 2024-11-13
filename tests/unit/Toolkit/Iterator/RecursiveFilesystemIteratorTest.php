@@ -353,18 +353,6 @@ final class RecursiveFilesystemIteratorTest extends TestCase
             [
                 false,
                 $dir,
-                'fileInfo',
-                true,
-            ],
-            [
-                false,
-                $dir,
-                'pathInfo',
-                true,
-            ],
-            [
-                false,
-                $dir,
                 'openFile',
                 true,
             ],

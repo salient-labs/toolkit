@@ -325,9 +325,10 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                 }
                 $trimmed = rtrim($blockPrefix);
                 if ($lastPrefix !== null) {
+                    // @phpstan-ignore identical.alwaysTrue
                     if ($lastPrefix === $blockPrefix) {
                         File::writeAll($stream, $eol . $trimmed . $eol);
-                    } else {  // @phpstan-ignore else.unreachable
+                    } else {
                         File::writeAll($stream, $eol . $eol);
                     }
                     $lastPrefix = null;

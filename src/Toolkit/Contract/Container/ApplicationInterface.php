@@ -141,7 +141,7 @@ interface ApplicationInterface extends ContainerInterface
      * If the entity store is filesystem-backed, the application's data
      * directory is used.
      *
-     * @param mixed[]|null $arguments
+     * @param string[]|null $arguments
      * @return $this
      */
     public function startSync(?string $command = null, ?array $arguments = null);

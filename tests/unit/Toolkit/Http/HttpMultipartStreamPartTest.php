@@ -75,7 +75,7 @@ class HttpMultipartStreamPartTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($content) must be of type StreamInterface|resource|string|null, int given');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         new HttpMultipartStreamPart(123, 'file');
     }
 

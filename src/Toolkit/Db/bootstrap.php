@@ -3,5 +3,5 @@
 use Composer\InstalledVersions;
 
 if (InstalledVersions::isInstalled('adodb/adodb-php')) {
-    require InstalledVersions::getInstallPath('adodb/adodb-php') . '/adodb-exceptions.inc.php';
+    require_once InstalledVersions::getInstallPath('adodb/adodb-php') . '/adodb-exceptions.inc.php';
 }

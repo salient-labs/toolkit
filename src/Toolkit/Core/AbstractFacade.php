@@ -88,7 +88,7 @@ abstract class AbstractFacade implements FacadeInterface
     final public static function unloadAll(): void
     {
         foreach (array_keys(self::$Instances) as $class) {
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore identical.alwaysFalse
             if ($class === Event::class) {
                 continue;
             }
@@ -134,9 +134,7 @@ abstract class AbstractFacade implements FacadeInterface
     {
         $serviceName = self::getServiceName();
 
-        if ($instance !== null && (
-            !is_object($instance) || !is_a($instance, $serviceName)
-        )) {
+        if ($instance !== null && !is_a($instance, $serviceName)) {
             throw new LogicException(sprintf(
                 '%s does not inherit %s',
                 Get::type($instance),
@@ -153,17 +151,17 @@ abstract class AbstractFacade implements FacadeInterface
             : self::createInstance();
 
         $dispatcher =
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore booleanAnd.alwaysFalse
             $instance instanceof EventDispatcher
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore identical.alwaysFalse
             && static::class === Event::class
                 ? $instance
                 : Event::getInstance();
 
         if (
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore booleanAnd.alwaysFalse
             $instance instanceof ContainerInterface
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore identical.alwaysFalse
             && static::class === App::class
         ) {
             if (!$container) {
@@ -255,9 +253,10 @@ abstract class AbstractFacade implements FacadeInterface
 
     private static function doUnload(): void
     {
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore identical.alwaysFalse
         if (static::class === Event::class) {
             $loaded = array_keys(self::$Instances);
+            // @phpstan-ignore notIdentical.alwaysTrue
             if ($loaded && $loaded !== [Event::class]) {
                 throw new LogicException(sprintf(
                     '%s cannot be unloaded before other facades',
@@ -277,6 +276,7 @@ abstract class AbstractFacade implements FacadeInterface
             return;
         }
 
+        // @phpstan-ignore notIdentical.alwaysTrue
         if (static::class !== App::class) {
             $container = Container::hasGlobalContainer()
                 ? Container::getGlobalContainer()

@@ -15,8 +15,6 @@ use Stringable;
  * @method static void MyStaticMagicMethod() Description of MyBaseClass::MyStaticMagicMethod()
  *
  * @internal
- *
- * @phpstan-ignore phpDoc.parseError
  */
 abstract class MyBaseClass implements MyInterface, Stringable
 {

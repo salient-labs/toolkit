@@ -17,7 +17,7 @@ interface SyncSerializeRulesInterface extends SerializeRulesInterface
     /**
      * @inheritDoc
      *
-     * @return array<string,array{int|string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>
+     * @return array<string,array{string|null,(Closure(mixed $value, SyncStoreInterface|null $store=): mixed)|null}>
      */
     public function getReplaceableKeys(?string $class, ?string $baseClass, array $path): array;
 

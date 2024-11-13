@@ -9,19 +9,21 @@ $parameters = [
     'tmpDir' => sprintf('build/cache/phpstan/%d.%d', \PHP_MAJOR_VERSION, \PHP_MINOR_VERSION),
 ];
 
+$dir = __DIR__ . '/..';
+
 if (\PHP_VERSION_ID < 80000) {
     return [
         'includes' => $includes,
         'parameters' => [
             'excludePaths' => [
                 'analyseAndScan' => [
-                    'tests/fixtures/Toolkit/Reflection/callbacksWithDnfTypes.php',
-                    'tests/fixtures/Toolkit/Reflection/callbacksWithUnionsAndIntersections.php',
-                    'tests/fixtures/Toolkit/Reflection/MyBackedEnum.php',
-                    'tests/fixtures/Toolkit/Reflection/MyClassWithDnfTypes.php',
-                    'tests/fixtures/Toolkit/Reflection/MyClassWithUnionsAndIntersections.php',
-                    'tests/unit/Toolkit/Core/EventDispatcher/listenerWithDnfType.php',
-                    'tests/unit/Toolkit/Core/EventDispatcher/listenerWithIntersectionType.php',
+                    "$dir/tests/fixtures/Toolkit/Reflection/callbacksWithDnfTypes.php",
+                    "$dir/tests/fixtures/Toolkit/Reflection/callbacksWithUnionsAndIntersections.php",
+                    "$dir/tests/fixtures/Toolkit/Reflection/MyBackedEnum.php",
+                    "$dir/tests/fixtures/Toolkit/Reflection/MyClassWithDnfTypes.php",
+                    "$dir/tests/fixtures/Toolkit/Reflection/MyClassWithUnionsAndIntersections.php",
+                    "$dir/tests/unit/Toolkit/Core/EventDispatcher/listenerWithDnfType.php",
+                    "$dir/tests/unit/Toolkit/Core/EventDispatcher/listenerWithIntersectionType.php",
                 ],
             ],
             'ignoreErrors' => [
@@ -53,9 +55,14 @@ return [
                 'message' => '#^Parameter \#1 \$handle of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects CurlHandle, CurlHandle\|resource(\|null)? given\.$#',
             ],
             [
+                'message' => '#^Method Salient\\\\Testing\\\\Core\\\\MockPhpStream\:\:stream_read\(\) never returns false so it can be removed from the return type\.$#',
+                'count' => 1,
+                'path' => "$dir/src/Toolkit/Testing/Core/MockPhpStream.php",
+            ],
+            [
                 'message' => '#^Strict comparison using \=\=\= between array.* and false will always evaluate to false\.$#',
                 'count' => 1,
-                'path' => '../src/Toolkit/Utility/Arr.php',
+                'path' => "$dir/src/Toolkit/Utility/Arr.php",
             ],
         ],
     ] + $parameters,

@@ -1124,7 +1124,7 @@ final class UriTest extends TestCase
         $component = max(self::COMPONENT_MAP) + 1;
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid component: $component");
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         Uri::parse('//', $component);
     }
 

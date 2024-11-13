@@ -189,6 +189,7 @@ class PhpToken implements Stringable
         if (is_string($kind)) {
             return $this->text === $kind;
         }
+        // @phpstan-ignore function.alreadyNarrowedType
         if (!is_array($kind)) {
             throw new TypeError(sprintf('Argument #1 ($kind) must be of type string|int|array, %s given', gettype($kind)));
         }
@@ -205,7 +206,7 @@ class PhpToken implements Stringable
                 }
                 continue;
             }
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore deadCode.unreachable
             throw new TypeError(sprintf('Argument #1 ($kind) must only have elements of type string|int, %s given', gettype($_kind)));
         }
         return false;

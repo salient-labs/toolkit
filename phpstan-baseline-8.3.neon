@@ -106,16 +106,6 @@ parameters:
 			path: src/Toolkit/Http/HttpStream.php
 
 		-
-			message: "#^Method Salient\\\\Iterator\\\\RecursiveFilesystemIterator\\:\\:getIterator\\(\\) should return Traversable\\<string, SplFileInfo\\> but returns CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, CallbackFilterIterator\\<mixed, mixed, RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|CallbackFilterIterator\\<mixed, mixed, FilesystemIterator\\>\\|CallbackFilterIterator\\<mixed, mixed, RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\>\\|FilesystemIterator\\|RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<mixed, mixed, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
-
-		-
-			message: "#^Parameter \\#1 \\$string1 of function strcasecmp expects string, int\\|string given\\.$#"
-			count: 2
-			path: src/Toolkit/Iterator/RecursiveFilesystemIterator.php
-
-		-
 			message: "#^Cannot call method getFileName\\(\\) on ReflectionClass\\|null\\.$#"
 			count: 1
 			path: src/Toolkit/Sli/Command/Generate/GenerateBuilder.php
@@ -159,21 +149,6 @@ parameters:
 			message: "#^Parameter \\#2 \\$filename of method Salient\\\\Sli\\\\Command\\\\Generate\\\\AbstractGenerateCommand\\:\\:getTypeAlias\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 1
 			path: src/Toolkit/Sli/Command/Generate/GenerateTests.php
-
-		-
-			message: "#^Offset 3 does not exist on array\\{0\\: TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface, 1\\: string, 2\\: mixed, 3\\?\\: float\\}\\.$#"
-			count: 2
-			path: src/Toolkit/Sync/Support/SyncEntityFuzzyResolver.php
-
-		-
-			message: "#^Property Salient\\\\Sync\\\\Support\\\\SyncEntityFuzzyResolver\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\:\\:\\$Algorithm \\(int\\<0, 63\\>\\) does not accept int\\<0, 127\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncEntityFuzzyResolver.php
-
-		-
-			message: "#^Property Salient\\\\Sync\\\\Support\\\\SyncEntityFuzzyResolver\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\:\\:\\$Cache \\(array\\<string, array\\{\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null, float\\|null\\}\\>\\) does not accept non\\-empty\\-array\\<string, array\\{\\(TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\)\\|null, mixed\\}\\>\\.$#"
-			count: 1
-			path: src/Toolkit/Sync/Support/SyncEntityFuzzyResolver.php
 
 		-
 			message: "#^Argument of an invalid type iterable\\<TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\>\\|TEntity of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface passed to yield from, only iterables are supported\\.$#"
@@ -271,6 +246,41 @@ parameters:
 			path: tests/fixtures/Toolkit/Core/AbstractFacade/MyHasFacadeClass.php
 
 		-
+			message: "#^Cannot access offset 1 on mixed\\.$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Core/Process/cat.php
+
+		-
+			message: "#^Parameter \\#1 \\$array of function array_slice expects array, mixed given\\.$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Core/Process/cat.php
+
+		-
+			message: "#^Parameter \\#4 \\.\\.\\.\\$values of function fprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Core/Process/cat.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Http\\\\OAuth2\\\\OAuth2Client\\\\OAuth2TestClient\\:\\:getFlow\\(\\) never returns 1 so it can be removed from the return type\\.$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Http/OAuth2/OAuth2Client/OAuth2TestClient.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Http\\\\OAuth2\\\\OAuth2Client\\\\OAuth2TestClient\\:\\:getJsonWebKeySetUrl\\(\\) never returns null so it can be removed from the return type\\.$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Http/OAuth2/OAuth2Client/OAuth2TestClient.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Http\\\\OAuth2\\\\OAuth2Client\\\\OAuth2TestClient\\:\\:getListener\\(\\) never returns null so it can be removed from the return type\\.$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Http/OAuth2/OAuth2Client/OAuth2TestClient.php
+
+		-
+			message: "#^PHPDoc tag @property has invalid value \\(\\$MyMagicProperty Description of MyBaseClass\\:\\:\\$MyMagicProperty\\)\\: Unexpected token \"\\$MyMagicProperty\", expected type at offset 46 on line 4$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Sli/Command/AnalyseClass/MyBaseClass.php
+
+		-
 			message: "#^Parameter \\#1 \\$data of static method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:provide\\(\\) expects array, mixed given\\.$#"
 			count: 1
 			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
@@ -281,9 +291,69 @@ parameters:
 			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
 
 		-
+			message: "#^Parameter \\#1 \\$entities of class Salient\\\\Curler\\\\CurlerPage constructor expects list\\<mixed\\>, array\\<array\\> given\\.$#"
+			count: 1
+			path: tests/fixtures/Toolkit/Sync/Provider/MockoonPager.php
+
+		-
 			message: "#^Cannot access property \\$Foo on mixed\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Cache/CacheStoreTest.php
+
+		-
+			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Salient\\\\\\\\Tests\\\\\\\\Cli\\\\\\\\Command\\\\\\\\TestOptions' and null will always evaluate to false\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Cli/CliApplicationTest.php
+
+		-
+			message: "#^PHPDoc tag @var with type Salient\\\\Console\\\\ConsoleWriter is not subtype of native type \\$this\\(Salient\\\\Tests\\\\Console\\\\ConsoleWriterTest\\)\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Console/ConsoleWriterTest.php
+
+		-
+			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertCount\\(\\) with 1 and array\\{\\} will always evaluate to false\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Core/AbstractFacadeTest.php
+
+		-
+			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Salient\\\\\\\\Tests\\\\\\\\Core\\\\\\\\AbstractFacade\\\\\\\\MyHasFacadeClass' and false will always evaluate to false\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Core/AbstractFacadeTest.php
+
+		-
+			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertSame\\(\\) with array\\{array\\{onClose\\: 'Salient\\\\\\\\Tests\\\\\\\\Core\\\\\\\\EventDispatcher\\\\\\\\NamedLoggableEvent'\\}\\} and array\\<array\\{string, string\\}\\|string\\> will always evaluate to false\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Core/EventDispatcher/EventDispatcherTest.php
+
+		-
+			message: "#^Binary operation \"\\*\" between mixed and 6 results in an error\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Core/PipelineTest.php
+
+		-
+			message: "#^Binary operation \"/\" between mixed and 23 results in an error\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Core/PipelineTest.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Core\\\\ProcessTest\\:\\:getCallback\\(\\) never assigns null to &\\$output so it can be removed from the by\\-ref type\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Core/ProcessTest.php
+
+		-
+			message: "#^Offset 1 might not exist on array\\<1\\|2, string\\>\\|null\\.$#"
+			count: 2
+			path: tests/unit/Toolkit/Core/ProcessTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$command of class Salient\\\\Core\\\\Process constructor expects list\\<string\\>, non\\-empty\\-array\\<string\\> given\\.$#"
+			count: 2
+			path: tests/unit/Toolkit/Core/ProcessTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of method Salient\\\\Http\\\\HttpHeaders\\:\\:filter\\(\\) contains unresolvable type\\.$#"
+			count: 2
+			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
 
 		-
 			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and array\\{'accept', array\\{'\\*/\\*'\\}\\} will always evaluate to false\\.$#"
@@ -291,9 +361,54 @@ parameters:
 			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
 
 		-
+			message: "#^Cannot call method getText\\(\\) on Salient\\\\Core\\\\Process\\|null\\.$#"
+			count: 2
+			path: tests/unit/Toolkit/Http/HttpServerTest.php
+
+		-
+			message: "#^Cannot call method wait\\(\\) on Salient\\\\Core\\\\Process\\|null\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Http/HttpServerTest.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Http\\\\HttpServerTest\\:\\:getServerWithClient\\(\\) never assigns null to &\\$client so it can be removed from the by\\-ref type\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Http/HttpServerTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$command of class Salient\\\\Core\\\\Process constructor expects list\\<string\\>, non\\-empty\\-array\\<int\\|string, string\\> given\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Http/HttpServerTest.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Iterator\\\\RecursiveCallbackIteratorTest\\:\\:getArrayWithNestedObjectsAndArrays\\(\\) never assigns null to &\\$a so it can be removed from the by\\-ref type\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Iterator\\\\RecursiveCallbackIteratorTest\\:\\:getArrayWithNestedObjectsAndArrays\\(\\) never assigns null to &\\$d1 so it can be removed from the by\\-ref type\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Iterator\\\\RecursiveCallbackIteratorTest\\:\\:getArrayWithNestedObjectsAndArrays\\(\\) never assigns null to &\\$d2 so it can be removed from the by\\-ref type\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
+			message: "#^Method Salient\\\\Tests\\\\Iterator\\\\RecursiveCallbackIteratorTest\\:\\:getArrayWithNestedObjectsAndArrays\\(\\) never assigns null to &\\$e so it can be removed from the by\\-ref type\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
 			message: "#^Cannot call method getDepth\\(\\) on RecursiveIteratorIterator\\<RecursiveCallbackFilterIterator\\<string, SplFileInfo, RecursiveDirectoryIterator\\>\\|RecursiveDirectoryIterator\\>\\|null\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Iterator/RecursiveFilesystemIteratorTest.php
+
+		-
+			message: "#^Parameter &\\$actualCode @param\\-out type of method Salient\\\\Tests\\\\Sli\\\\SliTestCase\\:\\:serializeTokens\\(\\) expects array\\<array\\{int, string, string, array\\{int\\|null, int\\|null\\}, array\\{int\\|null, int\\|null\\}, int\\|null, array\\{int\\|null, int\\|null\\}\\}\\>, non\\-empty\\-array\\<int\\|string, array\\{int, int\\|non\\-falsy\\-string, string, array\\{int\\|null, int\\|null\\}, array\\{int\\|null, int\\|null\\}, int\\|null, array\\{int\\|null, int\\|null\\}\\}\\> given\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Sli/SliTestCase.php
 
 		-
 			message: "#^Parameter \\#1 \\$data of static method Salient\\\\Sync\\\\AbstractSyncEntity\\:\\:provide\\(\\) expects array, mixed given\\.$#"
@@ -316,9 +431,19 @@ parameters:
 			path: tests/unit/Toolkit/Sync/Support/DeferredRelationshipTest.php
 
 		-
+			message: "#^PHPDoc tag @var with type Salient\\\\Sync\\\\Support\\\\SyncContext is not subtype of native type \\$this\\(Salient\\\\Tests\\\\Sync\\\\Support\\\\SyncContextTest\\)\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Sync/Support/SyncContextTest.php
+
+		-
 			message: "#^Cannot access property \\$Id on Salient\\\\Sync\\\\Support\\\\DeferredEntity\\<Salient\\\\Tests\\\\Sync\\\\Entity\\\\User\\>\\|Salient\\\\Tests\\\\Sync\\\\Entity\\\\User\\|null\\.$#"
 			count: 1
 			path: tests/unit/Toolkit/Sync/Support/SyncEntityProviderTest.php
+
+		-
+			message: "#^PHPDoc tag @var with type Salient\\\\Sync\\\\SyncSerializeRules\\<T of Salient\\\\Contract\\\\Sync\\\\SyncEntityInterface\\> is not subtype of native type \\$this\\(Salient\\\\Tests\\\\Sync\\\\SyncSerializeRulesTest\\)\\.$#"
+			count: 1
+			path: tests/unit/Toolkit/Sync/SyncSerializeRulesTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$exception of method PHPUnit\\\\Framework\\\\TestCase\\:\\:expectException\\(\\) expects class\\-string\\<Throwable\\>, string given\\.$#"

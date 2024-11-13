@@ -34,7 +34,7 @@ final class HttpStreamTest extends TestCase
         $this->expectExceptionMessage(
             'Argument #1 ($stream) must be of type resource (stream), string given'
         );
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         new HttpStream(__METHOD__);
     }
 

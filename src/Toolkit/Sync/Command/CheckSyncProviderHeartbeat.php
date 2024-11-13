@@ -74,7 +74,8 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
         yield from $this->getGlobalOptionList();
     }
 
-    public function getLongDescription(): ?string
+    // @phpstan-ignore return.unusedType
+    protected function getLongDescription(): ?string
     {
         if ($this->Providers) {
             $description[] = <<<EOF

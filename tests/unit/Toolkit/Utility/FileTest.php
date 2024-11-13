@@ -557,7 +557,7 @@ final class FileTest extends TestCase
                 }
             }
         }
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         $this->assertSame($expected, File::getContents($value));
     }
 

@@ -307,7 +307,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $this->InputClass = new ReflectionClass($fqcn);
         $this->InputClassName = $this->InputClass->getName();
         $this->InputClassPHPDoc = PHPDoc::forClass($this->InputClass);
-        $this->InputClassTemplates = $this->InputClassPHPDoc->getTemplates(false);
+        $this->InputClassTemplates = $this->InputClassPHPDoc->getTemplates();
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
             : '';
@@ -392,19 +392,28 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         string $type,
         array $templates,
         ?TemplateTag &$template = null,
-        array &$inputClassTemplates = []
+        array &$inputClassTemplates = [],
+        bool $resolveMemberTemplates = true
     ): string {
         $seen = [];
         while ($tag = $templates[$type] ?? null) {
             $template = $tag;
             // Don't resolve templates that will appear in the output
-            if (
-                $tag->getClass() === $this->InputClassName
-                && $tag->getMember() === null
-                && ($_template = $this->InputClassTemplates[$type] ?? null)
-            ) {
-                $inputClassTemplates[$type] = $_template;
-                return $type;
+            if ($tag->getClass() === $this->InputClassName) {
+                $member = $tag->getMember();
+                if (
+                    $member === null
+                    && ($_template = $this->InputClassTemplates[$type] ?? null)
+                ) {
+                    $inputClassTemplates[$type] = $_template;
+                    return $type;
+                } elseif (
+                    $member !== null
+                    && !$resolveMemberTemplates
+                ) {
+                    $inputClassTemplates[$type] = $tag;
+                    return $type;
+                }
             }
             // Prevent recursion
             $tagType = $tag->getType() ?? 'mixed';
@@ -431,7 +440,8 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         array $templates,
         string $namespace,
         ?string $filename = null,
-        array &$inputClassTemplates = []
+        array &$inputClassTemplates = [],
+        bool $resolveMemberTemplates = true
     ): string {
         $subject = $type instanceof AbstractTag
             ? $type->getType() ?? ''
@@ -445,10 +455,17 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 $namespace,
                 $filename,
                 &$inputClassTemplates,
+                $resolveMemberTemplates,
                 $subject
             ) {
-                $t = $this->resolveTemplates($matches[0][0], $templates, $template, $inputClassTemplates);
-                $type = $template ?: $type;
+                $t = $this->resolveTemplates(
+                    $matches[0][0],
+                    $templates,
+                    $template,
+                    $inputClassTemplates,
+                    $resolveMemberTemplates,
+                );
+                $type = $template ?? $type;
                 if ($type instanceof AbstractTag && ($class = $type->getClass()) !== null) {
                     $class = new ReflectionClass($class);
                     $namespace = $class->getNamespaceName();
@@ -461,9 +478,13 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 if ($t !== $matches[0][0]) {
                     return $this->getPHPDocTypeAlias($t, $templates, $namespace, $filename);
                 }
-                // Leave reserved words and PHPDoc types (e.g. `class-string`)
-                // alone
-                if (Test::isBuiltinType($t) || strpos($t, '-') !== false) {
+                // Leave reserved words, PHPDoc types (e.g. `class-string`) and
+                // template names alone
+                if (
+                    Test::isBuiltinType($t)
+                    || strpos($t, '-') !== false
+                    || isset($inputClassTemplates[$t])
+                ) {
                     return $t;
                 }
                 // Leave `min` and `max` (lowercase) alone if they appear
@@ -1064,13 +1085,15 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected function indent($lines, int $levels = 1)
     {
         if (is_array($lines)) {
-            foreach ($lines as &$line) {
-                $line = $this->indent($line, $levels);
+            foreach ($lines as $line) {
+                $indented[] = $this->indent($line, $levels);
             }
-            return $lines;
+            // @phpstan-ignore return.type
+            return $indented ?? [];
         }
 
         $indent = str_repeat(self::TAB, $levels);
+        // @phpstan-ignore return.type
         return $indent . str_replace(\PHP_EOL, \PHP_EOL . $indent, $lines);
     }
 

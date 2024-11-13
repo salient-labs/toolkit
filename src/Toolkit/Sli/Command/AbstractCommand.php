@@ -22,6 +22,8 @@ abstract class AbstractCommand extends CliCommand
      * Normalise a user-supplied class name, optionally assigning its base name
      * and/or namespace to variables passed by reference
      *
+     * @param-out string $class
+     * @param-out string $namespace
      * @return class-string|''
      */
     protected function getFqcnOptionValue(
@@ -35,14 +37,14 @@ abstract class AbstractCommand extends CliCommand
             return '';
         }
 
-        $namespace = null;
+        $ns = null;
         if ($namespaceEnvVar !== null) {
-            $namespace = Env::get($namespaceEnvVar, null);
+            $ns = Env::get($namespaceEnvVar, null);
         }
-        $namespace ??= Env::get(EnvVar::NS_DEFAULT, null);
+        $ns ??= Env::get(EnvVar::NS_DEFAULT, null);
 
-        if ($namespace !== null && strpos($value, '\\') === false) {
-            $fqcn = trim($namespace, '\\') . "\\$value";
+        if ($ns !== null && strpos($value, '\\') === false) {
+            $fqcn = trim($ns, '\\') . "\\$value";
         } else {
             $fqcn = ltrim($value, '\\');
         }
@@ -65,6 +67,8 @@ abstract class AbstractCommand extends CliCommand
      * Normalise a mandatory user-supplied class name, optionally assigning its
      * base name and/or namespace to variables passed by reference
      *
+     * @param-out string $class
+     * @param-out string $namespace
      * @return class-string
      */
     protected function requireFqcnOptionValue(

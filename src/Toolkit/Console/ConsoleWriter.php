@@ -42,11 +42,11 @@ use Throwable;
  * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
  * {@see Console::getInstance()}.
  *
- * @implements FacadeAwareInterface<FacadeInterface<self>>
+ * @implements FacadeAwareInterface<FacadeInterface<ConsoleWriterInterface>>
  */
 final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterface, Unloadable
 {
-    /** @use HasFacade<FacadeInterface<self>> */
+    /** @use HasFacade<FacadeInterface<ConsoleWriterInterface>> */
     use HasFacade;
 
     private ConsoleWriterState $State;
@@ -421,9 +421,11 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
         bool $withStandardMessageType = false
     ) {
         if ($withResourceUsage) {
+            /** @var float */
+            $requestTime = $_SERVER['REQUEST_TIME_FLOAT'];
             $usage = sprintf(
                 'in %.3fs (%s memory used)',
-                microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
+                microtime(true) - $requestTime,
                 Format::bytes(memory_get_peak_usage()),
             );
         }
@@ -913,9 +915,11 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
     }
 
     /**
+     * @template T of Target
+     *
      * @param Level::* $level
      * @param MessageType::* $type
-     * @param array<Level::*,Target[]> $targets
+     * @param array<Level::*,T[]> $targets
      * @return $this
      */
     private function _write(

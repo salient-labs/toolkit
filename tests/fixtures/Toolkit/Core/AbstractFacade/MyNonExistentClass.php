@@ -6,7 +6,7 @@ use Salient\Contract\Core\Unloadable;
 
 // The declaration is only to satisfy static analysis
 //
-// @phpstan-ignore-next-line
+// @phpstan-ignore if.alwaysFalse
 if (false) {
     class MyNonExistentClass implements MyServiceInterface, Unloadable
     {

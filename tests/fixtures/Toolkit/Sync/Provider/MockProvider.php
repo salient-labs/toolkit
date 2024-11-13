@@ -3,6 +3,7 @@
 namespace Salient\Tests\Sync\Provider;
 
 use Salient\Contract\Container\SingletonInterface;
+use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Core\DateFormatter;
 use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;

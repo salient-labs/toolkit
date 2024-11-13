@@ -1,2 +1,4 @@
 <?php
-echo $_SERVER['argv'][1] . \PHP_EOL;
+/** @var string[] */
+$args = $_SERVER['argv'];
+echo $args[1] . \PHP_EOL;

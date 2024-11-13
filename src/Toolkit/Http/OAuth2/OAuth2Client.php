@@ -602,7 +602,7 @@ abstract class OAuth2Client
     {
         return (function () {
             /** @var AbstractProvider $this */
-            // @phpstan-ignore method.protected
+            // @phpstan-ignore varTag.nativeType, method.protected
             return $this->getDefaultScopes();
         })->bindTo($this->Provider, $this->Provider)();
     }
@@ -614,7 +614,7 @@ abstract class OAuth2Client
     {
         return (function () {
             /** @var AbstractProvider $this */
-            // @phpstan-ignore method.protected
+            // @phpstan-ignore varTag.nativeType, method.protected
             return $this->getScopeSeparator();
         })->bindTo($this->Provider, $this->Provider)();
     }

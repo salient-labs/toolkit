@@ -89,6 +89,9 @@ final class QueryPager implements CurlerPagerInterface
                 throw new LogicException('No page key and no integer value at query offset 0');
             }
             $query[$key] ??= 1;
+            if (!Test::isInteger($query[$key])) {
+                throw new LogicException('Value at page key is not an integer');
+            }
             $query[$key]++;
             $nextRequest = $curler->replaceQuery($request, $query);
         }

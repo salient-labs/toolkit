@@ -545,6 +545,9 @@ abstract class CliCommand implements CliCommandInterface
         return $synopsis;
     }
 
+    /**
+     * @param-out string $collapsed
+     */
     private function getOptionsSynopsis(CliHelpStyleInterface $style, ?string &$collapsed = null): string
     {
         $b = $style->getBold();
@@ -1037,6 +1040,7 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * @param string[] $args
      * @param array<string,array<string|int|bool|float>|string|int|bool|float|null> $argValues
+     * @param-out int $nextArgumentIndex
      * @return array<string,array<string|int|bool|float>|string|int|bool|float|null>
      */
     private function mergeArguments(
@@ -1142,6 +1146,7 @@ abstract class CliCommand implements CliCommandInterface
                         $value = [''];
                     } else {
                         $merged[$key] = [];
+                        // @phpstan-ignore parameterByRef.type
                         $argValues[$key] = [];
                         continue;
                     }

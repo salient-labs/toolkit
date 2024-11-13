@@ -30,6 +30,7 @@ use Salient\Utility\File;
 use Salient\Utility\Format;
 use Salient\Utility\Get;
 use Salient\Utility\Inflect;
+use Salient\Utility\Json;
 use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Sys;
@@ -538,15 +539,23 @@ class Application extends Container implements ApplicationInterface
             ));
         }
 
-        /** @disregard P1006 */
+        if ($arguments === null && $command === null) {
+            if (\PHP_SAPI === 'cli') {
+                /** @var string[] */
+                $args = $_SERVER['argv'];
+                $arguments = array_slice($args, 1);
+            } else {
+                $arguments = [Json::stringify([
+                    '_GET' => $_GET,
+                    '_POST' => $_POST,
+                ])];
+            }
+        }
+
         Sync::load(new SyncStore(
             $syncDb,
             $command ?? Sys::getProgramName($this->BasePath),
-            $arguments ?? ($command === null
-                ? (\PHP_SAPI === 'cli'
-                    ? array_slice($_SERVER['argv'], 1)
-                    : ['_GET' => $_GET, '_POST' => $_POST])
-                : [])
+            $arguments ?? [],
         ));
 
         return $this;
@@ -670,9 +679,11 @@ class Application extends Container implements ApplicationInterface
      */
     private static function doReportResourceUsage(int $level): void
     {
+        /** @var float */
+        $requestTime = $_SERVER['REQUEST_TIME_FLOAT'];
         [$peakMemory, $elapsedTime, $userTime, $systemTime] = [
             memory_get_peak_usage(),
-            microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
+            microtime(true) - $requestTime,
             ...Sys::getCpuUsage(),
         ];
 

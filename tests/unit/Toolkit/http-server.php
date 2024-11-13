@@ -16,11 +16,13 @@ require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
 // Usage: php http-server.php [<host>[:<port>] [<timeout>]] [-- [<filename>...]]
 
-$key = array_search('--', $_SERVER['argv'], true);
+/** @var string[] */
+$_args = $_SERVER['argv'];
+$key = array_search('--', $_args, true);
 /** @var int|false $key */
 $args = $key === false
-    ? array_slice($_SERVER['argv'], 1)
-    : array_slice($_SERVER['argv'], 1, $key - 1);
+    ? array_slice($_args, 1)
+    : array_slice($_args, 1, $key - 1);
 $host = $args[0] ?? 'localhost:3007';
 $timeout = (int) ($args[1] ?? -1);
 
@@ -28,9 +30,9 @@ if ($key === false) {
     $responses[] = Str::setEol(File::getContents(\STDIN), "\r\n");
 } else {
     $responses = null;
-    $count = count($_SERVER['argv']);
+    $count = count($_args);
     for ($i = $key + 1; $i < $count; $i++) {
-        $responses[] = Str::setEol(File::getContents($_SERVER['argv'][$i]), "\r\n");
+        $responses[] = Str::setEol(File::getContents($_args[$i]), "\r\n");
     }
 }
 
@@ -83,6 +85,10 @@ do {
     );
 
     TestUtil::dumpHttpMessage($stream, true, $startLine);
+
+    if ($startLine === null) {
+        throw new RuntimeException('Invalid or empty request');
+    }
 
     $response = $responses[$i]
         ?? (string) (new HttpResponse())

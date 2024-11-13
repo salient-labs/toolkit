@@ -26,14 +26,13 @@ trait HasBuilder
      */
     protected static function getBuilder(): string
     {
-        /** @var class-string<TBuilder> */
-        return static::class . 'Builder';
+        return self::class . 'Builder';
     }
 
     /**
      * @inheritDoc
      */
-    final public static function build(?ContainerInterface $container = null): BuilderInterface
+    public static function build(?ContainerInterface $container = null): BuilderInterface
     {
         return static::getBuilder()::create($container);
     }
@@ -41,7 +40,7 @@ trait HasBuilder
     /**
      * @inheritDoc
      */
-    final public static function resolve($object)
+    public static function resolve($object)
     {
         /** @var static */
         return static::getBuilder()::resolve($object);

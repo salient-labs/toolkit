@@ -75,31 +75,30 @@ class Graph implements GraphInterface
     #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
-        if (!$this->offsetExists($offset)) {
-            if (
-                ($this->IsObject && !$this->AddMissingProperties)
-                || (!$this->IsObject && !$this->AddMissingKeys)
-            ) {
-                throw new OutOfRangeException(sprintf('Offset not found: %s', $offset));
-            }
-            if ($this->IsObject) {
+        if ($this->IsObject) {
+            if (!property_exists($this->Object, (string) $offset)) {
+                if (!$this->AddMissingProperties) {
+                    throw new OutOfRangeException(sprintf('Property not found: %s', $offset));
+                }
                 $this->Object->$offset = [];
-            } else {
+            }
+            if (!(is_object($this->Object->$offset) || is_array($this->Object->$offset))) {
+                return $this->Object->$offset;
+            }
+            $value = new static($this->Object->$offset);
+        } else {
+            if (!array_key_exists($offset, $this->Array)) {
+                if (!$this->AddMissingKeys) {
+                    throw new OutOfRangeException(sprintf('Key not found: %s', $offset));
+                }
                 $this->Array[$offset] = [];
             }
+            if (!(is_object($this->Array[$offset]) || is_array($this->Array[$offset]))) {
+                /** @var int|float|string|bool|null */
+                return $this->Array[$offset];
+            }
+            $value = new static($this->Array[$offset]);
         }
-
-        $value = $this->IsObject
-            ? $this->Object->$offset
-            : $this->Array[$offset];
-
-        if (!is_object($value) && !is_array($value)) {
-            return $value;
-        }
-
-        $value = $this->IsObject
-            ? new static($this->Object->$offset)
-            : new static($this->Array[$offset]);
 
         $value->AddMissingProperties = $this->AddMissingProperties;
         $value->AddMissingKeys = $this->AddMissingKeys;
