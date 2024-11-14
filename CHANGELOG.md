@@ -10,6 +10,57 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.62] - 2024-11-14
+
+### Added
+
+#### `PHPDoc`
+
+- Add `PHPDoc::getClassTemplates()`
+
+### Changed
+
+#### `Container`
+
+- Require `Application::startSync()` arguments to be strings
+
+#### `Core`
+
+- Require new keys passed to `SerializeRulesInterface` to be strings
+- In `HasBuilder` trait:
+  - Use `self` instead of `static` to derive `getBuilder()` return value
+  - Remove `final` from method declarations to allow reinsertion by subclasses
+
+#### `Iterator`
+
+- Update return type of `FluentIteratorInterface::nextWithValue()` to indicate `TValue` must be an object or array
+- In `FluentIteratorTrait::nextWithValue()`, remove special handling of `ArrayAccess` objects
+- In `RecursiveFilesystemIterator::nextWithValue()`, don't reject keys that resolve to `getFileInfo()` or `getPathInfo()`
+
+#### `PHPDoc`
+
+- Rename `PHPDoc::getTemplatesForTag()` to `getTagTemplates()`
+
+#### `Sli`
+
+- In `generate builder`:
+  - Include constructor templates in declared methods if they appear in the relevant parameter type
+  - Preserve original template names if possible
+
+#### `Utility`
+
+- Improve `Arr::wrap()` and `Arr::wrapList()` return type annotations
+
+### Fixed
+
+#### `Container`
+
+- Fix issue where fallback arguments passed to the entity store may not be not strings
+
+#### `Utility`
+
+- Fix `File::isSeekableStream()` and `File::isStream()` assertions
+
 ## [v0.99.61] - 2024-11-02
 
 ### Added
@@ -4095,6 +4146,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.62]: https://github.com/salient-labs/toolkit/compare/v0.99.61...v0.99.62
 [v0.99.61]: https://github.com/salient-labs/toolkit/compare/v0.99.60...v0.99.61
 [v0.99.60]: https://github.com/salient-labs/toolkit/compare/v0.99.59...v0.99.60
 [v0.99.59]: https://github.com/salient-labs/toolkit/compare/v0.99.58...v0.99.59
