@@ -37,7 +37,7 @@ final class CliHelpStyle implements CliHelpStyleInterface
     private string $OptionIndent = '    ';
     private string $OptionPrefix = '';
     private string $OptionDescriptionPrefix = "\n    ";
-    /** @var int&CliOptionVisibility::* */
+    /** @var CliOptionVisibility::* */
     private int $Visibility = CliOptionVisibility::HELP;
 
     // --

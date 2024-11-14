@@ -177,7 +177,9 @@ abstract class AbstractBuilder implements BuilderInterface
     }
 
     /**
-     * @param mixed $variable
+     * @template TValue
+     *
+     * @param TValue $variable
      * @return static
      */
     final protected function withRefB(string $name, &$variable)

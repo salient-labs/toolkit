@@ -549,12 +549,12 @@ final class File extends AbstractUtility
      * Check if a value is a seekable stream resource
      *
      * @param mixed $value
-     * @phpstan-assert-if-true resource $value
+     * @phpstan-assert-if-true =resource $value
      */
     public static function isSeekableStream($value): bool
     {
         return self::isStream($value)
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore nullCoalesce.offset
             && (stream_get_meta_data($value)['seekable'] ?? false);
     }
 
@@ -562,7 +562,7 @@ final class File extends AbstractUtility
      * Check if a value is a stream resource
      *
      * @param mixed $value
-     * @phpstan-assert-if-true resource $value
+     * @phpstan-assert-if-true =resource $value
      */
     public static function isStream($value): bool
     {
@@ -597,6 +597,7 @@ final class File extends AbstractUtility
         if (is_resource($resource)) {
             /** @phpstan-var resource $resource */
             self::assertResourceIsStream($resource);
+            // @phpstan-ignore paramOut.type
             $uri ??= self::getStreamUri($resource);
             return $resource;
         }
@@ -827,7 +828,7 @@ final class File extends AbstractUtility
     public static function maybeWrite($stream, string $data, ?string &$buffer, ?int $length = null, $uri = null): int
     {
         $result = self::doWrite($stream, $data, $length, $unwritten, $uri);
-        $buffer = substr($data, $result);
+        $buffer = (string) substr($data, $result);
         return $result;
     }
 
@@ -835,6 +836,7 @@ final class File extends AbstractUtility
      * @param resource $stream
      * @param int<0,max>|null $length
      * @param Stringable|string|null $uri
+     * @param-out int $unwritten
      */
     private static function doWrite($stream, string $data, ?int $length, ?int &$unwritten, $uri): int
     {

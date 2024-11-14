@@ -26,10 +26,8 @@ interface SerializeRulesInterface extends Immutable
      * An exception is thrown if `$rules` does not apply to the same entity or
      * one of its subclasses.
      *
-     * @template T of TEntity
-     *
-     * @param static<T> $rules
-     * @return static<T>
+     * @param static $rules
+     * @return static
      */
     public function merge(SerializeRulesInterface $rules): SerializeRulesInterface;
 
@@ -63,7 +61,7 @@ interface SerializeRulesInterface extends Immutable
      * @param class-string<T1>|null $class
      * @param class-string<T0>|null $baseClass
      * @param string[] $path
-     * @return array<string,array{int|string|null,(Closure(mixed $value): mixed)|null}> Each
+     * @return array<string,array{string|null,(Closure(mixed $value): mixed)|null}> Each
      * key is mapped to an array with two values, one of which may be `null`:
      * - a new key for the value
      * - a closure to return a new value for the key

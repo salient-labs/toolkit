@@ -15,7 +15,9 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 $app = new CliApplication(dirname(__DIR__));
 
-$args = array_slice($_SERVER['argv'], 1);
+/** @var string[] */
+$args = $_SERVER['argv'];
+$args = array_slice($args, 1);
 $check = !in_array('--force', $args);
 
 $files = File::find()

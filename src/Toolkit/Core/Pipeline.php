@@ -120,6 +120,7 @@ final class Pipeline implements
         }
 
         /** @var static<T0,TOutput,T1> */
+        // @phpstan-ignore varTag.nativeType
         $pipeline = $this;
         $pipeline = $pipeline
             ->with('HasPayload', true)
@@ -169,9 +170,11 @@ final class Pipeline implements
      */
     public function afterIf(Closure $closure)
     {
-        return $this->After
-            ? $this
-            : $this->after($closure);
+        if ($this->After) {
+            return $this;
+        }
+
+        return $this->with('After', $closure);
     }
 
     /**
@@ -199,14 +202,15 @@ final class Pipeline implements
     public function throughKeyMap(array $keyMap, int $flags = ArrayMapper::ADD_UNMAPPED)
     {
         $keyMapKey = count($this->KeyMaps);
-        $clone = $this->through(
+        $pipeline = $this->through(
             function ($payload, Closure $next, self $pipeline) use ($keyMapKey) {
                 /** @var mixed[] $payload */
+                // @phpstan-ignore varTag.nativeType
                 return $next($pipeline->ArrayMappers[$keyMapKey]->map($payload));
             }
         );
-        $clone->KeyMaps[] = [$keyMap, $flags];
-        return $clone;
+        $pipeline->KeyMaps[] = [$keyMap, $flags];
+        return $pipeline;
     }
 
     /**
@@ -262,7 +266,10 @@ final class Pipeline implements
      */
     public function cc(Closure $closure)
     {
-        return $this->with('Cc', Arr::push($this->Cc, $closure));
+        $cc = $this->Cc;
+        $cc[] = $closure;
+
+        return $this->with('Cc', $cc);
     }
 
     /**
@@ -286,9 +293,11 @@ final class Pipeline implements
     {
         $this->assertHasStream();
 
-        return $this->Unless
-            ? $this
-            : $this->unless($filter);
+        if ($this->Unless) {
+            return $this;
+        }
+
+        return $this->with('Unless', $filter);
     }
 
     /**

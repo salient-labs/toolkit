@@ -70,22 +70,23 @@ final class Sys extends AbstractUtility
      */
     public static function getProgramName(?string $parentDir = null): string
     {
+        /** @var string */
         $filename = $_SERVER['SCRIPT_FILENAME'];
 
         if ($parentDir === null) {
             return $filename;
         }
 
-        $filename = File::getRelativePath($filename, $parentDir);
-        if ($filename === null) {
+        $relative = File::getRelativePath($filename, $parentDir);
+        if ($relative === null) {
             throw new LogicException(sprintf(
                 "'%s' is not in '%s'",
-                $_SERVER['SCRIPT_FILENAME'],
+                $filename,
                 $parentDir,
             ));
         }
 
-        return $filename;
+        return $relative;
     }
 
     /**
@@ -95,7 +96,9 @@ final class Sys extends AbstractUtility
      */
     public static function getProgramBasename(string ...$suffixes): string
     {
-        $basename = basename($_SERVER['SCRIPT_FILENAME']);
+        /** @var string */
+        $filename = $_SERVER['SCRIPT_FILENAME'];
+        $basename = basename($filename);
 
         if (!$suffixes) {
             return $basename;

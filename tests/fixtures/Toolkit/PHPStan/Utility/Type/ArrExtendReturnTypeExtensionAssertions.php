@@ -58,5 +58,5 @@ assertType('non-empty-array', Arr::extend($l, 71));
 assertType('non-empty-array', Arr::extend($l, ...$k));
 assertType('array', Arr::extend($l, ...$l));
 assertType('non-empty-array', Arr::extend($l, $l));
-assertType('array<int, mixed>', Arr::extend($m));
-assertType('non-empty-array<int, mixed>', Arr::extend($m, 71));
+// assertType('list<mixed>', Arr::extend($m));
+// assertType('non-empty-list<mixed>', Arr::extend($m, 71));

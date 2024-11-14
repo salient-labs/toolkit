@@ -80,7 +80,7 @@ final class AbstractFacadeTest extends TestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(' does not inherit ');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         MyClassFacade::load(new MyHasFacadeClass());
     }
 
@@ -89,7 +89,7 @@ final class AbstractFacadeTest extends TestCase
         MyClassFacade::load();
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(' does not inherit ');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         MyClassFacade::swap(new MyHasFacadeClass());
     }
 

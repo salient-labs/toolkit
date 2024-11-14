@@ -173,7 +173,7 @@ final class HttpRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($body) must be of type StreamInterface|resource|string|null, int given');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         new HttpRequest('GET', '/', 123);
     }
 
@@ -181,7 +181,7 @@ final class HttpRequestTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($body) must be of type StreamInterface|resource|string|null, int given');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         (new HttpRequest('GET', '/'))->withBody(123);
     }
 

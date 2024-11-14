@@ -793,11 +793,27 @@ class PHPDoc implements Immutable, Stringable
     }
 
     /**
+     * Get the PHPDoc's class "@template" tags, indexed by name
+     *
+     * @return array<string,TemplateTag>
+     */
+    public function getClassTemplates(): array
+    {
+        foreach ($this->Templates as $name => $template) {
+            if ($template->getClass() !== null && $template->getMember() === null) {
+                $templates[$name] = $template;
+            }
+        }
+
+        return $templates ?? [];
+    }
+
+    /**
      * Get "@template" tags applicable to the given tag, indexed by name
      *
      * @return array<string,TemplateTag>
      */
-    public function getTemplatesForTag(AbstractTag $tag): array
+    public function getTagTemplates(AbstractTag $tag): array
     {
         if (!in_array($tag, $this->Tags[$tag->getTag()] ?? [], true)) {
             throw new InvalidArgumentException('Tag does not belong to the PHPDoc');
@@ -955,6 +971,7 @@ class PHPDoc implements Immutable, Stringable
 
     /**
      * @param array<string,class-string> $aliases
+     * @param-out int $tags
      */
     private function parse(string $content, array $aliases, ?int &$tags): void
     {

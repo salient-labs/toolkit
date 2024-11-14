@@ -12,8 +12,9 @@ use CallbackFilterIterator;
 use Countable;
 use EmptyIterator;
 use FilesystemIterator;
+use InvalidArgumentException;
+use Iterator;
 use IteratorAggregate;
-use LogicException;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -362,6 +363,7 @@ class RecursiveFilesystemIterator implements
                     );
                 }
 
+                /** @var Iterator<string,SplFileInfo> $iterator */
                 $iterators[] = $iterator;
 
                 continue;
@@ -395,12 +397,9 @@ class RecursiveFilesystemIterator implements
                     $iterator,
                     function (SplFileInfo $file, string $path, RecursiveIteratorIterator $iterator) use ($includeFilter): bool {
                         $recursiveIterator = $iterator;
-                        /** @var RecursiveCallbackFilterIterator|RecursiveDirectoryIterator */
-                        $iterator = $iterator->getInnerIterator();
-                        if ($iterator instanceof RecursiveCallbackFilterIterator) {
-                            /** @var RecursiveDirectoryIterator */
+                        do {
                             $iterator = $iterator->getInnerIterator();
-                        }
+                        } while (!$iterator instanceof RecursiveDirectoryIterator);
                         return $includeFilter($file, $path, $iterator, $recursiveIterator);
                     }
                 );
@@ -420,6 +419,7 @@ class RecursiveFilesystemIterator implements
             return $iterators[0];
         }
 
+        /** @var AppendIterator<string,SplFileInfo,Iterator<string,SplFileInfo>> */
         $iterator = new AppendIterator();
         foreach ($iterators as $dirIterator) {
             $iterator->append($dirIterator);
@@ -433,30 +433,21 @@ class RecursiveFilesystemIterator implements
      */
     public function nextWithValue($key, $value, bool $strict = false)
     {
-        $name = Regex::replace('/^(?:get|is)/i', '', (string) $key, -1, $count);
+        if (!is_string($key)) {
+            return null;
+        }
 
-        if (method_exists(SplFileInfo::class, $key)) {
-            // If `$key` is the name of a method, check that it starts with
-            // "get" or "is"
-            if (!$count) {
-                throw new LogicException(sprintf('Illegal key: %s', $key));
-            }
-            $method = $key;
-        } else {
-            foreach (["get{$name}", "is{$name}"] as $method) {
-                if (method_exists(SplFileInfo::class, $method)) {
-                    break;
-                }
-                $method = null;
+        $key = Regex::replace('/^(?:get|is)/i', '', $key);
+        $method = null;
+        foreach (['get', 'is'] as $prefix) {
+            if (method_exists(SplFileInfo::class, $name = $prefix . $key)) {
+                $method = $name;
+                break;
             }
         }
 
-        if (
-            $method === null
-            || !strcasecmp($method, 'getFileInfo')
-            || !strcasecmp($method, 'getPathInfo')
-        ) {
-            throw new LogicException(sprintf('Invalid key: %s', $key));
+        if ($method === null) {
+            throw new InvalidArgumentException(sprintf('Invalid key: %s', $key));
         }
 
         foreach ($this as $current) {

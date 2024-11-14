@@ -148,6 +148,7 @@ final class HttpUtil extends AbstractUtility
             $merged[] = $last = implode('=', $value);
         }
         $merged = implode('; ', $merged);
+        // @phpstan-ignore notIdentical.alwaysTrue ($merged could be empty)
         return $last === '' && $merged !== ''
             ? substr($merged, 0, -1)
             : $merged;
@@ -214,19 +215,23 @@ final class HttpUtil extends AbstractUtility
         int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
-        $uri = $value instanceof RequestInterface
-            ? $value->getUri()
-            : ($value instanceof PsrUriInterface
-                ? $value
-                : new Uri((string) $value));
+        if ($value instanceof RequestInterface) {
+            $uri = $value->getUri();
+            $return = $value;
+        } elseif ($value instanceof PsrUriInterface) {
+            $return = $uri = $value;
+        } else {
+            $return = $uri = new Uri((string) $value);
+        }
+
         /** @todo Replace with `parse_str()` alternative */
         parse_str($uri->getQuery(), $query);
         $query = (new FormData(array_replace_recursive($query, $data)))
             ->getQuery($flags, $dateFormatter);
-        if ($value instanceof RequestInterface) {
-            return $value->withUri($uri->withQuery($query));
-        }
-        return $uri->withQuery($query);
+
+        return $return instanceof RequestInterface
+            ? $return->withUri($uri->withQuery($query))
+            : $return->withQuery($query);
     }
 
     /**

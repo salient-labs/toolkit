@@ -350,7 +350,7 @@ final class Env extends AbstractUtility
     }
 
     /**
-     * @return string|false
+     * @return ($assertValueIsString is true ? string|false : mixed)
      */
     private static function _get(string $name, bool $assertValueIsString = true)
     {

@@ -62,7 +62,7 @@ final class Process
     private const SIGTERM = 15;
     private const SIGKILL = 9;
 
-    /** @var string[]|string */
+    /** @var list<string>|string */
     private $Command;
     /** @var resource */
     private $Input;
@@ -115,7 +115,7 @@ final class Process
     /**
      * Creates a new Process object
      *
-     * @param string[] $command
+     * @param list<string> $command
      * @param resource|string|null $input
      * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed)|null $callback
      * @param array<string,string>|null $env
@@ -567,7 +567,7 @@ final class Process
     /**
      * Get the command passed to proc_open() to spawn the process
      *
-     * @return string[]|string
+     * @return list<string>|string
      */
     public function getCommand()
     {
@@ -969,6 +969,7 @@ final class Process
 
     /**
      * @param array<FileDescriptor::*,resource> $streams
+     * @param-out array{} $streams
      */
     private function closeStreams(array &$streams): void
     {

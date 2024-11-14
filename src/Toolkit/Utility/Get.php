@@ -106,6 +106,7 @@ final class Get extends AbstractUtility
             return $value;
         }
 
+        // @phpstan-ignore function.alreadyNarrowedType
         if (!is_string($value)) {
             throw new InvalidArgumentTypeException(1, 'value', 'int|string|null', $value);
         }
@@ -834,7 +835,7 @@ final class Get extends AbstractUtility
             foreach ($var as $key => $value) {
                 $array[$key] = self::doCopy($value, $skip, $flags, $map);
             }
-            /** @var T */
+            // @phpstan-ignore return.type
             return $array ?? [];
         }
 
@@ -844,7 +845,7 @@ final class Get extends AbstractUtility
 
         $id = spl_object_id($var);
         if (isset($map[$id])) {
-            /** @var T */
+            // @phpstan-ignore return.type
             return $map[$id];
         }
 
@@ -866,6 +867,7 @@ final class Get extends AbstractUtility
                     return $var;
                 }
                 if (
+                    // @phpstan-ignore function.alreadyNarrowedType
                     !is_object($result)
                     || get_class($result) !== get_class($var)
                 ) {
@@ -878,7 +880,7 @@ final class Get extends AbstractUtility
                 $map[$id] = $result;
                 $id = spl_object_id($result);
                 $map[$id] = $result;
-                /** @var T */
+                // @phpstan-ignore return.type
                 return $result;
             }
         } else {
@@ -948,7 +950,7 @@ final class Get extends AbstractUtility
             }
 
             (function () use ($name, $value): void {
-                // @phpstan-ignore-next-line
+                // @phpstan-ignore variable.undefined
                 $this->$name = &$value;
             })->bindTo($clone, $declaring->getName())();
         }

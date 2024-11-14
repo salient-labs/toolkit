@@ -445,6 +445,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
 
     public function runA(int $operation, ...$args): array
     {
+        // @phpstan-ignore staticMethod.alreadyNarrowedType
         if (!SyncUtil::isListOperation($operation)) {
             throw new LogicException('Not a *_LIST operation: ' . $operation);
         }

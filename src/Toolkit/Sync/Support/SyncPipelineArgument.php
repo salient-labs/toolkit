@@ -65,6 +65,7 @@ final class SyncPipelineArgument
         switch ($operation) {
             case SyncOperation::READ:
                 $this->Id = $id;
+                $this->Entity = null;
                 break;
 
             case SyncOperation::CREATE:
@@ -83,6 +84,10 @@ final class SyncPipelineArgument
             case SyncOperation::UPDATE_LIST:
             case SyncOperation::DELETE_LIST:
                 $this->Entity = &$entity;
+                break;
+
+            default:
+                $this->Entity = null;
                 break;
         }
     }

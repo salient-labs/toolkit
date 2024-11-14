@@ -8,14 +8,14 @@ use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasFacade;
 
 /**
- * @implements FacadeAwareInterface<FacadeInterface<self>>
+ * @implements FacadeAwareInterface<FacadeInterface<MyServiceInterface>>
  */
 class MyHasFacadeClass implements
     FacadeAwareInterface,
     MyServiceInterface,
     Unloadable
 {
-    /** @use HasFacade<FacadeInterface<self>> */
+    /** @use HasFacade<FacadeInterface<MyServiceInterface>> */
     use HasFacade;
     use MyInstanceTrait;
 

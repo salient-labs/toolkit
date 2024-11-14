@@ -41,6 +41,7 @@ class TypesAssignedByHasMutatorRule implements Rule
             // @codeCoverageIgnoreEnd
         }
         $prototypeReflection = $methodReflection->getPrototype();
+        // @phpstan-ignore phpstanApi.instanceofAssumption
         if (!$prototypeReflection instanceof PhpMethodReflection) {
             // @codeCoverageIgnoreStart
             return [];

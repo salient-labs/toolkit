@@ -133,7 +133,7 @@ final class GetTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($value) must be of type int|string|null, stdClass given');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         Get::arrayKey(new stdClass());
     }
 
@@ -1101,7 +1101,9 @@ class RefClass
     public $BindTo;
 
     /**
-     * @param mixed $bindTo
+     * @template TValue
+     *
+     * @param TValue $bindTo
      */
     public function __construct(&$bindTo)
     {

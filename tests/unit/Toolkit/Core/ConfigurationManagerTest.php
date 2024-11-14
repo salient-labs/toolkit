@@ -134,7 +134,7 @@ final class ConfigurationManagerTest extends TestCase
 
         $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Value not found: app.does-not-exist');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore expr.resultUnused
         $config['app.does-not-exist'];
     }
 

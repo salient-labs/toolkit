@@ -394,6 +394,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         // methods
         if (array_key_exists($operation, $this->Overrides)) {
             /** @var SyncOperationClosure */
+            // @phpstan-ignore varTag.nativeType
             $closure = fn(SyncContextInterface $ctx, ...$args) =>
                 $this->Overrides[$operation](
                     $this,
@@ -414,6 +415,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
 
         if ($closure) {
             /** @var SyncOperationClosure */
+            // @phpstan-ignore varTag.nativeType
             $closure = fn(SyncContextInterface $ctx, ...$args) =>
                 $closure(
                     $ctx,

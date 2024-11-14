@@ -35,7 +35,7 @@ class RecursiveMutableGraphIterator extends MutableGraphIterator implements Recu
 
         if (is_object($current) && $this->hasChildren()) {
             $array = [];
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore foreach.nonIterable
             foreach ($current as $key => $value) {
                 $array[$key] = $value;
             }

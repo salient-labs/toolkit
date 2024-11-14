@@ -11,11 +11,13 @@ require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
 // Usage: php http-client.php [<host>[:<port>] [<method> [<target> [<timeout> ["<header>: <value>"...]]]]]
 
-$host = $_SERVER['argv'][1] ?? 'localhost:3008';
-$method = $_SERVER['argv'][2] ?? 'GET';
-$target = $_SERVER['argv'][3] ?? '/';
-$timeout = (int) ($_SERVER['argv'][4] ?? -1);
-$headers = array_slice($_SERVER['argv'], 5);
+/** @var string[] */
+$args = $_SERVER['argv'];
+$host = $args[1] ?? 'localhost:3008';
+$method = $args[2] ?? 'GET';
+$target = $args[3] ?? '/';
+$timeout = (int) ($args[4] ?? -1);
+$headers = array_slice($args, 5);
 
 $body = $method === 'GET' || $method === 'HEAD'
     ? ''

@@ -52,6 +52,8 @@ class NamespaceData implements JsonSerializable
      * @param (callable(ClassData|ConstantData|PropertyData|MethodData $data, string $type): bool)|null $filter
      * @param array<string,static>|null $data
      * @param array<class-string,ClassData>|null $index
+     * @param-out array<string,static> $data
+     * @param-out array<class-string,ClassData> $index
      */
     public static function fromExtractor(
         TokenExtractor $extractor,
@@ -65,6 +67,9 @@ class NamespaceData implements JsonSerializable
             throw new InvalidArgumentException('Invalid token extractor');
             // @codeCoverageIgnoreEnd
         }
+
+        $data ??= [];
+        $index ??= [];
 
         $file = $extractor->getFilename();
         foreach ($extractor->getNamespaces() as $ns => $extractor) {

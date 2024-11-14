@@ -700,6 +700,7 @@ SQL;
         if ($prefix === null) {
             return SyncUtil::getEntityTypeUri($entityType, $compact);
         }
+        /** @var string $namespace */
         $entityType = str_replace('\\', '/', substr(ltrim($entityType, '\\'), strlen($namespace)));
 
         return $compact

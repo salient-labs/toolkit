@@ -17,7 +17,7 @@ class B extends A implements Constructible
     protected DateTimeImmutable $CreatedAt;
     protected DateTimeImmutable $ModifiedAt;
 
-    // @phpstan-ignore-next-line
+    // @phpstan-ignore property.onlyWritten
     private string $LastSetter;
 
     public function __construct(DateTimeImmutable $createdAt)

@@ -45,6 +45,8 @@ interface DeferredRelationshipInterface extends IteratorAggregate
     /**
      * Defer retrieval of a sync entity relationship
      *
+     * @template TReplace of TEntity[]|static|null
+     *
      * @param SyncProviderInterface $provider The provider servicing the entity.
      * @param SyncContextInterface|null $context The context within which the
      * provider is servicing the entity.
@@ -57,10 +59,11 @@ interface DeferredRelationshipInterface extends IteratorAggregate
      * relationship is deferred.
      * @param array<string,mixed>|null $filter Overrides the default filter
      * passed to the provider when requesting entities.
-     * @param TEntity[]|static|null $replace Refers to the variable or property
-     * to replace when the relationship is resolved.
+     * @param TReplace $replace Refers to the variable or property to replace
+     * when the relationship is resolved.
      * @param (Closure(TEntity[]): void)|null $callback If given, `$replace` is
      * ignored and the resolved entities are passed to the callback.
+     * @param-out ($callback is null ? TEntity[]|static : TReplace) $replace
      */
     public static function defer(
         SyncProviderInterface $provider,

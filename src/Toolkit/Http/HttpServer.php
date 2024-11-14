@@ -268,7 +268,7 @@ class HttpServer implements Immutable
      *
      * @template T
      *
-     * @param callable(HttpServerRequestInterface $request, bool &$continue, T &$return): ResponseInterface $callback Receives
+     * @param callable(HttpServerRequestInterface $request, bool &$continue, T|null &$return): ResponseInterface $callback Receives
      * an {@see HttpServerRequestInterface} and returns a
      * {@see ResponseInterface}. May also set `$continue = true` to make
      * {@see HttpServer::listen()} wait for another request, or pass a value

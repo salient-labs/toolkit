@@ -27,7 +27,7 @@ trait ExceptionTrait
      */
     public static function withExitStatus(?int $exitStatus, ...$args): ExceptionInterface
     {
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore new.static
         $instance = new static(...$args);
         $instance->ExitStatus = $exitStatus;
         return $instance;

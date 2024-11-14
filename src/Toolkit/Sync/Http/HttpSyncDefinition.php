@@ -468,7 +468,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                     iterable $entities,
                     ...$args
                 ) use ($operation): iterable {
-                    /** @var TEntity */
+                    /** @var TEntity|null */
                     $entity = null;
                     $arg = new SyncPipelineArgument($operation, $ctx, $args, null, $entity);
                     /** @var PipelineInterface<mixed[],TEntity,SyncPipelineArgument> */
@@ -480,11 +480,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
 
                     if ($this->SyncOneEntityPerRequest) {
                         $payload = &$entity;
-                        /** @var Closure(TEntity): TEntity */
                         $after = function ($currentPayload) use (&$entity) {
                             return $entity = $currentPayload;
                         };
-                        /** @var Closure(mixed[]): mixed[] */
                         $then = function ($data) use ($operation, $ctx, $args, &$payload) {
                             /** @var TEntity $payload */
                             return $this->getRoundTripPayload(
@@ -498,11 +496,9 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                             ->then($then);
                     } else {
                         $payload = [];
-                        /** @var Closure(TEntity): TEntity */
                         $after = function ($currentPayload) use (&$entity, &$payload) {
                             return $payload[] = $entity = $currentPayload;
                         };
-                        /** @var Closure(array<mixed[]>): array<mixed[]> */
                         $then = function ($data) use ($operation, $ctx, $args, &$payload) {
                             /** @var TEntity[] $payload */
                             return $this->getRoundTripPayload(
@@ -528,7 +524,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                     SyncContextInterface $ctx,
                     ...$args
                 ) use ($operation): iterable {
-                    /** @var iterable<mixed[]>) */
+                    /** @var iterable<mixed[]> */
                     $payload = $this->runHttpOperation($operation, $ctx, ...$args);
                     $arg = new SyncPipelineArgument($operation, $ctx, $args);
                     return $this
@@ -561,7 +557,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             SyncUtil::isWriteOperation($operation)
             && Env::getDryRun()
         ) {
-            /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
+            /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): mixed[] */
             return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                 $payload ?? [];
         }

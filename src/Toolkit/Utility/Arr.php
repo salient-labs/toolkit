@@ -872,6 +872,7 @@ final class Arr extends AbstractUtility
         if ($length === null) {
             $length = count($array);
         }
+        // @phpstan-ignore paramOut.type
         $replaced = array_splice($array, $offset, $length, $replacement);
         return $array;
     }
@@ -1014,8 +1015,8 @@ final class Arr extends AbstractUtility
      *
      * @template T
      *
-     * @param T $value
-     * @return (T is null ? array{} : (T is array ? T : array{T}))
+     * @param array<T>|T $value
+     * @return array<T>
      */
     public static function wrap($value): array
     {
@@ -1030,14 +1031,15 @@ final class Arr extends AbstractUtility
      *
      * @template T
      *
-     * @param T $value
-     * @return (T is null ? array{} : (T is list ? T : array{T}))
+     * @param list<T>|T $value
+     * @return list<T>
      */
     public static function wrapList($value): array
     {
         if ($value === null) {
             return [];
         }
+        // @phpstan-ignore return.type
         return self::isList($value, true) ? $value : [$value];
     }
 

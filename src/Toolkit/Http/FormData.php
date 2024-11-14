@@ -204,13 +204,13 @@ final class FormData
             } else {
                 /** @var object|mixed[]|string|null $value */
                 foreach ($data as $key => $value) {
-                    /** @phpstan-var string */
                     $_key = sprintf($format, $key);
-                    /** @var mixed[] $query */
+                    // @phpstan-ignore identical.alwaysFalse
                     if ($_key === '') {
                         $query[] = null;
                         $_key = array_key_last($query);
                     }
+                    // @phpstan-ignore offsetAccess.nonOffsetAccessible
                     $this->doGetData($value, $flags, $df, $cb, false, $fromCallback[$key], $query[$_key], '');
                 }
             }
@@ -258,6 +258,7 @@ final class FormData
         if (is_object($value)) {
             $value = $this->convertObject($value, $df, $cb, $fromCallback);
             if (!$fromCallback && ($value === null || is_scalar($value))) {
+                // @phpstan-ignore cast.string
                 return (string) $value;
             }
             /** @var mixed[]|(T&object)|string|null */
@@ -275,6 +276,7 @@ final class FormData
      *
      * @param mixed $value
      * @param (callable(object): (T|false))|null $cb
+     * @param-out bool $fromCallback
      * @return T|mixed[]|int|float|string|bool|null
      */
     private function resolveValue(
@@ -303,6 +305,7 @@ final class FormData
      * @template T of object|mixed[]|string|null
      *
      * @param (callable(object): (T|false))|null $cb
+     * @param-out bool $fromCallback
      * @return T|mixed[]|int|float|string|bool|null
      */
     private function convertObject(
@@ -346,7 +349,7 @@ final class FormData
 
         // Get public property values
         $result = [];
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore foreach.nonIterable
         foreach ($value as $key => $val) {
             $result[$key] = $val;
         }

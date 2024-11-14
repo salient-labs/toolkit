@@ -153,15 +153,15 @@ EOF)
             'class',
             $this->ClassFqcn,
             null,
-            $classClass
+            $classClass,
         );
 
         $this->requireFqcnOptionValue(
             'builder',
-            $this->BuilderFqcn ?: $classFqcn . 'Builder',
+            $this->BuilderFqcn ?? $classFqcn . 'Builder',
             EnvVar::NS_BUILDER,
             $builderClass,
-            $builderNamespace
+            $builderNamespace,
         );
 
         $this->assertClassIsInstantiable($classFqcn);
@@ -181,23 +181,20 @@ EOF)
             : $this->Description;
 
         if ($this->IncludeProperties) {
-            $introspector = Introspector::get($this->InputClass->getName());
+            $introspector = Introspector::get($this->InputClassName);
             $writable = $introspector->getWritableProperties();
             $writable = Arr::combine(
-                array_map(
-                    fn(string $name) => Str::camel($name),
-                    $writable
-                ),
-                $writable
+                array_map([Str::class, 'camel'], $writable),
+                $writable,
             );
         } else {
             $writable = [];
         }
 
         /**
-         * camelCase name => parameter
+         * camelCase name => constructor parameter
          *
-         * @var ReflectionParameter[]
+         * @var array<string,ReflectionParameter>
          */
         $_params = [];
 
@@ -243,14 +240,14 @@ EOF)
          *
          * @var array<string,ReflectionProperty>
          */
-        $_allProperties = [];
+        $_properties = [];
 
         /**
-         * camelCase name => default property value (`null` if not set)
+         * camelCase name => default property value
          *
          * @var array<string,mixed>
          */
-        $_defaultProperties = [];
+        $defaultPropertyValues = [];
 
         if (!$this->IgnoreProperties) {
             $defaults = $this->InputClass->getDefaultProperties();
@@ -262,34 +259,29 @@ EOF)
                 }
                 $_name = $_property->getName();
                 $name = Str::camel($_name);
-                $_allProperties[$name] = $_property;
+                $_properties[$name] = $_property;
                 if (array_key_exists($_name, $defaults)) {
-                    $_defaultProperties[$name] = $defaults[$_name];
+                    $defaultPropertyValues[$name] = $defaults[$_name];
                 }
             }
         }
 
         /**
-         * camelCase name => writable property that isn't also a constructor
-         * parameter
+         * camelCase name => writable property with no constructor parameter
          *
          * @var ReflectionProperty[]
          */
-        $_properties = [];
-
-        foreach (array_keys($writable) as $name) {
-            $_properties[$name] = $_allProperties[$name];
-        }
+        $_props = array_intersect_key($_properties, $writable);
 
         $_phpDoc = $_constructor ? PHPDoc::forMethod($_constructor) : new PHPDoc();
 
-        $names = array_keys($_params + $_properties);
+        $names = array_keys($_params + $_props);
         foreach ($names as $name) {
             if (in_array($name, $this->Skip)) {
                 continue;
             }
 
-            if ($_property = $_properties[$name] ?? null) {
+            if ($_property = $_props[$name] ?? null) {
                 $phpDoc = PHPDoc::forProperty($_property);
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
@@ -306,12 +298,13 @@ EOF)
                     $templates = [];
                     $type = $this->getPHPDocTypeAlias(
                         $tag,
-                        $phpDoc->getTemplates(),
+                        // Property-specific templates are invalid
+                        $phpDoc->getClassTemplates(),
                         $propertyNamespace,
                         $propertyFile,
                         $templates
                     );
-                    if (count($templates) === 1 && !in_array($name, $this->NoDeclare)) {
+                    if ($templates && !in_array($name, $this->NoDeclare)) {
                         $declareTemplates[$name] = $templates;
                         $this->ToDeclare[$name] ??= $_property;
                     }
@@ -342,8 +335,8 @@ EOF)
                         break;
                     case 'bool':
                         $default = ' = true';
-                        if (array_key_exists($name, $_defaultProperties)) {
-                            $defaultValue = $_defaultProperties[$name];
+                        if (array_key_exists($name, $defaultPropertyValues)) {
+                            $defaultValue = $defaultPropertyValues[$name];
                             if ($defaultValue !== null) {
                                 $defaultText = sprintf(
                                     'default: %s',
@@ -390,7 +383,7 @@ EOF)
             $declare = array_key_exists($name, $this->ToDeclare);
 
             // If the parameter has a matching property, retrieve its DocBlock
-            if ($_property = $_allProperties[$name] ?? null) {
+            if ($_property = $_properties[$name] ?? null) {
                 $phpDoc = PHPDoc::forProperty($_property);
             } else {
                 $phpDoc = null;
@@ -413,9 +406,11 @@ EOF)
                     $_phpDoc->getTemplates(),
                     $propertyNamespace,
                     $propertyFile,
-                    $templates
+                    $templates,
+                    // Resolve member templates if a method won't be declared
+                    in_array($name, $this->NoDeclare),
                 );
-                if (count($templates) === 1 && !in_array($name, $this->NoDeclare)) {
+                if ($templates && !in_array($name, $this->NoDeclare)) {
                     $declareTemplates[$name] = $templates;
                     if (!$declare) {
                         $this->ToDeclare[$name] = $_param;
@@ -510,23 +505,34 @@ EOF)
                 if ($templates) {
                     $returnType = array_keys($this->InputClassTemplates);
                     $returnType = Arr::combine($returnType, $returnType);
+                    $returnTypeChanged = false;
                     $i = count($templates) > 1 ? 0 : -1;
                     /** @var TemplateTag $templateTag */
                     foreach ($templates as $template => $templateTag) {
-                        do {
+                        $T = $template;
+                        while (
+                            array_key_exists($T, $this->InputClassTemplates)
+                            || array_key_exists(Str::lower($T), $this->AliasMap)
+                        ) {
                             $T = sprintf('T%s', $i < 0 ? '' : $i);
                             $i++;
-                        } while (array_key_exists($T, $this->InputClassTemplates)
-                            || array_key_exists(Str::lower($T), $this->AliasMap));
+                        }
                         $lines[] = (string) $templateTag->withName($T)->withoutVariance();
-                        $returnType[$template] = $T;
+                        if ($templateTag->getMember() === null) {
+                            $returnType[$template] = $T;
+                            $returnTypeChanged = true;
+                        }
                         $param = Regex::replace("/(?<!\$|\\\\)\b$template\b/", $T, (string) $param);
                     }
-                    $returnType = 'static<' . implode(',', $returnType) . '>';
+                    if (!$returnTypeChanged) {
+                        $returnType = 'static';
+                    } else {
+                        $returnType = 'static<' . implode(',', $returnType) . '>';
+                        $returnDocBlocks[$name] = "/** @var $returnType */";
+                    }
                     $lines[] = '';
                     $lines[] = $param;
                     $lines[] = "@return $returnType";
-                    $returnDocBlocks[$name] = "/** @var $returnType */";
                 } else {
                     if ($param) {
                         $lines[] = $param;
@@ -789,7 +795,7 @@ EOF)
             unset($blocks[3]);
         }
 
-        if (($builderNamespace ?? '') === '') {
+        if ($builderNamespace === '') {
             unset($blocks[2]);
         }
 
@@ -897,6 +903,7 @@ EOF)
 
     /**
      * @param ReflectionProperty|ReflectionMethod|null $member
+     * @param-out string $see
      */
     private function getSummary(
         ?string $summary,

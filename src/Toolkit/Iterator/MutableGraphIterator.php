@@ -40,7 +40,7 @@ class MutableGraphIterator extends GraphIterator implements MutableIterator
             return $this;
         }
 
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore offsetAccess.nonOffsetAccessible
         $this->Graph[$key] = $value;
         return $this;
     }

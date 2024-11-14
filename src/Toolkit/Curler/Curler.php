@@ -825,7 +825,6 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withSensitiveHeader(string $name)
     {
-        // @phpstan-ignore salient.property.type
         return $this->with(
             'SensitiveHeaders',
             Arr::set($this->SensitiveHeaders, Str::lower($name), true)
@@ -837,7 +836,6 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withoutSensitiveHeader(string $name)
     {
-        // @phpstan-ignore salient.property.type
         return $this->with(
             'SensitiveHeaders',
             Arr::unset($this->SensitiveHeaders, Str::lower($name))
@@ -1312,6 +1310,7 @@ class Curler implements CurlerInterface, Buildable
                         // "If the name is an empty string, no cookies are loaded,
                         // but cookie handling is still enabled"
                         curl_setopt(self::$Handle, \CURLOPT_COOKIEFILE, '');
+                        /** @var non-empty-string[] */
                         $cookies = $this->getCache()->getArray($this->CookiesCacheKey);
                         if ($cookies) {
                             foreach ($cookies as $cookie) {
@@ -1410,6 +1409,7 @@ class Curler implements CurlerInterface, Buildable
                     curl_setopt(
                         self::$Handle,
                         \CURLOPT_URL,
+                        // @phpstan-ignore argument.type
                         $opt[\CURLOPT_URL] = (string) $uri,
                     );
                 }

@@ -340,6 +340,7 @@ REGEX,
         $notAfterPreserve = '';
         if ($preserve !== '') {
             $preserve = Regex::replace('/[[:alnum:]]++/u', '', $preserve);
+            // @phpstan-ignore notIdentical.alwaysTrue
             if ($preserve !== '') {
                 $preserve = Regex::quoteCharacterClass($preserve, '/');
                 // Prevent "key=value" becoming "key= value" when preserving "="
@@ -455,7 +456,8 @@ REGEX,
                 continue;
             }
             $parts = explode("\t", $line);
-            while (($part = array_shift($parts)) !== null) {
+            do {
+                $part = array_shift($parts);
                 $expanded .= $part;
                 if (!$parts) {
                     break;
@@ -468,7 +470,7 @@ REGEX,
                 $spaces = $tabSize - (($column - 1) % $tabSize);
                 $expanded .= str_repeat(' ', $spaces);
                 $column += $spaces;
-            }
+            } while (true);
         }
         return $expanded;
     }
@@ -511,6 +513,7 @@ REGEX,
             $characters,
             $removeEmpty
         );
+        // @phpstan-ignore return.type
         return $removeEmpty ? $split : array_values($split);
     }
 
@@ -576,6 +579,7 @@ REGEX;
             $removeEmpty
         );
 
+        // @phpstan-ignore return.type
         return $removeEmpty ? $split : array_values($split);
     }
 

@@ -110,6 +110,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
         yield from $this->getGlobalOptionList();
     }
 
+    // @phpstan-ignore return.unusedType
     protected function run(string ...$args)
     {
         $this->startRun();

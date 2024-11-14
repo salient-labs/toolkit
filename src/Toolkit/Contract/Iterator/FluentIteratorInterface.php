@@ -32,12 +32,12 @@ interface FluentIteratorInterface extends Arrayable, Traversable
     public function forEach(callable $callback);
 
     /**
-     * Get the value of the iterator's first element with a key or property
-     * equal to a given value
+     * Get the first element in the iterator with a key or property equal to a
+     * given value, or null if no such element is found
      *
      * @param array-key $key
      * @param mixed $value
-     * @return TValue|null `null` if no matching element is found.
+     * @return (TValue&(object|mixed[]))|null
      */
     public function nextWithValue($key, $value, bool $strict = false);
 }

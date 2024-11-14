@@ -87,6 +87,7 @@ final class SqlQuery implements Chainable, Readable
      * Add a parameter and assign its query placeholder to a variable
      *
      * @param mixed $value
+     * @param-out string $placeholder
      * @return $this
      */
     public function addParam(string $name, $value, ?string &$placeholder)
@@ -141,6 +142,7 @@ final class SqlQuery implements Chainable, Readable
      * Prepare a WHERE condition for use in a SQL statement
      *
      * @param array<string,mixed>|null $values
+     * @param-out array<string,mixed> $values
      */
     public function getWhere(?array &$values = null): ?string
     {

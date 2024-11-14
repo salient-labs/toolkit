@@ -56,15 +56,18 @@ interface DeferredEntityInterface
     /**
      * Defer retrieval of a sync entity
      *
+     * @template TReplace of TEntity|static|null
+     *
      * @param SyncProviderInterface $provider The provider servicing the entity.
      * @param SyncContextInterface|null $context The context within which the
      * provider is servicing the entity.
      * @param class-string<TEntity> $entity The entity to instantiate.
      * @param int|string $entityId The identifier of the deferred entity.
-     * @param TEntity|static|null $replace Refers to the variable or property to
-     * replace when the entity is resolved.
+     * @param TReplace $replace Refers to the variable or property to replace
+     * when the entity is resolved.
      * @param (Closure(TEntity): void)|null $callback If given, `$replace` is
      * ignored and the resolved entity is passed to the callback.
+     * @param-out ($callback is null ? TEntity|static : TReplace) $replace
      */
     public static function defer(
         SyncProviderInterface $provider,

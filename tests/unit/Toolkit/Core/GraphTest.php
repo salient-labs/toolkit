@@ -60,8 +60,7 @@ final class GraphTest extends TestCase
         $this->assertSame('charlie', $graph['obj'][0]);
 
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Offset not found: bar');
-        // @phpstan-ignore offsetAccess.nonOffsetAccessible
+        $this->expectExceptionMessage('Property not found: bar');
         $graph['bar'][] = 'foo';
     }
 
@@ -70,7 +69,6 @@ final class GraphTest extends TestCase
         $value = new stdClass();
         $graph = new Graph($value, true, true);
 
-        // @phpstan-ignore offsetAccess.nonOffsetAccessible
         $graph['q']['qux']['quux'] = 'foobar';
         /** @disregard P1006 */
         $this->assertSame(['qux' => ['quux' => 'foobar']], $value->q);
@@ -118,8 +116,7 @@ final class GraphTest extends TestCase
         $this->assertSame('charlie', $graph['obj'][0]);
 
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Offset not found: bar');
-        // @phpstan-ignore offsetAccess.nonOffsetAccessible
+        $this->expectExceptionMessage('Key not found: bar');
         $graph['bar'][] = 'foo';
     }
 
@@ -128,7 +125,6 @@ final class GraphTest extends TestCase
         $value = [];
         $graph = new Graph($value, true, true);
 
-        // @phpstan-ignore offsetAccess.nonOffsetAccessible
         $graph['q']['qux']['quux'] = 'foobar';
         $this->assertSame(['q' => ['qux' => ['quux' => 'foobar']]], $value);
     }
@@ -148,6 +144,7 @@ final class GraphTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Argument #1 ($value) must be of type mixed[]|object, int given');
         $value = 42;
+        // @phpstan-ignore argument.type
         new Graph($value);
     }
 }

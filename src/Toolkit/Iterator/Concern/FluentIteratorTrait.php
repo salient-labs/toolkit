@@ -3,7 +3,6 @@
 namespace Salient\Iterator\Concern;
 
 use Salient\Contract\Iterator\FluentIteratorInterface;
-use ArrayAccess;
 
 /**
  * Implements FluentIteratorInterface
@@ -20,7 +19,7 @@ use ArrayAccess;
 trait FluentIteratorTrait
 {
     /**
-     * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
+     * @inheritDoc
      */
     public function toArray(bool $preserveKeys = true): array
     {
@@ -37,8 +36,7 @@ trait FluentIteratorTrait
     }
 
     /**
-     * @param callable(TValue, TKey): mixed $callback
-     * @return $this
+     * @inheritDoc
      */
     public function forEach(callable $callback)
     {
@@ -49,21 +47,26 @@ trait FluentIteratorTrait
     }
 
     /**
-     * @param array-key $key
-     * @param mixed $value
-     * @return TValue|null
+     * @inheritDoc
      */
     public function nextWithValue($key, $value, bool $strict = false)
     {
+        $found = null;
         foreach ($this as $current) {
             // Move forward-only iterators to the next element
-            if (isset($found)) {
+            if ($found) {
                 break;
             }
-            if (is_array($current) || $current instanceof ArrayAccess) {
-                $_value = $current[$key];
-            } else {
+            if (is_array($current)) {
+                if (array_key_exists($key, $current)) {
+                    $_value = $current[$key];
+                } else {
+                    continue;
+                }
+            } elseif (is_object($current)) {
                 $_value = $current->$key;
+            } else {
+                continue;
             }
             if ($strict) {
                 if ($_value === $value) {
@@ -73,6 +76,7 @@ trait FluentIteratorTrait
                 $found = $current;
             }
         }
-        return $found ?? null;
+        // @phpstan-ignore return.type
+        return $found;
     }
 }

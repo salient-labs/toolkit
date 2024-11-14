@@ -121,15 +121,8 @@ class CliApplication extends Application implements CliApplicationInterface
             return null;
         }
 
-        if (!($command = $this->get($node)) instanceof CliCommandInterface) {
-            throw new LogicException(sprintf(
-                'Does not implement %s: %s',
-                CliCommandInterface::class,
-                $node,
-            ));
-        }
-        $command->setName($name ? explode(' ', $name) : []);
-
+        $command = $this->get($node);
+        $command->setName($name === '' ? [] : explode(' ', $name));
         return $command;
     }
 
@@ -164,6 +157,7 @@ class CliApplication extends Application implements CliApplicationInterface
             $tree = $tree[$subcommand] ?? null;
         }
 
+        // @phpstan-ignore return.type
         return $tree ?: null;
     }
 
@@ -305,8 +299,9 @@ class CliApplication extends Application implements CliApplicationInterface
     {
         $this->LastExitStatus = 0;
 
-        /** @disregard P1006 */
-        $args = array_slice($_SERVER['argv'], 1);
+        /** @var string[] */
+        $args = $_SERVER['argv'];
+        $args = array_slice($args, 1);
 
         $lastNode = null;
         $lastName = null;
@@ -373,6 +368,7 @@ class CliApplication extends Application implements CliApplicationInterface
             }
             $lastNode = $node;
             $lastName = $name;
+            /** @var array<string,class-string<CliCommandInterface>|mixed[]>|class-string<CliCommandInterface> */
             $node = $node[$arg] ?? null;
             $name .= ($name === '' ? '' : ' ') . $arg;
         }

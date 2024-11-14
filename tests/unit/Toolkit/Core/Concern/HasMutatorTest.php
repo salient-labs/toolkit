@@ -111,7 +111,7 @@ final class HasMutatorTest extends TestCase
         $this->assertNotSame($c, $b);
         $this->assertSame($d, $c);
         $this->assertSame($e, $d);
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.impossibleType, isset.property
         $this->assertFalse(isset($e->B));
         $this->assertSame(0, $f->B);
         $this->assertSame($g->A, 1);

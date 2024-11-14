@@ -16,13 +16,13 @@ abstract class MyBaseClass
 
     /**
      * @var mixed
-     * @phpstan-ignore-next-line
+     * @phpstan-ignore property.unused
      */
     private $MyPrivateProperty1;
 
     /**
      * @var mixed
-     * @phpstan-ignore-next-line
+     * @phpstan-ignore property.unused
      */
     private $MyPrivateProperty2;
 

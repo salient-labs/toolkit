@@ -49,7 +49,7 @@ class GraphIterator implements Iterator
         }
 
         $this->Graph = $graph;
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore foreach.nonIterable
         foreach ($graph as $key => $value) {
             $this->Keys[] = $key;
         }
@@ -71,7 +71,7 @@ class GraphIterator implements Iterator
 
         return $this->IsObject
             ? $this->Graph->{$key}
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore offsetAccess.nonOffsetAccessible
             : $this->Graph[$key];
     }
 

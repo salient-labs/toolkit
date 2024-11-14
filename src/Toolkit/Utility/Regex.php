@@ -171,18 +171,11 @@ REGEX;
      *                     : (TFlags is 514
      *                         ? list<array<string|null>>
      *                         : (TFlags is 768|769
-     *                             ? array<list<array{string|null,int}>>
+     *                             ? mixed[]
      *                             : (TFlags is 770
      *                                 ? list<array<array{string|null,int}>>
      *                                 : array<list<string>>
-     *                             )
-     *                         )
-     *                     )
-     *                 )
-     *             )
-     *         )
-     *     )
-     * ) $matches
+     * )))))))) $matches Removed for PHPStan compatibility: (TFlags is 768|769 ? array<list<array{string|null,int}>> : ...)
      */
     public static function matchAll(
         string $pattern,
@@ -206,6 +199,7 @@ REGEX;
      * @param string[]|string $pattern
      * @param string[]|string $replacement
      * @param T $subject
+     * @param-out int $count
      * @return T
      */
     public static function replace(
@@ -243,6 +237,7 @@ REGEX;
      * ) $callback
      * @param T $subject
      * @param TFlags $flags
+     * @param-out int $count
      * @return T
      */
     public static function replaceCallback(

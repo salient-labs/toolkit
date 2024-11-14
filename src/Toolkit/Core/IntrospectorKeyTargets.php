@@ -135,8 +135,8 @@ final class IntrospectorKeyTargets implements Readable
         $this->DateProperties = $dateProperties;
         $this->CustomKeys = $customKeys;
 
-        if ($this->Parameters) {
-            $this->LastParameterIndex = max(array_values($parameters));
+        if ($parameters) {
+            $this->LastParameterIndex = max($parameters);
         }
     }
 }

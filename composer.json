@@ -103,9 +103,6 @@
         },
         "classmap": [
             "tests/stubs/"
-        ],
-        "files": [
-            "tests/bootstrap.php"
         ]
     },
     "bin": [
