@@ -9,7 +9,7 @@ $parameters = [
     'tmpDir' => sprintf('build/cache/phpstan/%d.%d', \PHP_MAJOR_VERSION, \PHP_MINOR_VERSION),
 ];
 
-$dir = __DIR__ . '/..';
+$dir = dirname(__DIR__);
 
 if (\PHP_VERSION_ID < 80000) {
     return [
