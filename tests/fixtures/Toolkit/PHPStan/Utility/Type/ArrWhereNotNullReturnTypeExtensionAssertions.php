@@ -26,8 +26,8 @@ $i = [];
 /** @var array{foo:Stringable|null,bar:string|null,baz:int,qux?:float,quux:string} */
 $j = [];
 
-assertType('array', Arr::whereNotNull());
-assertType('array', Arr::whereNotNull($a));
+assertType('array<mixed>', Arr::whereNotNull());
+assertType('array<mixed>', Arr::whereNotNull($a));
 assertType('array{}', Arr::whereNotNull($b));
 assertType("array{'', false}", Arr::whereNotNull($c));
 assertType("array{0: '', 1: false, 3: 0, 4: 0.0, 5: '0'}", Arr::whereNotNull($d));
@@ -36,6 +36,6 @@ assertType("array{quuux: '0', quux: 0.0, qux: 0, foo: '', bar: false}", Arr::whe
 assertType('array<bool|float|int|string>', Arr::whereNotNull($g));
 assertType('array<bool|float|int|string>', Arr::whereNotNull($k));
 assertType('non-empty-array<bool|float|int|string>', Arr::whereNotNull($l));
-// assertType('array<int<0, max>, bool|float|int|string|Stringable>', Arr::whereNotNull($h));
-// assertType('list<bool|float|int|string>', Arr::whereNotNull($i));
+assertType('array<int<0, max>, bool|float|int|string|Stringable>', Arr::whereNotNull($h));
+assertType('list<bool|float|int|string>', Arr::whereNotNull($i));
 assertType('array{foo?: Stringable, bar?: string, baz: int, qux?: float, quux: string}', Arr::whereNotNull($j));

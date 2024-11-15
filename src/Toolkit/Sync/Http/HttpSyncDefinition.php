@@ -558,6 +558,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             && Env::getDryRun()
         ) {
             /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): mixed[] */
+            // @phpstan-ignore varTag.nativeType
             return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                 $payload ?? [];
         }

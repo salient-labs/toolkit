@@ -1,5 +1,4 @@
 includes:
-	- phar://phpstan.phar/conf/bleedingEdge.neon
 	- src/Toolkit/PHPStan/phpstan.extension.neon
 	- tests/phpstan-conditional.php
 

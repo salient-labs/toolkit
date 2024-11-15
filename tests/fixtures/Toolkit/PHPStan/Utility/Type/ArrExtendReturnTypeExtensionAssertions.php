@@ -37,8 +37,8 @@ $l = [];
 /** @var list<mixed> */
 $m = [];
 
-assertType('array', Arr::extend());
-assertType('array', Arr::extend('foo'));
+assertType('array<mixed>', Arr::extend());
+assertType('array<mixed>', Arr::extend('foo'));
 assertType("array{'a', 'a', 'd', 'd', 'b', 'b', 'c', 'c'}", Arr::extend(['a', 'a', 'd', 'd'], 'a', 'a', 'a', 'b', 'b', 'c', 'c'));
 assertType("array{foo: 'a', bar: 'd', 0: 'b', 1: 'c'}", Arr::extend(['foo' => 'a', 'bar' => 'd'], 'a', 'b', 'c'));
 assertType("array{'Reflector', 'ReflectionFunction', 'ReflectionObject', 'ReflectionMethod', 'ReflectionClass'}", Arr::extend($a, ...$b, ...$c));
@@ -51,12 +51,12 @@ assertType('array{foo?: string, bar: int, baz?: string, 0: string|Stringable, 1:
 assertType('non-empty-array<int|string, bool|float|int|string|Stringable>', Arr::extend($d, ...$g));
 assertType('non-empty-array<int|string, bool|float|int|string|Stringable|null>', Arr::extend($e, ...$f));
 assertType('non-empty-array<int|string, bool|float|int|string|Stringable>', Arr::extend($e, ...$g));
-assertType('non-empty-array', Arr::extend($k));
-assertType('non-empty-array', Arr::extend($k, 71));
-assertType('array', Arr::extend($l));
-assertType('non-empty-array', Arr::extend($l, 71));
-assertType('non-empty-array', Arr::extend($l, ...$k));
-assertType('array', Arr::extend($l, ...$l));
-assertType('non-empty-array', Arr::extend($l, $l));
-// assertType('list<mixed>', Arr::extend($m));
-// assertType('non-empty-list<mixed>', Arr::extend($m, 71));
+assertType('non-empty-array<mixed>', Arr::extend($k));
+assertType('non-empty-array<mixed>', Arr::extend($k, 71));
+assertType('array<mixed>', Arr::extend($l));
+assertType('non-empty-array<mixed>', Arr::extend($l, 71));
+assertType('non-empty-array<mixed>', Arr::extend($l, ...$k));
+assertType('array<mixed>', Arr::extend($l, ...$l));
+assertType('non-empty-array<mixed>', Arr::extend($l, $l));
+assertType('list<mixed>', Arr::extend($m));
+assertType('non-empty-list<mixed>', Arr::extend($m, 71));
