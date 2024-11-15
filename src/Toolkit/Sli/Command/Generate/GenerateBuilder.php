@@ -945,27 +945,26 @@ EOF)
             $defaultSuffix = $defaultPrefix = '';
         }
 
-        return
-            $summary !== null
-                ? ($declare
-                    ? $summary . $defaultSuffix
-                    : " $summary"
-                        . ($link
-                            ? " ({$defaultPrefix}see {@see $see})"
-                            : $defaultSuffix))
-                : (($declare
-                    ? ($member instanceof ReflectionMethod
-                        ? "Call $see on a new instance"
-                        : ($byRef
-                            ? "Pass a variable to $param$see by reference"
-                            : "Pass a value to $param$see"))
-                    : ($link
-                        ? " See {@see $see}"
-                        : ($member instanceof ReflectionMethod
-                            ? " Call $see on a new instance"
-                            : ($param !== ''
-                                ? " Pass \$value to $param$see"
-                                : " Set $see"))))
-                    . $defaultSuffix);
+        return $summary !== null
+            ? ($declare
+                ? $summary . $defaultSuffix
+                : " $summary"
+                    . ($link
+                        ? " ({$defaultPrefix}see {@see $see})"
+                        : $defaultSuffix))
+            : (($declare
+                ? ($member instanceof ReflectionMethod
+                    ? "Call $see on a new instance"
+                    : ($byRef
+                        ? "Pass a variable to $param$see by reference"
+                        : "Pass a value to $param$see"))
+                : ($link
+                    ? " See {@see $see}"
+                    : ($member instanceof ReflectionMethod
+                        ? " Call $see on a new instance"
+                        : ($param !== ''
+                            ? " Pass \$value to $param$see"
+                            : " Set $see"))))
+                . $defaultSuffix);
     }
 }

@@ -57,8 +57,8 @@ class ReflectionSyncProvider extends ReflectionClass
      */
     public function getSyncProviderInterfaces(): array
     {
-        return self::$Interfaces[$this->name]
-            ??= array_keys($this->getSyncProviderReflectionInterfaces());
+        return self::$Interfaces[$this->name] ??=
+            array_keys($this->getSyncProviderReflectionInterfaces());
     }
 
     /**
@@ -84,8 +84,8 @@ class ReflectionSyncProvider extends ReflectionClass
      */
     public function getSyncProviderEntityTypes(): array
     {
-        return self::$EntityTypes[$this->name]
-            ??= array_keys($this->getSyncProviderReflectionEntities());
+        return self::$EntityTypes[$this->name] ??=
+            array_keys($this->getSyncProviderReflectionEntities());
     }
 
     /**
@@ -96,8 +96,8 @@ class ReflectionSyncProvider extends ReflectionClass
      */
     public function getSyncProviderEntityTypeBasenames(): array
     {
-        return self::$EntityTypeBasenames[$this->name]
-            ??= $this->doGetSyncProviderEntityTypeBasenames();
+        return self::$EntityTypeBasenames[$this->name] ??=
+            $this->doGetSyncProviderEntityTypeBasenames();
     }
 
     /**
@@ -286,8 +286,8 @@ class ReflectionSyncProvider extends ReflectionClass
      */
     public function getSyncOperationMethods(): array
     {
-        return self::$Methods[$this->name]
-            ??= $this->filterUniqueSyncOperationMethods(true);
+        return self::$Methods[$this->name] ??=
+            $this->filterUniqueSyncOperationMethods(true);
     }
 
     /**
@@ -298,8 +298,8 @@ class ReflectionSyncProvider extends ReflectionClass
      */
     public function getSyncOperationMagicMethods(): array
     {
-        return self::$MagicMethods[$this->name]
-            ??= $this->filterUniqueSyncOperationMethods(false);
+        return self::$MagicMethods[$this->name] ??=
+            $this->filterUniqueSyncOperationMethods(false);
     }
 
     /**

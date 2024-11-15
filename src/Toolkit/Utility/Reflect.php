@@ -381,8 +381,8 @@ final class Reflect extends AbstractUtility
      */
     public static function getConstants($class): array
     {
-        return self::$Constants[self::getClassName($class)]
-            ??= self::doGetConstants($class);
+        return self::$Constants[self::getClassName($class)] ??=
+            self::doGetConstants($class);
     }
 
     /**
@@ -412,8 +412,8 @@ final class Reflect extends AbstractUtility
      */
     public static function getConstantsByValue($class): array
     {
-        return self::$ConstantsByValue[self::getClassName($class)]
-            ??= self::doGetConstantsByValue($class);
+        return self::$ConstantsByValue[self::getClassName($class)] ??=
+            self::doGetConstantsByValue($class);
     }
 
     /**

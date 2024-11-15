@@ -151,22 +151,21 @@ final class SyncIntrospector extends Introspector
         // Return a closure that injects this introspector's service
         $service = $this->_Service;
 
-        return
-            static function (
-                array $array,
-                SyncProviderInterface $provider,
-                SyncContextInterface $context
-            ) use ($closure, $service) {
-                return $closure(
-                    $array,
-                    $service,
-                    $context->getContainer(),
-                    $provider,
-                    $context,
-                    $provider->getDateFormatter(),
-                    $context->getParent(),
-                );
-            };
+        return static function (
+            array $array,
+            SyncProviderInterface $provider,
+            SyncContextInterface $context
+        ) use ($closure, $service) {
+            return $closure(
+                $array,
+                $service,
+                $context->getContainer(),
+                $provider,
+                $context,
+                $provider->getDateFormatter(),
+                $context->getParent(),
+            );
+        };
     }
 
     /**
@@ -534,95 +533,44 @@ final class SyncIntrospector extends Introspector
         bool $isChildren
     ): Closure {
         if ($relationship === null) {
-            return
-                static function (
-                    array $data,
-                    ?string $service,
-                    $entity
-                ) use ($key, $property): void {
-                    $entity->{$property} = $data[$key];
-                };
-        }
-
-        return
-            static function (
+            return static function (
                 array $data,
                 ?string $service,
-                $entity,
-                ?SyncProviderInterface $provider,
-                ?SyncContextInterface $context
-            ) use (
-                $key,
-                $isList,
-                $relationship,
-                $property,
-                $isParent,
-                $isChildren
-            ): void {
-                if (
-                    $data[$key] === null
-                    || (Arr::isList($data[$key]) xor $isList)
-                    || !$entity instanceof SyncEntityInterface
-                    || !$provider instanceof SyncProviderInterface
-                    || !$context instanceof SyncContextInterface
-                ) {
-                    $entity->{$property} = $data[$key];
-                    return;
-                }
+                $entity
+            ) use ($key, $property): void {
+                $entity->{$property} = $data[$key];
+            };
+        }
 
-                if ($isList) {
-                    if (is_scalar($data[$key][0])) {
-                        if (!$isChildren) {
-                            DeferredEntity::deferList(
-                                $provider,
-                                $context->pushEntity($entity, true),
-                                $relationship,
-                                $data[$key],
-                                $entity->{$property},
-                            );
-                            return;
-                        }
+        return static function (
+            array $data,
+            ?string $service,
+            $entity,
+            ?SyncProviderInterface $provider,
+            ?SyncContextInterface $context
+        ) use (
+            $key,
+            $isList,
+            $relationship,
+            $property,
+            $isParent,
+            $isChildren
+        ): void {
+            if (
+                $data[$key] === null
+                || (Arr::isList($data[$key]) xor $isList)
+                || !$entity instanceof SyncEntityInterface
+                || !$provider instanceof SyncProviderInterface
+                || !$context instanceof SyncContextInterface
+            ) {
+                $entity->{$property} = $data[$key];
+                return;
+            }
 
-                        /** @var SyncEntityInterface&Treeable $entity */
-                        /** @disregard P1008 */
-                        DeferredEntity::deferList(
-                            $provider,
-                            $context->pushEntity($entity, true),
-                            $relationship,
-                            $data[$key],
-                            $replace,
-                            static function ($child) use ($entity): void {
-                                /** @var SyncEntityInterface&Treeable $child */
-                                $entity->addChild($child);
-                            },
-                        );
-                        return;
-                    }
-
-                    $entities =
-                        $relationship::provideMultiple(
-                            $data[$key],
-                            $provider,
-                            $context->getConformity(),
-                            $context->pushEntity($entity),
-                        )->toArray();
-
+            if ($isList) {
+                if (is_scalar($data[$key][0])) {
                     if (!$isChildren) {
-                        $entity->{$property} = $entities;
-                        return;
-                    }
-
-                    /** @var array<SyncEntityInterface&Treeable> $entities */
-                    foreach ($entities as $child) {
-                        /** @var SyncEntityInterface&Treeable $entity */
-                        $entity->addChild($child);
-                    }
-                    return;
-                }
-
-                if (is_scalar($data[$key])) {
-                    if (!$isParent) {
-                        DeferredEntity::defer(
+                        DeferredEntity::deferList(
                             $provider,
                             $context->pushEntity($entity, true),
                             $relationship,
@@ -634,38 +582,87 @@ final class SyncIntrospector extends Introspector
 
                     /** @var SyncEntityInterface&Treeable $entity */
                     /** @disregard P1008 */
-                    DeferredEntity::defer(
+                    DeferredEntity::deferList(
                         $provider,
                         $context->pushEntity($entity, true),
                         $relationship,
                         $data[$key],
                         $replace,
-                        static function ($parent) use ($entity): void {
-                            /** @var SyncEntityInterface&Treeable $parent */
-                            $entity->setParent($parent);
+                        static function ($child) use ($entity): void {
+                            /** @var SyncEntityInterface&Treeable $child */
+                            $entity->addChild($child);
                         },
                     );
                     return;
                 }
 
-                $related =
-                    $relationship::provide(
+                $entities =
+                    $relationship::provideMultiple(
                         $data[$key],
                         $provider,
+                        $context->getConformity(),
                         $context->pushEntity($entity),
-                    );
+                    )->toArray();
 
-                if (!$isParent) {
-                    $entity->{$property} = $related;
+                if (!$isChildren) {
+                    $entity->{$property} = $entities;
                     return;
                 }
 
-                /**
-                 * @var SyncEntityInterface&Treeable $entity
-                 * @var SyncEntityInterface&Treeable $related
-                 */
-                $entity->setParent($related);
-            };
+                /** @var array<SyncEntityInterface&Treeable> $entities */
+                foreach ($entities as $child) {
+                    /** @var SyncEntityInterface&Treeable $entity */
+                    $entity->addChild($child);
+                }
+                return;
+            }
+
+            if (is_scalar($data[$key])) {
+                if (!$isParent) {
+                    DeferredEntity::defer(
+                        $provider,
+                        $context->pushEntity($entity, true),
+                        $relationship,
+                        $data[$key],
+                        $entity->{$property},
+                    );
+                    return;
+                }
+
+                /** @var SyncEntityInterface&Treeable $entity */
+                /** @disregard P1008 */
+                DeferredEntity::defer(
+                    $provider,
+                    $context->pushEntity($entity, true),
+                    $relationship,
+                    $data[$key],
+                    $replace,
+                    static function ($parent) use ($entity): void {
+                        /** @var SyncEntityInterface&Treeable $parent */
+                        $entity->setParent($parent);
+                    },
+                );
+                return;
+            }
+
+            $related =
+                $relationship::provide(
+                    $data[$key],
+                    $provider,
+                    $context->pushEntity($entity),
+                );
+
+            if (!$isParent) {
+                $entity->{$property} = $related;
+                return;
+            }
+
+            /**
+             * @var SyncEntityInterface&Treeable $entity
+             * @var SyncEntityInterface&Treeable $related
+             */
+            $entity->setParent($related);
+        };
     }
 
     /**
@@ -682,56 +679,40 @@ final class SyncIntrospector extends Introspector
         $entityType = $this->_Class->Class;
         $entityProvider = null;
 
-        return
-            static function (
-                array $data,
-                ?string $service,
-                $entity,
-                ?SyncProviderInterface $provider,
-                ?SyncContextInterface $context
-            ) use (
-                $idKey,
-                $relationship,
-                $property,
-                $filter,
-                $isChildren,
-                $entityType,
-                &$entityProvider
-            ): void {
-                if (
-                    !$context instanceof SyncContextInterface
-                    || !$provider instanceof SyncProviderInterface
-                    || !is_a($provider, $entityProvider ??= SyncUtil::getEntityTypeProvider($relationship, SyncUtil::getStore($context->getContainer())))
-                    || $data[$idKey] === null
-                ) {
-                    return;
-                }
+        return static function (
+            array $data,
+            ?string $service,
+            $entity,
+            ?SyncProviderInterface $provider,
+            ?SyncContextInterface $context
+        ) use (
+            $idKey,
+            $relationship,
+            $property,
+            $filter,
+            $isChildren,
+            $entityType,
+            &$entityProvider
+        ): void {
+            if (
+                !$context instanceof SyncContextInterface
+                || !$provider instanceof SyncProviderInterface
+                || !is_a($provider, $entityProvider ??= SyncUtil::getEntityTypeProvider($relationship, SyncUtil::getStore($context->getContainer())))
+                || $data[$idKey] === null
+            ) {
+                return;
+            }
 
-                $policy = $context->getHydrationPolicy($relationship);
-                if ($policy === HydrationPolicy::SUPPRESS) {
-                    return;
-                }
+            $policy = $context->getHydrationPolicy($relationship);
+            if ($policy === HydrationPolicy::SUPPRESS) {
+                return;
+            }
 
-                if ($filter !== null) {
-                    $filter = [$filter => $data[$idKey]];
-                }
+            if ($filter !== null) {
+                $filter = [$filter => $data[$idKey]];
+            }
 
-                if (!$isChildren) {
-                    DeferredRelationship::defer(
-                        $provider,
-                        $context->pushEntity($entity, true),
-                        $relationship,
-                        $service ?? $entityType,
-                        $property,
-                        $data[$idKey],
-                        $filter,
-                        $entity->{$property},
-                    );
-                    return;
-                }
-
-                /** @var SyncEntityInterface&Treeable $entity */
-                /** @disregard P1008 */
+            if (!$isChildren) {
                 DeferredRelationship::defer(
                     $provider,
                     $context->pushEntity($entity, true),
@@ -740,18 +721,33 @@ final class SyncIntrospector extends Introspector
                     $property,
                     $data[$idKey],
                     $filter,
-                    $replace,
-                    static function ($entities) use ($entity, $property): void {
-                        if (!$entities) {
-                            $entity->{$property} = [];
-                            return;
-                        }
-                        foreach ($entities as $child) {
-                            /** @var SyncEntityInterface&Treeable $child */
-                            $entity->addChild($child);
-                        }
-                    },
+                    $entity->{$property},
                 );
-            };
+                return;
+            }
+
+            /** @var SyncEntityInterface&Treeable $entity */
+            /** @disregard P1008 */
+            DeferredRelationship::defer(
+                $provider,
+                $context->pushEntity($entity, true),
+                $relationship,
+                $service ?? $entityType,
+                $property,
+                $data[$idKey],
+                $filter,
+                $replace,
+                static function ($entities) use ($entity, $property): void {
+                    if (!$entities) {
+                        $entity->{$property} = [];
+                        return;
+                    }
+                    foreach ($entities as $child) {
+                        /** @var SyncEntityInterface&Treeable $child */
+                        $entity->addChild($child);
+                    }
+                },
+            );
+        };
     }
 }

@@ -1063,8 +1063,8 @@ class Curler implements CurlerInterface, Buildable
         // response as an error condition. For example, response status codes in
         // the 400 and 500 range MUST NOT cause an exception and MUST be
         // returned to the Calling Library as normal."
-        $curler = $this->WithoutThrowHttpErrors
-            ??= $this->withThrowHttpErrors(false);
+        $curler = $this->WithoutThrowHttpErrors ??=
+            $this->withThrowHttpErrors(false);
         try {
             try {
                 return $curler->doSendRequest($request);
@@ -1614,8 +1614,8 @@ class Curler implements CurlerInterface, Buildable
      */
     private function getUnstableHeaders(): array
     {
-        return self::$UnstableHeaders
-            ??= array_fill_keys(HttpHeaderGroup::UNSTABLE, true);
+        return self::$UnstableHeaders ??=
+            array_fill_keys(HttpHeaderGroup::UNSTABLE, true);
     }
 
     /**

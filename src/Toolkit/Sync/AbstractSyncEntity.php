@@ -169,9 +169,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
      */
     public function getName(): string
     {
-        return
-            SyncIntrospector::get(static::class)
-                ->getGetNameClosure()($this);
+        return SyncIntrospector::get(static::class)
+            ->getGetNameClosure()($this);
     }
 
     /**
@@ -299,17 +298,17 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
         bool $greedy = true,
         string ...$hints
     ): string {
-        $regex = self::$RemovablePrefixRegex[static::class]
-            ??= self::getRemovablePrefixRegex();
+        $regex = self::$RemovablePrefixRegex[static::class] ??=
+            self::getRemovablePrefixRegex();
 
         if ($regex === false) {
-            return self::$NormalisedPropertyMap[static::class][$name]
-                ??= Str::snake($name);
+            return self::$NormalisedPropertyMap[static::class][$name] ??=
+                Str::snake($name);
         }
 
         if ($greedy && !$hints) {
-            return self::$NormalisedPropertyMap[static::class][$name]
-                ??= Regex::replace($regex, '', Str::snake($name));
+            return self::$NormalisedPropertyMap[static::class][$name] ??=
+                Regex::replace($regex, '', Str::snake($name));
         }
 
         $_name = Str::snake($name);

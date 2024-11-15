@@ -262,23 +262,22 @@ class Introspector
         // Return a closure that injects this introspector's service
         $service = $this->_Service;
 
-        return
-            static function (
-                array $array,
-                ContainerInterface $container,
-                ?DateFormatterInterface $dateFormatter = null,
-                ?Treeable $parent = null
-            ) use ($closure, $service) {
-                return $closure(
-                    $array,
-                    $service,
-                    $container,
-                    null,
-                    null,
-                    $dateFormatter,
-                    $parent,
-                );
-            };
+        return static function (
+            array $array,
+            ContainerInterface $container,
+            ?DateFormatterInterface $dateFormatter = null,
+            ?Treeable $parent = null
+        ) use ($closure, $service) {
+            return $closure(
+                $array,
+                $service,
+                $container,
+                null,
+                null,
+                $dateFormatter,
+                $parent,
+            );
+        };
     }
 
     /**
@@ -347,22 +346,21 @@ class Introspector
         // Return a closure that injects this introspector's service
         $service = $this->_Service;
 
-        return
-            static function (
-                array $array,
-                ProviderInterface $provider,
-                ProviderContextInterface $context
-            ) use ($closure, $service) {
-                return $closure(
-                    $array,
-                    $service,
-                    $context->getContainer(),
-                    $provider,
-                    $context,
-                    $provider->getDateFormatter(),
-                    $context->getParent(),
-                );
-            };
+        return static function (
+            array $array,
+            ProviderInterface $provider,
+            ProviderContextInterface $context
+        ) use ($closure, $service) {
+            return $closure(
+                $array,
+                $service,
+                $context->getContainer(),
+                $provider,
+                $context,
+                $provider->getDateFormatter(),
+                $context->getParent(),
+            );
+        };
     }
 
     /**
