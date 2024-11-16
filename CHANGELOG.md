@@ -10,6 +10,22 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.63] - 2024-11-16
+
+### Changed
+
+#### `PHPStan`
+
+- Adopt PHPStan 2.0
+
+#### `Sync`
+
+- Require list operations to return `iterable<array-key,TEntity>`, not just `iterable<TEntity>`
+
+#### `Utility`
+
+- Accept scalar and `Stringable` arguments to `Str::coalesce()`
+
 ## [v0.99.62] - 2024-11-14
 
 ### Added
@@ -4146,6 +4162,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.63]: https://github.com/salient-labs/toolkit/compare/v0.99.62...v0.99.63
 [v0.99.62]: https://github.com/salient-labs/toolkit/compare/v0.99.61...v0.99.62
 [v0.99.61]: https://github.com/salient-labs/toolkit/compare/v0.99.60...v0.99.61
 [v0.99.60]: https://github.com/salient-labs/toolkit/compare/v0.99.59...v0.99.60
