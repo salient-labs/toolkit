@@ -36,6 +36,6 @@ assertType("array{quuux: '0', quux: 0.0, qux: 0}", Arr::whereNotEmpty($f));
 assertType('array<float|int|non-empty-string|true>', Arr::whereNotEmpty($g));
 assertType('array<float|int|non-empty-string|true>', Arr::whereNotEmpty($k));
 assertType('non-empty-array<float|int>', Arr::whereNotEmpty($l));
-// assertType('array<int<0, max>, float|int|non-empty-string|Stringable|true>', Arr::whereNotEmpty($h));
-// assertType('list<float|int|non-empty-string|true>', Arr::whereNotEmpty($i));
+assertType('array<int<0, max>, float|int|non-empty-string|Stringable|true>', Arr::whereNotEmpty($h));
+assertType('list<float|int|non-empty-string|true>', Arr::whereNotEmpty($i));
 assertType('array{foo?: Stringable, bar?: non-empty-string, baz: int, qux?: float, quux: non-empty-string}', Arr::whereNotEmpty($j));

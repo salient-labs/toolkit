@@ -252,8 +252,7 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
                     : 1.0;
 
             case Algorithm::CONTAINS:
-                return
-                    strpos($string2, $string1) !== false
+                return strpos($string2, $string1) !== false
                     || strpos($string1, $string2) !== false
                         ? 0.0
                         : 1.0;

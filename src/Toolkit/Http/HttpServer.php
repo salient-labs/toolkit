@@ -182,8 +182,7 @@ class HttpServer implements Immutable
                 : sprintf('http://%s:%d', $this->Host, $this->Port);
         }
 
-        return
-            ($this->ProxyTls && $this->ProxyPort === 443)
+        return ($this->ProxyTls && $this->ProxyPort === 443)
             || (!$this->ProxyTls && $this->ProxyPort === 80)
                 ? sprintf(
                     '%s://%s%s',

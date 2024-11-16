@@ -16,9 +16,9 @@ $c = [];
 /** @var array{3:"foo",bar:"baz"} */
 $d = [];
 
-assertType('array', Arr::flatten());
-assertType('array', Arr::flatten('foo'));
-assertType('array', Arr::flatten([], 'foo'));
+assertType('array<mixed>', Arr::flatten());
+assertType('array<mixed>', Arr::flatten('foo'));
+assertType('array<mixed>', Arr::flatten([], 'foo'));
 assertType('array{1}', Arr::flatten([1]));
 assertType('array{1}', Arr::flatten([[1]]));
 assertType('array{1}', Arr::flatten([[[1]]]));

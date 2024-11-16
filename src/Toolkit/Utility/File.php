@@ -418,8 +418,7 @@ final class File extends AbstractUtility
         $stat1 = self::stat($filename1);
         $stat2 = self::stat($filename2);
 
-        return
-            $stat1['dev'] === $stat2['dev']
+        return $stat1['dev'] === $stat2['dev']
             && $stat1['ino'] === $stat2['ino'];
     }
 

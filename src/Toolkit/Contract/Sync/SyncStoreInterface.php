@@ -195,12 +195,15 @@ interface SyncStoreInterface extends Instantiable
     /**
      * Get a sync entity from the entity store if it is available
      *
-     * @param class-string<SyncEntityInterface> $entityType
+     * @template TEntity of SyncEntityInterface
+     *
+     * @param class-string<TEntity> $entityType
      * @param int|string $entityId
      * @param bool|null $offline - `null` (default) or `true`: allow the entity
      * to be retrieved from the local entity store
      * - `false`: do not retrieve the entity from the local entity store; return
      *   `null` if it has not been applied to the store in the current run
+     * @return TEntity|null
      */
     public function getEntity(
         int $providerId,

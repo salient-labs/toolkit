@@ -152,7 +152,7 @@ class ArrExtendReturnTypeExtension implements DynamicStaticMethodReturnTypeExten
             $type = TypeCombinator::intersect($type, new NonEmptyArrayType());
         }
         if ($arrayType->isList()->yes()) {
-            $type = AccessoryArrayListType::intersectWith($type);
+            $type = TypeCombinator::intersect($type, new AccessoryArrayListType());
         }
         return $type;
     }

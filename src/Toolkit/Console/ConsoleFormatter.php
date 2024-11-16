@@ -664,6 +664,7 @@ REGEX;
     ): string {
         /** @var string */
         $text = $matchesHasOffset ? $matches['text'][0] : $matches['text'];
+        /** @var string */
         $tag = $matchesHasOffset ? $matches['tag'][0] : $matches['tag'];
 
         $text = Regex::replaceCallback(

@@ -540,8 +540,7 @@ final class Process
      */
     public function isRunning(): bool
     {
-        return
-            $this->State === self::RUNNING
+        return $this->State === self::RUNNING
             && $this->maybeUpdateStatus()->State === self::RUNNING;
     }
 
@@ -550,8 +549,7 @@ final class Process
      */
     public function isTerminated(): bool
     {
-        return
-            $this->State === self::TERMINATED
+        return $this->State === self::TERMINATED
             || $this->maybeUpdateStatus()->State === self::TERMINATED;
     }
 

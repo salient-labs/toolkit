@@ -50,6 +50,7 @@ trait HasFacade
         // `$this` hasn't been cloned in the meantime
         if (
             $this->InstanceWithoutFacade === $this
+            && $this->InstanceWithFacade
             && $this->InstanceWithFacade->Facade === $facade
         ) {
             return $this->InstanceWithFacade;
@@ -88,7 +89,11 @@ trait HasFacade
 
         // Revert to `$this->InstanceWithoutFacade` if `$this` hasn't been
         // cloned in the meantime
-        if ($this->InstanceWithFacade === $this && !$unloading) {
+        if (
+            $this->InstanceWithFacade === $this
+            && $this->InstanceWithoutFacade
+            && !$unloading
+        ) {
             return $this->InstanceWithoutFacade;
         }
 

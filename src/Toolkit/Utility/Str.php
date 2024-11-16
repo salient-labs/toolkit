@@ -4,6 +4,7 @@ namespace Salient\Utility;
 
 use Closure;
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * Work with strings
@@ -30,15 +31,20 @@ final class Str extends AbstractUtility
 
     /**
      * Get the first string that is not null or empty, or return the last value
+     *
+     * @param int|float|string|bool|Stringable|null ...$strings
      */
-    public static function coalesce(?string ...$strings): ?string
+    public static function coalesce(...$strings): ?string
     {
         $string = null;
         foreach ($strings as $string) {
-            if ($string === null || $string === '') {
+            if ($string === null) {
                 continue;
             }
-            return $string;
+            $string = (string) $string;
+            if ($string !== '') {
+                break;
+            }
         }
         return $string;
     }
@@ -832,7 +838,9 @@ REGEX;
             if ($split === '') {
                 continue;
             }
-            $ngrams = array_merge($ngrams, str_split($split, $size));
+            /** @var string[] */
+            $split = str_split($split, $size);
+            $ngrams = array_merge($ngrams, $split);
         }
 
         return $ngrams;

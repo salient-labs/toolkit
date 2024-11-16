@@ -51,7 +51,7 @@ trait MultipleErrorExceptionTrait
 
     public function getMessageWithoutErrors(): string
     {
-        return Str::coalesce($this->MessageWithoutErrors, $this->message);
+        return Str::coalesce($this->MessageWithoutErrors, (string) $this->message);
     }
 
     /**

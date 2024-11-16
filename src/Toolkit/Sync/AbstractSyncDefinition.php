@@ -30,15 +30,15 @@ use Closure;
 use LogicException;
 
 /**
- * @phpstan-type SyncOperationClosure (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
- * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
+ * @phpstan-type SyncOperationClosure (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(SyncContextInterface, mixed...): iterable<array-key,TEntity>)|(Closure(SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<array-key,TEntity>)
+ * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<array-key,TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<array-key,TEntity>)
  *
  * @property-read class-string<TEntity> $Entity The entity being serviced
  * @property-read TProvider $Provider The provider servicing the entity
  * @property-read array<OP::*> $Operations Supported sync operations
  * @property-read ListConformity::* $Conformity Conformity level of data returned by the provider for this entity
  * @property-read FilterPolicy::* $FilterPolicy Action to take when filters are not claimed by the provider
- * @property-read array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $Overrides Array that maps sync operations to closures that override other implementations
+ * @property-read array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $Overrides Array that maps sync operations to closures that override other implementations
  * @phpstan-property-read array<OP::*,OverrideClosure> $Overrides
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap Array that maps keys to properties for entity data returned by the provider
  * @property-read int-mask-of<ArrayMapperInterface::*> $KeyMapFlags Array mapper flags used if a key map is provided
@@ -68,17 +68,17 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * - the provider has not implemented the operation via a declared method
      *
      * @param OP::* $operation
-     * @return (Closure(SyncContextInterface, mixed...): (iterable<TEntity>|TEntity))|null
+     * @return (Closure(SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity))|null
      * @phpstan-return (
      *     $operation is OP::READ
      *     ? (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)
      *     : (
      *         $operation is OP::READ_LIST
-     *         ? (Closure(SyncContextInterface, mixed...): iterable<TEntity>)
+     *         ? (Closure(SyncContextInterface, mixed...): iterable<array-key,TEntity>)
      *         : (
      *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
      *             ? (Closure(SyncContextInterface, TEntity, mixed...): TEntity)
-     *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<array-key,TEntity>)
      *         )
      *     )
      * )|null
@@ -142,7 +142,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * Operations implemented here are added to
      * {@see AbstractSyncDefinition::$Operations} automatically.
      *
-     * @var array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)>
+     * @var array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)>
      * @phpstan-var array<OP::*,OverrideClosure>
      */
     protected array $Overrides = [];
@@ -217,7 +217,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @param array<OP::*> $operations
      * @param ListConformity::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
-     * @param array<int-mask-of<OP::*>,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
+     * @param array<int-mask-of<OP::*>,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
@@ -460,11 +460,11 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      *     ? (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)
      *     : (
      *         $operation is OP::READ_LIST
-     *         ? (Closure(SyncContextInterface, mixed...): iterable<TEntity>)
+     *         ? (Closure(SyncContextInterface, mixed...): iterable<array-key,TEntity>)
      *         : (
      *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
      *             ? (Closure(SyncContextInterface, TEntity, mixed...): TEntity)
-     *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<array-key,TEntity>)
      *         )
      *     )
      * )

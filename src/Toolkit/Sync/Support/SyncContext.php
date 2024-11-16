@@ -228,8 +228,8 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 /** @var SyncEntityInterface $entity */
                 $id = $this->normaliseFilterEntity($entity);
                 $service = $entity->getService();
-                $key = self::$ServiceKeyMap[$service]
-                    ??= Str::snake(Get::basename($service));
+                $key = self::$ServiceKeyMap[$service] ??=
+                    Str::snake(Get::basename($service));
                 $filters[$key][] = $id;
             }
 
@@ -422,8 +422,8 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
                 $this->FallbackHydrationPolicy,
             );
         } else {
-            $this->EntityHydrationPolicy
-                += [$entityType => $this->FallbackHydrationPolicy];
+            $this->EntityHydrationPolicy +=
+                [$entityType => $this->FallbackHydrationPolicy];
         }
 
         foreach ($this->EntityHydrationPolicy as $entity => &$value) {

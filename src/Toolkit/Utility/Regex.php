@@ -171,11 +171,18 @@ REGEX;
      *                     : (TFlags is 514
      *                         ? list<array<string|null>>
      *                         : (TFlags is 768|769
-     *                             ? mixed[]
+     *                             ? array<list<array{string|null,int}>>
      *                             : (TFlags is 770
      *                                 ? list<array<array{string|null,int}>>
      *                                 : array<list<string>>
-     * )))))))) $matches Removed for PHPStan compatibility: (TFlags is 768|769 ? array<list<array{string|null,int}>> : ...)
+     *                             )
+     *                         )
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     )
+     * ) $matches
      */
     public static function matchAll(
         string $pattern,
@@ -184,6 +191,7 @@ REGEX;
         int $flags = 0,
         int $offset = 0
     ): int {
+        // @phpstan-ignore paramOut.type
         $result = preg_match_all($pattern, $subject, $matches, $flags, $offset);
         if ($result === false) {
             throw new PcreErrorException(null, 'preg_match_all', $pattern, $subject);
@@ -213,6 +221,7 @@ REGEX;
         if ($result === null) {
             throw new PcreErrorException(null, 'preg_replace', $pattern, $subject);
         }
+        // @phpstan-ignore return.type
         return $result;
     }
 
@@ -248,10 +257,12 @@ REGEX;
         ?int &$count = null,
         int $flags = 0
     ) {
+        // @phpstan-ignore argument.type
         $result = preg_replace_callback($pattern, $callback, $subject, $limit, $count, $flags);
         if ($result === null) {
             throw new PcreErrorException(null, 'preg_replace_callback', $pattern, $subject);
         }
+        // @phpstan-ignore return.type
         return $result;
     }
 
@@ -288,6 +299,7 @@ REGEX;
         if ($result === null) {
             throw new PcreErrorException(null, 'preg_replace_callback_array', $pattern, $subject);
         }
+        // @phpstan-ignore return.type
         return $result;
     }
 

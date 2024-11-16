@@ -476,8 +476,8 @@ class PHPDoc implements Immutable, Stringable
      */
     private static function getInheritableTagIndex(): array
     {
-        return self::$InheritableTagIndex[static::class]
-            ??= self::doGetInheritableTagIndex(static::INHERITABLE_TAGS);
+        return self::$InheritableTagIndex[static::class] ??=
+            self::doGetInheritableTagIndex(static::INHERITABLE_TAGS);
     }
 
     /**
@@ -485,8 +485,8 @@ class PHPDoc implements Immutable, Stringable
      */
     private static function getInheritableByClassTagIndex(): array
     {
-        return self::$InheritableByClassTagIndex[static::class]
-            ??= self::doGetInheritableTagIndex(static::INHERITABLE_BY_CLASS_TAGS);
+        return self::$InheritableByClassTagIndex[static::class] ??=
+            self::doGetInheritableTagIndex(static::INHERITABLE_BY_CLASS_TAGS);
     }
 
     /**

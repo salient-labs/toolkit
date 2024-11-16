@@ -575,8 +575,8 @@ final class PHPDocUtil extends AbstractUtility
             $param = $type;
         }
 
-        $param
-            .= ($param === '' ? '' : ' ')
+        $param .=
+            ($param === '' ? '' : ' ')
             . ($parameter->isVariadic() ? '...' : '')
             . '$' . ($name === null ? $parameter->getName() : $name);
 
@@ -632,8 +632,8 @@ final class PHPDocUtil extends AbstractUtility
             $param = $type;
         }
 
-        $param
-            .= ($param === '' ? '' : ' ')
+        $param .=
+            ($param === '' ? '' : ' ')
             . ($parameter->isPassedByReference() ? '&' : '')
             . ($parameter->isVariadic() ? '...' : '')
             . '$' . ($name === null ? $parameter->getName() : $name);
