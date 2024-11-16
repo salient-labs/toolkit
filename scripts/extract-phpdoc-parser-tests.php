@@ -8,8 +8,10 @@ use Salient\Utility\Get;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
-// Run `composer require --dev --prefer-source phpstan/phpdoc-parser=^1` before
-// running this script
+// Delete `vendor/phpstan/phpdoc-parser` and run the following command before
+// running this script:
+//
+// composer require --dev --prefer-source phpstan/phpdoc-parser=^2
 $loader->addPsr4(
     'PHPStan\\PhpDocParser\\',
     InstalledVersions::getInstallPath('phpstan/phpdoc-parser') . '/tests/PHPStan/'
