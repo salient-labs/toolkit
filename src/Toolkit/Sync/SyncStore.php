@@ -804,7 +804,10 @@ SQL;
     }
 
     /**
-     * @inheritDoc
+     * @template TEntity of SyncEntityInterface
+     *
+     * @param class-string<TEntity> $entityType
+     * @return TEntity|null
      */
     public function getEntity(
         int $providerId,
@@ -813,6 +816,7 @@ SQL;
         ?bool $offline = null
     ): ?SyncEntityInterface {
         $entityTypeId = $this->EntityTypeMap[$entityType];
+        /** @var TEntity|null */
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
         if ($entity || $offline === false) {
             return $entity;

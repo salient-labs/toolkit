@@ -15,7 +15,7 @@ final class InflectTest extends TestCase
     /**
      * @dataProvider formatProvider
      *
-     * @param mixed $values
+     * @param string|int|bool|float|null ...$values
      */
     public function testFormat(
         string $expected0,
@@ -144,7 +144,7 @@ final class InflectTest extends TestCase
      *
      * @param int|float $from
      * @param int|float $to
-     * @param mixed ...$values
+     * @param string|int|bool|float|null ...$values
      */
     public function testFormatRange(
         string $expected1,

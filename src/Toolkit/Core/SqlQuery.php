@@ -6,6 +6,7 @@ use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Chainable;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasReadableProperties;
+use Salient\Utility\Get;
 use LogicException;
 
 /**
@@ -50,7 +51,7 @@ final class SqlQuery implements Chainable, Readable
      * ]
      * ```
      *
-     * @var array<int|string,string|mixed[]>
+     * @var array<string|mixed[]>
      */
     public $Where = [];
 
@@ -165,24 +166,31 @@ final class SqlQuery implements Chainable, Readable
     }
 
     /**
-     * @param array<int|string,string|mixed[]> $where
+     * @param array<string|mixed[]> $where
      */
     private function buildWhere(array $where): string
     {
         $glue = $where['__'] ?? self::AND;
+        if (!is_string($glue)) {
+            throw new LogicException(sprintf(
+                'Invalid operator in WHERE condition: %s',
+                Get::code($glue),
+            ));
+        }
         unset($where['__']);
-        foreach ($where as $i => $condition) {
+        /** @var string|array<string|mixed[]> $condition */
+        foreach ($where as $condition) {
             if (is_array($condition)) {
                 $condition = $this->buildWhere($condition);
                 if ($condition === '') {
-                    unset($where[$i]);
                     continue;
                 }
-                $where[$i] = "($condition)";
+                $sql[] = "($condition)";
+            } else {
+                $sql[] = $condition;
             }
         }
 
-        /** @var string[] $where */
-        return implode(" $glue ", $where);
+        return implode(" $glue ", $sql ?? []);
     }
 }

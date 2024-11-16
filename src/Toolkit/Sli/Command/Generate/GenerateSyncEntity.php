@@ -241,7 +241,7 @@ EOF)
             $entity = $this->getJson($json, $entityUri);
             if (!is_array($entity)) {
                 throw new CliInvalidArgumentsException(sprintf(
-                    'Not a reference entity: %s',
+                    'not a reference entity: %s',
                     $json,
                 ));
             }
@@ -251,6 +251,12 @@ EOF)
             $data = $this->HttpDataFile === null
                 ? null
                 : $this->getJson($this->HttpDataFile, $dataUri, false);
+            if ($data !== null && !is_array($data) && !is_object($data)) {
+                throw new CliInvalidArgumentsException(sprintf(
+                    'not an array or object: %s',
+                    $this->HttpDataFile,
+                ));
+            }
             $method = $data !== null && $endpoint !== null
                 ? HttpRequestMethod::POST
                 : $this->HttpMethod;
@@ -300,7 +306,7 @@ EOF)
             $skip[] = $normaliser($property);
         }
 
-        if ($entity) {
+        if (is_array($entity)) {
             foreach (['data', 'Result', 'Items'] as $property) {
                 if (is_array($entity[$property] ?? null)) {
                     $entity = $entity[$property];
@@ -308,7 +314,7 @@ EOF)
                 }
             }
 
-            if (Arr::isList($entity)) {
+            if (Arr::isList($entity) && is_array($entity[0])) {
                 $entity = $entity[0];
             }
 
@@ -378,6 +384,8 @@ EOF)
 
                 $properties[$key] = $type;
             }
+        } else {
+            $entity = null;
         }
 
         $count = 0;
@@ -550,7 +558,7 @@ EOF,
             $matches
         )) {
             throw new CliInvalidArgumentsException(sprintf(
-                'Invalid relationship: %s',
+                'invalid relationship: %s',
                 $relationship,
             ));
         }

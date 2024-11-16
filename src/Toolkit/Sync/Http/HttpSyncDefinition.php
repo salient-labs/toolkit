@@ -57,7 +57,7 @@ use UnexpectedValueException;
  * If no implementations are found, {@see SyncOperationNotImplementedException}
  * is thrown.
  *
- * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
+ * @phpstan-type OverrideClosure (Closure(static, OP::*, SyncContextInterface, int|string|null, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, mixed...): iterable<array-key,TEntity>)|(Closure(static, OP::*, SyncContextInterface, TEntity, mixed...): TEntity)|(Closure(static, OP::*, SyncContextInterface, iterable<TEntity>, mixed...): iterable<array-key,TEntity>)
  *
  * @property-read string[]|string|null $Path Path or paths to the endpoint servicing the entity, e.g. "/v1/user"
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
@@ -242,7 +242,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param int<-1,max>|null $expiry
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @param (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $curlerCallback
-     * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $overrides
+     * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
@@ -512,6 +512,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                             ->collectThen($then);
                     }
 
+                    /** @var iterable<array-key,TEntity> */
                     return $toBackend
                         ->startInto($roundTrip)
                         ->withConformity($this->Conformity)
@@ -527,6 +528,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                     /** @var iterable<mixed[]> */
                     $payload = $this->runHttpOperation($operation, $ctx, ...$args);
                     $arg = new SyncPipelineArgument($operation, $ctx, $args);
+                    /** @var iterable<array-key,TEntity> */
                     return $this
                         ->getPipelineFromBackend()
                         ->stream($payload, $arg)

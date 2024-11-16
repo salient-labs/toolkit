@@ -2,6 +2,8 @@
 
 namespace Salient\Utility\Exception;
 
+use Stringable;
+
 /**
  * @api
  */
@@ -20,16 +22,16 @@ class PcreErrorException extends AbstractUtilityException
     protected int $PcreError;
     protected string $PcreErrorMessage;
     protected string $Function;
-    /** @var array<string,callable(array<string|null>): string>|string[]|string */
+    /** @var array<string,callable>|string[]|string */
     protected $Pattern;
-    /** @var string[]|string */
+    /** @var array<int|float|string|bool|Stringable|null>|string */
     protected $Subject;
     /** @var array<int,string> */
     private static array $ErrorNameMap;
 
     /**
-     * @param array<string,callable(array<string|null>): string>|string[]|string $pattern
-     * @param string[]|string $subject
+     * @param array<string,callable>|string[]|string $pattern
+     * @param array<int|float|string|bool|Stringable|null>|string $subject
      */
     public function __construct(?int $error, string $function, $pattern, $subject)
     {
@@ -87,7 +89,7 @@ class PcreErrorException extends AbstractUtilityException
     /**
      * Get the pattern passed to the PCRE function
      *
-     * @return array<string,callable(array<string|null>): string>|string[]|string
+     * @return array<string,callable>|string[]|string
      */
     public function getPattern()
     {
@@ -97,7 +99,7 @@ class PcreErrorException extends AbstractUtilityException
     /**
      * Get the subject passed to the PCRE function
      *
-     * @return string[]|string
+     * @return array<int|float|string|bool|Stringable|null>|string
      */
     public function getSubject()
     {

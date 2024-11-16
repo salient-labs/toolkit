@@ -27,11 +27,11 @@ interface SyncDefinitionInterface extends Immutable
      *     ? (Closure(SyncContextInterface, int|string|null, mixed...): TEntity)
      *     : (
      *         TOperation is OP::READ_LIST
-     *         ? (Closure(SyncContextInterface, mixed...): iterable<TEntity>)
+     *         ? (Closure(SyncContextInterface, mixed...): iterable<array-key,TEntity>)
      *         : (
      *             TOperation is OP::CREATE|OP::UPDATE|OP::DELETE
      *             ? (Closure(SyncContextInterface, TEntity, mixed...): TEntity)
-     *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *             : (Closure(SyncContextInterface, iterable<TEntity>, mixed...): iterable<array-key,TEntity>)
      *         )
      *     )
      * )|null

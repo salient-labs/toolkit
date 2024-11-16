@@ -22,7 +22,7 @@ use Closure;
  * @method $this table(?string $value) Set DbSyncDefinition::$Table
  * @method $this conformity(ListConformity::* $value) Conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
  * @method $this filterPolicy(FilterPolicy::*|null $value) Action to take when filters are not claimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
- * @method $this overrides(array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<TEntity>|TEntity)> $value) Array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})
+ * @method $this overrides(array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $value) Array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})
  * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) Array that maps keys to properties for entity data returned by the provider (see {@see AbstractSyncDefinition::$KeyMap})
  * @method $this keyMapFlags(int-mask-of<ArrayMapperInterface::*> $value) Array mapper flags used if a key map is provided
  * @method $this readFromList(bool $value = true) Perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromList})

@@ -17,6 +17,11 @@ assertType("''", Str::coalesce('', '', ''));
 assertType("'foo'", Str::coalesce('foo', ''));
 assertType("'foo'", Str::coalesce('', 'foo'));
 assertType("'foo'", Str::coalesce('', null, 'foo', ''));
+assertType("''", Str::coalesce(false));
+assertType('null', Str::coalesce(false, null));
+assertType("'1'", Str::coalesce(true));
+assertType("'0'", Str::coalesce(0));
+assertType("'0'", Str::coalesce(0, null));
 
 $a = [];
 $b = [null];
@@ -25,6 +30,11 @@ $d = ['', null];
 $e = [null, ''];
 $f = ['foo', ''];
 $g = ['', null, 'foo', ''];
+$h = [false];
+$i = [false, null];
+$j = [true];
+$k = [0];
+$l = [0, null];
 
 assertType('null', Str::coalesce(...$a));
 assertType('null', Str::coalesce(...$a, ...$a));
@@ -35,7 +45,12 @@ assertType("''", Str::coalesce(...$e));
 assertType("''", Str::coalesce(...$a, ...$d, ...$e));
 assertType("'foo'", Str::coalesce(...$f));
 assertType("'foo'", Str::coalesce(...$g));
+assertType("''", Str::coalesce(...$h));
+assertType('null', Str::coalesce(...$i));
+assertType("'1'", Str::coalesce(...$j));
+assertType("'0'", Str::coalesce(...$k));
+assertType("'0'", Str::coalesce(...$l));
 
-foreach ($g as $h) {
-    assertType("''|'foo'|null", Str::coalesce('', $h));
+foreach ($g as $value) {
+    assertType("''|'foo'|null", Str::coalesce('', $value));
 }

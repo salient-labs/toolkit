@@ -170,7 +170,7 @@ class GenerateTests extends AbstractGenerateCommand
                     $_method->getReturnType(),
                     $classPrefix,
                     fn(string $type): ?string =>
-                        $this->getTypeAlias($type, $_method->getFileName(), false)
+                        $this->getTypeAlias($type, Str::coalesce($_method->getFileName(), null), false)
                 );
                 array_unshift(
                     $_parameters,

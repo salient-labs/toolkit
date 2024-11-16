@@ -277,7 +277,7 @@ abstract class CliCommand implements CliCommandInterface
             $allowed = null;
             $booleanValue = false;
             $valueName = null;
-            $default = null;
+            $default = [];
             $prefix = '';
             $suffix = '';
 

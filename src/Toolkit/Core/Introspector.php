@@ -17,8 +17,9 @@ use Salient\Contract\Core\SerializeRulesInterface;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Closure;
+use InvalidArgumentException;
 use LogicException;
-use UnexpectedValueException;
+use RuntimeException;
 
 /**
  * Generates closures that perform operations on a class
@@ -74,7 +75,7 @@ class Introspector
     protected $_Entity;
     /** @var class-string<TContext> */
     protected $_Context;
-    /** @var array<class-string,IntrospectionClass<object>> */
+    /** @var array<self::class,array<class-string,IntrospectionClass<object>>> */
     private static $_IntrospectionClasses = [];
 
     /**
@@ -134,9 +135,11 @@ class Introspector
         string $entity,
         string $context
     ) {
-        $this->_Class =
+        /** @var IntrospectionClass<TClass> */
+        $_class =
             self::$_IntrospectionClasses[static::class][$class]
                 ?? (self::$_IntrospectionClasses[static::class][$class] = $this->getIntrospectionClass($class));
+        $this->_Class = $_class;
         $this->_Service = $service === $class ? null : $service;
         $this->_Provider = $provider;
         $this->_Entity = $entity;
@@ -307,6 +310,8 @@ class Introspector
                 ProviderInterface $provider,
                 ProviderContextInterface $context
             ) use ($strict) {
+                /** @var TProvider $provider */
+                /** @var TContext $context */
                 $keys = array_keys($array);
                 $closure = $this->getCreateProvidableFromSignatureClosure($keys, $strict);
                 return $closure($array, $provider, $context);
@@ -388,6 +393,9 @@ class Introspector
             ?DateFormatterInterface $dateFormatter,
             ?Treeable $parent
         ) use ($constructor, $updater, $resolver) {
+            /** @var class-string $service */
+            /** @var TProvider $provider */
+            /** @var TContext $context */
             $obj = $constructor($array, $service, $container);
             $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
             $obj = $resolver($array, $service, $obj, $provider, $context);
@@ -464,7 +472,7 @@ class Introspector
             );
             if ($readonly) {
                 throw new LogicException(sprintf(
-                    'Cannot set readonly properties of %s: %s',
+                    'Cannot set unwritable properties of %s: %s',
                     $this->_Class->Class,
                     implode(', ', $readonly),
                 ));
@@ -697,7 +705,7 @@ class Introspector
             IntrospectionClass::ACTION_ISSET,
             IntrospectionClass::ACTION_UNSET
         ])) {
-            throw new UnexpectedValueException("Invalid action: $action");
+            throw new InvalidArgumentException("Invalid action: $action");
         }
 
         if ($method = $this->_Class->Actions[$action][$_name] ?? null) {
@@ -776,10 +784,14 @@ class Introspector
         }
 
         if (!$closure) {
-            throw new UnexpectedValueException("Unable to perform '$action' on property '$name'");
+            throw new LogicException("Unable to perform '$action' on property '$name'");
         }
 
         $closure = $closure->bindTo(null, $this->_Class->Class);
+
+        if (!$closure) {
+            throw new RuntimeException('Error binding closure to class');
+        }
 
         return $this->_Class->PropertyActionClosures[$_name][$action] = $closure;
     }
@@ -1007,7 +1019,7 @@ class Introspector
             // methods need them
             if ($isProvidable && $provider) {
                 if (!$context) {
-                    throw new UnexpectedValueException('$context cannot be null when $provider is not null');
+                    throw new InvalidArgumentException('$context cannot be null when $provider is not null');
                 }
                 /** @var TClass&TEntity $obj */
                 $currentProvider = $obj->getProvider();
@@ -1065,6 +1077,8 @@ class Introspector
             ?ProviderInterface $provider,
             ?ProviderContextInterface $context
         ) use ($callbackKeys) {
+            /** @var TProvider $provider */
+            /** @var TContext $context */
             if ($callbackKeys) {
                 foreach ($callbackKeys as $callback) {
                     $callback($array, $service, $obj, $provider, $context);

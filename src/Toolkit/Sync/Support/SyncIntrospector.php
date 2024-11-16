@@ -292,7 +292,8 @@ final class SyncIntrospector extends Introspector
 
                 $store = $provider->getStore()->registerEntityType($service ?? $entityType);
                 $providerId = $provider->getProviderId();
-                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context->getOffline());
+                /** @var TClass|null */
+                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context ? $context->getOffline() : null);
 
                 if ($obj) {
                     $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
@@ -617,7 +618,7 @@ final class SyncIntrospector extends Introspector
                 return;
             }
 
-            if (is_scalar($data[$key])) {
+            if (is_int($data[$key]) || is_string($data[$key])) {
                 if (!$isParent) {
                     DeferredEntity::defer(
                         $provider,
@@ -676,6 +677,7 @@ final class SyncIntrospector extends Introspector
         ?string $filter,
         bool $isChildren
     ): Closure {
+        /** @var class-string<SyncEntityInterface> */
         $entityType = $this->_Class->Class;
         $entityProvider = null;
 
@@ -712,6 +714,7 @@ final class SyncIntrospector extends Introspector
                 $filter = [$filter => $data[$idKey]];
             }
 
+            /** @var class-string<SyncEntityInterface>|null $service */
             if (!$isChildren) {
                 DeferredRelationship::defer(
                     $provider,

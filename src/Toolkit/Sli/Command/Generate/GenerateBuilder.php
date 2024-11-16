@@ -283,7 +283,7 @@ EOF)
 
             if ($_property = $_props[$name] ?? null) {
                 $phpDoc = PHPDoc::forProperty($_property);
-                $propertyFile = $_property->getDeclaringClass()->getFileName();
+                $propertyFile = Str::coalesce($_property->getDeclaringClass()->getFileName(), null);
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
                 $internal = $phpDoc->hasTag('internal');
@@ -377,7 +377,7 @@ EOF)
             // If we end up here, we're dealing with a constructor parameter
             /** @var ReflectionMethod $_constructor */
             $maps = $this->getMaps();
-            $propertyFile = $_constructor->getFileName();
+            $propertyFile = Str::coalesce($_constructor->getFileName(), null);
             $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
             $declaringClass = $this->getTypeAlias($_constructor->getDeclaringClass()->getName());
             $declare = array_key_exists($name, $this->ToDeclare);
@@ -582,7 +582,7 @@ EOF)
 
                 $declaringClass = $this->getTypeAlias($_method->getDeclaringClass()->getName());
                 $_params = $_method->getParameters();
-                $propertyFile = $_method->getFileName() ?: null;
+                $propertyFile = Str::coalesce($_method->getFileName(), null);
                 $propertyNamespace = $_method->getDeclaringClass()->getNamespaceName();
 
                 $declare = (bool) array_filter(
@@ -768,7 +768,7 @@ EOF)
                         $tag,
                         [],
                         $this->InputClass->getNamespaceName(),
-                        $this->InputClass->getFileName()
+                        Str::coalesce($this->InputClass->getFileName(), null),
                     ));
                 }
                 $docBlock[] = " * $tag";
@@ -876,7 +876,9 @@ EOF)
                     fn(string $type): ?string =>
                         $this->getTypeAlias(
                             $type,
-                            $_param->getDeclaringClass()->getFileName(),
+                            ($_declaring = $_param->getDeclaringClass())
+                                ? Str::coalesce($_declaring->getFileName(), null)
+                                : null,
                             false
                         )
                 )

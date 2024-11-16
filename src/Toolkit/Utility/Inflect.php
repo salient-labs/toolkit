@@ -38,8 +38,8 @@ final class Inflect extends AbstractUtility
      *
      * @param int|float $from
      * @param int|float $to
-     * @param mixed ...$values Passed to {@see sprintf()} with the inflected
-     * string if given.
+     * @param string|int|bool|float|null ...$values Passed to {@see sprintf()}
+     * with the inflected string if given.
      */
     public static function formatRange($from, $to, string $format, ...$values): string
     {
@@ -55,7 +55,7 @@ final class Inflect extends AbstractUtility
         $callback = $singular
             ? fn(): string =>
                 (string) $from
-            : fn(?string $pluralWord): string =>
+            : fn(?string $pluralWord = null): string =>
                 sprintf('%s %s %s', $from, $pluralWord ?? 'to', $to);
 
         if ($zero) {
@@ -117,8 +117,8 @@ final class Inflect extends AbstractUtility
      * ```
      *
      * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $count
-     * @param mixed ...$values Passed to {@see sprintf()} with the inflected
-     * string if given.
+     * @param string|int|bool|float|null ...$values Passed to {@see sprintf()}
+     * with the inflected string if given.
      */
     public static function format($count, string $format, ...$values): string
     {
@@ -130,8 +130,8 @@ final class Inflect extends AbstractUtility
      * in the plural otherwise
      *
      * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $count
-     * @param mixed ...$values Passed to {@see sprintf()} with the inflected
-     * string if given.
+     * @param string|int|bool|float|null ...$values Passed to {@see sprintf()}
+     * with the inflected string if given.
      */
     public static function formatWithZeroAsOne($count, string $format, ...$values): string
     {
@@ -139,8 +139,8 @@ final class Inflect extends AbstractUtility
     }
 
     /**
-     * @param array<string,(Closure(string|null): string)|string> $replace
-     * @param mixed ...$values
+     * @param array<string,(Closure(string|null=): string)|string> $replace
+     * @param string|int|bool|float|null ...$values
      */
     private static function doFormat(int $count, string $format, array $replace, bool $zeroIsSingular, ...$values): string
     {

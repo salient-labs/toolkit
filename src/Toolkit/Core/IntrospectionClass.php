@@ -510,7 +510,7 @@ class IntrospectionClass
                     }
                 } elseif (!$param->allowsNull()) {
                     $this->RequiredParameters[$normalised] = $name;
-                    if ($type) {
+                    if ($type !== null) {
                         $this->ServiceParameters[$normalised] = $type;
                     }
                 }
@@ -521,7 +521,7 @@ class IntrospectionClass
                 if ($param->isPassedByReference()) {
                     $this->PassByRefParameters[$normalised] = $name;
                 }
-                if ($this->HasDates && is_a($type, DateTimeInterface::class, true)) {
+                if ($this->HasDates && $type !== null && is_a($type, DateTimeInterface::class, true)) {
                     $this->DateParameters[$normalised] = $name;
                 }
                 $this->Parameters[$normalised] = $name;
@@ -579,6 +579,7 @@ class IntrospectionClass
 
                 // If the methods were declared in different classes, choose the
                 // least-generic one
+                /** @var class-string<Treeable> */
                 $service = $childrenClass->isSubclassOf($parentClass)
                     ? $childrenClass->getName()
                     : $parentClass->getName();

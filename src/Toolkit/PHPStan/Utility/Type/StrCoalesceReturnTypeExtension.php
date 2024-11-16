@@ -5,6 +5,7 @@ namespace Salient\PHPStan\Utility\Type;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
@@ -44,7 +45,11 @@ class StrCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
             return $null;
         }
 
-        $empty = new UnionType([new ConstantStringType(''), $null]);
+        $empty = new UnionType([
+            new ConstantStringType(''),
+            new ConstantBooleanType(false),
+            $null,
+        ]);
 
         $types = [];
         $last = null;
@@ -73,12 +78,15 @@ class StrCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
                 if ($isEmpty->no()) {
                     break 2;
                 }
-                $types[] = TypeCombinator::remove($type, $empty);
+                $types[] = TypeCombinator::remove(
+                    self::toStringOrNull($type, $null),
+                    $empty,
+                );
             }
         }
 
         if ($last) {
-            $types[] = $last;
+            $types[] = self::toStringOrNull($last, $null);
         }
 
         if ($types === []) {
@@ -86,5 +94,20 @@ class StrCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
         }
 
         return TypeCombinator::union(...$types);
+    }
+
+    private static function toStringOrNull(Type $type, Type $null): Type
+    {
+        $isNull = $null->isSuperTypeOf($type);
+        if ($isNull->yes()) {
+            return $type;
+        }
+        if ($isNull->maybe()) {
+            return TypeCombinator::union(
+                TypeCombinator::remove($type, $null)->toString(),
+                $null,
+            );
+        }
+        return $type->toString();
     }
 }

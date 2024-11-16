@@ -116,10 +116,10 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     /**
      * @param SyncOperation::* $operation
      * @param mixed ...$args
-     * @return iterable<TEntity>|TEntity
+     * @return iterable<array-key,TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
-     *     ? iterable<TEntity>
+     *     ? iterable<array-key,TEntity>
      *     : TEntity
      * )
      */
@@ -191,9 +191,9 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
     }
 
     /**
-     * @param SyncOperation::* $operation
+     * @param SyncOperation::*_LIST $operation
      * @param mixed ...$args
-     * @return Generator<TEntity>
+     * @return Generator<array-key,TEntity>
      */
     private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, int $operation, ...$args): Generator
     {

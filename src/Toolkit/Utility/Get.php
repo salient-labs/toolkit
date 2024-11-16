@@ -136,9 +136,10 @@ final class Get extends AbstractUtility
      * Resolve a closure to its return value
      *
      * @template T
+     * @template TArg
      *
-     * @param (Closure(mixed...): T)|T $value
-     * @param mixed ...$args Passed to `$value` if it is a closure.
+     * @param T|Closure(TArg...): T $value
+     * @param TArg ...$args Passed to `$value` if it is a closure.
      * @return T
      */
     public static function value($value, ...$args)

@@ -7,6 +7,7 @@ use Salient\Utility\Get;
 use Salient\Utility\Str;
 use Closure;
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * @covers \Salient\Utility\Str
@@ -15,18 +16,21 @@ final class StrTest extends TestCase
 {
     /**
      * @dataProvider coalesceProvider
+     *
+     * @param int|float|string|bool|Stringable|null ...$strings
      */
-    public function testCoalesce(?string $expected, ?string ...$strings): void
+    public function testCoalesce(?string $expected, ...$strings): void
     {
         $this->assertSame($expected, Str::coalesce(...$strings));
     }
 
     /**
-     * @return array<array<string|null>>
+     * @return array<array{string|null,...<int|float|string|bool|Stringable|null>}>
      */
     public static function coalesceProvider(): array
     {
         return [
+            [null],
             [null, null],
             ['', ''],
             [null, '', null],
@@ -39,6 +43,14 @@ final class StrTest extends TestCase
             ['foo', null, 'foo', null],
             ['a', '', null, 'a', null],
             ['0', '0', '1', null],
+            ['', false],
+            [null, false, null],
+            ['1', true],
+            ['1', true, null],
+            ['0', 0],
+            ['0', 0, null],
+            ['3.14', 3.14],
+            ['3.14', 3.14, null],
         ];
     }
 
