@@ -5,18 +5,17 @@ namespace Salient\Tests\Collection;
 use Salient\Tests\Collection\TypedList\MyClass;
 use Salient\Tests\Collection\TypedList\MyList;
 use Salient\Tests\TestCase;
-use InvalidArgumentException;
 use OutOfRangeException;
 
 /**
- * @covers \Salient\Collection\AbstractTypedList
- * @covers \Salient\Collection\ListTrait
+ * @covers \Salient\Collection\ListCollection
+ * @covers \Salient\Collection\ListCollectionTrait
  * @covers \Salient\Collection\CollectionTrait
- * @covers \Salient\Collection\ReadableCollectionTrait
+ * @covers \Salient\Collection\ReadOnlyCollectionTrait
  */
-final class AbstractTypedListTest extends TestCase
+final class ListCollectionTest extends TestCase
 {
-    public function testTypedList(): void
+    public function testListCollection(): void
     {
         $list = new MyList();
 
@@ -134,15 +133,15 @@ final class AbstractTypedListTest extends TestCase
         $this->assertSame($e1, $list->firstOf($e3));
         $this->assertNull($list->firstOf($e4));
 
-        $list->set(2, $e4);
-        $this->assertSame([$e0, $e1, $e4], $list->all());
-        $list->unset(0);
-        $this->assertSame([$e1, $e4], $list->all());
-        $list->merge([13 => $e0, 7 => $e2, 11 => $e4]);
-        $this->assertSame([$e1, $e4, $e0, $e2, $e4], $list->all());
+        $l = $list->set(2, $e4);
+        $this->assertSame([$e0, $e1, $e4], $l->all());
+        $l = $l->unset(0);
+        $this->assertSame([$e1, $e4], $l->all());
+        $l = $l->merge([13 => $e0, 7 => $e2, 11 => $e4]);
+        $this->assertSame([$e1, $e4, $e0, $e2, $e4], $l->all());
     }
 
-    public function testEmptyTypedList(): void
+    public function testEmptyListCollection(): void
     {
         $list = new MyList();
 
@@ -215,35 +214,30 @@ final class AbstractTypedListTest extends TestCase
 
     public function testInvalidKeyType(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($offset) must be of type int, string given');
         $list = new MyList();
-        // @phpstan-ignore offsetAssign.dimType
-        $list['foo'] = new MyClass('bar');
+        $list['foo'] = $value = new MyClass('bar');
+        $this->assertSame([$value], $list->all());
     }
 
     public function testSetInvalidKeyType(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($key) must be of type int, string given');
         $list = new MyList();
         // @phpstan-ignore argument.type
-        $list->set('foo', new MyClass('bar'));
+        $list = $list->set('foo', $value = new MyClass('bar'));
+        $this->assertSame([$value], $list->all());
     }
 
     public function testInvalidKey(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item cannot be added with key: 1');
         $list = new MyList();
-        $list[1] = new MyClass('foo');
+        $list[1] = $value = new MyClass('foo');
+        $this->assertSame([$value], $list->all());
     }
 
     public function testSetInvalidKey(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item cannot be added with key: 1');
         $list = new MyList();
-        $list->set(1, new MyClass('foo'));
+        $list = $list->set(1, $value = new MyClass('foo'));
+        $this->assertSame([$value], $list->all());
     }
 }

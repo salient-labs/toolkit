@@ -61,20 +61,6 @@ interface CollectionInterface extends
     public function __construct($items = []);
 
     /**
-     * Get a new collection with no items
-     *
-     * @return static
-     */
-    public static function empty();
-
-    /**
-     * Get a copy of the collection
-     *
-     * @return static
-     */
-    public function copy();
-
-    /**
      * Add or replace an item with a given key
      *
      * @param TKey $key
@@ -106,6 +92,14 @@ interface CollectionInterface extends
      * @return static
      */
     public function unset($key);
+
+    /**
+     * Add an item
+     *
+     * @param TValue $value
+     * @return static
+     */
+    public function add($value);
 
     /**
      * Merge the collection with the given items
@@ -275,11 +269,18 @@ interface CollectionInterface extends
     public function nth(int $n);
 
     /**
+     * Push items onto the end of the collection
+     *
+     * @param TValue ...$items
+     * @return static
+     */
+    public function push(...$items);
+
+    /**
      * Pop an item off the end of the collection
      *
      * @param TValue|null $last Receives the value removed from the collection,
      * or `null` if the collection is empty.
-     * @param-out TValue|null $last
      * @return static
      */
     public function pop(&$last = null);
@@ -289,8 +290,17 @@ interface CollectionInterface extends
      *
      * @param TValue|null $first Receives the value removed from the collection,
      * or `null` if the collection is empty.
-     * @param-out TValue|null $first
      * @return static
      */
     public function shift(&$first = null);
+
+    /**
+     * Add items to the beginning of the collection
+     *
+     * Items are added in one operation and stay in the given order.
+     *
+     * @param TValue ...$items
+     * @return static
+     */
+    public function unshift(...$items);
 }

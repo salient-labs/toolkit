@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Collection\TypedCollection;
 
-use Salient\Collection\AbstractTypedCollection;
+use Salient\Collection\Collection;
 
 /**
- * @extends AbstractTypedCollection<array-key,MyClass>
+ * @extends Collection<array-key,MyClass>
  */
-class MyCollection extends AbstractTypedCollection
+class MyCollection extends Collection
 {
     protected function compareItems($a, $b): int
     {

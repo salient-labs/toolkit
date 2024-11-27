@@ -15,10 +15,6 @@ use ReturnTypeWillChange;
 use Traversable;
 
 /**
- * Implements CollectionInterface getters
- *
- * @see CollectionInterface
- *
  * @api
  *
  * @template TKey of array-key
@@ -26,7 +22,7 @@ use Traversable;
  *
  * @phpstan-require-implements CollectionInterface
  */
-trait ReadableCollectionTrait
+trait ReadOnlyCollectionTrait
 {
     /** @var array<TKey,TValue> */
     protected $Items = [];
@@ -36,23 +32,7 @@ trait ReadableCollectionTrait
      */
     public function __construct($items = [])
     {
-        $this->Items = $this->getItems($items);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function empty()
-    {
-        return new static();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function copy()
-    {
-        return clone $this;
+        $this->Items = $this->getItemsArray($items);
     }
 
     /**
@@ -83,20 +63,17 @@ trait ReadableCollectionTrait
     {
         $prev = null;
         $item = null;
-        $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
+            /** @var T */
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($i++) {
-                /** @var T $item */
-                /** @var T $next */
+            if ($item) {
                 $callback($item, $next, $prev);
                 $prev = $item;
             }
             $item = $next;
         }
-        if ($i) {
-            /** @var T $item */
+        if ($item) {
             $callback($item, null, $prev);
         }
 
@@ -114,16 +91,15 @@ trait ReadableCollectionTrait
         $item = null;
         $key = null;
         $value = null;
-        $i = 0;
 
         foreach ($this->Items as $nextKey => $nextValue) {
+            /** @var T */
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($i++) {
-                /** @var T $item */
-                /** @var T $next */
+            if ($item) {
                 if ($callback($item, $next, $prev)) {
                     /** @var TKey $key */
                     /** @var TValue $value */
+                    // @phpstan-ignore return.type
                     return $this->getReturnValue($mode, $key, $value);
                 }
                 $prev = $item;
@@ -132,10 +108,10 @@ trait ReadableCollectionTrait
             $key = $nextKey;
             $value = $nextValue;
         }
-        /** @var T $item */
-        if ($i && $callback($item, null, $prev)) {
+        if ($item && $callback($item, null, $prev)) {
             /** @var TKey $key */
             /** @var TValue $value */
+            // @phpstan-ignore return.type
             return $this->getReturnValue($mode, $key, $value);
         }
 
@@ -207,13 +183,12 @@ trait ReadableCollectionTrait
      */
     public function toArray(): array
     {
-        $array = $this->Items;
-        foreach ($array as &$value) {
-            if ($value instanceof Arrayable) {
-                $value = $value->toArray();
-            }
+        foreach ($this->Items as $key => $value) {
+            $array[$key] = $value instanceof Arrayable
+                ? $value->toArray()
+                : $value;
         }
-        return $array;
+        return $array ?? [];
     }
 
     /**
@@ -221,17 +196,18 @@ trait ReadableCollectionTrait
      */
     public function jsonSerialize(): array
     {
-        $array = $this->Items;
-        foreach ($array as &$value) {
+        foreach ($this->Items as $key => $value) {
             if ($value instanceof JsonSerializable) {
-                $value = $value->jsonSerialize();
+                $array[$key] = $value->jsonSerialize();
             } elseif ($value instanceof Jsonable) {
-                $value = Json::parseObjectAsArray($value->toJson());
+                $array[$key] = Json::parseObjectAsArray($value->toJson());
             } elseif ($value instanceof Arrayable) {
-                $value = $value->toArray();
+                $array[$key] = $value->toArray();
+            } else {
+                $array[$key] = $value;
             }
         }
-        return $array;
+        return $array ?? [];
     }
 
     /**
@@ -247,10 +223,7 @@ trait ReadableCollectionTrait
      */
     public function first()
     {
-        if (!$this->Items) {
-            return null;
-        }
-        return $this->Items[array_key_first($this->Items)];
+        return $this->Items ? reset($this->Items) : null;
     }
 
     /**
@@ -258,10 +231,7 @@ trait ReadableCollectionTrait
      */
     public function last()
     {
-        if (!$this->Items) {
-            return null;
-        }
-        return $this->Items[array_key_last($this->Items)];
+        return $this->Items ? end($this->Items) : null;
     }
 
     /**
@@ -330,26 +300,35 @@ trait ReadableCollectionTrait
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
      * @return array<TKey,TValue>
      */
-    protected function getItems($items): array
+    protected function getItemsArray($items): array
+    {
+        $items = $this->getItems($items);
+        return is_array($items)
+            ? $items
+            : iterator_to_array($items);
+    }
+
+    /**
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
+     * @return iterable<TKey,TValue>
+     */
+    protected function getItems($items): iterable
     {
         if ($items instanceof self) {
             $items = $items->Items;
         } elseif ($items instanceof Arrayable) {
             $items = $items->toArray();
-        } elseif (!is_array($items)) {
-            $items = iterator_to_array($items);
         }
-
         return $this->filterItems($items);
     }
 
     /**
      * Override to normalise items applied to the collection
      *
-     * @param array<TKey,TValue> $items
-     * @return array<TKey,TValue>
+     * @param iterable<TKey,TValue> $items
+     * @return iterable<TKey,TValue>
      */
-    protected function filterItems(array $items): array
+    protected function filterItems(iterable $items): iterable
     {
         return $items;
     }
@@ -379,7 +358,7 @@ trait ReadableCollectionTrait
     /**
      * @param int-mask-of<CollectionInterface::*> $mode
      * @param TKey $key
-     * @param TValue|null $value
+     * @param TValue $value
      * @return TValue|TKey|array{TKey,TValue}
      */
     protected function getCallbackValue(int $mode, $key, $value)
@@ -388,7 +367,6 @@ trait ReadableCollectionTrait
         if ($mode === CollectionInterface::CALLBACK_USE_KEY) {
             return $key;
         }
-        assert($value !== null);
         return $mode === CollectionInterface::CALLBACK_USE_BOTH
             ? [$key, $value]
             : $value;

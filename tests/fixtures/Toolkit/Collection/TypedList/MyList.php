@@ -2,12 +2,12 @@
 
 namespace Salient\Tests\Collection\TypedList;
 
-use Salient\Collection\AbstractTypedList;
+use Salient\Collection\ListCollection;
 
 /**
- * @extends AbstractTypedList<MyClass>
+ * @extends ListCollection<MyClass>
  */
-class MyList extends AbstractTypedList
+class MyList extends ListCollection
 {
     protected function compareItems($a, $b): int
     {

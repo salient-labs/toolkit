@@ -51,7 +51,7 @@ interface HttpHeadersInterface extends
      * @param string[]|string $value
      * @return static
      */
-    public function add($key, $value);
+    public function append($key, $value);
 
     /**
      * Apply a value to a header, replacing any existing values

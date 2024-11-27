@@ -2,7 +2,7 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Collection\AbstractTypedCollection;
+use Salient\Collection\Collection;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleWriterInterface;
@@ -16,9 +16,9 @@ use Salient\Utility\Inflect;
 use Salient\Utility\Reflect;
 
 /**
- * @extends AbstractTypedCollection<int,SyncErrorInterface>
+ * @extends Collection<int,SyncErrorInterface>
  */
-final class SyncErrorCollection extends AbstractTypedCollection implements SyncErrorCollectionInterface
+final class SyncErrorCollection extends Collection implements SyncErrorCollectionInterface
 {
     private int $ErrorCount = 0;
     private int $WarningCount = 0;

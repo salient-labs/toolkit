@@ -8,13 +8,13 @@ use Salient\Tests\TestCase;
 use OutOfRangeException;
 
 /**
- * @covers \Salient\Collection\AbstractTypedCollection
+ * @covers \Salient\Collection\Collection
  * @covers \Salient\Collection\CollectionTrait
- * @covers \Salient\Collection\ReadableCollectionTrait
+ * @covers \Salient\Collection\ReadOnlyCollectionTrait
  */
-final class AbstractTypedCollectionTest extends TestCase
+final class CollectionTest extends TestCase
 {
-    public function testTypedCollection(): void
+    public function testCollection(): void
     {
         $collection = new MyCollection();
 
@@ -132,15 +132,15 @@ final class AbstractTypedCollectionTest extends TestCase
         $this->assertSame($e2, $collection->firstOf($e3));
         $this->assertNull($collection->firstOf($e4));
 
-        $collection->set('n', $e4);
-        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e4], $collection->all());
-        $collection->unset(0);
-        $this->assertSame([2 => $e2, 'n' => $e4], $collection->all());
-        $collection->merge(['i' => $e0, 'n' => $e1, 11 => $e4]);
-        $this->assertSame([2 => $e2, 'n' => $e1, 'i' => $e0, 3 => $e4], $collection->all());
+        $coll = $collection->set('n', $e4);
+        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e4], $coll->all());
+        $coll = $coll->unset(0);
+        $this->assertSame([2 => $e2, 'n' => $e4], $coll->all());
+        $coll = $coll->merge(['i' => $e0, 'n' => $e1, 11 => $e4]);
+        $this->assertSame([2 => $e2, 'n' => $e1, 'i' => $e0, 3 => $e4], $coll->all());
     }
 
-    public function testEmptyTypedCollection(): void
+    public function testEmptyCollection(): void
     {
         $collection = new MyCollection();
 

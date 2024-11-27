@@ -3,12 +3,12 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\Instantiable;
-use Salient\Core\Concern\ImmutableArrayAccessTrait;
 use Salient\Core\Exception\InvalidConfigurationException;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use ArrayAccess;
+use LogicException;
 use OutOfRangeException;
 use ReturnTypeWillChange;
 
@@ -21,9 +21,6 @@ use ReturnTypeWillChange;
  */
 final class ConfigurationManager implements ArrayAccess, Instantiable
 {
-    /** @use ImmutableArrayAccessTrait<string,mixed> */
-    use ImmutableArrayAccessTrait;
-
     /** @var array<string,mixed[]> */
     private array $Items = [];
 
@@ -144,5 +141,28 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
     public function offsetGet($offset)
     {
         return Arr::get($this->Items, $offset);
+    }
+
+    /**
+     * @internal
+     *
+     * @param string|null $offset
+     * @param mixed $value
+     * @return never
+     */
+    public function offsetSet($offset, $value): void
+    {
+        throw new LogicException('Configuration values cannot be set');
+    }
+
+    /**
+     * @internal
+     *
+     * @param string $offset
+     * @return never
+     */
+    public function offsetUnset($offset): void
+    {
+        throw new LogicException('Configuration values cannot be unset');
     }
 }

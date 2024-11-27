@@ -2,19 +2,17 @@
 
 namespace Salient\Collection;
 
-use Salient\Contract\Collection\ListInterface;
+use Salient\Contract\Collection\CollectionInterface;
 
 /**
- * An array-like list of items
- *
  * @api
  *
  * @template TValue
  *
- * @implements ListInterface<TValue>
+ * @implements CollectionInterface<int,TValue>
  */
-final class ListCollection implements ListInterface
+class ListCollection implements CollectionInterface
 {
-    /** @use ListTrait<int,TValue> */
-    use ListTrait;
+    /** @use ListCollectionTrait<TValue> */
+    use ListCollectionTrait;
 }

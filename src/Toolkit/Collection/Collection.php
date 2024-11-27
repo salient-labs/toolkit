@@ -5,8 +5,6 @@ namespace Salient\Collection;
 use Salient\Contract\Collection\CollectionInterface;
 
 /**
- * An array-like collection of items
- *
  * @api
  *
  * @template TKey of array-key
@@ -14,7 +12,7 @@ use Salient\Contract\Collection\CollectionInterface;
  *
  * @implements CollectionInterface<TKey,TValue>
  */
-final class Collection implements CollectionInterface
+class Collection implements CollectionInterface
 {
     /** @use CollectionTrait<TKey,TValue> */
     use CollectionTrait;
