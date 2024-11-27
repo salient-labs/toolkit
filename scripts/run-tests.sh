@@ -20,7 +20,7 @@ function run() {
 
 function run_with_php_versions() {
     local php versions=()
-    while [[ $1 == [78][0-9] ]]; do
+    while [[ -z $1 ]] || [[ $1 == [78][0-9] ]]; do
         if type -P "php$1" >/dev/null; then
             versions[${#versions[@]}]=php$1
         fi
@@ -35,10 +35,10 @@ function run_with_php_versions() {
     die "must run from root of package folder"
 
 run scripts/generate.php --check
-run tools/php-cs-fixer check --diff --verbose
+run php83 tools/php-cs-fixer check --diff --verbose
 run tools/pretty-php --diff
-run_with_php_versions 83 74 vendor/bin/phpstan
+run_with_php_versions '' 74 vendor/bin/phpstan
 run scripts/stop-mockoon.sh || (($? == 1)) || die 'error stopping mockoon'
 run scripts/start-mockoon.sh >/dev/null
 trap 'run scripts/stop-mockoon.sh' EXIT
-run_with_php_versions 83 74 82 81 80 vendor/bin/phpunit
+run_with_php_versions 84 74 83 82 81 80 vendor/bin/phpunit

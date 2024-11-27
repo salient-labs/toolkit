@@ -140,7 +140,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
      *
      * @return $this
      */
-    public function silencePath(string $path, int $levels = \E_STRICT | \E_DEPRECATED | \E_USER_DEPRECATED)
+    public function silencePath(string $path, int $levels = \E_DEPRECATED | \E_USER_DEPRECATED)
     {
         // Ignore paths that don't exist
         if (!file_exists($path)) {
@@ -160,7 +160,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
      *
      * @return $this
      */
-    public function silencePattern(string $pattern, int $levels = \E_STRICT | \E_DEPRECATED | \E_USER_DEPRECATED)
+    public function silencePattern(string $pattern, int $levels = \E_DEPRECATED | \E_USER_DEPRECATED)
     {
         $entry = [$pattern, $levels];
         if (!in_array($entry, $this->Silenced, true)) {

@@ -148,7 +148,7 @@ EOF, $client->getText(FileDescriptor::ERR));
                 'localhost:3008',
                 $method,
                 $target,
-                '-1',
+                '300',
                 ...$headers,
             ], $body)
         )->start();

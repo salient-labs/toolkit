@@ -15,8 +15,8 @@ use Salient\Core\ErrorHandler;
  * @method static bool isShuttingDown() Check if the running script is terminating
  * @method static bool isShuttingDownOnError() Check if the running script is terminating after a fatal error or uncaught exception
  * @method static ErrorHandler register() Register error, exception and shutdown handlers
- * @method static ErrorHandler silencePath(string $path, int $levels = 26624) Silence errors in a file or directory
- * @method static ErrorHandler silencePattern(string $pattern, int $levels = 26624) Silence errors in paths that match a regular expression
+ * @method static ErrorHandler silencePath(string $path, int $levels = 24576) Silence errors in a file or directory
+ * @method static ErrorHandler silencePattern(string $pattern, int $levels = 24576) Silence errors in paths that match a regular expression
  *
  * @extends AbstractFacade<ErrorHandler>
  *
