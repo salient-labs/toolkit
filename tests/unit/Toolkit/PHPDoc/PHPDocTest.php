@@ -17,6 +17,7 @@ use Salient\Tests\Reflection\MyBaseClass;
 use Salient\Tests\Reflection\MyClass;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
+use Salient\Utility\Get;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
@@ -1319,7 +1320,11 @@ EOF;
             ['int[foo][bar][baz]'],
         ];
         foreach ($data as $test) {
-            yield str_replace(\PHP_EOL, '<eol>', $test[0]) => $test;
+            if (mb_check_encoding($test[0], 'UTF-8')) {
+                yield str_replace(\PHP_EOL, '<eol>', $test[0]) => $test;
+            } else {
+                yield Get::code($test[0]) => $test;
+            }
         }
     }
 }
