@@ -47,6 +47,8 @@ trait ListCollectionTrait
         return $this->replaceItems($items, true);
     }
 
+    // --
+
     /**
      * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
      * @return iterable<TValue>

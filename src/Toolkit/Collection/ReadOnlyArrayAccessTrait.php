@@ -16,8 +16,6 @@ use LogicException;
 trait ReadOnlyArrayAccessTrait
 {
     /**
-     * @internal
-     *
      * @param TKey|null $offset
      * @param TValue $value
      * @return never
@@ -31,8 +29,6 @@ trait ReadOnlyArrayAccessTrait
     }
 
     /**
-     * @internal
-     *
      * @param TKey $offset
      * @return never
      */
