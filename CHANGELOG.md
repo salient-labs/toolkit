@@ -10,6 +10,68 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.64] - 2024-11-29
+
+### Changed
+
+#### `Collection`
+
+- Move `ListInterface` methods to `CollectionInterface`
+- Use PHPStan conditional parameter types to vary `forEach()`, `map()`, `filter()` and `find()` callback signatures by `$mode`
+- Return a modified instance from collection methods that previously operated on a single instance:
+  - `set()`
+  - `unset()`
+  - `add()`
+  - `merge()`
+  - `pop()`
+  - `shift()`
+- Adopt `iterable` as return type for protected `getItems()` and `filterItems()` methods
+- In list collections, silently replace invalid keys instead of throwing an exception
+- Replace `AbstractTypedCollection` and `Collection` with non-final `Collection`
+- Replace `AbstractTypedList` and `ListCollection` with non-final `ListCollection`
+- Rename:
+  - `ListTrait` -> `ListCollectionTrait`
+  - `ReadableCollectionTrait` -> `ReadOnlyCollectionTrait`
+- Rename `ImmutableArrayAccessTrait` to `ReadOnlyArrayAccessTrait` and move it back to the `Collection` namespace
+
+#### `Http`
+
+- Rename `HttpHeadersInterface::add()` to `append()` to resolve conflict with `CollectionInterface::add()`
+- In `HttpHeaders`:
+  - Implement methods added to `CollectionInterface`
+  - Replace `generateItems()` with `getItems()` now that the `ReadOnlyCollectionTrait` method can return `iterable`
+  - Implement `CollectionInterface::map()`
+
+#### `Utility`
+
+- Update `Debug::getCaller()` to work with PHP 8.4's backtrace changes
+
+### Removed
+
+#### `Collection`
+
+- Remove `ListInterface`
+- Remove "immutable" collections and traits:
+  - `ImmutableCollection`
+  - `ImmutableCollectionTrait`
+  - `ImmutableListCollection`
+  - `ImmutableListTrait`
+- Remove redundant collection methods `empty()` and `copy()`
+
+#### `Core`
+
+- Remove `ImmutableArrayAccessTrait` (moved to `Collection` component as `ReadOnlyArrayAccessTrait`)
+
+### Fixed
+
+#### `Collection`
+
+- Fix issue where numeric keys are reindexed when `shift()` is called on a collection
+
+#### `Core`
+
+- Remove references to `E_STRICT` constant (deprecated in PHP 8.4)
+
 ## [v0.99.63] - 2024-11-16
 
 ### Changed
@@ -4162,6 +4224,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.64]: https://github.com/salient-labs/toolkit/compare/v0.99.63...v0.99.64
 [v0.99.63]: https://github.com/salient-labs/toolkit/compare/v0.99.62...v0.99.63
 [v0.99.62]: https://github.com/salient-labs/toolkit/compare/v0.99.61...v0.99.62
 [v0.99.61]: https://github.com/salient-labs/toolkit/compare/v0.99.60...v0.99.61
