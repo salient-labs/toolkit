@@ -2,31 +2,32 @@
 
 namespace Salient\Tests\Collection;
 
-use Salient\Tests\Collection\TypedCollection\MyClass;
-use Salient\Tests\Collection\TypedCollection\MyCollection;
+use Salient\Collection\Collection;
 use Salient\Tests\TestCase;
 use OutOfRangeException;
 
 /**
- * @covers \Salient\Collection\AbstractTypedCollection
+ * @covers \Salient\Collection\Collection
  * @covers \Salient\Collection\CollectionTrait
- * @covers \Salient\Collection\ReadableCollectionTrait
+ * @covers \Salient\Collection\ReadOnlyCollectionTrait
  */
-final class AbstractTypedCollectionTest extends TestCase
+final class CollectionTest extends TestCase
 {
-    public function testTypedCollection(): void
+    public function testCollection(): void
     {
-        $collection = new MyCollection();
+        /** @var Collection<array-key,MyComparableClass> */
+        $collection = new Collection();
 
-        $e0 = new MyClass('delta');
-        $e1 = new MyClass('november');
-        $e2 = new MyClass('charlie');
+        $e0 = new MyComparableClass('delta');
+        $e1 = new MyComparableClass('november');
+        $e2 = new MyComparableClass('charlie');
 
         $collection[] = $e0;
         $collection[] = $e1;
         $collection[] = $e2;
 
         $this->assertTrue(isset($collection[1]));
+        $this->assertSame($e1, $collection[1]);
         unset($collection[1]);
         $this->assertFalse(isset($collection[1]));
         $collection['n'] = $e1;
@@ -50,41 +51,45 @@ final class AbstractTypedCollectionTest extends TestCase
 
         $arr = $arrNext = $arrPrev = [];
         $coll = $collection->forEach(
-            function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev) {
+            $callback = function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev) {
                 $arr[] = $item;
                 $arrNext[] = $next;
                 $arrPrev[] = $prev;
             }
         );
         $this->assertSame($collection, $coll);
-        $this->assertSame([$e0, $e2, $e1], $arr);
-        $this->assertSame([$e2, $e1, null], $arrNext);
-        $this->assertSame([null, $e0, $e2], $arrPrev);
+        ($assertSameCallbackArgs = function () use (&$arr, &$arrNext, &$arrPrev, $e0, $e1, $e2) {
+            $this->assertSame([$e0, $e2, $e1], $arr);
+            $this->assertSame([$e2, $e1, null], $arrNext);
+            $this->assertSame([null, $e0, $e2], $arrPrev);
+        })();
 
-        $coll = $collection->map(fn(MyClass $item) => $item);
+        $arr = $arrNext = $arrPrev = [];
+        $coll = $collection->map(
+            function (MyComparableClass $item, $next, $prev) use ($callback) {
+                $callback($item, $next, $prev);
+                return $item;
+            }
+        );
         $this->assertSame($collection, $coll);
+        $assertSameCallbackArgs();
 
-        $coll = $collection->map(fn(MyClass $item) => new MyClass($item->Name . '-2'));
+        $coll = $collection->map(fn(MyComparableClass $item) => new MyComparableClass($item->Name . '-2'));
         $this->assertNotSame($collection, $coll);
         $this->assertSame(
             [0 => 'delta-2', 2 => 'charlie-2', 'n' => 'november-2'],
-            array_map(fn(MyClass $item) => $item->Name, $coll->all()),
+            array_map(fn($item) => $item->Name, $coll->all()),
         );
 
         $arr = $arrNext = $arrPrev = [];
         $coll = $collection->filter(
-            function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
-                $arr[] = $item;
-                $arrNext[] = $next;
-                $arrPrev[] = $prev;
-
-                return (bool) $prev;
+            function ($item, $next, $prev) use ($callback) {
+                $callback($item, $next, $prev);
+                return $prev !== null;
             }
         );
         $this->assertSame([2 => $e2, 'n' => $e1], $coll->all());
-        $this->assertSame([$e0, $e2, $e1], $arr);
-        $this->assertSame([$e2, $e1, null], $arrNext);
-        $this->assertSame([null, $e0, $e2], $arrPrev);
+        $assertSameCallbackArgs();
 
         $coll = $collection->only([0, 71, 'n']);
         $this->assertSame([0 => $e0, 'n' => $e1], $coll->all());
@@ -104,26 +109,23 @@ final class AbstractTypedCollectionTest extends TestCase
 
         $arr = $arrNext = $arrPrev = [];
         $found = $collection->find(
-            function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
-                $arr[] = $item;
-                $arrNext[] = $next;
-                $arrPrev[] = $prev;
-
+            function ($item, $next, $prev) use ($callback) {
+                $callback($item, $next, $prev);
                 return !$next;
             }
         );
         $this->assertSame($e1, $found);
-        $this->assertSame([$e0, $e2, $e1], $arr);
-        $this->assertSame([$e2, $e1, null], $arrNext);
-        $this->assertSame([null, $e0, $e2], $arrPrev);
+        $assertSameCallbackArgs();
 
+        $this->assertSame($e2, $collection->find(fn(MyComparableClass $item) => $item->Name === 'charlie'));
+        $this->assertSame('n', $collection->find(fn(MyComparableClass $item) => $item->Name === 'november', Collection::CALLBACK_USE_VALUE | Collection::FIND_KEY));
         $this->assertNull($collection->find(fn() => false));
 
         $slice = $collection->slice(1, 1);
         $this->assertSame([2 => $e2], $slice->toArray());
 
-        $e3 = new MyClass('charlie');
-        $e4 = new MyClass('echo');
+        $e3 = new MyComparableClass('charlie');
+        $e4 = new MyComparableClass('echo');
         $this->assertTrue($collection->hasValue($e3));
         $this->assertFalse($collection->hasValue($e3, true));
         $this->assertSame(2, $collection->keyOf($e3));
@@ -132,24 +134,37 @@ final class AbstractTypedCollectionTest extends TestCase
         $this->assertSame($e2, $collection->firstOf($e3));
         $this->assertNull($collection->firstOf($e4));
 
-        $collection->set('n', $e4);
-        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e4], $collection->all());
-        $collection->unset(0);
-        $this->assertSame([2 => $e2, 'n' => $e4], $collection->all());
-        $collection->merge(['i' => $e0, 'n' => $e1, 11 => $e4]);
-        $this->assertSame([2 => $e2, 'n' => $e1, 'i' => $e0, 3 => $e4], $collection->all());
+        $first = null;
+        $this->assertSame([2 => $e2, 'n' => $e1], $collection->shift($first)->all());
+        $this->assertSame($e0, $first);
+
+        $last = null;
+        $this->assertSame([0 => $e0, 2 => $e2], $collection->pop($last)->all());
+        $this->assertSame($e1, $last);
+
+        $coll = $collection->set('n', $e4);
+        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e4], $coll->all());
+        $coll = $coll->unset(0);
+        $this->assertSame([2 => $e2, 'n' => $e4], $coll->all());
+        $coll = $coll->merge(['i' => $e0, 'n' => $e1, 11 => $e4]);
+        $this->assertSame([2 => $e2, 'n' => $e1, 'i' => $e0, 3 => $e4], $coll->all());
     }
 
-    public function testEmptyTypedCollection(): void
+    public function testEmptyCollection(): void
     {
-        $collection = new MyCollection();
+        /** @var Collection<array-key,MyComparableClass> */
+        $collection = new Collection();
 
+        /** @disregard P1008 */
         $coll = $collection->pop($last);
         $this->assertSame($collection, $coll);
+        /** @disregard P1008 */
         $this->assertNull($last);
 
+        /** @disregard P1008 */
         $coll = $collection->shift($first);
         $this->assertSame($collection, $coll);
+        /** @disregard P1008 */
         $this->assertNull($first);
 
         $coll = $collection->sort();
@@ -167,7 +182,7 @@ final class AbstractTypedCollectionTest extends TestCase
         $this->assertSame($coll, $collection);
         $this->assertSame(0, $count);
 
-        $coll = $collection->map(fn(MyClass $item) => $item);
+        $coll = $collection->map(fn(MyComparableClass $item) => $item);
         $this->assertSame($collection, $coll);
 
         $coll = $collection->filter(fn() => true);
@@ -193,7 +208,7 @@ final class AbstractTypedCollectionTest extends TestCase
         $coll = $collection->merge([]);
         $this->assertSame($collection, $coll);
 
-        $e0 = new MyClass('foo');
+        $e0 = new MyComparableClass('foo');
         $this->assertFalse($collection->hasValue($e0));
         $this->assertFalse($collection->hasValue($e0, true));
         $this->assertNull($collection->keyOf($e0));

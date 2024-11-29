@@ -5,14 +5,6 @@ namespace Salient\Collection;
 use Salient\Contract\Collection\CollectionInterface;
 
 /**
- * Implements CollectionInterface
- *
- * Unless otherwise noted, {@see CollectionTrait} methods operate on one
- * instance of the class. Immutable collections should use
- * {@see ImmutableCollectionTrait} instead.
- *
- * @see CollectionInterface
- *
  * @api
  *
  * @template TKey of array-key
@@ -22,8 +14,8 @@ use Salient\Contract\Collection\CollectionInterface;
  */
 trait CollectionTrait
 {
-    /** @use ReadableCollectionTrait<TKey,TValue> */
-    use ReadableCollectionTrait;
+    /** @use ReadOnlyCollectionTrait<TKey,TValue> */
+    use ReadOnlyCollectionTrait;
 
     /**
      * @inheritDoc
@@ -51,6 +43,177 @@ trait CollectionTrait
     /**
      * @inheritDoc
      */
+    public function add($value)
+    {
+        $items = $this->Items;
+        $items[] = $value;
+        return $this->replaceItems($items, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function merge($items)
+    {
+        $items = $this->getItemsArray($items);
+        if (!$items) {
+            return $this;
+        }
+        // array_merge() can't be used here because it renumbers numeric keys
+        $merged = $this->Items;
+        foreach ($items as $key => $item) {
+            if (is_int($key)) {
+                $merged[] = $item;
+                continue;
+            }
+            $merged[$key] = $item;
+        }
+        return $this->maybeReplaceItems($merged);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function sort()
+    {
+        $items = $this->Items;
+        uasort($items, fn($a, $b) => $this->compareItems($a, $b));
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reverse()
+    {
+        $items = array_reverse($this->Items, true);
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
+    {
+        $items = [];
+        $prev = null;
+        $item = null;
+        $key = null;
+
+        foreach ($this->Items as $nextKey => $nextValue) {
+            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
+            if ($item !== null) {
+                /** @var TKey $key */
+                $items[$key] = $callback($item, $next, $prev);
+            }
+            $prev = $item;
+            $item = $next;
+            $key = $nextKey;
+        }
+        if ($item !== null) {
+            /** @var TKey $key */
+            $items[$key] = $callback($item, null, $prev);
+        }
+
+        // @phpstan-ignore argument.type, return.type
+        return $this->maybeReplaceItems($items, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
+    {
+        $items = [];
+        $prev = null;
+        $item = null;
+        $key = null;
+        $value = null;
+
+        foreach ($this->Items as $nextKey => $nextValue) {
+            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
+            if ($item !== null) {
+                if ($callback($item, $next, $prev)) {
+                    /** @var TKey $key */
+                    /** @var TValue $value */
+                    $items[$key] = $value;
+                }
+            }
+            $prev = $item;
+            $item = $next;
+            $key = $nextKey;
+            $value = $nextValue;
+        }
+        if ($item !== null && $callback($item, null, $prev)) {
+            /** @var TKey $key */
+            /** @var TValue $value */
+            $items[$key] = $value;
+        }
+
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function only(array $keys)
+    {
+        $items = array_intersect_key($this->Items, array_flip($keys));
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function onlyIn(array $index)
+    {
+        $items = array_intersect_key($this->Items, $index);
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function except(array $keys)
+    {
+        $items = array_diff_key($this->Items, array_flip($keys));
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function exceptIn(array $index)
+    {
+        $items = array_diff_key($this->Items, $index);
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function slice(int $offset, ?int $length = null)
+    {
+        $items = array_slice($this->Items, $offset, $length, true);
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function push(...$items)
+    {
+        if (!$items) {
+            return $this;
+        }
+        $_items = $this->Items;
+        array_push($_items, ...$items);
+        return $this->replaceItems($_items, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function pop(&$last = null)
     {
         if (!$this->Items) {
@@ -63,160 +226,6 @@ trait CollectionTrait
     }
 
     /**
-     * @return static A copy of the collection with items sorted by value.
-     */
-    public function sort()
-    {
-        $items = $this->Items;
-        uasort($items, fn($a, $b) => $this->compareItems($a, $b));
-        return $this->maybeReplaceItems($items, true);
-    }
-
-    /**
-     * @return static A copy of the collection with items in reverse order.
-     */
-    public function reverse()
-    {
-        $items = array_reverse($this->Items, true);
-        return $this->maybeReplaceItems($items, true);
-    }
-
-    /**
-     * @template T of TValue|TKey|array{TKey,TValue}
-     * @template TReturn
-     *
-     * @param callable(T, T|null $next, T|null $prev): TReturn $callback
-     */
-    public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
-    {
-        $items = [];
-        $prev = null;
-        $item = null;
-        $key = null;
-        $i = 0;
-
-        foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($i++) {
-                /** @var T $item */
-                /** @var T $next */
-                /** @var TKey $key */
-                $items[$key] = $callback($item, $next, $prev);
-                $prev = $item;
-            }
-            $item = $next;
-            $key = $nextKey;
-        }
-        if ($i) {
-            /** @var T $item */
-            /** @var TKey $key */
-            $items[$key] = $callback($item, null, $prev);
-        }
-
-        // @phpstan-ignore argument.type, return.type
-        return $this->maybeReplaceItems($items, true);
-    }
-
-    /**
-     * @template T of TValue|TKey|array{TKey,TValue}
-     *
-     * @param callable(T, T|null $next, T|null $prev): bool $callback
-     * @return static A copy of the collection with items that satisfy `$callback`.
-     */
-    public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
-    {
-        $items = [];
-        $prev = null;
-        $item = null;
-        $key = null;
-        $value = null;
-        $i = 0;
-
-        foreach ($this->Items as $nextKey => $nextValue) {
-            $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($i++) {
-                /** @var T $item */
-                /** @var T $next */
-                if ($callback($item, $next, $prev)) {
-                    /** @var TKey $key */
-                    /** @var TValue $value */
-                    $items[$key] = $value;
-                }
-                $prev = $item;
-            }
-            $item = $next;
-            $key = $nextKey;
-            $value = $nextValue;
-        }
-        /** @var T $item */
-        if ($i && $callback($item, null, $prev)) {
-            /** @var TKey $key */
-            /** @var TValue $value */
-            $items[$key] = $value;
-        }
-
-        return $this->maybeReplaceItems($items, true);
-    }
-
-    /**
-     * @return static A copy of the collection with items that have keys in
-     * `$keys`.
-     */
-    public function only(array $keys)
-    {
-        return $this->maybeReplaceItems(
-            array_intersect_key($this->Items, array_flip($keys)),
-            true
-        );
-    }
-
-    /**
-     * @return static A copy of the collection with items that have keys in
-     * `$index`.
-     */
-    public function onlyIn(array $index)
-    {
-        return $this->maybeReplaceItems(
-            array_intersect_key($this->Items, $index),
-            true
-        );
-    }
-
-    /**
-     * @return static A copy of the collection with items that have keys not in
-     * `$keys`.
-     */
-    public function except(array $keys)
-    {
-        return $this->maybeReplaceItems(
-            array_diff_key($this->Items, array_flip($keys)),
-            true
-        );
-    }
-
-    /**
-     * @return static A copy of the collection with items that have keys not in
-     * `$index`.
-     */
-    public function exceptIn(array $index)
-    {
-        return $this->maybeReplaceItems(
-            array_diff_key($this->Items, $index),
-            true
-        );
-    }
-
-    /**
-     * @return static A copy of the collection with items starting from
-     * `$offset`.
-     */
-    public function slice(int $offset, ?int $length = null)
-    {
-        $items = array_slice($this->Items, $offset, $length, true);
-        return $this->maybeReplaceItems($items, true);
-    }
-
-    /**
      * @inheritDoc
      */
     public function shift(&$first = null)
@@ -226,29 +235,22 @@ trait CollectionTrait
             return $this;
         }
         $items = $this->Items;
-        $first = array_shift($items);
+        $first = reset($items);
+        unset($items[key($items)]);
         return $this->replaceItems($items);
     }
 
     /**
      * @inheritDoc
      */
-    public function merge($items)
+    public function unshift(...$items)
     {
-        $_items = $this->getItems($items);
-        if (!$_items) {
+        if (!$items) {
             return $this;
         }
-        // array_merge() can't be used here because it renumbers numeric keys
-        $items = $this->Items;
-        foreach ($_items as $key => $_item) {
-            if (is_int($key)) {
-                $items[] = $_item;
-                continue;
-            }
-            $items[$key] = $_item;
-        }
-        return $this->maybeReplaceItems($items);
+        $_items = $this->Items;
+        array_unshift($_items, ...$items);
+        return $this->replaceItems($_items, true);
     }
 
     // Partial implementation of `ArrayAccess`:
@@ -262,10 +264,11 @@ trait CollectionTrait
         $items = $this->Items;
         if ($offset === null) {
             $items[] = $value;
+            $this->replaceItems($items, false, false);
         } else {
             $items[$offset] = $value;
+            $this->maybeReplaceItems($items, false, false);
         }
-        $this->replaceItems($items, false);
     }
 
     /**
@@ -275,7 +278,7 @@ trait CollectionTrait
     {
         $items = $this->Items;
         unset($items[$offset]);
-        $this->maybeReplaceItems($items, false);
+        $this->maybeReplaceItems($items, false, false);
     }
 
     // --
@@ -284,36 +287,26 @@ trait CollectionTrait
      * @param array<TKey,TValue> $items
      * @return static
      */
-    protected function maybeReplaceItems(array $items, ?bool $getClone = null)
+    protected function maybeReplaceItems(array $items, bool $trustKeys = false, bool $getClone = true)
     {
         if ($items === $this->Items) {
             return $this;
         }
-        return $this->replaceItems($items, $getClone);
+        return $this->replaceItems($items, $trustKeys, $getClone);
     }
 
     /**
      * @param array<TKey,TValue> $items
      * @return static
      */
-    protected function replaceItems(array $items, ?bool $getClone = null)
+    protected function replaceItems(array $items, bool $trustKeys = false, bool $getClone = true)
     {
-        $clone = $getClone === false
-            ? $this
-            : ($getClone
-                ? clone $this
-                : $this->maybeClone());
+        $clone = $getClone
+            ? clone $this
+            : $this;
         $clone->Items = $items;
         $clone->handleItemsReplaced();
         return $clone;
-    }
-
-    /**
-     * @return static
-     */
-    protected function maybeClone()
-    {
-        return $this;
     }
 
     /**

@@ -48,31 +48,17 @@ interface CollectionInterface extends
     /**
      * Return the first item that satisfies the callback
      */
-    public const FIND_VALUE = 4;
+    public const FIND_VALUE = 8;
 
     /**
      * Return the key of the first item that satisfies the callback
      */
-    public const FIND_KEY = 8;
+    public const FIND_KEY = 16;
 
     /**
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
      */
     public function __construct($items = []);
-
-    /**
-     * Get a new collection with no items
-     *
-     * @return static
-     */
-    public static function empty();
-
-    /**
-     * Get a copy of the collection
-     *
-     * @return static
-     */
-    public function copy();
 
     /**
      * Add or replace an item with a given key
@@ -108,6 +94,14 @@ interface CollectionInterface extends
     public function unset($key);
 
     /**
+     * Add an item
+     *
+     * @param TValue $value
+     * @return static
+     */
+    public function add($value);
+
+    /**
      * Merge the collection with the given items
      *
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
@@ -134,10 +128,18 @@ interface CollectionInterface extends
      *
      * The callback's return values are discarded.
      *
-     * @template T of TValue|TKey|array{TKey,TValue}
+     * @template TMode of int-mask-of<CollectionInterface::*>
      *
-     * @param callable(T, T|null $next, T|null $prev): mixed $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
+     * @param (callable(TValue, TValue|null $next, TValue|null $prev): mixed)|(callable(TKey, TKey|null $next, TKey|null $prev): mixed)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): mixed) $callback
+     * @phpstan-param (
+     *     TMode is 3|11|19
+     *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): mixed)
+     *     : (TMode is 2|10|18
+     *         ? (callable(TKey, TKey|null $next, TKey|null $prev): mixed)
+     *         : (callable(TValue, TValue|null $next, TValue|null $prev): mixed)
+     *     )
+     * ) $callback
+     * @param TMode $mode
      * @return $this
      */
     public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -146,22 +148,37 @@ interface CollectionInterface extends
      * Pass each item in the collection to a callback and populate a new
      * collection with its return values
      *
-     * @template T of TValue|TKey|array{TKey,TValue}
-     * @template TReturn
+     * @template TMode of int-mask-of<CollectionInterface::*>
      *
-     * @param callable(T, T|null $next, T|null $prev): TReturn $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
-     * @return static<TKey,TReturn>
+     * @param (callable(TValue, TValue|null $next, TValue|null $prev): TValue)|(callable(TKey, TKey|null $next, TKey|null $prev): TValue)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TValue) $callback
+     * @phpstan-param (
+     *     TMode is 3|11|19
+     *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TValue)
+     *     : (TMode is 2|10|18
+     *         ? (callable(TKey, TKey|null $next, TKey|null $prev): TValue)
+     *         : (callable(TValue, TValue|null $next, TValue|null $prev): TValue)
+     *     )
+     * ) $callback
+     * @param TMode $mode
+     * @return static
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
 
     /**
      * Reduce the collection to items that satisfy a callback
      *
-     * @template T of TValue|TKey|array{TKey,TValue}
+     * @template TMode of int-mask-of<CollectionInterface::*>
      *
-     * @param callable(T, T|null $next, T|null $prev): bool $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
+     * @param (callable(TValue, TValue|null $next, TValue|null $prev): bool)|(callable(TKey, TKey|null $next, TKey|null $prev): bool)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool) $callback
+     * @phpstan-param (
+     *     TMode is 3|11|19
+     *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool)
+     *     : (TMode is 2|10|18
+     *         ? (callable(TKey, TKey|null $next, TKey|null $prev): bool)
+     *         : (callable(TValue, TValue|null $next, TValue|null $prev): bool)
+     *     )
+     * ) $callback
+     * @param TMode $mode
      * @return static
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -170,11 +187,19 @@ interface CollectionInterface extends
      * Get the first item that satisfies a callback, or null if there is no such
      * item in the collection
      *
-     * @template T of TValue|TKey|array{TKey,TValue}
+     * @template TMode of int-mask-of<CollectionInterface::*>
      *
-     * @param callable(T, T|null $next, T|null $prev): bool $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
-     * @return ($mode is 8|9|10|11 ? TKey : TValue)|null
+     * @param (callable(TValue, TValue|null $next, TValue|null $prev): bool)|(callable(TKey, TKey|null $next, TKey|null $prev): bool)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool) $callback
+     * @phpstan-param (
+     *     TMode is 3|11|19
+     *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool)
+     *     : (TMode is 2|10|18
+     *         ? (callable(TKey, TKey|null $next, TKey|null $prev): bool)
+     *         : (callable(TValue, TValue|null $next, TValue|null $prev): bool)
+     *     )
+     * ) $callback
+     * @param TMode $mode
+     * @return (TMode is 16|17|18|19 ? TKey : TValue)|null
      */
     public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE | CollectionInterface::FIND_VALUE);
 
@@ -275,11 +300,18 @@ interface CollectionInterface extends
     public function nth(int $n);
 
     /**
+     * Push items onto the end of the collection
+     *
+     * @param TValue ...$items
+     * @return static
+     */
+    public function push(...$items);
+
+    /**
      * Pop an item off the end of the collection
      *
      * @param TValue|null $last Receives the value removed from the collection,
      * or `null` if the collection is empty.
-     * @param-out TValue|null $last
      * @return static
      */
     public function pop(&$last = null);
@@ -289,8 +321,17 @@ interface CollectionInterface extends
      *
      * @param TValue|null $first Receives the value removed from the collection,
      * or `null` if the collection is empty.
-     * @param-out TValue|null $first
      * @return static
      */
     public function shift(&$first = null);
+
+    /**
+     * Add items to the beginning of the collection
+     *
+     * Items are added in one operation and stay in the given order.
+     *
+     * @param TValue ...$items
+     * @return static
+     */
+    public function unshift(...$items);
 }

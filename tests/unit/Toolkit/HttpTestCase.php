@@ -115,7 +115,7 @@ abstract class HttpTestCase extends TestCase
             ...self::PHP_COMMAND,
             __DIR__ . '/http-server.php',
             self::HTTP_SERVER_AUTHORITY,
-            '-1',
+            '300',
             ...($args ?? []),
         ], $input ?? '');
 

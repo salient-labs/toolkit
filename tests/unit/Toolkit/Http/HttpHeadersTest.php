@@ -22,7 +22,7 @@ use LogicException;
 final class HttpHeadersTest extends TestCase
 {
     /**
-     * @dataProvider constructProvider
+     * @dataProvider constructorProvider
      *
      * @param array<string,string[]>|string $expected
      * @param string[]|null $expectedLines
@@ -39,7 +39,7 @@ final class HttpHeadersTest extends TestCase
     /**
      * @return array<array{array<string,string[]>|string,string[]|null,array<string,string[]|string>}>
      */
-    public static function constructProvider(): array
+    public static function constructorProvider(): array
     {
         return [
             [
@@ -331,7 +331,7 @@ final class HttpHeadersTest extends TestCase
     public function testAddInvalidHeader(string $key, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new HttpHeaders())->add($key, $value);
+        (new HttpHeaders())->append($key, $value);
     }
 
     /**
@@ -364,12 +364,12 @@ final class HttpHeadersTest extends TestCase
     public function testGetHeader(): void
     {
         $headers = (new HttpHeaders())
-            ->add('foo', ['qux', 'quux', 'quuux'])
-            ->add('bar', ['baz'])
-            ->add('qux', ['quux="comma,separated,value", quuux'])
-            ->add('size1', ['100', '100'])
-            ->add('size2', ['100', '101'])
-            ->add('items', ['item1, item2', 'item3, item4,item5', 'item6,item7']);
+            ->append('foo', ['qux', 'quux', 'quuux'])
+            ->append('bar', ['baz'])
+            ->append('qux', ['quux="comma,separated,value", quuux'])
+            ->append('size1', ['100', '100'])
+            ->append('size2', ['100', '101'])
+            ->append('items', ['item1, item2', 'item3, item4,item5', 'item6,item7']);
 
         $this->assertTrue($headers->hasHeader('Foo'));
         $this->assertFalse($headers->hasHeader('Baz'));
@@ -409,10 +409,10 @@ final class HttpHeadersTest extends TestCase
         $this->assertSame([], (new HttpHeaders())->getPreferences());
 
         $headers = (new HttpHeaders())
-            ->add(HttpHeader::PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
-            ->add(HttpHeader::PREFER, 'wait=10; baz=qux')
-            ->add(HttpHeader::PREFER, 'task_priority=2; baz="foo bar"')
-            ->add(HttpHeader::PREFER, 'odata.maxpagesize=100');
+            ->append(HttpHeader::PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
+            ->append(HttpHeader::PREFER, 'wait=10; baz=qux')
+            ->append(HttpHeader::PREFER, 'task_priority=2; baz="foo bar"')
+            ->append(HttpHeader::PREFER, 'odata.maxpagesize=100');
 
         $this->assertSame([
             'respond-async' => ['value' => '', 'parameters' => []],
@@ -451,8 +451,8 @@ final class HttpHeadersTest extends TestCase
         $this->assertSame($d, $c);
 
         $a = new HttpHeaders();
-        $b = $a->add(HttpHeader::PREFER, ['respond-async', 'wait=5', 'handling=lenient', 'task_priority=2']);
-        $c = $b->add(HttpHeader::PREFER, 'odata.maxpagesize=100');
+        $b = $a->append(HttpHeader::PREFER, ['respond-async', 'wait=5', 'handling=lenient', 'task_priority=2']);
+        $c = $b->append(HttpHeader::PREFER, 'odata.maxpagesize=100');
         $d = $c->set(HttpHeader::PREFER, [
             'respond-async',
             'wait=5',
@@ -501,7 +501,7 @@ final class HttpHeadersTest extends TestCase
 
     public function testEmptyValue(): void
     {
-        $headers = (new HttpHeaders(['foo' => 'bar', 'baz' => '']))->add('foo', '')->set('qux', '');
+        $headers = (new HttpHeaders(['foo' => 'bar', 'baz' => '']))->append('foo', '')->set('qux', '');
         $this->assertSame(['foo' => ['bar', ''], 'baz' => [''], 'qux' => ['']], $headers->getHeaders());
         $this->assertSame(['foo: bar', 'baz: ', 'foo: ', 'qux: '], $headers->getLines());
         $this->assertSame(['foo:bar', 'baz;', 'foo;', 'qux;'], $headers->getLines('%s:%s', '%s;'));
@@ -586,6 +586,21 @@ final class HttpHeadersTest extends TestCase
             'foo: bar',
             'Foo2: *',
         ], $headers->getLines());
+    }
+
+    public function testMap(): void
+    {
+        $headers = $this->getHeaders();
+        $this->assertSame([], $headers->map(fn() => [])->all());
+        $this->assertSame([
+            'foo2' => ['*-2'],
+            'foo' => ['bar-2', 'baz-2'],
+            'abc' => ['def-2'],
+            'qux' => ['quux-2'],
+        ], $headers->map(
+            fn($values) =>
+                array_map(fn($value) => $value . '-2', $values)
+        )->all());
     }
 
     private function getHeaders(): HttpHeaders

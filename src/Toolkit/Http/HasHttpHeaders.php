@@ -96,7 +96,7 @@ trait HasHttpHeaders
      */
     public function withAddedHeader(string $name, $value): self
     {
-        return $this->with('Headers', $this->Headers->add($name, $value));
+        return $this->with('Headers', $this->Headers->append($name, $value));
     }
 
     /**

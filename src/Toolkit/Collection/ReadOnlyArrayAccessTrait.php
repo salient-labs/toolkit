@@ -1,13 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Concern;
+namespace Salient\Collection;
 
 use ArrayAccess;
 use LogicException;
 
 /**
- * Implements ArrayAccess setters for immutable objects
- *
  * @api
  *
  * @template TKey of array-key
@@ -15,11 +13,9 @@ use LogicException;
  *
  * @phpstan-require-implements ArrayAccess
  */
-trait ImmutableArrayAccessTrait
+trait ReadOnlyArrayAccessTrait
 {
     /**
-     * @internal
-     *
      * @param TKey|null $offset
      * @param TValue $value
      * @return never
@@ -33,8 +29,6 @@ trait ImmutableArrayAccessTrait
     }
 
     /**
-     * @internal
-     *
      * @param TKey $offset
      * @return never
      */

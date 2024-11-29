@@ -64,16 +64,23 @@ final class Debug extends AbstractUtility
 
         if (isset($frames[$depth + 2]['function'])) {
             $frame = $frames[$depth + 2];
+            // - PHP 8.4: `{closure:Salient\Tests\Utility\Debug\GetCallerClass::getCallback():31}`
+            // - Earlier: `Salient\Tests\Utility\Debug\{closure}`
+            if (Str::startsWith($frame['function'], '{closure:')) {
+                $closure = implode(':', array_slice(explode(':', $frame['function']), 1, -1));
+            }
             if (isset($frame['class'])) {
                 $namespace = Get::namespace($frame['class']);
                 $class = Get::basename($frame['class']);
             } else {
-                $namespace = Get::namespace($frame['function']);
+                $namespace = Get::namespace($closure ?? $frame['function']);
                 $class = '';
             }
             // NB: `function` and `class` are both namespaced for closures in
             // namespaced classes
-            $function = Get::basename($frame['function']);
+            $function = isset($closure)
+                ? '{closure}'
+                : Get::basename($frame['function']);
             if ($namespace !== '') {
                 $namespace .= '\\';
             }

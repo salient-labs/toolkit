@@ -1,7 +1,13 @@
 <?php declare(strict_types=1);
 
 $includes = [
-    sprintf('../phpstan-baseline-%d.%d.neon', \PHP_MAJOR_VERSION, \PHP_MINOR_VERSION),
+    sprintf(
+        '../phpstan-baseline-%d.%d.neon',
+        \PHP_MAJOR_VERSION,
+        \PHP_MAJOR_VERSION === 8
+            ? 3
+            : \PHP_MINOR_VERSION,
+    ),
 ];
 
 $parameters = [

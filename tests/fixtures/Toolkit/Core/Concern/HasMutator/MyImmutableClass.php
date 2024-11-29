@@ -2,7 +2,9 @@
 
 namespace Salient\Tests\Core\Concern\HasMutator;
 
-use Salient\Collection\ImmutableCollection;
+use Salient\Collection\CollectionTrait;
+use Salient\Collection\ReadOnlyArrayAccessTrait;
+use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use stdClass;
@@ -36,13 +38,27 @@ class MyImmutableClass implements Immutable
     public $Arr4;
     /** @var stdClass */
     public $Obj;
-    /** @var ImmutableCollection<array-key,mixed> */
+    /** @var MyImmutableCollection */
     public $Coll;
     public stdClass $TypedObj;
 
     public function __construct()
     {
         $this->Obj = new stdClass();
-        $this->Coll = new ImmutableCollection();
+        $this->Coll = new MyImmutableCollection();
+    }
+}
+
+/**
+ * @implements CollectionInterface<array-key,stdClass>
+ */
+class MyImmutableCollection implements CollectionInterface, Immutable
+{
+    /** @use CollectionTrait<array-key,stdClass> */
+    use CollectionTrait;
+    /** @use ReadOnlyArrayAccessTrait<array-key,stdClass> */
+    use ReadOnlyArrayAccessTrait {
+        ReadOnlyArrayAccessTrait::offsetSet insteadof CollectionTrait;
+        ReadOnlyArrayAccessTrait::offsetUnset insteadof CollectionTrait;
     }
 }

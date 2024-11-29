@@ -127,18 +127,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/ProcessTest.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Salient\\Http\\HttpHeaders\:\:filter\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between \*NEVER\* and array\{''accept'', array\{''\*/\*''\}\} will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: tests/unit/Toolkit/Http/HttpHeadersTest.php
-
-		-
 			message: '#^Cannot call method getText\(\) on Salient\\Core\\Process\|null\.$#'
 			identifier: method.nonObject
 			count: 2

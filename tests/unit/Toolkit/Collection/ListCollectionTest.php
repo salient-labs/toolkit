@@ -2,33 +2,33 @@
 
 namespace Salient\Tests\Collection;
 
-use Salient\Tests\Collection\TypedList\MyClass;
-use Salient\Tests\Collection\TypedList\MyList;
+use Salient\Collection\ListCollection;
 use Salient\Tests\TestCase;
-use InvalidArgumentException;
 use OutOfRangeException;
 
 /**
- * @covers \Salient\Collection\AbstractTypedList
- * @covers \Salient\Collection\ListTrait
+ * @covers \Salient\Collection\ListCollection
+ * @covers \Salient\Collection\ListCollectionTrait
  * @covers \Salient\Collection\CollectionTrait
- * @covers \Salient\Collection\ReadableCollectionTrait
+ * @covers \Salient\Collection\ReadOnlyCollectionTrait
  */
-final class AbstractTypedListTest extends TestCase
+final class ListCollectionTest extends TestCase
 {
-    public function testTypedList(): void
+    public function testListCollection(): void
     {
-        $list = new MyList();
+        /** @var ListCollection<MyComparableClass> */
+        $list = new ListCollection();
 
-        $e0 = new MyClass('delta');
-        $e1 = new MyClass('charlie');
-        $e2 = new MyClass('november');
+        $e0 = new MyComparableClass('delta');
+        $e1 = new MyComparableClass('charlie');
+        $e2 = new MyComparableClass('november');
 
         $list[] = $e0;
         $list[] = $e1;
         $list[] = $e2;
 
         $this->assertTrue(isset($list[2]));
+        $this->assertSame($e2, $list[2]);
         unset($list[2]);
         $this->assertFalse(isset($list[2]));
         $list[2] = $e2;
@@ -52,41 +52,45 @@ final class AbstractTypedListTest extends TestCase
 
         $arr = $arrNext = $arrPrev = [];
         $l = $list->forEach(
-            function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev) {
+            $callback = function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev) {
                 $arr[] = $item;
                 $arrNext[] = $next;
                 $arrPrev[] = $prev;
             }
         );
         $this->assertSame($list, $l);
-        $this->assertSame([$e0, $e1, $e2], $arr);
-        $this->assertSame([$e1, $e2, null], $arrNext);
-        $this->assertSame([null, $e0, $e1], $arrPrev);
+        ($assertSameCallbackArgs = function () use (&$arr, &$arrNext, &$arrPrev, $e0, $e1, $e2) {
+            $this->assertSame([$e0, $e1, $e2], $arr);
+            $this->assertSame([$e1, $e2, null], $arrNext);
+            $this->assertSame([null, $e0, $e1], $arrPrev);
+        })();
 
-        $l = $list->map(fn(MyClass $item) => $item);
+        $arr = $arrNext = $arrPrev = [];
+        $l = $list->map(
+            function (MyComparableClass $item, $next, $prev) use ($callback) {
+                $callback($item, $next, $prev);
+                return $item;
+            }
+        );
         $this->assertSame($list, $l);
+        $assertSameCallbackArgs();
 
-        $l = $list->map(fn(MyClass $item) => new MyClass($item->Name . '-2'));
+        $l = $list->map(fn(MyComparableClass $item) => new MyComparableClass($item->Name . '-2'));
         $this->assertNotSame($list, $l);
         $this->assertSame(
             ['delta-2', 'charlie-2', 'november-2'],
-            array_map(fn(MyClass $item) => $item->Name, $l->all()),
+            array_map(fn(MyComparableClass $item) => $item->Name, $l->all()),
         );
 
         $arr = $arrNext = $arrPrev = [];
         $l = $list->filter(
-            function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
-                $arr[] = $item;
-                $arrNext[] = $next;
-                $arrPrev[] = $prev;
-
-                return (bool) $prev;
+            function ($item, $next, $prev) use ($callback) {
+                $callback($item, $next, $prev);
+                return $prev !== null;
             }
         );
         $this->assertSame([$e1, $e2], $l->all());
-        $this->assertSame([$e0, $e1, $e2], $arr);
-        $this->assertSame([$e1, $e2, null], $arrNext);
-        $this->assertSame([null, $e0, $e1], $arrPrev);
+        $assertSameCallbackArgs();
 
         $l = $list->only([2, 3, 4]);
         $this->assertSame([$e2], $l->all());
@@ -106,26 +110,23 @@ final class AbstractTypedListTest extends TestCase
 
         $arr = $arrNext = $arrPrev = [];
         $found = $list->find(
-            function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
-                $arr[] = $item;
-                $arrNext[] = $next;
-                $arrPrev[] = $prev;
-
+            function ($item, $next, $prev) use ($callback) {
+                $callback($item, $next, $prev);
                 return !$next;
             }
         );
         $this->assertSame($e2, $found);
-        $this->assertSame([$e0, $e1, $e2], $arr);
-        $this->assertSame([$e1, $e2, null], $arrNext);
-        $this->assertSame([null, $e0, $e1], $arrPrev);
+        $assertSameCallbackArgs();
 
+        $this->assertSame($e1, $list->find(fn(MyComparableClass $item) => $item->Name === 'charlie'));
+        $this->assertSame(0, $list->find(fn(MyComparableClass $item) => $item->Name === 'delta', ListCollection::CALLBACK_USE_VALUE | ListCollection::FIND_KEY));
         $this->assertNull($list->find(fn() => false));
 
         $slice = $list->slice(1, 1);
         $this->assertSame([$e1], $slice->toArray());
 
-        $e3 = new MyClass('charlie');
-        $e4 = new MyClass('echo');
+        $e3 = new MyComparableClass('charlie');
+        $e4 = new MyComparableClass('echo');
         $this->assertTrue($list->hasValue($e3));
         $this->assertFalse($list->hasValue($e3, true));
         $this->assertSame(1, $list->keyOf($e3));
@@ -134,24 +135,37 @@ final class AbstractTypedListTest extends TestCase
         $this->assertSame($e1, $list->firstOf($e3));
         $this->assertNull($list->firstOf($e4));
 
-        $list->set(2, $e4);
-        $this->assertSame([$e0, $e1, $e4], $list->all());
-        $list->unset(0);
-        $this->assertSame([$e1, $e4], $list->all());
-        $list->merge([13 => $e0, 7 => $e2, 11 => $e4]);
-        $this->assertSame([$e1, $e4, $e0, $e2, $e4], $list->all());
+        $first = null;
+        $this->assertSame([$e1, $e2], $list->shift($first)->all());
+        $this->assertSame($e0, $first);
+
+        $last = null;
+        $this->assertSame([$e0, $e1], $list->pop($last)->all());
+        $this->assertSame($e2, $last);
+
+        $l = $list->set(2, $e4);
+        $this->assertSame([$e0, $e1, $e4], $l->all());
+        $l = $l->unset(0);
+        $this->assertSame([$e1, $e4], $l->all());
+        $l = $l->merge([13 => $e0, 7 => $e2, 11 => $e4]);
+        $this->assertSame([$e1, $e4, $e0, $e2, $e4], $l->all());
     }
 
-    public function testEmptyTypedList(): void
+    public function testEmptyListCollection(): void
     {
-        $list = new MyList();
+        /** @var ListCollection<MyComparableClass> */
+        $list = new ListCollection();
 
+        /** @disregard P1008 */
         $l = $list->pop($last);
         $this->assertSame($list, $l);
+        /** @disregard P1008 */
         $this->assertNull($last);
 
+        /** @disregard P1008 */
         $l = $list->shift($first);
         $this->assertSame($list, $l);
+        /** @disregard P1008 */
         $this->assertNull($first);
 
         $l = $list->sort();
@@ -169,7 +183,7 @@ final class AbstractTypedListTest extends TestCase
         $this->assertSame($l, $list);
         $this->assertSame(0, $count);
 
-        $l = $list->map(fn(MyClass $item) => $item);
+        $l = $list->map(fn(MyComparableClass $item) => $item);
         $this->assertSame($list, $l);
 
         $l = $list->filter(fn() => true);
@@ -195,7 +209,7 @@ final class AbstractTypedListTest extends TestCase
         $l = $list->merge([]);
         $this->assertSame($list, $l);
 
-        $e0 = new MyClass('foo');
+        $e0 = new MyComparableClass('foo');
         $this->assertFalse($list->hasValue($e0));
         $this->assertFalse($list->hasValue($e0, true));
         $this->assertNull($list->keyOf($e0));
@@ -215,35 +229,33 @@ final class AbstractTypedListTest extends TestCase
 
     public function testInvalidKeyType(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($offset) must be of type int, string given');
-        $list = new MyList();
+        /** @var ListCollection<MyComparableClass> */
+        $list = new ListCollection();
         // @phpstan-ignore offsetAssign.dimType
-        $list['foo'] = new MyClass('bar');
+        $list['foo'] = $value = new MyComparableClass('bar');
+        $this->assertSame([$value], $list->all());
     }
 
     public function testSetInvalidKeyType(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($key) must be of type int, string given');
-        $list = new MyList();
+        $list = new ListCollection();
         // @phpstan-ignore argument.type
-        $list->set('foo', new MyClass('bar'));
+        $list = $list->set('foo', $value = new MyComparableClass('bar'));
+        $this->assertSame([$value], $list->all());
     }
 
     public function testInvalidKey(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item cannot be added with key: 1');
-        $list = new MyList();
-        $list[1] = new MyClass('foo');
+        /** @var ListCollection<MyComparableClass> */
+        $list = new ListCollection();
+        $list[1] = $value = new MyComparableClass('foo');
+        $this->assertSame([$value], $list->all());
     }
 
     public function testSetInvalidKey(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Item cannot be added with key: 1');
-        $list = new MyList();
-        $list->set(1, new MyClass('foo'));
+        $list = new ListCollection();
+        $list = $list->set(1, $value = new MyComparableClass('foo'));
+        $this->assertSame([$value], $list->all());
     }
 }

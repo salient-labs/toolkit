@@ -3,7 +3,8 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface;
-use Salient\Collection\ReadableCollectionTrait;
+use Salient\Collection\ReadOnlyArrayAccessTrait;
+use Salient\Collection\ReadOnlyCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\AccessTokenInterface;
@@ -11,14 +12,11 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Core\Concern\HasMutator;
-use Salient\Core\Concern\ImmutableArrayAccessTrait;
-use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
-use Generator;
 use InvalidArgumentException;
 use LogicException;
 
@@ -32,10 +30,10 @@ use LogicException;
  */
 class HttpHeaders implements HttpHeadersInterface
 {
-    /** @use ReadableCollectionTrait<string,string[]> */
-    use ReadableCollectionTrait;
-    /** @use ImmutableArrayAccessTrait<string,string[]> */
-    use ImmutableArrayAccessTrait;
+    /** @use ReadOnlyCollectionTrait<string,string[]> */
+    use ReadOnlyCollectionTrait;
+    /** @use ReadOnlyArrayAccessTrait<string,string[]> */
+    use ReadOnlyArrayAccessTrait;
     use HasMutator;
 
     private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
@@ -93,20 +91,9 @@ REGEX;
      */
     public function __construct($items = [])
     {
-        $headers = [];
-        $index = [];
-        $i = -1;
-        foreach ($this->generateItems($items) as $key => $value) {
-            $values = (array) $value;
-            $lower = Str::lower($key);
-            foreach ($values as $value) {
-                $headers[++$i] = [$key => $value];
-                $index[$lower][] = $i;
-            }
-        }
+        $this->Items = $this->filterByLower($this->getItemsArray($items, $headers, $index));
+        $this->Index = $this->filterByLower($index);
         $this->Headers = $headers;
-        $this->Index = $this->filterIndex($index);
-        $this->Items = $this->doGetHeaders();
     }
 
     /**
@@ -114,7 +101,7 @@ REGEX;
      *
      * If `$value` is a string, it is parsed as an HTTP message.
      *
-     * @param MessageInterface|Arrayable<string,string[]|string>|iterable<string,string[]|string>|string $value
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|MessageInterface|string $value
      * @return static
      */
     public static function from($value): self
@@ -338,7 +325,7 @@ REGEX;
 
         /** @var string $name */
         /** @var string $value */
-        return $this->add($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
+        return $this->append($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
     }
 
     /**
@@ -352,7 +339,7 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function add($key, $value)
+    public function append($key, $value)
     {
         $values = (array) $value;
         if (!$values) {
@@ -435,12 +422,20 @@ REGEX;
     /**
      * @inheritDoc
      */
+    public function add($value)
+    {
+        throw new LogicException('HTTP header required');
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function merge($items, bool $addToExisting = false)
     {
         $headers = $this->Headers;
         $index = $this->Index;
         $applied = false;
-        foreach ($this->generateItems($items) as $key => $value) {
+        foreach ($this->getItems($items) as $key => $value) {
             $values = (array) $value;
             $lower = Str::lower($key);
             if (
@@ -520,23 +515,48 @@ REGEX;
     }
 
     /**
-     * @template T of string[]|string|array{string,string[]}
-     *
-     * @param callable(T, T|null $next, T|null $prev): string[] $callback
+     * @inheritDoc
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            CollectionInterface::class,
-        );
+        $items = [];
+        $prev = null;
+        $item = null;
+        $key = null;
+
+        foreach ($this->Index as $nextLower => $headerIndex) {
+            $nextValue = [];
+            $nextKey = null;
+            foreach ($headerIndex as $i) {
+                $header = $this->Headers[$i];
+                $nextValue[] = reset($header);
+                $nextKey ??= key($header);
+            }
+            $next = $this->getCallbackValue($mode, $nextLower, $nextValue);
+            if ($item !== null) {
+                /** @disregard P1006 */
+                foreach ($callback($item, $next, $prev) as $value) {
+                    /** @var string $key */
+                    $items[$key][] = $value;
+                }
+                $prev = $item;
+            }
+            $item = $next;
+            $key = $nextKey ?? $nextLower;
+        }
+        if ($item !== null) {
+            /** @disregard P1006 */
+            foreach ($callback($item, null, $prev) as $value) {
+                /** @var string $key */
+                $items[$key][] = $value;
+            }
+        }
+
+        return new static($items);
     }
 
     /**
-     * @template T of string[]|string|array{string,string[]}
-     *
-     * @param callable(T, T|null $next, T|null $prev): bool $callback
+     * @inheritDoc
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
@@ -544,21 +564,16 @@ REGEX;
         $prev = null;
         $item = null;
         $lower = null;
-        $count = 0;
         $changed = false;
 
         foreach ($index as $nextLower => $headerIndex) {
-            $nextValue = null;
-            // @phpstan-ignore notIdentical.alwaysTrue
-            if ($mode & CollectionInterface::CALLBACK_USE_BOTH !== CollectionInterface::CALLBACK_USE_KEY) {
-                foreach ($headerIndex as $i) {
-                    $nextValue[] = Arr::first($this->Headers[$i]);
-                }
+            $nextValue = [];
+            foreach ($headerIndex as $i) {
+                $header = $this->Headers[$i];
+                $nextValue[] = reset($header);
             }
             $next = $this->getCallbackValue($mode, $nextLower, $nextValue);
-            if ($count++) {
-                /** @var T $item */
-                /** @var T $next */
+            if ($item !== null) {
                 if (!$callback($item, $next, $prev)) {
                     unset($index[$lower]);
                     $changed = true;
@@ -568,8 +583,7 @@ REGEX;
             $item = $next;
             $lower = $nextLower;
         }
-        /** @var T $item */
-        if ($count && !$callback($item, null, $prev)) {
+        if ($item !== null && !$callback($item, null, $prev)) {
             unset($index[$lower]);
             $changed = true;
         }
@@ -657,6 +671,14 @@ REGEX;
     /**
      * @inheritDoc
      */
+    public function push(...$items)
+    {
+        throw new LogicException('HTTP header required');
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function pop(&$last = null)
     {
         if (!$this->Index) {
@@ -682,6 +704,14 @@ REGEX;
         array_shift($index);
         $first = Arr::first($this->Items);
         return $this->replaceHeaders(null, $index);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function unshift(...$items)
+    {
+        throw new LogicException('HTTP header required');
     }
 
     /**
@@ -831,9 +861,9 @@ REGEX;
     }
 
     /**
-     * @return Generator<string,string>
+     * @return iterable<string,string>
      */
-    protected function headers(): Generator
+    protected function headers(): iterable
     {
         foreach ($this->Headers as $header) {
             $value = reset($header);
@@ -899,7 +929,7 @@ REGEX;
 
         $clone = clone $this;
         $clone->Headers = $headers;
-        $clone->Index = $clone->filterIndex($index);
+        $clone->Index = $clone->filterByLower($index);
         $clone->Items = $clone->doGetHeaders();
         return $clone;
     }
@@ -955,10 +985,12 @@ REGEX;
     }
 
     /**
-     * @param array<string,int[]> $index
-     * @return array<string,int[]>
+     * @template T
+     *
+     * @param array<string,T> $index
+     * @return array<string,T>
      */
-    private function filterIndex(array $index): array
+    private function filterByLower(array $index): array
     {
         // According to [RFC7230] Section 5.4, "a user agent SHOULD generate
         // Host as the first header field following the request-line"
@@ -985,68 +1017,65 @@ REGEX;
 
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
-     * @return Generator<string,string[]|string>
-     */
-    protected function generateItems($items): Generator
-    {
-        if ($items instanceof self) {
-            yield from $items->headers();
-        } elseif ($items instanceof Arrayable) {
-            /** @var array<string,string[]|string> */
-            $items = $items->toArray();
-            yield from $this->filterItems($items);
-        } elseif (is_array($items)) {
-            yield from $this->filterItems($items);
-        } else {
-            foreach ($items as $key => $value) {
-                $values = (array) $value;
-                if (!$values) {
-                    throw new InvalidArgumentException(
-                        sprintf('At least one value must be given for HTTP header: %s', $key)
-                    );
-                }
-                $key = $this->filterName($key);
-                foreach ($values as $value) {
-                    yield $key => $this->filterValue($value);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param array<string,string[]|string> $items
+     * @param array<int,non-empty-array<string,string>>|null $headers
+     * @param array<string,int[]>|null $index
+     * @param-out array<int,non-empty-array<string,string>> $headers
+     * @param-out array<string,int[]> $index
      * @return array<string,string[]>
      */
-    protected function filterItems(array $items): array
+    protected function getItemsArray($items, ?array &$headers = null, ?array &$index = null): array
     {
-        foreach ($items as $key => $value) {
-            $values = (array) $value;
-            if (!$values) {
-                throw new InvalidArgumentException(
-                    sprintf('At least one value must be given for HTTP header: %s', $key)
-                );
-            }
-            $key = $this->filterName($key);
+        $headers = [];
+        $index = [];
+        $i = -1;
+        foreach ($this->getItems($items) as $key => $values) {
+            $lower = Str::lower($key);
             foreach ($values as $value) {
-                $filtered[$key][] = $this->filterValue($value);
+                $headers[++$i] = [$key => $value];
+                $index[$lower][] = $i;
+                $array[$lower][] = $value;
             }
         }
-        return $filtered ?? [];
+
+        return $array ?? [];
     }
 
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
-     * @return never
-     *
-     * @codeCoverageIgnore
+     * @return iterable<string,string[]>
      */
-    protected function getItems($items): array
+    protected function getItems($items): iterable
     {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            ReadableCollectionTrait::class,
-        );
+        if ($items instanceof self) {
+            $items = $items->headers();
+        } elseif ($items instanceof Arrayable) {
+            /** @var array<string,string[]|string> */
+            $items = $items->toArray();
+        }
+        yield from $this->filterItems($items);
+    }
+
+    /**
+     * @param iterable<string,string[]|string> $items
+     * @return iterable<string,string[]>
+     */
+    protected function filterItems(iterable $items): iterable
+    {
+        foreach ($items as $key => $value) {
+            $values = (array) $value;
+            if (!$values) {
+                throw new InvalidArgumentException(sprintf(
+                    'At least one value must be given for HTTP header: %s',
+                    $key,
+                ));
+            }
+            $key = $this->filterName($key);
+            $filtered = [];
+            foreach ($values as $value) {
+                $filtered[] = $this->filterValue($value);
+            }
+            yield $key => $filtered;
+        }
     }
 
     /**
