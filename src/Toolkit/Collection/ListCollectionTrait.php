@@ -8,6 +8,7 @@ use Salient\Contract\Core\Arrayable;
 /**
  * @api
  *
+ * @template TKey of int
  * @template TValue
  *
  * @phpstan-require-implements CollectionInterface

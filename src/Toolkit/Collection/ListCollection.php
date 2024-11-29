@@ -13,6 +13,6 @@ use Salient\Contract\Collection\CollectionInterface;
  */
 class ListCollection implements CollectionInterface
 {
-    /** @use ListCollectionTrait<TValue> */
+    /** @use ListCollectionTrait<int,TValue> */
     use ListCollectionTrait;
 }

@@ -50,13 +50,13 @@ class MyImmutableClass implements Immutable
 }
 
 /**
- * @implements CollectionInterface<array-key,mixed>
+ * @implements CollectionInterface<array-key,stdClass>
  */
 class MyImmutableCollection implements CollectionInterface, Immutable
 {
-    /** @use CollectionTrait<array-key,mixed> */
+    /** @use CollectionTrait<array-key,stdClass> */
     use CollectionTrait;
-    /** @use ReadOnlyArrayAccessTrait<array-key,mixed> */
+    /** @use ReadOnlyArrayAccessTrait<array-key,stdClass> */
     use ReadOnlyArrayAccessTrait {
         ReadOnlyArrayAccessTrait::offsetSet insteadof CollectionTrait;
         ReadOnlyArrayAccessTrait::offsetUnset insteadof CollectionTrait;

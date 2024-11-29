@@ -22,7 +22,7 @@ use LogicException;
 final class HttpHeadersTest extends TestCase
 {
     /**
-     * @dataProvider constructProvider
+     * @dataProvider constructorProvider
      *
      * @param array<string,string[]>|string $expected
      * @param string[]|null $expectedLines
@@ -39,7 +39,7 @@ final class HttpHeadersTest extends TestCase
     /**
      * @return array<array{array<string,string[]>|string,string[]|null,array<string,string[]|string>}>
      */
-    public static function constructProvider(): array
+    public static function constructorProvider(): array
     {
         return [
             [
@@ -586,6 +586,21 @@ final class HttpHeadersTest extends TestCase
             'foo: bar',
             'Foo2: *',
         ], $headers->getLines());
+    }
+
+    public function testMap(): void
+    {
+        $headers = $this->getHeaders();
+        $this->assertSame([], $headers->map(fn() => [])->all());
+        $this->assertSame([
+            'foo2' => ['*-2'],
+            'foo' => ['bar-2', 'baz-2'],
+            'abc' => ['def-2'],
+            'qux' => ['quux-2'],
+        ], $headers->map(
+            fn($values) =>
+                array_map(fn($value) => $value . '-2', $values)
+        )->all());
     }
 
     private function getHeaders(): HttpHeaders

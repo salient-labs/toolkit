@@ -231,6 +231,7 @@ final class ListCollectionTest extends TestCase
     {
         /** @var ListCollection<MyComparableClass> */
         $list = new ListCollection();
+        // @phpstan-ignore offsetAssign.dimType
         $list['foo'] = $value = new MyComparableClass('bar');
         $this->assertSame([$value], $list->all());
     }

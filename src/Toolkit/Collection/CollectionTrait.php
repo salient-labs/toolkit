@@ -91,10 +91,7 @@ trait CollectionTrait
     }
 
     /**
-     * @template T of TValue|TKey|array{TKey,TValue}
-     * @template TReturn
-     *
-     * @param callable(T, T|null $next, T|null $prev): TReturn $callback
+     * @inheritDoc
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
@@ -104,7 +101,6 @@ trait CollectionTrait
         $key = null;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            /** @var T */
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
             if ($item) {
                 /** @var TKey $key */
@@ -124,9 +120,7 @@ trait CollectionTrait
     }
 
     /**
-     * @template T of TValue|TKey|array{TKey,TValue}
-     *
-     * @param callable(T, T|null $next, T|null $prev): bool $callback
+     * @inheritDoc
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
@@ -137,7 +131,6 @@ trait CollectionTrait
         $value = null;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            /** @var T */
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
             if ($item) {
                 if ($callback($item, $next, $prev)) {

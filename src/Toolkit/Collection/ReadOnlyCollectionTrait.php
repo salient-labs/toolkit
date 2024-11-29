@@ -55,9 +55,7 @@ trait ReadOnlyCollectionTrait
     }
 
     /**
-     * @template T of TValue|TKey|array{TKey,TValue}
-     *
-     * @param callable(T, T|null $next, T|null $prev): mixed $callback
+     * @inheritDoc
      */
     public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
@@ -65,7 +63,6 @@ trait ReadOnlyCollectionTrait
         $item = null;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            /** @var T */
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
             if ($item) {
                 $callback($item, $next, $prev);
@@ -81,9 +78,7 @@ trait ReadOnlyCollectionTrait
     }
 
     /**
-     * @template T of TValue|TKey|array{TKey,TValue}
-     *
-     * @param callable(T, T|null $next, T|null $prev): bool $callback
+     * @inheritDoc
      */
     public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE | CollectionInterface::FIND_VALUE)
     {
@@ -93,7 +88,6 @@ trait ReadOnlyCollectionTrait
         $value = null;
 
         foreach ($this->Items as $nextKey => $nextValue) {
-            /** @var T */
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
             if ($item) {
                 if ($callback($item, $next, $prev)) {
@@ -319,6 +313,7 @@ trait ReadOnlyCollectionTrait
         } elseif ($items instanceof Arrayable) {
             $items = $items->toArray();
         }
+        // @phpstan-ignore argument.type
         return $this->filterItems($items);
     }
 
@@ -359,7 +354,7 @@ trait ReadOnlyCollectionTrait
      * @param int-mask-of<CollectionInterface::*> $mode
      * @param TKey $key
      * @param TValue $value
-     * @return TValue|TKey|array{TKey,TValue}
+     * @return ($mode is 3|11|19 ? array{TKey,TValue} : ($mode is 2|10|18 ? TKey : TValue))
      */
     protected function getCallbackValue(int $mode, $key, $value)
     {
@@ -376,7 +371,7 @@ trait ReadOnlyCollectionTrait
      * @param int-mask-of<CollectionInterface::*> $mode
      * @param TKey $key
      * @param TValue $value
-     * @return ($mode is 8|9|10|11 ? TKey : TValue)
+     * @return ($mode is 16|17|18|19 ? TKey : TValue)
      */
     protected function getReturnValue(int $mode, $key, $value)
     {
