@@ -64,13 +64,13 @@ trait ReadOnlyCollectionTrait
 
         foreach ($this->Items as $nextKey => $nextValue) {
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($item) {
+            if ($item !== null) {
                 $callback($item, $next, $prev);
-                $prev = $item;
             }
+            $prev = $item;
             $item = $next;
         }
-        if ($item) {
+        if ($item !== null) {
             $callback($item, null, $prev);
         }
 
@@ -89,20 +89,20 @@ trait ReadOnlyCollectionTrait
 
         foreach ($this->Items as $nextKey => $nextValue) {
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($item) {
+            if ($item !== null) {
                 if ($callback($item, $next, $prev)) {
                     /** @var TKey $key */
                     /** @var TValue $value */
                     // @phpstan-ignore return.type
                     return $this->getReturnValue($mode, $key, $value);
                 }
-                $prev = $item;
             }
+            $prev = $item;
             $item = $next;
             $key = $nextKey;
             $value = $nextValue;
         }
-        if ($item && $callback($item, null, $prev)) {
+        if ($item !== null && $callback($item, null, $prev)) {
             /** @var TKey $key */
             /** @var TValue $value */
             // @phpstan-ignore return.type
