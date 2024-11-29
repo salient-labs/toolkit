@@ -282,8 +282,10 @@ REGEX;
         $value = null;
         if ($strict) {
             $line = substr($line, 0, -2);
-            if (!Regex::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL)
-                    || $matches['bad_whitespace'] !== null) {
+            if (
+                !Regex::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL)
+                || $matches['bad_whitespace'] !== null
+            ) {
                 throw new InvalidArgumentException(sprintf('Invalid HTTP header field: %s', $line));
             }
             // Section 3.2.4 of [RFC7230]: "A user agent that receives an

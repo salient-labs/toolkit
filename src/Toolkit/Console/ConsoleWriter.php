@@ -797,8 +797,10 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
                 $msg2 .= sprintf("\nCaused by __%s__: ", $class);
             }
 
-            if ($ex instanceof MultipleErrorExceptionInterface
-                    && !$ex->hasUnreportedErrors()) {
+            if (
+                $ex instanceof MultipleErrorExceptionInterface
+                && !$ex->hasUnreportedErrors()
+            ) {
                 $message = $this->escape($ex->getMessageWithoutErrors());
             } else {
                 $message = $this->escape($ex->getMessage());

@@ -506,7 +506,12 @@ final class Get extends AbstractUtility
         // PHP is very forgiving with the syntax of these values
         $size = rtrim($size);
         $exp = [
-            'K' => 1, 'k' => 1, 'M' => 2, 'm' => 2, 'G' => 3, 'g' => 3
+            'K' => 1,
+            'k' => 1,
+            'M' => 2,
+            'm' => 2,
+            'G' => 3,
+            'g' => 3,
         ][$size[-1] ?? ''] ?? 0;
         return (int) $size * 1024 ** $exp;
     }

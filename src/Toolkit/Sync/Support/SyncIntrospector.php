@@ -360,9 +360,11 @@ final class SyncIntrospector extends Introspector
 
         // Check for relationships to honour by applying deferred entities
         // instead of raw data
-        if ($this->_Class->IsSyncEntity
+        if (
+            $this->_Class->IsSyncEntity
             && ($this->_Class->OneToOneRelationships
-                || $this->_Class->OneToManyRelationships)) {
+                || $this->_Class->OneToManyRelationships)
+        ) {
             $missing = null;
             foreach ([
                 $this->_Class->OneToOneRelationships,
@@ -484,8 +486,10 @@ final class SyncIntrospector extends Introspector
                         : ($this->_Class->OneToOneRelationships[$match] ?? null))
                     : null;
 
-            if ($relationship !== null
-                    && !is_a($relationship, SyncEntityInterface::class, true)) {
+            if (
+                $relationship !== null
+                && !is_a($relationship, SyncEntityInterface::class, true)
+            ) {
                 throw new LogicException(sprintf(
                     '%s does not implement %s',
                     $relationship,

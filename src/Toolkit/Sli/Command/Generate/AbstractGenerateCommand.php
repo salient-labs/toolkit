@@ -1111,8 +1111,10 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      */
     private function generatePHPDocBlock($phpDoc): array
     {
-        if ($phpDoc === []
-                || (is_string($phpDoc) && trim($phpDoc) === '')) {
+        if (
+            $phpDoc === []
+            || (is_string($phpDoc) && trim($phpDoc) === '')
+        ) {
             return [];
         }
 

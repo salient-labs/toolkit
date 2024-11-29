@@ -171,8 +171,10 @@ final class GenerateFacade extends AbstractGenerateCommand
                     continue;
                 }
                 $method = $methodName;
-                if (strpos($method, '__') === 0
-                        || in_array($method, $this->SkipMethods)) {
+                if (
+                    strpos($method, '__') === 0
+                    || in_array($method, $this->SkipMethods)
+                ) {
                     continue;
                 }
 

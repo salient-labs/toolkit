@@ -200,8 +200,10 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
 
         // Ignore explicitly silenced errors
         foreach ($this->Silenced as [$pattern, $levels]) {
-            if (($levels & $level)
-                    && Regex::match($pattern, $file)) {
+            if (
+                ($levels & $level)
+                && Regex::match($pattern, $file)
+            ) {
                 return true;
             }
         }

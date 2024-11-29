@@ -590,9 +590,9 @@ class IntrospectionClass
                     $className::getChildrenProperty(),
                 ];
 
-                $treeable = array_unique($this->maybeNormalise(
-                    $treeable, NormaliserFlag::LAZY
-                ));
+                $treeable = array_unique(
+                    $this->maybeNormalise($treeable, NormaliserFlag::LAZY),
+                );
 
                 // Do nothing if, after normalisation, both methods return the
                 // same value, or if the values they return don't resolve to

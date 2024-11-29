@@ -567,14 +567,16 @@ EOF)
                 $name = $_method->getName();
                 $phpDoc = PHPDoc::forMethod($_method);
 
-                if ($_method->isConstructor()
-                        || $_method->isStatic()
-                        || strpos($name, '__') === 0
-                        || $phpDoc->hasTag('deprecated')
-                        || in_array(Str::camel($name), $names)
-                        || in_array(Str::camel(Regex::replace('/^(with|get)/i', '', $name)), $names)
-                        || in_array($name, $this->Skip)
-                        || ($this->Forward !== [] && !in_array($name, $this->Forward))) {
+                if (
+                    $_method->isConstructor()
+                    || $_method->isStatic()
+                    || strpos($name, '__') === 0
+                    || $phpDoc->hasTag('deprecated')
+                    || in_array(Str::camel($name), $names)
+                    || in_array(Str::camel(Regex::replace('/^(with|get)/i', '', $name)), $names)
+                    || in_array($name, $this->Skip)
+                    || ($this->Forward !== [] && !in_array($name, $this->Forward))
+                ) {
                     continue;
                 }
 
@@ -610,11 +612,13 @@ EOF)
                         $propertyFile,
                         $templates
                     );
-                    if ($templates
-                            && count($templates) === 1
-                            && ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>'
-                                || $type === $key)
-                            && !in_array($name, $this->NoDeclare)) {
+                    if (
+                        $templates
+                        && count($templates) === 1
+                        && ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>'
+                            || $type === $key)
+                        && !in_array($name, $this->NoDeclare)
+                    ) {
                         $declareTemplates[$name] = $templates;
                         if (!$declare) {
                             $this->ToDeclare[$name] = $_method;
