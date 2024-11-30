@@ -199,8 +199,10 @@ class GenerateSyncProvider extends AbstractGenerateCommand
                 $paramCode = Arr::whereNotEmpty([$context . ' $ctx', $paramCode]);
 
                 $phpDoc = [];
-                if ($paramDoc !== ''
-                        && (SyncUtil::isListOperation($op) || $op === SyncOperation::READ)) {
+                if (
+                    $paramDoc !== ''
+                    && (SyncUtil::isListOperation($op) || $op === SyncOperation::READ)
+                ) {
                     $phpDoc[] = "@param $paramDoc";
                 }
                 if (SyncUtil::isListOperation($op)) {

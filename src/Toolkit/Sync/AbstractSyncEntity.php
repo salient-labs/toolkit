@@ -706,9 +706,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
 
         $context = ($context ?? $provider->getContext())->withContainer($container);
 
-        $closure = SyncIntrospector::getService(
-            $container, static::class
-        )->getCreateSyncEntityFromClosure();
+        $closure = SyncIntrospector::getService($container, static::class)
+            ->getCreateSyncEntityFromClosure();
 
         return $closure($data, $provider, $context);
     }

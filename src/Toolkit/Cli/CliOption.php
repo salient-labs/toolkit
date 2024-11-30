@@ -867,11 +867,13 @@ final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Read
      */
     public function normaliseValue($value, bool $expand = false)
     {
-        if ($expand
+        if (
+            $expand
             && $this->ValueOptional
             && ($value === null
                 || ($this->ValueType !== CliOptionValueType::BOOLEAN
-                    && $value === true))) {
+                    && $value === true))
+        ) {
             $value = $this->DefaultValue;
         }
 

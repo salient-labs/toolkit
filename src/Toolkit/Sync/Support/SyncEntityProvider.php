@@ -583,10 +583,12 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         ?string $weightProperty = null,
         bool $requireOneMatch = false
     ): SyncEntityResolverInterface {
-        if ($nameProperty !== null
-                && $algorithm === TextComparisonAlgorithm::SAME
-                && $weightProperty === null
-                && !$requireOneMatch) {
+        if (
+            $nameProperty !== null
+            && $algorithm === TextComparisonAlgorithm::SAME
+            && $weightProperty === null
+            && !$requireOneMatch
+        ) {
             return new SyncEntityResolver($this, $nameProperty);
         }
         return new SyncEntityFuzzyResolver(

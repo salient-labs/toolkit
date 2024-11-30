@@ -16,6 +16,7 @@
     "includeIfPhp": "/(\\/sli|\\.stub)$/",
     "enable": [
         "preserve-one-line",
+        "semi-strict-expressions",
         "strict-lists"
     ],
     "operatorsFirst": true,

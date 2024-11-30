@@ -281,15 +281,19 @@ class RecursiveFilesystemIterator implements
                             }
                             continue;
                         }
-                        if (Regex::match($exclude, $path)
+                        if (
+                            Regex::match($exclude, $path)
                             || ($this->MatchRelative
-                                && Regex::match($exclude, "/{$path}"))) {
+                                && Regex::match($exclude, "/{$path}"))
+                        ) {
                             return true;
                         }
-                        if ($file->isDir()
+                        if (
+                            $file->isDir()
                             && (Regex::match($exclude, "{$path}/")
                                 || ($this->MatchRelative
-                                    && Regex::match($exclude, "/{$path}/")))) {
+                                    && Regex::match($exclude, "/{$path}/")))
+                        ) {
                             return true;
                         }
                     }
@@ -315,15 +319,19 @@ class RecursiveFilesystemIterator implements
                             }
                             continue;
                         }
-                        if (Regex::match($include, $path)
+                        if (
+                            Regex::match($include, $path)
                             || ($this->MatchRelative
-                                && Regex::match($include, "/{$path}"))) {
+                                && Regex::match($include, "/{$path}"))
+                        ) {
                             return true;
                         }
-                        if ($file->isDir()
+                        if (
+                            $file->isDir()
                             && (Regex::match($include, "$path/")
                                 || ($this->MatchRelative
-                                    && Regex::match($include, "/{$path}/")))) {
+                                    && Regex::match($include, "/{$path}/")))
+                        ) {
                             return true;
                         }
                     }

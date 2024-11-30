@@ -724,9 +724,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             && $this->Callback === null
             && strpos($path, '?') === false
         ) {
-            $path .= '/' . $this->filterParameterValue(
-                (string) $id, 'id', "$path/:id"
-            );
+            $path .= '/' . $this->filterParameterValue((string) $id, 'id', "$path/:id");
         }
 
         $curler = $this->Provider->getCurler(
@@ -843,7 +841,10 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             default:
                 // @codeCoverageIgnoreStart
                 throw new SyncInvalidEntitySourceException(
-                    $this->Provider, $this->Entity, $operation, $this->ReturnEntitiesFrom
+                    $this->Provider,
+                    $this->Entity,
+                    $operation,
+                    $this->ReturnEntitiesFrom,
                 );
                 // @codeCoverageIgnoreEnd
         }
@@ -869,7 +870,10 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             default:
                 // @codeCoverageIgnoreStart
                 throw new SyncInvalidEntitySourceException(
-                    $this->Provider, $this->Entity, $operation, $this->ReturnEntitiesFrom
+                    $this->Provider,
+                    $this->Entity,
+                    $operation,
+                    $this->ReturnEntitiesFrom,
                 );
                 // @codeCoverageIgnoreEnd
         }

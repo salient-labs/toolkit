@@ -115,9 +115,8 @@ trait ProvidableTrait
 
         $context = ($context ?? $provider->getContext())->withContainer($container);
 
-        $closure = Introspector::getService(
-            $container, static::class
-        )->getCreateProvidableFromClosure();
+        $closure = Introspector::getService($container, static::class)
+            ->getCreateProvidableFromClosure();
 
         return $closure($data, $provider, $context);
     }

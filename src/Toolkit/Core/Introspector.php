@@ -525,7 +525,8 @@ class Introspector
             if ($property !== null) {
                 /** @disregard P1006 */
                 if ($this->_Class->propertyActionIsAllowed(
-                    $normalisedKey, IntrospectionClass::ACTION_SET
+                    $normalisedKey,
+                    IntrospectionClass::ACTION_SET
                 )) {
                     $propertyKeys[$key] = $property;
                     continue;

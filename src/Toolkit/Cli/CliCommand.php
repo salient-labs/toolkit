@@ -996,8 +996,10 @@ abstract class CliCommand implements CliCommandInterface
             $this->OptionValues = [];
 
             foreach ($this->Options as $option) {
-                if ($option->Required
-                        && (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
+                if (
+                    $option->Required
+                    && (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])
+                ) {
                     if (!(count($this->Arguments) === 1 && ($this->HasHelpArgument || $this->HasVersionArgument))) {
                         $this->optionError(sprintf(
                             '%s required%s',
@@ -1057,8 +1059,10 @@ abstract class CliCommand implements CliCommandInterface
                 }
                 $saved = true;
                 /** @var CliOption $option */
-                if (!array_key_exists($key, $argValues)
-                        || ($option->IsFlag && !$option->MultipleAllowed)) {
+                if (
+                    !array_key_exists($key, $argValues)
+                    || ($option->IsFlag && !$option->MultipleAllowed)
+                ) {
                     $argValues[$key] = $value;
                 } else {
                     $argValues[$key] = array_merge((array) $argValues[$key], Arr::wrap($value));
@@ -1156,8 +1160,10 @@ abstract class CliCommand implements CliCommandInterface
                 $saveArgValue($key, $value);
             }
 
-            if (array_key_exists($key, $merged)
-                    && !($option->IsFlag && !$option->MultipleAllowed)) {
+            if (
+                array_key_exists($key, $merged)
+                && !($option->IsFlag && !$option->MultipleAllowed)
+            ) {
                 $merged[$key] = array_merge((array) $merged[$key], (array) $value);
             } else {
                 $merged[$key] = $value;
@@ -1298,30 +1304,36 @@ abstract class CliCommand implements CliCommandInterface
         }
 
         if ($option->IsPositional) {
-            if ($option->WasRequired
-                    && array_filter(
-                        $this->PositionalOptions,
-                        fn(CliOption $opt) =>
-                            !$opt->WasRequired && !$opt->MultipleAllowed
-                    )) {
+            if (
+                $option->WasRequired
+                && array_filter(
+                    $this->PositionalOptions,
+                    fn(CliOption $opt) =>
+                        !$opt->WasRequired && !$opt->MultipleAllowed
+                )
+            ) {
                 throw new LogicException('Required positional options must be added before optional ones');
             }
 
-            if (!$option->WasRequired
-                    && array_filter(
-                        $this->PositionalOptions,
-                        fn(CliOption $opt) =>
-                            $opt->MultipleAllowed
-                    )) {
+            if (
+                !$option->WasRequired
+                && array_filter(
+                    $this->PositionalOptions,
+                    fn(CliOption $opt) =>
+                        $opt->MultipleAllowed
+                )
+            ) {
                 throw new LogicException("'multipleAllowed' positional options must be added after optional ones");
             }
 
-            if ($option->MultipleAllowed
-                    && array_filter(
-                        $this->PositionalOptions,
-                        fn(CliOption $opt) =>
-                            $opt->MultipleAllowed
-                    )) {
+            if (
+                $option->MultipleAllowed
+                && array_filter(
+                    $this->PositionalOptions,
+                    fn(CliOption $opt) =>
+                        $opt->MultipleAllowed
+                )
+            ) {
                 throw new LogicException("'multipleAllowed' cannot be set on more than one positional option");
             }
 

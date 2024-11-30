@@ -388,8 +388,10 @@ final class SyncContext extends ProviderContext implements SyncContextInterface
         $clone = clone $this;
         $clone->applyHydrationPolicy($policy, $entityType, $depth);
 
-        if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy
-                && $this->FallbackHydrationPolicy === $clone->FallbackHydrationPolicy) {
+        if (
+            $this->EntityHydrationPolicy === $clone->EntityHydrationPolicy
+            && $this->FallbackHydrationPolicy === $clone->FallbackHydrationPolicy
+        ) {
             return $this;
         }
 
