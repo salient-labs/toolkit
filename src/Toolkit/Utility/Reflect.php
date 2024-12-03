@@ -28,22 +28,23 @@ use ReflectionZendExtension;
  */
 final class Reflect extends AbstractUtility
 {
-    /** @var array<class-string,array<string,mixed>> */
+    /** @var array<class-string,array<non-empty-string,mixed>> */
     private static array $Constants = [];
-    /** @var array<class-string,array<int|string,string[]|string>> */
+    /** @var array<class-string,array<int|string,non-empty-string[]|non-empty-string>> */
     private static array $ConstantsByValue = [];
 
     /**
      * Get a list of names from a list of reflectors
      *
      * @param array<ReflectionAttribute<object>|ReflectionClass<object>|ReflectionClassConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
-     * @return string[]
+     * @return non-empty-string[]
      */
     public static function getNames(array $reflectors): array
     {
         foreach ($reflectors as $reflector) {
             $names[] = $reflector->getName();
         }
+        /** @var non-empty-string[] */
         return $names ?? [];
     }
 
@@ -129,12 +130,13 @@ final class Reflect extends AbstractUtility
      * [ trait, method ] arrays
      *
      * @param ReflectionClass<object> $class
-     * @return array<string,array{class-string,string}>
+     * @return array<non-empty-string,array{class-string,non-empty-string}>
      */
     public static function getTraitAliases(ReflectionClass $class): array
     {
+        /** @var non-empty-string $alias */
         foreach ($class->getTraitAliases() as $alias => $original) {
-            /** @var array{class-string,string} */
+            /** @var array{class-string,non-empty-string} */
             $original = explode('::', $original, 2);
             $aliases[$alias] = $original;
         }
@@ -212,7 +214,7 @@ final class Reflect extends AbstractUtility
      * callable
      *
      * @param ReflectionFunctionAbstract|callable $function
-     * @return ($skipBuiltins is true ? array<class-string[]|class-string> : array<string[]|string>)
+     * @return ($skipBuiltins is true ? array<class-string[]|class-string> : array<non-empty-string[]|non-empty-string>)
      * @throws InvalidArgumentException if `$function` has no parameter at the
      * given position.
      */
@@ -298,7 +300,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get the name of each type in a ReflectionType
      *
-     * @return string[]
+     * @return non-empty-string[]
      */
     public static function getTypeNames(?ReflectionType $type): array
     {
@@ -306,7 +308,7 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * @return ($names is true ? string[] : ReflectionNamedType[])
+     * @return ($names is true ? non-empty-string[] : ReflectionNamedType[])
      */
     private static function doGetTypes(?ReflectionType $type, bool $names): array
     {
@@ -314,8 +316,9 @@ final class Reflect extends AbstractUtility
             return [];
         }
 
+        /** @var ReflectionNamedType $type */
         foreach (Arr::flatten(self::doNormaliseType($type)) as $type) {
-            /** @var ReflectionNamedType $type */
+            /** @var non-empty-string */
             $name = $type->getName();
             if (isset($seen[$name])) {
                 continue;
@@ -377,7 +380,7 @@ final class Reflect extends AbstractUtility
      * Get the public constants of a class or interface, indexed by name
      *
      * @param ReflectionClass<object>|class-string $class
-     * @return array<string,mixed>
+     * @return array<non-empty-string,mixed>
      */
     public static function getConstants($class): array
     {
@@ -387,14 +390,16 @@ final class Reflect extends AbstractUtility
 
     /**
      * @param ReflectionClass<object>|class-string $class
-     * @return array<string,mixed>
+     * @return array<non-empty-string,mixed>
      */
     private static function doGetConstants($class): array
     {
         $class = self::getClass($class);
         foreach ($class->getReflectionConstants() as $constant) {
             if ($constant->isPublic()) {
-                $constants[$constant->getName()] = $constant->getValue();
+                /** @var non-empty-string */
+                $name = $constant->getName();
+                $constants[$name] = $constant->getValue();
             }
         }
 
@@ -408,7 +413,7 @@ final class Reflect extends AbstractUtility
      * For any values used by multiple constants, an array is returned.
      *
      * @param ReflectionClass<object>|class-string $class
-     * @return array<int|string,string[]|string>
+     * @return array<int|string,non-empty-string[]|non-empty-string>
      */
     public static function getConstantsByValue($class): array
     {
@@ -418,7 +423,7 @@ final class Reflect extends AbstractUtility
 
     /**
      * @param ReflectionClass<object>|class-string $class
-     * @return array<int|string,string[]|string>
+     * @return array<int|string,non-empty-string[]|non-empty-string>
      */
     private static function doGetConstantsByValue($class): array
     {
@@ -430,6 +435,7 @@ final class Reflect extends AbstractUtility
                 $constants[$value] = $name;
                 continue;
             }
+            // @phpstan-ignore booleanNot.alwaysTrue
             if (!is_array($constants[$value])) {
                 $constants[$value] = (array) $constants[$value];
             }
@@ -458,6 +464,7 @@ final class Reflect extends AbstractUtility
      * @param mixed $value
      * @throws InvalidArgumentException if `$value` is invalid or matches
      * multiple constants.
+     * @return non-empty-string
      */
     public static function getConstantName($class, $value): string
     {
