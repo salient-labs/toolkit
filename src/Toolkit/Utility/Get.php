@@ -553,8 +553,11 @@ final class Get extends AbstractUtility
         }
         $classes = Arr::toIndex($classes);
         $constRegex = [];
-        foreach (array_keys($constants) as $string) {
-            $constRegex[] = preg_quote($string, '/');
+        if ($constants) {
+            uksort($constants, fn($a, $b) => strlen($b) <=> strlen($a));
+            foreach (array_keys($constants) as $string) {
+                $constRegex[] = preg_quote($string, '/');
+            }
         }
         switch (count($constRegex)) {
             case 0:
