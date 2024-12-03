@@ -17,6 +17,19 @@ $parameters = [
 
 $dir = dirname(__DIR__);
 
+$ignoreErrors = \PHP_VERSION_ID >= 80400 ? [] : [
+    [
+        'message' => '#^Call to method getName\(\) on an unknown class ReflectionConstant\.$#',
+        'identifier' => 'class.notFound',
+    ],
+    [
+        'message' => '#^Parameter \$reflectors of method Salient\\\\Utility\\\\Reflect\:\:getNames\(\) has invalid type ReflectionConstant\.$#',
+        'identifier' => 'class.notFound',
+        'count' => 1,
+        'path' => "$dir/src/Toolkit/Utility/Reflect.php",
+    ],
+];
+
 if (\PHP_VERSION_ID < 80000) {
     return [
         'includes' => $includes,
@@ -32,7 +45,7 @@ if (\PHP_VERSION_ID < 80000) {
                     "$dir/tests/unit/Toolkit/Core/EventDispatcher/listenerWithIntersectionType.php",
                 ],
             ],
-            'ignoreErrors' => [
+            'ignoreErrors' => array_merge([
                 [
                     'message' => '#^Parameter \#1 \$ch of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects resource, CurlHandle\|resource(\|null)? given\.$#',
                 ],
@@ -66,7 +79,7 @@ if (\PHP_VERSION_ID < 80000) {
                     'count' => 1,
                     'path' => "$dir/src/Toolkit/Utility/Str.php",
                 ],
-            ],
+            ], $ignoreErrors),
         ] + $parameters,
     ];
 }
@@ -74,7 +87,7 @@ if (\PHP_VERSION_ID < 80000) {
 return [
     'includes' => $includes,
     'parameters' => [
-        'ignoreErrors' => [
+        'ignoreErrors' => array_merge([
             [
                 'message' => '#^Parameter \#1 \$handle of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects CurlHandle, CurlHandle\|resource(\|null)? given\.$#',
             ],
@@ -94,6 +107,6 @@ return [
                 'count' => 1,
                 'path' => "$dir/src/Toolkit/Utility/Arr.php",
             ],
-        ],
+        ], $ignoreErrors),
     ] + $parameters,
 ];
