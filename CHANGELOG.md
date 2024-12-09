@@ -10,6 +10,27 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.65] - 2024-12-09
+
+### Added
+
+#### `Collection`
+
+- Add and implement `isEmpty()`
+- Add PHPStan assertions that narrow the return types of `all()`, `first()` and `last()` when a collection is non-empty
+
+### Changed
+
+#### `Utility`
+
+- Accept `ReflectionConstant` in `Reflect::getNames()`
+
+### Fixed
+
+#### `Utility`
+
+- Fix issue where `Get::code()` may not match the longest possible string in `$constants`, generating output like `"Type::PROPERTY . '_HOOK'"` instead of `"Type::PROPERTY_HOOK"`
+
 ## [v0.99.64] - 2024-11-29
 
 ### Changed
@@ -4224,6 +4245,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.65]: https://github.com/salient-labs/toolkit/compare/v0.99.64...v0.99.65
 [v0.99.64]: https://github.com/salient-labs/toolkit/compare/v0.99.63...v0.99.64
 [v0.99.63]: https://github.com/salient-labs/toolkit/compare/v0.99.62...v0.99.63
 [v0.99.62]: https://github.com/salient-labs/toolkit/compare/v0.99.61...v0.99.62
