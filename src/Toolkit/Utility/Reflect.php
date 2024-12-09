@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionClassConstant;
+use ReflectionConstant;
 use ReflectionException;
 use ReflectionExtension;
 use ReflectionFunction;
@@ -36,7 +37,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get a list of names from a list of reflectors
      *
-     * @param array<ReflectionAttribute<object>|ReflectionClass<object>|ReflectionClassConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
+     * @param array<ReflectionAttribute<object>|ReflectionClass<object>|ReflectionClassConstant|ReflectionConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
      * @return string[]
      */
     public static function getNames(array $reflectors): array
@@ -248,7 +249,7 @@ final class Reflect extends AbstractUtility
             $union[] = Arr::unwrap($intersection);
         }
 
-        /** @var array<class-string[]|class-string> */
+        /** @var array<class-string[]|class-string>|array<string[]|string> */
         return $union ?? [];
     }
 
@@ -314,8 +315,8 @@ final class Reflect extends AbstractUtility
             return [];
         }
 
+        /** @var ReflectionNamedType $type */
         foreach (Arr::flatten(self::doNormaliseType($type)) as $type) {
-            /** @var ReflectionNamedType $type */
             $name = $type->getName();
             if (isset($seen[$name])) {
                 continue;
