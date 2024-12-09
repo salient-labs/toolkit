@@ -38,6 +38,14 @@ trait ReadOnlyCollectionTrait
     /**
      * @inheritDoc
      */
+    public function isEmpty(): bool
+    {
+        return !$this->Items;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function has($key): bool
     {
         return array_key_exists($key, $this->Items);

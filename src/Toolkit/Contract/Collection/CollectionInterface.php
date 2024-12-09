@@ -11,8 +11,6 @@ use JsonSerializable;
 use OutOfRangeException;
 
 /**
- * An array-like collection of items
- *
  * @api
  *
  * @template TKey of array-key
@@ -61,6 +59,15 @@ interface CollectionInterface extends
     public function __construct($items = []);
 
     /**
+     * Check if the collection is empty
+     *
+     * @phpstan-assert-if-false non-empty-array<TKey,TValue> $this->all()
+     * @phpstan-assert-if-false !null $this->first()
+     * @phpstan-assert-if-false !null $this->last()
+     */
+    public function isEmpty(): bool;
+
+    /**
      * Add or replace an item with a given key
      *
      * @param TKey $key
@@ -73,6 +80,9 @@ interface CollectionInterface extends
      * Check if an item with a given key exists
      *
      * @param TKey $key
+     * @phpstan-assert-if-true non-empty-array<TKey,TValue> $this->all()
+     * @phpstan-assert-if-true !null $this->first()
+     * @phpstan-assert-if-true !null $this->last()
      */
     public function has($key): bool;
 
@@ -246,6 +256,9 @@ interface CollectionInterface extends
      * Check if a value is in the collection
      *
      * @param TValue $value
+     * @phpstan-assert-if-true non-empty-array<TKey,TValue> $this->all()
+     * @phpstan-assert-if-true !null $this->first()
+     * @phpstan-assert-if-true !null $this->last()
      */
     public function hasValue($value, bool $strict = false): bool;
 
