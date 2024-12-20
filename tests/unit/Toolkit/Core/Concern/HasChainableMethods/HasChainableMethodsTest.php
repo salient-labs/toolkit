@@ -27,14 +27,14 @@ final class HasChainableMethodsTest extends TestCase
         $callback2 = fn(MyChainable $chainable) => $chainable->next()->next();
 
         $a = new MyChainable();
-        $b = $a->if(true, null, $callback2);
-        $c = $b->if(false, $callback1, null);
-        $d = $c->if(true, $callback1, $callback2);
-        $e = $d->if(false, $callback1, $callback2);
-        $f = $e->if(fn() => true, null, $callback2);
-        $g = $f->if(fn() => false, $callback1, null);
-        $h = $g->if(fn() => true, $callback1, $callback2);
-        $i = $h->if(fn() => false, $callback1, $callback2);
+        $b = $a->applyIf(true, null, $callback2);
+        $c = $b->applyIf(false, $callback1, null);
+        $d = $c->applyIf(true, $callback1, $callback2);
+        $e = $d->applyIf(false, $callback1, $callback2);
+        $f = $e->applyIf(fn() => true, null, $callback2);
+        $g = $f->applyIf(fn() => false, $callback1, null);
+        $h = $g->applyIf(fn() => true, $callback1, $callback2);
+        $i = $h->applyIf(fn() => false, $callback1, $callback2);
 
         $this->assertSame($a, $b);
         $this->assertSame($a, $c);
@@ -56,8 +56,8 @@ final class HasChainableMethodsTest extends TestCase
             $chainable->next()->record([$key, $value]);
 
         $a = new MyChainable();
-        $b = $a->withEach([], $callback);
-        $c = $b->withEach([1, 'foo' => 2, 'BAR' => 3], $callback);
+        $b = $a->applyForEach([], $callback);
+        $c = $b->applyForEach([1, 'foo' => 2, 'BAR' => 3], $callback);
 
         $this->assertSame($a, $b);
         $this->assertNotSame($b, $c);

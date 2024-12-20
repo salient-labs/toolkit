@@ -27,18 +27,18 @@ interface Chainable
      * resolves to `false`.
      * @return static
      */
-    public function if($condition, ?callable $then = null, ?callable $else = null);
+    public function applyIf($condition, ?callable $then = null, ?callable $else = null);
 
     /**
      * Move to the next method in the chain after applying a callback to the
-     * object with each item in a list
+     * object for each item in an array or iterator
      *
      * @template TKey
      * @template TValue
      *
-     * @param iterable<TKey,TValue> $list
+     * @param iterable<TKey,TValue> $items
      * @param callable(static, TValue, TKey): static $callback
      * @return static
      */
-    public function withEach(iterable $list, callable $callback);
+    public function applyForEach(iterable $items, callable $callback);
 }
