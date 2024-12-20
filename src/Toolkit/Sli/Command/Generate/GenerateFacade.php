@@ -128,7 +128,7 @@ final class GenerateFacade extends AbstractGenerateCommand
 
         $this->Description ??= sprintf(
             'A facade for %s',
-            $service,
+            $classClass,
         );
 
         $_methods = $this->InputClass->getMethods(ReflectionMethod::IS_PUBLIC);

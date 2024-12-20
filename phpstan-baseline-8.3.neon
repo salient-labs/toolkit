@@ -181,7 +181,7 @@ parameters:
 			path: tests/unit/Toolkit/Iterator/RecursiveFilesystemIteratorTest.php
 
 		-
-			message: '#^Parameter &\$actualCode @param\-out type of method Salient\\Tests\\Sli\\SliTestCase\:\:serializeTokens\(\) expects array\<array\{int, string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\>, non\-empty\-array\<int\|string, array\{int, int\|non\-falsy\-string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\> given\.$#'
+			message: '#^Parameter &\$actualCode @param\-out type of method Salient\\Tests\\Sli\\SliTestCase\:\:serializeTokens\(\) expects array\<array\{int, string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\>, non\-empty\-array\<array\{int, int\|non\-falsy\-string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\> given\.$#'
 			identifier: paramOut.type
 			count: 1
 			path: tests/unit/Toolkit/Sli/SliTestCase.php

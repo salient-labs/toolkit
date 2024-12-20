@@ -62,12 +62,6 @@ if (\PHP_VERSION_ID < 80000) {
                     'message' => '#^Class Salient\\\\Tests\\\\Reflection\\\\MyBackedEnum not found\.$#',
                 ],
                 [
-                    'message' => '#^Negated boolean expression is always false\.$#',
-                    'identifier' => 'booleanNot.alwaysFalse',
-                    'count' => 1,
-                    'path' => "$dir/src/Toolkit/Core/Introspector.php",
-                ],
-                [
                     'message' => '#^Method Salient\\\\Utility\\\\Regex\:\:matchAll\(\) should return int but returns int\<0, max\>\|null\.$#',
                     'identifier' => 'return.type',
                     'count' => 1,

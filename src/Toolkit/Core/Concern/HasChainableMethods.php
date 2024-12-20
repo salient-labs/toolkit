@@ -7,8 +7,6 @@ use Salient\Contract\Core\Chainable;
 /**
  * Implements Chainable
  *
- * @see Chainable
- *
  * @api
  *
  * @phpstan-require-implements Chainable
@@ -16,8 +14,7 @@ use Salient\Contract\Core\Chainable;
 trait HasChainableMethods
 {
     /**
-     * @param callable(static): static $callback
-     * @return static
+     * @inheritDoc
      */
     public function apply(callable $callback)
     {
@@ -25,34 +22,26 @@ trait HasChainableMethods
     }
 
     /**
-     * @param (callable(static): bool)|bool $condition
-     * @param (callable(static): static)|null $then
-     * @param (callable(static): static)|null $else
-     * @return static
+     * @inheritDoc
      */
-    public function if($condition, ?callable $then = null, ?callable $else = null)
+    public function applyIf($condition, ?callable $then = null, ?callable $else = null)
     {
         if (is_callable($condition)) {
             $condition = $condition($this);
         }
-        if (!$condition) {
-            return $else === null ? $this : $else($this);
-        }
-        return $then === null ? $this : $then($this);
+
+        return $condition
+            ? ($then === null ? $this : $then($this))
+            : ($else === null ? $this : $else($this));
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     *
-     * @param iterable<TKey,TValue> $list
-     * @param callable(static, TValue, TKey): static $callback
-     * @return static
+     * @inheritDoc
      */
-    public function withEach(iterable $list, callable $callback)
+    public function applyForEach(iterable $items, callable $callback)
     {
         $instance = $this;
-        foreach ($list as $key => $value) {
+        foreach ($items as $key => $value) {
             $instance = $callback($instance, $value, $key);
         }
         return $instance;

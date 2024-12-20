@@ -16,8 +16,6 @@ use Salient\Sync\AbstractSyncDefinition;
 use Closure;
 
 /**
- * A fluent DbSyncDefinition factory
- *
  * @method $this operations(array<OP::*> $value) Supported sync operations
  * @method $this table(?string $value) Set DbSyncDefinition::$Table
  * @method $this conformity(ListConformity::* $value) Conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})

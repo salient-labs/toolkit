@@ -176,9 +176,10 @@ EOF)
         $service = $this->getFqcnAlias($classFqcn, $classClass);
         $extends = $this->getFqcnAlias(AbstractBuilder::class);
 
-        $desc = $this->Description === null
-            ? "A fluent $classClass factory"
-            : $this->Description;
+        $this->Description ??= sprintf(
+            'A builder for %s',
+            $classClass,
+        );
 
         if ($this->IncludeProperties) {
             $introspector = Introspector::get($this->InputClassName);
@@ -750,8 +751,8 @@ EOF)
         $methods = implode(\PHP_EOL, $methods ?? []);
 
         $docBlock[] = '/**';
-        if ($desc) {
-            $docBlock[] = " * $desc";
+        if ($this->Description !== '') {
+            $docBlock[] = " * {$this->Description}";
             $docBlock[] = ' *';
         }
         $docBlock[] = $methods;

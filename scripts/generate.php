@@ -88,12 +88,12 @@ $facades = [
 ];
 
 $builders = [
-    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--no-declare=valueCallback', '--api'],
-    Curler::class => [CurlerBuilder::class, '--forward=head,get,post,put,patch,delete,getP,postP,putP,patchP,deleteP,postR,putR,patchR,deleteR', '--api'],
-    DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--no-declare=overrides'],
-    HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--no-declare=callback,curlerCallback,overrides'],
-    SyncError::class => SyncErrorBuilder::class,
-    SyncSerializeRules::class => [SyncSerializeRulesBuilder::class, '--no-declare=remove,replace'],
+    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--no-declare=valueCallback', '--desc', '', '--api'],
+    Curler::class => [CurlerBuilder::class, '--forward=head,get,post,put,patch,delete,getP,postP,putP,patchP,deleteP,postR,putR,patchR,deleteR', '--desc', '', '--api'],
+    DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--no-declare=overrides', '--desc', ''],
+    HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--no-declare=callback,curlerCallback,overrides', '--desc', ''],
+    SyncError::class => [SyncErrorBuilder::class, '--desc', ''],
+    SyncSerializeRules::class => [SyncSerializeRulesBuilder::class, '--no-declare=remove,replace', '--desc', ''],
 ];
 
 $entities = [
@@ -197,10 +197,10 @@ foreach ($facades as $facade => $class) {
 
 foreach ($builders as $class => $builder) {
     $builderArgs = [];
-    if (is_array($builder)) {
-        $builderArgs = $builder;
-        $builder = array_shift($builderArgs);
-    }
+    // if (is_array($builder)) {
+    $builderArgs = $builder;
+    $builder = array_shift($builderArgs);
+    // }
     $status |= $generateBuilder(...[...$args, ...$builderArgs, $class, $builder]);
     generated($generateBuilder);
 }

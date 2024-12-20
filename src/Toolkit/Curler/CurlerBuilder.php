@@ -21,8 +21,6 @@ use Closure;
 use Stringable;
 
 /**
- * A fluent Curler factory
- *
  * @method $this uri(PsrUriInterface|Stringable|string|null $value) Endpoint URI (cannot have query or fragment components)
  * @method $this headers(Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $value) Request headers
  * @method $this accessToken(AccessTokenInterface|null $value) Access token applied to request headers

@@ -364,7 +364,7 @@ final class Get extends AbstractUtility
             random_bytes(4),
             random_bytes(2),
             // Version 4 (most significant 4 bits = 0b0100)
-            chr(random_int(0, 0x0F) | 0x40) . random_bytes(1),
+            chr(random_int(0, 0xF) | 0x40) . random_bytes(1),
             // Variant 1 (most significant 2 bits = 0b10)
             chr(random_int(0, 0x3F) | 0x80) . random_bytes(1),
             random_bytes(6),

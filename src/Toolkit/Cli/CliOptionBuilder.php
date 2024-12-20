@@ -9,8 +9,6 @@ use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Core\AbstractBuilder;
 
 /**
- * A fluent CliOption factory
- *
  * @method $this name(string|null $value) The name of the option (ignored if not positional; must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens)
  * @method $this long(string|null $value) The long form of the option, e.g. "verbose" (ignored if positional and name is given; must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens)
  * @method $this short(string|null $value) The short form of the option, e.g. "v" (ignored if positional; must contain one letter, number or underscore)

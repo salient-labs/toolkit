@@ -13,6 +13,8 @@ use Salient\Core\AbstractFacade;
  *
  * @method static ContainerInterface addContextualBinding(class-string[]|class-string $context, class-string|string $dependency, (callable(ContainerInterface): mixed)|class-string|mixed $value) Register a contextual binding with the container (see {@see ContainerInterface::addContextualBinding()})
  * @method static ContainerInterface apply(callable(static): static $callback) Move to the next method in the chain after applying a callback to the object
+ * @method static ContainerInterface applyForEach(iterable<mixed,mixed> $items, callable(static, mixed, mixed): static $callback) Move to the next method in the chain after applying a callback to the object for each item in an array or iterator
+ * @method static ContainerInterface applyIf((callable(static): bool)|bool $condition, (callable(static): static)|null $then = null, (callable(static): static)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see Chainable::applyIf()})
  * @method static ContainerInterface bind(class-string $id, class-string|null $class = null, mixed[] $args = []) Bind a service to the container (see {@see ContainerInterface::bind()})
  * @method static ContainerInterface bindIf(class-string $id, class-string|null $class = null, mixed[] $args = []) Bind a service to the container if it isn't already bound
  * @method static object get(class-string $id, mixed[] $args = []) Resolve a service from the container (see {@see ContainerInterface::get()})
@@ -25,7 +27,6 @@ use Salient\Core\AbstractFacade;
  * @method static bool hasInstance(class-string $id) Check if a service resolves to a shared instance
  * @method static bool hasProvider(class-string $id) Check if a service provider is registered with the container
  * @method static bool hasSingleton(class-string $id) Check if a shared service is bound to the container
- * @method static ContainerInterface if((callable(static): bool)|bool $condition, (callable(static): static)|null $then = null, (callable(static): static)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see Chainable::if()})
  * @method static ContainerInterface inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
  * @method static ContainerInterface instance(class-string $id, object $instance) Bind a shared instance to the container
  * @method static ContainerInterface provider(class-string $id, class-string[]|null $services = null, class-string[] $exceptServices = [], ServiceLifetime::* $lifetime = ServiceLifetime::INHERIT) Register a service provider with the container, optionally specifying which of its services to bind or ignore (see {@see ContainerInterface::provider()})
@@ -35,7 +36,6 @@ use Salient\Core\AbstractFacade;
  * @method static ContainerInterface singleton(class-string $id, class-string|null $class = null, mixed[] $args = []) Bind a shared service to the container (see {@see ContainerInterface::singleton()})
  * @method static ContainerInterface singletonIf(class-string $id, class-string|null $class = null, mixed[] $args = []) Bind a shared service to the container if it isn't already bound
  * @method static ContainerInterface unbind(class-string $id) Remove a binding from the container
- * @method static ContainerInterface withEach(iterable<mixed,mixed> $list, callable(static, mixed, mixed): static $callback) Move to the next method in the chain after applying a callback to the object with each item in a list
  *
  * @api
  *

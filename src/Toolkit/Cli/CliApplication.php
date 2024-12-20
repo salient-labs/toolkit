@@ -16,6 +16,7 @@ use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\Get;
@@ -24,6 +25,7 @@ use Salient\Utility\Package;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Sys;
+use InvalidArgumentException;
 use LogicException;
 
 /**
@@ -46,13 +48,14 @@ class CliApplication extends Application implements CliApplicationInterface
         ?string $basePath = null,
         ?string $appName = null,
         int $envFlags = Env::APPLY_ALL,
-        ?string $configDir = 'config'
+        ?string $configDir = 'config',
+        bool $allowRoot = false
     ) {
         parent::__construct($basePath, $appName, $envFlags, $configDir);
 
         if (\PHP_SAPI !== 'cli') {
             // @codeCoverageIgnoreStart
-            throw new LogicException('Not running on CLI');
+            throw new ShouldNotHappenException('Not running via PHP CLI');
             // @codeCoverageIgnoreEnd
         }
 
@@ -62,15 +65,28 @@ class CliApplication extends Application implements CliApplicationInterface
             // @codeCoverageIgnoreEnd
         }
 
+        if (
+            !$allowRoot
+            && function_exists('posix_geteuid')
+            && posix_geteuid() === 0
+        ) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidRuntimeConfigurationException(sprintf(
+                '%s cannot run as root',
+                $this->getAppName(),
+            ));
+            // @codeCoverageIgnoreEnd
+        }
+
         // Keep running, even if:
         // - the TTY disconnects
         // - `max_execution_time` is non-zero
-        // - `memory_limit` is exceeded
+        // - the configured `memory_limit` is exceeded
         ignore_user_abort(true);
         set_time_limit(0);
         ini_set('memory_limit', '-1');
 
-        // Exit cleanly when interrupted
+        // Exit cleanly if interrupted
         Sys::handleExitSignals();
     }
 
@@ -176,7 +192,7 @@ class CliApplication extends Application implements CliApplicationInterface
     {
         foreach ($name as $subcommand) {
             if (!Regex::match(self::COMMAND_REGEX, $subcommand)) {
-                throw new LogicException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'Subcommand does not start with a letter, followed by zero or more letters, numbers, hyphens or underscores: %s',
                     $subcommand,
                 ));
@@ -509,7 +525,7 @@ class CliApplication extends Application implements CliApplicationInterface
                 break;
 
             default:
-                throw new LogicException(sprintf('Invalid CliHelpTarget: %d', $target));
+                throw new InvalidArgumentException(sprintf('Invalid CliHelpTarget: %d', $target));
         }
 
         $formatter = new Formatter($formats, null, fn(): int => 80);

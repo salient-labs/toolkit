@@ -205,7 +205,6 @@ final class FormData
                 /** @var object|mixed[]|string|null $value */
                 foreach ($data as $key => $value) {
                     $_key = sprintf($format, $key);
-                    // @phpstan-ignore identical.alwaysFalse
                     if ($_key === '') {
                         $query[] = null;
                         $_key = array_key_last($query);
