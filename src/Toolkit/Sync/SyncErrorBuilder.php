@@ -9,8 +9,6 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\AbstractBuilder;
 
 /**
- * A fluent SyncError factory
- *
  * @method $this errorType(ErrorType::* $value) Error type
  * @method $this message(string $value) `sprintf()` format string that explains the error
  * @method $this values(list<mixed[]|object|int|float|string|bool|null>|null $value) Values applied to the message format string. Default: `[$entityName]`

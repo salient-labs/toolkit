@@ -20,8 +20,6 @@ use Salient\Sync\AbstractSyncDefinition;
 use Closure;
 
 /**
- * A fluent HttpSyncDefinition factory
- *
  * @method $this operations(array<OP::*> $value) Supported sync operations
  * @method $this path(string[]|string|null $value) Path or paths to the endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})

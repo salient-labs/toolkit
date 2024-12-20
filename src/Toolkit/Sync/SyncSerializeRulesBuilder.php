@@ -9,8 +9,6 @@ use Salient\Core\AbstractBuilder;
 use Closure;
 
 /**
- * A fluent SyncSerializeRules factory
- *
  * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to serialize date and time values
  * @method $this includeMeta(bool|null $value = true) Serialize undeclared property values? (default: true)
  * @method $this sortByKey(bool|null $value = true) Sort serialized entities by key? (default: false)
