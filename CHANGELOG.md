@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.67] - 2025-01-13
+
+### Changed
+
+#### `Sli`
+
+- Generate sync entity providers that return `iterable<array-key,TEntity>` instead of `iterable<TEntity>`, as per `Sync` change in v0.99.63
+
 ## [v0.99.66] - 2025-01-13
 
 ### Changed
@@ -4263,6 +4271,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.67]: https://github.com/salient-labs/toolkit/compare/v0.99.66...v0.99.67
 [v0.99.66]: https://github.com/salient-labs/toolkit/compare/v0.99.65...v0.99.66
 [v0.99.65]: https://github.com/salient-labs/toolkit/compare/v0.99.64...v0.99.65
 [v0.99.64]: https://github.com/salient-labs/toolkit/compare/v0.99.63...v0.99.64
