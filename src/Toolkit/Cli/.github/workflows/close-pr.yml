@@ -8,7 +8,7 @@ on:
 jobs:
   close-pr:
     name: Close PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Run GitHub CLI
         run: gh pr close "$number" --repo "$repo" --comment "$comment"

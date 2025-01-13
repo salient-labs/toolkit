@@ -16,7 +16,7 @@ concurrency:
 jobs:
   split:
     name: Update read-only subtree split repositories
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Install libgit2
