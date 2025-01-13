@@ -13,7 +13,7 @@ use Salient\Tests\Sync\Entity\Task;
  * @method Task getTask(SyncContextInterface $ctx, int|string|null $id)
  * @method Task updateTask(SyncContextInterface $ctx, Task $task)
  * @method Task deleteTask(SyncContextInterface $ctx, Task $task)
- * @method iterable<Task> getTasks(SyncContextInterface $ctx)
+ * @method iterable<array-key,Task> getTasks(SyncContextInterface $ctx)
  *
  * @generated
  */

@@ -13,7 +13,7 @@ use Salient\Tests\Sync\Entity\User;
  * @method User getUser(SyncContextInterface $ctx, int|string|null $id)
  * @method User updateUser(SyncContextInterface $ctx, User $user)
  * @method User deleteUser(SyncContextInterface $ctx, User $user)
- * @method iterable<User> getUsers(SyncContextInterface $ctx)
+ * @method iterable<array-key,User> getUsers(SyncContextInterface $ctx)
  *
  * @generated
  */

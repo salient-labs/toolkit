@@ -13,7 +13,7 @@ use Salient\Tests\Sync\Entity\Unimplemented;
  * @method Unimplemented getUnimplemented(SyncContextInterface $ctx, int|string|null $id)
  * @method Unimplemented updateUnimplemented(SyncContextInterface $ctx, Unimplemented $unimplemented)
  * @method Unimplemented deleteUnimplemented(SyncContextInterface $ctx, Unimplemented $unimplemented)
- * @method iterable<Unimplemented> getUnimplementeds(SyncContextInterface $ctx)
+ * @method iterable<array-key,Unimplemented> getUnimplementeds(SyncContextInterface $ctx)
  *
  * @generated
  */
