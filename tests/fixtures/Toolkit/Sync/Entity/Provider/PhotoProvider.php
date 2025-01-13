@@ -13,7 +13,7 @@ use Salient\Tests\Sync\Entity\Photo;
  * @method Photo getPhoto(SyncContextInterface $ctx, int|string|null $id)
  * @method Photo updatePhoto(SyncContextInterface $ctx, Photo $photo)
  * @method Photo deletePhoto(SyncContextInterface $ctx, Photo $photo)
- * @method iterable<Photo> getPhotos(SyncContextInterface $ctx)
+ * @method iterable<array-key,Photo> getPhotos(SyncContextInterface $ctx)
  *
  * @generated
  */

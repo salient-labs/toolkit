@@ -175,7 +175,7 @@ class GenerateSyncProvider extends AbstractGenerateCommand
             if (SyncUtil::isListOperation($op)) {
                 $paramDoc = 'iterable<' . $service . '> $' . $camelPlural;
                 $paramCode = 'iterable $' . $camelPlural;
-                $returnDoc = 'iterable<' . $service . '>';
+                $returnDoc = 'iterable<array-key,' . $service . '>';
                 $returnCode = 'iterable';
             } else {
                 $paramDoc = $service . ' $' . $camelClass;

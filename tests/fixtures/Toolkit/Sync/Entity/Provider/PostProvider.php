@@ -13,7 +13,7 @@ use Salient\Tests\Sync\Entity\Post;
  * @method Post getPost(SyncContextInterface $ctx, int|string|null $id)
  * @method Post updatePost(SyncContextInterface $ctx, Post $post)
  * @method Post deletePost(SyncContextInterface $ctx, Post $post)
- * @method iterable<Post> getPosts(SyncContextInterface $ctx)
+ * @method iterable<array-key,Post> getPosts(SyncContextInterface $ctx)
  *
  * @generated
  */

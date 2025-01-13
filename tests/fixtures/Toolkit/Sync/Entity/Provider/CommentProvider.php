@@ -13,7 +13,7 @@ use Salient\Tests\Sync\Entity\Comment;
  * @method Comment getComment(SyncContextInterface $ctx, int|string|null $id)
  * @method Comment updateComment(SyncContextInterface $ctx, Comment $comment)
  * @method Comment deleteComment(SyncContextInterface $ctx, Comment $comment)
- * @method iterable<Comment> getComments(SyncContextInterface $ctx)
+ * @method iterable<array-key,Comment> getComments(SyncContextInterface $ctx)
  *
  * @generated
  */

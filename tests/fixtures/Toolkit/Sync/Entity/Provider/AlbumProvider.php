@@ -13,7 +13,7 @@ use Salient\Tests\Sync\Entity\Album;
  * @method Album getAlbum(SyncContextInterface $ctx, int|string|null $id)
  * @method Album updateAlbum(SyncContextInterface $ctx, Album $album)
  * @method Album deleteAlbum(SyncContextInterface $ctx, Album $album)
- * @method iterable<Album> getAlbums(SyncContextInterface $ctx)
+ * @method iterable<array-key,Album> getAlbums(SyncContextInterface $ctx)
  *
  * @generated
  */

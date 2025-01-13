@@ -17,12 +17,12 @@ use Salient\Utility\Get;
  * @method User getUser(SyncContextInterface $ctx, int|string|null $id)
  * @method User updateUser(SyncContextInterface $ctx, User $user)
  * @method User deleteUser(SyncContextInterface $ctx, User $user)
- * @method iterable<User> getUsers(SyncContextInterface $ctx)
+ * @method iterable<array-key,User> getUsers(SyncContextInterface $ctx)
  * @method Collides createCollides(SyncContextInterface $ctx, Collides $collides)
  * @method Collides getCollides(SyncContextInterface $ctx, int|string|null $id)
  * @method Collides updateCollides(SyncContextInterface $ctx, Collides $collides)
  * @method Collides deleteCollides(SyncContextInterface $ctx, Collides $collides)
- * @method iterable<Collides> getCollideses(SyncContextInterface $ctx)
+ * @method iterable<array-key,Collides> getCollideses(SyncContextInterface $ctx)
  */
 class MockProvider extends HttpSyncProvider implements
     SingletonInterface,

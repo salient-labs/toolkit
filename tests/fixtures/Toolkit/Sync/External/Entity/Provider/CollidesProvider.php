@@ -13,7 +13,7 @@ use Salient\Tests\Sync\External\Entity\Collides;
  * @method Collides getCollides(SyncContextInterface $ctx, int|string|null $id)
  * @method Collides updateCollides(SyncContextInterface $ctx, Collides $collides)
  * @method Collides deleteCollides(SyncContextInterface $ctx, Collides $collides)
- * @method iterable<Collides> getCollideses(SyncContextInterface $ctx)
+ * @method iterable<array-key,Collides> getCollideses(SyncContextInterface $ctx)
  *
  * @generated
  */
