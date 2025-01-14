@@ -17,7 +17,6 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncOperationNotImplementedException;
-use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Sync\SyncUtil;
 use Generator;
 use LogicException;
@@ -82,13 +81,7 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
             ));
         }
 
-        if (!(new ReflectionSyncProvider($provider))->isSyncEntityProvider($entity)) {
-            throw new LogicException(sprintf(
-                '%s does not service %s',
-                get_class($provider),
-                $entity,
-            ));
-        }
+        $entity = SyncUtil::getServicedEntityType($entity, $provider, $container);
 
         $this->Entity = $entity;
         $this->Provider = $provider;

@@ -22,8 +22,6 @@ parameters:
 		- Salient\Contract\Core\Entity\Extensible
 	ignoreErrors:
 		-
-			identifier: property.unusedType
-		-
 			identifier: trait.unused
 		-
 			identifier: method.alreadyNarrowedType
@@ -81,7 +79,3 @@ parameters:
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrFlattenReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
 				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php
-		-
-			identifier: property.unused
-			paths:
-				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php

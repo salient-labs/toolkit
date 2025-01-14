@@ -52,7 +52,6 @@ use LogicException;
  * @method Post deletePost(SyncContextInterface $ctx, Post $post)
  * @method iterable<array-key,Post> getPosts(SyncContextInterface $ctx)
  * @method Task createTask(SyncContextInterface $ctx, Task $task)
- * @method Task getTask(SyncContextInterface $ctx, int|string|null $id)
  * @method Task updateTask(SyncContextInterface $ctx, Task $task)
  * @method Task deleteTask(SyncContextInterface $ctx, Task $task)
  * @method iterable<array-key,Task> getTasks(SyncContextInterface $ctx)

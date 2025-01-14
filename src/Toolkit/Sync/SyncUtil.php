@@ -8,10 +8,13 @@ use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Sync;
+use Salient\Sync\Reflection\ReflectionSyncProvider;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Regex;
+use LogicException;
+use ReflectionClass;
 
 final class SyncUtil extends AbstractUtility
 {
@@ -49,6 +52,51 @@ final class SyncUtil extends AbstractUtility
             SyncOperation::UPDATE_LIST => true,
             SyncOperation::DELETE_LIST => true,
         ][$operation] ?? false;
+    }
+
+    /**
+     * With a sync entity type and any non-abstract parents bound to it in a
+     * service container, get the first that is serviced by a provider
+     *
+     * @template T of SyncEntityInterface
+     *
+     * @param class-string<T> $entityType
+     * @return class-string<T>
+     * @throws LogicException if the provider does not service the entity type.
+     */
+    public static function getServicedEntityType(
+        string $entityType,
+        SyncProviderInterface $provider,
+        ContainerInterface $container
+    ): string {
+        $provider = new ReflectionSyncProvider($provider);
+        if ($provider->isSyncEntityProvider($entityType)) {
+            return $entityType;
+        }
+
+        $entity = new ReflectionClass($entityType);
+        do {
+            $entity = $entity->getParentClass();
+            if (
+                !$entity
+                || $entity->isAbstract()
+            ) {
+                throw new LogicException(sprintf(
+                    '%s does not service %s',
+                    $provider->name,
+                    $entityType,
+                ));
+            }
+            if (
+                is_a($container->getName($entity->name), $entityType, true)
+                && $provider->isSyncEntityProvider($entity)
+            ) {
+                break;
+            }
+        } while (true);
+
+        /** @var class-string<T> */
+        return $entity->name;
     }
 
     /**
