@@ -11,6 +11,7 @@ use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule
+ * @covers \Salient\PHPStan\Core\Rules\HasMutatorReadWritePropertiesExtension
  *
  * @extends RuleTestCase<TypesAssignedByHasMutatorRule>
  */

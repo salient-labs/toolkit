@@ -1,5 +1,10 @@
 services:
 	-
+		class: Salient\PHPStan\Core\Rules\HasMutatorReadWritePropertiesExtension
+		tags:
+			- phpstan.properties.readWriteExtension
+
+	-
 		class: Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule
 		tags:
 			- phpstan.rules.rule

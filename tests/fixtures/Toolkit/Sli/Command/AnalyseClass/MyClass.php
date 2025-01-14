@@ -41,7 +41,7 @@ final class MyClass extends MyBaseClass
     // @phpstan-ignore property.unused
     private static ?int $MyNullableStaticTypedProperty;
 
-    // @phpstan-ignore property.onlyWritten
+    // @phpstan-ignore property.onlyWritten, property.unusedType
     private static ?int $MyNullableStaticTypedPropertyWithDefault = null;
 
     /**
