@@ -137,11 +137,12 @@ class ReflectionSyncProvider extends ReflectionClass
      *
      * @template T of SyncEntityInterface
      *
-     * @param ReflectionSyncEntity<T>|class-string<T>|T $entity
+     * @param ReflectionClass<T>|class-string<T>|T $entity
      */
     public function isSyncEntityProvider($entity): bool
     {
-        if ($entity instanceof ReflectionSyncEntity) {
+        if ($entity instanceof ReflectionClass) {
+            /** @var class-string<T> */
             $entity = $entity->name;
         } elseif ($entity instanceof SyncEntityInterface) {
             $entity = get_class($entity);
