@@ -64,6 +64,7 @@ use Salient\Utility\Env;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Package;
+use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 
 $dir = dirname(__DIR__);
@@ -136,14 +137,9 @@ $generateBuilder = new GenerateBuilder($app);
 $generateEntity = new GenerateSyncEntity($app);
 $generateProvider = new GenerateSyncProvider($app);
 
-$class = new ReflectionClass(EnvVar::class);
-foreach ($class->getReflectionConstants() as $constant) {
-    if (!$constant->isPublic()) {
-        continue;
-    }
-    /** @var string */
-    $value = $constant->getValue();
-    Env::unset($value);
+/** @var string $name */
+foreach (Reflect::getConstants(EnvVar::class) as $name) {
+    Env::unset($name);
 }
 
 /** @var string[] */
