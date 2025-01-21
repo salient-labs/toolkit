@@ -73,166 +73,53 @@ final class FileTest extends TestCase
     }
 
     /**
-     * @dataProvider resolveProvider
+     * @dataProvider resolvePathProvider
      */
-    public function testResolve(string $expected, string $path, bool $withEmptySegments = false): void
+    public function testResolvePath(string $expected, string $path, bool $withUriSegments = false): void
     {
-        $this->assertSame($expected, File::resolvePath($path, $withEmptySegments));
+        $this->assertSame($expected, File::resolvePath($path, $withUriSegments));
     }
 
     /**
      * @return array<array{string,string,2?:bool}>
      */
-    public static function resolveProvider(): array
+    public static function resolvePathProvider(): array
     {
         return [
-            [
-                '',
-                '.',
-            ],
-            [
-                '',
-                '..',
-            ],
-            [
-                '',
-                './././',
-            ],
-            [
-                '/',
-                '/././.',
-            ],
-            [
-                '',
-                '../../../',
-            ],
-            [
-                '/',
-                '/../../..',
-            ],
-            [
-                'dir/subdir/file',
-                './dir/subdir/file',
-            ],
-            [
-                'dir/subdir/file',
-                '../dir/subdir/file',
-            ],
-            [
-                'dir/subdir/file',
-                '../../dir/subdir/file',
-            ],
-            [
-                '/dir/subdir/file',
-                '/./dir/subdir/file',
-            ],
-            [
-                '/dir/subdir/file',
-                '/../dir/subdir/file',
-            ],
-            [
-                '/dir/subdir2/',
-                '/dir/subdir/files/../../subdir2/.',
-            ],
-            [
-                '/dir/subdir2/file',
-                '/dir/subdir/files/../../subdir2/./file',
-            ],
-            [
-                'C:/dir/subdir2/file',
-                'C:\dir\subdir\files\..\..\subdir2\.\file',
-            ],
-            [
-                '/dir/',
-                '/dir/subdir//../',
-            ],
-            [
-                '/dir/',
-                '/dir/subdir//..',
-            ],
-            [
-                '/dir/',
-                '/dir/subdir///../',
-            ],
-            [
-                '/dir/',
-                '/dir/subdir///..',
-            ],
-            [
-                '//dir//subdir//',
-                '//dir//subdir//files//..',
-            ],
-            [
-                '//dir//',
-                '//dir//subdir//files//../..',
-            ],
-            [
-                '//',
-                '//dir//subdir//files//../../..',
-            ],
-            [
-                '/',
-                '//dir//subdir//files//../../../..',
-            ],
-            [
-                '/',
-                '//dir//subdir//files//../../../../..',
-            ],
-            [
-                '/dir/subdir/',
-                '/dir/subdir//../',
-                true,
-            ],
-            [
-                '/dir/subdir/',
-                '/dir/subdir//..',
-                true,
-            ],
-            [
-                '/dir/subdir//',
-                '/dir/subdir///../',
-                true,
-            ],
-            [
-                '/dir/subdir//',
-                '/dir/subdir///..',
-                true,
-            ],
-            [
-                '/dir/',
-                '/dir/subdir///../../../',
-                true,
-            ],
-            [
-                '/',
-                '/dir/subdir///../../../../',
-                true,
-            ],
-            [
-                '/',
-                '/dir/subdir///../../../../../',
-                true,
-            ],
-            [
-                '/dir/',
-                '/dir//subdir//../../../',
-                true,
-            ],
-            [
-                '/dir/',
-                '/dir///subdir/../../../',
-                true,
-            ],
-            [
-                '//',
-                '///dir/subdir/../../../',
-                true,
-            ],
-            [
-                '/',
-                '///dir/subdir/../../../../',
-                true,
-            ],
+            ['', '.'],
+            ['', '..'],
+            ['', './././'],
+            ['/', '/././.'],
+            ['', '../../../'],
+            ['/', '/../../..'],
+            ['dir/subdir/file', './dir/subdir/file'],
+            ['dir/subdir/file', '../dir/subdir/file'],
+            ['dir/subdir/file', '../../dir/subdir/file'],
+            ['/dir/subdir/file', '/./dir/subdir/file'],
+            ['/dir/subdir/file', '/../dir/subdir/file'],
+            ['/dir/subdir2/', '/dir/subdir/files/../../subdir2/.'],
+            ['/dir/subdir2/file', '/dir/subdir/files/../../subdir2/./file'],
+            ['C:/dir/subdir2/file', 'C:\dir\subdir\files\..\..\subdir2\.\file'],
+            ['/dir/', '/dir/subdir//../'],
+            ['/dir/', '/dir/subdir//..'],
+            ['/dir/', '/dir/subdir///../'],
+            ['/dir/', '/dir/subdir///..'],
+            ['//dir//subdir//', '//dir//subdir//files//..'],
+            ['//dir//', '//dir//subdir//files//../..'],
+            ['//', '//dir//subdir//files//../../..'],
+            ['/', '//dir//subdir//files//../../../..'],
+            ['/', '//dir//subdir//files//../../../../..'],
+            ['/dir/subdir/', '/dir/subdir//../', true],
+            ['/dir/subdir/', '/dir/subdir//..', true],
+            ['/dir/subdir//', '/dir/subdir///../', true],
+            ['/dir/subdir//', '/dir/subdir///..', true],
+            ['/dir/', '/dir/subdir///../../../', true],
+            ['/', '/dir/subdir///../../../../', true],
+            ['/', '/dir/subdir///../../../../../', true],
+            ['/dir/', '/dir//subdir//../../../', true],
+            ['/dir/', '/dir///subdir/../../../', true],
+            ['//', '///dir/subdir/../../../', true],
+            ['/', '///dir/subdir/../../../../', true],
         ];
     }
 
@@ -277,7 +164,7 @@ final class FileTest extends TestCase
         $this->assertSame("$dir", File::getClosestPath("$dir/not_a_dir/does_not_exist"));
     }
 
-    public function testGetCwd(): void
+    public function testGetcwd(): void
     {
         // chdir() resolves symbolic links, so this is all we can reliably test
         // without launching a separate process
@@ -286,7 +173,7 @@ final class FileTest extends TestCase
         $this->assertSame(getcwd(), File::getcwd());
     }
 
-    public function testGetCwdInSymlinkedDirectory(): void
+    public function testGetcwdInSymlinkedDirectory(): void
     {
         $dir = File::realpath(self::getFixturesPath(__CLASS__));
         $command = sprintf(
@@ -304,7 +191,7 @@ final class FileTest extends TestCase
     /**
      * @requires OSFAMILY Darwin
      */
-    public function testGetCwdOnDarwin(): void
+    public function testGetcwdOnDarwin(): void
     {
         $dir = File::createTempDir();
         try {
@@ -319,7 +206,7 @@ final class FileTest extends TestCase
         }
     }
 
-    public function testCreatable(): void
+    public function testIsCreatable(): void
     {
         $dir = self::getFixturesPath(__CLASS__);
         $this->assertTrue(File::isCreatable("$dir/exists"));
@@ -490,12 +377,12 @@ final class FileTest extends TestCase
     }
 
     /**
-     * @dataProvider readCsvProvider
+     * @dataProvider getCsvProvider
      *
      * @param array<mixed[]> $expected
      * @param Stringable|string|resource $resource
      */
-    public function testReadCsv($expected, $resource): void
+    public function testGetCsv($expected, $resource): void
     {
         $this->assertSame($expected, File::getCsv($resource));
     }
@@ -503,7 +390,7 @@ final class FileTest extends TestCase
     /**
      * @return array<array{array<mixed[]>,Stringable|string|resource}>
      */
-    public static function readCsvProvider(): array
+    public static function getCsvProvider(): array
     {
         $dir = self::getFixturesPath(__CLASS__) . '/csv';
 
