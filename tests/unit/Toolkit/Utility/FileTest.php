@@ -17,80 +17,6 @@ use Stringable;
  */
 final class FileTest extends TestCase
 {
-    /**
-     * @dataProvider getCleanDirProvider
-     */
-    public function testGetCleanDir(string $expected, string $directory): void
-    {
-        $this->assertSame($expected, File::getCleanDir($directory));
-    }
-
-    /**
-     * @return array<array{string,string}>
-     */
-    public static function getCleanDirProvider(): array
-    {
-        return [
-            ['.', ''],
-            ['dir', 'dir'],
-            ['dir', 'dir/'],
-            ['dir', 'dir///'],
-            ['dir/subdir', 'dir/subdir'],
-            ['dir/subdir', 'dir/subdir/'],
-            ['/dir', '/dir'],
-            ['/dir', '/dir/'],
-            ['/dir', '/dir///'],
-            ['C:', 'C:'],
-            ['C:', 'C:/'],
-            ['C:', 'C:' . \DIRECTORY_SEPARATOR],
-            [\DIRECTORY_SEPARATOR, '/'],
-            [\DIRECTORY_SEPARATOR, '/' . \DIRECTORY_SEPARATOR],
-            [\DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR . \DIRECTORY_SEPARATOR . '/'],
-        ];
-    }
-
-    public function testGetCwd(): void
-    {
-        // chdir() resolves symbolic links, so this is all we can reliably test
-        // without launching a separate process
-        $dir = self::getFixturesPath(__CLASS__);
-        File::chdir($dir);
-        $this->assertSame(getcwd(), File::getcwd());
-    }
-
-    public function testGetCwdInSymlinkedDirectory(): void
-    {
-        $dir = File::realpath(self::getFixturesPath(__CLASS__));
-        $command = sprintf(
-            '%s && %s',
-            Sys::escapeCommand(['cd', "$dir/dir_symlink"]),
-            Sys::escapeCommand([...self::PHP_COMMAND, "$dir/pwd.php"]),
-        );
-        $handle = File::openPipe($command, 'rb');
-        $output = File::getContents($handle);
-        $status = File::closePipe($handle);
-        $this->assertSame(0, $status);
-        $this->assertSame($dir . \DIRECTORY_SEPARATOR . 'dir_symlink' . \PHP_EOL, $output);
-    }
-
-    /**
-     * @requires OSFAMILY Darwin
-     */
-    public function testGetCwdOnDarwin(): void
-    {
-        $dir = File::createTempDir();
-        try {
-            File::createDir("$dir/not_searchable/dir");
-            File::chdir("$dir/not_searchable/dir");
-            File::chmod("$dir/not_searchable", 0600);
-            $this->expectException(FilesystemErrorException::class);
-            $this->expectExceptionMessage('Error calling getcwd()');
-            File::getcwd();
-        } finally {
-            File::pruneDir($dir, true, true);
-        }
-    }
-
     public function testFileOperations(): void
     {
         vfsStream::setup('root');
@@ -114,64 +40,6 @@ final class FileTest extends TestCase
         $this->assertSame(0, File::size($file));
         $this->assertSame(0, File::tell($stream, $file));
         File::close($stream);
-    }
-
-    /**
-     * @dataProvider getEolProvider
-     */
-    public function testGetEol(?string $expected, string $content): void
-    {
-        $stream = Str::toStream($content);
-        $this->assertSame($expected, File::getEol($stream));
-    }
-
-    /**
-     * @return array<array{string|null,string}>
-     */
-    public static function getEolProvider(): array
-    {
-        return [
-            [null, ''],
-            [null, 'x'],
-            ["\r\n", "\r\n"],
-            ["\r\n", "x\r\n"],
-            ["\r\n", "x\r\nx"],
-            ["\n", "\n"],
-            ["\n", "x\n"],
-            ["\n", "x\nx"],
-            ["\r", "\r"],
-            ["\r", "x\r"],
-            ["\r", "x\rx"],
-            ["\n", "x\rx\n"],
-            ["\r\n", "x\rx\r\n"],
-        ];
-    }
-
-    public function testCreatable(): void
-    {
-        $dir = self::getFixturesPath(__CLASS__);
-        $this->assertTrue(File::isCreatable("$dir/exists"));
-        $this->assertTrue(File::isCreatable("$dir/dir/does_not_exist"));
-        $this->assertFalse(File::isCreatable("$dir/dir/file/does_not_exist"));
-        $this->assertTrue(File::isCreatable("$dir/not_a_dir/does_not_exist"));
-
-        $dir = File::createTempDir();
-        try {
-            File::createDir("$dir/unwritable", 0500);
-            $this->assertFalse(File::isCreatable("$dir/unwritable"));
-            $this->assertFalse(File::isCreatable("$dir/unwritable/does_not_exist"));
-            File::create("$dir/writable/file");
-            File::create("$dir/writable/read_only", 0400);
-            File::create("$dir/writable/no_permissions", 0);
-            File::chmod("$dir/writable", 0500);
-            $this->assertFalse(File::isCreatable("$dir/writable"));
-            $this->assertTrue(File::isCreatable("$dir/writable/file"));
-            $this->assertFalse(File::isCreatable("$dir/writable/read_only"));
-            $this->assertFalse(File::isCreatable("$dir/writable/no_permissions"));
-            $this->assertFalse(File::isCreatable("$dir/writable/does_not_exist"));
-        } finally {
-            File::pruneDir($dir, true, true);
-        }
     }
 
     /**
@@ -202,15 +70,6 @@ final class FileTest extends TestCase
             [true, 'file:/usr/local/Cellar/composer/2.6.5/bin/composer'],
             [true, 'phar:///usr/local/Cellar/composer/2.6.5/bin/composer/bin/composer'],
         ];
-    }
-
-    public function testRealpath(): void
-    {
-        $dir = self::getFixturesPath(__CLASS__);
-        $this->assertSame(realpath("$dir/exists"), File::realpath("$dir/exists"));
-        $this->expectException(FilesystemErrorException::class);
-        $this->expectExceptionMessage("Error calling realpath() with $dir/does_not_exist");
-        File::realpath("$dir/does_not_exist");
     }
 
     /**
@@ -377,6 +236,38 @@ final class FileTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider getCleanDirProvider
+     */
+    public function testGetCleanDir(string $expected, string $directory): void
+    {
+        $this->assertSame($expected, File::getCleanDir($directory));
+    }
+
+    /**
+     * @return array<array{string,string}>
+     */
+    public static function getCleanDirProvider(): array
+    {
+        return [
+            ['.', ''],
+            ['dir', 'dir'],
+            ['dir', 'dir/'],
+            ['dir', 'dir///'],
+            ['dir/subdir', 'dir/subdir'],
+            ['dir/subdir', 'dir/subdir/'],
+            ['/dir', '/dir'],
+            ['/dir', '/dir/'],
+            ['/dir', '/dir///'],
+            ['C:', 'C:'],
+            ['C:', 'C:/'],
+            ['C:', 'C:' . \DIRECTORY_SEPARATOR],
+            [\DIRECTORY_SEPARATOR, '/'],
+            [\DIRECTORY_SEPARATOR, '/' . \DIRECTORY_SEPARATOR],
+            [\DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR . \DIRECTORY_SEPARATOR . '/'],
+        ];
+    }
+
     public function testGetClosestPath(): void
     {
         $dir = self::getFixturesPath(__CLASS__);
@@ -386,55 +277,82 @@ final class FileTest extends TestCase
         $this->assertSame("$dir", File::getClosestPath("$dir/not_a_dir/does_not_exist"));
     }
 
-    /**
-     * @dataProvider readCsvProvider
-     *
-     * @param array<mixed[]> $expected
-     * @param Stringable|string|resource $resource
-     */
-    public function testReadCsv($expected, $resource): void
+    public function testGetCwd(): void
     {
-        $this->assertSame($expected, File::getCsv($resource));
+        // chdir() resolves symbolic links, so this is all we can reliably test
+        // without launching a separate process
+        $dir = self::getFixturesPath(__CLASS__);
+        File::chdir($dir);
+        $this->assertSame(getcwd(), File::getcwd());
+    }
+
+    public function testGetCwdInSymlinkedDirectory(): void
+    {
+        $dir = File::realpath(self::getFixturesPath(__CLASS__));
+        $command = sprintf(
+            '%s && %s',
+            Sys::escapeCommand(['cd', "$dir/dir_symlink"]),
+            Sys::escapeCommand([...self::PHP_COMMAND, "$dir/pwd.php"]),
+        );
+        $handle = File::openPipe($command, 'rb');
+        $output = File::getContents($handle);
+        $status = File::closePipe($handle);
+        $this->assertSame(0, $status);
+        $this->assertSame($dir . \DIRECTORY_SEPARATOR . 'dir_symlink' . \PHP_EOL, $output);
     }
 
     /**
-     * @return array<array{array<mixed[]>,Stringable|string|resource}>
+     * @requires OSFAMILY Darwin
      */
-    public static function readCsvProvider(): array
+    public function testGetCwdOnDarwin(): void
     {
-        $dir = self::getFixturesPath(__CLASS__) . '/csv';
+        $dir = File::createTempDir();
+        try {
+            File::createDir("$dir/not_searchable/dir");
+            File::chdir("$dir/not_searchable/dir");
+            File::chmod("$dir/not_searchable", 0600);
+            $this->expectException(FilesystemErrorException::class);
+            $this->expectExceptionMessage('Error calling getcwd()');
+            File::getcwd();
+        } finally {
+            File::pruneDir($dir, true, true);
+        }
+    }
 
-        return [
-            [
-                [
-                    [
-                        'id',
-                        'name',
-                        'email',
-                        'notes',
-                    ],
-                    [
-                        '71',
-                        'King, Terry',
-                        '',
-                        'Likes "everybody wants to rule the world"',
-                    ],
-                    [
-                        '38',
-                        'Amir',
-                        'amir@domain.test',
-                        'Website: https://domain.test/~amir',
-                    ],
-                    [
-                        '32',
-                        'Greta',
-                        'greta@domain.test',
-                        'Has a \backslash \"and escaped quotes\"',
-                    ],
-                ],
-                $dir . '/utf8.csv',
-            ],
-        ];
+    public function testCreatable(): void
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        $this->assertTrue(File::isCreatable("$dir/exists"));
+        $this->assertTrue(File::isCreatable("$dir/dir/does_not_exist"));
+        $this->assertFalse(File::isCreatable("$dir/dir/file/does_not_exist"));
+        $this->assertTrue(File::isCreatable("$dir/not_a_dir/does_not_exist"));
+
+        $dir = File::createTempDir();
+        try {
+            File::createDir("$dir/unwritable", 0500);
+            $this->assertFalse(File::isCreatable("$dir/unwritable"));
+            $this->assertFalse(File::isCreatable("$dir/unwritable/does_not_exist"));
+            File::create("$dir/writable/file");
+            File::create("$dir/writable/read_only", 0400);
+            File::create("$dir/writable/no_permissions", 0);
+            File::chmod("$dir/writable", 0500);
+            $this->assertFalse(File::isCreatable("$dir/writable"));
+            $this->assertTrue(File::isCreatable("$dir/writable/file"));
+            $this->assertFalse(File::isCreatable("$dir/writable/read_only"));
+            $this->assertFalse(File::isCreatable("$dir/writable/no_permissions"));
+            $this->assertFalse(File::isCreatable("$dir/writable/does_not_exist"));
+        } finally {
+            File::pruneDir($dir, true, true);
+        }
+    }
+
+    public function testRealpath(): void
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        $this->assertSame(realpath("$dir/exists"), File::realpath("$dir/exists"));
+        $this->expectException(FilesystemErrorException::class);
+        $this->expectExceptionMessage("Error calling realpath() with $dir/does_not_exist");
+        File::realpath("$dir/does_not_exist");
     }
 
     /**
@@ -515,6 +433,37 @@ final class FileTest extends TestCase
         $this->assertNotSame($identifier, File::getIdentifier("$dir/exists"));
     }
 
+    /**
+     * @dataProvider getEolProvider
+     */
+    public function testGetEol(?string $expected, string $content): void
+    {
+        $stream = Str::toStream($content);
+        $this->assertSame($expected, File::getEol($stream));
+    }
+
+    /**
+     * @return array<array{string|null,string}>
+     */
+    public static function getEolProvider(): array
+    {
+        return [
+            [null, ''],
+            [null, 'x'],
+            ["\r\n", "\r\n"],
+            ["\r\n", "x\r\n"],
+            ["\r\n", "x\r\nx"],
+            ["\n", "\n"],
+            ["\n", "x\n"],
+            ["\n", "x\nx"],
+            ["\r", "\r"],
+            ["\r", "x\r"],
+            ["\r", "x\rx"],
+            ["\n", "x\rx\n"],
+            ["\r\n", "x\rx\r\n"],
+        ];
+    }
+
     public function testReadAll(): void
     {
         // 1 MiB
@@ -538,6 +487,57 @@ final class FileTest extends TestCase
         File::writeAll($stream, '');
         File::rewind($stream);
         $this->assertSame($data . '0123456789abcdef', File::getContents($stream));
+    }
+
+    /**
+     * @dataProvider readCsvProvider
+     *
+     * @param array<mixed[]> $expected
+     * @param Stringable|string|resource $resource
+     */
+    public function testReadCsv($expected, $resource): void
+    {
+        $this->assertSame($expected, File::getCsv($resource));
+    }
+
+    /**
+     * @return array<array{array<mixed[]>,Stringable|string|resource}>
+     */
+    public static function readCsvProvider(): array
+    {
+        $dir = self::getFixturesPath(__CLASS__) . '/csv';
+
+        return [
+            [
+                [
+                    [
+                        'id',
+                        'name',
+                        'email',
+                        'notes',
+                    ],
+                    [
+                        '71',
+                        'King, Terry',
+                        '',
+                        'Likes "everybody wants to rule the world"',
+                    ],
+                    [
+                        '38',
+                        'Amir',
+                        'amir@domain.test',
+                        'Website: https://domain.test/~amir',
+                    ],
+                    [
+                        '32',
+                        'Greta',
+                        'greta@domain.test',
+                        'Has a \backslash \"and escaped quotes\"',
+                    ],
+                ],
+                $dir . '/utf8.csv',
+            ],
+        ];
     }
 
     /**
