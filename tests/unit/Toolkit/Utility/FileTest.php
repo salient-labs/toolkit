@@ -3,6 +3,7 @@
 namespace Salient\Tests\Utility;
 
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 use Salient\Tests\TestCase;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\UnreadDataException;
@@ -19,8 +20,8 @@ final class FileTest extends TestCase
 {
     public function testFileOperations(): void
     {
-        vfsStream::setup('root');
-        $file = vfsStream::url('root/file');
+        $dir = self::getRoot()->url();
+        $file = "$dir/file";
         $this->assertFileDoesNotExist($file);
         $stream = File::open($file, 'w+');
         $this->assertIsResource($stream);
@@ -33,7 +34,9 @@ final class FileTest extends TestCase
         $this->assertSame(0, File::tell($stream, $file));
         clearstatcache();
         $this->assertSame($data, File::read($stream, $length * 2, $file));
+        // @phpstan-ignore argument.unresolvableType
         $this->assertSame($length, File::size($file));
+        // @phpstan-ignore argument.unresolvableType
         $this->assertSame($length, File::tell($stream, $file));
         File::truncate($stream, 0, $file);
         clearstatcache();
@@ -124,17 +127,17 @@ final class FileTest extends TestCase
     }
 
     /**
-     * @dataProvider getCleanDirProvider
+     * @dataProvider sanitiseDirProvider
      */
-    public function testGetCleanDir(string $expected, string $directory): void
+    public function testSanitiseDir(string $expected, string $directory): void
     {
-        $this->assertSame($expected, File::getCleanDir($directory));
+        $this->assertSame($expected, File::sanitiseDir($directory));
     }
 
     /**
      * @return array<array{string,string}>
      */
-    public static function getCleanDirProvider(): array
+    public static function sanitiseDirProvider(): array
     {
         return [
             ['.', ''],
@@ -162,6 +165,116 @@ final class FileTest extends TestCase
         $this->assertSame("$dir/dir", File::getClosestPath("$dir/dir/does_not_exist"));
         $this->assertNull(File::getClosestPath("$dir/dir/file/does_not_exist"));
         $this->assertSame("$dir", File::getClosestPath("$dir/not_a_dir/does_not_exist"));
+    }
+
+    public function testCreateAndCreateDir(): void
+    {
+        $this->doTestCreateAndCreateDir(self::getRoot()->url());
+
+        // Repeat the test against a real filesystem and its umask behaviour
+        $dir = File::createTempDir();
+        try {
+            $this->doTestCreateAndCreateDir($dir);
+        } finally {
+            File::pruneDir($dir, true, true);
+        }
+    }
+
+    private function doTestCreateAndCreateDir(string $dir): void
+    {
+        File::create("$dir/file1", 0777);
+        File::create("$dir/dir1/dir4/file2");
+        File::create("$dir/dir2/dir5/dir6/file3", 0600, 0700);
+        File::create("$dir/dir3/file4", 0640, 0750);
+        $this->assertFileExists("$dir/file1");
+        $this->assertFileExists("$dir/dir1/dir4/file2");
+        $this->assertFileExists("$dir/dir2/dir5/dir6/file3");
+        $this->assertFileExists("$dir/dir3/file4");
+        $this->assertSame(0, filesize("$dir/file1"));
+        $this->assertSame(0, filesize("$dir/dir1/dir4/file2"));
+        $this->assertSame(0, filesize("$dir/dir2/dir5/dir6/file3"));
+        $this->assertSame(0, filesize("$dir/dir3/file4"));
+        $this->assertSame(0777, fileperms("$dir/file1") & 0777);
+        $this->assertSame(0755, fileperms("$dir/dir1/dir4/file2") & 0777);
+        $this->assertSame(0755, fileperms("$dir/dir1/dir4") & 0777);
+        $this->assertSame(0755, fileperms("$dir/dir1") & 0777);
+        $this->assertSame(0600, fileperms("$dir/dir2/dir5/dir6/file3") & 0777);
+        $this->assertSame(0700, fileperms("$dir/dir2/dir5/dir6") & 0777);
+        $this->assertSame(0755, fileperms("$dir/dir2/dir5") & 0777);
+        $this->assertSame(0755, fileperms("$dir/dir2") & 0777);
+        $this->assertSame(0640, fileperms("$dir/dir3/file4") & 0777);
+        $this->assertSame(0750, fileperms("$dir/dir3") & 0777);
+    }
+
+    public function testCreateTemp(): void
+    {
+        /** @var string */
+        $filename = $_SERVER['SCRIPT_FILENAME'];
+        $prefix = basename($filename);
+        $shortPrefix = substr($prefix, 0, Sys::isWindows() ? 3 : 63);
+        $dir = File::createTempDir();
+        try {
+            $temp1 = File::createTemp($dir);
+            $this->assertStringStartsWith("$dir/$shortPrefix", $temp1);
+            $this->assertFileExists($temp1);
+            $this->assertIsWritable($temp1);
+            $this->assertSame(0600, fileperms($temp1) & 0777);
+
+            $temp2 = File::createTemp($dir);
+            $this->assertNotSame($temp1, $temp2);
+            $this->assertStringStartsWith("$dir/$shortPrefix", $temp2);
+            $this->assertFileExists($temp2);
+            $this->assertIsWritable($temp2);
+            $this->assertSame(0600, fileperms($temp2) & 0777);
+
+            $prefix = __FUNCTION__;
+            $shortPrefix = substr($prefix, 0, Sys::isWindows() ? 3 : 63);
+            $temp3 = File::createTemp($dir, $prefix);
+            $this->assertStringStartsWith("$dir/$shortPrefix", $temp3);
+            $this->assertFileExists($temp3);
+            $this->assertIsWritable($temp3);
+            $this->assertSame(0600, fileperms($temp3) & 0777);
+        } finally {
+            File::pruneDir($dir, true, true);
+        }
+    }
+
+    public function testCreateTempDir(): void
+    {
+        $dir = self::getRoot()->url();
+        /** @var string */
+        $filename = $_SERVER['SCRIPT_FILENAME'];
+        $prefix = basename($filename);
+
+        $tempDir1 = File::createTempDir($dir);
+        $this->assertStringStartsWith("$dir/$prefix", $tempDir1);
+        $this->assertDirectoryExists($tempDir1);
+        $this->assertIsWritable($tempDir1);
+        $this->assertSame(0700, fileperms($tempDir1) & 0777);
+
+        $tempDir2 = File::createTempDir($dir);
+        $this->assertNotSame($tempDir1, $tempDir2);
+        $this->assertStringStartsWith("$dir/$prefix", $tempDir2);
+        $this->assertDirectoryExists($tempDir2);
+        $this->assertIsWritable($tempDir2);
+        $this->assertSame(0700, fileperms($tempDir2) & 0777);
+
+        $prefix = __FUNCTION__;
+        $tempDir3 = File::createTempDir($dir, $prefix);
+        $this->assertStringStartsWith("$dir/$prefix", $tempDir3);
+        $this->assertDirectoryExists($tempDir3);
+        $this->assertIsWritable($tempDir3);
+        $this->assertSame(0700, fileperms($tempDir3) & 0777);
+    }
+
+    public function testCreateTempDirInUnwritableDirectory(): void
+    {
+        $root = self::getRoot()->url();
+        $dir = "$root/unwritable";
+        File::createDir($dir, 0500);
+        $this->expectException(FilesystemErrorException::class);
+        $this->expectExceptionMessage("Not a writable directory: $dir");
+        File::createTempDir($dir);
     }
 
     public function testGetcwd(): void
@@ -427,43 +540,8 @@ final class FileTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider assertResourceIsStreamProvider
-     *
-     * @param mixed $value
-     */
-    public function testAssertResourceIsStream(?string $expected, $value, ?string $valueType = null): void
+    private static function getRoot(): vfsStreamDirectory
     {
-        if ($expected === null) {
-            $this->expectException(InvalidArgumentException::class);
-            if ($valueType !== null) {
-                if (is_resource($value)) {
-                    $this->expectExceptionMessage("Invalid resource type: $valueType");
-                } else {
-                    $this->expectExceptionMessage("Argument #1 (\$resource) must be of type Stringable|string|resource, $valueType given");
-                }
-            }
-        }
-        // @phpstan-ignore argument.type
-        $this->assertSame($expected, File::getContents($value));
-    }
-
-    /**
-     * @return array<array{string|null,mixed,2?:string|null}>
-     */
-    public static function assertResourceIsStreamProvider(): array
-    {
-        $dir = self::getFixturesPath(__CLASS__);
-        $file = "$dir/dir/file";
-        $stream1 = File::open($file, 'r');
-        $stream2 = File::open($file, 'r');
-        File::close($stream2);
-
-        return [
-            [null, null, 'null'],
-            ['', $file],
-            ['', $stream1],
-            [null, $stream2, 'resource (closed)'],
-        ];
+        return vfsStream::setup();
     }
 }
