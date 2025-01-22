@@ -94,7 +94,7 @@ Summary of MyInterface::MyStaticMethod()
 
 ### Class `MyClass`
 
-<small>(57 lines)</small>
+<small>(53 lines)</small>
 
 Summary of MyClass
 

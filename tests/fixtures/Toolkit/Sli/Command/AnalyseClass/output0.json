@@ -796,7 +796,7 @@
                     ],
                     "type": null,
                     "defaultValue": "0",
-                    "line": 36
+                    "line": 35
                 },
                 "MyStaticTypedProperty": {
                     "summary": null,
@@ -823,7 +823,7 @@
                     ],
                     "type": "int",
                     "defaultValue": null,
-                    "line": 39
+                    "line": 37
                 },
                 "MyNullableStaticTypedProperty": {
                     "summary": null,
@@ -850,7 +850,7 @@
                     ],
                     "type": "?int",
                     "defaultValue": null,
-                    "line": 42
+                    "line": 39
                 },
                 "MyNullableStaticTypedPropertyWithDefault": {
                     "summary": null,
@@ -877,7 +877,7 @@
                     ],
                     "type": "?int",
                     "defaultValue": "null",
-                    "line": 45
+                    "line": 41
                 },
                 "MyMagicReadOnlyInt": {
                     "summary": null,
@@ -1161,7 +1161,7 @@
                         ]
                     },
                     "returnType": null,
-                    "line": 52,
+                    "line": 48,
                     "lines": 4
                 },
                 "MyTemplateMethod": {
@@ -1201,7 +1201,7 @@
                         ]
                     },
                     "returnType": "array<T,TInstance>",
-                    "line": 66,
+                    "line": 62,
                     "lines": 4
                 },
                 "__toString": {
@@ -1233,7 +1233,7 @@
                     ],
                     "parameters": {},
                     "returnType": "string",
-                    "line": 71,
+                    "line": 67,
                     "lines": 4
                 },
                 "MyStaticMethod": {
@@ -1415,7 +1415,7 @@
             },
             "file": "./MyClass.php",
             "line": 19,
-            "lines": 57
+            "lines": 53
         },
         "MyInterface": {
             "type": "interface",
