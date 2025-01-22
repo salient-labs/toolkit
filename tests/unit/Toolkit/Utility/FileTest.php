@@ -10,7 +10,6 @@ use Salient\Utility\Exception\UnreadDataException;
 use Salient\Utility\File;
 use Salient\Utility\Str;
 use Salient\Utility\Sys;
-use InvalidArgumentException;
 use Stringable;
 
 /**
@@ -169,18 +168,18 @@ final class FileTest extends TestCase
 
     public function testCreateAndCreateDir(): void
     {
-        $this->doTestCreateAndCreateDir(self::getRoot()->url());
+        $this->doTestCreateAndCreateDir(self::getRoot()->url(), false);
 
         // Repeat the test against a real filesystem and its umask behaviour
         $dir = File::createTempDir();
         try {
-            $this->doTestCreateAndCreateDir($dir);
+            $this->doTestCreateAndCreateDir($dir, Sys::isWindows());
         } finally {
             File::pruneDir($dir, true, true);
         }
     }
 
-    private function doTestCreateAndCreateDir(string $dir): void
+    private function doTestCreateAndCreateDir(string $dir, bool $windows): void
     {
         File::create("$dir/file1", 0777);
         File::create("$dir/dir1/dir4/file2");
@@ -194,46 +193,54 @@ final class FileTest extends TestCase
         $this->assertSame(0, filesize("$dir/dir1/dir4/file2"));
         $this->assertSame(0, filesize("$dir/dir2/dir5/dir6/file3"));
         $this->assertSame(0, filesize("$dir/dir3/file4"));
-        $this->assertSame(0777, fileperms("$dir/file1") & 0777);
-        $this->assertSame(0755, fileperms("$dir/dir1/dir4/file2") & 0777);
-        $this->assertSame(0755, fileperms("$dir/dir1/dir4") & 0777);
-        $this->assertSame(0755, fileperms("$dir/dir1") & 0777);
-        $this->assertSame(0600, fileperms("$dir/dir2/dir5/dir6/file3") & 0777);
-        $this->assertSame(0700, fileperms("$dir/dir2/dir5/dir6") & 0777);
-        $this->assertSame(0755, fileperms("$dir/dir2/dir5") & 0777);
-        $this->assertSame(0755, fileperms("$dir/dir2") & 0777);
-        $this->assertSame(0640, fileperms("$dir/dir3/file4") & 0777);
-        $this->assertSame(0750, fileperms("$dir/dir3") & 0777);
+        foreach ([
+            [$windows ? 0666 : 0777, "$dir/file1"],
+            [$windows ? 0666 : 0755, "$dir/dir1/dir4/file2"],
+            [$windows ? 0777 : 0755, "$dir/dir1/dir4"],
+            [$windows ? 0777 : 0755, "$dir/dir1"],
+            [$windows ? 0666 : 0600, "$dir/dir2/dir5/dir6/file3"],
+            [$windows ? 0777 : 0700, "$dir/dir2/dir5/dir6"],
+            [$windows ? 0777 : 0755, "$dir/dir2/dir5"],
+            [$windows ? 0777 : 0755, "$dir/dir2"],
+            [$windows ? 0666 : 0640, "$dir/dir3/file4"],
+            [$windows ? 0777 : 0750, "$dir/dir3"],
+        ] as [$perms, $file]) {
+            $expected[] = [$perms, $file];
+            $actual[] = [fileperms($file) & 0777, $file];
+        }
+        $this->assertSame($expected, $actual);
     }
 
     public function testCreateTemp(): void
     {
+        $windows = Sys::isWindows();
         /** @var string */
         $filename = $_SERVER['SCRIPT_FILENAME'];
         $prefix = basename($filename);
-        $shortPrefix = substr($prefix, 0, Sys::isWindows() ? 3 : 63);
-        $dir = File::createTempDir();
+        $shortPrefix = substr($prefix, 0, $windows ? 3 : 63);
+        $sep = \DIRECTORY_SEPARATOR;
+        $dir = File::realpath(File::createTempDir());
         try {
             $temp1 = File::createTemp($dir);
-            $this->assertStringStartsWith("$dir/$shortPrefix", $temp1);
+            $this->assertStringStartsWith("$dir$sep$shortPrefix", $temp1);
             $this->assertFileExists($temp1);
             $this->assertIsWritable($temp1);
-            $this->assertSame(0600, fileperms($temp1) & 0777);
+            $this->assertSame($windows ? 0666 : 0600, fileperms($temp1) & 0777);
 
             $temp2 = File::createTemp($dir);
             $this->assertNotSame($temp1, $temp2);
-            $this->assertStringStartsWith("$dir/$shortPrefix", $temp2);
+            $this->assertStringStartsWith("$dir$sep$shortPrefix", $temp2);
             $this->assertFileExists($temp2);
             $this->assertIsWritable($temp2);
-            $this->assertSame(0600, fileperms($temp2) & 0777);
+            $this->assertSame($windows ? 0666 : 0600, fileperms($temp2) & 0777);
 
             $prefix = __FUNCTION__;
-            $shortPrefix = substr($prefix, 0, Sys::isWindows() ? 3 : 63);
+            $shortPrefix = substr($prefix, 0, $windows ? 3 : 63);
             $temp3 = File::createTemp($dir, $prefix);
-            $this->assertStringStartsWith("$dir/$shortPrefix", $temp3);
+            $this->assertStringStartsWith("$dir$sep$shortPrefix", $temp3);
             $this->assertFileExists($temp3);
             $this->assertIsWritable($temp3);
-            $this->assertSame(0600, fileperms($temp3) & 0777);
+            $this->assertSame($windows ? 0666 : 0600, fileperms($temp3) & 0777);
         } finally {
             File::pruneDir($dir, true, true);
         }
