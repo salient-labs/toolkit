@@ -10,6 +10,36 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.69] - 2025-01-22
+
+### Added
+
+#### `Utility`
+
+- Add `File::createTemp()` for completeness
+
+### Changed
+
+#### `Utility`
+
+- Rename `File::getCleanDir()` to `sanitiseDir()`
+- In `File`, remove resource type checks in favour of upstream exceptions
+
+### Fixed
+
+#### `Utility`
+
+- Fix issue where `File::createTempDir()` consumes full CPU indefinitely if given a directory that is not writable (or not a directory)
+
+### Security
+
+#### `Utility`
+
+- In `File::create()` and `createDir()`:
+  - Change default permissions from `0777` to `0755`
+  - Use umask `0077` to prevent access by an attacker before permissions are applied
+  - In `create()`, open files with mode `'x'` instead of using `touch()` to create them
+
 ## [v0.99.68] - 2025-01-14
 
 ### Added
@@ -4294,6 +4324,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.69]: https://github.com/salient-labs/toolkit/compare/v0.99.68...v0.99.69
 [v0.99.68]: https://github.com/salient-labs/toolkit/compare/v0.99.67...v0.99.68
 [v0.99.67]: https://github.com/salient-labs/toolkit/compare/v0.99.66...v0.99.67
 [v0.99.66]: https://github.com/salient-labs/toolkit/compare/v0.99.65...v0.99.66
