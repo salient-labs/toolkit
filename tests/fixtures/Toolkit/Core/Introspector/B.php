@@ -16,7 +16,6 @@ class B extends A implements Constructible
     private $Meta;
     protected DateTimeImmutable $CreatedAt;
     protected DateTimeImmutable $ModifiedAt;
-
     // @phpstan-ignore property.onlyWritten
     private string $LastSetter;
 

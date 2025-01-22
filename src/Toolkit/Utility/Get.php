@@ -776,11 +776,11 @@ final class Get extends AbstractUtility
      *
      * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
      *
-     * @return non-empty-string|null `null` if there are no recognised newline
-     * characters in `$string`.
-     *
      * @see File::getEol()
      * @see Str::setEol()
+     *
+     * @return non-empty-string|null `null` if there are no recognised newline
+     * characters in `$string`.
      */
     public static function eol(string $string): ?string
     {

@@ -15,9 +15,9 @@ use Salient\Core\Internal\WritePropertyTrait;
  * - The existence of `_set<Property>()` makes `<Property>` writable, regardless
  *   of {@see Writable::getWritableProperties()}'s return value.
  *
- * @api
- *
  * @see Writable
+ *
+ * @api
  */
 trait HasWritableProperties
 {
