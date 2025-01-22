@@ -48,6 +48,7 @@ return (new PhpCsFixer\Config())
         'phpdoc_no_useless_inheritdoc' => true,
         'phpdoc_order' => ['order' => [
             'todo',
+            'see',
             'property',
             'property-read',
             'property-write',

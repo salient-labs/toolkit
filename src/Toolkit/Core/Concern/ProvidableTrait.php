@@ -16,10 +16,10 @@ use LogicException;
 /**
  * Implements Providable to represent an external entity
  *
+ * @see Providable
+ *
  * @template TProvider of ProviderInterface
  * @template TContext of ProviderContextInterface
- *
- * @see Providable
  */
 trait ProvidableTrait
 {

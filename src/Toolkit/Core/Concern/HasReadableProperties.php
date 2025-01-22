@@ -15,9 +15,9 @@ use Salient\Core\Internal\ReadPropertyTrait;
  * - The existence of `_get<Property>()` makes `<Property>` readable, regardless
  *   of {@see Readable::getReadableProperties()}'s return value.
  *
- * @api
- *
  * @see Readable
+ *
+ * @api
  */
 trait HasReadableProperties
 {

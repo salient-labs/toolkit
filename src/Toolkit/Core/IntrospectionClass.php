@@ -661,13 +661,13 @@ class IntrospectionClass
      * Normalise strings if the class has a normaliser, otherwise return them
      * as-is
      *
+     * @see Normalisable::normalise()
+     *
      * @template T of string[]|string
      *
      * @param T $value
      * @param int-mask-of<NormaliserFlag::*> $flags
      * @return T
-     *
-     * @see Normalisable::normalise()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {

@@ -1370,9 +1370,9 @@ abstract class CliCommand implements CliCommandInterface
     /**
      * Set the command's return value / exit status
      *
-     * @return $this
-     *
      * @see CliCommand::run()
+     *
+     * @return $this
      */
     final protected function setExitStatus(int $status)
     {
