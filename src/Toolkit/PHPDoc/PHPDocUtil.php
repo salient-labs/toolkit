@@ -34,7 +34,7 @@ final class PHPDocUtil extends AbstractUtility
      * Returns an empty array if no doc comments are found for the class or any
      * extended classes or interfaces.
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @param bool $includeAll If `true`, entries are returned for `$class` and
      * every parent, including any without doc comments.
      * @return ($includeAll is false ? array<class-string,string> : array<class-string,string|null>)
@@ -94,7 +94,7 @@ final class PHPDocUtil extends AbstractUtility
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes, interfaces or traits.
      *
-     * @param ReflectionClass<object>|null $fromClass If given, entries are
+     * @param ReflectionClass<*>|null $fromClass If given, entries are
      * returned for `$fromClass` and every parent with `$method`, including any
      * without doc comments or where `$method` is not declared.
      * @param array<class-string,string|null>|null $classDocComments If given,
@@ -139,7 +139,7 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object>|null $fromClass
+     * @param ReflectionClass<*>|null $fromClass
      * @param array<class-string,string|null>|null $classDocComments
      * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
      */
@@ -216,7 +216,7 @@ final class PHPDocUtil extends AbstractUtility
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes or traits.
      *
-     * @param ReflectionClass<object>|null $fromClass If given, entries are
+     * @param ReflectionClass<*>|null $fromClass If given, entries are
      * returned for `$fromClass` and every parent with `$property`, including
      * any without doc comments or where `$property` is not declared.
      * @param array<class-string,string|null>|null $classDocComments If given,
@@ -245,7 +245,7 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object>|null $fromClass
+     * @param ReflectionClass<*>|null $fromClass
      * @param array<class-string,string|null>|null $classDocComments
      * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
      */
@@ -313,7 +313,7 @@ final class PHPDocUtil extends AbstractUtility
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes, interfaces or traits.
      *
-     * @param ReflectionClass<object>|null $fromClass If given, entries are
+     * @param ReflectionClass<*>|null $fromClass If given, entries are
      * returned for `$fromClass` and every parent with `$constant`, including
      * any without doc comments or where `$constant` is not declared.
      * @param array<class-string,string|null>|null $classDocComments If given,
@@ -361,7 +361,7 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object>|null $fromClass
+     * @param ReflectionClass<*>|null $fromClass
      * @param array<class-string,string|null>|null $classDocComments
      * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
      */
@@ -739,8 +739,8 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object> $class
-     * @return array<class-string,ReflectionClass<object>>
+     * @param ReflectionClass<*> $class
+     * @return array<class-string,ReflectionClass<*>>
      */
     private static function getInterfaces(ReflectionClass $class): array
     {
@@ -760,7 +760,7 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     private static function getMethodName(
         ReflectionMethod $method,
@@ -782,7 +782,7 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     private static function isMethodInClass(
         ReflectionMethod $method,
@@ -856,7 +856,7 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     private static function isPropertyInClass(
         ReflectionProperty $property,
@@ -881,7 +881,7 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     private static function isConstantInClass(
         ReflectionClassConstant $constant,
@@ -914,7 +914,7 @@ final class PHPDocUtil extends AbstractUtility
      * Get an array that maps traits to [ alias => method ] arrays for the trait
      * method aliases of a class
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @return array<class-string,array<string,string>>
      */
     private static function getTraitAliases(ReflectionClass $class): array

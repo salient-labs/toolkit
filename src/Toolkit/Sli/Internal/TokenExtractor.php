@@ -54,7 +54,7 @@ final class TokenExtractor
      * Creates a new TokenExtractor object for a class from the file in which it
      * is declared
      *
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      */
     public static function forClass($class, ?string $eol = null): self
     {

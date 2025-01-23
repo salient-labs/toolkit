@@ -177,7 +177,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
     // --
 
-    /** @var ReflectionClass<object> */
+    /** @var ReflectionClass<*> */
     protected ReflectionClass $InputClass;
     /** @var class-string */
     protected string $InputClassName;
@@ -344,6 +344,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             }
 
             $this->InputFileUseMaps[$file] = array_change_key_case($useMap ?? []);
+            // @phpstan-ignore assign.propertyType
             $this->InputFileTypeMaps[$file] = array_change_key_case(array_flip($useMap ?? []));
         }
     }

@@ -37,7 +37,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get a list of names from a list of reflectors
      *
-     * @param array<ReflectionAttribute<object>|ReflectionClass<object>|ReflectionClassConstant|ReflectionConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
+     * @param array<ReflectionAttribute<*>|ReflectionClass<*>|ReflectionClassConstant|ReflectionConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
      * @return string[]
      */
     public static function getNames(array $reflectors): array
@@ -51,8 +51,8 @@ final class Reflect extends AbstractUtility
     /**
      * Follow parents of a class to the root class
      *
-     * @param ReflectionClass<object> $class
-     * @return ReflectionClass<object>
+     * @param ReflectionClass<*> $class
+     * @return ReflectionClass<*>
      */
     public static function getBaseClass(ReflectionClass $class): ReflectionClass
     {
@@ -96,7 +96,7 @@ final class Reflect extends AbstractUtility
      * Get the declaring class of a method's prototype, falling back to the
      * method's declaring class if it has no prototype
      *
-     * @return ReflectionClass<object>
+     * @return ReflectionClass<*>
      */
     public static function getPrototypeClass(ReflectionMethod $method): ReflectionClass
     {
@@ -106,7 +106,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get the trait method inserted into a class with the given name
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     public static function getTraitMethod(
         ReflectionClass $class,
@@ -129,7 +129,7 @@ final class Reflect extends AbstractUtility
      * Get the trait method aliases of a class as an array that maps aliases to
      * [ trait, method ] arrays
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @return array<string,array{class-string,string}>
      */
     public static function getTraitAliases(ReflectionClass $class): array
@@ -146,7 +146,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get the trait property inserted into a class with the given name
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     public static function getTraitProperty(
         ReflectionClass $class,
@@ -164,7 +164,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get the trait constant inserted into a class with the given name
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     public static function getTraitConstant(
         ReflectionClass $class,
@@ -189,7 +189,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get the properties of a class, including private parent properties
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @return ReflectionProperty[]
      */
     public static function getAllProperties(ReflectionClass $class): array
@@ -377,7 +377,7 @@ final class Reflect extends AbstractUtility
     /**
      * Get the public constants of a class or interface, indexed by name
      *
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @return array<string,mixed>
      */
     public static function getConstants($class): array
@@ -387,7 +387,7 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @return array<string,mixed>
      */
     private static function doGetConstants($class): array
@@ -408,7 +408,7 @@ final class Reflect extends AbstractUtility
      * If the value of a constant is not an integer or string, it is ignored.
      * For any values used by multiple constants, an array is returned.
      *
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @return array<int|string,string[]|string>
      */
     public static function getConstantsByValue($class): array
@@ -418,7 +418,7 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @return array<int|string,string[]|string>
      */
     private static function doGetConstantsByValue($class): array
@@ -443,7 +443,7 @@ final class Reflect extends AbstractUtility
     /**
      * Check if a class or interface has a public constant with the given value
      *
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @param mixed $value
      */
     public static function hasConstantWithValue($class, $value): bool
@@ -455,7 +455,7 @@ final class Reflect extends AbstractUtility
      * Get the name of a public constant with the given value from a class or
      * interface
      *
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @param mixed $value
      * @throws InvalidArgumentException if `$value` is invalid or matches
      * multiple constants.
@@ -489,7 +489,7 @@ final class Reflect extends AbstractUtility
      * Get the value of a public constant with the given name from a class or
      * interface
      *
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @return mixed
      * @throws InvalidArgumentException if `$name` is invalid.
      */
@@ -511,10 +511,8 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * @template T of object
-     *
-     * @param ReflectionClass<T>|class-string<T> $class
-     * @return ReflectionClass<T>
+     * @param ReflectionClass<*>|class-string $class
+     * @return ReflectionClass<*>
      */
     private static function getClass($class): ReflectionClass
     {
@@ -525,10 +523,8 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * @template T of object
-     *
-     * @param ReflectionClass<T>|class-string<T> $class
-     * @return class-string<T>
+     * @param ReflectionClass<*>|class-string $class
+     * @return class-string
      */
     private static function getClassName($class): string
     {
