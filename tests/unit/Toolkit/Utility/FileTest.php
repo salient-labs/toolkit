@@ -168,47 +168,58 @@ final class FileTest extends TestCase
 
     public function testCreateAndCreateDir(): void
     {
-        $this->doTestCreateAndCreateDir(self::getRoot()->url(), false);
+        $this->doTestCreateAndCreateDir(self::getRoot()->url());
 
-        // Repeat the test against a real filesystem and its umask behaviour
-        $dir = File::createTempDir();
+        // Repeat the test against a real filesystem using various umasks
+        $umask = umask();
         try {
-            $this->doTestCreateAndCreateDir($dir, Sys::isWindows());
+            foreach ([null, 022, 02] as $u) {
+                if ($u !== null) {
+                    umask($u);
+                }
+                $dir = File::createTempDir();
+                try {
+                    $this->doTestCreateAndCreateDir($dir, $w ??= Sys::isWindows(), $u);
+                } finally {
+                    File::pruneDir($dir, true, true);
+                }
+            }
         } finally {
-            File::pruneDir($dir, true, true);
+            umask($umask);
         }
     }
 
-    private function doTestCreateAndCreateDir(string $dir, bool $windows): void
+    private function doTestCreateAndCreateDir(string $dir, bool $w = false, ?int $u = null): void
     {
-        File::create("$dir/file1", 0777);
-        File::create("$dir/dir1/dir4/file2");
-        File::create("$dir/dir2/dir5/dir6/file3", 0600, 0700);
-        File::create("$dir/dir3/file4", 0640, 0750);
-        $this->assertFileExists("$dir/file1");
-        $this->assertFileExists("$dir/dir1/dir4/file2");
-        $this->assertFileExists("$dir/dir2/dir5/dir6/file3");
-        $this->assertFileExists("$dir/dir3/file4");
-        $this->assertSame(0, filesize("$dir/file1"));
-        $this->assertSame(0, filesize("$dir/dir1/dir4/file2"));
-        $this->assertSame(0, filesize("$dir/dir2/dir5/dir6/file3"));
-        $this->assertSame(0, filesize("$dir/dir3/file4"));
+        File::create("$dir/file1", 0777, 0755, $u !== null);
+        File::create("$dir/dir1/dir4/file2", 0755, 0755, $u !== null);
+        File::create("$dir/dir2/dir5/dir6/file3", 0600, 0700, $u !== null);
+        File::create("$dir/dir3/file4", 0640, 0750, $u !== null);
+        $message = sprintf('$w = %d, $u = 0%o', (int) $w, $u ?? 0);
+        $this->assertFileExists("$dir/file1", $message);
+        $this->assertFileExists("$dir/dir1/dir4/file2", $message);
+        $this->assertFileExists("$dir/dir2/dir5/dir6/file3", $message);
+        $this->assertFileExists("$dir/dir3/file4", $message);
+        $this->assertSame(0, filesize("$dir/file1"), $message);
+        $this->assertSame(0, filesize("$dir/dir1/dir4/file2"), $message);
+        $this->assertSame(0, filesize("$dir/dir2/dir5/dir6/file3"), $message);
+        $this->assertSame(0, filesize("$dir/dir3/file4"), $message);
         foreach ([
-            [$windows ? 0666 : 0777, "$dir/file1"],
-            [$windows ? 0666 : 0755, "$dir/dir1/dir4/file2"],
-            [$windows ? 0777 : 0755, "$dir/dir1/dir4"],
-            [$windows ? 0777 : 0755, "$dir/dir1"],
-            [$windows ? 0666 : 0600, "$dir/dir2/dir5/dir6/file3"],
-            [$windows ? 0777 : 0700, "$dir/dir2/dir5/dir6"],
-            [$windows ? 0777 : 0755, "$dir/dir2/dir5"],
-            [$windows ? 0777 : 0755, "$dir/dir2"],
-            [$windows ? 0666 : 0640, "$dir/dir3/file4"],
-            [$windows ? 0777 : 0750, "$dir/dir3"],
+            [$w ? 0666 : ($u === null ? 0777 : ($u === 022 ? 0755 : 0775)), "$dir/file1"],
+            [$w ? 0666 : ($u === null ? 0755 : ($u === 022 ? 0755 : 0755)), "$dir/dir1/dir4/file2"],
+            [$w ? 0777 : ($u === null ? 0755 : ($u === 022 ? 0755 : 0755)), "$dir/dir1/dir4"],
+            [$w ? 0777 : ($u === null ? 0755 : ($u === 022 ? 0755 : 0775)), "$dir/dir1"],
+            [$w ? 0666 : ($u === null ? 0600 : ($u === 022 ? 0600 : 0600)), "$dir/dir2/dir5/dir6/file3"],
+            [$w ? 0777 : ($u === null ? 0700 : ($u === 022 ? 0700 : 0700)), "$dir/dir2/dir5/dir6"],
+            [$w ? 0777 : ($u === null ? 0755 : ($u === 022 ? 0755 : 0775)), "$dir/dir2/dir5"],
+            [$w ? 0777 : ($u === null ? 0755 : ($u === 022 ? 0755 : 0775)), "$dir/dir2"],
+            [$w ? 0666 : ($u === null ? 0640 : ($u === 022 ? 0640 : 0640)), "$dir/dir3/file4"],
+            [$w ? 0777 : ($u === null ? 0750 : ($u === 022 ? 0750 : 0750)), "$dir/dir3"],
         ] as [$perms, $file]) {
             $expected[] = [$perms, $file];
             $actual[] = [fileperms($file) & 0777, $file];
         }
-        $this->assertSame($expected, $actual);
+        $this->assertSame($expected, $actual, $message);
     }
 
     public function testCreateTemp(): void
