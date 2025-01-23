@@ -1,6 +1,9 @@
 <?php
 
 $customTokens = [
+    'T_PRIVATE_SET',
+    'T_PROTECTED_SET',
+    'T_PUBLIC_SET',
     'T_PROPERTY_C',
     'T_OPEN_BRACE',
     'T_OPEN_BRACKET',

@@ -90,6 +90,7 @@
         ],
         "files": [
             "src/Toolkit/Db/bootstrap.php",
+            "src/Toolkit/Polyfill/bootstrap.php",
             "src/Toolkit/Sli/bootstrap.php"
         ]
     },
