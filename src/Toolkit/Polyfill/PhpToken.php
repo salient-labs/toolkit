@@ -2,12 +2,11 @@
 
 namespace Salient\Polyfill;
 
-use Salient\Utility\Regex;
 use Stringable;
 use TypeError;
 
 /**
- * The PhpToken class
+ * @api
  */
 class PhpToken implements Stringable
 {
@@ -38,7 +37,6 @@ class PhpToken implements Stringable
         \T_ENDIF => true,
         \T_ENDSWITCH => true,
         \T_ENDWHILE => true,
-        \T_ENUM => true,
         \T_EVAL => true,
         \T_EXIT => true,
         \T_EXTENDS => true,
@@ -66,17 +64,14 @@ class PhpToken implements Stringable
         \T_LOGICAL_AND => true,
         \T_LOGICAL_OR => true,
         \T_LOGICAL_XOR => true,
-        \T_MATCH => true,
         \T_METHOD_C => true,
         \T_NAMESPACE => true,
         \T_NEW => true,
         \T_NS_C => true,
         \T_PRINT => true,
         \T_PRIVATE => true,
-        \T_PROPERTY_C => true,
         \T_PROTECTED => true,
         \T_PUBLIC => true,
-        \T_READONLY => true,
         \T_REQUIRE => true,
         \T_REQUIRE_ONCE => true,
         \T_RETURN => true,
@@ -96,36 +91,33 @@ class PhpToken implements Stringable
 
     /**
      * One of the T_* constants, or an ASCII codepoint representing a
-     * single-char token.
+     * single-char token
      */
     public int $id;
 
     /**
-     * The textual content of the token.
+     * The textual content of the token
      */
     public string $text;
 
     /**
-     * The starting line number (1-based) of the token.
+     * The starting line number (1-based) of the token
      */
     public int $line;
 
     /**
-     * The starting position (0-based) in the tokenized string (the number of
-     * bytes).
+     * The starting position (0-based) in the tokenized string
      */
     public int $pos;
 
     /**
-     * Returns a new PhpToken object
+     * Creates a new PhpToken object
      *
-     * @param int $id One of the T_* constants (see
-     * {@link https://www.php.net/manual/en/tokens.php List of Parser Tokens}),
-     * or an ASCII codepoint representing a single-char token.
+     * @param int $id One of the T_* constants, or an ASCII codepoint
+     * representing a single-char token.
      * @param string $text The textual content of the token.
      * @param int $line The starting line number (1-based) of the token.
-     * @param int $pos The starting position (0-based) in the tokenized string
-     * (the number of bytes).
+     * @param int $pos The starting position (0-based) in the tokenized string.
      */
     final public function __construct(
         int $id,
@@ -140,12 +132,11 @@ class PhpToken implements Stringable
     }
 
     /**
-     * Returns the name of the token.
+     * Get the name of the token
      *
      * @return string|null An ASCII character for single-char tokens, or one of
-     * T_* constant names for known tokens (see
-     * {@link https://www.php.net/manual/en/tokens.php List of Parser Tokens}),
-     * or **`null`** for unknown tokens.
+     * the T_* constant names for known tokens, or **`null`** for unknown
+     * tokens.
      */
     public function getTokenName(): ?string
     {
@@ -155,16 +146,8 @@ class PhpToken implements Stringable
 
         $name = [
             \T_NAME_FULLY_QUALIFIED => 'T_NAME_FULLY_QUALIFIED',
-            \T_NAME_RELATIVE => 'T_NAME_RELATIVE',
             \T_NAME_QUALIFIED => 'T_NAME_QUALIFIED',
-            \T_MATCH => 'T_MATCH',
-            \T_READONLY => 'T_READONLY',
-            \T_ENUM => 'T_ENUM',
-            \T_PROPERTY_C => 'T_PROPERTY_C',
-            \T_ATTRIBUTE => 'T_ATTRIBUTE',
-            \T_NULLSAFE_OBJECT_OPERATOR => 'T_NULLSAFE_OBJECT_OPERATOR',
-            \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => 'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG',
-            \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => 'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG',
+            \T_NAME_RELATIVE => 'T_NAME_RELATIVE',
         ][$this->id] ?? token_name($this->id);
 
         if ($name === 'UNKNOWN') {
@@ -175,48 +158,47 @@ class PhpToken implements Stringable
     }
 
     /**
-     * Tells whether the token is of given kind.
+     * Check if the token is of given kind
      *
      * @param int|string|array<int|string> $kind Either a single value to match
      * the token's id or textual content, or an array thereof.
-     * @return bool A boolean value whether the token is of given kind.
      */
     public function is($kind): bool
     {
         if (is_int($kind)) {
-            return $this->id === $kind;
-        }
-        if (is_string($kind)) {
-            return $this->text === $kind;
-        }
-        // @phpstan-ignore function.alreadyNarrowedType
-        if (!is_array($kind)) {
-            throw new TypeError(sprintf('Argument #1 ($kind) must be of type string|int|array, %s given', gettype($kind)));
-        }
-        foreach ($kind as $_kind) {
-            if (is_int($_kind)) {
-                if ($this->id === $_kind) {
-                    return true;
+            $is = $this->id === $kind;
+        } elseif (is_string($kind)) {
+            $is = $this->text === $kind;
+        } elseif (is_array($kind)) {
+            $is = false;
+            foreach ($kind as $_kind) {
+                if (is_int($_kind)) {
+                    $value = $this->id;
+                } elseif (is_string($_kind)) {
+                    $value = $this->text;
+                } else {
+                    throw new TypeError(sprintf(
+                        'Argument #1 ($kind) must only have elements of type string|int, %s given',
+                        gettype($_kind),
+                    ));
                 }
-                continue;
-            }
-            if (is_string($_kind)) {
-                if ($this->text === $_kind) {
-                    return true;
+                if ($value === $_kind) {
+                    $is = true;
+                    break;
                 }
-                continue;
             }
-            // @phpstan-ignore deadCode.unreachable
-            throw new TypeError(sprintf('Argument #1 ($kind) must only have elements of type string|int, %s given', gettype($_kind)));
+        } else {
+            throw new TypeError(sprintf(
+                'Argument #1 ($kind) must be of type string|int|array, %s given',
+                gettype($kind),
+            ));
         }
-        return false;
+
+        return $is;
     }
 
     /**
-     * Tells whether the token would be ignored by the PHP parser.
-     *
-     * @return bool A boolean value whether the token would be ignored by the
-     * PHP parser (such as whitespace or comments).
+     * Check if the token would be ignored by the PHP parser
      */
     public function isIgnorable(): bool
     {
@@ -228,9 +210,7 @@ class PhpToken implements Stringable
     }
 
     /**
-     * Returns the textual content of the token.
-     *
-     * @return string A textual content of the token.
+     * Get the textual content of the token
      */
     public function __toString(): string
     {
@@ -238,7 +218,7 @@ class PhpToken implements Stringable
     }
 
     /**
-     * Splits given source into PHP tokens, represented by PhpToken objects.
+     * Split the given source into PHP tokens, represented by PhpToken objects
      *
      * @param string $code The PHP source to parse.
      * @param int $flags Valid flags:
@@ -267,7 +247,7 @@ class PhpToken implements Stringable
                 if (
                     $token->id === \T_COMMENT
                     && substr($token->text, 0, 2) !== '/*'
-                    && Regex::match('/(?:\r\n|\n|\r)$/D', $token->text, $matches)
+                    && preg_match('/(?:\r\n|\n|\r)$/D', $token->text, $matches)
                 ) {
                     $newline = $matches[0];
                     $token->text = substr($token->text, 0, -strlen($newline));
@@ -326,12 +306,9 @@ class PhpToken implements Stringable
                 }
             } else {
                 /** @var static $last */
-                $token = new static(
-                    ord($_token),
-                    $_token,
-                    $last->line + Regex::matchAll('/\r\n|\n|\r/', $last->text),
-                    $pos
-                );
+                $line = $last->line + preg_match_all('/\r\n|\n|\r/', $last->text);
+                // The token may be `b"`, so convert the last character
+                $token = new static(ord($_token[-1]), $_token, $line, $pos);
             }
             $tokens[] = $last = $token;
             $pos += strlen($token->text);
