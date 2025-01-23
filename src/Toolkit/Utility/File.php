@@ -153,18 +153,23 @@ final class File extends AbstractUtility
      *
      * @param int $permissions Applied if `$filename` is created.
      * @param int $dirPermissions Applied if `$filename`'s directory is created.
-     * Parent directories, if any, are created with file mode `0755`.
+     * Parent directories, if any, are created with file mode `0755`, or `0777 &
+     * ~umask()` if `$applyUmask` is `true`.
      */
     public static function create(
         string $filename,
         int $permissions = 0755,
-        int $dirPermissions = 0755
+        int $dirPermissions = 0755,
+        bool $applyUmask = false
     ): void {
         if (is_file($filename)) {
             return;
         }
-        self::createDir(dirname($filename), $dirPermissions);
+        self::createDir(dirname($filename), $dirPermissions, $applyUmask);
         $umask = umask();
+        if ($applyUmask) {
+            $permissions &= ~$umask;
+        }
         try {
             umask(077);
             $handle = self::open($filename, 'x');
@@ -184,21 +189,26 @@ final class File extends AbstractUtility
      * File mode defaults and behaviour are similar to `install` on *nix.
      *
      * @param int $permissions Applied if `$directory` is created. Parent
-     * directories, if any, are created with file mode `0755`.
+     * directories, if any, are created with file mode `0755`, or `0777 &
+     * ~umask()` if `$applyUmask` is `true`.
      */
     public static function createDir(
         string $directory,
-        int $permissions = 0755
+        int $permissions = 0755,
+        bool $applyUmask = false
     ): void {
         if (is_dir($directory)) {
             return;
         }
         $parent = dirname($directory);
         $umask = umask();
+        if ($applyUmask) {
+            $permissions &= ~$umask;
+        }
         try {
             if (!is_dir($parent)) {
-                umask(022);
-                self::mkdir($parent, 0755, true);
+                umask(0);
+                self::mkdir($parent, $applyUmask ? 0777 & ~$umask : 0755, true);
             }
             umask(077);
             self::mkdir($directory);
