@@ -50,7 +50,7 @@ class ConstantData implements JsonSerializable
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @param array<string,class-string> $aliases
      */
     public static function fromReflection(

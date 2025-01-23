@@ -35,7 +35,7 @@ final class PHPDocUtilTest extends TestCase
      * @dataProvider getAllClassDocCommentsProvider
      *
      * @param array<class-string,string|null> $expected
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     public function testGetAllClassDocComments(
         array $expected,
@@ -47,7 +47,7 @@ final class PHPDocUtilTest extends TestCase
     }
 
     /**
-     * @return array<array{array<class-string,string|null>,ReflectionClass<object>,2?:bool}>
+     * @return array<array{array<class-string,string|null>,ReflectionClass<*>,2?:bool}>
      */
     public static function getAllClassDocCommentsProvider(): array
     {
@@ -121,7 +121,7 @@ final class PHPDocUtilTest extends TestCase
     /**
      * @dataProvider getAllMethodDocCommentsProvider
      *
-     * @param ReflectionClass<object>|null $fromClass
+     * @param ReflectionClass<*>|null $fromClass
      * @param array<string,string|null> $expected
      * @param array<string,string|null>|null $expectedClassDocComments
      */
@@ -143,7 +143,7 @@ final class PHPDocUtilTest extends TestCase
     }
 
     /**
-     * @return array<string,array{ReflectionMethod,ReflectionClass<object>|null,array<string,string|null>,3?:array<string,string|null>}>
+     * @return array<string,array{ReflectionMethod,ReflectionClass<*>|null,array<string,string|null>,3?:array<string,string|null>}>
      */
     public static function getAllMethodDocCommentsProvider(): array
     {

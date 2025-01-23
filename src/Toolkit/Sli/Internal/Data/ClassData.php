@@ -85,7 +85,7 @@ class ClassData implements JsonSerializable
 
     /**
      * @param (callable(ConstantData|PropertyData|MethodData $data, string $type): bool)|null $filter
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @param array<string,class-string> $aliases
      * @return static
      */
@@ -218,7 +218,7 @@ class ClassData implements JsonSerializable
 
     /**
      * @param (callable(ConstantData|PropertyData|MethodData $data, string $type): bool)|null $filter
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @return static
      */
     public static function fromReflection(
@@ -346,7 +346,7 @@ class ClassData implements JsonSerializable
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      */
     private function applyModifiers(ReflectionClass $class, PHPDoc $phpDoc): void
     {

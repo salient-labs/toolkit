@@ -239,7 +239,7 @@ class PHPDoc implements Immutable, Stringable
     /**
      * Creates a new PHPDoc object for a class from its doc comments
      *
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<*> $class
      * @param array<string,class-string> $aliases
      * @return static
      */
@@ -255,7 +255,7 @@ class PHPDoc implements Immutable, Stringable
     /**
      * Creates a new PHPDoc object for a method from its doc comments
      *
-     * @param ReflectionClass<object>|null $class
+     * @param ReflectionClass<*>|null $class
      * @param array<string,class-string> $aliases
      * @return static
      */
@@ -272,7 +272,7 @@ class PHPDoc implements Immutable, Stringable
     /**
      * Creates a new PHPDoc object for a property from its doc comments
      *
-     * @param ReflectionClass<object>|null $class
+     * @param ReflectionClass<*>|null $class
      * @param array<string,class-string> $aliases
      * @return static
      */
@@ -289,7 +289,7 @@ class PHPDoc implements Immutable, Stringable
     /**
      * Creates a new PHPDoc object for a class constant from its doc comments
      *
-     * @param ReflectionClass<object>|null $class
+     * @param ReflectionClass<*>|null $class
      * @param array<string,class-string> $aliases
      * @return static
      */

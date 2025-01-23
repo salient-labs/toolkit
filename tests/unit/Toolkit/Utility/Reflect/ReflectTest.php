@@ -275,7 +275,7 @@ final class ReflectTest extends TestCase
      * @dataProvider getConstantsProvider
      *
      * @param array<string,mixed> $expected
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      */
     public function testGetConstants(array $expected, $class): void
     {
@@ -283,7 +283,7 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @return array<array{array<string,mixed>,ReflectionClass<object>|class-string}>
+     * @return array<array{array<string,mixed>,ReflectionClass<*>|class-string}>
      */
     public static function getConstantsProvider(): array
     {
@@ -320,7 +320,7 @@ final class ReflectTest extends TestCase
      * @dataProvider getConstantsByValueProvider
      *
      * @param array<int|string,string[]|string> $expected
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      */
     public function testGetConstantsByValue(array $expected, $class): void
     {
@@ -328,7 +328,7 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @return array<array{array<int|string,string[]|string>,ReflectionClass<object>|class-string}>
+     * @return array<array{array<int|string,string[]|string>,ReflectionClass<*>|class-string}>
      */
     public static function getConstantsByValueProvider(): array
     {
@@ -375,7 +375,7 @@ final class ReflectTest extends TestCase
      * @dataProvider getConstantNameProvider
      *
      * @param array{class-string<Throwable>,string}|string $expected
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      * @param mixed $value
      */
     public function testGetConstantName($expected, $class, $value): void
@@ -390,7 +390,7 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @return array<array{array{class-string<Throwable>,string}|string,ReflectionClass<object>|class-string,mixed}>
+     * @return array<array{array{class-string<Throwable>,string}|string,ReflectionClass<*>|class-string,mixed}>
      */
     public static function getConstantNameProvider(): array
     {
@@ -441,7 +441,7 @@ final class ReflectTest extends TestCase
      * @dataProvider getConstantValueProvider
      *
      * @param array{class-string<Throwable>,string}|int|string $expected
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<*>|class-string $class
      */
     public function testGetConstantValue($expected, $class, string $name, bool $ignoreCase = false): void
     {
@@ -455,7 +455,7 @@ final class ReflectTest extends TestCase
     }
 
     /**
-     * @return array<array{array{class-string<Throwable>,string}|int|string,ReflectionClass<object>|class-string,string,3?:bool}>
+     * @return array<array{array{class-string<Throwable>,string}|int|string,ReflectionClass<*>|class-string,string,3?:bool}>
      */
     public static function getConstantValueProvider(): array
     {
