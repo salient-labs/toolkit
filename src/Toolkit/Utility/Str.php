@@ -559,7 +559,7 @@ REGEX,
             throw new InvalidArgumentException('Separator cannot be a delimiter');
         }
 
-        $quoted = preg_quote($separator, '/');
+        $quoted = Regex::quote($separator, '/');
         $escaped = Regex::quoteCharacterClass($separator, '/');
 
         $regex = <<<REGEX
@@ -645,7 +645,7 @@ REGEX;
         bool $trimLines = false,
         bool $collapseBlankLines = false
     ): string {
-        $newline = preg_quote($break, '/');
+        $newline = Regex::quote($break, '/');
         $noEscape = $ignoreEscapes ? '' : '(?<!\\\\)(?:\\\\\\\\)*\K';
 
         if ($trimLines) {

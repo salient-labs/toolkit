@@ -546,7 +546,7 @@ final class Get extends AbstractUtility
             foreach (str_split($escapeCharacters) as $character) {
                 $search[] = sprintf(
                     '/((?<!\\\\)(?:\\\\\\\\)*)%s/',
-                    preg_quote(addcslashes($character, $character), '/'),
+                    Regex::quote(addcslashes($character, $character), '/'),
                 );
                 $replace[] = sprintf('$1\x%02x', ord($character));
             }
@@ -556,7 +556,7 @@ final class Get extends AbstractUtility
         if ($constants) {
             uksort($constants, fn($a, $b) => strlen($b) <=> strlen($a));
             foreach (array_keys($constants) as $string) {
-                $constRegex[] = preg_quote($string, '/');
+                $constRegex[] = Regex::quote($string, '/');
             }
         }
         switch (count($constRegex)) {

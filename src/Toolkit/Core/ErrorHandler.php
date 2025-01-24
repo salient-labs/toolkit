@@ -149,7 +149,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
 
         $path = File::realpath($path);
         $this->silencePattern(
-            '@^' . preg_quote($path, '@') . (is_dir($path) ? '/' : '$') . '@',
+            '@^' . Regex::quote($path, '@') . (is_dir($path) ? '/' : '$') . '@',
             $levels
         );
         return $this;
