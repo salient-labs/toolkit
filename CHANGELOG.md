@@ -10,6 +10,35 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.71] - 2025-01-24
+
+### Added
+
+#### `Utility`
+
+- Add `File` methods `rename()` and `symlink()`
+- Add `Regex::quote()` for completeness
+
+### Changed
+
+#### `Utility`
+
+- Improve `Regex` pattern consistency and readability
+- Add non-capturing groups to `Regex` patterns as needed for atomicity and to limit the scope of case sensitivity changes
+- Don't match leading and trailing whitespace in `Regex` patterns `BOOLEAN_STRING` and `INTEGER_STRING`
+
+### Removed
+
+#### `Utility`
+
+- Remove unused `Regex` patterns `PHP_UNION_TYPE`, `PHP_INTERSECTION_TYPE`, `PHP_DNF_SEGMENT`, `PHP_DNF_TYPE` and `PHP_FULL_TYPE`
+
+### Security
+
+#### `Utility`
+
+- Apply umask by default in `File::create()` and `createDir()`
+
 ## [v0.99.70] - 2025-01-23
 
 ### Changed
@@ -4347,6 +4376,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.71]: https://github.com/salient-labs/toolkit/compare/v0.99.70...v0.99.71
 [v0.99.70]: https://github.com/salient-labs/toolkit/compare/v0.99.69...v0.99.70
 [v0.99.69]: https://github.com/salient-labs/toolkit/compare/v0.99.68...v0.99.69
 [v0.99.68]: https://github.com/salient-labs/toolkit/compare/v0.99.67...v0.99.68
