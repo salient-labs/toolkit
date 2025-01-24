@@ -21,16 +21,18 @@ final class Format extends AbstractUtility
      * Format values in a list
      *
      * @param mixed[]|null $list
-     * @param string $format Passed to {@see sprintf()} with each value.
+     * @param string $format Passed to {@see sprintf()} with each value after it
+     * is formatted by {@see Format::value()} and indented (if applicable).
      * @param int $indent Spaces to add after newlines in values.
-     * @param string|null $trim Characters to trim from the end of the result,
-     * or `null` to trim nothing.
+     * @param string|null $characters Characters to trim from the end of the
+     * result, `null` to trim whitespace, or an empty string (the default) to
+     * trim nothing.
      */
     public static function list(
         ?array $list,
         string $format = "- %s\n",
         int $indent = 2,
-        ?string $trim = null
+        ?string $characters = ''
     ): string {
         if ($list === null || !$list) {
             return '';
@@ -44,25 +46,32 @@ final class Format extends AbstractUtility
             }
             $string .= sprintf($format, $value);
         }
-        return $trim === null
+        return $characters === ''
             ? $string
-            : rtrim($string, $trim);
+            : ($characters === null
+                ? rtrim($string)
+                : rtrim($string, $characters));
     }
 
     /**
      * Format keys and values in an array
      *
+     * To improve readability, newlines are added before multi-line values.
+     *
      * @param mixed[]|null $array
-     * @param string $format Passed to {@see sprintf()} with each key and value.
+     * @param string $format Passed to {@see sprintf()} with each key and value
+     * after the latter is formatted by {@see Format::value()} and indented (if
+     * applicable).
      * @param int $indent Spaces to add after newlines in values.
-     * @param string|null $trim Characters to trim from the end of the result,
-     * or `null` to trim nothing.
+     * @param string|null $characters Characters to trim from the end of the result,
+     * `null` to trim whitespace, or an empty string (the default) to trim
+     * nothing.
      */
     public static function array(
         ?array $array,
         string $format = "%s: %s\n",
         int $indent = 4,
-        ?string $trim = null
+        ?string $characters = ''
     ): string {
         if ($array === null || !$array) {
             return '';
@@ -79,9 +88,11 @@ final class Format extends AbstractUtility
             }
             $string .= sprintf($format, $key, $value);
         }
-        return $trim === null
+        return $characters === ''
             ? $string
-            : rtrim($string, $trim);
+            : ($characters === null
+                ? rtrim($string)
+                : rtrim($string, $characters));
     }
 
     /**

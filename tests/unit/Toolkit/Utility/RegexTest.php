@@ -101,7 +101,7 @@ final class RegexTest extends TestCase
         ];
     }
 
-    public function testMatch(): void
+    public function testMatchFails(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_match() failed with PREG_BACKTRACK_LIMIT_ERROR');
@@ -114,24 +114,21 @@ final class RegexTest extends TestCase
         try {
             Regex::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
         } catch (PcreErrorException $e) {
-            $this->assertStringContainsString('Call to preg_match() failed with PREG_BACKTRACK_LIMIT_ERROR', $e->getMessage());
-            $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
-            $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
-            $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');
-            $this->assertSame($e->getFunction(), 'preg_match');
-            $this->assertSame($e->getPattern(), '/(?:\D+|<\d+>)*[!?]/');
-            $this->assertSame($e->getSubject(), 'foobar foobar foobar');
+            $this->assertStringEndsWith(
+                "\n\nPattern:\n/(?:\D+|<\d+>)*[!?]/\n\nSubject:\nfoobar foobar foobar",
+                (string) $e,
+            );
         }
     }
 
-    public function testMatchAll(): void
+    public function testMatchAllFails(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_match_all() failed with PREG_BACKTRACK_LIMIT_ERROR');
         Regex::matchAll('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
     }
 
-    public function testReplace(): void
+    public function testReplaceFails(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_replace() failed with PREG_BACKTRACK_LIMIT_ERROR');
@@ -140,38 +137,43 @@ final class RegexTest extends TestCase
 
     public function testReplaceException(): void
     {
-        $pattern = ['/(?:\D+|<\d+>)*[!?]/', '/\h+/'];
         try {
-            Regex::replace($pattern, ['', ' '], 'foobar foobar foobar');
+            Regex::replace(['/(?:\D+|<\d+>)*[!?]/', '/\h+/'], ['', ' '], 'foobar foobar foobar');
         } catch (PcreErrorException $e) {
-            $this->assertStringContainsString(
-                'Call to preg_replace() failed with PREG_BACKTRACK_LIMIT_ERROR',
-                $e->getMessage(),
+            $this->assertStringEndsWith(
+                "\n\nPattern:\n- /(?:\D+|<\d+>)*[!?]/\n- /\h+/\n\nSubject:\nfoobar foobar foobar",
+                (string) $e,
             );
-            $this->assertSame($e->getPcreError(), \PREG_BACKTRACK_LIMIT_ERROR);
-            $this->assertSame($e->getPcreErrorName(), 'PREG_BACKTRACK_LIMIT_ERROR');
-            $this->assertSame($e->getPcreErrorMessage(), 'Backtrack limit exhausted');
-            $this->assertSame($e->getFunction(), 'preg_replace');
-            $this->assertSame($e->getPattern(), $pattern);
-            $this->assertSame($e->getSubject(), 'foobar foobar foobar');
         }
     }
 
-    public function testReplaceCallback(): void
+    public function testReplaceCallbackFails(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_replace_callback() failed with PREG_BACKTRACK_LIMIT_ERROR');
         Regex::replaceCallback('/(?:\D+|<\d+>)*[!?]/', fn() => '', 'foobar foobar foobar');
     }
 
-    public function testReplaceCallbackArray(): void
+    public function testReplaceCallbackArrayFails(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_replace_callback_array() failed with PREG_BACKTRACK_LIMIT_ERROR');
         Regex::replaceCallbackArray(['/(?:\D+|<\d+>)*[!?]/' => fn() => ''], 'foobar foobar foobar');
     }
 
-    public function testSplit(): void
+    public function testReplaceCallbackArrayException(): void
+    {
+        try {
+            Regex::replaceCallbackArray(['/(?:\D+|<\d+>)*[!?]/' => fn() => ''], 'foobar foobar foobar');
+        } catch (PcreErrorException $e) {
+            $this->assertStringEndsWith(
+                "\n\nPattern:\n/(?:\D+|<\d+>)*[!?]/: <callable>\n\nSubject:\nfoobar foobar foobar",
+                (string) $e,
+            );
+        }
+    }
+
+    public function testSplitFails(): void
     {
         $this->expectException(PcreErrorException::class);
         $this->expectExceptionMessage('Call to preg_split() failed with PREG_BACKTRACK_LIMIT_ERROR');
@@ -192,58 +194,18 @@ final class RegexTest extends TestCase
     public static function quoteCharacterClassProvider(): array
     {
         return [
-            [
-                '\\\\',
-                '\\',
-            ],
-            [
-                '\-',
-                '-',
-            ],
-            [
-                '\^',
-                '^',
-            ],
-            [
-                '\]',
-                ']',
-            ],
-            [
-                '[',
-                '[',
-            ],
-            [
-                '|',
-                '|',
-            ],
-            [
-                '/',
-                '/',
-            ],
-            [
-                '/',
-                '/',
-                '',
-            ],
-            [
-                '\/',
-                '/',
-                '/',
-            ],
-            [
-                '\]\-\^\\\\@\/',
-                ']-^\@/',
-                '/',
-            ],
-            [
-                '\]\-\^\\\\\\@/',
-                ']-^\@/',
-                '@',
-            ],
-            [
-                'a\-z0\-9',
-                'a-z0-9',
-            ],
+            ['\\\\', '\\'],
+            ['\-', '-'],
+            ['\^', '^'],
+            ['\]', ']'],
+            ['[', '['],
+            ['|', '|'],
+            ['/', '/'],
+            ['/', '/', ''],
+            ['\/', '/', '/'],
+            ['\]\-\^\\\\@\/', ']-^\@/', '/'],
+            ['\]\-\^\\\\\\@/', ']-^\@/', '@'],
+            ['a\-z0\-9', 'a-z0-9'],
         ];
     }
 

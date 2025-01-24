@@ -104,6 +104,22 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Rename a file or directory
+     */
+    public static function rename(string $from, string $to): void
+    {
+        self::check(@rename($from, $to), 'rename', null, null, $from, $to);
+    }
+
+    /**
+     * Create a symbolic link to a target with a given name
+     */
+    public static function symlink(string $target, string $link): void
+    {
+        self::check(@symlink($target, $link), 'symlink', null, null, $target, $link);
+    }
+
+    /**
      * Set file access and modification times
      */
     public static function touch(
@@ -144,33 +160,30 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Create a file if it doesn't exist
-     *
-     * To prevent access by an attacker before `$permissions` are applied,
-     * `$filename` is created with umask `0077`.
-     *
-     * File mode defaults and behaviour are similar to `install` on *nix.
+     * Safely create a file if it doesn't exist
      *
      * @param int $permissions Applied if `$filename` is created.
      * @param int $dirPermissions Applied if `$filename`'s directory is created.
-     * Parent directories, if any, are created with file mode `0755`, or `0777 &
-     * ~umask()` if `$applyUmask` is `true`.
+     * Parent directories, if any, are created with file mode `0777 & ~umask()`,
+     * or `0755` if `$umaskApplies` is `false`.
      */
     public static function create(
         string $filename,
-        int $permissions = 0755,
-        int $dirPermissions = 0755,
-        bool $applyUmask = false
+        int $permissions = 0777,
+        int $dirPermissions = 0777,
+        bool $umaskApplies = true
     ): void {
         if (is_file($filename)) {
             return;
         }
-        self::createDir(dirname($filename), $dirPermissions, $applyUmask);
+        self::createDir(dirname($filename), $dirPermissions, $umaskApplies);
         $umask = umask();
-        if ($applyUmask) {
+        if ($umaskApplies) {
             $permissions &= ~$umask;
         }
         try {
+            // Create the file without group or other permissions to prevent
+            // access by a bad actor before permissions are set
             umask(077);
             $handle = self::open($filename, 'x');
             self::chmod($filename, $permissions);
@@ -181,34 +194,32 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Create a directory if it doesn't exist
-     *
-     * To prevent access by an attacker before `$permissions` are applied,
-     * `$directory` is created with umask `0077`.
-     *
-     * File mode defaults and behaviour are similar to `install` on *nix.
+     * Safely create a directory if it doesn't exist
      *
      * @param int $permissions Applied if `$directory` is created. Parent
-     * directories, if any, are created with file mode `0755`, or `0777 &
-     * ~umask()` if `$applyUmask` is `true`.
+     * directories, if any, are created with file mode `0777 & ~umask()`, or
+     * `0755` if `$umaskApplies` is `false`.
      */
     public static function createDir(
         string $directory,
-        int $permissions = 0755,
-        bool $applyUmask = false
+        int $permissions = 0777,
+        bool $umaskApplies = true
     ): void {
         if (is_dir($directory)) {
             return;
         }
         $parent = dirname($directory);
         $umask = umask();
-        if ($applyUmask) {
+        if ($umaskApplies) {
             $permissions &= ~$umask;
         }
         try {
             if (!is_dir($parent)) {
                 umask(0);
-                self::mkdir($parent, $applyUmask ? 0777 & ~$umask : 0755, true);
+                $parentPerms = $umaskApplies
+                    ? 0777 & ~$umask
+                    : 0755;
+                self::mkdir($parent, $parentPerms, true);
             }
             umask(077);
             self::mkdir($directory);

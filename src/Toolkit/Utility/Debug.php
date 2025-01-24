@@ -3,7 +3,7 @@
 namespace Salient\Utility;
 
 /**
- * Get information about the call stack
+ * Get data from the call stack
  *
  * @api
  */
@@ -20,30 +20,6 @@ final class Debug extends AbstractUtility
      * - `file`
      * - `function`
      * - `line`
-     *
-     * The return values below, for example, would implode to:
-     * - `Salient\Tests\Utility\Debug\GetCallerClass->getCallerViaMethod:23`
-     * - `/path/to/tests/fixtures/Toolkit/Utility/Debug/GetCallerFile1.php::{closure}:29`
-     *
-     * ```
-     * <?php
-     * [
-     *     'namespace' => 'Salient\\Tests\\Utility\\Debug\\',
-     *     'class' => 'GetCallerClass',
-     *     '->',
-     *     'function' => 'getCallerViaMethod',
-     *     ':',
-     *     'line' => 23,
-     * ];
-     *
-     * [
-     *     'file' => '/path/to/tests/fixtures/Toolkit/Utility/Debug/GetCallerFile1.php',
-     *     '::',
-     *     'function' => '{closure}',
-     *     ':',
-     *     'line' => 29,
-     * ];
-     * ```
      *
      * For an earlier frame in the call stack, set `$depth` to `1` or higher.
      *
@@ -76,7 +52,7 @@ final class Debug extends AbstractUtility
                 $namespace = Get::namespace($closure ?? $frame['function']);
                 $class = '';
             }
-            // NB: `function` and `class` are both namespaced for closures in
+            // `function` and `class` are both namespaced for closures in
             // namespaced classes
             $function = isset($closure)
                 ? '{closure}'

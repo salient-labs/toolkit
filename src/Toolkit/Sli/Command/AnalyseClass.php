@@ -340,7 +340,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
                         $block = $blockPrefix . str_replace("\n", $replace, $block);
                     }
                     if ($trimmed !== $blockPrefix) {
-                        $regex = preg_quote($blockPrefix, '/');
+                        $regex = Regex::quote($blockPrefix, '/');
                         $block = Regex::replace("/(?<=\n|^){$regex}(?=\n|\$)/D", $trimmed, $block);
                     }
                     if (!$continue) {

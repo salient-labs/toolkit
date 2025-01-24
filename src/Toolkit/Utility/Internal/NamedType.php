@@ -23,21 +23,33 @@ class NamedType extends ReflectionNamedType
         $this->AllowsNull = $allowsNull;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getName(): string
     {
         return $this->Name;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function isBuiltin(): bool
     {
         return $this->IsBuiltin;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function allowsNull(): bool
     {
         return $this->AllowsNull;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function __toString(): string
     {
         return $this->Name;
