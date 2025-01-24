@@ -6,8 +6,7 @@ use Salient\Utility\Exception\PcreErrorException;
 use Stringable;
 
 /**
- * Wrappers for PHP's regular expression functions that throw exceptions on
- * failure
+ * PCRE function wrappers that throw an exception on failure
  *
  * @api
  */
@@ -19,80 +18,66 @@ final class Regex extends AbstractUtility
      *
      * @link https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=[[:Default_Ignorable_Code_Point=Yes:][:General_Category=Space_Separator:]-[\u0020]]
      */
-    public const INVISIBLE_CHAR = '[\x{00A0}\x{00AD}\x{034F}\x{061C}\x{115F}\x{1160}\x{1680}\x{17B4}\x{17B5}\x{180B}-\x{180F}\x{2000}-\x{200F}\x{202A}-\x{202F}\x{205F}-\x{206F}\x{3000}\x{3164}\x{FE00}-\x{FE0F}\x{FEFF}\x{FFA0}\x{FFF0}-\x{FFF8}\x{1BCA0}-\x{1BCA3}\x{1D173}-\x{1D17A}\x{E0000}-\x{E0FFF}]';
+    public const INVISIBLE_CHAR = '['
+        . '\x{00A0}\x{00AD}'
+        . '\x{034F}'
+        . '\x{061C}'
+        . '\x{115F}\x{1160}'
+        . '\x{1680}'
+        . '\x{17B4}\x{17B5}'
+        . '\x{180B}-\x{180F}'
+        . '\x{2000}-\x{200F}\x{202A}-\x{202F}\x{205F}-\x{206F}'
+        . '\x{3000}'
+        . '\x{3164}'
+        . '\x{FE00}-\x{FE0F}'
+        . '\x{FEFF}'
+        . '\x{FFA0}'
+        . '\x{FFF0}-\x{FFF8}'
+        . '\x{1BCA0}-\x{1BCA3}'
+        . '\x{1D173}-\x{1D17A}'
+        . '\x{E0000}-\x{E0FFF}'
+        . ']';
 
     /**
-     * A boolean string, e.g. "yes", "Y", "On", "TRUE", "enabled"
+     * A boolean string
      */
-    public const BOOLEAN_STRING = <<<'REGEX'
-(?xi)
-\s*+ (?:
-  (?<true>  1 | on  | y(?:es)? | true  | enabled?  ) |
-  (?<false> 0 | off | no?      | false | disabled? )
-) \s*+
-REGEX;
+    public const BOOLEAN_STRING = '(?:(?i)'
+        . '(?<true>1|on|y(?:es)?|true|enabled?)|'
+        . '(?<false>0|off|no?|false|disabled?)'
+        . ')';
 
     /**
      * An integer string
      */
-    public const INTEGER_STRING = '\s*+[+-]?[0-9]+\s*+';
+    public const INTEGER_STRING = '(?:[+-]?[0-9]+)';
 
     /**
      * A token in an [RFC7230]-compliant HTTP message
      */
-    public const HTTP_TOKEN = '(?i)[-0-9a-z!#$%&\'*+.^_`|~]++';
+    public const HTTP_TOKEN = '(?:(?i)[-0-9a-z!#$%&\'*+.^_`|~]+)';
 
     /**
      * An [RFC4122]-compliant version 4 UUID
      */
-    public const UUID = '(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
+    public const UUID = '(?:(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})';
 
     /**
      * A 12-byte MongoDB ObjectId
      */
-    public const MONGODB_OBJECTID = '(?i)[0-9a-f]{24}';
+    public const MONGODB_OBJECTID = '(?:(?i)[0-9a-f]{24})';
 
     /**
-     * A valid PHP identifier
+     * A PHP identifier
      *
      * @link https://www.php.net/manual/en/language.variables.basics.php
      * @link https://www.php.net/manual/en/language.oop5.basic.php
      */
-    public const PHP_IDENTIFIER = '[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*';
+    public const PHP_IDENTIFIER = '(?:[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*)';
 
     /**
-     * A valid PHP type, i.e. a PHP_IDENTIFIER with an optional namespace
+     * A PHP type, i.e. an identifier with an optional namespace
      */
-    public const PHP_TYPE = '(?:\\\\?' . self::PHP_IDENTIFIER . ')+';
-
-    /**
-     * A PHP union type, e.g. "A|B|C"
-     */
-    public const PHP_UNION_TYPE = self::PHP_TYPE . '(?:\|' . self::PHP_TYPE . ')+';
-
-    /**
-     * A PHP intersection type, e.g. "A&B&C"
-     */
-    public const PHP_INTERSECTION_TYPE = self::PHP_TYPE . '(?:&' . self::PHP_TYPE . ')+';
-
-    /**
-     * One of the segments in a PHP DNF type, e.g. "A" or "(B&C)"
-     *
-     * @link https://wiki.php.net/rfc/dnf_types
-     */
-    public const PHP_DNF_SEGMENT = '(?:' . self::PHP_TYPE . '|\(' . self::PHP_INTERSECTION_TYPE . '\))';
-
-    /**
-     * A PHP DNF type, e.g. "A|(B&C)|D|E"
-     *
-     * @link https://wiki.php.net/rfc/dnf_types
-     */
-    public const PHP_DNF_TYPE = self::PHP_DNF_SEGMENT . '(?:\|' . self::PHP_DNF_SEGMENT . ')+';
-
-    /**
-     * A valid PHP type, including union, intersection, and DNF types
-     */
-    public const PHP_FULL_TYPE = self::PHP_DNF_SEGMENT . '(?:\|' . self::PHP_DNF_SEGMENT . ')*';
+    public const PHP_TYPE = '(?:(?:\\\\?' . self::PHP_IDENTIFIER . ')+)';
 
     /**
      * A wrapper for preg_grep()
@@ -327,19 +312,29 @@ REGEX;
      */
     public static function delimit(string $pattern, string $delimiter = '/'): string
     {
-        return sprintf(
-            '%s%s%s',
-            $delimiter,
-            str_replace($delimiter, '\\' . $delimiter, $pattern),
-            $delimiter,
-        );
+        return $delimiter
+            . str_replace($delimiter, '\\' . $delimiter, $pattern)
+            . $delimiter;
+    }
+
+    /**
+     * Quote a string for use in a regular expression
+     *
+     * @param string|null $delimiter The PCRE pattern delimiter to escape.
+     * Forward slash (`'/'`) is the most commonly used delimiter.
+     */
+    public static function quote(
+        string $str,
+        ?string $delimiter = null
+    ): string {
+        return preg_quote($str, $delimiter);
     }
 
     /**
      * Quote characters for use in a character class
      *
      * @param string|null $delimiter The PCRE pattern delimiter to escape.
-     * Forward slash ('/') is most commonly used.
+     * Forward slash (`'/'`) is the most commonly used delimiter.
      */
     public static function quoteCharacterClass(
         string $characters,

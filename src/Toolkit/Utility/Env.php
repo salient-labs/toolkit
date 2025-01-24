@@ -188,6 +188,7 @@ final class Env extends AbstractUtility
         if ($value === false) {
             return self::_default($name, $default, false);
         }
+        $value = trim($value);
         if (!Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
             throw new InvalidEnvironmentException(
                 sprintf('Value is not an integer: %s', $name)
@@ -212,7 +213,8 @@ final class Env extends AbstractUtility
         if ($value === false) {
             return self::_default($name, $default, -1);
         }
-        if (trim($value) === '') {
+        $value = trim($value);
+        if ($value === '') {
             return false;
         }
         if (!Regex::match(
@@ -268,13 +270,13 @@ final class Env extends AbstractUtility
         if (trim($value) === '') {
             return [];
         }
-        $regex = sprintf('/^%s(?:%s%1$s)*+$/', Regex::INTEGER_STRING, preg_quote($delimiter, '/'));
-        if (!Regex::match($regex, $value)) {
-            throw new InvalidEnvironmentException(
-                sprintf('Value is not an integer list: %s', $name)
-            );
-        }
         foreach (explode($delimiter, $value) as $value) {
+            $value = trim($value);
+            if (!Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+                throw new InvalidEnvironmentException(
+                    sprintf('Value is not an integer list: %s', $name)
+                );
+            }
             $list[] = (int) $value;
         }
         return $list;
@@ -309,7 +311,8 @@ final class Env extends AbstractUtility
         if ($value === false) {
             return self::_default($name, $default, false);
         }
-        if (trim($value) === '') {
+        $value = trim($value);
+        if ($value === '') {
             return null;
         }
         if (!Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
@@ -333,7 +336,8 @@ final class Env extends AbstractUtility
         if ($value === false) {
             return self::_default($name, $default, -1);
         }
-        if (trim($value) === '') {
+        $value = trim($value);
+        if ($value === '') {
             return null;
         }
         if (!Regex::match(

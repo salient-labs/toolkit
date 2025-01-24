@@ -15,6 +15,8 @@ use Stringable;
 
 /**
  * @covers \Salient\Utility\Format
+ *
+ * @salient-reviewed 2025-01-24
  */
 final class FormatTest extends TestCase
 {
@@ -28,9 +30,9 @@ final class FormatTest extends TestCase
         ?array $list,
         string $format = "- %s\n",
         int $indent = 2,
-        ?string $trim = null
+        ?string $characters = ''
     ): void {
-        $this->assertSame($expected, Format::list($list, $format, $indent, $trim));
+        $this->assertSame($expected, Format::list($list, $format, $indent, $characters));
     }
 
     /**
@@ -127,9 +129,9 @@ final class FormatTest extends TestCase
         ?array $array,
         string $format = "%s: %s\n",
         int $indent = 4,
-        ?string $trim = null
+        ?string $characters = ''
     ): void {
-        $this->assertSame($expected, Format::array($array, $format, $indent, $trim));
+        $this->assertSame($expected, Format::array($array, $format, $indent, $characters));
     }
 
     /**

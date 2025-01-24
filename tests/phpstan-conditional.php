@@ -62,6 +62,9 @@ if (\PHP_VERSION_ID < 80000) {
                     'message' => '#^Class Salient\\\\Tests\\\\Reflection\\\\MyBackedEnum not found\.$#',
                 ],
                 [
+                    'message' => '#^Parameter \#2 \$delim_char of function preg_quote expects string, string\|null given\.$#'
+                ],
+                [
                     'message' => '#^Method Salient\\\\Utility\\\\Regex\:\:matchAll\(\) should return int but returns int\<0, max\>\|null\.$#',
                     'identifier' => 'return.type',
                     'count' => 1,

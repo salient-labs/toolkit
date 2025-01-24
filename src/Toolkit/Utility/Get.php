@@ -69,7 +69,7 @@ final class Get extends AbstractUtility
 
         if (is_string($value) && Regex::match(
             '/^' . Regex::BOOLEAN_STRING . '$/',
-            $value,
+            trim($value),
             $matches,
             \PREG_UNMATCHED_AS_NULL
         )) {
@@ -111,7 +111,7 @@ final class Get extends AbstractUtility
             throw new InvalidArgumentTypeException(1, 'value', 'int|string|null', $value);
         }
 
-        if (Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+        if (Regex::match('/^' . Regex::INTEGER_STRING . '$/', trim($value))) {
             return (int) $value;
         }
 

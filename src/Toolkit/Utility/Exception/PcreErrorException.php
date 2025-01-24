@@ -2,6 +2,8 @@
 
 namespace Salient\Utility\Exception;
 
+use Salient\Utility\Arr;
+use Salient\Utility\Format;
 use Stringable;
 
 /**
@@ -19,9 +21,6 @@ class PcreErrorException extends AbstractUtilityException
         \PREG_JIT_STACKLIMIT_ERROR => 'JIT stack limit exhausted',
     ];
 
-    protected int $PcreError;
-    protected string $PcreErrorMessage;
-    protected string $Function;
     /** @var array<string,callable>|string[]|string */
     protected $Pattern;
     /** @var array<int|float|string|bool|Stringable|null>|string */
@@ -30,6 +29,8 @@ class PcreErrorException extends AbstractUtilityException
     private static array $ErrorNameMap;
 
     /**
+     * @api
+     *
      * @param array<string,callable>|string[]|string $pattern
      * @param array<int|float|string|bool|Stringable|null>|string $subject
      */
@@ -40,87 +41,57 @@ class PcreErrorException extends AbstractUtilityException
             ? self::ERROR_MESSAGE_MAP[$error] ?? 'Unknown error'
             : preg_last_error_msg();
 
-        $this->PcreError = $error;
-        $this->PcreErrorMessage = $message;
-        $this->Function = $function;
         $this->Pattern = $pattern;
         $this->Subject = $subject;
 
         parent::__construct(sprintf(
             'Call to %s() failed with %s (%s)',
             $function,
-            (self::$ErrorNameMap ??= $this->getErrorNameMap())[$error],
+            (self::$ErrorNameMap ??= self::getErrorNameMap())[$error] ?? "#$error",
             $message,
         ));
     }
 
     /**
-     * Get the exception's PCRE error code
+     * @inheritDoc
      */
-    public function getPcreError(): int
+    public function __toString(): string
     {
-        return $this->PcreError;
-    }
+        $detail = '';
+        foreach ([
+            'Pattern' => is_array($this->Pattern)
+                ? array_map(
+                    fn($value) => is_string($value) ? $value : '<callable>',
+                    $this->Pattern,
+                )
+                : $this->Pattern,
+            'Subject' => $this->Subject,
+        ] as $key => $value) {
+            if (is_array($value)) {
+                $value = Arr::isList($value)
+                    ? Format::list($value)
+                    : Format::array($value);
+            }
+            $detail .= sprintf("\n\n%s:\n%s", $key, rtrim($value, "\n"));
+        }
 
-    /**
-     * Get the name of the exception's PCRE error
-     */
-    public function getPcreErrorName(): string
-    {
-        return self::$ErrorNameMap[$this->PcreError];
-    }
-
-    /**
-     * Get the exception's PCRE error message
-     */
-    public function getPcreErrorMessage(): string
-    {
-        return $this->PcreErrorMessage;
-    }
-
-    /**
-     * Get the name of the PCRE function that failed
-     */
-    public function getFunction(): string
-    {
-        return $this->Function;
-    }
-
-    /**
-     * Get the pattern passed to the PCRE function
-     *
-     * @return array<string,callable>|string[]|string
-     */
-    public function getPattern()
-    {
-        return $this->Pattern;
-    }
-
-    /**
-     * Get the subject passed to the PCRE function
-     *
-     * @return array<int|float|string|bool|Stringable|null>|string
-     */
-    public function getSubject()
-    {
-        return $this->Subject;
+        return parent::__toString() . $detail;
     }
 
     /**
      * @return array<int,string>
      */
-    private function getErrorNameMap(): array
+    private static function getErrorNameMap(): array
     {
         /** @var array<string,mixed> */
         $constants = get_defined_constants(true)['pcre'];
+        $map = [];
         foreach ($constants as $name => $value) {
-            if (substr($name, -6) !== '_ERROR') {
-                continue;
+            if (substr($name, -6) === '_ERROR') {
+                /** @var int $value */
+                $map[$value] = $name;
             }
-            /** @var int $value */
-            $errors[$value] = $name;
         }
-
-        return $errors ?? [];
+        return $map;
     }
 }

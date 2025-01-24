@@ -31,7 +31,7 @@ final class Test extends AbstractUtility
     {
         return is_bool($value) || (
             is_string($value)
-            && Regex::match('/^' . Regex::BOOLEAN_STRING . '$/', $value)
+            && Regex::match('/^' . Regex::BOOLEAN_STRING . '$/', trim($value))
         );
     }
 
@@ -45,7 +45,7 @@ final class Test extends AbstractUtility
     {
         return is_int($value) || (
             is_string($value)
-            && Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+            && Regex::match('/^' . Regex::INTEGER_STRING . '$/', trim($value))
         );
     }
 
@@ -62,7 +62,7 @@ final class Test extends AbstractUtility
         return is_float($value) || (
             is_string($value)
             && is_numeric(trim($value))
-            && !Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)
+            && !Regex::match('/^' . Regex::INTEGER_STRING . '$/', trim($value))
         );
     }
 
