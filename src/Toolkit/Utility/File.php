@@ -104,6 +104,22 @@ final class File extends AbstractUtility
     }
 
     /**
+     * Rename a file or directory
+     */
+    public static function rename(string $from, string $to): void
+    {
+        self::check(@rename($from, $to), 'rename', null, null, $from, $to);
+    }
+
+    /**
+     * Create a symbolic link to a target with a given name
+     */
+    public static function symlink(string $target, string $link): void
+    {
+        self::check(@symlink($target, $link), 'symlink', null, null, $target, $link);
+    }
+
+    /**
      * Set file access and modification times
      */
     public static function touch(
