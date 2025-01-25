@@ -480,7 +480,7 @@ EOF;
             new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
             new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
             new HttpResponse(302, '', [Header::LOCATION => '/foo/bar?baz=1']),
-            new HttpResponse(200, Json::stringify(self::OUT), [Header::CONTENT_TYPE => MimeType::JSON]),
+            new HttpResponse(200, Json::encode(self::OUT), [Header::CONTENT_TYPE => MimeType::JSON]),
         ];
         $server = $this->startHttpServer(...$responses);
         $output = [];
@@ -606,7 +606,7 @@ EOF,
         foreach ($data as $data) {
             $responses[] = new HttpResponse(
                 200,
-                Json::stringify($data),
+                Json::encode($data),
                 [Header::CONTENT_TYPE => MimeType::JSON],
             );
         }

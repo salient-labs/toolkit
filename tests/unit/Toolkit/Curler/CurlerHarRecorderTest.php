@@ -38,7 +38,7 @@ final class CurlerHarRecorderTest extends HttpTestCase
         $curler->get(['foo' => 'bar']);
         $recorder->close();
 
-        $har = Json::parseObjectAsArray(File::getContents($file));
+        $har = Json::objectAsArray(File::getContents($file));
         $this->assertIsArray($har);
         $this->assertArrayHasKey('log', $har);
         $this->assertIsArray($log = $har['log']);

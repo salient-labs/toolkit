@@ -335,11 +335,11 @@ final class FormData
         }
 
         if ($value instanceof JsonSerializable) {
-            return Json::parseObjectAsArray(Json::stringify($value));
+            return Json::objectAsArray(Json::encode($value));
         }
 
         if ($value instanceof Jsonable) {
-            return Json::parseObjectAsArray($value->toJson());
+            return Json::objectAsArray($value->toJson());
         }
 
         if ($value instanceof Traversable) {

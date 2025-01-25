@@ -1792,7 +1792,7 @@ final class ArrTest extends TestCase
         $b = new class implements Jsonable {
             public function toJson(int $flags = 0): string
             {
-                return Json::stringify([Jsonable::class => true], $flags);
+                return Json::encode([Jsonable::class => true], $flags);
             }
         };
 
@@ -1843,7 +1843,7 @@ final class ArrTest extends TestCase
         $b = new class implements Jsonable {
             public function toJson(int $flags = 0): string
             {
-                return Json::stringify([Jsonable::class => true], $flags);
+                return Json::encode([Jsonable::class => true], $flags);
             }
         };
 

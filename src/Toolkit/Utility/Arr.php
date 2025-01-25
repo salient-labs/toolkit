@@ -769,7 +769,7 @@ final class Arr extends AbstractUtility
                 } elseif ($value instanceof Jsonable) {
                     $value = $value->toJson(Json::ENCODE_FLAGS);
                 } else {
-                    $value = Json::stringify($value);
+                    $value = Json::encode($value);
                 }
             }
             $scalars[self::getKey($key, $i)] = $value;
@@ -801,7 +801,7 @@ final class Arr extends AbstractUtility
             } elseif ($value instanceof Jsonable) {
                 $value = $value->toJson(Json::ENCODE_FLAGS);
             } else {
-                $value = Json::stringify($value);
+                $value = Json::encode($value);
             }
             $strings[self::getKey($key, $i)] = $value;
         }

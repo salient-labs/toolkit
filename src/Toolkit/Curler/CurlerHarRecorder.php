@@ -67,7 +67,7 @@ class CurlerHarRecorder
 
         File::writeAll($this->Stream, sprintf(
             '{"log":{"version":"1.2","creator":%s,"pages":[],"entries":[',
-            Json::stringify([
+            Json::encode([
                 'name' => $name ?? '',
                 'version' => $version ?? '',
             ]),
@@ -289,7 +289,7 @@ class CurlerHarRecorder
 
         File::writeAll(
             $this->Stream,
-            ($this->EntryCount++ ? ',' : '') . Json::stringify($entry),
+            ($this->EntryCount++ ? ',' : '') . Json::encode($entry),
             null,
             $this->Uri,
         );

@@ -244,7 +244,7 @@ final class FormatTest extends TestCase
             ['{"baz":71}', new class implements Jsonable {
                 public function toJson(int $flags = 0): string
                 {
-                    return Json::stringify(['baz' => 71], $flags);
+                    return Json::encode(['baz' => 71], $flags);
                 }
             }],
             ['<resource (stream)>', File::open(__FILE__, 'r')],
