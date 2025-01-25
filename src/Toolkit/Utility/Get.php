@@ -19,7 +19,7 @@ use Stringable;
 use UnitEnum;
 
 /**
- * Get values from other values
+ * Extract, convert and generate data
  *
  * @api
  */

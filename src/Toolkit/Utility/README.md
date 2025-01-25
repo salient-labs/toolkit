@@ -18,19 +18,19 @@ classes.
 
 - **`Date`** works with date and time values, timezones and intervals.
 
-- **`Debug`** gets caller information by normalising backtrace data.
+- **`Debug`** gets data from the call stack.
 
-- **`Env`** retrieves environment variables, loads values from `.env` files, and
-  applies values from the environment to the script.
+- **`Env`** manipulates environment variables, loads values from `.env` files,
+  and applies values from the environment to the script.
 
-- **`File`** provides methods for filesystem operations that throw exceptions on
-  failure.
+- **`File`** works with files, streams and paths, and provides filesystem
+  function wrappers that throw an exception on failure.
 
 - **`Format`** makes data human-readable.
 
 - **`Get`** extracts, converts and generates data. For example:
 
-  - `Get::coalesce()` replicates the SQL `COALESCE()` function
+  - `Get::coalesce()` is similar to the SQL `COALESCE()` function
   - `Get::code()` improves upon `var_export()`
   - `Get::copy()` gets a deep copy of an object
   - `Get::eol()` gets a string's end-of-line sequence
@@ -39,16 +39,15 @@ classes.
 - **`Inflect`** converts English words to different forms, e.g. from singular to
   plural.
 
-- **`Json`** provides methods for encoding and decoding JSON data that throw
-  exceptions on failure.
+- **`Json`** provides JSON function wrappers that throw an exception on failure.
 
 - **`Package`** retrieves information from Composer's runtime API, e.g. the name
   of the root package.
 
 - **`Reflect`** works with PHP's reflection API.
 
-- **`Regex`** provides methods for working with regular expressions that throw
-  exceptions on failure.
+- **`Regex`** provides `preg_*()` function wrappers that throw an exception on
+  failure.
 
 - **`Str`** manipulates strings. For example:
 

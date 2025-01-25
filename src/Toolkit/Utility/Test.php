@@ -5,7 +5,7 @@ namespace Salient\Utility;
 use Stringable;
 
 /**
- * Perform true/false tests on values
+ * Perform tests on values
  *
  * @api
  */
