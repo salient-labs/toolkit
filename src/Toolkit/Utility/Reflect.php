@@ -196,7 +196,8 @@ final class Reflect extends AbstractUtility
     {
         do {
             foreach ($class->getProperties() as $property) {
-                $name = $property->getName();
+                $name = $property->getDeclaringClass()->getName()
+                    . "\0" . $property->getName();
                 if (isset($seen[$name])) {
                     continue;
                 }

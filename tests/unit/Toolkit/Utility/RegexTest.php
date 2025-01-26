@@ -181,17 +181,17 @@ final class RegexTest extends TestCase
     }
 
     /**
-     * @dataProvider quoteCharacterClassProvider
+     * @dataProvider quoteCharactersProvider
      */
-    public function testQuoteCharacterClass(string $expected, string $characters, ?string $delimiter = null): void
+    public function testQuoteCharacters(string $expected, string $characters, ?string $delimiter = null): void
     {
-        $this->assertSame($expected, Regex::quoteCharacterClass($characters, $delimiter));
+        $this->assertSame($expected, Regex::quoteCharacters($characters, $delimiter));
     }
 
     /**
      * @return array<array{string,string,2?:string|null}>
      */
-    public static function quoteCharacterClassProvider(): array
+    public static function quoteCharactersProvider(): array
     {
         return [
             ['\\\\', '\\'],

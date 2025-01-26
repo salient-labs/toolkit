@@ -53,15 +53,19 @@ final class ReflectTest extends TestCase
     public function testGetAllProperties(): void
     {
         $this->assertSame([
-            'Id',
-            'AltId',
-            'Name',
-            'Parent',
-            'AltParent',
-            'MyPrivateProperty2',
-            'MyDocumentedProperty',
-            'MyPrivateProperty1',
-        ], Reflect::getNames(
+            MyClass::class . '::$Id',
+            MyClass::class . '::$AltId',
+            MyClass::class . '::$Name',
+            MyClass::class . '::$Parent',
+            MyClass::class . '::$AltParent',
+            MyClass::class . '::$MyPrivateProperty2',
+            MyClass::class . '::$MyDocumentedProperty',
+            MyBaseClass::class . '::$MyDocumentedProperty',
+            MyBaseClass::class . '::$MyPrivateProperty1',
+            MyBaseClass::class . '::$MyPrivateProperty2',
+        ], array_map(
+            fn($property) => $property->getDeclaringClass()->getName()
+                . '::$' . $property->getName(),
             Reflect::getAllProperties(new ReflectionClass(MyClass::class))
         ));
     }

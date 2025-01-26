@@ -551,7 +551,7 @@ EOF, JsonPlaceholderApi::class, Unimplemented::class),
             ],
             [
                 <<<EOF
-Error: invalid filter (Invalid key-value pair: '=value')
+Error: invalid filter (Invalid key[=value] pair: '=value')
 
 app [-IMscH] [-p <provider>] [-f <term=value>,...] [--shallow]
     [-F (<field>|<field>=<title>),...] [--] <entity> [<entity-id>]
