@@ -14,16 +14,6 @@ final class Test extends AbstractUtility
     /**
      * Check if a value is a boolean or boolean string
      *
-     * The following are regarded as boolean strings (case-insensitive):
-     *
-     * - `"1"`, `"0"`
-     * - `"on"`, `"off"`
-     * - `"true"`, `"false"`
-     * - `"y"`, `"n"`
-     * - `"yes"`, `"no"`
-     * - `"enable"`, `"disable"`
-     * - `"enabled"`, `"disabled"`
-     *
      * @param mixed $value
      * @phpstan-assert-if-true bool|non-empty-string $value
      */
@@ -61,8 +51,8 @@ final class Test extends AbstractUtility
     {
         return is_float($value) || (
             is_string($value)
-            && is_numeric(trim($value))
-            && !Regex::match('/^' . Regex::INTEGER_STRING . '$/', trim($value))
+            && is_numeric($value = trim($value))
+            && !Regex::match('/^' . Regex::INTEGER_STRING . '$/', $value)
         );
     }
 
