@@ -35,7 +35,7 @@ final class Reflect extends AbstractUtility
     private static array $ConstantsByValue = [];
 
     /**
-     * Get a list of names from a list of reflectors
+     * Get the names of the given reflectors
      *
      * @param array<ReflectionAttribute<*>|ReflectionClass<*>|ReflectionClassConstant|ReflectionConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
      * @return string[]
@@ -49,7 +49,7 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Follow parents of a class to the root class
+     * Follow the parents of a class to its base class
      *
      * @param ReflectionClass<*> $class
      * @return ReflectionClass<*>
@@ -93,8 +93,8 @@ final class Reflect extends AbstractUtility
     }
 
     /**
-     * Get the declaring class of a method's prototype, falling back to the
-     * method's declaring class if it has no prototype
+     * Get the declaring class of a method's prototype, or the method's
+     * declaring class if it has no prototype
      *
      * @return ReflectionClass<*>
      */
@@ -280,11 +280,9 @@ final class Reflect extends AbstractUtility
      */
     public static function normaliseType(?ReflectionType $type): array
     {
-        if ($type === null) {
-            return [];
-        }
-
-        return self::doNormaliseType($type);
+        return $type === null
+            ? []
+            : self::doNormaliseType($type);
     }
 
     /**
@@ -338,18 +336,17 @@ final class Reflect extends AbstractUtility
             foreach ($type->getTypes() as $type) {
                 if ($type instanceof ReflectionIntersectionType) {
                     $types[] = $type->getTypes();
-                    continue;
+                } else {
+                    $types[] = $type;
                 }
-                $types[] = $type;
             }
             /** @var array<ReflectionNamedType[]|ReflectionNamedType> */
             return $types ?? [];
         }
 
         if ($type instanceof ReflectionIntersectionType) {
-            $types = [$type->getTypes()];
             /** @var array<ReflectionNamedType[]> */
-            return $types;
+            return [$type->getTypes()];
         }
 
         /** @var ReflectionNamedType $type */
@@ -362,17 +359,15 @@ final class Reflect extends AbstractUtility
      */
     private static function expandNullableType(ReflectionType $type): array
     {
-        if ($type->allowsNull() && (
+        return $type->allowsNull() && (
             !$type->isBuiltin()
             || strcasecmp($type->getName(), 'null')
-        )) {
-            return [
+        )
+            ? [
                 new NamedType($type->getName(), $type->isBuiltin(), false),
                 new NamedType('null', true, true),
-            ];
-        }
-
-        return [$type];
+            ]
+            : [$type];
     }
 
     /**
@@ -425,17 +420,16 @@ final class Reflect extends AbstractUtility
     private static function doGetConstantsByValue($class): array
     {
         foreach (self::getConstants($class) as $name => $value) {
-            if (!is_int($value) && !is_string($value)) {
-                continue;
+            if (is_int($value) || is_string($value)) {
+                if (!isset($constants[$value])) {
+                    $constants[$value] = $name;
+                } else {
+                    if (!is_array($constants[$value])) {
+                        $constants[$value] = (array) $constants[$value];
+                    }
+                    $constants[$value][] = $name;
+                }
             }
-            if (!isset($constants[$value])) {
-                $constants[$value] = $name;
-                continue;
-            }
-            if (!is_array($constants[$value])) {
-                $constants[$value] = (array) $constants[$value];
-            }
-            $constants[$value][] = $name;
         }
 
         return $constants ?? [];
@@ -463,13 +457,14 @@ final class Reflect extends AbstractUtility
      */
     public static function getConstantName($class, $value): string
     {
+        $names = [];
         foreach (self::getConstants($class) as $name => $_value) {
             if ($_value === $value) {
                 $names[] = $name;
             }
         }
 
-        if (!isset($names)) {
+        if (!$names) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid value: %s',
                 Format::value($value),
@@ -517,10 +512,9 @@ final class Reflect extends AbstractUtility
      */
     private static function getClass($class): ReflectionClass
     {
-        if ($class instanceof ReflectionClass) {
-            return $class;
-        }
-        return new ReflectionClass($class);
+        return $class instanceof ReflectionClass
+            ? $class
+            : new ReflectionClass($class);
     }
 
     /**
@@ -529,9 +523,8 @@ final class Reflect extends AbstractUtility
      */
     private static function getClassName($class): string
     {
-        if ($class instanceof ReflectionClass) {
-            return $class->getName();
-        }
-        return $class;
+        return $class instanceof ReflectionClass
+            ? $class->getName()
+            : $class;
     }
 }
