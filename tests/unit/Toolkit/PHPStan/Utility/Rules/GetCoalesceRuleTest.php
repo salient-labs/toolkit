@@ -3,10 +3,9 @@
 namespace Salient\Tests\PHPStan\Utility\Rules;
 
 use PHPStan\Rules\Rule;
-use PHPStan\Testing\RuleTestCase;
 use Salient\Container\Container;
 use Salient\PHPStan\Utility\Rules\GetCoalesceRule;
-use Salient\Tests\TestCase;
+use Salient\Tests\PHPStan\RuleTestCase;
 
 /**
  * @covers \Salient\PHPStan\Utility\Rules\GetCoalesceRule
@@ -20,6 +19,9 @@ class GetCoalesceRuleTest extends RuleTestCase
         return (new Container())->get(GetCoalesceRule::class);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testRule(): void
     {
         foreach ([
@@ -36,6 +38,6 @@ class GetCoalesceRuleTest extends RuleTestCase
                 'Use a variadic argument or replace with: ' . $replacement,
             ];
         }
-        $this->analyse([TestCase::getFixturesPath(static::class) . 'Failures.php'], $expectedErrors);
+        $this->analyse([__DIR__ . '/GetCoalesceRuleFailures.php'], $expectedErrors);
     }
 }

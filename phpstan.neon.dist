@@ -43,39 +43,39 @@ parameters:
 		-
 			identifier: salient.needless.coalesce
 			paths:
-				- tests/fixtures/Toolkit/PHPStan/Utility/Rules/GetCoalesceRuleFailures.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/GetCoalesceReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Rules/GetCoalesceRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/GetCoalesceReturnTypeExtensionAssertions.php
 		-
 			identifier: salient.property.notFound
 			paths:
-				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
 		-
 			identifier: salient.property.private
 			paths:
-				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
 		-
 			identifier: salient.property.type
 			paths:
-				- tests/fixtures/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
 		-
 			identifier: arguments.count
 			paths:
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrExtendReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrFlattenReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrExtendReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrFlattenReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php
 		-
 			identifier: argument.templateType
 			paths:
-				- tests/fixtures/Toolkit/PHPStan/Utility/Rules/GetCoalesceRuleFailures.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrExtendReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/GetCoalesceReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Rules/GetCoalesceRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrExtendReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/GetCoalesceReturnTypeExtensionAssertions.php
 		-
 			identifier: argument.type
 			paths:
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrExtendReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrFlattenReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
-				- tests/fixtures/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrExtendReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrFlattenReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrWhereNotEmptyReturnTypeExtensionAssertions.php
+				- tests/unit/Toolkit/PHPStan/Utility/Type/ArrWhereNotNullReturnTypeExtensionAssertions.php

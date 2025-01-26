@@ -7,15 +7,21 @@ use Salient\Tests\TestCase;
 
 abstract class ReturnTypeExtensionTestCase extends TypeInferenceTestCase
 {
+    use PHPStanTestCaseTrait;
+
+    /**
+     * @runInSeparateProcess
+     */
     public function testAssertions(): void
     {
-        $_file = TestCase::getFixturesPath(static::class) . 'Assertions.php';
-        foreach (self::gatherAssertTypes($_file) as $args) {
-            $assertType = array_shift($args);
-            $file = array_shift($args);
-            /** @var string $assertType */
-            /** @var string $file */
-            $this->assertFileAsserts($assertType, $file, ...$args);
+        foreach (static::getAssertionsFiles() as $_file) {
+            foreach (self::gatherAssertTypes($_file) as $args) {
+                /** @var string */
+                $assertType = array_shift($args);
+                /** @var string */
+                $file = array_shift($args);
+                $this->assertFileAsserts($assertType, $file, ...$args);
+            }
         }
     }
 
@@ -26,4 +32,9 @@ abstract class ReturnTypeExtensionTestCase extends TypeInferenceTestCase
     {
         return [TestCase::getPackagePath() . '/src/Toolkit/PHPStan/phpstan.extension.neon'];
     }
+
+    /**
+     * @return string[]
+     */
+    abstract protected static function getAssertionsFiles(): array;
 }
