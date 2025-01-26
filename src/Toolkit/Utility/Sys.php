@@ -23,7 +23,7 @@ final class Sys extends AbstractUtility
 
     /**
      * Get the current memory usage of the script as a percentage of the
-     * memory_limit
+     * configured memory_limit
      */
     public static function getMemoryUsagePercent(): float
     {
@@ -37,7 +37,7 @@ final class Sys extends AbstractUtility
     /**
      * Get user and system CPU times for the current run, in microseconds
      *
-     * @return array{int,int} `[<user_time>, <system_time>]`
+     * @return array{int,int} `[ <user_time>, <system_time> ]`
      */
     public static function getCpuUsage(): array
     {
@@ -92,19 +92,22 @@ final class Sys extends AbstractUtility
     /**
      * Get the basename of the file used to run the script
      *
-     * @param string ...$suffixes Removed from the end of the filename.
+     * @param string ...$suffix Removed from the end of the filename.
      */
-    public static function getProgramBasename(string ...$suffixes): string
+    public static function getProgramBasename(string ...$suffix): string
     {
         /** @var string */
         $filename = $_SERVER['SCRIPT_FILENAME'];
         $basename = basename($filename);
 
-        if (!$suffixes) {
+        if (!$suffix) {
             return $basename;
         }
 
-        foreach ($suffixes as $suffix) {
+        foreach ($suffix as $suffix) {
+            if ($suffix === $basename) {
+                continue;
+            }
             $length = strlen($suffix);
             if (substr($basename, -$length) === $suffix) {
                 return substr($basename, 0, -$length);
@@ -145,19 +148,16 @@ final class Sys extends AbstractUtility
             return posix_geteuid();
         }
 
-        $user = Env::getNullable('USERNAME', null);
-        if ($user !== null) {
-            return $user;
+        $user = Env::getNullable(
+            'USERNAME',
+            fn() => Env::getNullable('USER', null),
+        );
+        if ($user === null) {
+            // @codeCoverageIgnoreStart
+            throw new RuntimeException('Unable to identify user');
+            // @codeCoverageIgnoreEnd
         }
-
-        // @codeCoverageIgnoreStart
-        $user = Env::getNullable('USER', null);
-        if ($user !== null) {
-            return $user;
-        }
-
-        throw new RuntimeException('Unable to identify user');
-        // @codeCoverageIgnoreEnd
+        return $user;
     }
 
     /**
@@ -191,19 +191,19 @@ final class Sys extends AbstractUtility
      * Don't use this method to prepare commands for {@see proc_open()}. Its
      * quoting behaviour on Windows is unstable.
      *
-     * @param string[] $args
+     * @param non-empty-array<string> $args
      */
     public static function escapeCommand(array $args): string
     {
         $windows = self::isWindows();
 
-        foreach ($args as &$arg) {
-            $arg = $windows
+        foreach ($args as $arg) {
+            $escaped[] = $windows
                 ? self::escapeCmdArg($arg)
                 : self::escapeShellArg($arg);
         }
 
-        return implode(' ', $args);
+        return implode(' ', $escaped);
     }
 
     /**
@@ -211,11 +211,10 @@ final class Sys extends AbstractUtility
      */
     private static function escapeShellArg(string $arg): string
     {
-        if ($arg === '' || Regex::match('/[^a-z0-9+.\/@_-]/i', $arg)) {
-            return "'" . str_replace("'", "'\''", $arg) . "'";
-        }
-
-        return $arg;
+        return $arg === ''
+            || Regex::match('/[^a-z0-9+.\/@_-]/i', $arg)
+                ? "'" . str_replace("'", "'\''", $arg) . "'"
+                : $arg;
     }
 
     /**
@@ -246,7 +245,7 @@ final class Sys extends AbstractUtility
     }
 
     /**
-     * True if the script is running on Windows
+     * Check if the script is running on Windows
      */
     public static function isWindows(): bool
     {
