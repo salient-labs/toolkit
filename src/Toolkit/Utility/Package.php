@@ -130,12 +130,16 @@ final class Package extends AbstractUtility
             return null;
         }
 
-        return self::filterData(
+        $path = self::filterData(
             Installed::getInstallPath($package),
             Installed::class,
             'getInstallPath',
             $package,
         );
+
+        return $path !== null
+            ? File::realpath($path)
+            : null;
     }
 
     /**
@@ -189,7 +193,7 @@ final class Package extends AbstractUtility
         // Sort prefixes from longest to shortest
         uksort(
             $prefixes,
-            fn(string $p1, string $p2): int => strlen($p2) <=> strlen($p1)
+            fn($p1, $p2) => strlen($p2) <=> strlen($p1)
         );
 
         foreach ($prefixes as $prefix => $dirs) {
@@ -198,18 +202,15 @@ final class Package extends AbstractUtility
             }
 
             foreach ((array) $dirs as $dir) {
-                if (!is_dir($dir)) {
-                    // @codeCoverageIgnoreStart
-                    continue;
-                    // @codeCoverageIgnoreEnd
+                if (is_dir($dir)) {
+                    $dir = File::realpath($dir);
+                    $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
+                    $path = Arr::implode('/', [$dir, $subdir], '');
+                    if (is_dir($path)) {
+                        return $path;
+                    }
+                    $fallback ??= $path;
                 }
-                $dir = File::realpath($dir);
-                $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
-                $path = Arr::implode('/', [$dir, $subdir], '');
-                if (is_dir($path)) {
-                    return $path;
-                }
-                $fallback ??= $path;
             }
         }
 
@@ -229,16 +230,20 @@ final class Package extends AbstractUtility
 
         if (!array_key_exists($key, $values)) {
             // @codeCoverageIgnoreStart
-            throw new ShouldNotHappenException(
-                sprintf('Value not found in root package: %s', $key)
-            );
+            throw new ShouldNotHappenException(sprintf(
+                'Value not found in root package: %s',
+                $key,
+            ));
             // @codeCoverageIgnoreEnd
         }
 
         return $values[$key];
     }
 
-    private static function isInstalled(string $package): bool
+    /**
+     * Check if a package is installed
+     */
+    public static function isInstalled(string $package): bool
     {
         return self::filterData(
             Installed::isInstalled($package),
@@ -282,13 +287,11 @@ final class Package extends AbstractUtility
      */
     private static function filterData($data, string $class, string $method, ...$args)
     {
-        if (!class_exists(Event::class) || !Event::isLoaded()) {
-            // @codeCoverageIgnoreStart
-            return $data;
-            // @codeCoverageIgnoreEnd
+        if (class_exists(Event::class) && Event::isLoaded()) {
+            $event = new PackageDataReceivedEvent($data, $class, $method, ...$args);
+            $data = Event::getInstance()->dispatch($event)->getData();
         }
-        $event = new PackageDataReceivedEvent($data, $class, $method, ...$args);
-        return Event::getInstance()->dispatch($event)->getData();
+        return $data;
     }
 
     /**
@@ -299,14 +302,13 @@ final class Package extends AbstractUtility
         ?bool $withRef,
         Closure $refCallback
     ): string {
-        if ($withRef !== false && Regex::match('/(?:^dev-|-dev$)/', $version)) {
+        if ($withRef !== false && Regex::match('/(?:^dev-|-dev$)/D', $version)) {
             $ref = $refCallback();
-            if ($ref !== null) {
+            if ($ref !== null && !Str::startsWith($version, ['dev-' . $ref, $ref])) {
                 return $version . "@$ref";
             }
             return $version;
         }
-
         if ($withRef) {
             $ref = $refCallback();
             if ($ref !== null) {
