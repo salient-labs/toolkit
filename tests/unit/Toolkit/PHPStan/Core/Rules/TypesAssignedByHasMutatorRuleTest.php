@@ -3,15 +3,13 @@
 namespace Salient\Tests\PHPStan\Core\Rules;
 
 use PHPStan\Rules\Rule;
-use PHPStan\Testing\RuleTestCase;
 use Salient\Container\Container;
 use Salient\Core\Concern\HasMutator;
 use Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule;
-use Salient\Tests\TestCase;
+use Salient\Tests\PHPStan\RuleTestCase;
 
 /**
  * @covers \Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule
- * @covers \Salient\PHPStan\Core\Rules\HasMutatorReadWritePropertiesExtension
  *
  * @extends RuleTestCase<TypesAssignedByHasMutatorRule>
  */
@@ -22,6 +20,9 @@ class TypesAssignedByHasMutatorRuleTest extends RuleTestCase
         return (new Container())->get(TypesAssignedByHasMutatorRule::class);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testRule(): void
     {
         $doesNotAccept = 'Property %s::$%s (%s) does not accept %s.';
@@ -50,6 +51,6 @@ class TypesAssignedByHasMutatorRuleTest extends RuleTestCase
             }
             $expectedErrors[] = $error;
         }
-        $this->analyse([TestCase::getFixturesPath(static::class) . 'Failures.php'], $expectedErrors);
+        $this->analyse([__DIR__ . '/TypesAssignedByHasMutatorRuleFailures.php'], $expectedErrors);
     }
 }

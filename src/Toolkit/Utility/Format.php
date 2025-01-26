@@ -118,7 +118,7 @@ final class Format extends AbstractUtility
             return $value->toJson(Json::ENCODE_FLAGS);
         }
         try {
-            return Json::stringify($value);
+            return Json::encode($value);
         } catch (JsonException $ex) {
             return '<' . Get::type($value) . '>';
         }

@@ -91,7 +91,7 @@ class HttpStream implements HttpStreamInterface
                 return false;
             };
             $data = $formData->getData($flags, $dateFormatter, $callback);
-            return self::fromString(Json::stringify($data));
+            return self::fromString(Json::encode($data));
         }
 
         $multipart = false;

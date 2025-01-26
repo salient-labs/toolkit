@@ -6,7 +6,6 @@ use Salient\Contract\Core\Arrayable;
 use Closure;
 use Countable;
 use InvalidArgumentException;
-use Traversable;
 
 /**
  * Convert English words to different forms
@@ -33,8 +32,6 @@ final class Inflect extends AbstractUtility
      * <?php
      * $message = Inflect::formatRange($from, $to, '{{#:at:between}} {{#:value}} {{#:#:and}}');
      * ```
-     *
-     * @see Inflect::format()
      *
      * @param int|float $from
      * @param int|float $to
@@ -108,15 +105,10 @@ final class Inflect extends AbstractUtility
      * Other words are inflected by {@see Inflect::plural()} if `$count` is a
      * value other than `1`, or used without inflection otherwise.
      *
-     * The plural form of a word can be given explicitly using the following
-     * syntax:
+     * The plural form of a word can be given explicitly using the syntax
+     * `{{#:matrix:matrices}}`.
      *
-     * ```php
-     * <?php
-     * '{{#:matrix:matrices}}';
-     * ```
-     *
-     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $count
+     * @param Arrayable<array-key,mixed>|iterable<array-key,mixed>|Countable|int $count
      * @param string|int|bool|float|null ...$values Passed to {@see sprintf()}
      * with the inflected string if given.
      */
@@ -129,7 +121,7 @@ final class Inflect extends AbstractUtility
      * Inflect placeholders in a string in the singular if a count is 0 or 1, or
      * in the plural otherwise
      *
-     * @param Traversable<array-key,mixed>|Arrayable<array-key,mixed>|Countable|array<array-key,mixed>|int $count
+     * @param Arrayable<array-key,mixed>|iterable<array-key,mixed>|Countable|int $count
      * @param string|int|bool|float|null ...$values Passed to {@see sprintf()}
      * with the inflected string if given.
      */
@@ -211,8 +203,6 @@ final class Inflect extends AbstractUtility
 
     /**
      * Get the plural form of a singular noun
-     *
-     * @todo Implement https://users.monash.edu/~damian/papers/HTML/Plurals.html
      */
     public static function plural(string $word): string
     {

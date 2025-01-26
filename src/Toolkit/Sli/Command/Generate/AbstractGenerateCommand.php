@@ -1064,14 +1064,10 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      */
     protected function code($value): string
     {
-        return Get::code(
-            $value,
-            ',' . \PHP_EOL,
-            ' => ',
-            null,
-            self::TAB,
-            array_merge(array_keys($this->getAliasMap()), $this->FqcnMap),
-        );
+        /** @var non-empty-string[] */
+        $map = array_keys($this->getAliasMap());
+        $map = array_merge($map, $this->FqcnMap);
+        return Get::code($value, ',' . \PHP_EOL, ' => ', null, self::TAB, $map);
     }
 
     /**

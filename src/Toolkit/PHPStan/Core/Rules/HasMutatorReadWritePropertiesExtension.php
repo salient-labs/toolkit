@@ -6,6 +6,9 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use Salient\Core\Concern\HasMutator;
 
+/**
+ * @codeCoverageIgnore
+ */
 class HasMutatorReadWritePropertiesExtension implements ReadWritePropertiesExtension
 {
     public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool

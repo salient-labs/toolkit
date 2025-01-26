@@ -221,7 +221,7 @@ EOF, HttpSyncProvider::class),
             ],
             [
                 <<<EOF
-Error: invalid query (Invalid key-value pair: '=value')
+Error: invalid query (Invalid key[=value] pair: '=value')
 
 app get [-PsH] [-q <field=value>,...] [--] <provider> <endpoint>
 

@@ -541,7 +541,7 @@ abstract class OAuth2Client
             return null;
         }
 
-        $header = Json::parseObjectAsArray($header);
+        $header = Json::objectAsArray($header);
         /** @var string|null */
         return $header['alg'] ?? null;
     }

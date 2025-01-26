@@ -202,7 +202,7 @@ trait ReadOnlyCollectionTrait
             if ($value instanceof JsonSerializable) {
                 $array[$key] = $value->jsonSerialize();
             } elseif ($value instanceof Jsonable) {
-                $array[$key] = Json::parseObjectAsArray($value->toJson());
+                $array[$key] = Json::objectAsArray($value->toJson());
             } elseif ($value instanceof Arrayable) {
                 $array[$key] = $value->toArray();
             } else {
@@ -217,7 +217,7 @@ trait ReadOnlyCollectionTrait
      */
     public function toJson(int $flags = 0): string
     {
-        return Json::stringify($this->jsonSerialize(), $flags);
+        return Json::encode($this->jsonSerialize(), $flags);
     }
 
     /**

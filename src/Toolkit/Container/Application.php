@@ -545,7 +545,7 @@ class Application extends Container implements ApplicationInterface
                 $args = $_SERVER['argv'];
                 $arguments = array_slice($args, 1);
             } else {
-                $arguments = [Json::stringify([
+                $arguments = [Json::encode([
                     '_GET' => $_GET,
                     '_POST' => $_POST,
                 ])];

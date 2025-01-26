@@ -207,7 +207,7 @@ class TestOptions extends CliCommand
         if ($data !== null) {
             $data = $this->DataAsObject
                 ? Json::parse($data)
-                : Json::parseObjectAsArray($data);
+                : Json::objectAsArray($data);
             if ($this->DataAsObject && is_object($data)) {
                 $data = (array) $data;
             }

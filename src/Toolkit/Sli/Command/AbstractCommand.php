@@ -159,7 +159,7 @@ abstract class AbstractCommand extends CliCommand
 
         try {
             return $associative
-                ? Json::parseObjectAsArray($json)
+                ? Json::objectAsArray($json)
                 : Json::parse($json);
         } catch (JsonException $ex) {
             throw new CliInvalidArgumentsException(sprintf(

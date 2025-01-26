@@ -24,6 +24,8 @@ use Traversable;
 
 /**
  * @covers \Salient\Utility\Get
+ * @covers \Salient\Utility\Internal\Copier
+ * @covers \Salient\Utility\Internal\Exporter
  */
 final class GetTest extends TestCase
 {
@@ -127,14 +129,6 @@ final class GetTest extends TestCase
             ['true', 'true'],
             [' YES ', ' YES '],
         ];
-    }
-
-    public function testArrayKeyWithInvalidValue(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($value) must be of type int|string|null, stdClass given');
-        // @phpstan-ignore argument.type
-        Get::arrayKey(new stdClass());
     }
 
     public function testClosure(): void
@@ -295,11 +289,11 @@ final class GetTest extends TestCase
                 true,
             ],
             [
-                InvalidArgumentException::class . ",Invalid key-value pair: '=value'",
+                InvalidArgumentException::class . ",Invalid key[=value] pair: '=value'",
                 ['=value'],
             ],
             [
-                InvalidArgumentException::class . ",Invalid key-value pairs: '=value', ''",
+                InvalidArgumentException::class . ",Invalid key[=value] pairs: '=value', ''",
                 ['=value', ''],
             ],
             [
@@ -638,7 +632,7 @@ final class GetTest extends TestCase
      * @dataProvider codeProvider
      *
      * @param mixed $value
-     * @param string[] $classes
+     * @param non-empty-string[] $classes
      * @param array<non-empty-string,string> $constants
      */
     public function testCode(
@@ -656,7 +650,7 @@ final class GetTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,mixed,2?:string[],3?:array<non-empty-string,string>,4?:string,5?:string,6?:string|null,7?:string}>
+     * @return array<string,array{string,mixed,2?:non-empty-string[],3?:array<non-empty-string,string>,4?:string,5?:string,6?:string|null,7?:string}>
      */
     public static function codeProvider(): array
     {
@@ -673,7 +667,9 @@ final class GetTest extends TestCase
             'This string has line 1,' . \PHP_EOL . 'line 2, and no more lines.',
             '\\Vendor\\Namespace\\',
             "\xa0",
+            "\u{034F}",
             '👩🏼‍🚒',
+            "\0\t\v\e\f\u{034F}👩🏼‍🚒",
         ];
         $classes = [static::class, Get::basename(static::class)];
         $constants = [\PHP_EOL => '\PHP_EOL'];
@@ -681,14 +677,14 @@ final class GetTest extends TestCase
         return [
             'default' => [
                 <<<EOF
-['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => 'This string has "double quotes", \'single quotes\', and commas.', 'classes' => [Salient\Tests\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1,{$esc}line 2, and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => 'This string has "double quotes", \'single quotes\', and commas.', 'classes' => [Salient\Tests\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1,{$esc}line 2, and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", "\\u{034F}", '👩🏼‍🚒', "\\0\\t\\v\\e\\f\\u{034F}👩🏼‍🚒"]
 EOF,
                 $array,
                 $classes,
             ],
             'compact' => [
                 <<<EOF
-['list1'=>[1],'list2'=>[1,3.14,6.626e-34],'list3'=>['foo'=>1,2.0,'bar'=>3,4],'empty'=>[],'index'=>[5=>true,2=>false],"multiline{$esc}key"=>'This string has "double quotes", \'single quotes\', and commas.','classes'=>[Salient\Tests\Utility\Get\GetTest::class,GetTest::class,'gettest'],"This string has line 1,{$esc}line 2, and no more lines.",'\\\\Vendor\\\\Namespace\\\\',"\\xa0",'👩🏼‍🚒']
+['list1'=>[1],'list2'=>[1,3.14,6.626e-34],'list3'=>['foo'=>1,2.0,'bar'=>3,4],'empty'=>[],'index'=>[5=>true,2=>false],"multiline{$esc}key"=>'This string has "double quotes", \'single quotes\', and commas.','classes'=>[Salient\Tests\Utility\Get\GetTest::class,GetTest::class,'gettest'],"This string has line 1,{$esc}line 2, and no more lines.",'\\\\Vendor\\\\Namespace\\\\',"\\xa0","\\u{034F}",'👩🏼‍🚒',"\\0\\t\\v\\e\\f\\u{034F}👩🏼‍🚒"]
 EOF,
                 $array,
                 $classes,
@@ -727,7 +723,9 @@ EOF,
     'This string has line 1,{$eol}line 2, and no more lines.',
     '\\\\Vendor\\\\Namespace\\\\',
     "\\xa0",
+    "\\u{034F}",
     '👩🏼‍🚒',
+    "\\0\\t\\v\\e\\f\\u{034F}👩🏼‍🚒",
 ]
 EOF,
                 $array,
@@ -737,7 +735,7 @@ EOF,
             ],
             'escaped commas' => [
                 <<<EOF
-['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c{$esc}line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], "multiline{$esc}key" => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c{$esc}line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", "\\u{034F}", '👩🏼‍🚒', "\\0\\t\\v\\e\\f\\u{034F}👩🏼‍🚒"]
 EOF,
                 $array,
                 $classes,
@@ -777,7 +775,9 @@ EOF,
     'This string has line 1,' . \PHP_EOL . 'line 2, and no more lines.',
     '\\\\Vendor\\\\Namespace\\\\',
     "\\xa0",
+    "\\u{034F}",
     '👩🏼‍🚒',
+    "\\0\\t\\v\\e\\f\\u{034F}👩🏼‍🚒",
 ]
 EOF,
                 $array,
@@ -787,7 +787,7 @@ EOF,
             ],
             'escaped commas + constants' => [
                 <<<EOF
-['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], 'multiline' . \PHP_EOL . 'key' => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c" . \PHP_EOL . "line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", '👩🏼‍🚒']
+['list1' => [1], 'list2' => [1, 3.14, 6.626e-34], 'list3' => ['foo' => 1, 2.0, 'bar' => 3, 4], 'empty' => [], 'index' => [5 => true, 2 => false], 'multiline' . \PHP_EOL . 'key' => "This string has \"double quotes\"\\x2c 'single quotes'\\x2c and commas.", 'classes' => [Salient\Tests\Utility\Get\GetTest::class, GetTest::class, 'gettest'], "This string has line 1\\x2c" . \PHP_EOL . "line 2\\x2c and no more lines.", '\\\\Vendor\\\\Namespace\\\\', "\\xa0", "\\u{034F}", '👩🏼‍🚒', "\\0\\t\\v\\e\\f\\u{034F}👩🏼‍🚒"]
 EOF,
                 $array,
                 $classes,
@@ -901,11 +901,34 @@ EOF,
         $this->assertNotSame($j, $k);
 
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('$skip returned class@anonymous (stdClass|bool expected)');
+        $this->expectExceptionMessage('Closure returned class@anonymous (stdClass|bool expected)');
         Get::copy(
             $h,
             fn($obj) => $obj instanceof stdClass ? new class() {} : false,
         );
+    }
+
+    /**
+     * @param mixed[] $baz
+     */
+    private function assertCopyHas(
+        ClassWithRefs $copy,
+        int $foo,
+        string $bar,
+        array $baz,
+        ?object $qux = null,
+        bool $byVal = false,
+        bool $byRef = true
+    ): void {
+        $this->assertSame($foo, $byVal ? $copy->FooByVal : $copy->Foo);
+        $this->assertSame($bar, $byVal ? $copy->BarByVal : $copy->Bar);
+        $this->assertSame($baz, $byVal ? $copy->BazByVal : $copy->Baz);
+        if ($qux !== null) {
+            $this->assertSame($qux, $byVal ? $copy->QuxByVal : $copy->Qux);
+        }
+        if ($byVal && $byRef && func_num_args() >= 7) {
+            $this->assertCopyHas($copy, $foo, $bar, $baz, $qux);
+        }
     }
 
     public function testCopyContainersAndSingletons(): void
@@ -970,27 +993,26 @@ EOF,
         $this->assertSame($a->$property, $c->$property);
     }
 
-    /**
-     * @param mixed[] $baz
-     */
-    private function assertCopyHas(
-        ClassWithRefs $copy,
-        int $foo,
-        string $bar,
-        array $baz,
-        ?object $qux = null,
-        bool $byVal = false,
-        bool $byRef = true
-    ): void {
-        $this->assertSame($foo, $byVal ? $copy->FooByVal : $copy->Foo);
-        $this->assertSame($bar, $byVal ? $copy->BarByVal : $copy->Bar);
-        $this->assertSame($baz, $byVal ? $copy->BazByVal : $copy->Baz);
-        if ($qux !== null) {
-            $this->assertSame($qux, $byVal ? $copy->QuxByVal : $copy->Qux);
-        }
-        if ($byVal && $byRef && func_num_args() >= 7) {
-            $this->assertCopyHas($copy, $foo, $bar, $baz, $qux);
-        }
+    public function testCopyInheritedProperties(): void
+    {
+        $a = new ClassWithInheritedProperties(0, 'bar', ['baz'], $priv1 = new stdClass());
+        $a->Foo = 'foo';
+        $a->Bar = ['bar'];
+        $a->Baz = $pub1 = new stdClass();
+        $a->Qux = 1;
+
+        $b = Get::copy($a);
+
+        $this->assertSame('foo', $b->Foo);
+        $this->assertSame(['bar'], $b->Bar);
+        $this->assertEquals($pub1, $pub2 = $b->Baz);
+        $this->assertNotSame($pub1, $pub2);
+        $this->assertSame(1, $b->Qux);
+        $this->assertSame(0, $b->getFoo());
+        $this->assertSame('bar', $b->getBar());
+        $this->assertSame(['baz'], $b->getBaz());
+        $this->assertEquals($priv1, $priv2 = $b->getQux());
+        $this->assertNotSame($priv1, $priv2);
     }
 }
 
@@ -1127,4 +1149,56 @@ class SkippableClass
     {
         $this->Skip = $skip;
     }
+}
+
+class ClassWithPrivateProperties
+{
+    private int $Foo;
+    private string $Bar;
+    /** @var mixed[] */
+    private array $Baz;
+    private ?object $Qux;
+
+    /**
+     * @param mixed[] $baz
+     */
+    public function __construct(int $foo, string $bar, array $baz, ?object $qux)
+    {
+        $this->Foo = $foo;
+        $this->Bar = $bar;
+        $this->Baz = $baz;
+        $this->Qux = $qux;
+    }
+
+    public function getFoo(): int
+    {
+        return $this->Foo;
+    }
+
+    public function getBar(): string
+    {
+        return $this->Bar;
+    }
+
+    /**
+     * @return mixed[]
+     */
+    public function getBaz(): array
+    {
+        return $this->Baz;
+    }
+
+    public function getQux(): ?object
+    {
+        return $this->Qux;
+    }
+}
+
+class ClassWithInheritedProperties extends ClassWithPrivateProperties
+{
+    public string $Foo;
+    /** @var mixed[] */
+    public array $Bar;
+    public ?object $Baz;
+    public int $Qux;
 }

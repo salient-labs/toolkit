@@ -170,7 +170,7 @@ abstract class AbstractSyncCommand extends CliCommand
 
         try {
             $json = $associative
-                ? Json::parseObjectAsArray($json)
+                ? Json::objectAsArray($json)
                 : Json::parse($json);
         } catch (JsonException $ex) {
             $message = $ex->getMessage();

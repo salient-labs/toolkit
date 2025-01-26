@@ -383,13 +383,13 @@ final class FormDataTest extends TestCase
                 new class implements Jsonable {
                     public function toJson(int $flags = 0): string
                     {
-                        return Json::stringify('FOO', $flags);
+                        return Json::encode('FOO', $flags);
                     }
                 },
                 new class implements Jsonable {
                     public function toJson(int $flags = 0): string
                     {
-                        return Json::stringify(['foo', 'bar', 'baz'], $flags);
+                        return Json::encode(['foo', 'bar', 'baz'], $flags);
                     }
                 },
             ],

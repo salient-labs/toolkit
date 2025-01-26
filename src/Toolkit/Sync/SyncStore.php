@@ -269,7 +269,7 @@ SQL;
         $stmt->bindValue(':run_uuid', $this->RunUuid, \SQLITE3_BLOB);
         $stmt->bindValue(':error_count', $this->Errors->getErrorCount(), \SQLITE3_INTEGER);
         $stmt->bindValue(':warning_count', $this->Errors->getWarningCount(), \SQLITE3_INTEGER);
-        $stmt->bindValue(':errors_json', Json::stringify($this->Errors), \SQLITE3_TEXT);
+        $stmt->bindValue(':errors_json', Json::encode($this->Errors), \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -1192,7 +1192,7 @@ SQL;
         $stmt = $this->prepare($sql);
         $stmt->bindValue(':run_uuid', $uuid = Get::binaryUuid(), \SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, \SQLITE3_TEXT);
-        $stmt->bindValue(':run_arguments_json', Json::stringify($this->Arguments), \SQLITE3_TEXT);
+        $stmt->bindValue(':run_arguments_json', Json::encode($this->Arguments), \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 

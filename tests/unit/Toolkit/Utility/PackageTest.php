@@ -59,6 +59,17 @@ final class PackageTest extends TestCase
         'dev' => false,
     ];
 
+    private const DEV_REF_PACKAGE = [
+        'name' => 'acme/sync',
+        'pretty_version' => 'dev-87effbba67b4cf767ff832f6f77bbca3f0dea67d',
+        'version' => 'dev-87effbba67b4cf767ff832f6f77bbca3f0dea67d',
+        'reference' => '87effbba67b4cf767ff832f6f77bbca3f0dea67d',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => [],
+        'dev' => true,
+    ];
+
     /** @var array<string,mixed>|null */
     private static ?array $RootPackage = null;
     private static int $ListenerId;
@@ -184,6 +195,27 @@ final class PackageTest extends TestCase
                 false,
                 true,
             ],
+            [
+                'dev-87effbba67b4cf767ff832f6f77bbca3f0dea67d',
+                self::DEV_REF_PACKAGE,
+            ],
+            [
+                'dev-87effbba67b4cf767ff832f6f77bbca3f0dea67d',
+                self::DEV_REF_PACKAGE,
+                false,
+            ],
+            [
+                'dev-87effbba67b4cf767ff832f6f77bbca3f0dea67d',
+                self::DEV_REF_PACKAGE,
+                true,
+                true,
+            ],
+            [
+                'dev-87effbba67b4cf767ff832f6f77bbca3f0dea67d',
+                self::DEV_REF_PACKAGE,
+                false,
+                true,
+            ],
         ];
     }
 
@@ -229,10 +261,9 @@ final class PackageTest extends TestCase
 
     public function testGetPackagePath(): void
     {
-        // `InstalledVersions::getInstallPath()` may return a non-existent
-        // location in phpstan.phar, so don't perform any filesystem tests here
-        $this->assertNotNull($dir = InstalledVersions::getInstallPath('phpunit/phpunit'));
-        $this->assertSame($dir, Package::getPackagePath('phpunit/phpunit'));
+        $this->assertNotNull($dir1 = InstalledVersions::getInstallPath('phpunit/phpunit'));
+        $this->assertNotNull($dir2 = Package::getPackagePath('phpunit/phpunit'));
+        $this->assertTrue(File::same($dir1, $dir2));
         $this->assertNull(Package::getPackagePath('composer/composer'));
     }
 

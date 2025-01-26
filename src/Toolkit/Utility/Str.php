@@ -348,7 +348,7 @@ REGEX,
             $preserve = Regex::replace('/[[:alnum:]]++/u', '', $preserve);
             // @phpstan-ignore notIdentical.alwaysTrue
             if ($preserve !== '') {
-                $preserve = Regex::quoteCharacterClass($preserve, '/');
+                $preserve = Regex::quoteCharacters($preserve, '/');
                 // Prevent "key=value" becoming "key= value" when preserving "="
                 // by asserting that when separating words, they must appear:
                 // - immediately after the previous word (\G),
@@ -560,7 +560,7 @@ REGEX,
         }
 
         $quoted = Regex::quote($separator, '/');
-        $escaped = Regex::quoteCharacterClass($separator, '/');
+        $escaped = Regex::quoteCharacters($separator, '/');
 
         $regex = <<<REGEX
 (?x)

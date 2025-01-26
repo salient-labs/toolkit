@@ -336,7 +336,7 @@ final class Regex extends AbstractUtility
      * @param string|null $delimiter The PCRE pattern delimiter to escape.
      * Forward slash (`'/'`) is the most commonly used delimiter.
      */
-    public static function quoteCharacterClass(
+    public static function quoteCharacters(
         string $characters,
         ?string $delimiter = null
     ): string {
