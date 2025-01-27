@@ -14,11 +14,34 @@
 
 ## Installation
 
-Install the latest version with [Composer](https://getcomposer.org/):
+Install the entire toolkit with [Composer][]:
 
 ```shell
 composer require salient/toolkit
 ```
+
+Or install only the components you need, e.g. [salient/cache][],
+[salient/utils][] and the toolkit's [PHPStan extension][salient/phpstan]:
+
+```shell
+composer require salient/cache salient/utils
+composer require --dev salient/phpstan
+```
+
+> `salient/toolkit` must be removed from your project before individual
+> components can be installed, and the version constraint applied to `salient`
+> packages in your `composer.json` must allow the same version of every package
+> to be installed.
+
+## Components
+
+The Salient toolkit includes the following components, each of which has its own
+[Composer package][packages] and can be installed separately:
+
+![Salient toolkit component diagram](images/components.svg)
+
+> Components in dashed boxes should only be installed as development
+> dependencies.
 
 ## Documentation
 
@@ -30,9 +53,6 @@ directory. Output is generated in `docs/api` by default.
 
 ```shell
 composer -d tools/apigen install
-```
-
-```shell
 tools/apigen/vendor/bin/apigen -c tools/apigen/apigen.neon
 ```
 
@@ -45,7 +65,12 @@ This project is licensed under the [MIT License][].
 
 [api-docs]: https://salient-labs.github.io/toolkit/
 [ApiGen]: https://github.com/ApiGen/ApiGen
+[Composer]: https://getcomposer.org/
 [docs]: docs/
 [MIT License]: LICENSE
+[packages]: https://packagist.org/packages/salient/
 [repo]: https://github.com/salient-labs/toolkit
+[salient/cache]: https://github.com/salient-labs/toolkit-cache
+[salient/phpstan]: https://github.com/salient-labs/toolkit-phpstan
+[salient/utils]: https://github.com/salient-labs/toolkit-utils
 [tests]: tests/unit/
