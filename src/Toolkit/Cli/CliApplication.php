@@ -472,10 +472,13 @@ class CliApplication extends Application implements CliApplicationInterface
      */
     public function getVersionString(): string
     {
+        $version = Package::version(true, false);
         $ref = Package::ref();
         return Arr::implode(' ', [
-            sprintf('%s %s', $this->getAppName(), Package::version(true, false)),
-            $ref !== null ? "($ref)" : null,
+            sprintf('%s %s', $this->getAppName(), $version),
+            $ref !== null && !Str::startsWith($version, ['dev-' . $ref, $ref])
+                ? "($ref)"
+                : null,
             sprintf('PHP %s', \PHP_VERSION),
         ]);
     }
