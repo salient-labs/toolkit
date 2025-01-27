@@ -10,6 +10,47 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.72] - 2025-01-27
+
+### Added
+
+#### `Cli`
+
+- Add overridable `CliCommand::canRunAsRoot()` method and fail with an exception if it returns `false` when running as root
+
+#### `Utility`
+
+- Add `Package::isInstalled()` to public API
+- Add `Sys::isRunningAsRoot()`
+
+### Changed
+
+#### `Utility`
+
+- Rename `Json::stringify()` to `encode()`
+- Rename `Json::parseObjectAsArray` to `objectAsArray()`
+- Rename `Regex::quoteCharacterClass()` to `quoteCharacters()`
+
+### Fixed
+
+#### `Cli`
+
+- Fix issue where `CliApplication::getVersionString()` returns values like `app dev-ef08c76d7c0e5563080e1276bccd2ca666ed85d8 (ef08c76d) PHP 8.3.6`
+
+#### `Utility`
+
+- Fix `Get::copy()` issue where private property values are not copied correctly if an extending class has a property with the same name
+- Fix `Reflect::getAllProperties()` issue where private properties in parent classes are not returned if an inheriting class has a property with the same name
+- Fix issue where `Package::getPackagePath()` doesn't use `File::realpath()` to return the canonical path
+- Fix issue where package versions like `dev-ef08c76d7c0e...@ef08c76d` may be returned
+
+### Security
+
+#### `Cli`
+
+- Allow applications to run as root
+- Don't allow commands to run as root by default (see above)
+
 ## [v0.99.71] - 2025-01-24
 
 ### Added
@@ -4376,6 +4417,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.72]: https://github.com/salient-labs/toolkit/compare/v0.99.71...v0.99.72
 [v0.99.71]: https://github.com/salient-labs/toolkit/compare/v0.99.70...v0.99.71
 [v0.99.70]: https://github.com/salient-labs/toolkit/compare/v0.99.69...v0.99.70
 [v0.99.69]: https://github.com/salient-labs/toolkit/compare/v0.99.68...v0.99.69
