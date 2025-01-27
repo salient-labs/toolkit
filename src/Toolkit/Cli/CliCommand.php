@@ -15,9 +15,11 @@ use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
+use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use InvalidArgumentException;
 use LogicException;
 use Throwable;
@@ -70,6 +72,17 @@ abstract class CliCommand implements CliCommandInterface
      * @return int|void
      */
     abstract protected function run(string ...$args);
+
+    /**
+     * Override to allow the command to run as the root user
+     *
+     * This method is called immediately before {@see CliCommand::run()}, after
+     * command-line arguments are parsed.
+     */
+    protected function canRunAsRoot(): bool
+    {
+        return false;
+    }
 
     /**
      * Override to return a list of options for the command
@@ -185,6 +198,15 @@ abstract class CliCommand implements CliCommandInterface
             throw new CliInvalidArgumentsException(
                 ...$this->DeferredOptionErrors,
             );
+        }
+
+        if (!$this->canRunAsRoot() && Sys::isRunningAsRoot()) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidRuntimeConfigurationException(sprintf(
+                'Command cannot run as root: %s',
+                $this->getNameWithProgram(),
+            ));
+            // @codeCoverageIgnoreEnd
         }
 
         $this->IsRunning = true;

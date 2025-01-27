@@ -48,8 +48,7 @@ class CliApplication extends Application implements CliApplicationInterface
         ?string $basePath = null,
         ?string $appName = null,
         int $envFlags = Env::APPLY_ALL,
-        ?string $configDir = 'config',
-        bool $allowRoot = false
+        ?string $configDir = 'config'
     ) {
         parent::__construct($basePath, $appName, $envFlags, $configDir);
 
@@ -62,19 +61,6 @@ class CliApplication extends Application implements CliApplicationInterface
         if (!ini_get('register_argc_argv')) {
             // @codeCoverageIgnoreStart
             throw new InvalidRuntimeConfigurationException('register_argc_argv must be enabled');
-            // @codeCoverageIgnoreEnd
-        }
-
-        if (
-            !$allowRoot
-            && function_exists('posix_geteuid')
-            && posix_geteuid() === 0
-        ) {
-            // @codeCoverageIgnoreStart
-            throw new InvalidRuntimeConfigurationException(sprintf(
-                '%s cannot run as root',
-                $this->getAppName(),
-            ));
             // @codeCoverageIgnoreEnd
         }
 

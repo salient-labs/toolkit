@@ -161,7 +161,16 @@ final class Sys extends AbstractUtility
     }
 
     /**
-     * Check if a process with the given process ID is running
+     * Check if the script is running as the root user
+     */
+    public static function isRunningAsRoot(): bool
+    {
+        return function_exists('posix_geteuid')
+            && posix_geteuid() === 0;
+    }
+
+    /**
+     * Check if there is a running process with the given process ID
      */
     public static function isProcessRunning(int $pid): bool
     {
@@ -186,10 +195,11 @@ final class Sys extends AbstractUtility
     }
 
     /**
-     * Get a command string with arguments escaped for this platform's shell
+     * Escape and implode a command line for use in a shell command
      *
-     * Don't use this method to prepare commands for {@see proc_open()}. Its
-     * quoting behaviour on Windows is unstable.
+     * This method should not be used to prepare commands for
+     * {@see proc_open()}. It is intended for use with {@see popen()} and
+     * {@see File::openPipe()}.
      *
      * @param non-empty-array<string> $args
      */
