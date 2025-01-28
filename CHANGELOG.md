@@ -10,6 +10,17 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.73] - 2025-01-28
+
+### Changed
+
+#### `Utility`
+
+- Rename `Arr::isIndexed()` to `hasNumericKeys()`
+- Make `Date::immutable()` argument optional
+- In `Str::expandTabs()` and `expandLeadingTabs()`, add support for strings with two or more different end-of-line sequences
+- In `Str::expandLeadingTabs()`, add support for an arbitrary combination of tabs and spaces at the start of each line
+
 ## [v0.99.72] - 2025-01-27
 
 ### Added
@@ -4417,6 +4428,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.73]: https://github.com/salient-labs/toolkit/compare/v0.99.72...v0.99.73
 [v0.99.72]: https://github.com/salient-labs/toolkit/compare/v0.99.71...v0.99.72
 [v0.99.71]: https://github.com/salient-labs/toolkit/compare/v0.99.70...v0.99.71
 [v0.99.70]: https://github.com/salient-labs/toolkit/compare/v0.99.69...v0.99.70
