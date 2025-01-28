@@ -187,13 +187,11 @@ final class Regex extends AbstractUtility
     /**
      * A wrapper for preg_replace()
      *
-     * @template T of string[]|string
-     *
      * @param string[]|string $pattern
      * @param string[]|string $replacement
-     * @param T $subject
+     * @param string[]|string $subject
      * @param-out int $count
-     * @return T
+     * @return ($subject is string[] ? string[] : string)
      */
     public static function replace(
         $pattern,
@@ -206,7 +204,6 @@ final class Regex extends AbstractUtility
         if ($result === null) {
             throw new PcreErrorException(null, 'preg_replace', $pattern, $subject);
         }
-        // @phpstan-ignore return.type
         return $result;
     }
 

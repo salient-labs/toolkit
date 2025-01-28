@@ -285,6 +285,7 @@ EOF,
             'title case' => ['Hello', 'hElLo', 'World'],
             'uppercase char' => ['Hello', 'hElLo', 'A'],
             'lowercase char' => ['hello', 'hElLo', 'a'],
+            'number' => ['hElLo', 'hElLo', '1'],
             'uppercase + space' => ['HELLO', 'hElLo', ' WORLD '],
             'lowercase + space' => ['hello', 'hElLo', ' world '],
             'title case + space' => ['Hello', 'hElLo', ' World '],
@@ -593,6 +594,8 @@ EOF,
 
     /**
      * @dataProvider ellipsizeProvider
+     *
+     * @param int<3,max> $length
      */
     public function testEllipsize(string $expected, string $value, int $length): void
     {
@@ -600,7 +603,7 @@ EOF,
     }
 
     /**
-     * @return array<array{string,string,int}>
+     * @return array<array{string,string,int<3,max>}>
      */
     public static function ellipsizeProvider(): array
     {
@@ -608,7 +611,6 @@ EOF,
             ['Hello...', 'Hello, world!', 8],
             ['Hello', 'Hello', 5],
             ['...', 'Hello', 3],
-            ['...', 'Hello', 1],
             ['', '', 5],
         ];
     }
@@ -740,11 +742,14 @@ EOF,
             ['twoWords12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
             ['TwoWords12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
             ['TWOWords12', '', 'two_words12', 'two-words12', 'twoWords12', 'TwoWords12'],
+            ['🚀fooBar🚀', '', 'foo_bar', 'foo-bar', 'fooBar', 'FooBar'],
         ];
     }
 
     /**
      * @dataProvider expandTabsProvider
+     *
+     * @param int<1,max> $tabSize
      */
     public function testExpandTabs(
         string $expected,
@@ -759,7 +764,7 @@ EOF,
     }
 
     /**
-     * @return array<array{string,string,2?:int,3?:int}>
+     * @return array<array{string,string,2?:int<1,max>,3?:int}>
      */
     public static function expandTabsProvider(): array
     {
@@ -782,6 +787,9 @@ EOF,
             ['abcdef  ', "abcdef\t", 8],
             ['abc     de      f               ', "abc\tde\tf\t\t", 8],
             ["   \nabc ", "\t\nabc\t", 4, 2],
+            ['a bc def g', "a\tbc\tdef\tg", 1],
+            ["        a\n            b\n    c\n        d\n      e", "\t  \ta\n\t    \tb\n  \tc\n    \td\n\t  e", 4],
+            ["abc d\re   fg\r\nh   ijk\nl   m", "abc\td\re\tfg\r\nh\tijk\nl\tm", 4],
             [
                 <<<EOF
     abc de  f       g
@@ -798,6 +806,8 @@ EOF,
 
     /**
      * @dataProvider expandLeadingTabsProvider
+     *
+     * @param int<1,max> $tabSize
      */
     public function testExpandLeadingTabs(
         string $expected,
@@ -813,7 +823,7 @@ EOF,
     }
 
     /**
-     * @return array<array{string,string,2?:int,3?:bool,4?:int}>
+     * @return array<array{string,string,2?:int<1,max>,3?:bool,4?:int}>
      */
     public static function expandLeadingTabsProvider(): array
     {
@@ -840,6 +850,9 @@ EOF,
             ["   \nabc\t", "\t\nabc\t", 4, false, 2],
             ["   \n    abc\t", "\t\n\tabc\t", 4, false, 2],
             ["   0\t1\t2\n    0\t1\t2", "\t0\t1\t2\n\t0\t1\t2", 4, false, 2],
+            [" a\tbc\tdef\tg", "\ta\tbc\tdef\tg", 1],
+            ["        a\n            b\n    c\n        d\n      e", "\t  \ta\n\t    \tb\n  \tc\n    \td\n\t  e", 4],
+            ["    a\r    b\r\n    c\n    d", "\ta\r\tb\r\n\tc\n\td", 4],
             [
                 <<<EOF
     abc\tde\tf\t\tg
@@ -1467,6 +1480,8 @@ EOF,
 
     /**
      * @dataProvider mergeListsProvider
+     *
+     * @param int<1,max> $tabSize
      */
     public function testMergeLists(
         string $expected,
@@ -1494,7 +1509,7 @@ EOF,
     }
 
     /**
-     * @return array<string,array{string,string,2?:string,3?:string|null,4?:string|null,5?:bool,6?:bool,7?:bool,8?:string,9?:int}>
+     * @return array<string,array{string,string,2?:string,3?:string|null,4?:string|null,5?:bool,6?:bool,7?:bool,8?:string,9?:int<1,max>}>
      */
     public static function mergeListsProvider(): array
     {
