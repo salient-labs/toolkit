@@ -606,7 +606,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
         }
 
         $isList = false;
-        if (Arr::isIndexed($node)) {
+        if (Arr::hasNumericKeys($node)) {
             $isList = true;
             $last = array_pop($path) . '[]';
             $path[] = $last;

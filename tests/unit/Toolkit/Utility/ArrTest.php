@@ -463,19 +463,19 @@ final class ArrTest extends TestCase
     }
 
     /**
-     * @dataProvider isIndexedProvider
+     * @dataProvider hasNumericKeysProvider
      *
      * @param mixed $value
      */
-    public function testIsIndexed(bool $expected, $value, bool $allowEmpty = false): void
+    public function testHasNumericKeys(bool $expected, $value, bool $allowEmpty = false): void
     {
-        $this->assertSame($expected, Arr::isIndexed($value, $allowEmpty));
+        $this->assertSame($expected, Arr::hasNumericKeys($value, $allowEmpty));
     }
 
     /**
      * @return array<array{bool,mixed,2?:bool}>
      */
-    public static function isIndexedProvider(): array
+    public static function hasNumericKeysProvider(): array
     {
         return [
             [false, null],
