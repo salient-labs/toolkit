@@ -504,6 +504,7 @@ final class PHPDocUtil extends AbstractUtility
             }
         }
 
+        /** @disregard P1006 */
         $types = array_unique(self::replaceTypes($types));
         if ($nullable ?? false) {
             $types[] = 'null';
@@ -513,10 +514,8 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @template T of string[]|string
-     *
-     * @param T $types
-     * @return T
+     * @param string[]|string $types
+     * @return ($types is string[] ? string[] : string)
      */
     private static function replaceTypes($types)
     {

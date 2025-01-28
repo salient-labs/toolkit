@@ -47,7 +47,7 @@ final class TestUtil extends AbstractUtility
                     $headers = $headers->addLine($line);
                     continue;
                 }
-                $line = Str::split(';', $line, 2)[0] ?? '';
+                $line = Str::split(';', $line, 2)[0];
                 if ($line === '' || strspn($line, Str::HEX) !== strlen($line)) {
                     throw new RuntimeException('Invalid chunk size');
                 }

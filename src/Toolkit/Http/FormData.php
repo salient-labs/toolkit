@@ -186,7 +186,7 @@ final class FormData
             $preserveKeys = $name === null || $hasArray || (
                 Arr::isList($data)
                     ? $flags & FormDataFlag::PRESERVE_LIST_KEYS
-                    : (Arr::isIndexed($data)
+                    : (Arr::hasNumericKeys($data)
                         ? $flags & FormDataFlag::PRESERVE_NUMERIC_KEYS
                         : $flags & FormDataFlag::PRESERVE_STRING_KEYS)
             );

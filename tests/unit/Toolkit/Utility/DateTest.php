@@ -25,6 +25,7 @@ final class DateTest extends TestCase
         $this->assertNotSame($notImmutable, $immutable2 = Date::immutable($notImmutable));
         $this->assertInstanceOf(DateTimeImmutable::class, $immutable2);
         $this->assertSame($notImmutable->getTimestamp(), $immutable2->getTimestamp());
+        $this->assertEqualsWithDelta(Date::immutable()->getTimestamp(), time(), 1);
     }
 
     /**

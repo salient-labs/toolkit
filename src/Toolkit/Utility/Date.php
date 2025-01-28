@@ -18,13 +18,16 @@ final class Date extends AbstractUtility
     /**
      * Get a DateTimeImmutable from a DateTimeInterface
      *
-     * A shim for {@see DateTimeImmutable::createFromInterface()}.
+     * @param DateTimeInterface|null $datetime If `null`, the current time is
+     * used.
      */
-    public static function immutable(DateTimeInterface $datetime): DateTimeImmutable
+    public static function immutable(?DateTimeInterface $datetime = null): DateTimeImmutable
     {
         return $datetime instanceof DateTimeImmutable
             ? $datetime
-            : DateTimeImmutable::createFromMutable($datetime);
+            : ($datetime
+                ? DateTimeImmutable::createFromMutable($datetime)
+                : new DateTimeImmutable());
     }
 
     /**

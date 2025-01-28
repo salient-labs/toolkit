@@ -9,7 +9,7 @@ use Stringable;
 use ValueError;
 
 /**
- * Work with arrays and iterables
+ * Work with arrays and other iterables
  *
  * @api
  */
@@ -463,7 +463,7 @@ final class Arr extends AbstractUtility
      * @param mixed $value
      * @phpstan-assert-if-true array<int,mixed> $value
      */
-    public static function isIndexed($value, bool $orEmpty = false): bool
+    public static function hasNumericKeys($value, bool $orEmpty = false): bool
     {
         if (!is_array($value)) {
             return false;
@@ -657,7 +657,7 @@ final class Arr extends AbstractUtility
 
     /**
      * Trim characters from each value in an array of strings and Stringables
-     * before removing or optionally replacing empty strings
+     * before removing empty strings or replacing them with null values
      *
      * @template TKey
      *
