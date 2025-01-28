@@ -11,6 +11,7 @@ use Stringable;
 
 /**
  * @covers \Salient\Utility\Str
+ * @covers \Salient\Utility\Internal\ListMerger
  */
 final class StrTest extends TestCase
 {

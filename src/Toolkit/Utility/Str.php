@@ -2,6 +2,7 @@
 
 namespace Salient\Utility;
 
+use Salient\Utility\Internal\ListMerger;
 use Closure;
 use InvalidArgumentException;
 use Stringable;
@@ -862,147 +863,15 @@ REGEX;
         string $eol = "\n",
         int $tabSize = 4
     ): string {
-        $prefix = self::coalesce($headingPrefix, null);
-        $regex = $itemRegex ?? self::DEFAULT_ITEM_REGEX;
-
-        if ($prefix !== null) {
-            $prefixIsItem = (bool) Regex::match($regex, $prefix);
-            $prefixBytes = strlen($prefix);
-            $indent = str_repeat(' ', mb_strlen($prefix));
-        } else {
-            $indent = '';
-        }
-
-        $lines = Regex::split('/\r\n|\n|\r/', $string);
-        $count = count($lines);
-        $lists = [];
-        $lastWasItem = false;
-        for ($i = 0; $i < $count; $i++) {
-            $line = $lines[$i];
-
-            // Remove prefixes to ensure lists with the same heading are merged
-            if (
-                $prefix !== null
-                && !$prefixIsItem
-                && substr($line, 0, $prefixBytes) === $prefix
-            ) {
-                /** @var string */
-                $line = substr($line, $prefixBytes);
-            }
-
-            // Clear the current heading if this is an empty line after an item
-            if (trim($line) === '') {
-                if (!$loose && $lastWasItem) {
-                    unset($list);
-                }
-                continue;
-            }
-
-            if (Regex::match($regex, $line, $matches, \PREG_OFFSET_CAPTURE)) {
-                // Collect subsequent lines with indentation of the same width
-                if (
-                    ($matches['indent'][1] ?? null) === 0
-                    && ($itemIndent = $matches['indent'][0]) !== ''
-                ) {
-                    $itemIndent = self::expandTabs($itemIndent, $tabSize);
-                    $itemIndentLength = mb_strlen($itemIndent);
-                    $itemIndent = str_repeat(' ', $itemIndentLength);
-                    $tentative = '';
-                    $backtrack = 0;
-                    while ($i < $count - 1) {
-                        $nextLine = $lines[$i + 1];
-                        if (trim($nextLine) === '') {
-                            $tentative .= $nextLine . $eol;
-                            $backtrack++;
-                        } elseif (substr(self::expandTabs($nextLine, $tabSize), 0, $itemIndentLength) === $itemIndent) {
-                            $line .= $eol . $tentative . $nextLine;
-                            $tentative = '';
-                            $backtrack = 0;
-                        } else {
-                            $i -= $backtrack;
-                            break;
-                        }
-                        $i++;
-                    }
-                }
-            } else {
-                $list = $line;
-            }
-
-            $key = $list ?? $line;
-            $lists[$key] ??= [];
-            $lastWasItem = $key !== $line;
-            if ($lastWasItem && !in_array($line, $lists[$key], true)) {
-                $lists[$key][] = $line;
-            }
-        }
-
-        // Move top-level lines to the top
-        $top = [];
-        $itemList = null;
-        foreach ($lists as $list => $lines) {
-            if (count($lines)) {
-                continue;
-            }
-
-            unset($lists[$list]);
-
-            if ($discardEmpty && !Regex::match($regex, $list)) {
-                continue;
-            }
-
-            if ($clean) {
-                $top[$list] = [];
-                continue;
-            }
-
-            // Move consecutive top-level items to their own list so
-            // `$listSeparator` isn't inserted between them
-            if (Regex::match($regex, $list)) {
-                if ($itemList !== null) {
-                    $top[$itemList][] = $list;
-                    continue;
-                }
-                $itemList = $list;
-            } else {
-                $itemList = null;
-            }
-            $top[$list] = [];
-        }
-        $lists = $top + $lists;
-
-        $merged = [];
-        foreach ($lists as $list => $lines) {
-            if ($clean) {
-                $list = Regex::replace($regex, '', $list, 1);
-            }
-
-            if (
-                $prefix !== null
-                && !($prefixIsItem && substr($list, 0, $prefixBytes) === $prefix)
-                && !Regex::match($regex, $list)
-            ) {
-                $list = $prefix . $list;
-                $listHasPrefix = true;
-            } else {
-                $listHasPrefix = false;
-            }
-
-            if (!$lines) {
-                $merged[] = $list;
-                continue;
-            }
-
-            // Don't separate or indent consecutive top-level items
-            if (!$listHasPrefix && Regex::match($regex, $list)) {
-                $merged[] = implode($eol, [$list, ...$lines]);
-                continue;
-            }
-
-            $merged[] = $list;
-            $merged[] = $indent . implode($eol . $indent, $lines);
-        }
-
-        return implode($listSeparator, $merged);
+        return (new ListMerger(
+            $listSeparator,
+            self::coalesce($headingPrefix, null),
+            $itemRegex ?? self::DEFAULT_ITEM_REGEX,
+            $clean,
+            $loose,
+            $discardEmpty,
+            $eol,
+            $tabSize,
+        ))->merge($string);
     }
 }
