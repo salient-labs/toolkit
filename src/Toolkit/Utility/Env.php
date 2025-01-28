@@ -5,19 +5,16 @@ namespace Salient\Utility;
 use Salient\Utility\Exception\InvalidEnvFileSyntaxException;
 use Salient\Utility\Exception\InvalidEnvironmentException;
 use Closure;
-use InvalidArgumentException;
 use RuntimeException;
 
 /**
  * Work with environment variables and .env files
  *
- * {@see Env::get()}, {@see Env::getInt()}, etc. check `$_ENV`, `$_SERVER` and
- * {@see getenv()} for a given variable and return the first value found. If the
- * value is not of the expected type, an {@see InvalidEnvironmentException} is
- * thrown. If the variable is not present in the environment, `$default` is
- * returned if given, otherwise an {@see InvalidEnvironmentException} is thrown.
- *
- * @todo Add support for variable expansion
+ * Methods that get a value from the environment check `$_ENV`, `$_SERVER` and
+ * {@see getenv()}, and return the first value found. If it is not of the
+ * expected type, an {@see InvalidEnvironmentException} is thrown. If it is not
+ * present in the environment, `$default` is returned if given, otherwise an
+ * {@see InvalidEnvironmentException} is thrown.
  *
  * @api
  */
@@ -97,7 +94,7 @@ final class Env extends AbstractUtility
 
         if ($flags & self::APPLY_TIMEZONE) {
             $tz = Regex::replace(
-                ['/^:?(.*\/zoneinfo\/)?/', '/^(UTC)0$/'],
+                ['/^:?(?:.*\/zoneinfo\/)?/', '/^(UTC)0$/'],
                 ['', '$1'],
                 self::get('TZ', '')
             );
@@ -154,7 +151,9 @@ final class Env extends AbstractUtility
      */
     public static function has(string $name): bool
     {
-        return self::_get($name, false) !== false;
+        return array_key_exists($name, $_ENV)
+            || array_key_exists($name, $_SERVER)
+            || getenv($name) !== false;
     }
 
     /**
@@ -236,13 +235,11 @@ final class Env extends AbstractUtility
      * @template T of string[]|null|false
      *
      * @param T|Closure(): T $default
+     * @param non-empty-string $delimiter
      * @return (T is string[] ? string[] : (T is null ? string[]|null : string[]|never))
      */
     public static function getList(string $name, $default = false, string $delimiter = ','): ?array
     {
-        if ($delimiter === '') {
-            throw new InvalidArgumentException('Invalid delimiter');
-        }
         $value = self::_get($name);
         if ($value === false) {
             return self::_default($name, $default, false);
@@ -256,13 +253,11 @@ final class Env extends AbstractUtility
      * @template T of int[]|null|false
      *
      * @param T|Closure(): T $default
+     * @param non-empty-string $delimiter
      * @return (T is int[] ? int[] : (T is null ? int[]|null : int[]|never))
      */
     public static function getIntList(string $name, $default = false, string $delimiter = ','): ?array
     {
-        if ($delimiter === '') {
-            throw new InvalidArgumentException('Invalid delimiter');
-        }
         $value = self::_get($name);
         if ($value === false) {
             return self::_default($name, $default, false);
@@ -354,9 +349,9 @@ final class Env extends AbstractUtility
     }
 
     /**
-     * @return ($assertValueIsString is true ? string|false : mixed)
+     * @return string|false
      */
-    private static function _get(string $name, bool $assertValueIsString = true)
+    private static function _get(string $name)
     {
         if (array_key_exists($name, $_ENV)) {
             $value = $_ENV[$name];
@@ -366,7 +361,7 @@ final class Env extends AbstractUtility
             $value = getenv($name, true);
             return $value === false ? getenv($name) : $value;
         }
-        if ($assertValueIsString && !is_string($value)) {
+        if (!is_string($value)) {
             throw new InvalidEnvironmentException(sprintf(
                 'Value is not a string: %s',
                 $name,
@@ -473,7 +468,8 @@ final class Env extends AbstractUtility
     }
 
     /**
-     * Get the current user's home directory from the environment
+     * Get the current user's home directory, or null if a value for the user's
+     * home directory is not found in the environment
      */
     public static function getHomeDir(): ?string
     {
@@ -495,8 +491,6 @@ final class Env extends AbstractUtility
      * @param string[] $lines
      * @param array<string,string> $queue
      * @param string[] $errors
-     * @param-out array<string,string> $queue
-     * @param-out string[] $errors
      */
     private static function parseLines(
         array $lines,
@@ -525,29 +519,19 @@ REGEX, $line, $matches, \PREG_UNMATCHED_AS_NULL)) {
 
             /** @var string */
             $name = $matches['name'];
-            if (
-                array_key_exists($name, $_ENV)
-                || array_key_exists($name, $_SERVER)
-                || getenv($name) !== false
-            ) {
+            if (self::has($name)) {
                 continue;
             }
 
-            $double = $matches['double'];
-            if ($double !== null) {
+            if (($double = $matches['double']) !== null) {
                 $queue[$name] = Regex::replace('/\\\\(["$\\\\`])/', '$1', $double);
-                continue;
-            }
-
-            $single = $matches['single'];
-            if ($single !== null) {
+            } elseif (($single = $matches['single']) !== null) {
                 $queue[$name] = str_replace("'\''", "'", $single);
-                continue;
+            } else {
+                /** @var string */
+                $none = $matches['none'];
+                $queue[$name] = Regex::replace('/\\\\(.)/', '$1', $none);
             }
-
-            /** @var string */
-            $none = $matches['none'];
-            $queue[$name] = Regex::replace('/\\\\(.)/', '$1', $none);
         }
     }
 }
