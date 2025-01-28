@@ -9,7 +9,7 @@ use Stringable;
 use ValueError;
 
 /**
- * Work with arrays and iterables
+ * Work with arrays and other iterables
  *
  * @api
  */
