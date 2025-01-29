@@ -1,6 +1,6 @@
 # salient/cache
 
-> The cache component of the [Salient toolkit][toolkit]
+> The caching component of the [Salient toolkit][toolkit]
 
 <p>
   <a href="https://packagist.org/packages/salient/toolkit"><img src="https://poser.pugx.org/salient/toolkit/v" alt="Latest Stable Version" /></a>
@@ -11,7 +11,7 @@
 
 ---
 
-`salient/cache` provides a SQLite-backed key-value cache.
+`salient/cache` provides a key-value store backed by a SQLite database.
 
 - Implements [PSR-16 (Common Interface for Caching Libraries)][PSR-16]
 - Multiple cache operations can be grouped into an atomic transaction via a

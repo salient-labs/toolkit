@@ -4,15 +4,14 @@ namespace Salient\Cache;
 
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Core\AbstractStore;
+use Salient\Utility\Date;
 use DateInterval;
-use DateTimeImmutable;
 use DateTimeInterface;
-use LogicException;
 use SQLite3Result;
 use SQLite3Stmt;
 
 /**
- * A PSR-16 key-value store backed by a SQLite database
+ * A key-value store backed by a SQLite database
  *
  * @api
  */
@@ -23,6 +22,8 @@ final class CacheStore extends AbstractStore implements CacheInterface
 
     /**
      * Creates a new CacheStore object
+     *
+     * @api
      */
     public function __construct(string $filename = ':memory:')
     {
@@ -55,7 +56,15 @@ SQL
     /**
      * @internal
      */
-    protected function __clone() {}
+    public function __destruct()
+    {
+        $this->close();
+    }
+
+    /**
+     * @internal
+     */
+    private function __clone() {}
 
     /**
      * @inheritDoc
@@ -64,14 +73,17 @@ SQL
     {
         if ($ttl === null) {
             $expires = null;
-        } elseif ($ttl instanceof DateInterval) {
-            $expires = (new DateTimeImmutable())->add($ttl)->getTimestamp();
         } elseif ($ttl instanceof DateTimeInterface) {
             $expires = $ttl->getTimestamp();
-        } elseif ($ttl > 0) {
-            $expires = time() + $ttl;
         } else {
-            return $this->delete($key);
+            if ($ttl instanceof DateInterval) {
+                $ttl = Date::duration($ttl);
+            }
+            if ($ttl > 0) {
+                $expires = time() + $ttl;
+            } else {
+                return $this->delete($key);
+            }
         }
 
         $sql = <<<SQL
@@ -103,7 +115,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function has($key): bool
     {
@@ -122,7 +134,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function get($key, $default = null)
     {
@@ -142,7 +154,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function getInstanceOf($key, string $class, ?object $default = null): ?object
     {
@@ -154,7 +166,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function getArray($key, ?array $default = null): ?array
     {
@@ -166,7 +178,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function getInt($key, ?int $default = null): ?int
     {
@@ -178,7 +190,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function getString($key, ?string $default = null): ?string
     {
@@ -222,7 +234,7 @@ SQL
     }
 
     /**
-     * Delete expired items
+     * Delete expired items from the cache
      *
      * @return true
      */
@@ -275,7 +287,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function getItemCount(): int
     {
@@ -294,7 +306,7 @@ SQL;
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
     public function getItemKeys(): array
     {
@@ -316,16 +328,17 @@ SQL;
     /**
      * @inheritDoc
      */
-    public function asOfNow(?int $now = null): CacheInterface
+    public function asOfNow(?int $now = null): self
     {
         if ($this->Now !== null) {
-            throw new LogicException(
-                sprintf('Calls to %s() cannot be nested', __METHOD__)
-            );
+            throw new CacheCopyFailedException(sprintf(
+                'Calls to %s() cannot be nested',
+                __METHOD__,
+            ));
         }
 
         if ($this->hasTransaction()) {
-            throw new LogicException(sprintf(
+            throw new CacheCopyFailedException(sprintf(
                 '%s() cannot be called until the instance returned previously is closed or discarded',
                 __METHOD__,
             ));
@@ -353,14 +366,6 @@ SQL;
 
         $this->clearExpired();
         $this->closeDb();
-    }
-
-    /**
-     * @internal
-     */
-    public function __destruct()
-    {
-        $this->close();
     }
 
     private function now(): int
