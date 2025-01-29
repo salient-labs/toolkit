@@ -865,6 +865,13 @@ EOF,
 EOF,
                 4,
             ],
+            [
+                "/* the printed value would be\n                       \$i before the increment\n                       (post-increment) */",
+                "/* the printed value would be\n\t\t       \$i before the increment\n\t\t       (post-increment) */",
+                8,
+                true,
+                21,
+            ],
         ];
     }
 

@@ -467,6 +467,7 @@ REGEX,
         foreach (array_chunk($lines, 2) as $i => [$line, $eol]) {
             if (!$i && $preserveLine1) {
                 $expanded .= $line . $eol;
+                $column = 1;
                 continue;
             }
             $parts = explode("\t", $line);
