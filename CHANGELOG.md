@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.74] - 2025-01-29
+
+### Fixed
+
+#### `Utility`
+
+- Fix regression in `Str::expandLeadingTabs()` where the indentation of the second line may be incorrect when `$preserveLine1` is `true`
+
 ## [v0.99.73] - 2025-01-28
 
 ### Changed
@@ -4428,6 +4436,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.74]: https://github.com/salient-labs/toolkit/compare/v0.99.73...v0.99.74
 [v0.99.73]: https://github.com/salient-labs/toolkit/compare/v0.99.72...v0.99.73
 [v0.99.72]: https://github.com/salient-labs/toolkit/compare/v0.99.71...v0.99.72
 [v0.99.71]: https://github.com/salient-labs/toolkit/compare/v0.99.70...v0.99.71
