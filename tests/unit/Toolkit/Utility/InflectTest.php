@@ -5,6 +5,7 @@ namespace Salient\Tests\Utility;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Inflect;
+use ArrayIterator;
 use InvalidArgumentException;
 
 /**
@@ -582,6 +583,39 @@ final class InflectTest extends TestCase
             ['a', 'z-th'],
             ['a', 'zoo'],
             ['a', 'Zth'],
+        ];
+    }
+
+    /**
+     * @dataProvider listProvider
+     *
+     * @param iterable<string> $words
+     */
+    public function testList(
+        string $expected,
+        iterable $words,
+        string $conjunction = 'and',
+        bool $oxford = false,
+        string $separator = ','
+    ): void {
+        $this->assertSame($expected, Inflect::list($words, $conjunction, $oxford, $separator));
+    }
+
+    /**
+     * @return array<array{string,iterable<string>,2?:string,3?:bool,4?:string}>
+     */
+    public static function listProvider(): array
+    {
+        return [
+            ['', []],
+            ['apple', ['apple']],
+            ['apple and banana', ['apple', 'banana']],
+            ['apple or banana', ['apple', 'banana'], 'or'],
+            ['apple, banana and cherry', ['apple', 'banana', 'cherry']],
+            ['apple, banana or cherry', ['apple', 'banana', 'cherry'], 'or'],
+            ['apple, banana, or cherry', ['apple', 'banana', 'cherry'], 'or', true],
+            ['apple; banana; and cherry', ['apple', 'banana', 'cherry'], 'and', true, ';'],
+            ['apple, banana and cherry', new ArrayIterator(['apple', 'banana', 'cherry'])],
         ];
     }
 }

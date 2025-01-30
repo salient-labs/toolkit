@@ -288,4 +288,27 @@ REGEX;
         // Otherwise, guess "a"
         return 'a';
     }
+
+    /**
+     * Use commas and a conjunction to implode a list of words
+     *
+     * @param iterable<string> $words
+     */
+    public static function list(
+        iterable $words,
+        string $conjunction = 'and',
+        bool $oxford = false,
+        string $separator = ','
+    ): string {
+        if (!is_array($words)) {
+            $words = iterator_to_array($words, false);
+        }
+        if (count($words) < 3) {
+            return implode(" $conjunction ", $words);
+        }
+        $last = array_pop($words);
+        return implode("$separator ", $words)
+            . ($oxford ? $separator : '')
+            . " $conjunction $last";
+    }
 }
