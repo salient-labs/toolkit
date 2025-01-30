@@ -1,6 +1,6 @@
 {
     "name": "salient/utils",
-    "description": "The utils package of the Salient toolkit",
+    "description": "The utilities component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

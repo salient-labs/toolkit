@@ -1,6 +1,6 @@
 # salient/cache
 
-> The cache component of the [Salient toolkit][toolkit]
+> The caching component of the [Salient toolkit][toolkit]
 
 <p>
   <a href="https://packagist.org/packages/salient/toolkit"><img src="https://poser.pugx.org/salient/toolkit/v" alt="Latest Stable Version" /></a>
@@ -11,12 +11,18 @@
 
 ---
 
-`salient/cache` provides a SQLite-backed key-value cache.
+`salient/cache` provides a key-value store backed by a SQLite database.
 
 - Implements [PSR-16 (Common Interface for Caching Libraries)][PSR-16]
 - Multiple cache operations can be grouped into an atomic transaction via a
   time-bound instance of the cache[^1] that maintains an exclusive lock on the
   underlying database until it goes out of scope or is explicitly closed
+
+[^1]: See [CacheStore::asOfNow()][asOfNow] for more information.
+
+[asOfNow]:
+  https://salient-labs.github.io/toolkit/Salient.Cache.CacheStore.html#_asOfNow
+[PSR-16]: https://www.php-fig.org/psr/psr-16/
 
 ## Documentation
 
@@ -24,10 +30,5 @@
 the toolkit's [GitHub repository][toolkit], where further documentation can also
 be found.
 
-[^1]: See [CacheStore::asOfNow()][asOfNow] for more information.
-
 [api-docs]: https://salient-labs.github.io/toolkit/namespace-Salient.Cache.html
-[asOfNow]:
-  https://salient-labs.github.io/toolkit/Salient.Cache.CacheStore.html#_asOfNow
-[PSR-16]: https://www.php-fig.org/psr/psr-16/
 [toolkit]: https://github.com/salient-labs/toolkit

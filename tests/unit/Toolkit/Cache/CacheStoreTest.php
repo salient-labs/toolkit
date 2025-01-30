@@ -3,11 +3,11 @@
 namespace Salient\Tests\Cache;
 
 use Salient\Cache\CacheStore;
+use Salient\Contract\Cache\CacheCopyFailedExceptionInterface;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use DateInterval;
 use DateTimeImmutable;
-use LogicException;
 use stdClass;
 
 /**
@@ -113,7 +113,7 @@ final class CacheStoreTest extends TestCase
     public function testNestedAsOfNow(): void
     {
         $current = $this->Cache->asOfNow();
-        $this->expectException(LogicException::class);
+        $this->expectException(CacheCopyFailedExceptionInterface::class);
         $this->expectExceptionMessage('Calls to ' . CacheStore::class . '::asOfNow() cannot be nested');
         $current->asOfNow();
     }
@@ -121,7 +121,7 @@ final class CacheStoreTest extends TestCase
     public function testMultipleAsOfNow(): void
     {
         $current = $this->Cache->asOfNow();
-        $this->expectException(LogicException::class);
+        $this->expectException(CacheCopyFailedExceptionInterface::class);
         $this->expectExceptionMessage(CacheStore::class . '::asOfNow() cannot be called until the instance returned previously is closed or discarded');
         $current = $this->Cache->asOfNow();
     }
@@ -161,6 +161,7 @@ final class CacheStoreTest extends TestCase
         $this->Cache->set(__METHOD__, $objIn);
 
         $objOut = $this->Cache->getInstanceOf(__METHOD__, stdClass::class);
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(stdClass::class, $objOut);
         $this->assertEquals($objIn, $objOut);
         $this->assertNotSame($objIn, $objOut);

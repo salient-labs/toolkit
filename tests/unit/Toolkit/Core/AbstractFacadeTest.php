@@ -51,7 +51,9 @@ final class AbstractFacadeTest extends TestCase
 
         $this->assertCount(0, MyHasFacadeClass::getUnloaded());
         MyInterfaceFacade::swap($instance);
+        // @phpstan-ignore method.impossibleType
         $this->assertCount(1, $unloaded = MyHasFacadeClass::getUnloaded());
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(MyHasFacadeClass::class, $unloaded = reset($unloaded));
         $this->assertNotSame($instance, $unloaded);
         $this->assertSame(2, $unloaded->getClones());
@@ -157,7 +159,7 @@ final class AbstractFacadeTest extends TestCase
     {
         Container::getGlobalContainer();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Service not bound to container: ');
+        $this->expectExceptionMessage('Service not instantiable: ');
         MyBrokenFacade::load();
     }
 

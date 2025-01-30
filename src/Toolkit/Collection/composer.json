@@ -1,6 +1,6 @@
 {
     "name": "salient/collections",
-    "description": "The collections package of the Salient toolkit",
+    "description": "The collections component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

@@ -23,7 +23,8 @@ final class MyInterfaceFacade extends AbstractFacade
     protected static function getService()
     {
         return [
-            MyServiceInterface::class => [
+            MyServiceInterface::class,
+            [
                 MyNonExistentClass::class,
                 MyHasFacadeClass::class,
             ],

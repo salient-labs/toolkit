@@ -1,6 +1,6 @@
 {
     "name": "salient/phpstan",
-    "description": "The phpstan package of the Salient toolkit",
+    "description": "The PHPStan component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

@@ -49,15 +49,15 @@ Output:
 Items in collection: 3
 ```
 
+[^immutable]:
+    Methods other than `offsetSet()` and `offsetUnset()` return a modified
+    instance if the state of the collection changes.
+
 ## Documentation
 
 [API documentation][api-docs] for `salient/collections` tracks the `main` branch
 of the toolkit's [GitHub repository][toolkit], where further documentation can
 also be found.
-
-[^immutable]:
-    Methods other than `offsetSet()` and `offsetUnset()` return a modified
-    instance if the state of the collection changes.
 
 [api-docs]:
   https://salient-labs.github.io/toolkit/namespace-Salient.Collection.html

@@ -1,6 +1,6 @@
 {
     "name": "salient/container",
-    "description": "The container package of the Salient toolkit",
+    "description": "The container component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

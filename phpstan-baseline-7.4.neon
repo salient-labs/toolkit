@@ -79,18 +79,6 @@ parameters:
 			path: tests/unit/Toolkit/Console/ConsoleWriterTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertCount\(\) with 1 and array\{\} will always evaluate to false\.$#'
-			identifier: method.impossibleType
-			count: 1
-			path: tests/unit/Toolkit/Core/AbstractFacadeTest.php
-
-		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Salient\\\\Tests\\\\Core\\\\AbstractFacade\\\\MyHasFacadeClass'' and false will always evaluate to false\.$#'
-			identifier: method.impossibleType
-			count: 1
-			path: tests/unit/Toolkit/Core/AbstractFacadeTest.php
-
-		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{array\{onClose\: ''Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\NamedLoggableEvent''\}\} and array\<array\{string, string\}\|string\> will always evaluate to false\.$#'
 			identifier: method.impossibleType
 			count: 1

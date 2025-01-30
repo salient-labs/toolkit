@@ -23,7 +23,8 @@ final class MyBrokenFacade extends AbstractFacade
     protected static function getService()
     {
         return [
-            MyServiceInterface::class => MyNonExistentClass::class,
+            MyServiceInterface::class,
+            MyNonExistentClass::class,
         ];
     }
 }

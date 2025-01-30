@@ -1,6 +1,6 @@
 {
     "name": "salient/sync",
-    "description": "The sync package of the Salient toolkit",
+    "description": "The sync component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

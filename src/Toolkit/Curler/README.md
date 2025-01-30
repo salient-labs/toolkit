@@ -11,8 +11,7 @@
 
 ---
 
-`salient/curler` provides an HTTP client optimised for exchanging data with
-RESTful API endpoints.
+`salient/curler` provides an HTTP client optimised for RESTful API endpoints.
 
 - Simple, fluent interface for sending `HEAD`, `GET`, `POST`, `PUT`, `PATCH` and
   `DELETE` requests
@@ -31,16 +30,17 @@ $curler = new \Salient\Curler\Curler('https://api.github.com/repos/salient-labs/
 echo 'Latest release: ' . $curler->get()['tag_name'] . \PHP_EOL;
 ```
 
+[^cache]: HTTP caching headers are ignored. USE RESPONSIBLY.
+
+[har]: http://www.softwareishard.com/blog/har-12-spec/
+[PSR-18]: https://www.php-fig.org/psr/psr-18/
+[PSR-7]: https://www.php-fig.org/psr/psr-7/
+
 ## Documentation
 
 [API documentation][api-docs] for `salient/curler` tracks the `main` branch of
 the toolkit's [GitHub repository][toolkit], where further documentation can also
 be found.
 
-[^cache]: HTTP caching headers are ignored. USE RESPONSIBLY.
-
 [api-docs]: https://salient-labs.github.io/toolkit/namespace-Salient.Curler.html
-[har]: http://www.softwareishard.com/blog/har-12-spec/
-[PSR-18]: https://www.php-fig.org/psr/psr-18/
-[PSR-7]: https://www.php-fig.org/psr/psr-7/
 [toolkit]: https://github.com/salient-labs/toolkit

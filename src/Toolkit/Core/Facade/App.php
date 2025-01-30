@@ -51,7 +51,8 @@ final class App extends AbstractFacade
     protected static function getService()
     {
         return [
-            ContainerInterface::class => Container::class,
+            ContainerInterface::class,
+            Container::class,
         ];
     }
 }

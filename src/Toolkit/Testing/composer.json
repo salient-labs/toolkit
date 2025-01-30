@@ -1,6 +1,6 @@
 {
     "name": "salient/testing",
-    "description": "The testing package of the Salient toolkit",
+    "description": "The testing component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

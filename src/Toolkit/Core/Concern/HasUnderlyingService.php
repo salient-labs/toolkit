@@ -13,15 +13,8 @@ use ReflectionClass;
  */
 trait HasUnderlyingService
 {
-    /** @var array<class-string<static>,class-string<TService>> */
-    private static array $ServiceNames = [];
-    /** @var array<class-string<static>,array<class-string<TService>>> */
-    private static array $ServiceLists = [];
-    /** @var array<class-string<static>,true> */
-    private static array $LoadedServices = [];
-
     /**
-     * @return class-string<TService>|array<class-string<TService>,class-string<TService>|array<class-string<TService>>>
+     * @return class-string<TService>|array{class-string<TService>,class-string<TService>[]|class-string<TService>}
      */
     abstract protected static function getService();
 
@@ -30,10 +23,9 @@ trait HasUnderlyingService
      */
     private static function getInstantiableService(): ?string
     {
-        $serviceName = self::getServiceName();
-        $serviceList = self::getServiceList();
+        [$name, $list] = self::getNormalisedService();
 
-        foreach ($serviceList as $service) {
+        foreach (Arr::extend([$name], ...$list) as $service) {
             if (
                 !class_exists($service)
                 || !(new ReflectionClass($service))->isInstantiable()
@@ -41,15 +33,12 @@ trait HasUnderlyingService
                 continue;
             }
 
-            if ($service !== $serviceName && !is_a($service, $serviceName, true)) {
-                // @codeCoverageIgnoreStart
+            if ($service !== $name && !is_a($service, $name, true)) {
                 throw new LogicException(sprintf(
-                    '%s does not inherit %s: %s::getService()',
+                    '%s does not inherit %s',
                     $service,
-                    $serviceName,
-                    static::class,
+                    $name,
                 ));
-                // @codeCoverageIgnoreEnd
             }
 
             return $service;
@@ -59,88 +48,16 @@ trait HasUnderlyingService
     }
 
     /**
-     * @return class-string<TService>
+     * @return array{class-string<TService>,class-string<TService>[]}
      */
-    private static function getServiceName(): string
-    {
-        self::loadServiceList();
-
-        return self::$ServiceNames[static::class];
-    }
-
-    /**
-     * @return array<class-string<TService>>
-     */
-    private static function getServiceList(): array
-    {
-        self::loadServiceList();
-
-        return self::$ServiceLists[static::class];
-    }
-
-    private static function loadServiceList(): void
-    {
-        if (self::$LoadedServices[static::class] ?? false) {
-            return;
-        }
-
-        /** @disregard P1008 */
-        self::doLoadServiceList($serviceName, $serviceList);
-        /** @disregard P1008 */
-        self::$ServiceNames[static::class] = $serviceName;
-        /** @disregard P1008 */
-        self::$ServiceLists[static::class] = $serviceList;
-        self::$LoadedServices[static::class] = true;
-    }
-
-    /**
-     * @param class-string<TService> $serviceName
-     * @param array<class-string<TService>> $serviceList
-     * @param-out class-string<TService> $serviceName
-     * @param-out array<class-string<TService>> $serviceList
-     */
-    private static function doLoadServiceList(?string &$serviceName, ?array &$serviceList): void
+    private static function getNormalisedService(): array
     {
         $service = static::getService();
 
         if (is_string($service)) {
-            $serviceName = $service;
-            $serviceList = [$service];
-            return;
+            return [$service, []];
         }
 
-        if (count($service) === 1) {
-            $name = array_key_first($service);
-            $value = $service[$name];
-            if (is_string($value)) {
-                $serviceName = $name;
-                $serviceList = Arr::extend([$name], $value);
-                return;
-            }
-            $serviceName = $name;
-            $serviceList = Arr::extend([$name], ...array_values($value));
-            return;
-        }
-
-        // @codeCoverageIgnoreStart
-        throw new LogicException(sprintf(
-            'Invalid service: %s::getService()',
-            static::class,
-        ));
-        // @codeCoverageIgnoreEnd
-    }
-
-    private static function unloadServiceList(): void
-    {
-        unset(self::$LoadedServices[static::class]);
-        unset(self::$ServiceLists[static::class]);
-        unset(self::$ServiceNames[static::class]);
-    }
-
-    private static function unloadAllServiceLists(): void
-    {
-        self::$ServiceNames = [];
-        self::$ServiceLists = [];
-        self::$LoadedServices = [];
+        return [$service[0], array_values((array) $service[1])];
     }
 }

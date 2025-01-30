@@ -1,6 +1,6 @@
 {
     "name": "salient/db",
-    "description": "The db package of the Salient toolkit",
+    "description": "The db component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [
