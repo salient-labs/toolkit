@@ -1,6 +1,6 @@
 {
     "name": "salient/polyfills",
-    "description": "The polyfills package of the Salient toolkit",
+    "description": "The polyfills component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

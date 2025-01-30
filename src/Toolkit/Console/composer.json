@@ -1,6 +1,6 @@
 {
     "name": "salient/console",
-    "description": "The console package of the Salient toolkit",
+    "description": "The console component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

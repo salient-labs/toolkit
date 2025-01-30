@@ -1,6 +1,6 @@
 {
     "name": "salient/http",
-    "description": "The http package of the Salient toolkit",
+    "description": "The HTTP component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

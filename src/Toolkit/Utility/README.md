@@ -11,7 +11,7 @@
 
 ---
 
-`salient/utils` provides utility methods via the following stateless classes.
+`salient/utils` provides utility methods via the stateless classes below.
 
 > If your project uses `File::find()` or `File::pruneDir()`,
 > [salient/iterators][] must also be installed.
@@ -48,6 +48,8 @@
   handler for exit signals (`SIGTERM`, `SIGINT` and `SIGHUP`).
 - **`Test`** performs tests on values.
 
+[salient/iterators]: https://github.com/salient-labs/toolkit-iterators
+
 ## Documentation
 
 [API documentation][api-docs] for `salient/utils` tracks the `main` branch of
@@ -56,5 +58,4 @@ be found.
 
 [api-docs]:
   https://salient-labs.github.io/toolkit/namespace-Salient.Utility.html
-[salient/iterators]: https://github.com/salient-labs/toolkit-iterators
 [toolkit]: https://github.com/salient-labs/toolkit

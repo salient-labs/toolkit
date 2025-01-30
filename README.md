@@ -28,20 +28,35 @@ composer require salient/cache salient/utils
 composer require --dev salient/phpstan
 ```
 
-> `salient/toolkit` must be removed from your project before individual
-> components can be installed, and the version constraint applied to `salient`
-> packages in your `composer.json` must allow the same version of every package
-> to be installed.
-
 ## Components
 
-The Salient toolkit includes the following components, each of which has its own
-[Composer package][packages] and can be installed separately:
+The Salient toolkit includes the following components, each of which can be
+installed separately:
 
 ![Salient toolkit component diagram](images/components.svg)
 
-> Components in dashed boxes should only be installed as development
-> dependencies.
+| Component     | Composer package        | Provides                                                                            |
+| ------------- | ----------------------- | ----------------------------------------------------------------------------------- |
+| Cache         | [salient/cache][]       | A key-value store backed by a SQLite database                                       |
+| **CLI**       | [salient/cli][]         | A service container and command framework for CLI applications                      |
+| Collections   | [salient/collections][] | Access to collections of values via array-like objects with chainable methods       |
+| **Console**   | [salient/console][]     | Terminal output and message logging via an API similar to `console` in web browsers |
+| **Container** | [salient/container][]   | A service container with contextual bindings                                        |
+| **Contracts** | [salient/contracts][]   | Interfaces and abstractions                                                         |
+| **Core**      | [salient/core][]        | Reusable classes, traits and services                                               |
+| Curler        | [salient/curler][]      | An HTTP client optimised for RESTful API endpoints                                  |
+| Db            | [salient/db][]          | Access to databases                                                                 |
+| HTTP          | [salient/http][]        | HTTP message and utility classes                                                    |
+| Iterators     | [salient/iterators][]   | Iterator classes and traits                                                         |
+| PHPDoc        | [salient/phpdoc][]      | A PHPDoc extractor and parser                                                       |
+| PHPStan       | [salient/phpstan][][^1] | PHPStan extensions                                                                  |
+| Polyfills     | [salient/polyfills][]   | Polyfills                                                                           |
+| Sli           | [salient/sli][][^1]     | `sli`, the toolkit's CLI utility                                                    |
+| **Sync**      | [salient/sync][]        | A framework and SQLite-backed store for synchronising data with backends            |
+| Testing       | [salient/testing][][^1] | Classes that are useful in test suites                                              |
+| **Utils**     | [salient/utils][]       | Utility methods via stateless classes                                               |
+
+[^1]: This component should only be installed as a development dependency.
 
 ## Documentation
 
@@ -68,9 +83,23 @@ This project is licensed under the [MIT License][].
 [Composer]: https://getcomposer.org/
 [docs]: docs/
 [MIT License]: LICENSE
-[packages]: https://packagist.org/packages/salient/
 [repo]: https://github.com/salient-labs/toolkit
-[salient/cache]: https://github.com/salient-labs/toolkit-cache
-[salient/phpstan]: https://github.com/salient-labs/toolkit-phpstan
-[salient/utils]: https://github.com/salient-labs/toolkit-utils
+[salient/cache]: https://packagist.org/packages/salient/cache
+[salient/cli]: https://packagist.org/packages/salient/cli
+[salient/collections]: https://packagist.org/packages/salient/collections
+[salient/console]: https://packagist.org/packages/salient/console
+[salient/container]: https://packagist.org/packages/salient/container
+[salient/contracts]: https://packagist.org/packages/salient/contracts
+[salient/core]: https://packagist.org/packages/salient/core
+[salient/curler]: https://packagist.org/packages/salient/curler
+[salient/db]: https://packagist.org/packages/salient/db
+[salient/http]: https://packagist.org/packages/salient/http
+[salient/iterators]: https://packagist.org/packages/salient/iterators
+[salient/phpdoc]: https://packagist.org/packages/salient/phpdoc
+[salient/phpstan]: https://packagist.org/packages/salient/phpstan
+[salient/polyfills]: https://packagist.org/packages/salient/polyfills
+[salient/sli]: https://packagist.org/packages/salient/sli
+[salient/sync]: https://packagist.org/packages/salient/sync
+[salient/testing]: https://packagist.org/packages/salient/testing
+[salient/utils]: https://packagist.org/packages/salient/utils
 [tests]: tests/unit/

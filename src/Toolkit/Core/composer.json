@@ -1,6 +1,6 @@
 {
     "name": "salient/core",
-    "description": "The core package of the Salient toolkit",
+    "description": "The core component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

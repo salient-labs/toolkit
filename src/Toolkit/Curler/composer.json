@@ -1,6 +1,6 @@
 {
     "name": "salient/curler",
-    "description": "The curler package of the Salient toolkit",
+    "description": "The Curler component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

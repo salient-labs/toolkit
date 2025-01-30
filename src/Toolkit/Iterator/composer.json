@@ -1,6 +1,6 @@
 {
     "name": "salient/iterators",
-    "description": "The iterators package of the Salient toolkit",
+    "description": "The iterators component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

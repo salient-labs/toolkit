@@ -1,6 +1,6 @@
 {
     "name": "salient/cli",
-    "description": "The cli package of the Salient toolkit",
+    "description": "The CLI component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

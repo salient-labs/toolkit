@@ -1,6 +1,6 @@
 {
     "name": "salient/phpdoc",
-    "description": "The phpdoc package of the Salient toolkit",
+    "description": "The PHPDoc component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

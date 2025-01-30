@@ -1,6 +1,6 @@
 {
     "name": "salient/contracts",
-    "description": "The contracts package of the Salient toolkit",
+    "description": "The contracts component of the Salient toolkit",
     "license": "MIT",
     "type": "library",
     "authors": [

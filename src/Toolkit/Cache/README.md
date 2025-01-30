@@ -18,16 +18,17 @@
   time-bound instance of the cache[^1] that maintains an exclusive lock on the
   underlying database until it goes out of scope or is explicitly closed
 
+[^1]: See [CacheStore::asOfNow()][asOfNow] for more information.
+
+[asOfNow]:
+  https://salient-labs.github.io/toolkit/Salient.Cache.CacheStore.html#_asOfNow
+[PSR-16]: https://www.php-fig.org/psr/psr-16/
+
 ## Documentation
 
 [API documentation][api-docs] for `salient/cache` tracks the `main` branch of
 the toolkit's [GitHub repository][toolkit], where further documentation can also
 be found.
 
-[^1]: See [CacheStore::asOfNow()][asOfNow] for more information.
-
 [api-docs]: https://salient-labs.github.io/toolkit/namespace-Salient.Cache.html
-[asOfNow]:
-  https://salient-labs.github.io/toolkit/Salient.Cache.CacheStore.html#_asOfNow
-[PSR-16]: https://www.php-fig.org/psr/psr-16/
 [toolkit]: https://github.com/salient-labs/toolkit
