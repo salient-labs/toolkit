@@ -42,7 +42,8 @@ final class Cache extends AbstractFacade
     protected static function getService()
     {
         return [
-            CacheInterface::class => CacheStore::class,
+            CacheInterface::class,
+            CacheStore::class,
         ];
     }
 }

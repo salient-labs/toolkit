@@ -348,7 +348,7 @@ final class GenerateFacade extends AbstractGenerateCommand
             ...$this->indent($this->generateGetter(
                 'getService',
                 $this->code($alias
-                    ? [$service => Arr::unwrap($alias)]
+                    ? [$service, Arr::unwrap($alias)]
                     : $service),
                 '@internal',
                 null,

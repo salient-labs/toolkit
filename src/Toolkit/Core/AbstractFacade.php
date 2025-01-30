@@ -12,12 +12,10 @@ use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasUnderlyingService;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
-use Salient\Utility\Get;
+use Salient\Utility\Arr;
 use LogicException;
 
 /**
- * Base class for facades
- *
  * @api
  *
  * @template TService of Instantiable
@@ -29,19 +27,16 @@ abstract class AbstractFacade implements FacadeInterface
     /** @use HasUnderlyingService<TService> */
     use HasUnderlyingService;
 
-    /** @var array<class-string<static>,TService> */
+    /** @var array<class-string<self<*>>,TService> */
     private static array $Instances = [];
-    /** @var array<class-string<static>,int> */
+    /** @var array<class-string<self<*>>,int> */
     private static array $ListenerIds = [];
 
     /**
-     * Get the facade's underlying class, or an array that maps its underlying
-     * class to compatible implementations
+     * Get the facade's underlying class, or an array with the facade's
+     * underlying class at index 0 and an inheritor or list thereof at index 1
      *
-     * At least one of the values returned should be an instantiable class that
-     * is guaranteed to exist.
-     *
-     * @return class-string<TService>|array<class-string<TService>,class-string<TService>|array<class-string<TService>>>
+     * @return class-string<TService>|array{class-string<TService>,class-string<TService>[]|class-string<TService>}
      */
     abstract protected static function getService();
 
@@ -61,7 +56,6 @@ abstract class AbstractFacade implements FacadeInterface
         if (isset(self::$Instances[static::class])) {
             throw new LogicException(sprintf('Already loaded: %s', static::class));
         }
-
         self::$Instances[static::class] = self::doLoad($instance);
     }
 
@@ -88,17 +82,11 @@ abstract class AbstractFacade implements FacadeInterface
     final public static function unloadAll(): void
     {
         foreach (array_keys(self::$Instances) as $class) {
-            // @phpstan-ignore identical.alwaysFalse
-            if ($class === Event::class) {
-                continue;
+            if ($class !== Event::class) {
+                $class::doUnload();
             }
-
-            $class::doUnload();
         }
-
         Event::doUnload();
-
-        self::unloadAllServiceLists();
     }
 
     /**
@@ -106,24 +94,19 @@ abstract class AbstractFacade implements FacadeInterface
      */
     final public static function getInstance(): object
     {
-        $instance = self::$Instances[static::class] ??=
-            self::doLoad();
-
-        if ($instance instanceof FacadeAwareInterface) {
-            return $instance->withoutFacade(static::class, false);
-        }
-
-        return $instance;
+        $instance = self::$Instances[static::class] ??= self::doLoad();
+        return $instance instanceof FacadeAwareInterface
+            ? $instance->withoutFacade(static::class, false)
+            : $instance;
     }
 
     /**
-     * @param mixed[] $arguments
-     * @return mixed
+     * @inheritDoc
      */
     final public static function __callStatic(string $name, array $arguments)
     {
-        return (self::$Instances[static::class] ??=
-            self::doLoad())->$name(...$arguments);
+        $instance = self::$Instances[static::class] ??= self::doLoad();
+        return $instance->$name(...$arguments);
     }
 
     /**
@@ -132,39 +115,46 @@ abstract class AbstractFacade implements FacadeInterface
      */
     private static function doLoad(?object $instance = null): object
     {
-        $serviceName = self::getServiceName();
+        [$name] = self::getNormalisedService();
 
-        if ($instance !== null && !is_a($instance, $serviceName)) {
+        if ($instance && !is_a($instance, $name)) {
             throw new LogicException(sprintf(
                 '%s does not inherit %s',
-                Get::type($instance),
-                $serviceName,
+                get_class($instance),
+                $name,
             ));
         }
 
-        $container = Container::hasGlobalContainer()
+        $containerExists = class_exists(Container::class);
+        $container = $containerExists && Container::hasGlobalContainer()
             ? Container::getGlobalContainer()
             : null;
 
         $instance ??= $container
-            ? self::getInstanceFromContainer($container, $serviceName)
-            : self::createInstance();
+            ? self::getInstanceFromContainer($container)
+            : self::createInstance() ?? (
+                $containerExists
+                    ? self::getInstanceFromContainer(new Container())
+                    : null
+            );
 
-        $dispatcher =
-            // @phpstan-ignore booleanAnd.alwaysFalse
-            $instance instanceof EventDispatcher
-            // @phpstan-ignore identical.alwaysFalse
-            && static::class === Event::class
-                ? $instance
-                : Event::getInstance();
+        if (!$instance) {
+            throw new LogicException(sprintf(
+                'Service not instantiable: %s::getService()',
+                static::class,
+            ));
+        }
 
-        if (
-            // @phpstan-ignore booleanAnd.alwaysFalse
-            $instance instanceof ContainerInterface
-            // @phpstan-ignore identical.alwaysFalse
-            && static::class === App::class
-        ) {
-            if (!$container) {
+        /** @var EventDispatcher */
+        // @phpstan-ignore identical.alwaysFalse
+        $dispatcher = static::class === Event::class
+            ? $instance
+            : Event::getInstance();
+
+        // @phpstan-ignore identical.alwaysFalse
+        if (static::class === App::class) {
+            /** @var ContainerInterface $instance */
+            if ($containerExists && !$container) {
                 Container::setGlobalContainer($instance);
             }
 
@@ -176,18 +166,19 @@ abstract class AbstractFacade implements FacadeInterface
                 }
             );
         } else {
-            if ($container && !$container->hasInstance($serviceName)) {
-                $container->instance($serviceName, $instance);
+            if ($container && !$container->hasInstance($name)) {
+                $container->instance($name, $instance);
             }
 
             $listenerId = $dispatcher->listen(
-                static function (BeforeGlobalContainerSetEventInterface $event) use ($serviceName, $instance): void {
-                    if (($container = $event->getContainer()) && !$container->hasInstance($serviceName)) {
-                        $container->instance($serviceName, $instance);
+                static function (BeforeGlobalContainerSetEventInterface $event) use ($name, $instance): void {
+                    if (($container = $event->getContainer()) && !$container->hasInstance($name)) {
+                        $container->instance($name, $instance);
                     }
                 }
             );
         }
+
         self::$ListenerIds[static::class] = $listenerId;
 
         if ($instance instanceof FacadeAwareInterface) {
@@ -198,57 +189,43 @@ abstract class AbstractFacade implements FacadeInterface
     }
 
     /**
-     * @param class-string<TService> $serviceName
-     * @return TService
+     * @return TService|null
      */
-    private static function getInstanceFromContainer(
-        ContainerInterface $container,
-        string $serviceName
-    ): object {
-        // If one of the services returned by the facade has been bound to the
-        // container, resolve it to an instance
-        foreach (self::getServiceList() as $service) {
+    private static function getInstanceFromContainer(ContainerInterface $container): ?object
+    {
+        [$name, $list] = self::getNormalisedService();
+
+        foreach (Arr::extend([$name], ...$list) as $service) {
             if ($container->has($service)) {
-                $instance = $container->getAs($service, $serviceName);
-                if (!is_a($instance, $serviceName)) {
+                $instance = $service === $name
+                    ? $container->get($name)
+                    : $container->getAs($service, $name);
+                if (!is_a($instance, $name)) {
                     throw new LogicException(sprintf(
-                        '%s does not inherit %s: %s::getService()',
+                        '%s does not inherit %s',
                         get_class($instance),
-                        $serviceName,
-                        static::class,
+                        $name,
                     ));
                 }
                 return $instance;
             }
         }
 
-        // Otherwise, use the container to resolve the first instantiable class
         $service = self::getInstantiableService();
-        if ($service !== null) {
-            return $container->getAs($service, $serviceName);
-        }
-
-        throw new LogicException(sprintf(
-            'Service not bound to container: %s::getService()',
-            static::class,
-        ));
+        return $service !== null
+            ? $container->getAs($service, $name)
+            : null;
     }
 
     /**
-     * @return TService
+     * @return TService|null
      */
-    private static function createInstance(): object
+    private static function createInstance(): ?object
     {
-        // Create an instance of the first instantiable class
         $service = self::getInstantiableService();
-        if ($service !== null) {
-            return new $service();
-        }
-
-        throw new LogicException(sprintf(
-            'Service not instantiable: %s::getService()',
-            static::class,
-        ));
+        return $service !== null
+            ? new $service()
+            : null;
     }
 
     private static function doUnload(): void
@@ -256,7 +233,6 @@ abstract class AbstractFacade implements FacadeInterface
         // @phpstan-ignore identical.alwaysFalse
         if (static::class === Event::class) {
             $loaded = array_keys(self::$Instances);
-            // @phpstan-ignore notIdentical.alwaysTrue
             if ($loaded && $loaded !== [Event::class]) {
                 throw new LogicException(sprintf(
                     '%s cannot be unloaded before other facades',
@@ -278,17 +254,18 @@ abstract class AbstractFacade implements FacadeInterface
 
         // @phpstan-ignore notIdentical.alwaysTrue
         if (static::class !== App::class) {
-            $container = Container::hasGlobalContainer()
-                ? Container::getGlobalContainer()
-                : null;
+            $container = class_exists(Container::class)
+                && Container::hasGlobalContainer()
+                    ? Container::getGlobalContainer()
+                    : null;
 
             if ($container) {
-                $serviceName = self::getServiceName();
+                [$name] = self::getNormalisedService();
                 if (
-                    $container->hasInstance($serviceName)
-                    && $container->get($serviceName) === $instance
+                    $container->hasInstance($name)
+                    && $container->get($name) === $instance
                 ) {
-                    $container->removeInstance($serviceName);
+                    $container->removeInstance($name);
                 }
             }
         }
@@ -302,7 +279,5 @@ abstract class AbstractFacade implements FacadeInterface
         }
 
         unset(self::$Instances[static::class]);
-
-        self::unloadServiceList();
     }
 }

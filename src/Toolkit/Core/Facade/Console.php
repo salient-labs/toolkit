@@ -71,7 +71,8 @@ final class Console extends AbstractFacade
     protected static function getService()
     {
         return [
-            ConsoleWriterInterface::class => ConsoleWriter::class,
+            ConsoleWriterInterface::class,
+            ConsoleWriter::class,
         ];
     }
 }

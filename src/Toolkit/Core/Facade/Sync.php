@@ -57,7 +57,8 @@ final class Sync extends AbstractFacade
     protected static function getService()
     {
         return [
-            SyncStoreInterface::class => SyncStore::class,
+            SyncStoreInterface::class,
+            SyncStore::class,
         ];
     }
 }
