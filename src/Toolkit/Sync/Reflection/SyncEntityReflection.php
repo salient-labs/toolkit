@@ -3,14 +3,14 @@
 namespace Salient\Sync\Reflection;
 
 use Salient\Contract\Sync\SyncEntityInterface;
-use ReflectionClass;
+use Salient\Core\Reflection\ClassReflection;
 
 /**
  * @template TEntity of SyncEntityInterface
  *
- * @extends ReflectionClass<TEntity>
+ * @extends ClassReflection<TEntity>
  */
-class SyncEntityReflection extends ReflectionClass
+class SyncEntityReflection extends ClassReflection
 {
     use SyncReflectionTrait;
 

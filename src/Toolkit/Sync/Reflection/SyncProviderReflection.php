@@ -7,6 +7,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
+use Salient\Core\Reflection\ClassReflection;
 use Salient\Sync\SyncUtil;
 use Salient\Utility\Str;
 use Closure;
@@ -16,9 +17,9 @@ use ReflectionException;
 /**
  * @template TProvider of SyncProviderInterface
  *
- * @extends ReflectionClass<TProvider>
+ * @extends ClassReflection<TProvider>
  */
-class SyncProviderReflection extends ReflectionClass
+class SyncProviderReflection extends ClassReflection
 {
     use SyncReflectionTrait;
 
