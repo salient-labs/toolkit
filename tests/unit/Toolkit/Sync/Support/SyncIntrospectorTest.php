@@ -6,8 +6,8 @@ use Salient\Container\Container;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Sync\Reflection\ReflectionSyncEntity;
-use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\Reflection\SyncEntityReflection;
+use Salient\Sync\Reflection\SyncProviderReflection;
 use Salient\Sync\SyncUtil;
 use Salient\Tests\Sync\Entity\Provider\TaskProvider;
 use Salient\Tests\Sync\Entity\Provider\UserProvider;
@@ -20,8 +20,8 @@ use Closure;
 use ReflectionFunction;
 
 /**
- * @covers \Salient\Sync\Reflection\ReflectionSyncEntity
- * @covers \Salient\Sync\Reflection\ReflectionSyncProvider
+ * @covers \Salient\Sync\Reflection\SyncEntityReflection
+ * @covers \Salient\Sync\Reflection\SyncProviderReflection
  * @covers \Salient\Sync\SyncUtil
  */
 final class SyncIntrospectorTest extends TestCase
@@ -79,8 +79,8 @@ final class SyncIntrospectorTest extends TestCase
         $container = (new Container())->provider(JsonPlaceholderApi::class);
         $provider = $container->get(TaskProvider::class);
 
-        $_entity = new ReflectionSyncEntity(Task::class);
-        $_provider = new ReflectionSyncProvider($container->getName(TaskProvider::class));
+        $_entity = new SyncEntityReflection(Task::class);
+        $_provider = new SyncProviderReflection($container->getName(TaskProvider::class));
 
         $this->assertSame('gettask', $this->getMethodVar($_provider->getSyncOperationClosure(SyncOperation::READ, $_entity, $provider)));
         $this->assertNull($this->getMethodVar($_provider->getSyncOperationClosure(SyncOperation::READ_LIST, $_entity, $provider)));

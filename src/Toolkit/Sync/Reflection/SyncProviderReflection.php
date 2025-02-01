@@ -18,7 +18,7 @@ use ReflectionException;
  *
  * @extends ReflectionClass<TProvider>
  */
-class ReflectionSyncProvider extends ReflectionClass
+class SyncProviderReflection extends ReflectionClass
 {
     use SyncReflectionTrait;
 
@@ -119,13 +119,13 @@ class ReflectionSyncProvider extends ReflectionClass
     /**
      * Get entity types serviced via sync provider interfaces
      *
-     * @return array<class-string<SyncEntityInterface>,ReflectionSyncEntity<SyncEntityInterface>>
+     * @return array<class-string<SyncEntityInterface>,SyncEntityReflection<SyncEntityInterface>>
      */
     public function getSyncProviderReflectionEntities(): array
     {
         foreach ($this->getSyncProviderInterfaces() as $interface) {
             foreach (SyncUtil::getProviderEntityTypes($interface, $this->Store) as $entityType) {
-                $entity = new ReflectionSyncEntity($entityType);
+                $entity = new SyncEntityReflection($entityType);
                 $entities[$entity->name] = $entity;
             }
         }
@@ -161,14 +161,14 @@ class ReflectionSyncProvider extends ReflectionClass
      * @template T of SyncEntityInterface
      *
      * @param SyncOperation::* $operation
-     * @param ReflectionSyncEntity<T>|class-string<T> $entity
+     * @param SyncEntityReflection<T>|class-string<T> $entity
      * @param TProvider $provider
      * @return (Closure(SyncContextInterface, mixed...): (iterable<T>|T))|null
      */
     public function getSyncOperationClosure(int $operation, $entity, SyncProviderInterface $provider): ?Closure
     {
-        if (!$entity instanceof ReflectionSyncEntity) {
-            $entity = new ReflectionSyncEntity($entity);
+        if (!$entity instanceof SyncEntityReflection) {
+            $entity = new SyncEntityReflection($entity);
         }
 
         $closure = self::$Closures[$this->name][$entity->name][$operation] ?? null;
@@ -190,12 +190,12 @@ class ReflectionSyncProvider extends ReflectionClass
      * by the provider
      *
      * @param SyncOperation::* $operation
-     * @param ReflectionSyncEntity<SyncEntityInterface>|class-string<SyncEntityInterface> $entity
+     * @param SyncEntityReflection<SyncEntityInterface>|class-string<SyncEntityInterface> $entity
      */
     public function getSyncOperationMethod(int $operation, $entity): ?string
     {
-        if (!$entity instanceof ReflectionSyncEntity) {
-            $entity = new ReflectionSyncEntity($entity);
+        if (!$entity instanceof SyncEntityReflection) {
+            $entity = new SyncEntityReflection($entity);
         }
 
         if (SyncUtil::isListOperation($operation)) {

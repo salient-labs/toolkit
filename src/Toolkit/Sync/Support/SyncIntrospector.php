@@ -14,7 +14,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
-use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\Reflection\SyncProviderReflection;
 use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -194,7 +194,7 @@ final class SyncIntrospector extends Introspector
         if ($closure === false) {
             /** @var class-string<SyncProviderInterface> */
             $class = $this->_Class->Class;
-            $operation = (new ReflectionSyncProvider($class))
+            $operation = (new SyncProviderReflection($class))
                 ->getSyncOperationMagicMethods()[$method] ?? null;
             if ($operation) {
                 $entity = $operation[1];

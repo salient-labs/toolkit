@@ -12,7 +12,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Console;
 use Salient\Sync\Http\HttpSyncProvider;
-use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\Reflection\SyncProviderReflection;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Get;
@@ -82,7 +82,7 @@ abstract class AbstractSyncCommand extends CliCommand
                 continue;
             }
 
-            $basenames = (new ReflectionSyncProvider($provider))
+            $basenames = (new SyncProviderReflection($provider))
                 ->getSyncProviderEntityTypeBasenames();
             foreach ($basenames as $entityKey => $entity) {
                 if (array_key_exists($entityKey, $entities) && (

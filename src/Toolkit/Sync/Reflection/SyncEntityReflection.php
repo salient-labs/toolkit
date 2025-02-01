@@ -10,7 +10,7 @@ use ReflectionClass;
  *
  * @extends ReflectionClass<TEntity>
  */
-class ReflectionSyncEntity extends ReflectionClass
+class SyncEntityReflection extends ReflectionClass
 {
     use SyncReflectionTrait;
 
