@@ -14,12 +14,12 @@ final class IndentationTest extends TestCase
     /**
      * Derived from VS Code's textModel tests
      *
+     * @link https://github.com/microsoft/vscode/blob/860d67064a9c1ef8ce0c8de35a78bea01033f76c/src/vs/editor/test/common/model/textModel.test.ts
+     *
      * @dataProvider guessIndentationProvider
      *
      * @param int[]|int|null $expectedTabSize
      * @param string[] $lines
-     *
-     * @link https://github.com/microsoft/vscode/blob/860d67064a9c1ef8ce0c8de35a78bea01033f76c/src/vs/editor/test/common/model/textModel.test.ts
      */
     public function testGuessIndentation(?bool $expectedInsertSpaces, $expectedTabSize, array $lines, ?Indentation $default = null): void
     {

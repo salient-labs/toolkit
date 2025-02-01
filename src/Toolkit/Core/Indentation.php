@@ -28,10 +28,10 @@ final class Indentation
      *
      * Returns `$default` if `$resource` appears to use the default indentation.
      *
+     * @link https://github.com/microsoft/vscode/blob/860d67064a9c1ef8ce0c8de35a78bea01033f76c/src/vs/editor/common/model/indentationGuesser.ts
+     *
      * @param Stringable|string|resource $resource
      * @param Stringable|string|null $uri
-     *
-     * @link https://github.com/microsoft/vscode/blob/860d67064a9c1ef8ce0c8de35a78bea01033f76c/src/vs/editor/common/model/indentationGuesser.ts
      */
     public static function from(
         $resource,

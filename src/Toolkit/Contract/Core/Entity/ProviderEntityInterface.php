@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core\Provider;
+namespace Salient\Contract\Core\Entity;
 
-use Salient\Contract\Core\Entity\EntityInterface;
+use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 
 /**
  * A generic entity serviced by a provider
@@ -12,6 +13,6 @@ use Salient\Contract\Core\Entity\EntityInterface;
  *
  * @extends Providable<TProvider,TContext>
  */
-interface ProvidableEntityInterface extends
+interface ProviderEntityInterface extends
     EntityInterface,
     Providable {}

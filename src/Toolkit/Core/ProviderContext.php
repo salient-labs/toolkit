@@ -3,8 +3,8 @@
 namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\HasId;

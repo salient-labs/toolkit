@@ -10,5 +10,4 @@ interface EntityInterface extends
     Extensible,
     Normalisable,
     Readable,
-    Writable,
-    Temporal {}
+    Writable {}

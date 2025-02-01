@@ -3,8 +3,9 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\ProviderEntityInterface;
 use Salient\Contract\Core\Entity\Relatable;
-use Salient\Contract\Core\Provider\ProvidableEntityInterface;
+use Salient\Contract\Core\Entity\Temporal;
 use Salient\Contract\Core\HasId;
 use Salient\Contract\Core\HasName;
 use Salient\Contract\Sync\Exception\SyncEntityNotFoundExceptionInterface;
@@ -13,13 +14,14 @@ use JsonSerializable;
 /**
  * Represents the state of an entity in an external system
  *
- * @extends ProvidableEntityInterface<SyncProviderInterface,SyncContextInterface>
+ * @extends ProviderEntityInterface<SyncProviderInterface,SyncContextInterface>
  */
 interface SyncEntityInterface extends
     HasId,
     HasName,
-    ProvidableEntityInterface,
+    ProviderEntityInterface,
     Relatable,
+    Temporal,
     JsonSerializable
 {
     /**

@@ -8,9 +8,9 @@ namespace Salient\Contract\Polyfill;
  * This class provides an abstraction of the streamWrapper prototype described
  * in the PHP manual.
  *
- * @api
- *
  * @link https://www.php.net/manual/en/class.streamwrapper.php
+ *
+ * @api
  */
 abstract class StreamWrapper implements StreamWrapperInterface
 {

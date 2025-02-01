@@ -27,9 +27,9 @@ use Stringable;
 final class HttpUtil extends AbstractUtility
 {
     /**
-     * @var array<string,string>
-     *
      * @link https://www.iana.org/assignments/media-type-structured-suffix/media-type-structured-suffix.xhtml
+     *
+     * @var array<string,string>
      */
     private const SUFFIX_TYPE = [
         'gzip' => MimeType::GZIP,

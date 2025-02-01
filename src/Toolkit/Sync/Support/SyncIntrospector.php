@@ -3,9 +3,9 @@
 namespace Salient\Sync\Support;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Relatable;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;

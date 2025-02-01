@@ -65,6 +65,12 @@ if (\PHP_VERSION_ID < 80000) {
                     'message' => '#^Parameter \#2 \$delim_char of function preg_quote expects string, string\|null given\.$#'
                 ],
                 [
+                    'message' => '#^Parameter \#1 \$filter of method ReflectionClass\<T of object\>\:\:getMethods\(\) expects int, int\|null given\.$#',
+                    'identifier' => 'argument.type',
+                    'count' => 1,
+                    'path' => "$dir/src/Toolkit/Core/Reflection/ClassReflection.php",
+                ],
+                [
                     'message' => '#^Method Salient\\\\Utility\\\\Regex\:\:matchAll\(\) should return int but returns int\<0, max\>\|null\.$#',
                     'identifier' => 'return.type',
                     'count' => 1,

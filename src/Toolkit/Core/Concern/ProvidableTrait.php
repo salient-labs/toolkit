@@ -3,7 +3,7 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Entity\Extensible;
-use Salient\Contract\Core\Provider\Providable;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\ListConformity;

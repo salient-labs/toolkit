@@ -79,12 +79,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     use ConstructibleTrait;
     use HasReadableProperties;
     use HasWritableProperties;
-    use ExtensibleTrait {
-        ExtensibleTrait::__set insteadof HasWritableProperties;
-        ExtensibleTrait::__get insteadof HasReadableProperties;
-        ExtensibleTrait::__isset insteadof HasReadableProperties;
-        ExtensibleTrait::__unset insteadof HasWritableProperties;
-    }
+    use ExtensibleTrait;
     /** @use ProvidableTrait<SyncProviderInterface,SyncContextInterface> */
     use ProvidableTrait;
     use HasNormaliser;
@@ -289,34 +284,32 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
      * Normalise a property name
      *
      * 1. `$name` is converted to snake_case
-     * 2. If the result is one of the given `$hints`, it is returned
-     * 3. If `$greedy` is `true`, prefixes returned by
-     *    {@see AbstractSyncEntity::getRemovablePrefixes()} are removed
+     * 2. If `$fromData` is `false` or the result matches a `$declaredName`, it
+     *    is returned
+     * 3. Otherwise, prefixes returned by {@see getRemovablePrefixes()} are
+     *    removed
      */
     final public static function normaliseProperty(
         string $name,
-        bool $greedy = true,
-        string ...$hints
+        bool $fromData = true,
+        string ...$declaredName
     ): string {
-        $regex = self::$RemovablePrefixRegex[static::class] ??=
-            self::getRemovablePrefixRegex();
-
-        if ($regex === false) {
-            return self::$NormalisedPropertyMap[static::class][$name] ??=
-                Str::snake($name);
-        }
-
-        if ($greedy && !$hints) {
-            return self::$NormalisedPropertyMap[static::class][$name] ??=
-                Regex::replace($regex, '', Str::snake($name));
+        if (isset(self::$NormalisedPropertyMap[static::class][$name])) {
+            return self::$NormalisedPropertyMap[static::class][$name];
         }
 
         $_name = Str::snake($name);
-        if (!$greedy || in_array($_name, $hints)) {
-            return $_name;
+
+        if (
+            $fromData
+            && (!$declaredName || !in_array($_name, $declaredName))
+            && ($regex = self::$RemovablePrefixRegex[static::class] ??=
+                self::getRemovablePrefixRegex()) !== false
+        ) {
+            $_name = Regex::replace($regex, '', $_name);
         }
 
-        return Regex::replace($regex, '', $_name);
+        return self::$NormalisedPropertyMap[static::class][$name] = $_name;
     }
 
     /**

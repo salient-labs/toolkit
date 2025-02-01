@@ -17,13 +17,13 @@ interface MethodNotImplementedExceptionInterface extends Throwable
     public function getClass(): string;
 
     /**
-     * Get the name of the method that has not been implemented
+     * Get the name of the method that is not implemented
      */
     public function getMethod(): string;
 
     /**
-     * Get the name of the class or interface from which the unimplemented
-     * method is inherited
+     * Get the name of the class or interface where the unimplemented method is
+     * defined
      *
      * @return class-string
      */

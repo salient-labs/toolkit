@@ -6,7 +6,6 @@ use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\AbstractBuilder;
-use Salient\Core\Introspector;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
@@ -32,14 +31,17 @@ class GenerateBuilder extends AbstractGenerateCommand
     private const SKIP = [
         // These are displaced by AbstractBuilder
         'apply',
+        'applyForEach',
+        'applyIf',
         'build',
+        'create',
         'getB',
         'getContainer',
         'getService',
         'getTerminators',
         'go',
-        'if',
         'issetB',
+        'requireContainer',
         'resolve',
         'unsetB',
         'withRefB',
@@ -48,7 +50,6 @@ class GenerateBuilder extends AbstractGenerateCommand
 
     private string $ClassFqcn = '';
     private ?string $BuilderFqcn = null;
-    private bool $IncludeProperties = false;
     private bool $IgnoreProperties = false;
     /** @var string[]|null */
     private ?array $Forward = null;
@@ -60,10 +61,10 @@ class GenerateBuilder extends AbstractGenerateCommand
     // --
 
     /**
-     * camelCase name => parameter received by reference, or
-     * parameter/property/method with a generic template type
+     * camelCase name => parameter received by reference, or parameter/method
+     * with a generic template type
      *
-     * @var array<string,ReflectionParameter|ReflectionProperty|ReflectionMethod>
+     * @var array<string,ReflectionParameter|ReflectionMethod>
      */
     private array $ToDeclare = [];
 
@@ -89,20 +90,14 @@ class GenerateBuilder extends AbstractGenerateCommand
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->bindTo($this->BuilderFqcn),
             CliOption::build()
-                ->long('properties')
-                ->short('r')
-                ->description('Include writable properties of <class> in the builder')
-                ->bindTo($this->IncludeProperties),
-            CliOption::build()
                 ->long('no-properties')
                 ->short('i')
                 ->description(<<<EOF
 Ignore properties of <class> when checking for PHP DocBlocks
 
 By default, if a property with the same name as a constructor parameter has a
-DocBlock, its description is used in the absence of a parameter description,
-even if `-r/--properties` is not given. Use this option to disable this
-behaviour.
+DocBlock, its description is used in the absence of a parameter description. Use
+this option to disable this behaviour.
 EOF)
                 ->bindTo($this->IgnoreProperties),
             CliOption::build()
@@ -134,7 +129,9 @@ EOF)
             CliOption::build()
                 ->long('skip')
                 ->short('k')
-                ->description('Exclude a property or method from the builder')
+                ->description(<<<EOF
+Exclude a constructor parameter or method from the builder
+EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->Skip),
@@ -181,17 +178,6 @@ EOF)
             $classClass,
         );
 
-        if ($this->IncludeProperties) {
-            $introspector = Introspector::get($this->InputClassName);
-            $writable = $introspector->getWritableProperties();
-            $writable = Arr::combine(
-                array_map([Str::class, 'camel'], $writable),
-                $writable,
-            );
-        } else {
-            $writable = [];
-        }
-
         /**
          * camelCase name => constructor parameter
          *
@@ -226,7 +212,6 @@ EOF)
         if ($_constructor = $this->InputClass->getConstructor()) {
             foreach ($_constructor->getParameters() as $_param) {
                 $name = Str::camel($_param->getName());
-                unset($writable[$name]);
                 $_params[$name] = $_param;
                 // Variables can't be passed to __call by reference, so this
                 // parameter needs to be received via a declared method
@@ -267,111 +252,11 @@ EOF)
             }
         }
 
-        /**
-         * camelCase name => writable property with no constructor parameter
-         *
-         * @var ReflectionProperty[]
-         */
-        $_props = array_intersect_key($_properties, $writable);
-
         $_phpDoc = $_constructor ? PHPDoc::forMethod($_constructor) : new PHPDoc();
 
-        $names = array_keys($_params + $_props);
+        $names = array_keys($_params);
         foreach ($names as $name) {
             if (in_array($name, $this->Skip)) {
-                continue;
-            }
-
-            if ($_property = $_props[$name] ?? null) {
-                $phpDoc = PHPDoc::forProperty($_property);
-                $propertyFile = Str::coalesce($_property->getDeclaringClass()->getFileName(), null);
-                $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
-
-                $internal = $phpDoc->hasTag('internal');
-                $link = !$internal && $phpDoc->hasDetail();
-
-                $vars = $phpDoc->getVars();
-                $tag = $vars[0] ?? $vars[$_property->getName()] ?? null;
-                $_type = $tag ? $tag->getType() : null;
-
-                if ($_type !== null) {
-                    /** @var PHPDoc $phpDoc */
-                    $templates = [];
-                    $type = $this->getPHPDocTypeAlias(
-                        $tag,
-                        // Property-specific templates are invalid
-                        $phpDoc->getClassTemplates(),
-                        $propertyNamespace,
-                        $propertyFile,
-                        $templates
-                    );
-                    if ($templates && !in_array($name, $this->NoDeclare)) {
-                        $declareTemplates[$name] = $templates;
-                        $this->ToDeclare[$name] ??= $_property;
-                    }
-                } else {
-                    $type = $_property->hasType()
-                        ? PHPDocUtil::getTypeDeclaration(
-                            $_property->getType(),
-                            $classPrefix,
-                            fn(string $type): ?string =>
-                                $this->getTypeAlias($type, $propertyFile, false)
-                        )
-                        : '';
-                }
-
-                $default = '';
-                $defaultText = null;
-                switch (Regex::replace('/^(\?|null\|)|\|null$/', '', $type)) {
-                    case '\static':
-                    case 'static':
-                    case '$this':
-                        $type = $service;
-                        break;
-                    case '\self':
-                    case 'self':
-                        $type = $this->getTypeAlias(
-                            $_property->getDeclaringClass()->getName()
-                        );
-                        break;
-                    case 'bool':
-                        $default = ' = true';
-                        if (array_key_exists($name, $defaultPropertyValues)) {
-                            $defaultValue = $defaultPropertyValues[$name];
-                            if ($defaultValue !== null) {
-                                $defaultText = sprintf(
-                                    'default: %s',
-                                    var_export($defaultValue, true)
-                                );
-                            }
-                        }
-                        break;
-                }
-                $summary = $phpDoc->getSummary();
-                if ($summary === null && ($_param = $_params[$name] ?? null) !== null) {
-                    $_name = $_param->getName();
-                    if (
-                        ($tag = $_phpDoc->getParams()[$_name] ?? null)
-                        && ($summary = $tag->getDescription()) !== null
-                    ) {
-                        $summary = Str::collapse($summary);
-                    }
-                }
-
-                $type = $type !== '' ? "$type " : '';
-                $methods[] = " * @method \$this $name($type\$value$default)"
-                    . $this->getSummary(
-                        $summary,  // Taken from property PHPDoc if set, otherwise constructor PHPDoc if set, otherwise `null`
-                        $_property,
-                        fn(string $type): ?string =>
-                            $this->getTypeAlias($type, $propertyFile, false),
-                        null,
-                        null,
-                        $defaultText,
-                        false,
-                        $link,
-                    );
-
                 continue;
             }
 
@@ -866,7 +751,7 @@ EOF)
                 $code[] = $returnDocBlocks[$name];
             }
 
-            if ($_param instanceof ReflectionParameter && $_param->isPassedByReference()) {
+            if ($_param->isPassedByReference()) {
                 $code[] = 'return $this->withRefB(__FUNCTION__, $variable);';
                 $param = '&$variable';
             } else {

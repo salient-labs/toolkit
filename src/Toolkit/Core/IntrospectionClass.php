@@ -4,12 +4,12 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Relatable;
 use Salient\Contract\Core\Entity\Temporal;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Entity\Writable;
-use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\NormaliserFlag;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
@@ -194,8 +194,6 @@ class IntrospectionClass
     /**
      * Parameters with a declared type that implements DateTimeInterface
      * (normalised name => declared name)
-     *
-     * Empty if the class does not implement {@see Temporal}.
      *
      * @var array<string,string>
      */
@@ -521,7 +519,7 @@ class IntrospectionClass
                 if ($param->isPassedByReference()) {
                     $this->PassByRefParameters[$normalised] = $name;
                 }
-                if ($this->HasDates && $type !== null && is_a($type, DateTimeInterface::class, true)) {
+                if ($type !== null && is_a($type, DateTimeInterface::class, true)) {
                     $this->DateParameters[$normalised] = $name;
                 }
                 $this->Parameters[$normalised] = $name;
@@ -631,30 +629,32 @@ class IntrospectionClass
         if ($this->HasDates) {
             /** @var class-string<Temporal> $className */
             $dates = $className::getDateProperties();
+        } else {
+            $dates = [];
+        }
 
-            $nativeDates = [];
-            foreach ($properties as $property) {
-                if (!$property->hasType()) {
-                    continue;
-                }
-                foreach (Reflect::getTypeNames($property->getType()) as $type) {
-                    if (is_a($type, DateTimeInterface::class, true)) {
-                        $nativeDates[] = $property->getName();
-                        continue 2;
-                    }
+        $nativeDates = [];
+        foreach ($properties as $property) {
+            if (!$property->hasType()) {
+                continue;
+            }
+            foreach (Reflect::getTypeNames($property->getType()) as $type) {
+                if (is_a($type, DateTimeInterface::class, true)) {
+                    $nativeDates[] = $property->getName();
+                    continue 2;
                 }
             }
-
-            $this->DateKeys =
-                ['*'] === $dates
-                    ? ($nativeDates
-                        ? $this->maybeNormalise($nativeDates, NormaliserFlag::LAZY)
-                        : $this->NormalisedKeys)
-                    : array_intersect(
-                        $this->NormalisedKeys,
-                        $this->maybeNormalise(array_merge($dates, $nativeDates), NormaliserFlag::LAZY),
-                    );
         }
+
+        $this->DateKeys =
+            ['*'] === $dates
+                ? ($nativeDates
+                    ? $this->maybeNormalise($nativeDates, NormaliserFlag::LAZY)
+                    : $this->NormalisedKeys)
+                : array_intersect(
+                    $this->NormalisedKeys,
+                    $this->maybeNormalise(array_merge($dates, $nativeDates), NormaliserFlag::LAZY),
+                );
     }
 
     /**

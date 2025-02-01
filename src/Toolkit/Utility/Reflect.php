@@ -40,10 +40,15 @@ final class Reflect extends AbstractUtility
      * @param array<ReflectionAttribute<*>|ReflectionClass<*>|ReflectionClassConstant|ReflectionConstant|ReflectionExtension|ReflectionFunctionAbstract|ReflectionNamedType|ReflectionParameter|ReflectionProperty|ReflectionZendExtension> $reflectors
      * @return string[]
      */
-    public static function getNames(array $reflectors): array
+    public static function getNames(array $reflectors, bool $preserveKeys = true): array
     {
-        foreach ($reflectors as $reflector) {
-            $names[] = $reflector->getName();
+        foreach ($reflectors as $key => $reflector) {
+            $name = $reflector->getName();
+            if ($preserveKeys) {
+                $names[$key] = $name;
+            } else {
+                $names[] = $name;
+            }
         }
         return $names ?? [];
     }
@@ -214,14 +219,14 @@ final class Reflect extends AbstractUtility
      * callable
      *
      * @param ReflectionFunctionAbstract|callable $function
-     * @return ($skipBuiltins is true ? array<class-string[]|class-string> : array<string[]|string>)
+     * @return ($discardBuiltins is true ? array<class-string[]|class-string> : array<class-string[]|string>)
      * @throws InvalidArgumentException if `$function` has no parameter at the
      * given position.
      */
     public static function getAcceptedTypes(
         $function,
-        bool $skipBuiltins = false,
-        int $param = 0
+        bool $discardBuiltins = false,
+        int $position = 0
     ): array {
         if (!$function instanceof ReflectionFunctionAbstract) {
             if (!$function instanceof Closure) {
@@ -231,18 +236,19 @@ final class Reflect extends AbstractUtility
         }
 
         $params = $function->getParameters();
-        if (!isset($params[$param])) {
+        if (!isset($params[$position])) {
             throw new InvalidArgumentException(sprintf(
-                '$function has no parameter at position %d',
-                $param,
+                '%s has no parameter at position %d',
+                $function->name,
+                $position,
             ));
         }
 
-        $types = self::normaliseType($params[$param]->getType());
+        $types = self::normaliseType($params[$position]->getType());
         foreach ($types as $type) {
             $intersection = [];
             foreach (Arr::wrap($type) as $type) {
-                if ($skipBuiltins && $type->isBuiltin()) {
+                if ($discardBuiltins && $type->isBuiltin()) {
                     continue 2;
                 }
                 $intersection[] = $type->getName();
@@ -250,7 +256,7 @@ final class Reflect extends AbstractUtility
             $union[] = Arr::unwrap($intersection);
         }
 
-        /** @var array<class-string[]|class-string>|array<string[]|string> */
+        /** @var array<class-string[]|class-string>|array<class-string[]|string> */
         return $union ?? [];
     }
 
