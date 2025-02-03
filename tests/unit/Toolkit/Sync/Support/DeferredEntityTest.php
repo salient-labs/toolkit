@@ -60,7 +60,7 @@ final class DeferredEntityTest extends SyncTestCase
 
         /** @var JsonPlaceholderApi $provider */
         $data = $provider->getCurler('/posts/1')->get();
-        $post = Post::provide($data, $provider, $context);
+        $post = Post::provide($data, $context);
         $this->assertInstanceOf(User::class, $post->User);
 
         $userName = $post->User->Name;
@@ -77,7 +77,7 @@ final class DeferredEntityTest extends SyncTestCase
 
         /** @var JsonPlaceholderApi $provider */
         $data = $provider->getCurler('/posts/1')->get();
-        $post = Post::provide($data, $provider, $context);
+        $post = Post::provide($data, $context);
         $this->assertInstanceOf(DeferredEntity::class, $post->User);
 
         $userName = $post->User->Name;

@@ -2,15 +2,11 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\ListConformity;
-use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Core\Introspector;
-use Salient\Iterator\IterableIterator;
-use Generator;
 use LogicException;
 
 /**
@@ -29,6 +25,11 @@ trait ProvidableTrait
     private $Context;
     /** @var class-string|null */
     private $Service;
+
+    /**
+     * @inheritDoc
+     */
+    public function postLoad(): void {}
 
     /**
      * @param TProvider $provider
@@ -88,32 +89,19 @@ trait ProvidableTrait
     }
 
     /**
-     * Create an instance of the class from an array on behalf of a provider
-     *
-     * The constructor (if any) is invoked with values from `$data`. If `$data`
-     * values remain, they are assigned to writable properties. If further
-     * values remain and the class implements {@see Extensible}, they are
-     * assigned to dynamic properties.
-     *
-     * `$data` keys, constructor parameters and writable properties are
-     * normalised for comparison.
-     *
      * @param mixed[] $data
-     * @param TProvider $provider
-     * @param TContext|null $context
+     * @param TContext $context
      * @return static
      */
     final public static function provide(
         array $data,
-        ProviderInterface $provider,
-        ?ProviderContextInterface $context = null
+        ProviderContextInterface $context
     ) {
+        $provider = $context->getProvider();
         $container = $context
-            ? $context->getContainer()
-            : $provider->getContainer();
-        $container = $container->inContextOf(get_class($provider));
-
-        $context = ($context ?? $provider->getContext())->withContainer($container);
+            ->getContainer()
+            ->inContextOf(get_class($provider));
+        $context = $context->withContainer($container);
 
         $closure = Introspector::getService($container, static::class)
             ->getCreateProvidableFromClosure();
@@ -122,54 +110,43 @@ trait ProvidableTrait
     }
 
     /**
-     * Create instances of the class from arrays on behalf of a provider
+     * @template TKey of array-key
      *
-     * See {@see ProvidableTrait::provide()} for more information.
-     *
-     * @param iterable<array-key,mixed[]> $list
-     * @param TProvider $provider
+     * @param iterable<TKey,mixed[]> $data
+     * @param TContext $context
      * @param ListConformity::* $conformity
-     * @param TContext|null $context
-     * @return FluentIteratorInterface<array-key,static>
+     * @return iterable<TKey,static>
      */
     final public static function provideMultiple(
-        iterable $list,
-        ProviderInterface $provider,
-        int $conformity = ListConformity::NONE,
-        ?ProviderContextInterface $context = null
-    ): FluentIteratorInterface {
-        return IterableIterator::from(
-            self::_provideMultiple($list, $provider, $conformity, $context)
-        );
+        iterable $data,
+        ProviderContextInterface $context,
+        int $conformity = ListConformity::NONE
+    ): iterable {
+        return self::_provideMultiple($data, $context, $conformity);
     }
 
     /**
-     * @param iterable<array-key,mixed[]> $list
-     * @param TProvider $provider
+     * @template TKey of array-key
+     *
+     * @param iterable<TKey,mixed[]> $data
+     * @param TContext $context
      * @param ListConformity::* $conformity
-     * @param TContext|null $context
-     * @return Generator<array-key,static>
+     * @return iterable<TKey,static>
      */
     private static function _provideMultiple(
-        iterable $list,
-        ProviderInterface $provider,
-        $conformity,
-        ?ProviderContextInterface $context
-    ): Generator {
+        iterable $data,
+        ProviderContextInterface $context,
+        int $conformity = ListConformity::NONE
+    ): iterable {
+        $provider = $context->getProvider();
         $container = $context
-            ? $context->getContainer()
-            : $provider->getContainer();
-        $container = $container->inContextOf(get_class($provider));
-
-        $conformity = $context
-            ? max($context->getConformity(), $conformity)
-            : $conformity;
-
-        $context = ($context ?? $provider->getContext())->withContainer($container);
-
+            ->getContainer()
+            ->inContextOf(get_class($provider));
+        $context = $context->withContainer($container);
+        $conformity = max($context->getConformity(), $conformity);
         $introspector = Introspector::getService($container, static::class);
 
-        foreach ($list as $key => $data) {
+        foreach ($data as $key => $data) {
             if (!isset($closure)) {
                 $closure = $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
                     ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))

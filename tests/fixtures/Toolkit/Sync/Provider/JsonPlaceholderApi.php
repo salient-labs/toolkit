@@ -175,7 +175,6 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
             fn(): Task =>
                 Task::provide(
                     $this->getCurler(sprintf('/todos/%s', rawurlencode($id)))->get(),
-                    $this,
                     $ctx,
                 )
         );

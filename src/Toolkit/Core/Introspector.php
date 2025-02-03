@@ -14,6 +14,7 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\HasName;
 use Salient\Contract\Core\NormaliserFlag;
 use Salient\Contract\Core\SerializeRulesInterface;
+use Salient\Core\Exception\InvalidDataException;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Closure;
@@ -453,7 +454,7 @@ class Introspector
                 $keys,
             );
             if ($missing) {
-                throw new LogicException(sprintf(
+                throw new InvalidDataException(sprintf(
                     'Cannot call %s::__construct() without: %s',
                     $this->_Class->Class,
                     implode(', ', $missing),
@@ -471,7 +472,7 @@ class Introspector
                 array_flip($this->_Class->getWritableProperties()),
             );
             if ($readonly) {
-                throw new LogicException(sprintf(
+                throw new InvalidDataException(sprintf(
                     'Cannot set unwritable properties of %s: %s',
                     $this->_Class->Class,
                     implode(', ', $readonly),
@@ -532,7 +533,7 @@ class Introspector
                     continue;
                 }
                 if ($strict) {
-                    throw new LogicException(sprintf(
+                    throw new InvalidDataException(sprintf(
                         'Cannot set unwritable property: %s::$%s',
                         $this->_Class->Class,
                         $property,
@@ -547,7 +548,7 @@ class Introspector
             }
 
             if ($strict) {
-                throw new LogicException(sprintf(
+                throw new InvalidDataException(sprintf(
                     'Cannot apply %s to %s',
                     $key,
                     $this->_Class->Class,
@@ -645,7 +646,7 @@ class Introspector
                         continue;
                     }
                     if ($notNullableKeys[$key] ?? false) {
-                        throw new LogicException(sprintf(
+                        throw new InvalidDataException(sprintf(
                             "Argument #%d is not nullable, cannot apply value at key '%s': %s::__construct()",
                             $index + 1,
                             $key,

@@ -601,20 +601,20 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
 
-                $entities =
-                    $relationship::provideMultiple(
-                        $data[$key],
-                        $provider,
-                        $context->getConformity(),
-                        $context->pushEntity($entity),
-                    )->toArray();
+                /** @var list<mixed[]> */
+                $listData = $data[$key];
+                $entities = $relationship::provideMultiple(
+                    $listData,
+                    $context->pushEntity($entity),
+                    $context->getConformity(),
+                );
 
                 if (!$isChildren) {
-                    $entity->{$property} = $entities;
+                    $entity->{$property} = Get::array($entities);
                     return;
                 }
 
-                /** @var array<SyncEntityInterface&Treeable> $entities */
+                /** @var iterable<SyncEntityInterface&Treeable> $entities */
                 foreach ($entities as $child) {
                     /** @var SyncEntityInterface&Treeable $entity */
                     $entity->addChild($child);
@@ -653,7 +653,6 @@ final class SyncIntrospector extends Introspector
             $related =
                 $relationship::provide(
                     $data[$key],
-                    $provider,
                     $context->pushEntity($entity),
                 );
 

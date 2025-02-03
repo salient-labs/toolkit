@@ -145,7 +145,6 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      *                         'from' => $start,
      *                         'to' => $end,
      *                     ]),
-     *                     $this,
      *                     $ctx,
      *                 )
      *         );

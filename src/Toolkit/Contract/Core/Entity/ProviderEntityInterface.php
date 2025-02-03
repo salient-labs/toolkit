@@ -6,7 +6,7 @@ use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 
 /**
- * A generic entity serviced by a provider
+ * @api
  *
  * @template TProvider of ProviderInterface
  * @template TContext of ProviderContextInterface
