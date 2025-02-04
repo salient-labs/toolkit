@@ -24,14 +24,14 @@ interface Extensible
     public static function getDynamicPropertyNamesProperty(): string;
 
     /**
-     * Get the object's dynamic properties
+     * Get dynamic properties
      *
      * @return array<string,mixed> An array that maps property names to values.
      */
     public function getDynamicProperties(): array;
 
     /**
-     * Set the object's dynamic properties
+     * Set dynamic properties
      *
      * @param array<string,mixed> $values An array that maps property names to
      * values.
