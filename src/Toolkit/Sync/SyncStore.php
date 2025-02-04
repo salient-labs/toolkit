@@ -2,8 +2,8 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Core\Exception\MethodNotImplementedException;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\DeferredEntityInterface;

@@ -2,12 +2,12 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipeInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
-use Salient\Contract\Core\ListConformity;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\App;

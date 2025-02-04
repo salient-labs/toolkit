@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\Core;
 
+use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperInterface;
-use Salient\Contract\Core\ListConformity;
 use Salient\Core\Pipeline;
 use Salient\Tests\TestCase;
 use Closure;

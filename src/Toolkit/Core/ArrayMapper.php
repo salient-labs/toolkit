@@ -2,8 +2,8 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\ArrayMapperInterface;
-use Salient\Contract\Core\ListConformity;
+use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Utility\Arr;
 use InvalidArgumentException;
 use ValueError;

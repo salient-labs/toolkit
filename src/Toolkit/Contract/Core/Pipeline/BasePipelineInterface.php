@@ -2,7 +2,6 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
-use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Immutable;
 use Closure;

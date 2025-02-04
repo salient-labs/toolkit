@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
+use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Core\Exception\MultipleErrorException;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;

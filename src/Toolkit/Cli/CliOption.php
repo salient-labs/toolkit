@@ -4,6 +4,7 @@ namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
@@ -13,7 +14,6 @@ use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Core\JsonSchemaInterface;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Facade\Console;

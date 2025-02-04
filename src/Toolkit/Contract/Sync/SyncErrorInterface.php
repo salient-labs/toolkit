@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Core\Comparable;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Core\MessageLevel as Level;
 
 interface SyncErrorInterface extends Comparable, Immutable
 {

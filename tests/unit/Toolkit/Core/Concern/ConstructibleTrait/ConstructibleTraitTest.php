@@ -3,6 +3,7 @@
 namespace Salient\Tests\Core\Concern\ConstructibleTrait;
 
 use Salient\Container\Container;
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Constructible;
 use Salient\Contract\Core\Entity\Extensible;
@@ -10,7 +11,6 @@ use Salient\Contract\Core\Entity\Normalisable;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Entity\Writable;
-use Salient\Contract\Core\ListConformity;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
 use Salient\Core\Concern\HasNormaliser;

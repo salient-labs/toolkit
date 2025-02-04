@@ -3,10 +3,10 @@
 namespace Salient\Core\Concern;
 
 use Salient\Container\RequiresContainer;
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Constructible;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Contract\Core\ListConformity;
 use Salient\Core\Introspector;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Generator;

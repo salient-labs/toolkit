@@ -2,7 +2,7 @@
 <?php declare(strict_types=1);
 
 use Salient\Cli\CliApplication;
-use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;

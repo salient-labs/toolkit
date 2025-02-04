@@ -3,6 +3,9 @@
 namespace Salient\Sync;
 
 use Salient\Container\RequiresContainer;
+use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Catalog\TextComparisonAlgorithm as Algorithm;
+use Salient\Contract\Catalog\TextComparisonFlag as Flag;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Writable;
@@ -10,10 +13,7 @@ use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Flushable;
 use Salient\Contract\Core\HasDescription;
-use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\TextComparisonAlgorithm as Algorithm;
-use Salient\Contract\Core\TextComparisonFlag as Flag;
 use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\DeferredRelationshipInterface;
 use Salient\Contract\Sync\EntityState;

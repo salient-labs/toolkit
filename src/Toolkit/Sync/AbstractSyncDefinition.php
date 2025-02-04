@@ -2,11 +2,11 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Entity\Readable;
+use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Chainable;
-use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;

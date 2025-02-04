@@ -4,9 +4,9 @@ namespace Salient\Sync\Support;
 
 use Salient\Collection\Collection;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleWriterInterface;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;

@@ -5,9 +5,9 @@ namespace Salient\Console;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleWriterInterface;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Utility\Format;
 use Throwable;
 

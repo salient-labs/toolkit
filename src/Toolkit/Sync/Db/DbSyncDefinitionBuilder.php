@@ -2,9 +2,9 @@
 
 namespace Salient\Sync\Db;
 
+use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperInterface;
-use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;

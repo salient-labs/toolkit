@@ -2,9 +2,9 @@
 
 namespace Salient\Sync\Http;
 
+use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperInterface;
-use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;

@@ -2,10 +2,10 @@
 
 namespace Salient\Core\Concern;
 
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
-use Salient\Contract\Core\ListConformity;
 use Salient\Core\Introspector;
 use LogicException;
 

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Core\FileDescriptor;
+use Salient\Contract\Catalog\FileDescriptor;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Process;

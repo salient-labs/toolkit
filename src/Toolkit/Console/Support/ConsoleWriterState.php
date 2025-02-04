@@ -3,10 +3,10 @@
 namespace Salient\Console\Support;
 
 use Psr\Log\LoggerInterface;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
 use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
-use Salient\Contract\Core\MessageLevel as Level;
 
 /**
  * ConsoleWriter state information

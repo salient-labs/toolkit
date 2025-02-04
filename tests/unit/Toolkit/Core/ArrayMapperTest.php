@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Core\ListConformity;
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Core\ArrayMapper;
 use Salient\Tests\TestCase;
 use InvalidArgumentException;

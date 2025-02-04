@@ -2,8 +2,8 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Core\Buildable;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorInterface;

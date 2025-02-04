@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Container;
 
-use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Contract\Sync\SyncStoreInterface;

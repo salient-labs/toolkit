@@ -2,8 +2,8 @@
 
 namespace Salient\Sli\Internal\Data;
 
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleWriterInterface;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Reflect;
 use JsonSerializable;

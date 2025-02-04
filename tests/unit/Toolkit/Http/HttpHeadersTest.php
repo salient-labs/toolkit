@@ -3,8 +3,8 @@
 namespace Salient\Tests\Http;
 
 use Salient\Collection\Collection;
+use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Collection\CollectionInterface;
-use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Http\Exception\InvalidHeaderException;

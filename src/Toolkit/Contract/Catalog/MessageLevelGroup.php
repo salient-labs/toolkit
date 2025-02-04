@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Catalog;
 
-use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Catalog\MessageLevel as Level;
 
 /**
  * Groups of message levels

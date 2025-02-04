@@ -4,7 +4,7 @@ namespace Salient\Tests\Console;
 
 use Salient\Console\Support\ConsoleWriterState;
 use Salient\Console\ConsoleWriter;
-use Salient\Contract\Core\MessageLevel;
+use Salient\Contract\Catalog\MessageLevel;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;

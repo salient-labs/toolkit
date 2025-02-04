@@ -2,8 +2,8 @@
 
 namespace Salient\Sync\Support;
 
+use Salient\Contract\Catalog\TextComparisonAlgorithm;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\TextComparisonAlgorithm;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Sync\DeferralPolicy;
 use Salient\Contract\Sync\HydrationPolicy;

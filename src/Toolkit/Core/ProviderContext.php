@@ -2,13 +2,13 @@
 
 namespace Salient\Core;
 
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\HasId;
-use Salient\Contract\Core\ListConformity;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
