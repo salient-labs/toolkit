@@ -3,7 +3,7 @@
 namespace Salient\Contract\Core\Entity;
 
 use Salient\Contract\Container\ServiceAwareInterface;
-use Salient\Contract\Core\Exception\InvalidDataExceptionInterface;
+use Salient\Contract\Core\Exception\InvalidDataException;
 use Salient\Contract\Core\Provider\ProviderAwareInterface;
 use Salient\Contract\Core\Provider\ProviderContextAwareInterface;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
@@ -32,8 +32,8 @@ interface Providable extends
      * @param mixed[] $data
      * @param TContext $context
      * @return static
-     * @throws InvalidDataExceptionInterface if values in `$data` do not satisfy
-     * the constructor or cannot be applied to the class.
+     * @throws InvalidDataException if values in `$data` do not satisfy the
+     * constructor or cannot be applied to the class.
      */
     public static function provide(
         array $data,
@@ -51,8 +51,8 @@ interface Providable extends
      * @param TContext $context
      * @param ListConformity::* $conformity
      * @return iterable<TKey,static>
-     * @throws InvalidDataExceptionInterface if values in `$data` arrays do not
-     * satisfy the constructor or cannot be applied to the class.
+     * @throws InvalidDataException if values in `$data` arrays do not satisfy
+     * the constructor or cannot be applied to the class.
      */
     public static function provideMultiple(
         iterable $data,

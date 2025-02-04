@@ -3,7 +3,7 @@
 namespace Salient\Contract\Core\Entity;
 
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\Exception\InvalidDataExceptionInterface;
+use Salient\Contract\Core\Exception\InvalidDataException;
 use Salient\Contract\Core\ListConformity;
 
 /**
@@ -36,8 +36,8 @@ interface Constructible
      * @param mixed[] $data
      * @param static|null $parent
      * @return static
-     * @throws InvalidDataExceptionInterface if values in `$data` do not satisfy
-     * the constructor or cannot be applied to the class.
+     * @throws InvalidDataException if values in `$data` do not satisfy the
+     * constructor or cannot be applied to the class.
      */
     public static function construct(
         array $data,
@@ -56,8 +56,8 @@ interface Constructible
      * @param ListConformity::* $conformity
      * @param static|null $parent
      * @return iterable<TKey,static>
-     * @throws InvalidDataExceptionInterface if values in `$data` arrays do not
-     * satisfy the constructor or cannot be applied to the class.
+     * @throws InvalidDataException if values in `$data` arrays do not satisfy
+     * the constructor or cannot be applied to the class.
      */
     public static function constructMultiple(
         iterable $data,

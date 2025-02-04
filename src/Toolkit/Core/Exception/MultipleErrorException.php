@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Contract\Core\Exception\MultipleErrorExceptionInterface;
+use Salient\Contract\Core\Exception\MultipleErrorException as MultipleErrorExceptionInterface;
 
 /**
  * @api

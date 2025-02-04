@@ -8,7 +8,7 @@ use Throwable;
 /**
  * @api
  */
-interface ExceptionInterface extends Throwable
+interface Exception extends Throwable
 {
     /**
      * Get exit status to return if the exception is not caught

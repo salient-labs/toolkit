@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Contract\Core\Exception\ExceptionInterface;
+use Salient\Contract\Core\Exception\Exception as ExceptionInterface;
 use RuntimeException;
 
 /**

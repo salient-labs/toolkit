@@ -4,7 +4,7 @@ namespace Salient\Core\Exception;
 
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleWriterInterface;
-use Salient\Contract\Core\Exception\MultipleErrorExceptionInterface;
+use Salient\Contract\Core\Exception\MultipleErrorException;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Utility\Arr;
 use Salient\Utility\Format;
@@ -12,7 +12,7 @@ use Salient\Utility\Format;
 /**
  * @api
  *
- * @phpstan-require-implements MultipleErrorExceptionInterface
+ * @phpstan-require-implements MultipleErrorException
  */
 trait MultipleErrorExceptionTrait
 {

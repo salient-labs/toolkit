@@ -14,8 +14,8 @@ use Salient\Contract\Console\ConsoleTargetPrefixInterface as TargetPrefix;
 use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
 use Salient\Contract\Console\ConsoleWriterInterface;
-use Salient\Contract\Core\Exception\ExceptionInterface;
-use Salient\Contract\Core\Exception\MultipleErrorExceptionInterface;
+use Salient\Contract\Core\Exception\Exception;
+use Salient\Contract\Core\Exception\MultipleErrorException;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
 use Salient\Contract\Core\MessageLevel as Level;
@@ -798,7 +798,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             }
 
             if (
-                $ex instanceof MultipleErrorExceptionInterface
+                $ex instanceof MultipleErrorException
                 && !$ex->hasUnreportedErrors()
             ) {
                 $message = $this->escape($ex->getMessageOnly());
@@ -832,7 +832,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             'Stack trace:',
             "\n" . $exception->getTraceAsString()
         );
-        if ($exception instanceof ExceptionInterface) {
+        if ($exception instanceof Exception) {
             foreach ($exception->getMetadata() as $key => $value) {
                 $value = rtrim((string) $value, "\n");
                 $this->write($traceLevel, "{$key}:", "\n{$value}");

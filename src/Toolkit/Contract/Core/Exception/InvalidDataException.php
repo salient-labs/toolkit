@@ -7,4 +7,4 @@ use Throwable;
 /**
  * @api
  */
-interface InvalidDataExceptionInterface extends Throwable {}
+interface InvalidDataException extends Throwable {}

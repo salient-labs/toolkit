@@ -7,7 +7,7 @@ use Salient\Contract\Console\ConsoleWriterInterface;
 /**
  * @api
  */
-interface MultipleErrorExceptionInterface extends ExceptionInterface
+interface MultipleErrorException extends Exception
 {
     /**
      * Get the exception's message without errors

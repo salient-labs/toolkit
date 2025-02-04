@@ -2,13 +2,13 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Contract\Core\Exception\ExceptionInterface;
+use Salient\Contract\Core\Exception\Exception;
 use Throwable;
 
 /**
  * @api
  *
- * @phpstan-require-implements ExceptionInterface
+ * @phpstan-require-implements Exception
  */
 trait ExceptionTrait
 {

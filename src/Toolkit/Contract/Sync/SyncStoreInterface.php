@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\Exception\MethodNotImplementedException;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Sync\Exception\HeartbeatCheckFailedExceptionInterface;
@@ -119,7 +119,7 @@ interface SyncStoreInterface extends Instantiable
      *
      * If the same provider is given multiple times, it is only checked once.
      *
-     * {@see MethodNotImplementedExceptionInterface} exceptions thrown by
+     * {@see MethodNotImplementedException} exceptions thrown by
      * {@see ProviderInterface::checkHeartbeat()} are caught and ignored.
      *
      * @return $this

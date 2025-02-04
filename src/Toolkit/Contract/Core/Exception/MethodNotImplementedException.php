@@ -7,7 +7,7 @@ use Throwable;
 /**
  * @api
  */
-interface MethodNotImplementedExceptionInterface extends Throwable
+interface MethodNotImplementedException extends Throwable
 {
     /**
      * Get the name of the class that has not implemented the method

@@ -2,7 +2,7 @@
 
 namespace Salient\Sync;
 
-use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\Exception\MethodNotImplementedException;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\DeferralPolicy;
@@ -1110,7 +1110,7 @@ SQL;
             try {
                 $provider->checkHeartbeat($ttl);
                 Console::log('Heartbeat OK:', $name);
-            } catch (MethodNotImplementedExceptionInterface $ex) {
+            } catch (MethodNotImplementedException $ex) {
                 Console::log('Heartbeat check not supported:', $name);
             } catch (UnreachableBackendExceptionInterface $ex) {
                 Console::exception($ex, Level::DEBUG, null);

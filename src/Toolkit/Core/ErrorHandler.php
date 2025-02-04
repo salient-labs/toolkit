@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\Exception\ExceptionInterface;
+use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\FacadeAwareInterface;
 use Salient\Contract\Core\FacadeInterface;
 use Salient\Contract\Core\Instantiable;
@@ -231,7 +231,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
 
         $this->IsShuttingDown = true;
         $this->IsShuttingDownOnUncaughtException = true;
-        if ($exception instanceof ExceptionInterface) {
+        if ($exception instanceof Exception) {
             $exitStatus = $exception->getExitStatus();
         }
         $this->ExitStatus = $exitStatus ??= self::DEFAULT_EXIT_STATUS;

@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Contract\Core\Exception\InvalidDataExceptionInterface;
+use Salient\Contract\Core\Exception\InvalidDataException as InvalidDataExceptionInterface;
 use LogicException;
 
 /**
