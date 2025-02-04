@@ -2,9 +2,9 @@
 
 namespace Salient\Http\Exception;
 
-use Salient\Core\AbstractException;
+use Salient\Core\Exception\Exception;
 
 /**
  * Base class for HTTP exceptions
  */
-abstract class AbstractHttpException extends AbstractException {}
+abstract class AbstractHttpException extends Exception {}

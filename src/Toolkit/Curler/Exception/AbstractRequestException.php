@@ -3,7 +3,7 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Core\AbstractException;
+use Salient\Core\Exception\Exception;
 use Salient\Http\HttpRequest;
 use Salient\Utility\Format;
 use Throwable;
@@ -11,7 +11,7 @@ use Throwable;
 /**
  * @api
  */
-abstract class AbstractRequestException extends AbstractException
+abstract class AbstractRequestException extends Exception
 {
     protected RequestInterface $Request;
     /** @var array<string,mixed> */

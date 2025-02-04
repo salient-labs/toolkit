@@ -2,9 +2,9 @@
 
 namespace Salient\Http\OAuth2;
 
-use Salient\Core\AbstractException;
+use Salient\Core\Exception\Exception;
 
 /**
  * Thrown when an OAuth 2.0 request fails
  */
-class OAuth2Exception extends AbstractException {}
+class OAuth2Exception extends Exception {}

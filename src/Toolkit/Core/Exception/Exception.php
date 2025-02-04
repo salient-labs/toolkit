@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core;
+namespace Salient\Core\Exception;
 
 use Salient\Contract\Core\Exception\ExceptionInterface;
-use Salient\Core\Concern\ExceptionTrait;
 use RuntimeException;
 
 /**
@@ -11,7 +10,7 @@ use RuntimeException;
  *
  * @api
  */
-abstract class AbstractException extends RuntimeException implements ExceptionInterface
+abstract class Exception extends RuntimeException implements ExceptionInterface
 {
     use ExceptionTrait;
 }

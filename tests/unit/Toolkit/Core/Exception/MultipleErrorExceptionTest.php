@@ -4,16 +4,16 @@ namespace Salient\Tests\Core;
 
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
+use Salient\Core\Exception\MultipleErrorException;
 use Salient\Core\Facade\Console;
-use Salient\Core\AbstractMultipleErrorException;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;
 
 /**
- * @covers \Salient\Core\AbstractMultipleErrorException
- * @covers \Salient\Core\Concern\MultipleErrorExceptionTrait
+ * @covers \Salient\Core\Exception\MultipleErrorException
+ * @covers \Salient\Core\Exception\MultipleErrorExceptionTrait
  */
-final class AbstractMultipleErrorExceptionTest extends TestCase
+final class MultipleErrorExceptionTest extends TestCase
 {
     private MockTarget $ConsoleTarget;
 
@@ -30,7 +30,7 @@ final class AbstractMultipleErrorExceptionTest extends TestCase
 
     public function testConstructor(): void
     {
-        $exception = new MyAbstractMultipleErrorException('ohno:');
+        $exception = new MyMultipleErrorException('ohno:');
         $this->assertSame('ohno', $exception->getMessage());
         $this->assertNull($exception->getPrevious());
         $this->assertNull($exception->getExitStatus());
@@ -38,13 +38,13 @@ final class AbstractMultipleErrorExceptionTest extends TestCase
         $this->assertSame([], $exception->getErrors());
         $this->assertFalse($exception->hasUnreportedErrors());
 
-        $exception = new MyAbstractMultipleErrorException('ohno:', 'error');
+        $exception = new MyMultipleErrorException('ohno:', 'error');
         $this->assertSame('ohno: error', $exception->getMessage());
         $this->assertSame('ohno', $exception->getMessageOnly());
         $this->assertSame(['error'], $exception->getErrors());
         $this->assertTrue($exception->hasUnreportedErrors());
 
-        $exception = new MyAbstractMultipleErrorException('ohno', 'error1', "error2\nerror2, line2");
+        $exception = new MyMultipleErrorException('ohno', 'error1', "error2\nerror2, line2");
         $this->assertSame("ohno:\n- error1\n- error2\n  error2, line2", $exception->getMessage());
         $this->assertSame('ohno', $exception->getMessageOnly());
         $this->assertSame(['error1', "error2\nerror2, line2"], $exception->getErrors());
@@ -58,4 +58,4 @@ final class AbstractMultipleErrorExceptionTest extends TestCase
     }
 }
 
-class MyAbstractMultipleErrorException extends AbstractMultipleErrorException {}
+class MyMultipleErrorException extends MultipleErrorException {}

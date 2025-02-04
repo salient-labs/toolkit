@@ -2,19 +2,19 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Core\AbstractException;
+use Salient\Core\Exception\Exception;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 
 /**
- * @covers \Salient\Core\AbstractException
- * @covers \Salient\Core\Concern\ExceptionTrait
+ * @covers \Salient\Core\Exception\Exception
+ * @covers \Salient\Core\Exception\ExceptionTrait
  */
-final class AbstractExceptionTest extends TestCase
+final class ExceptionTest extends TestCase
 {
     public function testConstructor(): void
     {
-        $exception = new MyAbstractException('Foo', null, 8);
+        $exception = new MyException('Foo', null, 8);
         $this->assertSame('Foo', $exception->getMessage());
         $this->assertNull($exception->getPrevious());
         $this->assertSame(8, $exception->getExitStatus());
@@ -27,14 +27,14 @@ baz:
 1
 EOF), (string) $exception);
 
-        $exception2 = new MyAbstractException('Bar', $exception, 4);
+        $exception2 = new MyException('Bar', $exception, 4);
         $this->assertSame(4, $exception2->getExitStatus());
         $this->assertSame('Bar', $exception2->getMessage());
         $this->assertSame($exception, $exception2->getPrevious());
     }
 }
 
-class MyAbstractException extends AbstractException
+class MyException extends Exception
 {
     public function getMetadata(): array
     {
