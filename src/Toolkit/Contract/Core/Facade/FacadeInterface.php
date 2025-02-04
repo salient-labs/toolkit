@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Core\Facade;
 
+use Salient\Contract\Core\Instantiable;
+use Salient\Contract\Core\Unloadable;
 use LogicException;
 
 /**

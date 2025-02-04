@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Core;
+namespace Salient\Contract\Core\Entity;
 
+use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Core\Immutable;
 use Closure;
 use DateTimeInterface;
 

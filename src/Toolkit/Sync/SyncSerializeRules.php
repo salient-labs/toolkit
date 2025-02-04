@@ -2,15 +2,15 @@
 
 namespace Salient\Sync;
 
+use Salient\Contract\Core\Entity\SerializeRulesInterface;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\SerializeRulesInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasMutator;
+use Salient\Sync\Support\SyncIntrospectionClass;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
@@ -419,7 +419,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         return Regex::replaceCallback(
             '/[^].[]++/',
             fn(array $matches): string =>
-                $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),
+                $this->Introspector->maybeNormalise($matches[0], SyncIntrospectionClass::LAZY),
             $target,
         );
     }
@@ -445,7 +445,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
                 $normalised[3] = $value;
                 continue;
             }
-            $normalised[2] = $this->Introspector->maybeNormalise($value, NormaliserFlag::LAZY);
+            $normalised[2] = $this->Introspector->maybeNormalise($value, SyncIntrospectionClass::LAZY);
         }
         return $normalised;
     }

@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Core\SerializeRulesInterface;
+use Salient\Contract\Core\Entity\SerializeRulesInterface;
 use Closure;
 
 /**

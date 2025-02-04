@@ -7,13 +7,12 @@ use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Normalisable;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\SerializeRulesInterface;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\HasName;
-use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\SerializeRulesInterface;
 use Salient\Core\Exception\InvalidDataException;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -182,10 +181,10 @@ class Introspector
      * @template T of string[]|string
      *
      * @param T $value
-     * @param int-mask-of<NormaliserFlag::*> $flags
+     * @param int-mask-of<IntrospectionClass::GREEDY|IntrospectionClass::LAZY|IntrospectionClass::CAREFUL> $flags
      * @return T
      */
-    final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
+    final public function maybeNormalise($value, int $flags = IntrospectionClass::GREEDY)
     {
         return $this->_Class->maybeNormalise($value, $flags);
     }
@@ -695,7 +694,7 @@ class Introspector
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure
     {
-        $_name = $this->_Class->maybeNormalise($name, NormaliserFlag::CAREFUL);
+        $_name = $this->_Class->maybeNormalise($name, IntrospectionClass::CAREFUL);
 
         if ($closure = $this->_Class->PropertyActionClosures[$_name][$action] ?? null) {
             return $closure;
@@ -803,7 +802,7 @@ class Introspector
      */
     final public function hasProperty(string $name): bool
     {
-        $_name = $this->_Class->maybeNormalise($name, NormaliserFlag::CAREFUL);
+        $_name = $this->_Class->maybeNormalise($name, IntrospectionClass::CAREFUL);
 
         return in_array($_name, $this->_Class->NormalisedKeys, true);
     }
@@ -837,7 +836,7 @@ class Introspector
 
         $names = Arr::combine(
             $names,
-            $this->_Class->maybeNormalise($names, NormaliserFlag::CAREFUL)
+            $this->_Class->maybeNormalise($names, IntrospectionClass::CAREFUL)
         );
 
         $surname = $names['surname'];

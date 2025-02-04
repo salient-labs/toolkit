@@ -12,8 +12,8 @@ use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Buildable;
+use Salient\Contract\Core\HasJsonSchema;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Core\JsonSchemaInterface;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Facade\Console;
@@ -66,7 +66,7 @@ use LogicException;
  *
  * @implements Buildable<CliOptionBuilder>
  */
-final class CliOption implements Buildable, JsonSchemaInterface, Immutable, Readable
+final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
 {
     /** @use HasBuilder<CliOptionBuilder> */
     use HasBuilder;

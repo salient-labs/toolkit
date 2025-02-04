@@ -2,15 +2,19 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\GraphInterface;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
+use ArrayAccess;
 use OutOfRangeException;
 use ReturnTypeWillChange;
 
 /**
+ * Provides a standard interface to an underlying object or array and its values
+ *
  * @api
+ *
+ * @implements ArrayAccess<array-key,mixed>
  */
-class Graph implements GraphInterface
+class Graph implements GraphInterface, ArrayAccess
 {
     protected object $Object;
     /** @var mixed[] */
@@ -43,7 +47,9 @@ class Graph implements GraphInterface
     }
 
     /**
-     * @inheritDoc
+     * Get the underlying object or array
+     *
+     * @return mixed[]|object
      */
     public function getValue()
     {
@@ -51,7 +57,9 @@ class Graph implements GraphInterface
     }
 
     /**
-     * @inheritDoc
+     * Get the properties or keys traversed to reach the current value
+     *
+     * @return array<array-key>
      */
     public function getPath(): array
     {
@@ -69,7 +77,13 @@ class Graph implements GraphInterface
     }
 
     /**
+     * Get the value at the given offset
+     *
+     * If the value is an object or array, a new instance of the class is
+     * returned to service it, otherwise the value itself is returned.
+     *
      * @param array-key $offset
+     * @return static|resource|int|float|string|bool|null
      * @disregard P1038
      */
     #[ReturnTypeWillChange]
@@ -135,4 +149,15 @@ class Graph implements GraphInterface
             unset($this->Array[$offset]);
         }
     }
+}
+
+/**
+ * @internal
+ */
+interface GraphInterface
+{
+    /**
+     * @param mixed[]|object $value
+     */
+    public function __construct(&$value = []);
 }

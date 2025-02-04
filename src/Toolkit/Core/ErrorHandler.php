@@ -3,8 +3,8 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\Exception\Exception;
-use Salient\Contract\Core\FacadeAwareInterface;
-use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Facade\FacadeAwareInterface;
+use Salient\Contract\Core\Facade\FacadeInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Facade\Console;

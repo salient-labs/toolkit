@@ -13,7 +13,6 @@ use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Flushable;
 use Salient\Contract\Core\HasDescription;
-use Salient\Contract\Core\NormaliserFlag;
 use Salient\Contract\Sync\DeferredEntityInterface;
 use Salient\Contract\Sync\DeferredRelationshipInterface;
 use Salient\Contract\Sync\EntityState;
@@ -34,6 +33,7 @@ use Salient\Core\Facade\Sync;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
+use Salient\Sync\Support\SyncIntrospectionClass;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -662,7 +662,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
         if (!$rules->getIncludeCanonicalId()) {
             unset($array[
                 SyncIntrospector::get(static::class)
-                    ->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)
+                    ->maybeNormalise('CanonicalId', SyncIntrospectionClass::CAREFUL)
             ]);
         }
 

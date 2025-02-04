@@ -13,7 +13,7 @@ use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionVisibility;
-use Salient\Contract\Core\JsonSchemaInterface;
+use Salient\Contract\Core\HasJsonSchema;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Arr;
@@ -700,7 +700,7 @@ abstract class CliCommand implements CliCommandInterface
     final public function getJsonSchema(): array
     {
         $schema = [
-            '$schema' => JsonSchemaInterface::DRAFT_04_SCHEMA_ID,
+            '$schema' => HasJsonSchema::DRAFT_04_SCHEMA_ID,
         ];
         $schema['type'] = 'object';
         $schema['required'] = [];
