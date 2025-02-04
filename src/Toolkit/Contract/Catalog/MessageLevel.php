@@ -3,10 +3,6 @@
 namespace Salient\Contract\Catalog;
 
 /**
- * Message levels
- *
- * Levels have the same value as their syslog / journalctl counterparts.
- *
  * @api
  */
 interface MessageLevel

@@ -3,7 +3,9 @@
 namespace Salient\Contract\Catalog;
 
 /**
- * ANSI escape sequences for formatting terminal output
+ * ANSI escape sequences for terminal output formatting and control
+ *
+ * @api
  */
 interface EscapeSequence
 {
@@ -32,9 +34,6 @@ interface EscapeSequence
 
     /**
      * Reset BOLD and DIM
-     *
-     * @see EscapeSequence::UNBOLD_DIM
-     * @see EscapeSequence::UNDIM_BOLD
      */
     public const UNBOLD_UNDIM = "\e[22m";
 

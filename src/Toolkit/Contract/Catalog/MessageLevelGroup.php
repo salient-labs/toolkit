@@ -5,8 +5,6 @@ namespace Salient\Contract\Catalog;
 use Salient\Contract\Catalog\MessageLevel as Level;
 
 /**
- * Groups of message levels
- *
  * @api
  */
 interface MessageLevelGroup

@@ -3,11 +3,7 @@
 namespace Salient\Contract\Catalog;
 
 /**
- * Text comparison algorithms
- *
- * Text comparison algorithms take two strings and calculate a value between `0`
- * and `1`, where `0` indicates the strings could not be more similar, and `1`
- * indicates they could not be more different.
+ * @api
  */
 interface TextComparisonAlgorithm
 {
@@ -26,15 +22,11 @@ interface TextComparisonAlgorithm
      * Uncertainty is derived from levenshtein()
      *
      * String length cannot exceed 255 characters.
-     *
-     * @see levenshtein()
      */
     public const LEVENSHTEIN = 4;
 
     /**
      * Uncertainty is derived from similar_text()
-     *
-     * @see similar_text()
      */
     public const SIMILAR_TEXT = 8;
 

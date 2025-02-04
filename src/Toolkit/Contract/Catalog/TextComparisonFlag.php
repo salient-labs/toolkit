@@ -3,15 +3,9 @@
 namespace Salient\Contract\Catalog;
 
 /**
- * Text comparison flags
- *
- * {@see TextComparisonFlag} and {@see TextComparisonAlgorithm} values combine
- * to form one bitmask and cannot intersect.
+ * @api
  */
 interface TextComparisonFlag
 {
-    /**
-     * Normalise values before comparing them
-     */
     public const NORMALISE = 64;
 }

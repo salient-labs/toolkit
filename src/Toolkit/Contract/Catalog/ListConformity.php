@@ -3,7 +3,7 @@
 namespace Salient\Contract\Catalog;
 
 /**
- * Array key conformity levels
+ * @api
  */
 interface ListConformity
 {
@@ -13,14 +13,14 @@ interface ListConformity
     public const NONE = 0;
 
     /**
-     * Data arrays always have the same keys in the same order, but key maps (if
-     * applicable) may not have the same signature as data arrays
+     * Data arrays always have the same keys in the same order, but the given
+     * key map may have different keys in a different order
      */
     public const PARTIAL = 1;
 
     /**
-     * Arrays and key maps (if applicable) always have the same keys in the same
-     * order
+     * Data arrays always have the same keys in the same order as each other and
+     * the given key map
      */
     public const COMPLETE = 2;
 }

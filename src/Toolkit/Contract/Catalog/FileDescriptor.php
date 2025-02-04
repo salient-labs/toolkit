@@ -3,8 +3,6 @@
 namespace Salient\Contract\Catalog;
 
 /**
- * File descriptors
- *
  * @api
  */
 interface FileDescriptor
