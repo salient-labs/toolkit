@@ -410,7 +410,7 @@ class CliApplication extends Application implements CliApplicationInterface
             $this->LastExitStatus = $command(...$args);
             return $this;
         } catch (CliInvalidArgumentsException $ex) {
-            $ex->reportErrors();
+            $ex->reportErrors(Console::getInstance());
             if (!$node) {
                 $node = $lastNode;
                 $name = $lastName;

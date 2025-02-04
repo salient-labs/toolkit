@@ -3,59 +3,51 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\Exception\MultipleErrorExceptionInterface;
 use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Format;
-use Salient\Utility\Str;
 
 /**
+ * @api
+ *
  * @phpstan-require-implements MultipleErrorExceptionInterface
  */
 trait MultipleErrorExceptionTrait
 {
-    protected string $MessageWithoutErrors;
+    protected string $MessageOnly;
     /** @var string[] */
     protected array $Errors;
     protected bool $HasUnreportedErrors = true;
 
-    public function __construct(
-        string $message = '',
-        string ...$errors
-    ) {
+    public function __construct(string $message = '', string ...$errors)
+    {
         $message = rtrim($message, ':');
-        $this->MessageWithoutErrors = $message;
+        $this->MessageOnly = $message;
         $this->Errors = $errors;
 
-        switch (count($errors)) {
-            case 0:
-                $this->HasUnreportedErrors = false;
-                break;
-
-            case 1:
-                $separator = ': ';
-                $append = $errors[0];
-                // No break
-            default:
-                $message = Arr::implode(
-                    $separator ?? ":\n",
-                    [$message, $append ?? rtrim(Format::list($errors))],
-                    ''
-                );
-                break;
+        if (!$errors) {
+            $this->HasUnreportedErrors = false;
+        } elseif (count($errors) === 1) {
+            $message = Arr::implode(': ', [$message, $errors[0]], '');
+        } else {
+            $message = Arr::implode(":\n", [$message, rtrim(Format::list($errors))], '');
         }
 
         parent::__construct($message);
     }
 
-    public function getMessageWithoutErrors(): string
+    /**
+     * @inheritDoc
+     */
+    public function getMessageOnly(): string
     {
-        return Str::coalesce($this->MessageWithoutErrors, (string) $this->message);
+        return $this->MessageOnly;
     }
 
     /**
-     * @return string[]
+     * @inheritDoc
      */
     public function getErrors(): array
     {
@@ -65,13 +57,12 @@ trait MultipleErrorExceptionTrait
     /**
      * @inheritDoc
      */
-    public function reportErrors()
+    public function reportErrors(ConsoleWriterInterface $writer): void
     {
         foreach ($this->Errors as $error) {
-            Console::message('__Error:__', $error, Level::ERROR, MessageType::UNFORMATTED);
+            $writer->message('__Error:__', $error, Level::ERROR, MessageType::UNFORMATTED);
         }
         $this->HasUnreportedErrors = false;
-        return $this;
     }
 
     /**
@@ -80,17 +71,5 @@ trait MultipleErrorExceptionTrait
     public function hasUnreportedErrors(): bool
     {
         return $this->HasUnreportedErrors;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getMetadata(): array
-    {
-        return [
-            'Errors' => $this->Errors
-                ? Format::list($this->Errors)
-                : '<none>',
-        ];
     }
 }

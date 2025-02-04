@@ -11,21 +11,12 @@ use Throwable;
 interface ExceptionInterface extends Throwable
 {
     /**
-     * Get an instance with an exit status to return if the exception is not
-     * caught on the command line
-     *
-     * @return static
-     */
-    public static function withExitStatus(?int $exitStatus): ExceptionInterface;
-
-    /**
-     * Get the exit status to return if the exception is not caught on the
-     * command line
+     * Get exit status to return if the exception is not caught
      */
     public function getExitStatus(): ?int;
 
     /**
-     * Get exception metadata as an associative array
+     * Get exception metadata
      *
      * @return array<string,int|float|string|bool|Stringable|null>
      */

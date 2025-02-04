@@ -6,6 +6,8 @@ use Salient\Contract\Core\Exception\ExceptionInterface;
 use Throwable;
 
 /**
+ * @api
+ *
  * @phpstan-require-implements ExceptionInterface
  */
 trait ExceptionTrait
@@ -23,17 +25,6 @@ trait ExceptionTrait
     }
 
     /**
-     * @param mixed ...$args
-     */
-    public static function withExitStatus(?int $exitStatus, ...$args): ExceptionInterface
-    {
-        // @phpstan-ignore new.static
-        $instance = new static(...$args);
-        $instance->ExitStatus = $exitStatus;
-        return $instance;
-    }
-
-    /**
      * @inheritDoc
      */
     public function getExitStatus(): ?int
@@ -42,7 +33,7 @@ trait ExceptionTrait
     }
 
     /**
-     * @codeCoverageIgnore
+     * @inheritDoc
      */
     public function getMetadata(): array
     {
@@ -56,9 +47,8 @@ trait ExceptionTrait
     {
         $detail = '';
         foreach ($this->getMetadata() as $key => $value) {
-            $detail .= sprintf("\n\n%s:\n%s", $key, rtrim((string) $value, "\n"));
+            $detail .= sprintf("\n\n%s:\n%s", $key, rtrim((string) $value, "\r\n"));
         }
-
         return parent::__toString() . $detail;
     }
 }

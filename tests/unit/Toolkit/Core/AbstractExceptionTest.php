@@ -27,7 +27,7 @@ baz:
 1
 EOF), (string) $exception);
 
-        $exception2 = MyAbstractException::withExitStatus(4, 'Bar', $exception);
+        $exception2 = new MyAbstractException('Bar', $exception, 4);
         $this->assertSame(4, $exception2->getExitStatus());
         $this->assertSame('Bar', $exception2->getMessage());
         $this->assertSame($exception, $exception2->getPrevious());

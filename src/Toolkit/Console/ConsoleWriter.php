@@ -801,7 +801,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
                 $ex instanceof MultipleErrorExceptionInterface
                 && !$ex->hasUnreportedErrors()
             ) {
-                $message = $this->escape($ex->getMessageWithoutErrors());
+                $message = $this->escape($ex->getMessageOnly());
             } else {
                 $message = $this->escape($ex->getMessage());
             }

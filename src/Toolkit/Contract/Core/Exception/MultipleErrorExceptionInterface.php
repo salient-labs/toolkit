@@ -2,15 +2,17 @@
 
 namespace Salient\Contract\Core\Exception;
 
+use Salient\Contract\Console\ConsoleWriterInterface;
+
 /**
  * @api
  */
 interface MultipleErrorExceptionInterface extends ExceptionInterface
 {
     /**
-     * Get the original exception message
+     * Get the exception's message without errors
      */
-    public function getMessageWithoutErrors(): string;
+    public function getMessageOnly(): string;
 
     /**
      * Get the exception's errors
@@ -20,17 +22,13 @@ interface MultipleErrorExceptionInterface extends ExceptionInterface
     public function getErrors(): array;
 
     /**
-     * Report the exception's errors with console message level ERROR
-     *
-     * @return $this
+     * Report the exception's errors as console messages with level ERROR or
+     * higher
      */
-    public function reportErrors();
+    public function reportErrors(ConsoleWriterInterface $writer): void;
 
     /**
      * Check if the exception has unreported errors
-     *
-     * This method should return `false` after
-     * {@see MultipleErrorExceptionInterface::reportErrors()} is called.
      */
     public function hasUnreportedErrors(): bool;
 }
