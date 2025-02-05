@@ -5,13 +5,13 @@ namespace Salient\Core\Event;
 use Salient\Contract\Core\Event\StoppableEventInterface;
 
 /**
- * Implements IStoppableEvent
+ * @api
  *
- * @see StoppableEventInterface
+ * @phpstan-require-implements StoppableEventInterface
  */
 trait StoppableEventTrait
 {
-    protected bool $Propagate = true;
+    private bool $Propagate = true;
 
     /**
      * @inheritDoc
@@ -22,7 +22,7 @@ trait StoppableEventTrait
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
     public function stopPropagation()
     {

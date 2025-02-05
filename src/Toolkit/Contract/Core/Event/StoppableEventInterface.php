@@ -5,17 +5,20 @@ namespace Salient\Contract\Core\Event;
 use Psr\EventDispatcher\StoppableEventInterface as PsrStoppableEventInterface;
 
 /**
- * A cancellable event
+ * @api
  */
 interface StoppableEventInterface extends PsrStoppableEventInterface
 {
     /**
-     * True if the event should not be passed to listeners
+     * Check if the event should be propagated to listeners
+     *
+     * @return bool If `true`, no further listeners should be called for this
+     * event.
      */
     public function isPropagationStopped(): bool;
 
     /**
-     * Don't pass the event to listeners
+     * Do not propagate the event to further listeners
      *
      * @return $this
      */
