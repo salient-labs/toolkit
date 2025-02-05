@@ -910,7 +910,7 @@ class Introspector
     final public function getSerializeClosure(?SerializeRulesInterface $rules = null): Closure
     {
         $rules = $rules
-            ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
+            ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getDynamicProperties()]
             : [false, $this->_Class->IsExtensible];
         $key = implode("\0", $rules);
 

@@ -93,14 +93,14 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
 
     /** @var class-string<TEntity> */
     private string $Entity;
+    private ?bool $RecurseRules;
     private ?DateFormatterInterface $DateFormatter;
-    private ?bool $IncludeMeta;
+    private ?bool $DynamicProperties;
     private ?bool $SortByKey;
     private ?int $MaxDepth;
     private ?bool $DetectRecursion;
-    private ?bool $RecurseRules;
     private ?bool $ForSyncStore;
-    private ?bool $IncludeCanonicalId;
+    private ?bool $CanonicalId;
     /** @var class-string[] */
     private array $EntityIndex;
     /** @var class-string[] */
@@ -121,42 +121,42 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @internal
      *
-     * @param class-string<TEntity> $entity Entity to which the rules apply (required)
-     * @param DateFormatterInterface|null $dateFormatter Date formatter used to serialize date and time values
-     * @param bool|null $includeMeta Serialize undeclared property values? (default: true)
+     * @param class-string<TEntity> $entity Entity to which the instance applies (required)
+     * @param bool|null $recurseRules Apply path-based rules to nested instances of the entity? (default: true)
+     * @param DateFormatterInterface|null $dateFormatter Date formatter applied to the instance
+     * @param bool|null $dynamicProperties Include dynamic properties when the entity is serialized? (default: true)
      * @param bool|null $sortByKey Sort serialized entities by key? (default: false)
      * @param int|null $maxDepth Maximum depth of nested values (default: 99)
-     * @param bool|null $detectRecursion Detect recursion when serializing nested entities? (default: true)
-     * @param bool|null $recurseRules Apply path-based rules to nested instances of the entity? (default: true)
-     * @param bool|null $forSyncStore Are values being serialized for an entity store? (default: false)
-     * @param bool|null $includeCanonicalId Serialize canonical identifiers of sync entities? (default: false)
-     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string> $remove Values to remove, e.g. `[OrgUnit::class => ['users']]` to remove `users` from `OrgUnit` objects
-     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string> $replace Values to replace, e.g. `[User::class => [['org_unit', 'org_unit_id', fn($ou) => $ou->Id]]]` to replace `"org_unit" => $entity` with `"org_unit_id" => $entity->Id` in `User` objects
+     * @param bool|null $detectRecursion Detect recursion when nested entities are serialized? (default: true)
+     * @param bool|null $forSyncStore Serialize entities for an entity store? (default: false)
+     * @param bool|null $canonicalId Include canonical identifiers when sync entities are serialized? (default: false)
+     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string> $remove Values to remove
+     * @param array<array<(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string>|(array{string,...}&array<(Closure(mixed, SyncStoreInterface|null, SyncSerializeRules<TEntity>): mixed)|string|null>)|string> $replace Values to replace
      * @param SyncSerializeRules<TEntity>|null $inherit Inherit rules from another instance
      */
     public function __construct(
         string $entity,
+        ?bool $recurseRules = null,
         ?DateFormatterInterface $dateFormatter = null,
-        ?bool $includeMeta = null,
+        ?bool $dynamicProperties = null,
         ?bool $sortByKey = null,
         ?int $maxDepth = null,
         ?bool $detectRecursion = null,
-        ?bool $recurseRules = null,
         ?bool $forSyncStore = null,
-        ?bool $includeCanonicalId = null,
+        ?bool $canonicalId = null,
         array $remove = [],
         array $replace = [],
         ?SyncSerializeRules $inherit = null
     ) {
         $this->Entity = $entity;
+        $this->RecurseRules = $recurseRules;
         $this->DateFormatter = $dateFormatter;
-        $this->IncludeMeta = $includeMeta;
+        $this->DynamicProperties = $dynamicProperties;
         $this->SortByKey = $sortByKey;
         $this->MaxDepth = $maxDepth;
         $this->DetectRecursion = $detectRecursion;
-        $this->RecurseRules = $recurseRules;
         $this->ForSyncStore = $forSyncStore;
-        $this->IncludeCanonicalId = $includeCanonicalId;
+        $this->CanonicalId = $canonicalId;
         $this->EntityIndex[] = $entity;
         $this->Remove[] = $remove;
         $this->Replace[] = $replace;
@@ -180,7 +180,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function merge(SerializeRulesInterface $rules): SerializeRulesInterface
+    public function merge(SerializeRulesInterface $rules): self
     {
         $clone = clone $this;
         $clone->applyRules($rules);
@@ -209,14 +209,14 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         }
 
         $this->Entity = $merge->Entity;
+        $this->RecurseRules = $merge->RecurseRules ?? $base->RecurseRules;
         $this->DateFormatter = $merge->DateFormatter ?? $base->DateFormatter;
-        $this->IncludeMeta = $merge->IncludeMeta ?? $base->IncludeMeta;
+        $this->DynamicProperties = $merge->DynamicProperties ?? $base->DynamicProperties;
         $this->SortByKey = $merge->SortByKey ?? $base->SortByKey;
         $this->MaxDepth = $merge->MaxDepth ?? $base->MaxDepth;
         $this->DetectRecursion = $merge->DetectRecursion ?? $base->DetectRecursion;
-        $this->RecurseRules = $merge->RecurseRules ?? $base->RecurseRules;
         $this->ForSyncStore = $merge->ForSyncStore ?? $base->ForSyncStore;
-        $this->IncludeCanonicalId = $merge->IncludeCanonicalId ?? $base->IncludeCanonicalId;
+        $this->CanonicalId = $merge->CanonicalId ?? $base->CanonicalId;
         $this->EntityIndex = [...$base->EntityIndex, ...$merge->EntityIndex];
         $this->Remove = [...$base->Remove, ...$merge->Remove];
         $this->Replace = [...$base->Replace, ...$merge->Replace];
@@ -475,6 +475,14 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @inheritDoc
      */
+    public function getRecurseRules(): bool
+    {
+        return $this->RecurseRules ?? true;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getDateFormatter(): ?DateFormatterInterface
     {
         return $this->DateFormatter;
@@ -483,9 +491,9 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getIncludeMeta(): bool
+    public function getDynamicProperties(): bool
     {
-        return $this->IncludeMeta ?? true;
+        return $this->DynamicProperties ?? true;
     }
 
     /**
@@ -515,14 +523,6 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getRecurseRules(): bool
-    {
-        return $this->RecurseRules ?? true;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getForSyncStore(): bool
     {
         return $this->ForSyncStore ?? false;
@@ -531,55 +531,15 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getIncludeCanonicalId(): bool
+    public function getCanonicalId(): bool
     {
-        return $this->IncludeCanonicalId ?? false;
+        return $this->CanonicalId ?? false;
     }
 
     /**
      * @inheritDoc
      */
-    public function withDateFormatter(?DateFormatterInterface $formatter)
-    {
-        return $this->with('DateFormatter', $formatter);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withIncludeMeta(?bool $include = true)
-    {
-        return $this->with('IncludeMeta', $include);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withSortByKey(?bool $sort = true)
-    {
-        return $this->with('SortByKey', $sort);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withMaxDepth(?int $depth)
-    {
-        return $this->with('MaxDepth', $depth);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withDetectRecursion(?bool $detect = true)
-    {
-        return $this->with('DetectRecursion', $detect);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withRecurseRules(?bool $recurse = true)
+    public function withRecurseRules(?bool $recurse = true): self
     {
         return $this->with('RecurseRules', $recurse);
     }
@@ -587,7 +547,47 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withForSyncStore(?bool $forSyncStore = true)
+    public function withDateFormatter(?DateFormatterInterface $formatter): self
+    {
+        return $this->with('DateFormatter', $formatter);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withDynamicProperties(?bool $include = true): self
+    {
+        return $this->with('DynamicProperties', $include);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withSortByKey(?bool $sort = true): self
+    {
+        return $this->with('SortByKey', $sort);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withMaxDepth(?int $depth): self
+    {
+        return $this->with('MaxDepth', $depth);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withDetectRecursion(?bool $detect = true): self
+    {
+        return $this->with('DetectRecursion', $detect);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withForSyncStore(?bool $forSyncStore = true): self
     {
         return $this->with('ForSyncStore', $forSyncStore);
     }
@@ -595,8 +595,8 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withIncludeCanonicalId(?bool $include = true)
+    public function withCanonicalId(?bool $include = true): self
     {
-        return $this->with('IncludeCanonicalId', $include);
+        return $this->with('CanonicalId', $include);
     }
 }

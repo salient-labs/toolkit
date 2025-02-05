@@ -659,7 +659,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
         $array = SyncIntrospector::get(static::class)
             ->getSerializeClosure($rules)($clone);
 
-        if (!$rules->getIncludeCanonicalId()) {
+        if (!$rules->getCanonicalId()) {
             unset($array[
                 SyncIntrospector::get(static::class)
                     ->maybeNormalise('CanonicalId', SyncIntrospectionClass::CAREFUL)

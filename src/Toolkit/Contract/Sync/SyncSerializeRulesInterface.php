@@ -22,26 +22,28 @@ interface SyncSerializeRulesInterface extends SerializeRulesInterface
     public function getReplaceableKeys(?string $class, ?string $baseClass, array $path): array;
 
     /**
-     * Check if values are being serialized for an entity store
+     * Check if entities should be serialized for an entity store
      */
     public function getForSyncStore(): bool;
 
     /**
-     * Get an instance that serializes values for an entity store
+     * Get an instance where entities are serialized for an entity store
      *
      * @return static
      */
-    public function withForSyncStore(?bool $forSyncStore = true);
+    public function withForSyncStore(?bool $forSyncStore = true): self;
 
     /**
-     * Check if canonical identifiers of sync entities are serialized
+     * Check if the canonical identifiers of sync entities should be included
+     * when they are serialized
      */
-    public function getIncludeCanonicalId(): bool;
+    public function getCanonicalId(): bool;
 
     /**
-     * Get an instance that serializes canonical identifiers of sync entities
+     * Get an instance where the canonical identifiers of sync entities are
+     * included when they are serialized
      *
      * @return static
      */
-    public function withIncludeCanonicalId(?bool $include = true);
+    public function withCanonicalId(?bool $include = true): self;
 }
