@@ -25,7 +25,7 @@ interface BuilderInterface extends Chainable, Immutable
     public static function resolve($object);
 
     /**
-     * Terminate the builder by returning an instance
+     * Terminate the builder by creating an instance
      *
      * @return TClass
      */

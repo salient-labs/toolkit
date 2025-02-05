@@ -8,7 +8,7 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\HasMutator;
 use Salient\Sync\Support\SyncIntrospectionClass;
 use Salient\Sync\Support\SyncIntrospector;
@@ -87,8 +87,8 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     private const TYPE_REMOVE = 0;
     private const TYPE_REPLACE = 1;
 
-    /** @use HasBuilder<SyncSerializeRulesBuilder<TEntity>> */
-    use HasBuilder;
+    /** @use BuildableTrait<SyncSerializeRulesBuilder<TEntity>> */
+    use BuildableTrait;
     use HasMutator;
 
     /** @var class-string<TEntity> */

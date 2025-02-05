@@ -19,7 +19,7 @@ use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
-use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\HasMutator;
 use Salient\Core\Pipeline;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
@@ -79,8 +79,8 @@ use UnexpectedValueException;
  */
 final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildable
 {
-    /** @use HasBuilder<HttpSyncDefinitionBuilder<TEntity,TProvider>> */
-    use HasBuilder;
+    /** @use BuildableTrait<HttpSyncDefinitionBuilder<TEntity,TProvider>> */
+    use BuildableTrait;
     use HasMutator;
 
     public const DEFAULT_METHOD_MAP = [

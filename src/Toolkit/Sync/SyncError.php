@@ -8,7 +8,7 @@ use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Arr;
 
@@ -19,8 +19,8 @@ use Salient\Utility\Arr;
  */
 final class SyncError implements SyncErrorInterface, Buildable
 {
-    /** @use HasBuilder<SyncErrorBuilder> */
-    use HasBuilder;
+    /** @use BuildableTrait<SyncErrorBuilder> */
+    use BuildableTrait;
     use HasMutator;
 
     /** @var ErrorType::* */

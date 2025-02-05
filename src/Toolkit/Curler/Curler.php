@@ -27,7 +27,7 @@ use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
-use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
@@ -74,8 +74,8 @@ use Throwable;
  */
 class Curler implements CurlerInterface, Buildable
 {
-    /** @use HasBuilder<CurlerBuilder> */
-    use HasBuilder;
+    /** @use BuildableTrait<CurlerBuilder> */
+    use BuildableTrait;
     use HasHttpHeaders;
     use HasMutator;
 

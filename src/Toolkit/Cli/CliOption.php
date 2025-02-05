@@ -14,7 +14,7 @@ use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\HasJsonSchema;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\ReadsProtectedProperties;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
@@ -68,8 +68,8 @@ use LogicException;
  */
 final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
 {
-    /** @use HasBuilder<CliOptionBuilder> */
-    use HasBuilder;
+    /** @use BuildableTrait<CliOptionBuilder> */
+    use BuildableTrait;
     use ReadsProtectedProperties;
 
     private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/iD';
