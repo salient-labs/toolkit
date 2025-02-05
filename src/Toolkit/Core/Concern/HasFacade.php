@@ -4,21 +4,22 @@ namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Facade\FacadeInterface;
+use Salient\Contract\Core\Instantiable;
 use LogicException;
 
 /**
  * Implements FacadeAwareInterface by returning modified instances for use with
  * and without a facade
  *
- * @see FacadeAwareInterface
- *
  * @api
  *
- * @template TFacade of FacadeInterface
+ * @template TService of Instantiable
+ *
+ * @phpstan-require-implements FacadeAwareInterface
  */
 trait HasFacade
 {
-    /** @var class-string<TFacade>|null */
+    /** @var class-string<FacadeInterface<TService>>|null */
     protected ?string $Facade = null;
     /** @var static|null */
     private ?self $InstanceWithoutFacade = null;
@@ -27,8 +28,7 @@ trait HasFacade
     private bool $HasTentativeFacade = false;
 
     /**
-     * @param class-string<TFacade> $facade
-     * @return static
+     * @param class-string<FacadeInterface<TService>> $facade
      */
     final public function withFacade(string $facade)
     {
@@ -72,8 +72,7 @@ trait HasFacade
     }
 
     /**
-     * @param class-string<TFacade> $facade
-     * @return static
+     * @param class-string<FacadeInterface<TService>> $facade
      */
     final public function withoutFacade(string $facade, bool $unloading)
     {

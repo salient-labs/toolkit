@@ -2,29 +2,26 @@
 
 namespace Salient\Contract\Core\Facade;
 
+use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
 
 /**
- * For classes that need to know when they are used behind a facade
- *
- * @see FacadeInterface
- *
  * @api
  *
- * @template TFacade of FacadeInterface
+ * @template TService of Instantiable
  */
 interface FacadeAwareInterface
 {
     /**
-     * Get an instance to use behind a given facade
+     * Get an instance to use behind the given facade
      *
-     * @param class-string<TFacade> $facade
+     * @param class-string<FacadeInterface<TService>> $facade
      * @return static
      */
     public function withFacade(string $facade);
 
     /**
-     * Get an instance to use without a given facade
+     * Get an instance to use independently of the given facade
      *
      * If `$unloading` is `true`:
      *
@@ -33,7 +30,7 @@ interface FacadeAwareInterface
      * - if the instance also implements {@see Unloadable}, the facade will call
      *   its {@see Unloadable::unload()} method before it is removed
      *
-     * @param class-string<TFacade> $facade
+     * @param class-string<FacadeInterface<TService>> $facade
      * @return static
      */
     public function withoutFacade(string $facade, bool $unloading);

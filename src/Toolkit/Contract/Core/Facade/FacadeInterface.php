@@ -7,8 +7,6 @@ use Salient\Contract\Core\Unloadable;
 use LogicException;
 
 /**
- * Provides a static interface to an underlying instance
- *
  * @api
  *
  * @template TService of Instantiable
@@ -59,6 +57,10 @@ interface FacadeInterface
 
     /**
      * Get the facade's underlying instance, loading it if necessary
+     *
+     * Returns the instance returned by
+     * {@see FacadeAwareInterface::withoutFacade()} if the underlying instance
+     * implements {@see FacadeAwareInterface}.
      *
      * @return TService
      */

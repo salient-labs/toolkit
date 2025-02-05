@@ -4,7 +4,6 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
-use Salient\Contract\Core\Facade\FacadeInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Facade\Console;
@@ -17,11 +16,11 @@ use Throwable;
 /**
  * Handle errors and uncaught exceptions
  *
- * @implements FacadeAwareInterface<FacadeInterface<self>>
+ * @implements FacadeAwareInterface<self>
  */
 final class ErrorHandler implements FacadeAwareInterface, Instantiable
 {
-    /** @use UnloadsFacades<FacadeInterface<self>> */
+    /** @use UnloadsFacades<self> */
     use UnloadsFacades;
 
     private const DEFAULT_EXIT_STATUS = 16;

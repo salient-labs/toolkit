@@ -19,7 +19,6 @@ use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Exception\MultipleErrorException;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
-use Salient\Contract\Core\Facade\FacadeInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasFacade;
 use Salient\Core\Facade\Console;
@@ -42,11 +41,11 @@ use Throwable;
  * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
  * {@see Console::getInstance()}.
  *
- * @implements FacadeAwareInterface<FacadeInterface<ConsoleWriterInterface>>
+ * @implements FacadeAwareInterface<ConsoleWriterInterface>
  */
 final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterface, Unloadable
 {
-    /** @use HasFacade<FacadeInterface<ConsoleWriterInterface>> */
+    /** @use HasFacade<ConsoleWriterInterface> */
     use HasFacade;
 
     private ConsoleWriterState $State;
