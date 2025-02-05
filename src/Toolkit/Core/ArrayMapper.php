@@ -4,8 +4,8 @@ namespace Salient\Core;
 
 use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
+use Salient\Core\Exception\InvalidDataException;
 use Salient\Utility\Arr;
-use InvalidArgumentException;
 use ValueError;
 
 /**
@@ -83,7 +83,7 @@ final class ArrayMapper implements ArrayMapperInterface
             try {
                 $out = Arr::combine($this->OutputKeys, $in);
             } catch (ValueError $ex) {
-                throw new InvalidArgumentException('Invalid input array', 0, $ex);
+                throw new InvalidDataException('Invalid input array', 0, $ex);
             }
 
             return $this->RemoveNull ? Arr::whereNotNull($out) : $out;
@@ -96,7 +96,7 @@ final class ArrayMapper implements ArrayMapperInterface
             } elseif ($this->AddMissing) {
                 $out[$outKey] = null;
             } elseif ($this->RequireMapped) {
-                throw new InvalidArgumentException(sprintf(
+                throw new InvalidDataException(sprintf(
                     'Input key not found: %s',
                     $inKey,
                 ));

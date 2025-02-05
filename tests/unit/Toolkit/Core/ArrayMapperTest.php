@@ -3,9 +3,9 @@
 namespace Salient\Tests\Core;
 
 use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Core\Exception\InvalidDataException;
 use Salient\Core\ArrayMapper;
 use Salient\Tests\TestCase;
-use InvalidArgumentException;
 
 /**
  * @covers \Salient\Core\ArrayMapper
@@ -169,7 +169,7 @@ final class ArrayMapperTest extends TestCase
                 ArrayMapper::REQUIRE_MAPPED | ArrayMapper::REMOVE_NULL,
             ],
             'require mapped + missing input key' => [
-                InvalidArgumentException::class . ',Input key not found: MAIL',
+                InvalidDataException::class . ',Input key not found: MAIL',
                 $map2,
                 [
                     'USER_ID' => 32,
@@ -239,7 +239,7 @@ final class ArrayMapperTest extends TestCase
                 ArrayMapper::ADD_UNMAPPED | ArrayMapper::REMOVE_NULL,
             ],
             'complete conformity + extra input key' => [
-                InvalidArgumentException::class . ',Invalid input array',
+                InvalidDataException::class . ',Invalid input array',
                 $map2,
                 [
                     'USER_ID' => 38,

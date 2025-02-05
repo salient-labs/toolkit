@@ -2,6 +2,8 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
+use Salient\Contract\Core\Exception\InvalidDataException;
+
 /**
  * @api
  */
@@ -27,9 +29,6 @@ interface ArrayMapperInterface
 
     /**
      * Throw an exception if there are missing values
-     *
-     * An {@InvalidArgumentException} is thrown if the input array has no data
-     * for a given map.
      */
     public const REQUIRE_MAPPED = 8;
 
@@ -38,6 +37,8 @@ interface ArrayMapperInterface
      *
      * @param mixed[] $in
      * @return mixed[]
+     * @throws InvalidDataException if {@see REQUIRE_MAPPED} is applied and
+     * `$in` has no data for a given map.
      */
     public function map(array $in): array;
 }

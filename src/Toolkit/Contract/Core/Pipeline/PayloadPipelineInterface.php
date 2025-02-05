@@ -5,6 +5,8 @@ namespace Salient\Contract\Core\Pipeline;
 use Salient\Contract\Catalog\ListConformity;
 
 /**
+ * @api
+ *
  * @template TInput
  * @template TOutput
  * @template TArgument
@@ -14,7 +16,7 @@ use Salient\Contract\Catalog\ListConformity;
 interface PayloadPipelineInterface extends BasePipelineInterface
 {
     /**
-     * Set the payload's array key conformity
+     * Set the payload's conformity level
      *
      * `$conformity` is passed to any array key mappers added to the pipeline
      * with {@see BasePipelineInterface::throughKeyMap()}. It has no effect
@@ -27,7 +29,7 @@ interface PayloadPipelineInterface extends BasePipelineInterface
     public function withConformity($conformity);
 
     /**
-     * Get the payload's array key conformity
+     * Get the payload's conformity level
      *
      * @return ListConformity::*
      */

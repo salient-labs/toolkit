@@ -177,7 +177,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
     protected function pipelineFrom(string $entity): PipelineInterface
     {
         /** @var PipelineInterface<mixed[],T,SyncPipelineArgument> */
-        return Pipeline::create($this->App);
+        return Pipeline::create();
     }
 
     /**
@@ -191,7 +191,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
     protected function pipelineTo(string $entity): PipelineInterface
     {
         /** @var PipelineInterface<T,mixed[],SyncPipelineArgument> */
-        return Pipeline::create($this->App);
+        return Pipeline::create();
     }
 
     /**

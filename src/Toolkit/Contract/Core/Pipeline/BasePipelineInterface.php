@@ -7,6 +7,8 @@ use Salient\Contract\Core\Immutable;
 use Closure;
 
 /**
+ * @api
+ *
  * @template TInput
  * @template TOutput
  * @template TArgument
@@ -35,14 +37,8 @@ interface BasePipelineInterface extends Chainable, Immutable
     /**
      * Add a pipe to the pipeline
      *
-     * A pipe must be one of the following:
-     *
-     * - an instance of a class that implements {@see PipeInterface}
-     * - the name of a class that implements {@see PipeInterface}
-     * - a closure
-     *
-     * Whichever form it takes, a pipe should do something with `$payload`
-     * before taking one of the following actions:
+     * A pipe should do something with the `$payload` it receives before taking
+     * one of the following actions:
      *
      * - return the value of `$next($payload)`
      * - return a value that will be discarded by
@@ -50,10 +46,10 @@ interface BasePipelineInterface extends Chainable, Immutable
      *   and {@see BasePipelineInterface::then()}, if applicable
      * - throw an exception
      *
-     * @param (Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>> $pipe
+     * @param (Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput) $pipe
      * @return static
      */
-    public function through($pipe);
+    public function through(Closure $pipe);
 
     /**
      * Add a simple closure to the pipeline

@@ -3,6 +3,8 @@
 namespace Salient\Contract\Core\Pipeline;
 
 /**
+ * @api
+ *
  * @template TInput
  * @template TOutput
  * @template TArgument

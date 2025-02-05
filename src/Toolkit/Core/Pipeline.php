@@ -3,14 +3,11 @@
 namespace Salient\Core;
 
 use Salient\Contract\Catalog\ListConformity;
-use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
-use Salient\Contract\Core\Pipeline\PipeInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\HasMutator;
-use Salient\Core\Facade\App;
 use Salient\Utility\Arr;
 use Closure;
 use Generator;
@@ -45,7 +42,7 @@ final class Pipeline implements
     private int $PayloadConformity = ListConformity::NONE;
     /** @var (Closure(TInput $payload, static $pipeline, TArgument $arg): (TInput|TOutput))|null */
     private ?Closure $After = null;
-    /** @var array<(Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)|PipeInterface<TInput,TOutput,TArgument>|class-string<PipeInterface<TInput,TOutput,TArgument>>> */
+    /** @var array<(Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)> */
     private array $Pipes = [];
     /** @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapper::*>}> */
     private array $KeyMaps = [];
@@ -59,24 +56,15 @@ final class Pipeline implements
     private array $Cc = [];
     /** @var (Closure(TOutput, static, TArgument): bool)|null */
     private ?Closure $Unless = null;
-    private ?ContainerInterface $Container;
 
     /**
-     * Creates a new Pipeline object
-     */
-    public function __construct(?ContainerInterface $container = null)
-    {
-        $this->Container = $container;
-    }
-
-    /**
-     * Creates a new Pipeline object
+     * Get a new pipeline
      *
      * @return PipelineInterface<mixed,mixed,mixed>
      */
-    public static function create(?ContainerInterface $container = null): PipelineInterface
+    public static function create(): PipelineInterface
     {
-        return new self($container);
+        return new self();
     }
 
     /**
@@ -407,20 +395,6 @@ final class Pipeline implements
             : fn($result) => $result;
 
         foreach (array_reverse($this->Pipes) as $pipe) {
-            if (is_string($pipe)) {
-                $pipe = $this->Container
-                    ? $this->Container->get($pipe)
-                    : App::get($pipe);
-
-                if (!$pipe instanceof PipeInterface) {
-                    throw new LogicException(sprintf(
-                        '%s does not implement %s',
-                        get_class($pipe),
-                        PipeInterface::class,
-                    ));
-                }
-            }
-
             $closure = fn($payload) =>
                 $pipe($payload, $closure, $this, $this->Arg);
         }
