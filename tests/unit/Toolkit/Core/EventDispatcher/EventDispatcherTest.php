@@ -3,13 +3,13 @@
 namespace Salient\Tests\Core\EventDispatcher;
 
 use Salient\Contract\Core\HasName;
+use Salient\Core\Event\EventDispatcher;
 use Salient\Core\Facade\Event;
-use Salient\Core\EventDispatcher;
 use Salient\Tests\TestCase;
 use LogicException;
 
 /**
- * @covers \Salient\Core\EventDispatcher
+ * @covers \Salient\Core\Event\EventDispatcher
  * @covers \Salient\Core\Facade\Event
  */
 final class EventDispatcherTest extends TestCase

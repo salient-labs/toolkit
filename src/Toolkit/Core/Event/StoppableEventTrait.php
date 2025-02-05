@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Concern;
+namespace Salient\Core\Event;
 
 use Salient\Contract\Core\Event\StoppableEventInterface;
 
