@@ -18,9 +18,9 @@ use Salient\Contract\Core\Immutable;
  * @extends HasProvider<TProvider>
  */
 interface ProviderContextInterface extends
-    Immutable,
+    HasProvider,
     HasContainer,
-    HasProvider
+    Immutable
 {
     /**
      * Get the context's provider
@@ -52,14 +52,14 @@ interface ProviderContextInterface extends
     public function withEntityType(string $entityType);
 
     /**
-     * Get the array key conformity applied to the context
+     * Get the conformity level applied to the context
      *
      * @return ListConformity::*
      */
     public function getConformity(): int;
 
     /**
-     * Get an instance with the given array key conformity
+     * Get an instance with the given conformity level
      *
      * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
      * wherever possible to improve performance.

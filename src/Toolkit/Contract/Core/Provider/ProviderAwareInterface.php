@@ -2,8 +2,10 @@
 
 namespace Salient\Contract\Core\Provider;
 
+use LogicException;
+
 /**
- * Receives the provider servicing the object
+ * @api
  *
  * @template TProvider of ProviderInterface
  *
@@ -14,10 +16,9 @@ interface ProviderAwareInterface extends HasProvider
     /**
      * Set the object's provider
      *
-     * Throws an exception if the object already has a provider.
-     *
      * @param TProvider $provider
      * @return $this
+     * @throws LogicException if the object already has a provider.
      */
     public function setProvider(ProviderInterface $provider);
 }
