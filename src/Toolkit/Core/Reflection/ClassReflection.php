@@ -49,7 +49,14 @@ class ClassReflection extends ReflectionClass
     }
 
     /**
-     * @param int|null $filter
+     * @inheritDoc
+     */
+    public function getMethod($name): MethodReflection
+    {
+        return new MethodReflection($this->name, $name);
+    }
+
+    /**
      * @return MethodReflection[]
      */
     public function getMethods($filter = null): array

@@ -2,15 +2,10 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\BuilderInterface;
 
 /**
- * Implements Buildable
- *
- * @see Buildable
- *
  * @api
  *
  * @template TBuilder of BuilderInterface
@@ -20,7 +15,7 @@ use Salient\Contract\Core\BuilderInterface;
 trait HasBuilder
 {
     /**
-     * Get the name of a builder that creates instances of the class
+     * Get the name of a builder for the class
      *
      * @return class-string<TBuilder>
      */
@@ -32,9 +27,9 @@ trait HasBuilder
     /**
      * @inheritDoc
      */
-    public static function build(?ContainerInterface $container = null): BuilderInterface
+    public static function build(): BuilderInterface
     {
-        return static::getBuilder()::create($container);
+        return static::getBuilder()::create();
     }
 
     /**

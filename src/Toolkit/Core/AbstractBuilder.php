@@ -2,16 +2,18 @@
 
 namespace Salient\Core;
 
-use Salient\Container\RequiresContainer;
-use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\BuilderInterface;
 use Salient\Core\Concern\HasChainableMethods;
+use Salient\Core\Concern\HasMutator;
+use Salient\Core\Exception\InvalidDataException;
+use Salient\Core\Reflection\ClassReflection;
+use Salient\Core\Reflection\MethodReflection;
+use Salient\Core\Reflection\ParameterIndex;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
-use InvalidArgumentException;
+use Salient\Utility\Str;
+use Closure;
 
 /**
- * Base class for builders
- *
  * @api
  *
  * @template TClass of object
@@ -21,14 +23,23 @@ use InvalidArgumentException;
 abstract class AbstractBuilder implements BuilderInterface
 {
     use HasChainableMethods;
-    use RequiresContainer;
+    use HasMutator;
 
     /**
-     * Get the class to build
+     * Get the class to instantiate
      *
      * @return class-string<TClass>
      */
     abstract protected static function getService(): string;
+
+    /**
+     * Get a static method to call on the service class to create an instance,
+     * or null to use the constructor
+     */
+    protected static function getStaticConstructor(): ?string
+    {
+        return null;
+    }
 
     /**
      * Get methods to forward to a new instance of the service class
@@ -40,34 +51,51 @@ abstract class AbstractBuilder implements BuilderInterface
         return [];
     }
 
-    /** @todo Decouple from the service container */
-    protected ContainerInterface $Container;
-    /** @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
-    private Introspector $Introspector;
+    /** @var class-string<TClass> */
+    private string $Service;
+    private ?string $StaticConstructor;
+    /** @var Closure(string, bool=): string */
+    private Closure $Normaliser;
     /** @var array<string,true> */
     private array $Terminators = [];
+    private ?ParameterIndex $ParameterIndex = null;
     /** @var array<string,mixed> */
     private array $Data = [];
 
     /**
      * Creates a new builder
      */
-    final public function __construct(?ContainerInterface $container = null)
+    final public function __construct()
     {
-        $this->Container = self::requireContainer($container);
-        $this->Introspector = Introspector::getService($this->Container, static::getService());
+        $this->Service = static::getService();
+        $this->StaticConstructor = static::getStaticConstructor();
+
+        $class = new ClassReflection($this->Service);
+
+        $this->Normaliser = $class->getNormaliser()
+            ?? fn(string $name) => Str::camel($name);
+
         foreach (static::getTerminators() as $terminator) {
             $this->Terminators[$terminator] = true;
-            $this->Terminators[$this->Introspector->maybeNormalise($terminator)] = true;
+            $this->Terminators[($this->Normaliser)($terminator, false)] = true;
+        }
+
+        /** @var MethodReflection|null $constructor */
+        $constructor = $this->StaticConstructor === null
+            ? $class->getConstructor()
+            : $class->getMethod($this->StaticConstructor);
+
+        if ($constructor) {
+            $this->ParameterIndex = $constructor->getParameterIndex($this->Normaliser);
         }
     }
 
     /**
      * @inheritDoc
      */
-    final public static function create(?ContainerInterface $container = null)
+    final public static function create()
     {
-        return new static($container);
+        return new static();
     }
 
     /**
@@ -76,57 +104,46 @@ abstract class AbstractBuilder implements BuilderInterface
     final public static function resolve($object)
     {
         if ($object instanceof static) {
-            return $object->build();
+            $object = $object->build();
+        } elseif (!is_a($object, static::getService())) {
+            throw new InvalidArgumentTypeException(
+                1,
+                'object',
+                static::class . '|' . static::getService(),
+                $object,
+            );
         }
-
-        if (is_a($object, static::getService())) {
-            return $object;
-        }
-
-        throw new InvalidArgumentTypeException(
-            1,
-            'object',
-            static::class . '|' . static::getService(),
-            $object,
-        );
+        return $object;
     }
 
     /**
-     * Get the builder's container
-     */
-    final public function getContainer(): ContainerInterface
-    {
-        return $this->Container;
-    }
-
-    /**
-     * @inheritDoc
+     * Get a value applied to the builder
+     *
+     * @return mixed
      */
     final public function getB(string $name)
     {
-        return $this->Data[$this->Introspector->maybeNormalise($name)] ?? null;
+        return $this->Data[($this->Normaliser)($name)] ?? null;
     }
 
     /**
-     * @inheritDoc
+     * Check if a value has been applied to the builder
      */
     final public function issetB(string $name): bool
     {
-        return array_key_exists($this->Introspector->maybeNormalise($name), $this->Data);
+        return array_key_exists(($this->Normaliser)($name), $this->Data);
     }
 
     /**
-     * @inheritDoc
+     * Remove a value applied to the builder
+     *
+     * @return static
      */
     final public function unsetB(string $name)
     {
-        $name = $this->Introspector->maybeNormalise($name);
-        if (!array_key_exists($name, $this->Data)) {
-            return $this;
-        }
-        $clone = clone $this;
-        unset($clone->Data[$name]);
-        return $clone;
+        $data = $this->Data;
+        unset($data[($this->Normaliser)($name)]);
+        return $this->with('Data', $data);
     }
 
     /**
@@ -134,8 +151,38 @@ abstract class AbstractBuilder implements BuilderInterface
      */
     final public function build()
     {
-        /** @var TClass */
-        return $this->Introspector->getCreateFromClosure(true)($this->Data, $this->Container);
+        $data = $this->Data;
+        if ($this->ParameterIndex) {
+            $args = $this->ParameterIndex->DefaultArguments;
+            $argCount = $this->ParameterIndex->RequiredArgumentCount;
+            foreach ($data as $name => $value) {
+                $_name = $this->ParameterIndex->Names[$name] ?? null;
+                if ($_name !== null) {
+                    $pos = $this->ParameterIndex->Positions[$_name];
+                    $argCount = max($argCount, $pos + 1);
+                    if (isset($this->ParameterIndex->PassedByReference[$name])) {
+                        $args[$pos] = &$data[$name];
+                    } else {
+                        $args[$pos] = $value;
+                    }
+                    unset($data[$name]);
+                }
+            }
+            if (count($args) > $argCount) {
+                $args = array_slice($args, 0, $argCount);
+            }
+        }
+        if ($data) {
+            throw new InvalidDataException(sprintf(
+                'Cannot call %s::%s() with: %s',
+                $this->Service,
+                $this->StaticConstructor ?? '__construct',
+                implode(', ', array_keys($data)),
+            ));
+        }
+        return $this->StaticConstructor === null
+            ? new $this->Service(...($args ?? []))
+            : $this->Service::{$this->StaticConstructor}(...($args ?? []));
     }
 
     /**
@@ -148,17 +195,12 @@ abstract class AbstractBuilder implements BuilderInterface
     {
         if (
             ($this->Terminators[$name] ?? null)
-            || ($this->Terminators[$this->Introspector->maybeNormalise($name)] ?? null)
+            || ($this->Terminators[($this->Normaliser)($name, false)] ?? null)
         ) {
             return $this->build()->{$name}(...$arguments);
         }
 
-        $count = count($arguments);
-        if ($count > 1) {
-            throw new InvalidArgumentException('Too many arguments');
-        }
-
-        return $this->withValueB($name, $count ? $arguments[0] : true);
+        return $this->withValueB($name, $arguments ? $arguments[0] : true);
     }
 
     /**
@@ -167,13 +209,9 @@ abstract class AbstractBuilder implements BuilderInterface
      */
     final protected function withValueB(string $name, $value)
     {
-        $name = $this->Introspector->maybeNormalise($name);
-        if (array_key_exists($name, $this->Data) && $this->Data[$name] === $value) {
-            return $this;
-        }
-        $clone = clone $this;
-        $clone->Data[$name] = $value;
-        return $clone;
+        $data = $this->Data;
+        $data[($this->Normaliser)($name)] = $value;
+        return $this->with('Data', $data);
     }
 
     /**
@@ -184,21 +222,8 @@ abstract class AbstractBuilder implements BuilderInterface
      */
     final protected function withRefB(string $name, &$variable)
     {
-        $name = $this->Introspector->maybeNormalise($name);
-        $clone = clone $this;
-        $clone->Data[$name] = &$variable;
-        return $clone;
-    }
-
-    /**
-     * @deprecated Use {@see build()} instead
-     *
-     * @return TClass
-     *
-     * @codeCoverageIgnore
-     */
-    final public function go()
-    {
-        return $this->build();
+        $data = $this->Data;
+        $data[($this->Normaliser)($name)] = &$variable;
+        return $this->with('Data', $data);
     }
 }

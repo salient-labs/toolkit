@@ -114,14 +114,14 @@ final class AbstractSyncEntityTest extends SyncTestCase
         $user->Posts[] = $post;
 
         $_user = $user->toArrayWith(
-            SerializeRules::build($this->App)
+            SerializeRules::build()
                 ->entity(User::class)
                 ->sortByKey(true)
                 ->build(),
             $this->Store,
         );
         $_post = $post->toArrayWith(
-            SerializeRules::build($this->App)
+            SerializeRules::build()
                 ->entity(Post::class)
                 ->sortByKey(true)
                 ->build(),
