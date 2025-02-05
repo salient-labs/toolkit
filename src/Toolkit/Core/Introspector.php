@@ -5,15 +5,15 @@ namespace Salient\Core;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\SerializeRulesInterface;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\HasName;
-use Salient\Contract\Core\NormaliserFlag;
-use Salient\Contract\Core\SerializeRulesInterface;
+use Salient\Core\Exception\InvalidDataException;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Closure;
@@ -181,10 +181,10 @@ class Introspector
      * @template T of string[]|string
      *
      * @param T $value
-     * @param int-mask-of<NormaliserFlag::*> $flags
+     * @param int-mask-of<IntrospectionClass::GREEDY|IntrospectionClass::LAZY|IntrospectionClass::CAREFUL> $flags
      * @return T
      */
-    final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
+    final public function maybeNormalise($value, int $flags = IntrospectionClass::GREEDY)
     {
         return $this->_Class->maybeNormalise($value, $flags);
     }
@@ -453,7 +453,7 @@ class Introspector
                 $keys,
             );
             if ($missing) {
-                throw new LogicException(sprintf(
+                throw new InvalidDataException(sprintf(
                     'Cannot call %s::__construct() without: %s',
                     $this->_Class->Class,
                     implode(', ', $missing),
@@ -471,7 +471,7 @@ class Introspector
                 array_flip($this->_Class->getWritableProperties()),
             );
             if ($readonly) {
-                throw new LogicException(sprintf(
+                throw new InvalidDataException(sprintf(
                     'Cannot set unwritable properties of %s: %s',
                     $this->_Class->Class,
                     implode(', ', $readonly),
@@ -532,7 +532,7 @@ class Introspector
                     continue;
                 }
                 if ($strict) {
-                    throw new LogicException(sprintf(
+                    throw new InvalidDataException(sprintf(
                         'Cannot set unwritable property: %s::$%s',
                         $this->_Class->Class,
                         $property,
@@ -547,7 +547,7 @@ class Introspector
             }
 
             if ($strict) {
-                throw new LogicException(sprintf(
+                throw new InvalidDataException(sprintf(
                     'Cannot apply %s to %s',
                     $key,
                     $this->_Class->Class,
@@ -645,7 +645,7 @@ class Introspector
                         continue;
                     }
                     if ($notNullableKeys[$key] ?? false) {
-                        throw new LogicException(sprintf(
+                        throw new InvalidDataException(sprintf(
                             "Argument #%d is not nullable, cannot apply value at key '%s': %s::__construct()",
                             $index + 1,
                             $key,
@@ -694,7 +694,7 @@ class Introspector
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure
     {
-        $_name = $this->_Class->maybeNormalise($name, NormaliserFlag::CAREFUL);
+        $_name = $this->_Class->maybeNormalise($name, IntrospectionClass::CAREFUL);
 
         if ($closure = $this->_Class->PropertyActionClosures[$_name][$action] ?? null) {
             return $closure;
@@ -802,7 +802,7 @@ class Introspector
      */
     final public function hasProperty(string $name): bool
     {
-        $_name = $this->_Class->maybeNormalise($name, NormaliserFlag::CAREFUL);
+        $_name = $this->_Class->maybeNormalise($name, IntrospectionClass::CAREFUL);
 
         return in_array($_name, $this->_Class->NormalisedKeys, true);
     }
@@ -836,7 +836,7 @@ class Introspector
 
         $names = Arr::combine(
             $names,
-            $this->_Class->maybeNormalise($names, NormaliserFlag::CAREFUL)
+            $this->_Class->maybeNormalise($names, IntrospectionClass::CAREFUL)
         );
 
         $surname = $names['surname'];
@@ -910,7 +910,7 @@ class Introspector
     final public function getSerializeClosure(?SerializeRulesInterface $rules = null): Closure
     {
         $rules = $rules
-            ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
+            ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getDynamicProperties()]
             : [false, $this->_Class->IsExtensible];
         $key = implode("\0", $rules);
 

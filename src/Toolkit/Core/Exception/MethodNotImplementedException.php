@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Exception;
 
-use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\Exception\MethodNotImplementedException as MethodNotImplementedExceptionInterface;
 use Salient\Utility\Reflect;
 use LogicException;
 use ReflectionMethod;
@@ -24,9 +24,10 @@ class MethodNotImplementedException extends LogicException implements MethodNotI
      */
     public function __construct(string $class, string $method, ?string $prototypeClass = null)
     {
-        $prototypeClass ??= Reflect::getPrototypeClass(
-            new ReflectionMethod($class, $method)
-        )->getName();
+        $prototypeClass ??=
+            Reflect::getPrototypeClass(
+                new ReflectionMethod($class, $method)
+            )->name;
 
         $this->Class = $class;
         $this->Method = $method;

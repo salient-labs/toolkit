@@ -2,8 +2,8 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Contract\Core\TextComparisonAlgorithm as Algorithm;
-use Salient\Contract\Core\TextComparisonFlag as Flag;
+use Salient\Contract\Catalog\TextComparisonAlgorithm as Algorithm;
+use Salient\Contract\Catalog\TextComparisonFlag as Flag;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;

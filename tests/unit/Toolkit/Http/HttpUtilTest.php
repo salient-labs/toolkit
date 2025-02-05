@@ -3,8 +3,8 @@
 namespace Salient\Tests\Http;
 
 use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Http\HttpRequest;
 use Salient\Http\HttpUtil;

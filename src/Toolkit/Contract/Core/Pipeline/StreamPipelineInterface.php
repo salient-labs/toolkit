@@ -5,6 +5,8 @@ namespace Salient\Contract\Core\Pipeline;
 use Closure;
 
 /**
+ * @api
+ *
  * @template TInput
  * @template TOutput
  * @template TArgument
@@ -16,9 +18,8 @@ interface StreamPipelineInterface extends PayloadPipelineInterface
     /**
      * Pass results to a closure in batches
      *
-     * {@see StreamPipelineInterface::collectThen()} can only be called once per
-     * pipeline, and only if {@see BasePipelineInterface::then()} is not also
-     * called.
+     * This method can only be called once per pipeline, and only if
+     * {@see BasePipelineInterface::then()} is not also called.
      *
      * Values returned by the closure are returned to the caller via a
      * forward-only iterator.
@@ -40,8 +41,7 @@ interface StreamPipelineInterface extends PayloadPipelineInterface
     /**
      * Apply a filter to each result
      *
-     * {@see StreamPipelineInterface::unless()} can only be called once per
-     * pipeline.
+     * This method can only be called once per pipeline.
      *
      * If `$filter` returns `false`, `$result` is returned to the caller,
      * otherwise it is discarded.

@@ -2,13 +2,13 @@
 
 namespace Salient\Tests\Core;
 
+use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Core\Exception\InvalidDataException;
+use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
-use Salient\Contract\Core\ArrayMapperInterface;
-use Salient\Contract\Core\ListConformity;
 use Salient\Core\Pipeline;
 use Salient\Tests\TestCase;
 use Closure;
-use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -68,10 +68,12 @@ final class PipelineTest extends TestCase
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out1 = [];
         $out2 = [];
+        /** @var Pipeline<int,int,null> */
+        $pipeline = Pipeline::create()
+            ->stream($in)
+            ->through(fn($payload, Closure $next) => $next($payload * 6));
         foreach (
-            Pipeline::create()
-                ->stream($in)
-                ->through(fn($payload, Closure $next) => $next($payload * 6))
+            $pipeline
                 ->cc(function ($result) use (&$out1) { $out1[] = round($result / 23, 3); })
                 ->start() as $_out
         ) {
@@ -214,7 +216,7 @@ final class PipelineTest extends TestCase
 
         $pipeline = Pipeline::create()
             ->throughKeyMap($map, ArrayMapperInterface::REQUIRE_MAPPED);
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidDataException::class);
         foreach ($in as $_in) {
             $pipeline->send($_in)->run();
         }

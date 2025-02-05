@@ -4,8 +4,8 @@ namespace Salient\Http;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Utility\AbstractUtility;
@@ -27,9 +27,9 @@ use Stringable;
 final class HttpUtil extends AbstractUtility
 {
     /**
-     * @var array<string,string>
-     *
      * @link https://www.iana.org/assignments/media-type-structured-suffix/media-type-structured-suffix.xhtml
+     *
+     * @var array<string,string>
      */
     private const SUFFIX_TYPE = [
         'gzip' => MimeType::GZIP,

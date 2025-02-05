@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Cli;
 
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Container\ApplicationInterface;
-use Salient\Contract\Core\MessageLevel as Level;
 use LogicException;
 
 /**

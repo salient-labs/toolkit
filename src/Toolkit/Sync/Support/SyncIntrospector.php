@@ -3,9 +3,9 @@
 namespace Salient\Sync\Support;
 
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Relatable;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Contract\Core\Provider\Providable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
@@ -14,7 +14,7 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Facade\Sync;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
-use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\Reflection\SyncProviderReflection;
 use Salient\Sync\SyncUtil;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -194,7 +194,7 @@ final class SyncIntrospector extends Introspector
         if ($closure === false) {
             /** @var class-string<SyncProviderInterface> */
             $class = $this->_Class->Class;
-            $operation = (new ReflectionSyncProvider($class))
+            $operation = (new SyncProviderReflection($class))
                 ->getSyncOperationMagicMethods()[$method] ?? null;
             if ($operation) {
                 $entity = $operation[1];
@@ -601,20 +601,20 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
 
-                $entities =
-                    $relationship::provideMultiple(
-                        $data[$key],
-                        $provider,
-                        $context->getConformity(),
-                        $context->pushEntity($entity),
-                    )->toArray();
+                /** @var list<mixed[]> */
+                $listData = $data[$key];
+                $entities = $relationship::provideMultiple(
+                    $listData,
+                    $context->pushEntity($entity),
+                    $context->getConformity(),
+                );
 
                 if (!$isChildren) {
-                    $entity->{$property} = $entities;
+                    $entity->{$property} = Get::array($entities);
                     return;
                 }
 
-                /** @var array<SyncEntityInterface&Treeable> $entities */
+                /** @var iterable<SyncEntityInterface&Treeable> $entities */
                 foreach ($entities as $child) {
                     /** @var SyncEntityInterface&Treeable $entity */
                     $entity->addChild($child);
@@ -653,7 +653,6 @@ final class SyncIntrospector extends Introspector
             $related =
                 $relationship::provide(
                     $data[$key],
-                    $provider,
                     $context->pushEntity($entity),
                 );
 

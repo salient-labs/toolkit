@@ -2,11 +2,11 @@
 
 namespace Salient\Cli\Exception;
 
-use Salient\Core\AbstractException;
+use Salient\Core\Exception\Exception;
 
 /**
  * Thrown when an unknown value is rejected by a command line option
  *
  * @api
  */
-class CliUnknownValueException extends AbstractException {}
+class CliUnknownValueException extends Exception {}

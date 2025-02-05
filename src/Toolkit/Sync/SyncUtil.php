@@ -8,7 +8,7 @@ use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Sync;
-use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\Reflection\SyncProviderReflection;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -69,7 +69,7 @@ final class SyncUtil extends AbstractUtility
         SyncProviderInterface $provider,
         ContainerInterface $container
     ): string {
-        $provider = new ReflectionSyncProvider($provider);
+        $provider = new SyncProviderReflection($provider);
         if ($provider->isSyncEntityProvider($entityType)) {
             return $entityType;
         }

@@ -13,7 +13,7 @@ interface Relatable
     /**
      * Get an array that maps properties to relationships
      *
-     * @return array<string,array<Relatable::*,class-string<Relatable>>>
+     * @return array<string,non-empty-array<Relatable::*,class-string<Relatable>>>
      */
     public static function getRelationships(): array;
 }

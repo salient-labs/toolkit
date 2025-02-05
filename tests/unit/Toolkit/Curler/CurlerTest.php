@@ -5,7 +5,7 @@ namespace Salient\Tests\Curler;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
-use Salient\Contract\Core\MimeType;
+use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Curler\Event\CurlResponseEventInterface;
 use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
 use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;

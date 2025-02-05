@@ -10,7 +10,8 @@ interface Writable
     /**
      * Get writable properties
      *
-     * If `["*"]` is returned, all `protected` properties are writable.
+     * Returning `["*"]` has the same effect as returning every `protected`
+     * property of the class.
      *
      * @return string[]
      */

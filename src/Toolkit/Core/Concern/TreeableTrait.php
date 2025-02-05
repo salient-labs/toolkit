@@ -21,6 +21,14 @@ trait TreeableTrait
     /** @var array<class-string<self>,string> */
     private static $ChildrenProperties = [];
 
+    /**
+     * @inheritDoc
+     */
+    public static function getRelationships(): array
+    {
+        return [];
+    }
+
     private static function loadHierarchyProperties(): void
     {
         $introspector = Introspector::get(static::class);
@@ -35,9 +43,11 @@ trait TreeableTrait
             );
         }
 
+        // @phpstan-ignore assign.propertyType
         self::$ParentProperties[static::class] =
             $introspector->Properties[$introspector->ParentProperty]
                 ?? $introspector->ParentProperty;
+        // @phpstan-ignore assign.propertyType
         self::$ChildrenProperties[static::class] =
             $introspector->Properties[$introspector->ChildrenProperty]
                 ?? $introspector->ChildrenProperty;
@@ -49,7 +59,7 @@ trait TreeableTrait
     final public function getParent()
     {
         if (!isset(self::$ParentProperties[static::class])) {
-            static::loadHierarchyProperties();
+            self::loadHierarchyProperties();
         }
 
         $_parent = self::$ParentProperties[static::class];
@@ -63,7 +73,7 @@ trait TreeableTrait
     final public function getChildren(): array
     {
         if (!isset(self::$ChildrenProperties[static::class])) {
-            static::loadHierarchyProperties();
+            self::loadHierarchyProperties();
         }
 
         $_children = self::$ChildrenProperties[static::class];
@@ -78,7 +88,7 @@ trait TreeableTrait
     final public function setParent($parent)
     {
         if (!isset(self::$ParentProperties[static::class])) {
-            static::loadHierarchyProperties();
+            self::loadHierarchyProperties();
         }
 
         $_parent = self::$ParentProperties[static::class];
@@ -128,7 +138,7 @@ trait TreeableTrait
     final public function removeChild($child)
     {
         if (!isset(self::$ParentProperties[static::class])) {
-            static::loadHierarchyProperties();
+            self::loadHierarchyProperties();
         }
 
         $_parent = self::$ParentProperties[static::class];
@@ -143,7 +153,7 @@ trait TreeableTrait
     final public function getDepth(): int
     {
         if (!isset(self::$ParentProperties[static::class])) {
-            static::loadHierarchyProperties();
+            self::loadHierarchyProperties();
         }
 
         $_parent = self::$ParentProperties[static::class];
@@ -161,7 +171,7 @@ trait TreeableTrait
     final public function countDescendants(): int
     {
         if (!isset(self::$ChildrenProperties[static::class])) {
-            static::loadHierarchyProperties();
+            self::loadHierarchyProperties();
         }
 
         return $this->doCountDescendants(

@@ -3,8 +3,8 @@
 namespace Salient\Console\Target;
 
 use Salient\Console\Concept\ConsoleStreamTarget;
-use Salient\Contract\Core\EscapeSequence;
-use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Catalog\EscapeSequence;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Core\Facade\Err;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;

@@ -2,14 +2,14 @@
 
 namespace Salient\Cli\Exception;
 
-use Salient\Core\AbstractMultipleErrorException;
+use Salient\Core\Exception\MultipleErrorException;
 
 /**
  * Thrown when invalid command line arguments are given
  *
  * @api
  */
-class CliInvalidArgumentsException extends AbstractMultipleErrorException
+class CliInvalidArgumentsException extends MultipleErrorException
 {
     public function __construct(string ...$errors)
     {

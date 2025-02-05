@@ -2,13 +2,13 @@
 
 namespace Salient\Sync\Http;
 
+use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
-use Salient\Contract\Core\ArrayMapperInterface;
 use Salient\Contract\Core\Buildable;
-use Salient\Contract\Core\ListConformity;
 use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;

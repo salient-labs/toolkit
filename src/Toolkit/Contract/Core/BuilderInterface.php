@@ -2,8 +2,6 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Contract\Container\ContainerInterface;
-
 /**
  * @api
  *
@@ -16,10 +14,10 @@ interface BuilderInterface extends Chainable, Immutable
      *
      * @return static
      */
-    public static function create(?ContainerInterface $container = null);
+    public static function create();
 
     /**
-     * Get an instance from an optionally terminated builder
+     * Get an instance from a possibly-terminated builder
      *
      * @param static|TClass $object
      * @return TClass
@@ -27,26 +25,7 @@ interface BuilderInterface extends Chainable, Immutable
     public static function resolve($object);
 
     /**
-     * Get a value applied to the builder
-     *
-     * @return mixed
-     */
-    public function getB(string $name);
-
-    /**
-     * Check if a value has been applied to the builder
-     */
-    public function issetB(string $name): bool;
-
-    /**
-     * Remove a value applied to the builder
-     *
-     * @return static
-     */
-    public function unsetB(string $name);
-
-    /**
-     * Resolve the builder to an instance
+     * Terminate the builder by returning an instance
      *
      * @return TClass
      */

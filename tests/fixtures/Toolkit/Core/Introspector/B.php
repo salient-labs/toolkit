@@ -4,7 +4,9 @@ namespace Salient\Tests\Core\Introspector;
 
 use Salient\Contract\Core\Entity\Constructible;
 use Salient\Core\Concern\ConstructibleTrait;
+use Salient\Utility\Date;
 use DateTimeImmutable;
+use DateTimeInterface;
 
 class B extends A implements Constructible
 {
@@ -14,15 +16,17 @@ class B extends A implements Constructible
     private array $Data = [];
     /** @var mixed */
     private $Meta;
-    protected DateTimeImmutable $CreatedAt;
+    protected DateTimeInterface $CreatedAt;
     protected DateTimeImmutable $ModifiedAt;
     // @phpstan-ignore property.onlyWritten
     private string $LastSetter;
+    // @phpstan-ignore property.onlyWritten
+    private string $Secret;
 
-    public function __construct(DateTimeImmutable $createdAt)
+    public function __construct(DateTimeInterface $createdAt)
     {
         $this->CreatedAt = $createdAt;
-        $this->ModifiedAt = $createdAt;
+        $this->ModifiedAt = Date::immutable($createdAt);
         $this->LastSetter = __METHOD__;
     }
 
@@ -72,5 +76,10 @@ class B extends A implements Constructible
         $this->Meta = null;
         $this->ModifiedAt = new DateTimeImmutable();
         $this->LastSetter = __METHOD__;
+    }
+
+    protected function _setSecret(string $value): void
+    {
+        $this->Secret = $value;
     }
 }

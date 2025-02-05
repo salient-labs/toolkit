@@ -16,6 +16,8 @@ use Salient\Tests\Core\Introspector\LastNameOnlyA;
 use Salient\Tests\Core\Introspector\LastNameOnlyB;
 use Salient\Tests\Core\Introspector\SurnameOnlyA;
 use Salient\Tests\Core\Introspector\SurnameOnlyB;
+use Salient\Tests\Core\Introspector\X;
+use Salient\Tests\Core\Introspector\Y;
 use Salient\Tests\TestCase;
 use Generator;
 
@@ -133,6 +135,7 @@ final class IntrospectorTest extends TestCase
                         'set' => [
                             'data' => '_setData',
                             'meta' => '_setMeta',
+                            'secret' => '_setSecret',
                         ],
                         'isset' => [
                             'meta' => '_issetMeta',
@@ -149,10 +152,12 @@ final class IntrospectorTest extends TestCase
                     ],
                     'NotNullableParameters' => [],
                     'ServiceParameters' => [
-                        'created_at' => 'DateTimeImmutable',
+                        'created_at' => 'DateTimeInterface',
                     ],
                     'PassByRefParameters' => [],
-                    'DateParameters' => [],
+                    'DateParameters' => [
+                        'created_at' => 'createdAt',
+                    ],
                     'DefaultArguments' => [
                         null,
                     ],
@@ -174,12 +179,16 @@ final class IntrospectorTest extends TestCase
                         'modified_at',
                         'data',
                         'meta',
+                        'secret',
                     ],
                     'ParentProperty' => null,
                     'ChildrenProperty' => null,
                     'OneToOneRelationships' => [],
                     'OneToManyRelationships' => [],
-                    'DateKeys' => [],
+                    'DateKeys' => [
+                        3 => 'created_at',
+                        4 => 'modified_at',
+                    ],
                 ],
                 B::class,
             ],
@@ -192,9 +201,15 @@ final class IntrospectorTest extends TestCase
                     'IsProvidable' => false,
                     'IsRelatable' => false,
                     'IsTreeable' => false,
-                    'HasDates' => false,
-                    'Properties' => [],
-                    'PublicProperties' => [],
+                    'HasDates' => true,
+                    'Properties' => [
+                        'Long' => 'Long',
+                        'Short' => 'Short',
+                    ],
+                    'PublicProperties' => [
+                        'Long' => 'Long',
+                        'Short' => 'Short',
+                    ],
                     'ReadableProperties' => [],
                     'WritableProperties' => [],
                     'Actions' => [],
@@ -214,13 +229,15 @@ final class IntrospectorTest extends TestCase
                         'valueType' => 'valueType',
                     ],
                     'ServiceParameters' => [],
-                    'PassByRefParameters' => [],
+                    'PassByRefParameters' => [
+                        'description' => 'description',
+                    ],
                     'DateParameters' => [],
                     'DefaultArguments' => [
                         null,
                         null,
                         null,
-                        0,
+                        1,
                         0,
                         null,
                     ],
@@ -233,16 +250,77 @@ final class IntrospectorTest extends TestCase
                         'valueType' => 4,
                         'description' => 5,
                     ],
-                    'SerializableProperties' => [],
-                    'NormalisedKeys' => [],
+                    'SerializableProperties' => [
+                        'Long',
+                        'Short',
+                    ],
+                    'NormalisedKeys' => [
+                        'Long',
+                        'Short',
+                    ],
                     'ParentProperty' => null,
                     'ChildrenProperty' => null,
                     'OneToOneRelationships' => [],
                     'OneToManyRelationships' => [],
-                    'DateKeys' => [],
+                    'DateKeys' => [
+                        'Long',
+                        'Short',
+                    ],
                 ],
                 C::class,
-            ]
+            ],
+            X::class => [
+                [
+                    'Class' => X::class,
+                    'IsReadable' => true,
+                    'IsWritable' => true,
+                    'IsExtensible' => false,
+                    'IsProvidable' => false,
+                    'IsRelatable' => true,
+                    'IsTreeable' => false,
+                    'HasDates' => false,
+                    'Properties' => [
+                        'my-int' => 'MyInt',
+                        'my-y' => 'MyY',
+                    ],
+                    'PublicProperties' => [],
+                    'ReadableProperties' => [
+                        'my-int' => 'MyInt',
+                        'my-y' => 'MyY',
+                    ],
+                    'WritableProperties' => [],
+                    'Actions' => [
+                        'set' => [
+                            'my-y' => '_setMyY',
+                        ],
+                        'unset' => [
+                            'my-y' => '_unsetMyY',
+                        ],
+                    ],
+                    'Parameters' => [],
+                    'RequiredParameters' => [],
+                    'NotNullableParameters' => [],
+                    'ServiceParameters' => [],
+                    'PassByRefParameters' => [],
+                    'DateParameters' => [],
+                    'DefaultArguments' => [],
+                    'RequiredArguments' => 0,
+                    'ParameterIndex' => [],
+                    'SerializableProperties' => [],
+                    'NormalisedKeys' => [
+                        'my-int',
+                        'my-y',
+                    ],
+                    'ParentProperty' => null,
+                    'ChildrenProperty' => null,
+                    'OneToOneRelationships' => [
+                        'my-y' => Y::class,
+                    ],
+                    'OneToManyRelationships' => [],
+                    'DateKeys' => [],
+                ],
+                X::class,
+            ],
         ];
     }
 

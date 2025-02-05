@@ -4,13 +4,12 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Relatable;
 use Salient\Contract\Core\Entity\Temporal;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Entity\Writable;
-use Salient\Contract\Core\Provider\Providable;
-use Salient\Contract\Core\NormaliserFlag;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
@@ -33,6 +32,9 @@ class IntrospectionClass
     public const ACTION_ISSET = 'isset';
     public const ACTION_SET = 'set';
     public const ACTION_UNSET = 'unset';
+    public const GREEDY = 1;
+    public const LAZY = 2;
+    public const CAREFUL = 4;
 
     /**
      * The name of the class under introspection
@@ -194,8 +196,6 @@ class IntrospectionClass
     /**
      * Parameters with a declared type that implements DateTimeInterface
      * (normalised name => declared name)
-     *
-     * Empty if the class does not implement {@see Temporal}.
      *
      * @var array<string,string>
      */
@@ -421,10 +421,10 @@ class IntrospectionClass
         $names = Reflect::getNames($properties);
         $this->Properties = array_diff_key(
             Arr::combine(
-                $this->maybeNormalise($names, NormaliserFlag::LAZY),
+                $this->maybeNormalise($names, self::LAZY),
                 $names
             ),
-            array_flip($this->maybeNormalise($reserved, NormaliserFlag::LAZY)),
+            array_flip($this->maybeNormalise($reserved, self::LAZY)),
         );
         $this->PublicProperties =
             $propertyFilter & ReflectionProperty::IS_PROTECTED
@@ -478,7 +478,7 @@ class IntrospectionClass
                     continue;
                 }
                 $action = Str::lower($matches['action']);
-                $property = $this->maybeNormalise($matches['property'], NormaliserFlag::LAZY);
+                $property = $this->maybeNormalise($matches['property'], self::LAZY);
                 $this->Actions[$action][$property] = $name;
             }
         }
@@ -497,7 +497,7 @@ class IntrospectionClass
                 $type = $type instanceof ReflectionNamedType && !$type->isBuiltin()
                     ? $type->getName()
                     : null;
-                $normalised = $this->maybeNormalise($name = $param->getName(), NormaliserFlag::LAZY);
+                $normalised = $this->maybeNormalise($name = $param->getName(), self::LAZY);
                 $defaultValue = null;
                 $isOptional = false;
                 if ($param->isOptional()) {
@@ -521,7 +521,7 @@ class IntrospectionClass
                 if ($param->isPassedByReference()) {
                     $this->PassByRefParameters[$normalised] = $name;
                 }
-                if ($this->HasDates && $type !== null && is_a($type, DateTimeInterface::class, true)) {
+                if ($type !== null && is_a($type, DateTimeInterface::class, true)) {
                     $this->DateParameters[$normalised] = $name;
                 }
                 $this->Parameters[$normalised] = $name;
@@ -562,7 +562,7 @@ class IntrospectionClass
             /** @var class-string<Relatable> $className */
             $relationships = $className::getRelationships();
             $relationships = Arr::combine(
-                $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
+                $this->maybeNormalise(array_keys($relationships), self::LAZY),
                 $relationships
             );
 
@@ -591,7 +591,7 @@ class IntrospectionClass
                 ];
 
                 $treeable = array_unique(
-                    $this->maybeNormalise($treeable, NormaliserFlag::LAZY),
+                    $this->maybeNormalise($treeable, self::LAZY),
                 );
 
                 // Do nothing if, after normalisation, both methods return the
@@ -631,30 +631,32 @@ class IntrospectionClass
         if ($this->HasDates) {
             /** @var class-string<Temporal> $className */
             $dates = $className::getDateProperties();
+        } else {
+            $dates = [];
+        }
 
-            $nativeDates = [];
-            foreach ($properties as $property) {
-                if (!$property->hasType()) {
-                    continue;
-                }
-                foreach (Reflect::getTypeNames($property->getType()) as $type) {
-                    if (is_a($type, DateTimeInterface::class, true)) {
-                        $nativeDates[] = $property->getName();
-                        continue 2;
-                    }
+        $nativeDates = [];
+        foreach ($properties as $property) {
+            if (!$property->hasType()) {
+                continue;
+            }
+            foreach (Reflect::getTypeNames($property->getType()) as $type) {
+                if (is_a($type, DateTimeInterface::class, true)) {
+                    $nativeDates[] = $property->getName();
+                    continue 2;
                 }
             }
-
-            $this->DateKeys =
-                ['*'] === $dates
-                    ? ($nativeDates
-                        ? $this->maybeNormalise($nativeDates, NormaliserFlag::LAZY)
-                        : $this->NormalisedKeys)
-                    : array_intersect(
-                        $this->NormalisedKeys,
-                        $this->maybeNormalise(array_merge($dates, $nativeDates), NormaliserFlag::LAZY),
-                    );
         }
+
+        $this->DateKeys =
+            ['*'] === $dates
+                ? ($nativeDates
+                    ? $this->maybeNormalise($nativeDates, self::LAZY)
+                    : $this->NormalisedKeys)
+                : array_intersect(
+                    $this->NormalisedKeys,
+                    $this->maybeNormalise(array_merge($dates, $nativeDates), self::LAZY),
+                );
     }
 
     /**
@@ -666,19 +668,19 @@ class IntrospectionClass
      * @template T of string[]|string
      *
      * @param T $value
-     * @param int-mask-of<NormaliserFlag::*> $flags
+     * @param int-mask-of<self::GREEDY|self::LAZY|self::CAREFUL> $flags
      * @return T
      */
-    final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
+    final public function maybeNormalise($value, int $flags = self::GREEDY)
     {
         if (!$this->Normaliser) {
             return $value;
         }
         switch (true) {
-            case $flags & NormaliserFlag::LAZY:
+            case $flags & self::LAZY:
                 $normaliser = $this->GentleNormaliser;
                 break;
-            case $flags & NormaliserFlag::CAREFUL:
+            case $flags & self::CAREFUL:
                 $normaliser = $this->CarefulNormaliser;
                 break;
             default:

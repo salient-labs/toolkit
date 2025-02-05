@@ -15,7 +15,7 @@ use Salient\Core\AbstractProvider;
 use Salient\Core\Pipeline;
 use Salient\Sync\Exception\FilterPolicyViolationException;
 use Salient\Sync\Exception\SyncEntityRecursionException;
-use Salient\Sync\Reflection\ReflectionSyncProvider;
+use Salient\Sync\Reflection\SyncProviderReflection;
 use Salient\Sync\Support\SyncContext;
 use Salient\Sync\Support\SyncEntityProvider;
 use Salient\Sync\Support\SyncIntrospector;
@@ -145,7 +145,6 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      *                         'from' => $start,
      *                         'to' => $end,
      *                     ]),
-     *                     $this,
      *                     $ctx,
      *                 )
      *         );
@@ -178,7 +177,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
     protected function pipelineFrom(string $entity): PipelineInterface
     {
         /** @var PipelineInterface<mixed[],T,SyncPipelineArgument> */
-        return Pipeline::create($this->App);
+        return Pipeline::create();
     }
 
     /**
@@ -192,7 +191,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
     protected function pipelineTo(string $entity): PipelineInterface
     {
         /** @var PipelineInterface<T,mixed[],SyncPipelineArgument> */
-        return Pipeline::create($this->App);
+        return Pipeline::create();
     }
 
     /**
@@ -200,7 +199,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      */
     final public static function getServices(): array
     {
-        $provider = new ReflectionSyncProvider(static::class);
+        $provider = new SyncProviderReflection(static::class);
         return $provider->getSyncProviderInterfaces();
     }
 

@@ -2,13 +2,15 @@
 
 namespace Salient\Tests\Core\Introspector;
 
-class C
+use Salient\Contract\Core\Entity\Temporal;
+
+class C implements Temporal
 {
-    public const FLAG = 0;
+    public const FLAG = 1;
     public const BOOLEAN = 0;
 
-    protected string $Long;
-    protected ?string $Short;
+    public string $Long;
+    public ?string $Short;
     protected ?string $ValueName;
     protected int $Type;
     protected int $ValueType;
@@ -20,13 +22,21 @@ class C
         ?string $valueName,
         int $type = self::FLAG,
         int $valueType = self::BOOLEAN,
-        ?string $description = null
+        ?string &$description = null
     ) {
         $this->Long = $long;
         $this->Short = $short;
         $this->ValueName = $valueName;
         $this->Type = $type;
         $this->ValueType = $valueType;
-        $this->Description = $description;
+        $this->Description = &$description;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getDateProperties(): array
+    {
+        return ['*'];
     }
 }

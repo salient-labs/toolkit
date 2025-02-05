@@ -3,9 +3,9 @@
 namespace Salient\Testing\Console;
 
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Utility\File;
 use LogicException;
 

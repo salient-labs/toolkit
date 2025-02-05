@@ -4,12 +4,12 @@ namespace Salient\Sync\Exception;
 
 use Salient\Contract\Sync\Exception\SyncExceptionInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\AbstractException;
+use Salient\Core\Exception\Exception;
 
 /**
  * @internal
  */
-abstract class AbstractSyncException extends AbstractException implements SyncExceptionInterface
+abstract class AbstractSyncException extends Exception implements SyncExceptionInterface
 {
     /**
      * Get the name of a provider for use in exception messages

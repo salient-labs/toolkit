@@ -2,9 +2,8 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\Exception\ExceptionInterface;
-use Salient\Contract\Core\FacadeAwareInterface;
-use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Exception\Exception;
+use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Core\Concern\UnloadsFacades;
 use Salient\Core\Facade\Console;
@@ -17,11 +16,11 @@ use Throwable;
 /**
  * Handle errors and uncaught exceptions
  *
- * @implements FacadeAwareInterface<FacadeInterface<self>>
+ * @implements FacadeAwareInterface<self>
  */
 final class ErrorHandler implements FacadeAwareInterface, Instantiable
 {
-    /** @use UnloadsFacades<FacadeInterface<self>> */
+    /** @use UnloadsFacades<self> */
     use UnloadsFacades;
 
     private const DEFAULT_EXIT_STATUS = 16;
@@ -231,7 +230,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
 
         $this->IsShuttingDown = true;
         $this->IsShuttingDownOnUncaughtException = true;
-        if ($exception instanceof ExceptionInterface) {
+        if ($exception instanceof Exception) {
             $exitStatus = $exception->getExitStatus();
         }
         $this->ExitStatus = $exitStatus ??= self::DEFAULT_EXIT_STATUS;

@@ -108,34 +108,45 @@ final class Test extends AbstractUtility
     }
 
     /**
-     * Check if a value is a reserved PHP type
+     * Check if a string is a built-in type
      *
      * @link https://www.php.net/manual/en/reserved.php
+     *
+     * @param bool $orRelativeClass If `true`, treat `"parent"`, `"self"` and
+     * `"static"` as built-in types.
+     * @param bool $orResource If `true`, treat `"resource"` as a built-in type.
      */
-    public static function isBuiltinType(string $value): bool
-    {
-        return in_array(Str::lower($value), [
-            'array',
-            'bool',
-            'callable',
-            'enum',
-            'false',
-            'float',
-            'int',
-            'iterable',
-            'mixed',
-            'never',
-            'null',
-            'numeric',
-            'object',
-            'parent',
-            'resource',
-            'self',
-            'static',
-            'string',
-            'true',
-            'void',
-        ], true);
+    public static function isBuiltinType(
+        string $value,
+        bool $orRelativeClass = true,
+        bool $orResource = true
+    ): bool {
+        // Types for which `ReflectionNamedType::isBuiltin()` returns `true`
+        $builtin = [
+            'array' => true,
+            'bool' => true,
+            'callable' => true,
+            'false' => true,  // PHP 8.2+ (PHP 8.0+ in union types)
+            'float' => true,
+            'int' => true,
+            'iterable' => true,
+            'mixed' => true,  // PHP 8.0+
+            'never' => true,  // PHP 8.1+
+            'null' => true,  // PHP 8.2+
+            'object' => true,
+            'string' => true,
+            'true' => true,  // PHP 8.2+
+            'void' => true,
+        ];
+        !$orRelativeClass || $builtin += [
+            'parent' => true,
+            'self' => true,
+            'static' => true,
+        ];
+        !$orResource || $builtin += [
+            'resource' => true,
+        ];
+        return $builtin[Str::lower($value)] ?? false;
     }
 
     /**

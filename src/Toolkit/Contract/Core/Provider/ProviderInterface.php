@@ -3,13 +3,13 @@
 namespace Salient\Contract\Core\Provider;
 
 use Salient\Contract\Container\HasContainer;
-use Salient\Contract\Core\Exception\MethodNotImplementedExceptionInterface;
+use Salient\Contract\Core\Exception\MethodNotImplementedException;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\HasName;
 use Stringable;
 
 /**
- * Services objects on behalf of a backend
+ * @api
  *
  * @template TContext of ProviderContextInterface
  */
@@ -27,8 +27,8 @@ interface ProviderInterface extends HasContainer, HasName
     public function getName(): string;
 
     /**
-     * Get a stable list of values that, together with its class name, uniquely
-     * identifies the provider's backend instance
+     * Get a stable list of values that, together with the name of the class,
+     * uniquely identifies the provider's backend instance
      *
      * This method must be idempotent for each backend instance the provider
      * connects to. The return value should correspond to the smallest possible
@@ -58,7 +58,7 @@ interface ProviderInterface extends HasContainer, HasName
     public function getBackendIdentifier(): array;
 
     /**
-     * Get a date formatter to work with the backend's date and time format
+     * Get a date formatter to work with the provider's date and time format
      * and/or timezone
      */
     public function getDateFormatter(): DateFormatterInterface;
@@ -72,14 +72,14 @@ interface ProviderInterface extends HasContainer, HasName
     public function getContext(): ProviderContextInterface;
 
     /**
-     * Throw an exception if the backend isn't reachable
+     * Throw an exception if the provider's backend isn't reachable
      *
      * Positive results should be cached for `$ttl` seconds. Negative results
      * must never be cached.
      *
      * @return $this
-     * @throws MethodNotImplementedExceptionInterface if heartbeat monitoring
-     * isn't supported.
+     * @throws MethodNotImplementedException if heartbeat monitoring isn't
+     * supported.
      */
     public function checkHeartbeat(int $ttl = 300);
 }

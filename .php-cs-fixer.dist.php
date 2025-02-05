@@ -52,6 +52,7 @@ return (new PhpCsFixer\Config())
         'phpdoc_order' => ['order' => [
             'todo',
             'see',
+            'link',
             'property',
             'property-read',
             'property-write',

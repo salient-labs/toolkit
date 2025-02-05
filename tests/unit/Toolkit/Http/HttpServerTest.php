@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Core\FileDescriptor;
-use Salient\Contract\Core\MimeType;
+use Salient\Contract\Catalog\FileDescriptor;
+use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface as ResponseInterface;

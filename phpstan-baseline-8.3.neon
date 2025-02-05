@@ -85,18 +85,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/EventDispatcher/EventDispatcherTest.php
 
 		-
-			message: '#^Binary operation "\*" between mixed and 6 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: tests/unit/Toolkit/Core/PipelineTest.php
-
-		-
-			message: '#^Binary operation "/" between mixed and 23 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: tests/unit/Toolkit/Core/PipelineTest.php
-
-		-
 			message: '#^Method Salient\\Tests\\Core\\ProcessTest\:\:getCallback\(\) never assigns null to &\$output so it can be removed from the by\-ref type\.$#'
 			identifier: parameterByRef.unusedType
 			count: 1

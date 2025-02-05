@@ -2,8 +2,6 @@
 
 namespace Salient\Contract\Core;
 
-use Salient\Contract\Container\ContainerInterface;
-
 /**
  * @api
  *
@@ -12,14 +10,14 @@ use Salient\Contract\Container\ContainerInterface;
 interface Buildable
 {
     /**
-     * Get a builder that creates instances of the class
+     * Get a builder for the class
      *
      * @return TBuilder
      */
-    public static function build(?ContainerInterface $container = null): BuilderInterface;
+    public static function build(): BuilderInterface;
 
     /**
-     * Get an instance of the class from an optionally terminated builder
+     * Get an instance of the class from a possibly-terminated builder
      *
      * @param TBuilder|static $object
      * @return static

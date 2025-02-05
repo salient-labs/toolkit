@@ -2,9 +2,9 @@
 
 namespace Salient\Console\Support;
 
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleMessageAttributesInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Concern\HasMutator;
 
 /**

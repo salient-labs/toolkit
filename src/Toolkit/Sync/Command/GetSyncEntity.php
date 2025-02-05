@@ -244,8 +244,8 @@ EOF)
 
         /** @var SyncSerializeRules<T> */
         $rules = $entity::getSerializeRules()
-            ->withIncludeCanonicalId($this->IncludeCanonicalId)
-            ->withIncludeMeta($this->IncludeMeta);
+            ->withCanonicalId($this->IncludeCanonicalId)
+            ->withDynamicProperties($this->IncludeMeta);
 
         if ($this->Field) {
             foreach ($this->Field as $field) {

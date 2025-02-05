@@ -3,7 +3,7 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Core\MimeType;
+use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Exception\InvalidArgumentTypeException;

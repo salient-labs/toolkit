@@ -22,7 +22,7 @@ final class SyncSerializeRulesTest extends TestCase
     {
         $container = new Container();
 
-        $rules1 = SyncSerializeRules::build($container)
+        $rules1 = SyncSerializeRules::build()
             ->entity(User::class)
             ->remove([
                 'l1.l2.field1',
@@ -31,7 +31,7 @@ final class SyncSerializeRulesTest extends TestCase
                 User::class => ['e3_field', ['e4_field', 'e4_field_id_1']],
             ])
             ->build();
-        $rules2 = SyncSerializeRules::build($container)
+        $rules2 = SyncSerializeRules::build()
             ->entity(User::class)
             ->remove([
                 ['l1.l2.field1', 'field1_id_2'],
@@ -42,7 +42,7 @@ final class SyncSerializeRulesTest extends TestCase
                 User::class => ['e4_field', ['e3_field', 'e3_field_id_2']],
             ])
             ->build();
-        $rules3 = SyncSerializeRules::build($container)
+        $rules3 = SyncSerializeRules::build()
             ->entity(User::class)
             ->remove([
                 'l1.l2.field2',

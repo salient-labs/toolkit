@@ -2,20 +2,19 @@
 
 namespace Salient\Tests\Core\AbstractFacade;
 
-use Salient\Contract\Core\FacadeAwareInterface;
-use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\UnloadsFacades;
 
 /**
- * @implements FacadeAwareInterface<FacadeInterface<self>>
+ * @implements FacadeAwareInterface<MyServiceInterface>
  */
 class MyUnloadsFacadesClass extends MyServiceClass implements
     FacadeAwareInterface,
     MyServiceInterface,
     Unloadable
 {
-    /** @use UnloadsFacades<FacadeInterface<self>> */
+    /** @use UnloadsFacades<MyServiceInterface> */
     use UnloadsFacades;
     use MyInstanceTrait;
 }

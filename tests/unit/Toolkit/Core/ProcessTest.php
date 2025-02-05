@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Core\FileDescriptor;
+use Salient\Contract\Catalog\FileDescriptor;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTerminatedBySignalException;
 use Salient\Core\Exception\ProcessTimedOutException;

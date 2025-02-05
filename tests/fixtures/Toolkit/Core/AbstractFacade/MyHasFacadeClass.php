@@ -2,20 +2,19 @@
 
 namespace Salient\Tests\Core\AbstractFacade;
 
-use Salient\Contract\Core\FacadeAwareInterface;
-use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasFacade;
 
 /**
- * @implements FacadeAwareInterface<FacadeInterface<MyServiceInterface>>
+ * @implements FacadeAwareInterface<MyServiceInterface>
  */
 class MyHasFacadeClass implements
     FacadeAwareInterface,
     MyServiceInterface,
     Unloadable
 {
-    /** @use HasFacade<FacadeInterface<MyServiceInterface>> */
+    /** @use HasFacade<MyServiceInterface> */
     use HasFacade;
     use MyInstanceTrait;
 

@@ -6,6 +6,8 @@ use Psr\Log\LoggerInterface;
 use Salient\Console\Support\ConsoleWriterState;
 use Salient\Console\Target\StreamTarget;
 use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTargetInterface;
@@ -14,12 +16,9 @@ use Salient\Contract\Console\ConsoleTargetPrefixInterface as TargetPrefix;
 use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
 use Salient\Contract\Console\ConsoleWriterInterface;
-use Salient\Contract\Core\Exception\ExceptionInterface;
-use Salient\Contract\Core\Exception\MultipleErrorExceptionInterface;
-use Salient\Contract\Core\FacadeAwareInterface;
-use Salient\Contract\Core\FacadeInterface;
-use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
+use Salient\Contract\Core\Exception\Exception;
+use Salient\Contract\Core\Exception\MultipleErrorException;
+use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\HasFacade;
 use Salient\Core\Facade\Console;
@@ -42,11 +41,11 @@ use Throwable;
  * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
  * {@see Console::getInstance()}.
  *
- * @implements FacadeAwareInterface<FacadeInterface<ConsoleWriterInterface>>
+ * @implements FacadeAwareInterface<ConsoleWriterInterface>
  */
 final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterface, Unloadable
 {
-    /** @use HasFacade<FacadeInterface<ConsoleWriterInterface>> */
+    /** @use HasFacade<ConsoleWriterInterface> */
     use HasFacade;
 
     private ConsoleWriterState $State;
@@ -798,10 +797,10 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             }
 
             if (
-                $ex instanceof MultipleErrorExceptionInterface
+                $ex instanceof MultipleErrorException
                 && !$ex->hasUnreportedErrors()
             ) {
-                $message = $this->escape($ex->getMessageWithoutErrors());
+                $message = $this->escape($ex->getMessageOnly());
             } else {
                 $message = $this->escape($ex->getMessage());
             }
@@ -832,7 +831,7 @@ final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterfac
             'Stack trace:',
             "\n" . $exception->getTraceAsString()
         );
-        if ($exception instanceof ExceptionInterface) {
+        if ($exception instanceof Exception) {
             foreach ($exception->getMetadata() as $key => $value) {
                 $value = rtrim((string) $value, "\n");
                 $this->write($traceLevel, "{$key}:", "\n{$value}");

@@ -2,8 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Core\FacadeAwareInterface;
-use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\UnloadsFacades;
@@ -21,14 +20,14 @@ use Throwable;
  *
  * @api
  *
- * @implements FacadeAwareInterface<FacadeInterface<static>>
+ * @implements FacadeAwareInterface<static>
  */
 abstract class AbstractStore implements
     FacadeAwareInterface,
     Instantiable,
     Unloadable
 {
-    /** @use UnloadsFacades<FacadeInterface<static>> */
+    /** @use UnloadsFacades<static> */
     use UnloadsFacades;
 
     private ?StoreState $State = null;

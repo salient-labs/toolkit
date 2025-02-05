@@ -9,8 +9,8 @@ class ResolvableB implements Normalisable
 {
     public static function normaliseProperty(
         string $name,
-        bool $greedy = true,
-        string ...$hints
+        bool $fromData = true,
+        string ...$declaredName
     ): string {
         return Str::upper(Str::kebab($name));
     }

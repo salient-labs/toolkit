@@ -306,13 +306,17 @@ final class TestTest extends TestCase
     /**
      * @dataProvider isBuiltinTypeProvider
      */
-    public function testIsBuiltinType(bool $expected, string $value): void
-    {
-        $this->assertSame($expected, Test::isBuiltinType($value));
+    public function testIsBuiltinType(
+        bool $expected,
+        string $value,
+        bool $orClass = true,
+        bool $orResource = true
+    ): void {
+        $this->assertSame($expected, Test::isBuiltinType($value, $orClass, $orResource));
     }
 
     /**
-     * @return array<array{bool,string}>
+     * @return array<array{bool,string,2?:bool,3?:bool}>
      */
     public static function isBuiltinTypeProvider(): array
     {
@@ -320,6 +324,15 @@ final class TestTest extends TestCase
             [false, ''],
             [false, 'not a type'],
             [true, 'array'],
+            [true, 'ARRAY'],
+            [false, 'static', false, false],
+            [true, 'static', true, false],
+            [false, 'static', false],
+            [true, 'static'],
+            [false, 'resource', false, false],
+            [false, 'resource', true, false],
+            [true, 'resource', false],
+            [true, 'resource'],
         ];
     }
 

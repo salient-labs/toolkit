@@ -31,23 +31,24 @@ final class ReflectTest extends TestCase
 {
     public function testGetNames(): void
     {
-        $this->assertSame([
+        $this->assertSame($output = [
             'Salient\Tests\Reflection\MyClass',
             'Salient\Tests\Reflection\MyInterface',
             'Salient\Tests\Reflection\MyTrait',
-            'MY_CONSTANT',
-            'MyDocumentedMethod',
-            'parent',
-            'MyDocumentedProperty',
-        ], Reflect::getNames([
+            'MY_CONSTANT' => 'MY_CONSTANT',
+            'MyDocumentedMethod' => 'MyDocumentedMethod',
+            '$parent' => 'parent',
+            'MyDocumentedProperty' => 'MyDocumentedProperty',
+        ], Reflect::getNames($input = [
             new ReflectionClass(MyClass::class),
             new ReflectionClass(MyInterface::class),
             new ReflectionClass(MyTrait::class),
-            new ReflectionClassConstant(MyClass::class, 'MY_CONSTANT'),
-            new ReflectionMethod(MyClass::class, 'MyDocumentedMethod'),
-            new ReflectionParameter([MyClass::class, '__construct'], 'parent'),
-            new ReflectionProperty(MyClass::class, 'MyDocumentedProperty'),
+            'MY_CONSTANT' => new ReflectionClassConstant(MyClass::class, 'MY_CONSTANT'),
+            'MyDocumentedMethod' => new ReflectionMethod(MyClass::class, 'MyDocumentedMethod'),
+            '$parent' => new ReflectionParameter([MyClass::class, '__construct'], 'parent'),
+            'MyDocumentedProperty' => new ReflectionProperty(MyClass::class, 'MyDocumentedProperty'),
         ]));
+        $this->assertSame(array_values($output), Reflect::getNames($input, false));
     }
 
     public function testGetAllProperties(): void
@@ -92,7 +93,7 @@ final class ReflectTest extends TestCase
     {
         yield from [
             [
-                InvalidArgumentException::class . ',$function has no parameter at position 0',
+                InvalidArgumentException::class . ', has no parameter at position 0',
                 fn() => null,
             ],
             [

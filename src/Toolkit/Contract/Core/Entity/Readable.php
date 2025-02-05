@@ -10,7 +10,8 @@ interface Readable
     /**
      * Get readable properties
      *
-     * If `["*"]` is returned, all `protected` properties are readable.
+     * Returning `["*"]` has the same effect as returning every `protected`
+     * property of the class.
      *
      * @return string[]
      */

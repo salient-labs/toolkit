@@ -3,7 +3,7 @@
 namespace Salient\Tests;
 
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
-use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Utility\Regex;
 use Closure;
 use Throwable;

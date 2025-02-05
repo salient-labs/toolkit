@@ -43,7 +43,7 @@ abstract class AbstractProvider implements ProviderInterface
     }
 
     /**
-     * Get a date formatter to work with the backend's date and time format
+     * Get a date formatter to work with the provider's date and time format
      * and/or timezone
      *
      * The {@see DateFormatterInterface} returned will be cached for the

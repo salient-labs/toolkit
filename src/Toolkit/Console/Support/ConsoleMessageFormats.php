@@ -3,8 +3,8 @@
 namespace Salient\Console\Support;
 
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Core\MessageLevel as Level;
 
 /**
  * Maps message levels and types to formats

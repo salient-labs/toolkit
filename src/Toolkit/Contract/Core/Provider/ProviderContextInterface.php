@@ -2,11 +2,12 @@
 
 namespace Salient\Contract\Core\Provider;
 
+use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Core\ListConformity;
 
 /**
  * @api
@@ -17,9 +18,9 @@ use Salient\Contract\Core\ListConformity;
  * @extends HasProvider<TProvider>
  */
 interface ProviderContextInterface extends
-    Immutable,
+    HasProvider,
     HasContainer,
-    HasProvider
+    Immutable
 {
     /**
      * Get the context's provider
@@ -51,14 +52,14 @@ interface ProviderContextInterface extends
     public function withEntityType(string $entityType);
 
     /**
-     * Get the array key conformity applied to the context
+     * Get the conformity level applied to the context
      *
      * @return ListConformity::*
      */
     public function getConformity(): int;
 
     /**
-     * Get an instance with the given array key conformity
+     * Get an instance with the given conformity level
      *
      * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
      * wherever possible to improve performance.

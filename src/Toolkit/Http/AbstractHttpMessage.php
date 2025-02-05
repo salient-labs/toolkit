@@ -4,8 +4,8 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
+use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Core\MimeType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;

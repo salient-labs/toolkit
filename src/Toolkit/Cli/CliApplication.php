@@ -7,13 +7,13 @@ use Salient\Console\Support\ConsoleManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Container\Application;
+use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Core\JsonSchemaInterface;
-use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\HasJsonSchema;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -400,7 +400,7 @@ class CliApplication extends Application implements CliApplicationInterface
                 array_shift($args);
                 $schema = $command->getJsonSchema();
                 echo Json::prettyPrint([
-                    '$schema' => $schema['$schema'] ?? JsonSchemaInterface::DRAFT_04_SCHEMA_ID,
+                    '$schema' => $schema['$schema'] ?? HasJsonSchema::DRAFT_04_SCHEMA_ID,
                     'title' => $args[0] ?? $schema['title'] ?? trim($this->getProgramName() . " $name") . ' options',
                 ] + $schema) . \PHP_EOL;
                 return $this;
@@ -410,7 +410,7 @@ class CliApplication extends Application implements CliApplicationInterface
             $this->LastExitStatus = $command(...$args);
             return $this;
         } catch (CliInvalidArgumentsException $ex) {
-            $ex->reportErrors();
+            $ex->reportErrors(Console::getInstance());
             if (!$node) {
                 $node = $lastNode;
                 $name = $lastName;

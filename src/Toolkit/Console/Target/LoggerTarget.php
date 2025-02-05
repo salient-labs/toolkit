@@ -6,7 +6,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Salient\Console\Concept\ConsoleTarget;
-use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Catalog\MessageLevel as Level;
 
 /**
  * Writes console output to a PSR-3 logger

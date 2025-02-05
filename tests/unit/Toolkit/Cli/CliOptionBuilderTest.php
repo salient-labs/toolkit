@@ -389,7 +389,7 @@ final class CliOptionBuilderTest extends TestCase
 
     private function getOption(): CliOptionBuilder
     {
-        return CliOption::build($this->getContainer())
+        return CliOption::build()
             ->valueType(CliOptionValueType::DATE)
             ->allowedValues(['today', 'yesterday', 'tomorrow'])
             ->unknownValuePolicy(CliOptionValueUnknownPolicy::ACCEPT)

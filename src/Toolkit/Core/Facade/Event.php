@@ -2,8 +2,8 @@
 
 namespace Salient\Core\Facade;
 
+use Salient\Core\Event\EventDispatcher;
 use Salient\Core\AbstractFacade;
-use Salient\Core\EventDispatcher;
 
 /**
  * A facade for EventDispatcher

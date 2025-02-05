@@ -23,8 +23,7 @@ use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
 use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\SingletonInterface;
-use Salient\Contract\Core\FacadeAwareInterface;
-use Salient\Contract\Core\FacadeInterface;
+use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\HasChainableMethods;
 use Salient\Core\Concern\UnloadsFacades;
@@ -40,11 +39,11 @@ use ReflectionParameter;
 /**
  * A service container with contextual bindings
  *
- * @implements FacadeAwareInterface<FacadeInterface<self>>
+ * @implements FacadeAwareInterface<ContainerInterface>
  */
 class Container implements ContainerInterface, FacadeAwareInterface
 {
-    /** @use UnloadsFacades<FacadeInterface<self>> */
+    /** @use UnloadsFacades<ContainerInterface> */
     use UnloadsFacades;
     use HasChainableMethods;
 
