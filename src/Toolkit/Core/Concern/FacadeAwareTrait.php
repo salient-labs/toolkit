@@ -6,11 +6,9 @@ use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Facade\FacadeInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Utility\Get;
-use LogicException;
 
 /**
- * Implements FacadeAwareInterface by maintaining a list of facades the instance
- * is being used by
+ * Maintains a list of facades the instance is being used by
  *
  * @api
  *
@@ -20,12 +18,8 @@ use LogicException;
  */
 trait FacadeAwareTrait
 {
-    /**
-     * Normalised FQCN => given FQCN
-     *
-     * @var array<class-string<FacadeInterface<TService>>,class-string<FacadeInterface<TService>>>
-     */
-    private $Facades = [];
+    /** @var array<class-string<FacadeInterface<TService>>,class-string<FacadeInterface<TService>>> */
+    private array $Facades = [];
 
     /**
      * @param class-string<FacadeInterface<TService>> $facade
@@ -57,26 +51,10 @@ trait FacadeAwareTrait
         }
 
         foreach ($this->Facades as $fqcn => $facade) {
-            if (!$facade::isLoaded() || $facade::getInstance() !== $this) {
-                // @codeCoverageIgnoreStart
-                unset($this->Facades[$fqcn]);
-                continue;
-                // @codeCoverageIgnoreEnd
+            if ($facade::isLoaded() && $facade::getInstance() === $this) {
+                $facade::unload();
             }
-
-            $facade::unload();
+            unset($this->Facades[$fqcn]);
         }
-
-        if (!$this->Facades) {
-            return;
-        }
-
-        // @codeCoverageIgnoreStart
-        throw new LogicException(sprintf(
-            'Underlying %s not unloaded: %s',
-            static::class,
-            implode(' ', $this->Facades),
-        ));
-        // @codeCoverageIgnoreEnd
     }
 }
