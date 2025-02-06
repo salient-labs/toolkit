@@ -29,7 +29,7 @@ trait FacadeAwareInstanceTrait
     /**
      * @param class-string<FacadeInterface<TService>> $facade
      */
-    final public function withFacade(string $facade)
+    public function withFacade(string $facade)
     {
         if ($this->Facade === $facade) {
             return $this;
@@ -71,7 +71,7 @@ trait FacadeAwareInstanceTrait
     /**
      * @param class-string<FacadeInterface<TService>> $facade
      */
-    final public function withoutFacade(string $facade, bool $unloading)
+    public function withoutFacade(string $facade, bool $unloading)
     {
         if ($this->Facade !== $facade) {
             throw new LogicException(sprintf(
@@ -120,7 +120,7 @@ trait FacadeAwareInstanceTrait
      * This method can be used to keep a facade up-to-date with an immutable
      * underlying instance, e.g. by calling it from `__clone()`.
      */
-    final protected function updateFacade(): void
+    protected function updateFacade(): void
     {
         if (
             $this->Facade !== null

@@ -5,8 +5,6 @@ namespace Salient\Core\Concern;
 use Salient\Contract\Core\Chainable;
 
 /**
- * Implements Chainable
- *
  * @api
  *
  * @phpstan-require-implements Chainable
@@ -26,7 +24,7 @@ trait ChainableTrait
      */
     public function applyIf($condition, ?callable $then = null, ?callable $else = null)
     {
-        if (is_callable($condition)) {
+        if (!is_bool($condition)) {
             $condition = $condition($this);
         }
 

@@ -19,7 +19,7 @@ interface Treeable extends Hierarchical, Relatable
     /**
      * Get the property that links a parent to children of the same type
      *
-     * The property returned must accept `iterable<static>`.
+     * The property returned must accept `static[]`.
      */
     public static function getChildrenProperty(): string;
 }

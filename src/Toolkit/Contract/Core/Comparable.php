@@ -3,7 +3,7 @@
 namespace Salient\Contract\Core;
 
 /**
- * Able to compare instances of itself, e.g. for sorting purposes
+ * @api
  */
 interface Comparable
 {
@@ -11,14 +11,9 @@ interface Comparable
      * Get an integer less than, equal to, or greater than zero when $a is less
      * than, equal to, or greater than $b, respectively
      *
-     * This method returns the equivalent of:
-     *
-     * ```php
-     * $a <=> $b
-     * ```
-     *
      * @param static $a
      * @param static $b
+     * @return int A value that can be used instead of `$a <=> $b`.
      */
     public static function compare($a, $b): int;
 }

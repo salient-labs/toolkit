@@ -83,7 +83,10 @@ final class Date extends AbstractUtility
     {
         $datetime = self::immutable($datetime);
         $tz = $datetime->getTimezone()->getName();
-        if ($tz === 'UTC' && ($timezone !== null || date_default_timezone_get() !== 'UTC')) {
+        if (
+            ($tz === 'UTC' || $tz === '+00:00')
+            && ($timezone !== null || date_default_timezone_get() !== 'UTC')
+        ) {
             $timezone = self::timezone($timezone);
             if ($tz !== $timezone->getName()) {
                 return $datetime->setTimezone($timezone);

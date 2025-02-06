@@ -24,7 +24,7 @@ trait FacadeAwareTrait
     /**
      * @param class-string<FacadeInterface<TService>> $facade
      */
-    final public function withFacade(string $facade)
+    public function withFacade(string $facade)
     {
         $this->Facades[Get::fqcn($facade)] = $facade;
         return $this;
@@ -33,7 +33,7 @@ trait FacadeAwareTrait
     /**
      * @param class-string<FacadeInterface<TService>> $facade
      */
-    final public function withoutFacade(string $facade, bool $unloading)
+    public function withoutFacade(string $facade, bool $unloading)
     {
         if ($unloading) {
             unset($this->Facades[Get::fqcn($facade)]);
@@ -44,7 +44,7 @@ trait FacadeAwareTrait
     /**
      * Unload any facades where the object is the underlying instance
      */
-    final protected function unloadFacades(): void
+    protected function unloadFacades(): void
     {
         if (!$this->Facades) {
             return;

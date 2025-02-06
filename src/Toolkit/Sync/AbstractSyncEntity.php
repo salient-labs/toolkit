@@ -10,6 +10,7 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Writable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Flushable;
 use Salient\Contract\Core\HasDescription;
@@ -100,11 +101,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     public $CanonicalId;
 
     /** @var SyncProviderInterface|null */
-    private $Provider;
+    private ?ProviderInterface $Provider = null;
     /** @var SyncContextInterface|null */
-    private $Context;
+    private ?ProviderContextInterface $Context = null;
     /** @var int-mask-of<EntityState::*> */
-    private $State = 0;
+    private int $State = 0;
 
     /**
      * Entity => "/^<pattern>_/" | false

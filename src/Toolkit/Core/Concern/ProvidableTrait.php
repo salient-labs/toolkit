@@ -10,90 +10,79 @@ use Salient\Core\Introspector;
 use LogicException;
 
 /**
- * Implements Providable to represent an external entity
- *
- * @see Providable
+ * @api
  *
  * @template TProvider of ProviderInterface
  * @template TContext of ProviderContextInterface
+ *
+ * @phpstan-require-implements Providable<TProvider,TContext>
  */
 trait ProvidableTrait
 {
     /** @var TProvider|null */
-    private $Provider;
+    private ?ProviderInterface $Provider = null;
     /** @var TContext|null */
-    private $Context;
+    private ?ProviderContextInterface $Context = null;
     /** @var class-string|null */
-    private $Service;
-
-    /**
-     * @inheritDoc
-     */
-    public function postLoad(): void {}
+    private ?string $Service = null;
 
     /**
      * @param TProvider $provider
-     * @return $this
      */
-    final public function setProvider(ProviderInterface $provider)
+    public function setProvider(ProviderInterface $provider)
     {
         if ($this->Provider) {
             throw new LogicException('Provider already set');
         }
         $this->Provider = $provider;
-
         return $this;
     }
 
     /**
      * @return TProvider|null
      */
-    final public function getProvider(): ?ProviderInterface
+    public function getProvider(): ?ProviderInterface
     {
         return $this->Provider;
     }
 
     /**
      * @param TContext $context
-     * @return $this
      */
-    final public function setContext(ProviderContextInterface $context)
+    public function setContext(ProviderContextInterface $context)
     {
         $this->Context = $context;
-
         return $this;
     }
 
     /**
      * @return TContext|null
      */
-    final public function getContext(): ?ProviderContextInterface
+    public function getContext(): ?ProviderContextInterface
     {
         return $this->Context;
     }
 
     /**
-     * @param class-string $service
+     * @inheritDoc
      */
-    final public function setService(string $service): void
+    public function setService(string $service): void
     {
         $this->Service = $service;
     }
 
     /**
-     * @return class-string
+     * @inheritDoc
      */
-    final public function getService(): string
+    public function getService(): string
     {
         return $this->Service ?? static::class;
     }
 
     /**
-     * @param mixed[] $data
      * @param TContext $context
-     * @return static
      */
-    final public static function provide(
+    public static function provide(
         array $data,
         ProviderContextInterface $context
     ) {
@@ -110,30 +99,9 @@ trait ProvidableTrait
     }
 
     /**
-     * @template TKey of array-key
-     *
-     * @param iterable<TKey,mixed[]> $data
      * @param TContext $context
-     * @param ListConformity::* $conformity
-     * @return iterable<TKey,static>
      */
-    final public static function provideMultiple(
-        iterable $data,
-        ProviderContextInterface $context,
-        int $conformity = ListConformity::NONE
-    ): iterable {
-        return self::_provideMultiple($data, $context, $conformity);
-    }
-
-    /**
-     * @template TKey of array-key
-     *
-     * @param iterable<TKey,mixed[]> $data
-     * @param TContext $context
-     * @param ListConformity::* $conformity
-     * @return iterable<TKey,static>
-     */
-    private static function _provideMultiple(
+    public static function provideMultiple(
         iterable $data,
         ProviderContextInterface $context,
         int $conformity = ListConformity::NONE
@@ -147,13 +115,16 @@ trait ProvidableTrait
         $introspector = Introspector::getService($container, static::class);
 
         foreach ($data as $key => $data) {
-            if (!isset($closure)) {
-                $closure = $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
-                    ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
-                    : $introspector->getCreateProvidableFromClosure();
-            }
+            $closure ??= $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
+                ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
+                : $introspector->getCreateProvidableFromClosure();
 
             yield $key => $closure($data, $provider, $context);
         }
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function postLoad(): void {}
 }

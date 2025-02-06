@@ -12,10 +12,6 @@ use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Generator;
 
 /**
- * Implements Constructible
- *
- * @see Constructible
- *
  * @api
  *
  * @phpstan-require-implements Constructible
@@ -27,7 +23,7 @@ trait ConstructibleTrait
     /**
      * @inheritDoc
      */
-    final public static function construct(
+    public static function construct(
         array $data,
         ?object $parent = null,
         ?ContainerInterface $container = null
@@ -45,7 +41,7 @@ trait ConstructibleTrait
     /**
      * @inheritDoc
      */
-    final public static function constructMultiple(
+    public static function constructMultiple(
         iterable $data,
         int $conformity = ListConformity::NONE,
         ?object $parent = null,

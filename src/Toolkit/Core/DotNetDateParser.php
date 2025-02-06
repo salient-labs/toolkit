@@ -3,6 +3,7 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\DateParserInterface;
+use Salient\Utility\Date;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use DateTimeImmutable;
@@ -17,7 +18,7 @@ use DateTimeZone;
  */
 final class DotNetDateParser implements DateParserInterface
 {
-    private const REGEX = '/^\/Date\((?<seconds>[0-9]*?)(?<milliseconds>[0-9]{1,3})(?<offset>[-+][0-9]{4})?\)\/$/';
+    private const REGEX = '/^\/Date\((?<seconds>[0-9]*?)(?<milliseconds>[0-9]{1,3})(?<offset>[-+][0-9]{4})?\)\/$/D';
 
     /**
      * @inheritDoc
@@ -34,12 +35,9 @@ final class DotNetDateParser implements DateParserInterface
             (int) Str::coalesce($matches['seconds'], '0'),
             (int) $matches['milliseconds'],
         ));
-        if ($timezone) {
-            return $date->setTimezone($timezone);
-        }
         if ($matches['offset'] !== null) {
-            return $date->setTimezone(new DateTimeZone($matches['offset']));
+            $date = $date->setTimezone(new DateTimeZone($matches['offset']));
         }
-        return $date;
+        return Date::maybeSetTimezone($date, $timezone);
     }
 }

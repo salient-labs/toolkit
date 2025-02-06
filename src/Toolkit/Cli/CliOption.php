@@ -619,7 +619,7 @@ final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
     }
 
     /**
-     * Get the option's JSON Schema
+     * Get a JSON Schema for the option
      *
      * @return array{description?:string,type?:string[]|string,enum?:array<string|int|bool|float|null>,items?:array{type?:string[]|string,enum?:array<string|int|bool|float|null>},uniqueItems?:bool,default?:array<string|int|bool|float>|string|int|bool|float}
      */

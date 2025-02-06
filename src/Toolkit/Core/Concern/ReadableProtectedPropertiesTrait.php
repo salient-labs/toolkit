@@ -3,14 +3,15 @@
 namespace Salient\Core\Concern;
 
 /**
- * Extends HasReadableProperties to read all protected properties by default
- *
- * @see HasReadableProperties
+ * @api
  */
 trait ReadableProtectedPropertiesTrait
 {
     use ReadableTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getReadableProperties(): array
     {
         return ['*'];

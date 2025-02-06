@@ -3,8 +3,6 @@
 namespace Salient\Contract\Core;
 
 /**
- * Has underlying resources to close
- *
  * @api
  */
 interface Unloadable

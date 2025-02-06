@@ -5,12 +5,9 @@ namespace Salient\Core\Concern;
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Core\Internal\ReadPropertyTrait;
 use Salient\Core\Internal\WritePropertyTrait;
-use Salient\Utility\Arr;
 
 /**
- * Implements Extensible to store arbitrary property values
- *
- * @see Extensible
+ * @api
  *
  * @phpstan-require-implements Extensible
  */
@@ -20,14 +17,18 @@ trait ExtensibleTrait
     use WritePropertyTrait;
 
     /**
-     * Normalised property name => value
+     * Normalised name => value
+     *
+     * @internal
      *
      * @var array<string,mixed>
      */
     protected $MetaProperties = [];
 
     /**
-     * Normalised property name => first name passed to __set
+     * Normalised name => first name passed to __set
+     *
+     * @internal
      *
      * @var array<string,string>
      */
@@ -52,7 +53,7 @@ trait ExtensibleTrait
     /**
      * @inheritDoc
      */
-    final public function setDynamicProperties(array $values): void
+    public function setDynamicProperties(array $values): void
     {
         $this->MetaProperties = [];
         $this->MetaPropertyNames = [];
@@ -62,14 +63,14 @@ trait ExtensibleTrait
         }
     }
 
-    final public function getDynamicProperties(): array
+    /**
+     * @inheritDoc
+     */
+    public function getDynamicProperties(): array
     {
-        return Arr::combine(
-            array_map(
-                fn(string $name): string => $this->MetaPropertyNames[$name],
-                array_keys($this->MetaProperties)
-            ),
-            $this->MetaProperties
-        );
+        foreach ($this->MetaProperties as $name => $value) {
+            $properties[$this->MetaPropertyNames[$name]] = $value;
+        }
+        return $properties ?? [];
     }
 }

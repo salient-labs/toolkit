@@ -18,16 +18,18 @@ final class DateFormatParser implements DateParserInterface
     /**
      * Creates a new DateFormatParser object
      *
-     * @see DateTimeImmutable::createFromFormat()
+     * @param string $format Passed to
+     * {@see DateTimeImmutable::createFromFormat()}. See
+     * {@link https://www.php.net/manual/en/datetimeimmutable.createfromformat.php}
+     * for syntax.
      */
     public function __construct(string $format)
     {
         // Reset fields that don't appear in the format string to zero-like
         // values, otherwise they will be set to the current date and time
-        if (strpos($format, '!') === false && strpos($format, '|') === false) {
+        if (strcspn($format, '!|') === strlen($format)) {
             $format .= '|';
         }
-
         $this->Format = $format;
     }
 

@@ -6,18 +6,9 @@ use Salient\Contract\Core\Entity\Writable;
 use Salient\Core\Internal\WritePropertyTrait;
 
 /**
- * Implements Writable
- *
- * - If `_set<Property>()` is defined, it is called instead of assigning
- *   `$value` to `<Property>`.
- * - If `_unset<Property>()` is defined, it is called to unset `<Property>`
- *   instead of assigning `null`.
- * - The existence of `_set<Property>()` makes `<Property>` writable, regardless
- *   of {@see Writable::getWritableProperties()}'s return value.
- *
- * @see Writable
- *
  * @api
+ *
+ * @phpstan-require-implements Writable
  */
 trait WritableTrait
 {
