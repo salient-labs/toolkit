@@ -46,7 +46,7 @@ use Salient\Sync\SyncStore;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
 use Salient\Tests\Core\AbstractFacade\MyClassFacade;
-use Salient\Tests\Core\AbstractFacade\MyHasFacadeClass;
+use Salient\Tests\Core\AbstractFacade\MyFacadeAwareInstanceClass;
 use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
 use Salient\Tests\Core\AbstractFacade\MyServiceClass;
 use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
@@ -84,7 +84,7 @@ $facades = [
     Profile::class => [MetricCollector::class, '--api'],
     // Test fixtures
     MyBrokenFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass']],
-    MyInterfaceFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass', MyHasFacadeClass::class]],
+    MyInterfaceFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass', MyFacadeAwareInstanceClass::class]],
     MyClassFacade::class => [MyServiceClass::class, '--skip', 'withArgs'],
 ];
 

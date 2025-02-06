@@ -3,7 +3,7 @@
 namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\PHPDoc\PHPDocRegex;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Utility\Regex;
@@ -16,7 +16,7 @@ use Stringable;
  */
 abstract class AbstractTag implements Immutable, Stringable
 {
-    use HasMutator {
+    use ImmutableTrait {
         with as protected;
         without as protected;
     }

@@ -11,7 +11,7 @@ use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Regex;
 use LogicException;
@@ -23,7 +23,7 @@ use LogicException;
  */
 final class CliHelpStyle implements CliHelpStyleInterface
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     private ?int $Width;
     private FormatterInterface $Formatter;

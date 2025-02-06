@@ -13,7 +13,7 @@ use Salient\Contract\Console\ConsoleFormatInterface as Format;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use LogicException;
@@ -24,7 +24,7 @@ use UnexpectedValueException;
  */
 final class ConsoleFormatter implements FormatterInterface
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     public const DEFAULT_LEVEL_PREFIX_MAP = [
         Level::EMERGENCY => '! ',  // U+0021

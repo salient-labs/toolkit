@@ -9,7 +9,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\BuildableTrait;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Sync\Support\SyncIntrospectionClass;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Arr;
@@ -89,7 +89,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
 
     /** @use BuildableTrait<SyncSerializeRulesBuilder<TEntity>> */
     use BuildableTrait;
-    use HasMutator;
+    use ImmutableTrait;
 
     /** @var class-string<TEntity> */
     private string $Entity;

@@ -19,7 +19,7 @@ use Salient\Core\Internal\ReadPropertyTrait;
  *
  * @api
  */
-trait HasReadableProperties
+trait ReadableTrait
 {
     use ReadPropertyTrait;
 

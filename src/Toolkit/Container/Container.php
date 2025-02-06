@@ -25,8 +25,8 @@ use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\UnloadsFacades;
+use Salient\Core\Concern\ChainableTrait;
+use Salient\Core\Concern\FacadeAwareTrait;
 use Salient\Core\Facade\Event;
 use Salient\Sync\SyncStore;
 use Closure;
@@ -43,9 +43,9 @@ use ReflectionParameter;
  */
 class Container implements ContainerInterface, FacadeAwareInterface
 {
-    /** @use UnloadsFacades<ContainerInterface> */
-    use UnloadsFacades;
-    use HasChainableMethods;
+    /** @use FacadeAwareTrait<ContainerInterface> */
+    use FacadeAwareTrait;
+    use ChainableTrait;
 
     private const SERVICE_PROVIDER_INTERFACES = [
         ContainerAwareInterface::class,

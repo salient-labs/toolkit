@@ -4,18 +4,18 @@ namespace Salient\Tests\Core\AbstractFacade;
 
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Unloadable;
-use Salient\Core\Concern\HasFacade;
+use Salient\Core\Concern\FacadeAwareInstanceTrait;
 
 /**
  * @implements FacadeAwareInterface<MyServiceInterface>
  */
-class MyHasFacadeClass implements
+class MyFacadeAwareInstanceClass implements
     FacadeAwareInterface,
     MyServiceInterface,
     Unloadable
 {
-    /** @use HasFacade<MyServiceInterface> */
-    use HasFacade;
+    /** @use FacadeAwareInstanceTrait<MyServiceInterface> */
+    use FacadeAwareInstanceTrait;
     use MyInstanceTrait;
 
     public function getInstanceWithoutFacade(): ?self

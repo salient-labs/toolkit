@@ -15,9 +15,9 @@ use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\HasMutator;
-use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Concern\ChainableTrait;
+use Salient\Core\Concern\ImmutableTrait;
+use Salient\Core\Concern\ReadableTrait;
 use Salient\Core\Pipeline;
 use Salient\Iterator\IterableIterator;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
@@ -54,9 +54,9 @@ use LogicException;
  */
 abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chainable, Readable
 {
-    use HasChainableMethods;
-    use HasMutator;
-    use HasReadableProperties;
+    use ChainableTrait;
+    use ImmutableTrait;
+    use ReadableTrait;
 
     /**
      * Get a closure to perform a sync operation on the entity

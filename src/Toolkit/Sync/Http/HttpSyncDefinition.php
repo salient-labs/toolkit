@@ -20,7 +20,7 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Concern\BuildableTrait;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Pipeline;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
 use Salient\Sync\Exception\SyncInvalidContextException;
@@ -81,7 +81,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
 {
     /** @use BuildableTrait<HttpSyncDefinitionBuilder<TEntity,TProvider>> */
     use BuildableTrait;
-    use HasMutator;
+    use ImmutableTrait;
 
     public const DEFAULT_METHOD_MAP = [
         OP::CREATE => HttpRequestMethod::POST,

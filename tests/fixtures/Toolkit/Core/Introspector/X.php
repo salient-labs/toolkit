@@ -6,14 +6,14 @@ use Salient\Contract\Core\Entity\Normalisable;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Relatable;
 use Salient\Contract\Core\Entity\Writable;
-use Salient\Core\Concern\HasReadableProperties;
-use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Concern\ReadableTrait;
+use Salient\Core\Concern\WritableTrait;
 use Salient\Utility\Str;
 
 class X implements Readable, Writable, Normalisable, Relatable
 {
-    use HasReadableProperties;
-    use HasWritableProperties;
+    use ReadableTrait;
+    use WritableTrait;
 
     protected int $MyInt;
     protected Y $MyY;

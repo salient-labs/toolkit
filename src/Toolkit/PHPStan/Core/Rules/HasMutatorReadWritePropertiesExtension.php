@@ -4,7 +4,7 @@ namespace Salient\PHPStan\Core\Rules;
 
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 
 /**
  * @codeCoverageIgnore
@@ -30,7 +30,7 @@ class HasMutatorReadWritePropertiesExtension implements ReadWritePropertiesExten
     {
         $classReflection = $property->getDeclaringClass();
         foreach ($classReflection->getTraits(true) as $traitReflection) {
-            if ($traitReflection->getName() === HasMutator::class) {
+            if ($traitReflection->getName() === ImmutableTrait::class) {
                 return true;
             }
         }

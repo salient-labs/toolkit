@@ -5,7 +5,7 @@ namespace Salient\Http\OAuth2;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
 use Salient\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -22,7 +22,7 @@ use InvalidArgumentException;
  */
 final class AccessToken implements AccessTokenInterface, Immutable, Readable
 {
-    use ReadsProtectedProperties;
+    use ReadableProtectedPropertiesTrait;
 
     protected string $Token;
     protected string $Type;

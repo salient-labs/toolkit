@@ -20,7 +20,7 @@ use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Exception\MultipleErrorException;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Unloadable;
-use Salient\Core\Concern\HasFacade;
+use Salient\Core\Concern\FacadeAwareInstanceTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidEnvironmentException;
 use Salient\Utility\Arr;
@@ -45,8 +45,8 @@ use Throwable;
  */
 final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterface, Unloadable
 {
-    /** @use HasFacade<ConsoleWriterInterface> */
-    use HasFacade;
+    /** @use FacadeAwareInstanceTrait<ConsoleWriterInterface> */
+    use FacadeAwareInstanceTrait;
 
     private ConsoleWriterState $State;
 

@@ -3,7 +3,7 @@
 namespace Salient\Tests\PHPStan\Core\Rules;
 
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use stdClass;
 
 /**
@@ -11,7 +11,7 @@ use stdClass;
  */
 class MyClassWithMutator implements Immutable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     /** @var array-key */
     private $Foo;
@@ -56,7 +56,7 @@ class MyClassWithMutator implements Immutable
 
 class MyClassWithMutatorAlias implements Immutable
 {
-    use HasMutator {
+    use ImmutableTrait {
         with as withPropertyValue;
     }
 
@@ -81,7 +81,7 @@ class MyClassWithMutatorAlias implements Immutable
 
 class MyDynamicClassWithMutator extends stdClass implements Immutable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     /**
      * @return static
@@ -94,7 +94,7 @@ class MyDynamicClassWithMutator extends stdClass implements Immutable
 
 class MyClassWithProtectedMutator implements Immutable
 {
-    use HasMutator {
+    use ImmutableTrait {
         with as protected;
         without as protected;
     }

@@ -13,9 +13,9 @@ use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Entity\Writable;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
-use Salient\Core\Concern\HasNormaliser;
-use Salient\Core\Concern\HasReadableProperties;
-use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Concern\NormalisableTrait;
+use Salient\Core\Concern\ReadableTrait;
+use Salient\Core\Concern\WritableTrait;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -156,9 +156,9 @@ class A implements Constructible
 class B implements Constructible, Readable, Writable, Normalisable
 {
     use ConstructibleTrait;
-    use HasReadableProperties;
-    use HasWritableProperties;
-    use HasNormaliser;
+    use ReadableTrait;
+    use WritableTrait;
+    use NormalisableTrait;
 
     protected int $Id;
     protected string $Name;

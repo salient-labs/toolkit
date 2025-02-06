@@ -5,7 +5,7 @@ namespace Salient\Core;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
-use Salient\Core\Concern\UnloadsFacades;
+use Salient\Core\Concern\FacadeAwareTrait;
 use Salient\Core\Internal\StoreState;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
@@ -27,8 +27,8 @@ abstract class AbstractStore implements
     Instantiable,
     Unloadable
 {
-    /** @use UnloadsFacades<static> */
-    use UnloadsFacades;
+    /** @use FacadeAwareTrait<static> */
+    use FacadeAwareTrait;
 
     private ?StoreState $State = null;
     private bool $IsCheckRunning = false;

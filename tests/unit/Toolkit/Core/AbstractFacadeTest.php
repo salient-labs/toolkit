@@ -8,19 +8,19 @@ use Salient\Core\Facade\Event;
 use Salient\Core\AbstractFacade;
 use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
 use Salient\Tests\Core\AbstractFacade\MyClassFacade;
-use Salient\Tests\Core\AbstractFacade\MyHasFacadeClass;
+use Salient\Tests\Core\AbstractFacade\MyFacadeAwareClass;
+use Salient\Tests\Core\AbstractFacade\MyFacadeAwareInstanceClass;
 use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
 use Salient\Tests\Core\AbstractFacade\MyServiceClass;
 use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
-use Salient\Tests\Core\AbstractFacade\MyUnloadsFacadesClass;
 use Salient\Tests\TestCase;
 use LogicException;
 use stdClass;
 
 /**
  * @covers \Salient\Core\AbstractFacade
- * @covers \Salient\Core\Concern\HasFacade
- * @covers \Salient\Core\Concern\UnloadsFacades
+ * @covers \Salient\Core\Concern\FacadeAwareTrait
+ * @covers \Salient\Core\Concern\FacadeAwareInstanceTrait
  */
 final class AbstractFacadeTest extends TestCase
 {
@@ -34,7 +34,7 @@ final class AbstractFacadeTest extends TestCase
     public function testBrokenFacadeWithInstance(): void
     {
         $this->expectNotToPerformAssertions();
-        MyBrokenFacade::load(new MyUnloadsFacadesClass());
+        MyBrokenFacade::load(new MyFacadeAwareClass());
     }
 
     public function testLoadAndSwap(): void
@@ -45,16 +45,16 @@ final class AbstractFacadeTest extends TestCase
         $this->assertSame([], MyInterfaceFacade::getArgs());
         $this->assertSame(1, MyInterfaceFacade::getClones());
         $instance = MyInterfaceFacade::getInstance();
-        $this->assertInstanceOf(MyHasFacadeClass::class, $instance);
+        $this->assertInstanceOf(MyFacadeAwareInstanceClass::class, $instance);
         $this->assertSame([], $instance->getArgs());
         $this->assertSame(0, $instance->getClones());
 
-        $this->assertCount(0, MyHasFacadeClass::getUnloaded());
+        $this->assertCount(0, MyFacadeAwareInstanceClass::getUnloaded());
         MyInterfaceFacade::swap($instance);
         // @phpstan-ignore method.impossibleType
-        $this->assertCount(1, $unloaded = MyHasFacadeClass::getUnloaded());
+        $this->assertCount(1, $unloaded = MyFacadeAwareInstanceClass::getUnloaded());
         // @phpstan-ignore method.impossibleType
-        $this->assertInstanceOf(MyHasFacadeClass::class, $unloaded = reset($unloaded));
+        $this->assertInstanceOf(MyFacadeAwareInstanceClass::class, $unloaded = reset($unloaded));
         $this->assertNotSame($instance, $unloaded);
         $this->assertSame(2, $unloaded->getClones());
         $this->assertSame($instance, MyInterfaceFacade::getInstance());
@@ -72,10 +72,10 @@ final class AbstractFacadeTest extends TestCase
         $this->assertSame(2, MyInterfaceFacade::getClones());
         $this->assertSame($instance2, MyInterfaceFacade::getInstance());
 
-        $instance = new MyUnloadsFacadesClass(__METHOD__, $line = __LINE__);
+        $instance = new MyFacadeAwareClass(__METHOD__, $line = __LINE__);
         MyInterfaceFacade::swap($instance);
         $this->assertSame([__METHOD__, $line], MyInterfaceFacade::getArgs());
-        $this->assertCount(4, MyHasFacadeClass::getUnloaded());
+        $this->assertCount(4, MyFacadeAwareInstanceClass::getUnloaded());
     }
 
     public function testLoadInvalidInstance(): void
@@ -83,7 +83,7 @@ final class AbstractFacadeTest extends TestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(' does not inherit ');
         // @phpstan-ignore argument.type
-        MyClassFacade::load(new MyHasFacadeClass());
+        MyClassFacade::load(new MyFacadeAwareInstanceClass());
     }
 
     public function testSwapInvalidInstance(): void
@@ -92,7 +92,7 @@ final class AbstractFacadeTest extends TestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(' does not inherit ');
         // @phpstan-ignore argument.type
-        MyClassFacade::swap(new MyHasFacadeClass());
+        MyClassFacade::swap(new MyFacadeAwareInstanceClass());
     }
 
     public function testAlreadyLoaded(): void
@@ -117,13 +117,13 @@ final class AbstractFacadeTest extends TestCase
         MyInterfaceFacade::withArgs(__METHOD__, __LINE__);
         $this->assertTrue(MyInterfaceFacade::isLoaded());
         $instance = MyInterfaceFacade::getInstance();
-        $this->assertInstanceOf(MyHasFacadeClass::class, $instance);
-        /** @var MyHasFacadeClass $instance */
+        $this->assertInstanceOf(MyFacadeAwareInstanceClass::class, $instance);
+        /** @var MyFacadeAwareInstanceClass $instance */
         $this->assertNotNull($instance->getInstanceWithFacade());
         $this->assertNotNull($instance->getInstanceWithoutFacade());
         MyInterfaceFacade::unload();
-        $this->assertCount(2, $unloaded = MyHasFacadeClass::getUnloaded());
-        $this->assertInstanceOf(MyHasFacadeClass::class, $unloaded = end($unloaded));
+        $this->assertCount(2, $unloaded = MyFacadeAwareInstanceClass::getUnloaded());
+        $this->assertInstanceOf(MyFacadeAwareInstanceClass::class, $unloaded = end($unloaded));
         $this->assertNotSame($instance, $unloaded);
         $this->assertSame(3, $unloaded->getClones());
         $this->assertNull($unloaded->getInstanceWithFacade());
@@ -148,9 +148,9 @@ final class AbstractFacadeTest extends TestCase
     public function testLoadWithGlobalContainer(): void
     {
         $container = Container::getGlobalContainer();
-        $this->assertInstanceOf(MyHasFacadeClass::class, MyInterfaceFacade::getInstance());
+        $this->assertInstanceOf(MyFacadeAwareInstanceClass::class, MyInterfaceFacade::getInstance());
         $this->assertInstanceOf(MyServiceClass::class, MyClassFacade::getInstance());
-        $this->assertFalse($container->hasInstance(MyHasFacadeClass::class));
+        $this->assertFalse($container->hasInstance(MyFacadeAwareInstanceClass::class));
         $this->assertTrue($container->hasInstance(MyServiceInterface::class));
         $this->assertTrue($container->hasInstance(MyServiceClass::class));
     }
@@ -166,12 +166,12 @@ final class AbstractFacadeTest extends TestCase
     public function testLoadWithContainerBindings(): void
     {
         Container::getGlobalContainer()
-            ->singleton(MyServiceInterface::class, MyUnloadsFacadesClass::class)
-            ->singleton(MyServiceClass::class, MyUnloadsFacadesClass::class);
+            ->singleton(MyServiceInterface::class, MyFacadeAwareClass::class)
+            ->singleton(MyServiceClass::class, MyFacadeAwareClass::class);
         $instance1 = MyInterfaceFacade::getInstance();
         $instance2 = MyBrokenFacade::getInstance();
         $instance3 = MyClassFacade::getInstance();
-        $this->assertInstanceOf(MyUnloadsFacadesClass::class, $instance1);
+        $this->assertInstanceOf(MyFacadeAwareClass::class, $instance1);
         $this->assertSame($instance1, $instance2);
         $this->assertNotSame($instance1, $instance3);
     }
@@ -242,8 +242,8 @@ final class AbstractFacadeTest extends TestCase
         if (Container::hasGlobalContainer()) {
             Container::getGlobalContainer()->unload();
         }
-        MyHasFacadeClass::reset();
+        MyFacadeAwareInstanceClass::reset();
         MyServiceClass::reset();
-        MyUnloadsFacadesClass::reset();
+        MyFacadeAwareClass::reset();
     }
 }

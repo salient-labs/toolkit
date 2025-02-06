@@ -8,7 +8,7 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\HttpServerRequestInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Http\Exception\HttpServerException;
 use Salient\Http\Exception\InvalidHeaderException;
@@ -23,7 +23,7 @@ use InvalidArgumentException;
  */
 class HttpServer implements Immutable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     protected string $Host;
     protected int $Port;

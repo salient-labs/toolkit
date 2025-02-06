@@ -7,9 +7,9 @@ namespace Salient\Core\Concern;
  *
  * @see HasReadableProperties
  */
-trait ReadsProtectedProperties
+trait ReadableProtectedPropertiesTrait
 {
-    use HasReadableProperties;
+    use ReadableTrait;
 
     public static function getReadableProperties(): array
     {

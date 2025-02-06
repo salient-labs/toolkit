@@ -19,7 +19,7 @@ use Salient\Core\Internal\WritePropertyTrait;
  *
  * @api
  */
-trait HasWritableProperties
+trait WritableTrait
 {
     use WritePropertyTrait;
 

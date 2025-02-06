@@ -25,10 +25,10 @@ use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
-use Salient\Core\Concern\HasNormaliser;
-use Salient\Core\Concern\HasReadableProperties;
-use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Concern\NormalisableTrait;
 use Salient\Core\Concern\ProvidableTrait;
+use Salient\Core\Concern\ReadableTrait;
+use Salient\Core\Concern\WritableTrait;
 use Salient\Core\Facade\Sync;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
@@ -73,12 +73,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     Flushable
 {
     use ConstructibleTrait;
-    use HasReadableProperties;
-    use HasWritableProperties;
+    use ReadableTrait;
+    use WritableTrait;
     use ExtensibleTrait;
     /** @use ProvidableTrait<SyncProviderInterface,SyncContextInterface> */
     use ProvidableTrait;
-    use HasNormaliser;
+    use NormalisableTrait;
     use RequiresContainer;
 
     /**

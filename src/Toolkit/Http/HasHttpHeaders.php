@@ -3,11 +3,11 @@
 namespace Salient\Http;
 
 use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 
 trait HasHttpHeaders
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     protected HttpHeadersInterface $Headers;
 

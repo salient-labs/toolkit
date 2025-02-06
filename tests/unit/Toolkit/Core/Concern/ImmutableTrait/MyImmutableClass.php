@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Concern\HasMutator;
+namespace Salient\Tests\Core\Concern\ImmutableTrait;
 
 use Salient\Collection\CollectionTrait;
 use Salient\Collection\ReadOnlyArrayAccessTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use stdClass;
 
 class MyImmutableClass implements Immutable
 {
-    use HasMutator {
+    use ImmutableTrait {
         with as public;
         without as public;
     }

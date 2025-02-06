@@ -12,7 +12,7 @@ use Salient\Utility\Str;
  *
  * @phpstan-require-implements Normalisable
  */
-trait HasNormaliser
+trait NormalisableTrait
 {
     /**
      * @inheritDoc

@@ -18,7 +18,7 @@ use LogicException;
  *
  * @phpstan-require-implements FacadeAwareInterface
  */
-trait UnloadsFacades
+trait FacadeAwareTrait
 {
     /**
      * Normalised FQCN => given FQCN

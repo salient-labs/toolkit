@@ -17,7 +17,7 @@ use LogicException;
  *
  * @phpstan-require-implements FacadeAwareInterface
  */
-trait HasFacade
+trait FacadeAwareInstanceTrait
 {
     /** @var class-string<FacadeInterface<TService>>|null */
     protected ?string $Facade = null;

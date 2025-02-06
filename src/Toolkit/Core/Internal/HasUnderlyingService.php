@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core\Concern;
+namespace Salient\Core\Internal;
 
 use Salient\Utility\Arr;
 use LogicException;

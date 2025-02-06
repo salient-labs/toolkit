@@ -10,7 +10,7 @@ use ReflectionProperty;
  *
  * @phpstan-require-implements Immutable
  */
-trait HasMutator
+trait ImmutableTrait
 {
     /**
      * Get a copy of the object with a value assigned to a property if its

@@ -26,7 +26,7 @@ final class MyInterfaceFacade extends AbstractFacade
             MyServiceInterface::class,
             [
                 MyNonExistentClass::class,
-                MyHasFacadeClass::class,
+                MyFacadeAwareInstanceClass::class,
             ],
         ];
     }

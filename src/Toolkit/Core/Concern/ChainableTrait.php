@@ -11,7 +11,7 @@ use Salient\Contract\Core\Chainable;
  *
  * @phpstan-require-implements Chainable
  */
-trait HasChainableMethods
+trait ChainableTrait
 {
     /**
      * @inheritDoc
