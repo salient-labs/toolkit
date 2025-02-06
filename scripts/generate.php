@@ -44,12 +44,12 @@ use Salient\Sync\SyncSerializeRules;
 use Salient\Sync\SyncSerializeRulesBuilder;
 use Salient\Sync\SyncStore;
 use Salient\Testing\Console\MockTarget;
-use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
-use Salient\Tests\Core\AbstractFacade\MyClassFacade;
-use Salient\Tests\Core\AbstractFacade\MyFacadeAwareInstanceClass;
-use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
-use Salient\Tests\Core\AbstractFacade\MyServiceClass;
-use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
+use Salient\Tests\Core\Facade\MyBrokenFacade;
+use Salient\Tests\Core\Facade\MyClassFacade;
+use Salient\Tests\Core\Facade\MyFacadeAwareInstanceClass;
+use Salient\Tests\Core\Facade\MyInterfaceFacade;
+use Salient\Tests\Core\Facade\MyServiceClass;
+use Salient\Tests\Core\Facade\MyServiceInterface;
 use Salient\Tests\Sli\Command\AnalyseClassTest;
 use Salient\Tests\Sync\Entity\Album;
 use Salient\Tests\Sync\Entity\Comment;
@@ -83,8 +83,8 @@ $facades = [
     Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],
     Profile::class => [MetricCollector::class, '--api'],
     // Test fixtures
-    MyBrokenFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass']],
-    MyInterfaceFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\AbstractFacade\MyNonExistentClass', MyFacadeAwareInstanceClass::class]],
+    MyBrokenFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\Facade\MyNonExistentClass']],
+    MyInterfaceFacade::class => [MyServiceInterface::class, ['Salient\Tests\Core\Facade\MyNonExistentClass', MyFacadeAwareInstanceClass::class]],
     MyClassFacade::class => [MyServiceClass::class, '--skip', 'withArgs'],
 ];
 

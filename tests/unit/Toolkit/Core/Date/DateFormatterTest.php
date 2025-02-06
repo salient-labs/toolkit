@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Core\Date;
 
-use Salient\Core\DateFormatter;
+use Salient\Core\Date\DateFormatter;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * @covers \Salient\Core\DateFormatter
+ * @covers \Salient\Core\Date\DateFormatter
  */
 final class DateFormatterTest extends TestCase
 {

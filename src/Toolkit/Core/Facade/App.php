@@ -6,7 +6,6 @@ use Salient\Container\Container;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Core\Chainable;
-use Salient\Core\AbstractFacade;
 
 /**
  * A facade for the global service container
@@ -39,11 +38,11 @@ use Salient\Core\AbstractFacade;
  *
  * @api
  *
- * @extends AbstractFacade<ContainerInterface>
+ * @extends Facade<ContainerInterface>
  *
  * @generated
  */
-final class App extends AbstractFacade
+final class App extends Facade
 {
     /**
      * @internal

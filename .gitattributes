@@ -38,9 +38,6 @@
 /tests/data/unicode/ucd/DerivedCoreProperties.txt linguist-generated
 /tests/data/unicode/ucd/ReadMe.txt linguist-generated
 /tests/data/unicode/ucd/extracted/DerivedGeneralCategory.txt linguist-generated
-/tests/fixtures/Toolkit/Core/AbstractFacade/MyBrokenFacade.php linguist-generated
-/tests/fixtures/Toolkit/Core/AbstractFacade/MyClassFacade.php linguist-generated
-/tests/fixtures/Toolkit/Core/AbstractFacade/MyInterfaceFacade.php linguist-generated
 /tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output0.json linguist-generated
 /tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output1.csv linguist-generated
 /tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output2.md linguist-generated
@@ -60,4 +57,7 @@
 /tests/fixtures/Toolkit/Sync/Entity/Task.php linguist-generated
 /tests/fixtures/Toolkit/Sync/Entity/User.php linguist-generated
 /tests/fixtures/Toolkit/Sync/External/Entity/Provider/CollidesProvider.php linguist-generated
+/tests/unit/Toolkit/Core/Facade/MyBrokenFacade.php linguist-generated
+/tests/unit/Toolkit/Core/Facade/MyClassFacade.php linguist-generated
+/tests/unit/Toolkit/Core/Facade/MyInterfaceFacade.php linguist-generated
 /tools export-ignore

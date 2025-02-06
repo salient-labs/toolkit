@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Facade;
 
-use Salient\Core\AbstractFacade;
 use Salient\Core\ConfigurationManager;
 
 /**
@@ -16,11 +15,11 @@ use Salient\Core\ConfigurationManager;
  *
  * @api
  *
- * @extends AbstractFacade<ConfigurationManager>
+ * @extends Facade<ConfigurationManager>
  *
  * @generated
  */
-final class Config extends AbstractFacade
+final class Config extends Facade
 {
     /**
      * @internal

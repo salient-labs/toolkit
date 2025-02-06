@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core;
+namespace Salient\Core\Provider;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Provider\ProviderContextInterface;

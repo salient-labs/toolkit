@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core;
+namespace Salient\Core\Facade;
 
 use Salient\Container\Container;
 use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
@@ -10,8 +10,6 @@ use Salient\Contract\Core\Facade\FacadeInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Event\EventDispatcher;
-use Salient\Core\Facade\App;
-use Salient\Core\Facade\Event;
 use Salient\Core\Internal\HasUnderlyingService;
 use Salient\Utility\Arr;
 use LogicException;
@@ -23,7 +21,7 @@ use LogicException;
  *
  * @implements FacadeInterface<TService>
  */
-abstract class AbstractFacade implements FacadeInterface
+abstract class Facade implements FacadeInterface
 {
     /** @use HasUnderlyingService<TService> */
     use HasUnderlyingService;

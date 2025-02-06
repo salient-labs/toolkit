@@ -10,7 +10,7 @@ use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
 use Salient\Contract\Cli\CliOptionVisibility;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 use Salient\Tests\TestCase;
 use ReflectionClass;
 
@@ -230,7 +230,7 @@ final class CliOptionBuilderTest extends TestCase
             if (
                 $param->isPassedByReference()
                 || $option->issetB($name)
-                || method_exists(AbstractBuilder::class, $name)
+                || method_exists(Builder::class, $name)
             ) {
                 continue;
             }

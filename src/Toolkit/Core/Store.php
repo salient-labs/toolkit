@@ -22,7 +22,7 @@ use Throwable;
  *
  * @implements FacadeAwareInterface<static>
  */
-abstract class AbstractStore implements
+abstract class Store implements
     FacadeAwareInterface,
     Instantiable,
     Unloadable
@@ -146,8 +146,8 @@ abstract class AbstractStore implements
      * Override to perform an action whenever the underlying SQLite3 instance is
      * accessed
      *
-     * Called once per call to {@see AbstractStore::db()}. Use
-     * {@see AbstractStore::safeCheck()} to prevent recursion if necessary.
+     * Called once per call to {@see Store::db()}. Use {@see Store::safeCheck()}
+     * to prevent recursion if necessary.
      *
      * @return $this
      */
@@ -201,12 +201,12 @@ abstract class AbstractStore implements
     /**
      * Call check() without recursion
      *
-     * {@see AbstractStore::db()} calls {@see AbstractStore::check()} via
-     * {@see AbstractStore::safeCheck()} to prevent recursion when
-     * {@see AbstractStore::check()} calls {@see AbstractStore::db()}.
+     * {@see Store::db()} calls {@see Store::check()} via
+     * {@see Store::safeCheck()} to prevent recursion when {@see Store::check()}
+     * calls {@see Store::db()}.
      *
-     * If {@see AbstractStore::check()} may be called directly, it should call
-     * itself via {@see AbstractStore::safeCheck()}, for example:
+     * If {@see Store::check()} may be called directly, it should call itself
+     * via {@see Store::safeCheck()}, for example:
      *
      * ```php
      * protected function check()

@@ -5,7 +5,7 @@ namespace Salient\Sli\Command\Generate;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
@@ -29,7 +29,7 @@ class GenerateBuilder extends AbstractGenerateCommand
      * Properties and methods that shouldn't be surfaced by the builder
      */
     private const SKIP = [
-        // These are displaced by AbstractBuilder
+        // These are displaced by Builder
         'apply',
         'applyForEach',
         'applyIf',
@@ -172,7 +172,7 @@ EOF)
         $classPrefix = $this->getClassPrefix();
 
         $service = $this->getFqcnAlias($classFqcn, $classClass);
-        $extends = $this->getFqcnAlias(AbstractBuilder::class);
+        $extends = $this->getFqcnAlias(Builder::class);
 
         $this->Description ??= sprintf(
             'A builder for %s',

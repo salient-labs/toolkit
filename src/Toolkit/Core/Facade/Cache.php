@@ -4,7 +4,6 @@ namespace Salient\Core\Facade;
 
 use Salient\Cache\CacheStore;
 use Salient\Contract\Cache\CacheInterface;
-use Salient\Core\AbstractFacade;
 use DateInterval;
 use DateTimeInterface;
 
@@ -30,11 +29,11 @@ use DateTimeInterface;
  *
  * @api
  *
- * @extends AbstractFacade<CacheInterface>
+ * @extends Facade<CacheInterface>
  *
  * @generated
  */
-final class Cache extends AbstractFacade
+final class Cache extends Facade
 {
     /**
      * @internal

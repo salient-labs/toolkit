@@ -5,7 +5,7 @@ namespace Salient\Sync;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 use Closure;
 
 /**
@@ -22,11 +22,11 @@ use Closure;
  *
  * @template TEntity of SyncEntityInterface
  *
- * @extends AbstractBuilder<SyncSerializeRules<TEntity>>
+ * @extends Builder<SyncSerializeRules<TEntity>>
  *
  * @generated
  */
-final class SyncSerializeRulesBuilder extends AbstractBuilder
+final class SyncSerializeRulesBuilder extends Builder
 {
     /**
      * @internal

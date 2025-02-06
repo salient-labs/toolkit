@@ -16,7 +16,7 @@ use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\HttpResponseInterface;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 use Closure;
 use Stringable;
 
@@ -68,11 +68,11 @@ use Stringable;
  *
  * @api
  *
- * @extends AbstractBuilder<Curler>
+ * @extends Builder<Curler>
  *
  * @generated
  */
-final class CurlerBuilder extends AbstractBuilder
+final class CurlerBuilder extends Builder
 {
     /**
      * @internal

@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Facade;
 
-use Salient\Core\AbstractFacade;
 use Salient\Core\MetricCollector;
 
 /**
@@ -21,11 +20,11 @@ use Salient\Core\MetricCollector;
  *
  * @api
  *
- * @extends AbstractFacade<MetricCollector>
+ * @extends Facade<MetricCollector>
  *
  * @generated
  */
-final class Profile extends AbstractFacade
+final class Profile extends Facade
 {
     /**
      * @internal

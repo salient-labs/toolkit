@@ -4,7 +4,7 @@ namespace Salient\Sli\Command\Generate;
 
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
-use Salient\Core\AbstractFacade;
+use Salient\Core\Facade\Facade;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
@@ -119,7 +119,7 @@ final class GenerateFacade extends AbstractGenerateCommand
         $classPrefix = $this->getClassPrefix();
 
         $service = $this->getFqcnAlias($classFqcn, $classClass);
-        $extends = $this->getFqcnAlias(AbstractFacade::class);
+        $extends = $this->getFqcnAlias(Facade::class);
 
         $alias = [];
         foreach ($aliasFqcn as $aliasFqcn) {

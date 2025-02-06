@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core;
+namespace Salient\Core\Date;
 
 use Salient\Contract\Core\DateParserInterface;
 use Salient\Utility\Date;

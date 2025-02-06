@@ -12,7 +12,7 @@ use stdClass;
 
 /**
  * @covers \Salient\Cache\CacheStore
- * @covers \Salient\Core\AbstractStore
+ * @covers \Salient\Core\Store
  */
 final class CacheStoreTest extends TestCase
 {

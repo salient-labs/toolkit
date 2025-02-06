@@ -6,7 +6,7 @@ use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 
 /**
  * @method $this errorType(ErrorType::* $value) Error type
@@ -17,11 +17,11 @@ use Salient\Core\AbstractBuilder;
  * @method $this entityName(string|null $value) Display name of the entity associated with the error. Default: `$entity->getUri()`
  * @method $this provider(SyncProviderInterface|null $value) Sync provider associated with the error. Default: `$entity->getProvider()`
  *
- * @extends AbstractBuilder<SyncError>
+ * @extends Builder<SyncError>
  *
  * @generated
  */
-final class SyncErrorBuilder extends AbstractBuilder
+final class SyncErrorBuilder extends Builder
 {
     /**
      * @internal

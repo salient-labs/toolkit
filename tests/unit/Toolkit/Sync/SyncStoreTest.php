@@ -16,7 +16,7 @@ use Stringable;
 
 /**
  * @covers \Salient\Sync\SyncStore
- * @covers \Salient\Core\AbstractStore
+ * @covers \Salient\Core\Store
  */
 final class SyncStoreTest extends SyncTestCase
 {

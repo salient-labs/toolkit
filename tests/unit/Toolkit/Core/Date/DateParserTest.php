@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Core\Date;
 
-use Salient\Core\DateParser;
+use Salient\Core\Date\DateParser;
 use Salient\Tests\TestCase;
 use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * @covers \Salient\Core\DateParser
+ * @covers \Salient\Core\Date\DateParser
  */
 final class DateParserTest extends TestCase
 {

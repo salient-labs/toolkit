@@ -1,28 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Core\Facade;
 
 use Salient\Container\Container;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
-use Salient\Core\AbstractFacade;
-use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
-use Salient\Tests\Core\AbstractFacade\MyClassFacade;
-use Salient\Tests\Core\AbstractFacade\MyFacadeAwareClass;
-use Salient\Tests\Core\AbstractFacade\MyFacadeAwareInstanceClass;
-use Salient\Tests\Core\AbstractFacade\MyInterfaceFacade;
-use Salient\Tests\Core\AbstractFacade\MyServiceClass;
-use Salient\Tests\Core\AbstractFacade\MyServiceInterface;
+use Salient\Core\Facade\Facade;
 use Salient\Tests\TestCase;
 use LogicException;
 use stdClass;
 
 /**
- * @covers \Salient\Core\AbstractFacade
+ * @covers \Salient\Core\Facade\Facade
  * @covers \Salient\Core\Concern\FacadeAwareTrait
  * @covers \Salient\Core\Concern\FacadeAwareInstanceTrait
  */
-final class AbstractFacadeTest extends TestCase
+final class FacadeTest extends TestCase
 {
     public function testBrokenFacade(): void
     {
@@ -238,7 +231,7 @@ final class AbstractFacadeTest extends TestCase
 
     protected function tearDown(): void
     {
-        AbstractFacade::unloadAll();
+        Facade::unloadAll();
         if (Container::hasGlobalContainer()) {
             Container::getGlobalContainer()->unload();
         }

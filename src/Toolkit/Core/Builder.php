@@ -20,7 +20,7 @@ use Closure;
  *
  * @implements BuilderInterface<TClass>
  */
-abstract class AbstractBuilder implements BuilderInterface
+abstract class Builder implements BuilderInterface
 {
     use ChainableTrait;
     use ImmutableTrait;

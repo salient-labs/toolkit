@@ -2,13 +2,13 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Polyfill\StreamWrapper;
+use Salient\Contract\Polyfill\StreamWrapper as AbstractStreamWrapper;
 use Salient\Utility\Arr;
 
 /**
  * @api
  */
-abstract class AbstractStreamWrapper extends StreamWrapper
+abstract class StreamWrapper extends AbstractStreamWrapper
 {
     /** @var array{int,int,int,int,int,int,int,int,int,int,int,int,int} */
     protected const DEFAULT_STAT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1];

@@ -8,10 +8,10 @@ use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;
 
 /**
- * @covers \Salient\Core\AbstractStreamWrapper
+ * @covers \Salient\Core\StreamWrapper
  * @covers \Salient\Testing\Core\MockPhpStream
  */
-final class AbstractStreamWrapperTest extends TestCase
+final class StreamWrapperTest extends TestCase
 {
     public function testStreamWrapper(): void
     {

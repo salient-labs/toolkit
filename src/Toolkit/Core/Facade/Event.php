@@ -3,7 +3,6 @@
 namespace Salient\Core\Facade;
 
 use Salient\Core\Event\EventDispatcher;
-use Salient\Core\AbstractFacade;
 
 /**
  * A facade for EventDispatcher
@@ -15,11 +14,11 @@ use Salient\Core\AbstractFacade;
  *
  * @api
  *
- * @extends AbstractFacade<EventDispatcher>
+ * @extends Facade<EventDispatcher>
  *
  * @generated
  */
-final class Event extends AbstractFacade
+final class Event extends Facade
 {
     /**
      * @internal

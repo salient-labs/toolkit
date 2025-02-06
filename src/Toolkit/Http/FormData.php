@@ -6,7 +6,7 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Jsonable;
 use Salient\Contract\Http\FormDataFlag;
-use Salient\Core\DateFormatter;
+use Salient\Core\Date\DateFormatter;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Json;
