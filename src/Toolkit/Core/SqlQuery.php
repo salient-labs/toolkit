@@ -4,8 +4,8 @@ namespace Salient\Core;
 
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Chainable;
-use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Concern\ChainableTrait;
+use Salient\Core\Concern\ReadableTrait;
 use Salient\Utility\Get;
 use LogicException;
 
@@ -16,8 +16,8 @@ use LogicException;
  */
 final class SqlQuery implements Chainable, Readable
 {
-    use HasChainableMethods;
-    use HasReadableProperties;
+    use ChainableTrait;
+    use ReadableTrait;
 
     public const AND = 'AND';
     public const OR = 'OR';

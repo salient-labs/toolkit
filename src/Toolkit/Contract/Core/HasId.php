@@ -8,7 +8,7 @@ namespace Salient\Contract\Core;
 interface HasId
 {
     /**
-     * Get the object's unique identifier
+     * Get the unique identifier of the object
      *
      * @return int|string|null
      */

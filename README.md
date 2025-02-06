@@ -31,30 +31,33 @@ composer require --dev salient/phpstan
 ## Components
 
 The Salient toolkit includes the following components, each of which can be
-installed separately:
+installed separately to minimise the dependency footprint of your project. The
+only third-party dependencies are [PSR][] interface packages and [lkrms/dice][],
+a standalone dependency injection container that will be removed when
+[salient/container][] is finalised.
 
 ![Salient toolkit component diagram](images/components.svg)
 
-| Component     | Composer package        | Provides                                                                            |
-| ------------- | ----------------------- | ----------------------------------------------------------------------------------- |
-| Cache         | [salient/cache][]       | A key-value store backed by a SQLite database                                       |
-| **CLI**       | [salient/cli][]         | A service container and command framework for CLI applications                      |
-| Collections   | [salient/collections][] | Access to collections of values via array-like objects with chainable methods       |
-| **Console**   | [salient/console][]     | Terminal output and message logging via an API similar to `console` in web browsers |
-| **Container** | [salient/container][]   | A service container with contextual bindings                                        |
-| **Contracts** | [salient/contracts][]   | Interfaces and abstractions                                                         |
-| **Core**      | [salient/core][]        | Reusable classes, traits and services                                               |
-| Curler        | [salient/curler][]      | An HTTP client optimised for RESTful API endpoints                                  |
-| Db            | [salient/db][]          | Access to databases                                                                 |
-| HTTP          | [salient/http][]        | HTTP message and utility classes                                                    |
-| Iterators     | [salient/iterators][]   | Iterator classes and traits                                                         |
-| PHPDoc        | [salient/phpdoc][]      | A PHPDoc extractor and parser                                                       |
-| PHPStan       | [salient/phpstan][][^1] | PHPStan extensions                                                                  |
-| Polyfills     | [salient/polyfills][]   | Polyfills                                                                           |
-| Sli           | [salient/sli][][^1]     | `sli`, the toolkit's CLI utility                                                    |
-| **Sync**      | [salient/sync][]        | A framework and SQLite-backed store for synchronising data with backends            |
-| Testing       | [salient/testing][][^1] | Classes that are useful in test suites                                              |
-| **Utils**     | [salient/utils][]       | Utility methods via stateless classes                                               |
+| Component   | Package                 | Provides                                                                            |
+| ----------- | ----------------------- | ----------------------------------------------------------------------------------- |
+| Cache       | [salient/cache][]       | A key-value store backed by a SQLite database                                       |
+| CLI         | [salient/cli][]         | A service container and command framework for CLI applications                      |
+| Collections | [salient/collections][] | Access to collections of values via array-like objects with chainable methods       |
+| Console     | [salient/console][]     | Terminal output and message logging via an API similar to `console` in web browsers |
+| Container   | [salient/container][]   | A service container with contextual bindings                                        |
+| Contracts   | [salient/contracts][]   | Interfaces, abstractions and enumerations                                           |
+| Core        | [salient/core][]        | Reusable classes, traits and services                                               |
+| Curler      | [salient/curler][]      | An HTTP client optimised for RESTful API endpoints                                  |
+| Db          | [salient/db][]          | Access to databases                                                                 |
+| HTTP        | [salient/http][]        | HTTP message and utility classes                                                    |
+| Iterators   | [salient/iterators][]   | Iterator classes and traits                                                         |
+| PHPDoc      | [salient/phpdoc][]      | A PHPDoc extractor and parser                                                       |
+| PHPStan     | [salient/phpstan][][^1] | PHPStan extensions                                                                  |
+| Polyfills   | [salient/polyfills][]   | Polyfills                                                                           |
+| Sli         | [salient/sli][][^1]     | `sli`, the toolkit's CLI utility                                                    |
+| Sync        | [salient/sync][]        | A framework and SQLite-backed store for synchronising data with backends            |
+| Testing     | [salient/testing][][^1] | Classes that are useful in test suites                                              |
+| Utils       | [salient/utils][]       | Utility methods via stateless classes                                               |
 
 [^1]: This component should only be installed as a development dependency.
 
@@ -82,7 +85,9 @@ This project is licensed under the [MIT License][].
 [ApiGen]: https://github.com/ApiGen/ApiGen
 [Composer]: https://getcomposer.org/
 [docs]: docs/
+[lkrms/dice]: https://packagist.org/packages/lkrms/dice
 [MIT License]: LICENSE
+[PSR]: https://www.php-fig.org/psr/
 [repo]: https://github.com/salient-labs/toolkit
 [salient/cache]: https://packagist.org/packages/salient/cache
 [salient/cli]: https://packagist.org/packages/salient/cli

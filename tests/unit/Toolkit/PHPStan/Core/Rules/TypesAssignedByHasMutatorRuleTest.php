@@ -4,7 +4,7 @@ namespace Salient\Tests\PHPStan\Core\Rules;
 
 use PHPStan\Rules\Rule;
 use Salient\Container\Container;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule;
 use Salient\Tests\PHPStan\RuleTestCase;
 
@@ -28,7 +28,7 @@ class TypesAssignedByHasMutatorRuleTest extends RuleTestCase
         $doesNotAccept = 'Property %s::$%s (%s) does not accept %s.';
         $undefined = 'Access to an undefined property %s::$%s.';
         $private = 'Access to an inaccessible property %s::$%s.';
-        $privateTip = sprintf('Insert %s or change the visibility of the property.', HasMutator::class);
+        $privateTip = sprintf('Insert %s or change the visibility of the property.', ImmutableTrait::class);
         $tips = [
             112 => $privateTip,
             120 => $privateTip,

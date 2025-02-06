@@ -8,7 +8,7 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\ProviderContext;
 use Salient\Sync\Exception\InvalidFilterException;
 use Salient\Sync\Exception\InvalidFilterSignatureException;
@@ -27,7 +27,7 @@ use LogicException;
  */
 final class SyncContext extends ProviderContext implements SyncContextInterface
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     /** @var SyncOperation::* */
     protected ?int $Operation = null;

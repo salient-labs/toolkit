@@ -8,7 +8,7 @@ use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpResponseInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Arr;
 use Salient\Utility\Str;
@@ -21,7 +21,7 @@ use InvalidArgumentException;
  */
 class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     protected const STATUS_CODE = [
         100 => 'Continue',

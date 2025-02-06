@@ -10,7 +10,7 @@ use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
@@ -23,7 +23,7 @@ use InvalidArgumentException;
 abstract class AbstractHttpMessage implements HttpMessageInterface
 {
     use HasHttpHeaders;
-    use HasMutator;
+    use ImmutableTrait;
 
     protected string $ProtocolVersion;
     protected HttpHeadersInterface $Headers;

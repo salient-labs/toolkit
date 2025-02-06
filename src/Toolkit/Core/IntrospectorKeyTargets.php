@@ -5,7 +5,7 @@ namespace Salient\Core;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
-use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
 use Closure;
 
 /**
@@ -31,7 +31,7 @@ use Closure;
  */
 final class IntrospectorKeyTargets implements Readable
 {
-    use ReadsProtectedProperties;
+    use ReadableProtectedPropertiesTrait;
 
     /**
      * Key => constructor parameter index

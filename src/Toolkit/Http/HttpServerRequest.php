@@ -8,7 +8,7 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpServerRequestInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Stringable;
 
@@ -19,7 +19,7 @@ use Stringable;
  */
 class HttpServerRequest extends HttpRequest implements HttpServerRequestInterface
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     /** @var mixed[] */
     protected array $ServerParams;

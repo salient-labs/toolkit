@@ -1,15 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Concern;
+namespace Salient\Tests\Core\Concern\ImmutableTrait;
 
-use Salient\Tests\Core\Concern\HasMutator\MyImmutableClass;
 use Salient\Tests\TestCase;
 use stdClass;
 
 /**
- * @covers \Salient\Core\Concern\HasMutator
+ * @covers \Salient\Core\Concern\ImmutableTrait
  */
-final class HasMutatorTest extends TestCase
+final class ImmutableTraitTest extends TestCase
 {
     public function testWith(): void
     {

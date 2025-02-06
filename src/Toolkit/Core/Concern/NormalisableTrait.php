@@ -6,13 +6,11 @@ use Salient\Contract\Core\Entity\Normalisable;
 use Salient\Utility\Str;
 
 /**
- * Implements Normalisable
- *
- * @see Normalisable
+ * @api
  *
  * @phpstan-require-implements Normalisable
  */
-trait HasNormaliser
+trait NormalisableTrait
 {
     /**
      * @inheritDoc

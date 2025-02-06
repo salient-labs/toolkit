@@ -9,7 +9,7 @@ use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\HasId;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Str;
@@ -27,7 +27,7 @@ use Salient\Utility\Str;
  */
 class ProviderContext implements ProviderContextInterface
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     protected ContainerInterface $Container;
     /** @var TProvider */

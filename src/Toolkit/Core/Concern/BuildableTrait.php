@@ -12,7 +12,7 @@ use Salient\Contract\Core\BuilderInterface;
  *
  * @phpstan-require-implements Buildable<TBuilder>
  */
-trait HasBuilder
+trait BuildableTrait
 {
     /**
      * Get the name of a builder for the class

@@ -7,16 +7,16 @@ use Salient\Contract\Core\Entity\Normalisable;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Writable;
 use Salient\Core\Concern\ExtensibleTrait;
-use Salient\Core\Concern\HasNormaliser;
-use Salient\Core\Concern\HasWritableProperties;
-use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Concern\NormalisableTrait;
+use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
+use Salient\Core\Concern\WritableTrait;
 
 class A implements Readable, Writable, Extensible, Normalisable
 {
-    use ReadsProtectedProperties;
-    use HasWritableProperties;
+    use ReadableProtectedPropertiesTrait;
+    use WritableTrait;
     use ExtensibleTrait;
-    use HasNormaliser;
+    use NormalisableTrait;
 
     /**
      * @inheritDoc

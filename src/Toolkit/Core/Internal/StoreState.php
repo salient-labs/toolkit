@@ -5,8 +5,6 @@ namespace Salient\Core\Internal;
 use SQLite3;
 
 /**
- * AbstractStore state information
- *
  * @internal
  */
 final class StoreState

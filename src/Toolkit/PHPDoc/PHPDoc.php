@@ -3,7 +3,7 @@
 namespace Salient\PHPDoc;
 
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\ErrorTag;
 use Salient\PHPDoc\Tag\GenericTag;
@@ -33,7 +33,7 @@ use Stringable;
  */
 class PHPDoc implements Immutable, Stringable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     private const PHP_DOCBLOCK = '`^' . PHPDocRegex::PHP_DOCBLOCK . '$`D';
     private const PHPDOC_TAG = '`^' . PHPDocRegex::PHPDOC_TAG . '`D';

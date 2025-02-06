@@ -9,10 +9,10 @@ use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Facade\FacadeInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
-use Salient\Core\Concern\HasUnderlyingService;
 use Salient\Core\Event\EventDispatcher;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Event;
+use Salient\Core\Internal\HasUnderlyingService;
 use Salient\Utility\Arr;
 use LogicException;
 

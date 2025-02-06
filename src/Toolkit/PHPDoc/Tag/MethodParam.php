@@ -3,7 +3,7 @@
 namespace Salient\PHPDoc\Tag;
 
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Stringable;
 
 /**
@@ -11,7 +11,7 @@ use Stringable;
  */
 class MethodParam implements Immutable, Stringable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     protected string $Name;
     protected ?string $Type;

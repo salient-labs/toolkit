@@ -30,27 +30,29 @@ interface Hierarchical
      *   `$parent->removeChild($child)`
      *
      * @param static|null $parent
-     * @return static
+     * @return $this
      */
     public function setParent($parent);
 
     /**
      * Add a child to the object
      *
-     * Equivalent to `$child->setParent($parent)`.
+     * `$parent->addChild($child)` is equivalent to
+     * `$child->setParent($parent)`.
      *
      * @param static $child
-     * @return static
+     * @return $this
      */
     public function addChild($child);
 
     /**
      * Remove a child from the object
      *
-     * Equivalent to `$child->setParent(null)`.
+     * `$parent->removeChild($child)` is equivalent to
+     * `$child->setParent(null)`.
      *
      * @param static $child
-     * @return static
+     * @return $this
      */
     public function removeChild($child);
 

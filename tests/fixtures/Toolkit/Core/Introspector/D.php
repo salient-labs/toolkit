@@ -3,7 +3,7 @@
 namespace Salient\Tests\Core\Introspector;
 
 use Salient\Contract\Core\Entity\Readable;
-use Salient\Core\Concern\HasReadableProperties;
+use Salient\Core\Concern\ReadableTrait;
 use Salient\Utility\Get;
 use DateTime;
 use DateTimeImmutable;
@@ -11,7 +11,7 @@ use DateTimeInterface;
 
 class D extends C implements Readable
 {
-    use HasReadableProperties;
+    use ReadableTrait;
 
     public DateTimeInterface $Once;
     public DateTimeImmutable $Then;

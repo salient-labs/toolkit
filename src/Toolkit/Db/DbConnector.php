@@ -3,7 +3,7 @@
 namespace Salient\Db;
 
 use Salient\Contract\Core\Entity\Readable;
-use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
 use Salient\Utility\Env;
 use Salient\Utility\Format;
 use Salient\Utility\Get;
@@ -27,7 +27,7 @@ use UnexpectedValueException;
  */
 final class DbConnector implements Readable
 {
-    use ReadsProtectedProperties;
+    use ReadableProtectedPropertiesTrait;
 
     /** @var string */
     protected $Name;

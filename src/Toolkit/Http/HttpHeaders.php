@@ -11,7 +11,7 @@ use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
@@ -34,7 +34,7 @@ class HttpHeaders implements HttpHeadersInterface
     use ReadOnlyCollectionTrait;
     /** @use ReadOnlyArrayAccessTrait<string,string[]> */
     use ReadOnlyArrayAccessTrait;
-    use HasMutator;
+    use ImmutableTrait;
 
     private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
     private const HTTP_HEADER_FIELD_VALUE = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';

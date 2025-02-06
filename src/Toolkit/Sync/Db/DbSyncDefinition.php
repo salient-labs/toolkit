@@ -11,7 +11,7 @@ use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
-use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\BuildableTrait;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Sync\AbstractSyncDefinition;
 use Closure;
@@ -33,8 +33,8 @@ use LogicException;
  */
 final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
 {
-    /** @use HasBuilder<DbSyncDefinitionBuilder<TEntity,TProvider>> */
-    use HasBuilder;
+    /** @use BuildableTrait<DbSyncDefinitionBuilder<TEntity,TProvider>> */
+    use BuildableTrait;
 
     /** @var string|null */
     protected $Table;

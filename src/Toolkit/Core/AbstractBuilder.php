@@ -3,8 +3,8 @@
 namespace Salient\Core;
 
 use Salient\Contract\Core\BuilderInterface;
-use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ChainableTrait;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Exception\InvalidDataException;
 use Salient\Core\Reflection\ClassReflection;
 use Salient\Core\Reflection\MethodReflection;
@@ -22,8 +22,8 @@ use Closure;
  */
 abstract class AbstractBuilder implements BuilderInterface
 {
-    use HasChainableMethods;
-    use HasMutator;
+    use ChainableTrait;
+    use ImmutableTrait;
 
     /**
      * Get the class to instantiate

@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\Concern\HasChainableMethods;
+namespace Salient\Tests\Core\Concern\ChainableTrait;
 
 use Salient\Contract\Core\Chainable;
-use Salient\Core\Concern\HasChainableMethods;
+use Salient\Core\Concern\ChainableTrait;
 use Salient\Tests\TestCase;
 
 /**
- * @covers \Salient\Core\Concern\HasChainableMethods
+ * @covers \Salient\Core\Concern\ChainableTrait
  */
-final class HasChainableMethodsTest extends TestCase
+final class ChainableTraitTest extends TestCase
 {
     public function testApply(): void
     {
@@ -68,7 +68,7 @@ final class HasChainableMethodsTest extends TestCase
 
 class MyChainable implements Chainable
 {
-    use HasChainableMethods;
+    use ChainableTrait;
 
     private int $Id = 0;
     /** @var mixed[] */

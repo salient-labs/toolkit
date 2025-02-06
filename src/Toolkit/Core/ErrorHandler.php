@@ -5,7 +5,7 @@ namespace Salient\Core;
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Instantiable;
-use Salient\Core\Concern\UnloadsFacades;
+use Salient\Core\Concern\FacadeAwareTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
@@ -20,8 +20,8 @@ use Throwable;
  */
 final class ErrorHandler implements FacadeAwareInterface, Instantiable
 {
-    /** @use UnloadsFacades<self> */
-    use UnloadsFacades;
+    /** @use FacadeAwareTrait<self> */
+    use FacadeAwareTrait;
 
     private const DEFAULT_EXIT_STATUS = 16;
 

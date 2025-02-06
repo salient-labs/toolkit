@@ -14,8 +14,8 @@ use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\HasJsonSchema;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Concern\ReadsProtectedProperties;
+use Salient\Core\Concern\BuildableTrait;
+use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
@@ -68,9 +68,9 @@ use LogicException;
  */
 final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
 {
-    /** @use HasBuilder<CliOptionBuilder> */
-    use HasBuilder;
-    use ReadsProtectedProperties;
+    /** @use BuildableTrait<CliOptionBuilder> */
+    use BuildableTrait;
+    use ReadableProtectedPropertiesTrait;
 
     private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/iD';
     private const SHORT_REGEX = '/^[a-z0-9_]$/iD';
@@ -619,7 +619,7 @@ final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
     }
 
     /**
-     * Get the option's JSON Schema
+     * Get a JSON Schema for the option
      *
      * @return array{description?:string,type?:string[]|string,enum?:array<string|int|bool|float|null>,items?:array{type?:string[]|string,enum?:array<string|int|bool|float|null>},uniqueItems?:bool,default?:array<string|int|bool|float>|string|int|bool|float}
      */

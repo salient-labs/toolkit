@@ -2,21 +2,15 @@
 
 namespace Salient\Contract\Core;
 
-use DateTimeImmutable;
 use DateTimeInterface;
 
 /**
  * @api
  */
-interface DateFormatterInterface
+interface DateFormatterInterface extends DateParserInterface
 {
     /**
-     * Format a date and time
+     * Format a date and time as a string
      */
     public function format(DateTimeInterface $date): string;
-
-    /**
-     * Convert a value to a date and time, or return null if it can't be parsed
-     */
-    public function parse(string $value): ?DateTimeImmutable;
 }

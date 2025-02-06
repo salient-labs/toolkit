@@ -10,6 +10,7 @@ use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Writable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
+use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Flushable;
 use Salient\Contract\Core\HasDescription;
@@ -25,10 +26,10 @@ use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
-use Salient\Core\Concern\HasNormaliser;
-use Salient\Core\Concern\HasReadableProperties;
-use Salient\Core\Concern\HasWritableProperties;
+use Salient\Core\Concern\NormalisableTrait;
 use Salient\Core\Concern\ProvidableTrait;
+use Salient\Core\Concern\ReadableTrait;
+use Salient\Core\Concern\WritableTrait;
 use Salient\Core\Facade\Sync;
 use Salient\Core\AbstractEntity;
 use Salient\Core\DateFormatter;
@@ -73,12 +74,12 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     Flushable
 {
     use ConstructibleTrait;
-    use HasReadableProperties;
-    use HasWritableProperties;
+    use ReadableTrait;
+    use WritableTrait;
     use ExtensibleTrait;
     /** @use ProvidableTrait<SyncProviderInterface,SyncContextInterface> */
     use ProvidableTrait;
-    use HasNormaliser;
+    use NormalisableTrait;
     use RequiresContainer;
 
     /**
@@ -100,11 +101,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     public $CanonicalId;
 
     /** @var SyncProviderInterface|null */
-    private $Provider;
+    private ?ProviderInterface $Provider = null;
     /** @var SyncContextInterface|null */
-    private $Context;
+    private ?ProviderContextInterface $Context = null;
     /** @var int-mask-of<EntityState::*> */
-    private $State = 0;
+    private int $State = 0;
 
     /**
      * Entity => "/^<pattern>_/" | false

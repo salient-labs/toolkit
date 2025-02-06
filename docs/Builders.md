@@ -6,7 +6,7 @@
 <?php
 
 use Salient\Contract\Core\Buildable;
-use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\AbstractBuilder;
 
 /**
@@ -14,7 +14,8 @@ use Salient\Core\AbstractBuilder;
  */
 class Option implements Buildable
 {
-    use HasBuilder;
+    /** @use BuildableTrait<OptionBuilder> */
+    use BuildableTrait;
 
     protected $Long;
     protected $Short;

@@ -12,7 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 
 /**
  * @implements Rule<MethodCall>
@@ -48,7 +48,7 @@ class TypesAssignedByHasMutatorRule implements Rule
             // @codeCoverageIgnoreEnd
         }
         $traitReflection = $prototypeReflection->getDeclaringTrait();
-        if (!$traitReflection || $traitReflection->getName() !== HasMutator::class) {
+        if (!$traitReflection || $traitReflection->getName() !== ImmutableTrait::class) {
             // @codeCoverageIgnoreStart
             return [];
             // @codeCoverageIgnoreEnd
@@ -110,7 +110,7 @@ class TypesAssignedByHasMutatorRule implements Rule
                     ->identifier('salient.property.private')
                     ->tip(sprintf(
                         'Insert %s or change the visibility of the property.',
-                        HasMutator::class,
+                        ImmutableTrait::class,
                     ))
                     ->build(),
             ];

@@ -6,7 +6,7 @@ use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Contract\Console\ConsoleFormatInterface as Format;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Arr;
 
 /**
@@ -14,7 +14,7 @@ use Salient\Utility\Arr;
  */
 final class ConsoleTagFormats implements Immutable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     /** @var array<Tag::*,Format> */
     private array $Formats = [];

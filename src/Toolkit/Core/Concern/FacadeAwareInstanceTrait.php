@@ -8,8 +8,7 @@ use Salient\Contract\Core\Instantiable;
 use LogicException;
 
 /**
- * Implements FacadeAwareInterface by returning modified instances for use with
- * and without a facade
+ * Returns modified instances for use with and without a facade
  *
  * @api
  *
@@ -17,7 +16,7 @@ use LogicException;
  *
  * @phpstan-require-implements FacadeAwareInterface
  */
-trait HasFacade
+trait FacadeAwareInstanceTrait
 {
     /** @var class-string<FacadeInterface<TService>>|null */
     protected ?string $Facade = null;
@@ -30,24 +29,22 @@ trait HasFacade
     /**
      * @param class-string<FacadeInterface<TService>> $facade
      */
-    final public function withFacade(string $facade)
+    public function withFacade(string $facade)
     {
         if ($this->Facade === $facade) {
             return $this;
         }
 
         if ($this->Facade !== null) {
-            // @codeCoverageIgnoreStart
             throw new LogicException(sprintf(
                 '%s already has facade %s',
                 static::class,
                 $this->Facade,
             ));
-            // @codeCoverageIgnoreEnd
         }
 
-        // Revert to `$this->InstanceWithFacade` if `$facade` matches and
-        // `$this` hasn't been cloned in the meantime
+        // Reuse `$this->InstanceWithFacade` if `$facade` matches and `$this`
+        // hasn't been cloned in the meantime
         if (
             $this->InstanceWithoutFacade === $this
             && $this->InstanceWithFacade
@@ -74,20 +71,18 @@ trait HasFacade
     /**
      * @param class-string<FacadeInterface<TService>> $facade
      */
-    final public function withoutFacade(string $facade, bool $unloading)
+    public function withoutFacade(string $facade, bool $unloading)
     {
         if ($this->Facade !== $facade) {
-            // @codeCoverageIgnoreStart
             throw new LogicException(sprintf(
                 '%s does not have facade %s',
                 static::class,
                 $facade,
             ));
-            // @codeCoverageIgnoreEnd
         }
 
-        // Revert to `$this->InstanceWithoutFacade` if `$this` hasn't been
-        // cloned in the meantime
+        // Reuse `$this->InstanceWithoutFacade` if `$this` hasn't been cloned in
+        // the meantime
         if (
             $this->InstanceWithFacade === $this
             && $this->InstanceWithoutFacade
@@ -102,8 +97,6 @@ trait HasFacade
         $instance->Facade = null;
         $instance->HasTentativeFacade = false;
 
-        // Keep a copy of the cloned instance for future reuse if the facade is
-        // not being unloaded
         if ($unloading) {
             $instance->InstanceWithoutFacade = null;
             $instance->InstanceWithFacade = null;
@@ -127,29 +120,20 @@ trait HasFacade
      * This method can be used to keep a facade up-to-date with an immutable
      * underlying instance, e.g. by calling it from `__clone()`.
      */
-    final protected function updateFacade(): void
+    protected function updateFacade(): void
     {
-        if ($this->Facade === null || $this->HasTentativeFacade) {
-            return;
+        if (
+            $this->Facade !== null
+            && !$this->HasTentativeFacade
+            && $this->Facade::isLoaded()
+        ) {
+            $instance = $this->Facade::getInstance();
+            if (
+                !$instance instanceof static
+                || $instance->InstanceWithFacade !== $this
+            ) {
+                $this->Facade::swap($this);
+            }
         }
-
-        if (!$this->Facade::isLoaded()) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException(sprintf(
-                '%s has unloaded facade %s',
-                static::class,
-                $this->Facade,
-            ));
-            // @codeCoverageIgnoreEnd
-        }
-
-        $instance = $this->Facade::getInstance();
-        if ($instance instanceof self && $instance->InstanceWithFacade === $this) {
-            // @codeCoverageIgnoreStart
-            return;
-            // @codeCoverageIgnoreEnd
-        }
-
-        $this->Facade::swap($this);
     }
 }

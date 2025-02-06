@@ -3,23 +3,19 @@
 namespace Salient\Core\Concern;
 
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Core\Introspector;
-use LogicException;
+use Salient\Core\Reflection\ClassReflection;
+use Salient\Utility\Exception\ShouldNotHappenException;
+use InvalidArgumentException;
 
 /**
- * Implements Treeable
+ * @api
  *
- * @see Treeable
+ * @phpstan-require-implements Treeable
  */
 trait TreeableTrait
 {
-    abstract public static function getParentProperty(): string;
-    abstract public static function getChildrenProperty(): string;
-
-    /** @var array<class-string<self>,string> */
-    private static $ParentProperties = [];
-    /** @var array<class-string<self>,string> */
-    private static $ChildrenProperties = [];
+    /** @var array<class-string<self>,array{string,string}> */
+    private static array $TreeableProperties;
 
     /**
      * @inheritDoc
@@ -29,170 +25,132 @@ trait TreeableTrait
         return [];
     }
 
-    private static function loadHierarchyProperties(): void
+    /**
+     * @inheritDoc
+     */
+    public function getParent()
     {
-        $introspector = Introspector::get(static::class);
-
-        if (!$introspector->IsTreeable) {
-            throw new LogicException(
-                sprintf(
-                    '%s does not implement %s or does not return valid parent/child properties',
-                    static::class,
-                    Treeable::class,
-                )
-            );
-        }
-
-        // @phpstan-ignore assign.propertyType
-        self::$ParentProperties[static::class] =
-            $introspector->Properties[$introspector->ParentProperty]
-                ?? $introspector->ParentProperty;
-        // @phpstan-ignore assign.propertyType
-        self::$ChildrenProperties[static::class] =
-            $introspector->Properties[$introspector->ChildrenProperty]
-                ?? $introspector->ChildrenProperty;
+        [$_parent] = self::$TreeableProperties[static::class]
+            ?? self::getTreeableProperties();
+        return $this->{$_parent} ?? null;
     }
 
     /**
-     * @return static|null
+     * @inheritDoc
      */
-    final public function getParent()
+    public function getChildren(): array
     {
-        if (!isset(self::$ParentProperties[static::class])) {
-            self::loadHierarchyProperties();
-        }
-
-        $_parent = self::$ParentProperties[static::class];
-
-        return $this->{$_parent};
-    }
-
-    /**
-     * @return static[]
-     */
-    final public function getChildren(): array
-    {
-        if (!isset(self::$ChildrenProperties[static::class])) {
-            self::loadHierarchyProperties();
-        }
-
-        $_children = self::$ChildrenProperties[static::class];
-
+        [, $_children] = self::$TreeableProperties[static::class]
+            ?? self::getTreeableProperties();
         return $this->{$_children} ?? [];
     }
 
     /**
-     * @param (Treeable&static)|null $parent
-     * @return $this
+     * @inheritDoc
      */
-    final public function setParent($parent)
+    public function setParent($parent)
     {
-        if (!isset(self::$ParentProperties[static::class])) {
-            self::loadHierarchyProperties();
-        }
+        [$_parent, $_children] = self::$TreeableProperties[static::class]
+            ?? self::getTreeableProperties();
 
-        $_parent = self::$ParentProperties[static::class];
-        $_children = self::$ChildrenProperties[static::class];
-
-        if (
-            $parent === $this->{$_parent}
-            && ($parent === null
-                || in_array($this, $parent->{$_children} ?: [], true))
-        ) {
+        if ($parent === ($this->{$_parent} ?? null) && (
+            $parent === null
+            || in_array($this, $parent->{$_children} ?? [], true)
+        )) {
             return $this;
         }
 
-        // Remove the object from its current parent
-        if ($this->{$_parent} !== null) {
-            $this->{$_parent}->{$_children} =
-                array_values(
-                    array_filter(
-                        $this->{$_parent}->{$_children},
-                        fn($child) => $child !== $this
-                    )
-                );
+        if (isset($this->{$_parent})) {
+            $this->{$_parent}->{$_children} = array_values(array_filter(
+                $this->{$_parent}->{$_children} ?? [],
+                fn($child) => $child !== $this,
+            ));
         }
 
         $this->{$_parent} = $parent;
-
         if ($parent !== null) {
-            return $this->{$_parent}->{$_children}[] = $this;
+            $parent->{$_children}[] = $this;
         }
-
         return $this;
     }
 
     /**
-     * @param static $child
-     * @return $this
+     * @inheritDoc
      */
-    final public function addChild($child)
+    public function addChild($child)
     {
         return $child->setParent($this);
     }
 
     /**
-     * @param static $child
-     * @return $this
+     * @inheritDoc
      */
-    final public function removeChild($child)
+    public function removeChild($child)
     {
-        if (!isset(self::$ParentProperties[static::class])) {
-            self::loadHierarchyProperties();
+        if ($child->getParent() !== $this) {
+            throw new InvalidArgumentException('Invalid child');
         }
-
-        $_parent = self::$ParentProperties[static::class];
-
-        if ($child->{$_parent} !== $this) {
-            throw new LogicException('Argument #1 ($child) is not a child of this object');
-        }
-
         return $child->setParent(null);
     }
 
-    final public function getDepth(): int
+    /**
+     * @inheritDoc
+     */
+    public function getDepth(): int
     {
-        if (!isset(self::$ParentProperties[static::class])) {
-            self::loadHierarchyProperties();
-        }
-
-        $_parent = self::$ParentProperties[static::class];
-
+        [$_parent] = self::$TreeableProperties[static::class]
+            ?? self::getTreeableProperties();
         $depth = 0;
-        $parent = $this->{$_parent};
-        while ($parent !== null) {
+        $parent = $this;
+        while ($parent = $parent->{$_parent}) {
             $depth++;
-            $parent = $parent->{$_parent};
         }
-
         return $depth;
     }
 
-    final public function countDescendants(): int
+    /**
+     * @inheritDoc
+     */
+    public function countDescendants(): int
     {
-        if (!isset(self::$ChildrenProperties[static::class])) {
-            self::loadHierarchyProperties();
-        }
-
-        return $this->doCountDescendants(
-            self::$ChildrenProperties[static::class]
-        );
+        [, $_children] = self::$TreeableProperties[static::class]
+            ?? self::getTreeableProperties();
+        return $this->doCountDescendants($_children);
     }
 
     private function doCountDescendants(string $_children): int
     {
         /** @var static[] */
         $children = $this->{$_children} ?? [];
-
-        if ($children === []) {
+        if (!$children) {
             return 0;
         }
-
         $count = 0;
         foreach ($children as $child) {
             $count += 1 + $child->doCountDescendants($_children);
         }
-
         return $count;
+    }
+
+    /**
+     * @return array{string,string}
+     */
+    private static function getTreeableProperties(): array
+    {
+        $class = new ClassReflection(static::class);
+        if ($class->isTreeable()) {
+            return self::$TreeableProperties[static::class] = [
+                $class->getParentProperty(),
+                $class->getChildrenProperty(),
+            ];
+        }
+
+        // @codeCoverageIgnoreStart
+        throw new ShouldNotHappenException(sprintf(
+            '%s does not implement %s',
+            static::class,
+            Treeable::class,
+        ));
+        // @codeCoverageIgnoreEnd
     }
 }

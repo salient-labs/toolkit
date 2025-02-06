@@ -6,8 +6,8 @@ use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
-use Salient\Core\Concern\HasChainableMethods;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ChainableTrait;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Arr;
 use Closure;
 use Generator;
@@ -29,8 +29,8 @@ final class Pipeline implements
     EntityPipelineInterface,
     StreamPipelineInterface
 {
-    use HasChainableMethods;
-    use HasMutator;
+    use ChainableTrait;
+    use ImmutableTrait;
 
     private bool $HasPayload = false;
     private bool $HasStream;

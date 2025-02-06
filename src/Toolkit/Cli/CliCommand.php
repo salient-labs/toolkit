@@ -695,6 +695,8 @@ abstract class CliCommand implements CliCommandInterface
     }
 
     /**
+     * Get a JSON Schema for the command's options
+     *
      * @return array{'$schema':string,type:string,required?:string[],properties?:array<string,mixed>,...}
      */
     final public function getJsonSchema(): array
