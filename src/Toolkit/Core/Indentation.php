@@ -12,9 +12,16 @@ final class Indentation
 {
     /** @readonly */
     public bool $InsertSpaces;
-    /** @readonly */
+
+    /**
+     * @readonly
+     * @var int<1,max>
+     */
     public int $TabSize;
 
+    /**
+     * @param int<1,max> $tabSize
+     */
     public function __construct(bool $insertSpaces, int $tabSize)
     {
         $this->InsertSpaces = $insertSpaces;
