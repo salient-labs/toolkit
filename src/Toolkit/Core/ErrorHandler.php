@@ -5,6 +5,7 @@ namespace Salient\Core;
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Instantiable;
+use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\FacadeAwareTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\File;
@@ -14,18 +15,19 @@ use LogicException;
 use Throwable;
 
 /**
- * Handle errors and uncaught exceptions
+ * @api
  *
  * @implements FacadeAwareInterface<self>
  */
-final class ErrorHandler implements FacadeAwareInterface, Instantiable
+final class ErrorHandler implements FacadeAwareInterface, Instantiable, Unloadable
 {
     /** @use FacadeAwareTrait<self> */
     use FacadeAwareTrait;
 
     private const DEFAULT_EXIT_STATUS = 16;
 
-    private const FATAL_ERRORS = \E_ERROR
+    private const FATAL_ERRORS =
+        \E_ERROR
         | \E_PARSE
         | \E_CORE_ERROR
         | \E_CORE_WARNING
@@ -33,7 +35,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
         | \E_COMPILE_WARNING;
 
     /**
-     * [ [ Path regex, error levels ], ... ]
+     * [ [ Path regex, levels ], ... ]
      *
      * @var array<array{string,int}>
      */
@@ -53,11 +55,19 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
     public function __construct() {}
 
     /**
+     * @internal
+     */
+    public function unload(): void
+    {
+        $this->deregister();
+    }
+
+    /**
      * Register error, exception and shutdown handlers
      *
      * @return $this
      */
-    public function register()
+    public function register(): self
     {
         if ($this->IsRegistered) {
             return $this;
@@ -96,8 +106,8 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
     }
 
     /**
-     * Check if the running script is terminating after a fatal error or
-     * uncaught exception
+     * Check if the running script is terminating after a fatal error, uncaught
+     * exception or exit signal
      */
     public function isShuttingDownOnError(): bool
     {
@@ -108,6 +118,8 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
 
     /**
      * Get the exit status of the running script if it is terminating
+     *
+     * @throws LogicException if the running script is not terminating.
      */
     public function getExitStatus(): int
     {
@@ -122,11 +134,13 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
      *
      * @return $this
      */
-    public function deregister()
+    public function deregister(): self
     {
         if ($this->IsRegistered) {
             restore_error_handler();
             restore_exception_handler();
+
+            $this->IsRegistered = false;
         }
 
         $this->unloadFacades();
@@ -139,18 +153,15 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
      *
      * @return $this
      */
-    public function silencePath(string $path, int $levels = \E_DEPRECATED | \E_USER_DEPRECATED)
+    public function silencePath(string $path, int $levels = \E_DEPRECATED | \E_USER_DEPRECATED): self
     {
-        // Ignore paths that don't exist
-        if (!file_exists($path)) {
-            return $this;
+        if (file_exists($path)) {
+            $path = File::realpath($path);
+            $this->silencePattern(
+                '@^' . Regex::quote($path, '@') . (is_dir($path) ? '/' : '$') . '@D',
+                $levels,
+            );
         }
-
-        $path = File::realpath($path);
-        $this->silencePattern(
-            '@^' . Regex::quote($path, '@') . (is_dir($path) ? '/' : '$') . '@',
-            $levels
-        );
         return $this;
     }
 
@@ -159,7 +170,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
      *
      * @return $this
      */
-    public function silencePattern(string $pattern, int $levels = \E_DEPRECATED | \E_USER_DEPRECATED)
+    public function silencePattern(string $pattern, int $levels = \E_DEPRECATED | \E_USER_DEPRECATED): self
     {
         $entry = [$pattern, $levels];
         if (!in_array($entry, $this->Silenced, true)) {
@@ -173,6 +184,8 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
      */
     public function handleShutdown(): void
     {
+        // Shutdown functions can't be deregistered, so do nothing if this
+        // instance has been deregistered
         if (!$this->IsRegistered) {
             return;
         }
@@ -241,6 +254,9 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable
     /**
      * Report the exit status of the running script before it terminates on
      * SIGTERM, SIGINT or SIGHUP
+     *
+     * @throws LogicException if the instance is not registered to handle errors
+     * and exceptions.
      */
     public function handleExitSignal(int $exitStatus): void
     {
