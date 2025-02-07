@@ -8,6 +8,8 @@ use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Err;
+use Salient\Core\Facade\Profile;
 use Salient\Testing\Console\MockTarget;
 use Salient\Utility\File;
 
@@ -78,7 +80,9 @@ abstract class CommandTestCase extends TestCase
         } finally {
             $app->unload();
             File::pruneDir($basePath, true);
+            Profile::unload();
             Console::unload();
+            Err::unload();
         }
     }
 

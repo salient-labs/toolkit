@@ -16,6 +16,7 @@ use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
@@ -594,7 +595,7 @@ EOF,
         if (isset($this->ListenerId)) {
             Event::removeListener($this->ListenerId);
         }
-
+        Console::unload();
         parent::tearDown();
     }
 
