@@ -12,6 +12,7 @@ use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Event\EventDispatcher;
 use Salient\Core\Facade\App;
@@ -79,7 +80,7 @@ $facades = [
     Config::class => [ConfigurationManager::class, '--api'],
     Console::class => [ConsoleWriterInterface::class, [ConsoleWriter::class], '--desc', 'A facade for the global console writer', '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
-    Event::class => [EventDispatcher::class, '--api'],
+    Event::class => [EventDispatcherInterface::class, [EventDispatcher::class], '--api'],
     Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],
     Profile::class => [MetricCollector::class, '--api'],
     // Test fixtures

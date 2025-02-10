@@ -2,26 +2,19 @@
 
 namespace Salient\Core\Event;
 
-use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface as PsrListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface as PsrStoppableEventInterface;
+use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Core\HasName;
-use Salient\Contract\Core\Instantiable;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;
+use InvalidArgumentException;
 use LogicException;
 
 /**
- * Dispatches events to listeners
- *
- * Implements PSR-14 (Event Dispatcher) interfaces.
- *
  * @api
  */
-final class EventDispatcher implements
-    PsrEventDispatcherInterface,
-    PsrListenerProviderInterface,
-    Instantiable
+final class EventDispatcher implements EventDispatcherInterface
 {
     /**
      * Listener ID => list of events
@@ -41,11 +34,7 @@ final class EventDispatcher implements
     private PsrListenerProviderInterface $ListenerProvider;
 
     /**
-     * Creates a new EventDispatcher object
-     *
-     * If a listener provider is given, calls to methods other than
-     * {@see EventDispatcher::dispatch()} will fail with a
-     * {@see LogicException}.
+     * @api
      */
     public function __construct(?PsrListenerProviderInterface $listenerProvider = null)
     {
@@ -53,17 +42,7 @@ final class EventDispatcher implements
     }
 
     /**
-     * Register an event listener with the dispatcher
-     *
-     * Returns a listener ID that can be passed to
-     * {@see EventDispatcher::removeListener()}.
-     *
-     * @template TEvent of object
-     *
-     * @param callable(TEvent): mixed $listener
-     * @param string[]|string|null $event An event or array of events. If
-     * `null`, the listener is registered to receive events accepted by its
-     * first parameter.
+     * @inheritDoc
      */
     public function listen(callable $listener, $event = null): int
     {
@@ -79,7 +58,7 @@ final class EventDispatcher implements
         }
 
         if ($event === []) {
-            throw new LogicException('At least one event must be given');
+            throw new InvalidArgumentException('At least one event must be given');
         }
 
         $id = $this->NextListenerId++;
@@ -93,12 +72,7 @@ final class EventDispatcher implements
     }
 
     /**
-     * Dispatch an event to listeners registered to receive it
-     *
-     * @template TEvent of object
-     *
-     * @param TEvent $event
-     * @return TEvent
+     * @inheritDoc
      */
     public function dispatch(object $event): object
     {
@@ -119,12 +93,9 @@ final class EventDispatcher implements
     }
 
     /**
-     * @template TEvent of object
-     *
-     * @param TEvent $event
-     * @return array<callable(TEvent): mixed>
+     * @inheritDoc
      */
-    public function getListenersForEvent(object $event): array
+    public function getListenersForEvent(object $event): iterable
     {
         $this->assertIsListenerProvider();
 
@@ -135,11 +106,7 @@ final class EventDispatcher implements
         );
 
         if ($event instanceof HasName) {
-            $eventName = $event->getName();
-            // If the event returns a name we already have, do nothing
-            if (!is_a($event, $eventName)) {
-                $events[] = $eventName;
-            }
+            $events[] = $event->getName();
         }
 
         $listenersByEvent = array_intersect_key(
@@ -156,17 +123,14 @@ final class EventDispatcher implements
     }
 
     /**
-     * Remove an event listener from the dispatcher
-     *
-     * @param int $id A listener ID returned by
-     * {@see EventDispatcher::listen()}.
+     * @inheritDoc
      */
     public function removeListener(int $id): void
     {
         $this->assertIsListenerProvider();
 
         if (!array_key_exists($id, $this->Listeners)) {
-            throw new LogicException('No listener with that ID');
+            throw new InvalidArgumentException('No listener with that ID');
         }
 
         foreach ($this->Listeners[$id] as $event) {

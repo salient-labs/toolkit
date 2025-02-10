@@ -2,19 +2,21 @@
 
 namespace Salient\Core\Facade;
 
+use Salient\Contract\Core\Event\EventDispatcherInterface;
+use Salient\Contract\Core\Event\EventListenerProviderInterface;
 use Salient\Core\Event\EventDispatcher;
 
 /**
- * A facade for EventDispatcher
+ * A facade for EventDispatcherInterface
  *
- * @method static object dispatch(object $event) Dispatch an event to listeners registered to receive it (see {@see EventDispatcher::dispatch()})
- * @method static array<callable(object): mixed> getListenersForEvent(object $event) See {@see EventDispatcher::getListenersForEvent()}
- * @method static int listen(callable(object): mixed $listener, string[]|string|null $event = null) Register an event listener with the dispatcher (see {@see EventDispatcher::listen()})
- * @method static void removeListener(int $id) Remove an event listener from the dispatcher (see {@see EventDispatcher::removeListener()})
+ * @method static object dispatch(object $event) Dispatch a given event to listeners registered for it (see {@see EventDispatcherInterface::dispatch()})
+ * @method static iterable<callable(object): mixed> getListenersForEvent(object $event) Get listeners registered for a given event (see {@see EventListenerProviderInterface::getListenersForEvent()})
+ * @method static int listen(callable(object): mixed $listener, string[]|string|null $event = null) Register a listener for a given event or list of events (see {@see EventListenerProviderInterface::listen()})
+ * @method static void removeListener(int $id) Deregister an event listener with a given listener ID (see {@see EventListenerProviderInterface::removeListener()})
  *
  * @api
  *
- * @extends Facade<EventDispatcher>
+ * @extends Facade<EventDispatcherInterface>
  *
  * @generated
  */
@@ -25,6 +27,9 @@ final class Event extends Facade
      */
     protected static function getService()
     {
-        return EventDispatcher::class;
+        return [
+            EventDispatcherInterface::class,
+            EventDispatcher::class,
+        ];
     }
 }
