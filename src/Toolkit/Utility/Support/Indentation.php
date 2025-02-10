@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core;
+namespace Salient\Utility\Support;
 
 use Salient\Utility\File;
 use Stringable;

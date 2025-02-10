@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Utility\Support;
 
-use Salient\Core\Indentation;
 use Salient\Tests\TestCase;
+use Salient\Utility\Support\Indentation;
 use Salient\Utility\Str;
 
 /**
- * @covers \Salient\Core\Indentation
+ * @covers \Salient\Utility\Support\Indentation
  */
 final class IndentationTest extends TestCase
 {
