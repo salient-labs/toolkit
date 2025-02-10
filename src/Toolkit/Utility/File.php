@@ -8,6 +8,8 @@ use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Exception\UnreadDataException;
 use Salient\Utility\Exception\UnwrittenDataException;
+use Salient\Utility\Internal\IndentationGuesser;
+use Salient\Utility\Support\Indentation;
 use InvalidArgumentException;
 use Stringable;
 
@@ -1004,7 +1006,7 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Get the end-of-line sequence used in a file or stream
+     * Guess the end-of-line sequence used in a file or stream
      *
      * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
      *
@@ -1035,6 +1037,24 @@ final class File extends AbstractUtility
             return "\r";
         }
         return null;
+    }
+
+    /**
+     * Guess the indentation used in a file or stream
+     *
+     * Returns `$default` if `$resource` appears to use the default indentation.
+     *
+     * @param Stringable|string|resource $resource
+     * @param Stringable|string|null $uri
+     */
+    public static function getIndentation(
+        $resource,
+        ?Indentation $default = null,
+        bool $alwaysGuessTabSize = false,
+        $uri = null
+    ): Indentation {
+        return (new IndentationGuesser($default, $alwaysGuessTabSize))
+            ->guess($resource, $uri);
     }
 
     /**
