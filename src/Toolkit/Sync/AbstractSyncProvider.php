@@ -81,7 +81,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      */
     public function getContext(): SyncContextInterface
     {
-        return new SyncContext($this->App, $this);
+        return new SyncContext($this, $this->App);
     }
 
     /**

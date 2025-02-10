@@ -15,9 +15,6 @@ use Salient\Utility\Get;
 use Salient\Utility\Str;
 
 /**
- * The context within which entities of a given type are instantiated by a
- * provider
- *
  * @api
  *
  * @template TProvider of ProviderInterface
@@ -29,29 +26,31 @@ class ProviderContext implements ProviderContextInterface
 {
     use ImmutableTrait;
 
-    protected ContainerInterface $Container;
     /** @var TProvider */
     protected ProviderInterface $Provider;
+    protected ContainerInterface $Container;
     /** @var class-string<TEntity>|null */
     protected ?string $EntityType = null;
+    /** @var ListConformity::* */
+    protected int $Conformity = ListConformity::NONE;
     /** @var TEntity[] */
     protected array $Entities = [];
-    /** @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> */
-    protected array $Values = [];
     /** @var (TEntity&Treeable)|null */
     protected ?Treeable $Parent = null;
-    /** @var ListConformity::* */
-    protected $Conformity = ListConformity::NONE;
+    /** @var array<string,(int|string|float|bool|null)[]|int|string|float|bool|null> */
+    protected array $Values = [];
 
     /**
+     * @internal
+     *
      * @param TProvider $provider
      */
     public function __construct(
-        ContainerInterface $container,
-        ProviderInterface $provider
+        ProviderInterface $provider,
+        ContainerInterface $container
     ) {
-        $this->Container = $container;
         $this->Provider = $provider;
+        $this->Container = $container;
     }
 
     /**
