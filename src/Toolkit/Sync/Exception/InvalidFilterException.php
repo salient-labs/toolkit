@@ -7,4 +7,4 @@ use Salient\Contract\Sync\Exception\InvalidFilterExceptionInterface;
 /**
  * @internal
  */
-class InvalidFilterException extends AbstractSyncException implements InvalidFilterExceptionInterface {}
+class InvalidFilterException extends SyncException implements InvalidFilterExceptionInterface {}

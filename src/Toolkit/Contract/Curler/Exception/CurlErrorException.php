@@ -5,7 +5,7 @@ namespace Salient\Contract\Curler\Exception;
 /**
  * @api
  */
-interface CurlErrorExceptionInterface extends RequestExceptionInterface
+interface CurlErrorException extends RequestException
 {
     /**
      * Get the cURL error code associated with the exception

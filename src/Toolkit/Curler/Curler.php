@@ -12,7 +12,7 @@ use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
+use Salient\Contract\Curler\Exception\CurlErrorException as CurlErrorExceptionInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPageRequestInterface;

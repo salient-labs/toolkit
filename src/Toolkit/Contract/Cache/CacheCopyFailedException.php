@@ -5,4 +5,4 @@ namespace Salient\Contract\Cache;
 /**
  * @api
  */
-interface CacheCopyFailedExceptionInterface extends CacheExceptionInterface {}
+interface CacheCopyFailedException extends CacheException {}

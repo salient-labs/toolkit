@@ -11,7 +11,7 @@ use Salient\Utility\Reflect;
 /**
  * @api
  */
-class SyncOperationNotImplementedException extends AbstractSyncException implements SyncOperationNotImplementedExceptionInterface
+class SyncOperationNotImplementedException extends SyncException implements SyncOperationNotImplementedExceptionInterface
 {
     /**
      * @param class-string<SyncEntityInterface> $entity

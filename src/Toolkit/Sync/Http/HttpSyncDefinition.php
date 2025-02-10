@@ -9,7 +9,7 @@ use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Buildable;
-use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
+use Salient\Contract\Curler\Exception\HttpErrorException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -749,7 +749,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             function () use ($operation, $id, $curler, $httpClosure, $payload) {
                 try {
                     return $httpClosure($curler, $this->Query, $payload);
-                } catch (HttpErrorExceptionInterface $ex) {
+                } catch (HttpErrorException $ex) {
                     // If a request to READ an entity fails with 404 (Not Found)
                     // or 410 (Gone), throw a `SyncEntityNotFoundException`
                     if ($operation === OP::READ && $id !== null && (

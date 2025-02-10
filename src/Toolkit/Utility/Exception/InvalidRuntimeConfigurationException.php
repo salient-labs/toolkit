@@ -5,4 +5,4 @@ namespace Salient\Utility\Exception;
 /**
  * @api
  */
-class InvalidRuntimeConfigurationException extends AbstractUtilityException {}
+class InvalidRuntimeConfigurationException extends UtilityException {}

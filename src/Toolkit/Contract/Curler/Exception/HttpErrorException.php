@@ -5,4 +5,4 @@ namespace Salient\Contract\Curler\Exception;
 /**
  * @api
  */
-interface HttpErrorExceptionInterface extends ResponseExceptionInterface {}
+interface HttpErrorException extends ResponseException {}

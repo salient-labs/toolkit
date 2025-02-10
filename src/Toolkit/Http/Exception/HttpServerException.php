@@ -2,4 +2,4 @@
 
 namespace Salient\Http\Exception;
 
-class HttpServerException extends AbstractHttpException {}
+class HttpServerException extends HttpException {}

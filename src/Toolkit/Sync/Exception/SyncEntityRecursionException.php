@@ -7,4 +7,4 @@ use Salient\Contract\Sync\Exception\SyncEntityRecursionExceptionInterface;
 /**
  * @internal
  */
-class SyncEntityRecursionException extends AbstractSyncException implements SyncEntityRecursionExceptionInterface {}
+class SyncEntityRecursionException extends SyncException implements SyncEntityRecursionExceptionInterface {}

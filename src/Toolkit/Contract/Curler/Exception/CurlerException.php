@@ -2,7 +2,9 @@
 
 namespace Salient\Contract\Curler\Exception;
 
+use Throwable;
+
 /**
  * @api
  */
-interface TooManyRedirectsExceptionInterface extends ResponseExceptionInterface {}
+interface CurlerException extends Throwable {}

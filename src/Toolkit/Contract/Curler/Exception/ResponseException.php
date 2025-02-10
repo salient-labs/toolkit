@@ -8,7 +8,7 @@ use Salient\Contract\Http\HttpResponseInterface;
 /**
  * @api
  */
-interface ResponseExceptionInterface extends CurlerExceptionInterface
+interface ResponseException extends CurlerException
 {
     /**
      * Get the request associated with the exception

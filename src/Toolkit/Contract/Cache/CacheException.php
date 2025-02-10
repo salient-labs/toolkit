@@ -8,4 +8,4 @@ use Throwable;
 /**
  * @api
  */
-interface CacheExceptionInterface extends PsrCacheException, Throwable {}
+interface CacheException extends PsrCacheException, Throwable {}

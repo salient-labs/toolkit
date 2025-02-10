@@ -8,7 +8,7 @@ use Throwable;
 /**
  * @internal
  */
-abstract class AbstractUtilityException extends RuntimeException
+class UtilityException extends RuntimeException
 {
     /**
      * @api

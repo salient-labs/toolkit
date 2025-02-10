@@ -11,7 +11,7 @@ use Throwable;
 /**
  * @api
  */
-class SyncEntityNotFoundException extends AbstractSyncException implements SyncEntityNotFoundExceptionInterface
+class SyncEntityNotFoundException extends SyncException implements SyncEntityNotFoundExceptionInterface
 {
     /**
      * @param class-string<SyncEntityInterface> $entity

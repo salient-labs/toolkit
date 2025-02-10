@@ -2,4 +2,4 @@
 
 namespace Salient\Http\Exception;
 
-class UploadedFileException extends AbstractHttpException {}
+class UploadedFileException extends HttpException {}

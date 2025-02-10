@@ -11,7 +11,7 @@ use Throwable;
 /**
  * @api
  */
-abstract class AbstractRequestException extends Exception
+class GenericRequestException extends Exception
 {
     protected RequestInterface $Request;
     /** @var array<string,mixed> */

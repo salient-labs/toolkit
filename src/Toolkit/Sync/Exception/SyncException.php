@@ -9,7 +9,7 @@ use Salient\Core\Exception\Exception;
 /**
  * @internal
  */
-abstract class AbstractSyncException extends Exception implements SyncExceptionInterface
+class SyncException extends Exception implements SyncExceptionInterface
 {
     /**
      * Get the name of a provider for use in exception messages

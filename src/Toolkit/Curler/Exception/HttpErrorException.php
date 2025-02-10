@@ -3,7 +3,7 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
+use Salient\Contract\Curler\Exception\HttpErrorException as HttpErrorExceptionInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Utility\Arr;
 use Throwable;
@@ -11,7 +11,7 @@ use Throwable;
 /**
  * @internal
  */
-class HttpErrorException extends AbstractResponseException implements HttpErrorExceptionInterface
+class HttpErrorException extends GenericResponseException implements HttpErrorExceptionInterface
 {
     /**
      * @param array<string,mixed> $data

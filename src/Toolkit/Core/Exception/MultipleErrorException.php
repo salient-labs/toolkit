@@ -7,7 +7,7 @@ use Salient\Contract\Core\Exception\MultipleErrorException as MultipleErrorExcep
 /**
  * @api
  */
-abstract class MultipleErrorException extends Exception implements MultipleErrorExceptionInterface
+class MultipleErrorException extends Exception implements MultipleErrorExceptionInterface
 {
     use MultipleErrorExceptionTrait;
 }

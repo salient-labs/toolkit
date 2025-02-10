@@ -9,7 +9,7 @@ use Throwable;
 /**
  * @api
  */
-class UnreachableBackendException extends AbstractSyncException implements UnreachableBackendExceptionInterface
+class UnreachableBackendException extends SyncException implements UnreachableBackendExceptionInterface
 {
     protected SyncProviderInterface $Provider;
 

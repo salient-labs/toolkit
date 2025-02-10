@@ -7,7 +7,7 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @api
  */
-interface RequestExceptionInterface extends CurlerExceptionInterface
+interface RequestException extends CurlerException
 {
     /**
      * Get the request associated with the exception

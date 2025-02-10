@@ -2,7 +2,7 @@
 
 namespace Salient\Cache;
 
-use Salient\Contract\Cache\CacheCopyFailedExceptionInterface;
+use Salient\Contract\Cache\CacheCopyFailedException as CacheCopyFailedExceptionInterface;
 use LogicException;
 
 /**

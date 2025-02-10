@@ -9,7 +9,7 @@ use Throwable;
 /**
  * @api
  */
-class SyncInvalidEntityException extends AbstractSyncException
+class SyncInvalidEntityException extends SyncException
 {
     protected SyncProviderInterface $Provider;
     /** @var class-string<SyncEntityInterface> */

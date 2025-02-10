@@ -7,4 +7,4 @@ use Salient\Core\Exception\Exception;
 /**
  * Base class for HTTP exceptions
  */
-abstract class AbstractHttpException extends Exception {}
+class HttpException extends Exception {}

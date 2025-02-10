@@ -9,7 +9,7 @@ use Throwable;
 /**
  * @api
  */
-abstract class AbstractResponseException extends AbstractRequestException
+class GenericResponseException extends GenericRequestException
 {
     protected HttpResponseInterface $Response;
 

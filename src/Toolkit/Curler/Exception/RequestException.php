@@ -3,11 +3,11 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Client\RequestExceptionInterface as PsrRequestExceptionInterface;
-use Salient\Contract\Curler\Exception\RequestExceptionInterface;
+use Salient\Contract\Curler\Exception\RequestException as RequestExceptionInterface;
 
 /**
  * @internal
  */
-class RequestException extends AbstractRequestException implements
+class RequestException extends GenericRequestException implements
     RequestExceptionInterface,
     PsrRequestExceptionInterface {}
