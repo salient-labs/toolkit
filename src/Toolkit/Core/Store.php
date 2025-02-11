@@ -6,7 +6,6 @@ use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\FacadeAwareTrait;
-use Salient\Core\Internal\StoreState;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
 use LogicException;
@@ -16,8 +15,6 @@ use SQLite3Stmt;
 use Throwable;
 
 /**
- * Base class for SQLite-backed stores
- *
  * @api
  *
  * @implements FacadeAwareInterface<static>
@@ -33,6 +30,9 @@ abstract class Store implements
     private ?StoreState $State = null;
     private bool $IsCheckRunning = false;
 
+    /**
+     * @internal
+     */
     private function __clone() {}
 
     /**
@@ -41,7 +41,7 @@ abstract class Store implements
      * @param string $filename Use `":memory:"` to create an in-memory database,
      * or an empty string to create a temporary database on the filesystem.
      * Otherwise, `$filename` is created with file mode `0600` if it doesn't
-     * exist. Its parent directory is created with mode `0700` if it doesn't
+     * exist, and its parent directory is created with mode `0700` if it doesn't
      * exist.
      * @return $this
      * @throws LogicException if the database is already open.
@@ -209,13 +209,15 @@ abstract class Store implements
      * via {@see Store::safeCheck()}, for example:
      *
      * ```php
-     * protected function check()
+     * <?php
+     * class MyStore extends Store
      * {
-     *     if (!$this->isCheckRunning()) {
-     *         return $this->safeCheck();
+     *     protected function check()
+     *     {
+     *         if (!$this->isCheckRunning()) {
+     *             return $this->safeCheck();
+     *         }
      *     }
-     *
-     *     // ...
      * }
      * ```
      *
@@ -254,8 +256,8 @@ abstract class Store implements
      */
     final protected function prepare(string $query): SQLite3Stmt
     {
+        /** @var SQLite3Stmt */
         $stmt = $this->db()->prepare($query);
-        assert($stmt !== false);
         return $stmt;
     }
 
@@ -264,8 +266,8 @@ abstract class Store implements
      */
     final protected function execute(SQLite3Stmt $stmt): SQLite3Result
     {
+        /** @var SQLite3Result */
         $result = $stmt->execute();
-        assert($result !== false);
         return $result;
     }
 
@@ -348,9 +350,6 @@ abstract class Store implements
     /**
      * BEGIN a transaction, run a callback and COMMIT or ROLLBACK as needed
      *
-     * A rollback is attempted if an exception is caught, otherwise the
-     * transaction is committed.
-     *
      * @template T
      *
      * @param callable(): T $callback
@@ -395,9 +394,21 @@ abstract class Store implements
     final protected function assertIsOpen(): void
     {
         if (!$this->State || !$this->State->IsOpen) {
-            // @codeCoverageIgnoreStart
             throw new LogicException('No database open');
-            // @codeCoverageIgnoreEnd
         }
     }
+}
+
+/**
+ * @internal
+ */
+final class StoreState
+{
+    public bool $IsOpen;
+    public SQLite3 $Db;
+    public string $Filename;
+    public bool $IsTemporary;
+    public bool $HasTransaction;
+
+    private function __clone() {}
 }
