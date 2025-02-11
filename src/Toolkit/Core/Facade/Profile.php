@@ -11,6 +11,7 @@ use Salient\Core\MetricCollector;
  * @method static int count(string $counter, string $group = 'general') Increment a counter and return its value
  * @method static int getCounter(string $counter, string $group = 'general') Get the value of a counter
  * @method static array<string,array<string,int>>|array<string,int> getCounters(string[]|string|null $groups = null) Get counter values (see {@see MetricCollector::getCounters()})
+ * @method static array<string,int>|int getMaxTimers(string[]|string|null $groups = null) Get the maximum number of timers running simultaneously (see {@see MetricCollector::getMaxTimers()})
  * @method static array{float,int} getTimer(string $timer, string $group = 'general', bool $includeRunning = true) Get the start count and elapsed milliseconds of a timer
  * @method static array<string,array<string,array{float,int}>>|array<string,array{float,int}> getTimers(bool $includeRunning = true, string[]|string|null $groups = null) Get timer start counts and elapsed milliseconds (see {@see MetricCollector::getTimers()})
  * @method static void pop() Pop metrics off the stack

@@ -13,8 +13,6 @@ use OutOfRangeException;
 use ReturnTypeWillChange;
 
 /**
- * Provides access to values in configuration files
- *
  * @api
  *
  * @implements ArrayAccess<string,mixed>
@@ -25,6 +23,8 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
     private array $Items = [];
 
     /**
+     * @api
+     *
      * @param array<string,mixed[]> $items
      */
     public function __construct(array $items = [])
@@ -39,8 +39,13 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
      */
     public function loadDirectory(string $directory): self
     {
+        $files = File::find()
+            ->in($directory)
+            ->include('/\.php$/')
+            ->doNotRecurse();
+
         $items = [];
-        foreach (File::find()->in($directory)->include('/\.php$/')->doNotRecurse() as $file) {
+        foreach ($files as $file) {
             $basename = $file->getBasename('.php');
             $file = (string) $file;
             if (Regex::match('/[\s.]|^[0-9]+$/', $basename)) {
@@ -58,6 +63,7 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
             }
             $items[$basename] = $values;
         }
+
         ksort($items, \SORT_NATURAL);
         $this->Items = $items;
         return $this;
@@ -90,23 +96,24 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
     /**
      * Get multiple configuration values
      *
-     * @param array<string|int,mixed|string> $keys An array that optionally maps
-     * keys to default values.
+     * @param iterable<string> $keys
+     * @param mixed $default
      * @return array<string,mixed>
-     * @throws OutOfRangeException if a key is not configured and no default
-     * value is given.
+     * @throws OutOfRangeException if a key is not configured and no `$default`
+     * is given.
      */
-    public function getMany(array $keys): array
+    public function getMultiple(iterable $keys, $default = null): array
     {
-        foreach ($keys as $key => $default) {
-            if (is_int($key)) {
-                /** @var string */
-                $key = $default;
-                $values[$key] = Arr::get($this->Items, $key);
-                continue;
+        if (func_num_args() > 1) {
+            foreach ($keys as $key) {
+                $values[$key] = Arr::get($this->Items, $key, $default);
             }
-            $values[$key] = Arr::get($this->Items, $key, $default);
+        } else {
+            foreach ($keys as $key) {
+                $values[$key] = Arr::get($this->Items, $key);
+            }
         }
+
         return $values ?? [];
     }
 
@@ -152,7 +159,7 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
      */
     public function offsetSet($offset, $value): void
     {
-        throw new LogicException('Configuration values cannot be set');
+        throw new LogicException('Configuration values cannot be changed at runtime');
     }
 
     /**
@@ -163,6 +170,6 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
      */
     public function offsetUnset($offset): void
     {
-        throw new LogicException('Configuration values cannot be unset');
+        throw new LogicException('Configuration values cannot be changed at runtime');
     }
 }

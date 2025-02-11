@@ -4,9 +4,9 @@ namespace Salient\Tests\Core;
 
 use Salient\Core\Graph;
 use Salient\Tests\TestCase;
-use InvalidArgumentException;
 use OutOfRangeException;
 use stdClass;
+use TypeError;
 
 /**
  * @covers \Salient\Core\Graph
@@ -141,8 +141,7 @@ final class GraphTest extends TestCase
 
     public function testInvalidValue(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($value) must be of type mixed[]|object, int given');
+        $this->expectException(TypeError::class);
         $value = 42;
         // @phpstan-ignore argument.type
         new Graph($value);
