@@ -134,8 +134,8 @@ final class Process
         $this->Callback = $callback;
         $this->Cwd = $cwd;
         $this->Env = $env;
-        $this->UseOutputFiles = $useOutputFiles || Sys::isWindows();
         $this->CollectOutput = $collectOutput;
+        $this->UseOutputFiles = $useOutputFiles || Sys::isWindows();
 
         $this->applyInput($input);
         $this->applyTimeout($timeout);
@@ -199,6 +199,17 @@ final class Process
         $this->assertIsNotRunning();
         $this->applyInput($input);
         return $this;
+    }
+
+    /**
+     * @param resource|string|null $input
+     */
+    private function applyInput($input): void
+    {
+        $this->Input = $input === null || is_string($input)
+            ? Str::toStream((string) $input)
+            : File::getSeekableStream($input);
+        $this->RewindInput = true;
     }
 
     /**
@@ -269,6 +280,20 @@ final class Process
         $this->assertIsNotRunning();
         $this->Timeout = $timeout;
         return $this;
+    }
+
+    private function applyTimeout(?float $timeout): void
+    {
+        if ($timeout !== null && $timeout <= 0) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid timeout: %.3fs', $timeout)
+            );
+        }
+
+        $this->Timeout = $timeout;
+        [$this->Sec, $this->Usec] = $timeout === null
+            ? [null, 0]
+            : [0, min((int) ($timeout * 1000000), self::READ_INTERVAL)];
     }
 
     /**
@@ -429,28 +454,6 @@ final class Process
     }
 
     /**
-     * Check the process for output and update its status
-     *
-     * If fewer than {@see Process::POLL_INTERVAL} microseconds have passed
-     * since the process was last polled, a delay is inserted to minimise CPU
-     * usage.
-     *
-     * @return $this
-     */
-    public function poll(bool $now = false)
-    {
-        $this->assertHasRun();
-
-        $this->checkTimeout();
-        if (!$now) {
-            $this->awaitInterval($this->LastPollTime, self::POLL_INTERVAL);
-        }
-        $this->updateStatus();
-
-        return $this;
-    }
-
-    /**
      * Wait for the process to exit and return its exit status
      */
     public function wait(): int
@@ -484,6 +487,28 @@ final class Process
         }
 
         return $this->ExitStatus;
+    }
+
+    /**
+     * Check the process for output and update its status
+     *
+     * If fewer than {@see Process::POLL_INTERVAL} microseconds have passed
+     * since the process was last polled, a delay is inserted to minimise CPU
+     * usage.
+     *
+     * @return $this
+     */
+    public function poll(bool $now = false)
+    {
+        $this->assertHasRun();
+
+        $this->checkTimeout();
+        if (!$now) {
+            $this->awaitInterval($this->LastPollTime, self::POLL_INTERVAL);
+        }
+        $this->updateStatus();
+
+        return $this;
     }
 
     /**
@@ -529,6 +554,39 @@ final class Process
             'Process could not be stopped: %s',
             Get::code($this->Command),
         ));
+    }
+
+    private function doStop(int $signal): void
+    {
+        if ($this->Process === null) {
+            return;
+        }
+
+        $now = hrtime(true);
+
+        $this->throwOnFailure(
+            @proc_terminate($this->Process, $signal),
+            'Error terminating process: %s',
+        );
+
+        $this->LastStopTime = $now;
+        $this->Stats['stop_count']++;
+        if (!$this->Stopped) {
+            $this->Stats['stop_time'] = $now / 1000;
+            $this->Stopped = true;
+        }
+    }
+
+    private function waitForStop(float $until): bool
+    {
+        do {
+            usleep(self::POLL_INTERVAL);
+            if (!$this->isRunning()) {
+                return true;
+            }
+        } while (hrtime(true) < $until);
+
+        return false;
     }
 
     /**
@@ -710,23 +768,37 @@ final class Process
         return $this->Stats;
     }
 
-    private function reset(): void
+    /**
+     * @return $this
+     * @throws ProcessTimedOutException if the process timed out.
+     */
+    private function checkTimeout()
     {
-        $this->OutputCallback = null;
-        unset($this->OutputFilePos);
-        $this->StartTime = null;
-        $this->Process = null;
-        $this->Stopped = false;
-        unset($this->Pipes);
-        unset($this->ProcessStatus);
-        unset($this->Pid);
-        unset($this->ExitStatus);
-        $this->LastPollTime = null;
-        $this->LastReadTime = null;
-        $this->LastStopTime = null;
-        $this->Output = [];
-        $this->OutputPos = [];
-        $this->Stats = self::DEFAULT_STATS;
+        if (
+            $this->State !== self::RUNNING
+            || $this->Timeout === null
+            || $this->Timeout > (hrtime(true) - $this->StartTime) / 1000000000
+        ) {
+            return $this;
+        }
+
+        try {
+            $this->stop();
+            // @codeCoverageIgnoreStart
+        } catch (Throwable $ex) {
+            throw new ProcessException(sprintf(
+                'Error terminating process that timed out after %.3fs: %s',
+                $this->Timeout,
+                Get::code($this->Command),
+            ), $ex);
+            // @codeCoverageIgnoreEnd
+        }
+
+        throw new ProcessTimedOutException(sprintf(
+            'Process timed out after %.3fs: %s',
+            $this->Timeout,
+            Get::code($this->Command),
+        ));
     }
 
     /**
@@ -866,36 +938,36 @@ final class Process
     }
 
     /**
-     * @return $this
-     * @throws ProcessTimedOutException if the process timed out.
+     * @param array<FileDescriptor::*,resource> $streams
+     * @param-out array{} $streams
      */
-    private function checkTimeout()
+    private function closeStreams(array &$streams): void
     {
-        if (
-            $this->State !== self::RUNNING
-            || $this->Timeout === null
-            || $this->Timeout > (hrtime(true) - $this->StartTime) / 1000000000
-        ) {
-            return $this;
+        foreach ($streams as $stream) {
+            if (is_resource($stream)) {
+                File::close($stream);
+            }
         }
+        $streams = [];
+    }
 
-        try {
-            $this->stop();
-            // @codeCoverageIgnoreStart
-        } catch (Throwable $ex) {
-            throw new ProcessException(sprintf(
-                'Error terminating process that timed out after %.3fs: %s',
-                $this->Timeout,
-                Get::code($this->Command),
-            ), $ex);
-            // @codeCoverageIgnoreEnd
-        }
-
-        throw new ProcessTimedOutException(sprintf(
-            'Process timed out after %.3fs: %s',
-            $this->Timeout,
-            Get::code($this->Command),
-        ));
+    private function reset(): void
+    {
+        $this->OutputCallback = null;
+        unset($this->OutputFilePos);
+        $this->StartTime = null;
+        $this->Process = null;
+        $this->Stopped = false;
+        unset($this->Pipes);
+        unset($this->ProcessStatus);
+        unset($this->Pid);
+        unset($this->ExitStatus);
+        $this->LastPollTime = null;
+        $this->LastReadTime = null;
+        $this->LastStopTime = null;
+        $this->Output = [];
+        $this->OutputPos = [];
+        $this->Stats = self::DEFAULT_STATS;
     }
 
     /**
@@ -932,102 +1004,6 @@ final class Process
         return (int) ($interval - ($now - $time) / 1000) <= 0;
     }
 
-    private function doStop(int $signal): void
-    {
-        if ($this->Process === null) {
-            return;
-        }
-
-        $now = hrtime(true);
-
-        $this->throwOnFailure(
-            @proc_terminate($this->Process, $signal),
-            'Error terminating process: %s',
-        );
-
-        $this->LastStopTime = $now;
-        $this->Stats['stop_count']++;
-        if (!$this->Stopped) {
-            $this->Stats['stop_time'] = $now / 1000;
-            $this->Stopped = true;
-        }
-    }
-
-    private function waitForStop(float $until): bool
-    {
-        do {
-            usleep(self::POLL_INTERVAL);
-            if (!$this->isRunning()) {
-                return true;
-            }
-        } while (hrtime(true) < $until);
-
-        return false;
-    }
-
-    /**
-     * @param array<FileDescriptor::*,resource> $streams
-     * @param-out array{} $streams
-     */
-    private function closeStreams(array &$streams): void
-    {
-        foreach ($streams as $stream) {
-            if (is_resource($stream)) {
-                File::close($stream);
-            }
-        }
-        $streams = [];
-    }
-
-    private function assertIsNotRunning(): void
-    {
-        if ($this->State === self::RUNNING) {
-            throw new LogicException('Process is running');
-        }
-    }
-
-    private function assertHasRun(): void
-    {
-        if ($this->State === self::READY) {
-            throw new LogicException('Process has not run');
-        }
-    }
-
-    private function assertHasTerminated(bool $runtime = false): void
-    {
-        if ($this->State !== self::TERMINATED) {
-            $exception = $runtime
-                ? RuntimeException::class
-                : LogicException::class;
-            throw new $exception('Process has not terminated');
-        }
-    }
-
-    /**
-     * @param resource|string|null $input
-     */
-    private function applyInput($input): void
-    {
-        $this->Input = $input === null || is_string($input)
-            ? Str::toStream((string) $input)
-            : File::getSeekableStream($input);
-        $this->RewindInput = true;
-    }
-
-    private function applyTimeout(?float $timeout): void
-    {
-        if ($timeout !== null && $timeout <= 0) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid timeout: %.3fs', $timeout)
-            );
-        }
-
-        $this->Timeout = $timeout;
-        [$this->Sec, $this->Usec] = $timeout === null
-            ? [null, 0]
-            : [0, min((int) ($timeout * 1000000), self::READ_INTERVAL)];
-    }
-
     /**
      * @template T
      *
@@ -1060,5 +1036,29 @@ final class Process
             sprintf($message, Get::code($this->Command))
         );
         // @codeCoverageIgnoreEnd
+    }
+
+    private function assertIsNotRunning(): void
+    {
+        if ($this->State === self::RUNNING) {
+            throw new LogicException('Process is running');
+        }
+    }
+
+    private function assertHasRun(): void
+    {
+        if ($this->State === self::READY) {
+            throw new LogicException('Process has not run');
+        }
+    }
+
+    private function assertHasTerminated(bool $runtime = false): void
+    {
+        if ($this->State !== self::TERMINATED) {
+            $exception = $runtime
+                ? RuntimeException::class
+                : LogicException::class;
+            throw new $exception('Process has not terminated');
+        }
     }
 }
