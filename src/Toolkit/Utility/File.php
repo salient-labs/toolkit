@@ -348,7 +348,7 @@ final class File extends AbstractUtility
         if (class_exists(Process::class)) {
             $process = Process::withShellCommand($command);
             if ($process->run() === 0) {
-                return $process->getText();
+                return $process->getOutputAsText();
             }
         } else {
             // @codeCoverageIgnoreStart
@@ -539,7 +539,7 @@ final class File extends AbstractUtility
     public static function checkEof($stream, $uri = null): void
     {
         $error = error_get_last();
-        if (@feof($stream)) {
+        if (self::eof($stream, true)) {
             return;
         }
         if ($error) {
@@ -573,6 +573,24 @@ final class File extends AbstractUtility
         $result = @pclose($pipe);
         if ($result === -1) {
             self::check(false, 'pclose', $command ?? '<pipe>');
+        }
+        return $result;
+    }
+
+    /**
+     * Check if a stream is at end-of-file
+     *
+     * @param resource $stream
+     */
+    public static function eof($stream, bool $returnFalseOnError = false): bool
+    {
+        error_clear_last();
+        $result = @feof($stream);
+        if ($error = error_get_last()) {
+            if ($returnFalseOnError) {
+                return false;
+            }
+            throw new FilesystemErrorException($error['message']);
         }
         return $result;
     }
@@ -713,7 +731,7 @@ final class File extends AbstractUtility
             $unread = $length - $dataLength;
             $result = self::read($stream, $unread, $uri);
             if ($result === '') {
-                if (@feof($stream)) {
+                if (self::eof($stream)) {
                     break;
                 }
                 usleep(10000);
@@ -803,6 +821,29 @@ final class File extends AbstractUtility
             /** @disregard P1006 */
             self::seek($stream, $offset, $whence, $uri);
         }
+    }
+
+    /**
+     * Wait for the given streams to change status
+     *
+     * @template TRead of resource[]|null
+     * @template TWrite of resource[]|null
+     * @template TExcept of resource[]|null
+     *
+     * @param TRead $read
+     * @param TWrite $write
+     * @param TExcept $except
+     */
+    public static function select(?array &$read, ?array &$write, ?array &$except, ?int $seconds, ?int $microseconds = null): int
+    {
+        return self::check(@stream_select(
+            $read,
+            $write,
+            $except,
+            $seconds,
+            // `$microseconds` is not nullable until PHP 8.1
+            $microseconds ?? 0,
+        ), 'stream_select');
     }
 
     /**

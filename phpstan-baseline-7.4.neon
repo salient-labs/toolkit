@@ -103,7 +103,7 @@ parameters:
 			path: tests/unit/Toolkit/Core/ProcessTest.php
 
 		-
-			message: '#^Cannot call method getText\(\) on Salient\\Core\\Process\|null\.$#'
+			message: '#^Cannot call method getOutputAsText\(\) on Salient\\Core\\Process\|null\.$#'
 			identifier: method.nonObject
 			count: 2
 			path: tests/unit/Toolkit/Http/HttpServerTest.php

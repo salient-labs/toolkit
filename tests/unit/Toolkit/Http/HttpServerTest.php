@@ -120,14 +120,14 @@ HTTP/1.1 200 OK
 Content-Type: text/plain
 
 Hello, world!
-EOF, "\r\n"), $client->getText());
+EOF, "\r\n"), $client->getOutputAsText());
         $this->assertSame(<<<'EOF'
 ==> Connected to localhost:3008
 > GET / HTTP/1.1
 > Host: localhost:3008
 > Accept: */*
 >
-EOF, $client->getText(FileDescriptor::ERR));
+EOF, $client->getOutputAsText(FileDescriptor::ERR));
     }
 
     private function getServerWithClient(

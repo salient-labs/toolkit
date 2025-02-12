@@ -33,8 +33,8 @@ final class ProcessTest extends TestCase
         $this->assertSame(0, $process->run());
         $this->assertSame('foo' . \PHP_EOL, $process->getOutput());
         $this->assertSame('', $process->getNewOutput());
-        $this->assertSame('', $process->getNewText());
-        $this->assertSame('foo', $process->getText());
+        $this->assertSame('', $process->getNewOutputAsText());
+        $this->assertSame('foo', $process->getOutputAsText());
     }
 
     public function testDestructor(): void
@@ -63,7 +63,7 @@ final class ProcessTest extends TestCase
         $this->assertSame(0, $process->run());
         $this->assertSame('foo', $output[FileDescriptor::OUT]);
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Output not collected');
+        $this->expectExceptionMessage('Output collection disabled');
         $process->getOutput();
     }
 
@@ -76,7 +76,7 @@ final class ProcessTest extends TestCase
         $process->enableOutputCollection();
         $process->clearOutput();
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Output not collected');
+        $this->expectExceptionMessage('Output collection disabled');
         // Should fail because output was not collected when the process was run
         $process->getOutput();
     }
@@ -101,9 +101,6 @@ final class ProcessTest extends TestCase
         $this->assertTrue(Sys::isProcessRunning($pid));
         $process->stop();
         $this->assertFalse(Sys::isProcessRunning($pid));
-        if (!Sys::isWindows()) {
-            $this->assertTrue($process->isTerminatedBySignal());
-        }
         $this->assertNotSame(0, $process->getExitStatus());
     }
 
