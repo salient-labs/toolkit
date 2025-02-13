@@ -37,8 +37,6 @@ class HttpServer implements Immutable
     private $Server;
 
     /**
-     * Creates a new HttpServer object
-     *
      * @param int $timeout The default number of seconds to wait for a request
      * before timing out. Use a negative value to wait indefinitely.
      */

@@ -13,7 +13,7 @@ class PropertyTag extends AbstractTag
     protected bool $IsWriteOnly;
 
     /**
-     * Creates a new PropertyTag object
+     * @internal
      */
     public function __construct(
         string $name,

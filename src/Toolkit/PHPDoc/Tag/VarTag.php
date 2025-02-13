@@ -8,7 +8,7 @@ namespace Salient\PHPDoc\Tag;
 class VarTag extends AbstractTag
 {
     /**
-     * Creates a new VarTag object
+     * @internal
      */
     public function __construct(
         string $type,

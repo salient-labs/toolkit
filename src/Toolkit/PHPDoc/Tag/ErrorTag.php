@@ -10,7 +10,7 @@ class ErrorTag extends GenericTag
     protected string $Message;
 
     /**
-     * Creates a new ErrorTag object
+     * @internal
      */
     public function __construct(
         string $tag,

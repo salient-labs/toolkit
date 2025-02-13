@@ -30,8 +30,6 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     protected StreamInterface $Content;
 
     /**
-     * Creates a new HttpMultipartStreamPart object
-     *
      * @param StreamInterface|resource|string|null $content
      */
     public function __construct(

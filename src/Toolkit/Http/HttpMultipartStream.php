@@ -29,8 +29,6 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
     protected int $Pos = 0;
 
     /**
-     * Creates a new HttpMultipartStream object
-     *
      * @param HttpMultipartStreamPartInterface[] $parts
      */
     public function __construct(array $parts = [], ?string $boundary = null)

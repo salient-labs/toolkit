@@ -29,9 +29,6 @@ final class ConsoleLogger implements LoggerInterface
 
     private ConsoleWriterInterface $Writer;
 
-    /**
-     * Creates a new ConsoleLogger object
-     */
     public function __construct(ConsoleWriterInterface $writer)
     {
         $this->Writer = $writer;

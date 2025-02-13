@@ -23,8 +23,6 @@ class GraphIterator implements Iterator
     protected bool $IsObject = true;
 
     /**
-     * Creates a new GraphIterator object
-     *
      * @param object|mixed[] $graph
      */
     public function __construct($graph)

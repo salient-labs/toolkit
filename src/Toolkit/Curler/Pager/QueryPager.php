@@ -28,7 +28,7 @@ final class QueryPager implements CurlerPagerInterface
     private ?int $PageSize;
 
     /**
-     * Creates a new QueryPager object
+     * @api
      *
      * @param array-key|null $pageKey The value to increment in the query string
      * of each request, or `null` to use the first value in the query. Added to

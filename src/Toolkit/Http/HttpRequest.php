@@ -33,8 +33,6 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
     protected Uri $Uri;
 
     /**
-     * Creates a new HttpRequest object
-     *
      * @param PsrUriInterface|Stringable|string $uri
      * @param StreamInterface|resource|string|null $body
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers

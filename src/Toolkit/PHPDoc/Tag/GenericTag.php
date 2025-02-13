@@ -8,7 +8,7 @@ namespace Salient\PHPDoc\Tag;
 class GenericTag extends AbstractTag
 {
     /**
-     * Creates a new GenericTag object
+     * @internal
      */
     public function __construct(
         string $tag,

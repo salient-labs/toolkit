@@ -50,7 +50,7 @@ final class ErrorHandler implements FacadeAwareInterface, Instantiable, Unloadab
     private bool $IsShuttingDownOnExitSignal = false;
 
     /**
-     * Creates a new ErrorHandler object
+     * @api
      */
     public function __construct() {}
 

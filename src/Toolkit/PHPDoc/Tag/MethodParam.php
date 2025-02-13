@@ -19,7 +19,7 @@ class MethodParam implements Immutable, Stringable
     protected bool $IsVariadic;
 
     /**
-     * Creates a new MethodParam object
+     * @internal
      */
     public function __construct(
         string $name,

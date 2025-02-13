@@ -91,8 +91,6 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
     protected ?string $ReasonPhrase;
 
     /**
-     * Creates a new HttpResponse object
-     *
      * @param StreamInterface|resource|string|null $body
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */

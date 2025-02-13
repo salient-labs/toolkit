@@ -198,8 +198,6 @@ class PHPDoc implements Immutable, Stringable
     private static array $InheritableByClassTagIndex;
 
     /**
-     * Creates a new PHPDoc object from a PHP DocBlock
-     *
      * @param self|string|null $classDocBlock
      * @param class-string|null $class
      * @param array<string,class-string> $aliases

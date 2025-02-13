@@ -98,7 +98,7 @@ class Application extends Container implements ApplicationInterface
     private static bool $ShutdownReportIsRegistered = false;
 
     /**
-     * Creates a new Application object
+     * Creates a new service container
      *
      * If `$basePath` is `null`, the value of environment variable
      * `app_base_path` is used if present, otherwise the path of the root

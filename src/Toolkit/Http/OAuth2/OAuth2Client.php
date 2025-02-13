@@ -128,9 +128,6 @@ abstract class OAuth2Client
      */
     abstract protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void;
 
-    /**
-     * Creates a new OAuth2Client object
-     */
     public function __construct()
     {
         $this->Listener = $this->getListener();

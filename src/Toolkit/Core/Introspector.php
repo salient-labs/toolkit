@@ -124,8 +124,6 @@ class Introspector
     }
 
     /**
-     * Creates a new Introspector object
-     *
      * @param class-string $service
      * @param class-string<TClass> $class
      * @param class-string<TProvider> $provider

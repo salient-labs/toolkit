@@ -74,8 +74,6 @@ final class SqlQuery implements Chainable, Readable
     }
 
     /**
-     * Creates a new SqlQuery object
-     *
      * @param callable(string): string $paramCallback Applied to the name of
      * each parameter added to the query.
      */

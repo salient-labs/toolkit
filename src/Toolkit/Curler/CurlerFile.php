@@ -14,7 +14,7 @@ use InvalidArgumentException;
 class CurlerFile extends HttpMultipartStreamPart
 {
     /**
-     * Creates a new CurlerFile object
+     * @api
      *
      * @param string|null $uploadFilename Default: `basename($filename)`
      * @param string|null $mediaType Default: `mime_content_type($filename)`,

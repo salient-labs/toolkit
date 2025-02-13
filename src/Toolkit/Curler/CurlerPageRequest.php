@@ -17,7 +17,7 @@ class CurlerPageRequest implements CurlerPageRequestInterface
     protected ?array $NextQuery;
 
     /**
-     * Creates a new CurlerPageRequest object
+     * @api
      *
      * @param mixed[]|null $nextQuery
      */

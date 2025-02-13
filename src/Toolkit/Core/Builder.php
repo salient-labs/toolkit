@@ -63,7 +63,7 @@ abstract class Builder implements BuilderInterface
     private array $Data = [];
 
     /**
-     * Creates a new builder
+     * @api
      */
     final public function __construct()
     {

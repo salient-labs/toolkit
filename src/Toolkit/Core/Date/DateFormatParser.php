@@ -16,7 +16,7 @@ final class DateFormatParser implements DateParserInterface
     private string $Format;
 
     /**
-     * Creates a new DateFormatParser object
+     * @api
      *
      * @param string $format Passed to
      * {@see DateTimeImmutable::createFromFormat()}. See

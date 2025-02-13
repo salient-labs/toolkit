@@ -51,8 +51,6 @@ final class DbConnector implements Readable
     private $AdodbDriver;
 
     /**
-     * Creates a new DbConnector object
-     *
      * @param string $name The connection name used in the following environment
      * variables:
      * - `<name>_driver`: ignored if `$driver` is set, otherwise required
