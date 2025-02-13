@@ -9,14 +9,12 @@ use Salient\Utility\Arr;
 use ValueError;
 
 /**
- * Moves array values from one set of keys to another
- *
  * @api
  */
 final class ArrayMapper implements ArrayMapperInterface
 {
     /** @var array-key[]|null */
-    private ?array $OutputKeys;
+    private ?array $OutputKeys = null;
     /** @var array<array-key,array-key> */
     private array $OutputMap;
     private bool $RemoveNull;
@@ -27,16 +25,18 @@ final class ArrayMapper implements ArrayMapperInterface
     private array $InputKeyIndex;
 
     /**
-     * Creates a new ArrayMapper object
+     * Creates a new array mapper
      *
-     * By default, an array mapper:
+     * Default behaviour:
      *
-     * - ignores missing values (maps where the input array has no data)
-     * - preserves unmapped values (input that isn't mapped to a different key)
-     * - does not remove `null` values from the output array
+     * - ignore missing values (maps for which the input array has no data)
+     * - keep unmapped values (input that isn't mapped to a different key)
+     * - keep `null` values
+     *
+     * @api
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
-     * input keys to one or more output keys.
+     * input keys to one or multiple output keys.
      * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
      * wherever possible to improve performance.
      * @param int-mask-of<ArrayMapper::*> $flags
@@ -63,7 +63,6 @@ final class ArrayMapper implements ArrayMapperInterface
             return;
         }
 
-        $this->OutputKeys = null;
         $this->OutputMap = $outKeyMap;
         $this->AddUnmapped = (bool) ($flags & self::ADD_UNMAPPED);
         $this->RequireMapped = (bool) ($flags & self::REQUIRE_MAPPED);
@@ -85,28 +84,28 @@ final class ArrayMapper implements ArrayMapperInterface
             } catch (ValueError $ex) {
                 throw new InvalidDataException('Invalid input array', 0, $ex);
             }
+        } else {
+            $out = [];
+            foreach ($this->OutputMap as $outKey => $inKey) {
+                if (array_key_exists($inKey, $in)) {
+                    $out[$outKey] = $in[$inKey];
+                } elseif ($this->AddMissing) {
+                    $out[$outKey] = null;
+                } elseif ($this->RequireMapped) {
+                    throw new InvalidDataException(sprintf(
+                        'Input key not found: %s',
+                        $inKey,
+                    ));
+                }
+            }
 
-            return $this->RemoveNull ? Arr::whereNotNull($out) : $out;
-        }
-
-        $out = [];
-        foreach ($this->OutputMap as $outKey => $inKey) {
-            if (array_key_exists($inKey, $in)) {
-                $out[$outKey] = $in[$inKey];
-            } elseif ($this->AddMissing) {
-                $out[$outKey] = null;
-            } elseif ($this->RequireMapped) {
-                throw new InvalidDataException(sprintf(
-                    'Input key not found: %s',
-                    $inKey,
-                ));
+            if ($this->AddUnmapped) {
+                $out += array_diff_key($in, $this->InputKeyIndex);
             }
         }
 
-        if ($this->AddUnmapped) {
-            $out += array_diff_key($in, $this->InputKeyIndex);
-        }
-
-        return $this->RemoveNull ? Arr::whereNotNull($out) : $out;
+        return $this->RemoveNull
+            ? Arr::whereNotNull($out)
+            : $out;
     }
 }

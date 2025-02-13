@@ -9,7 +9,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\Core\ProviderContext;
+use Salient\Core\Provider\ProviderContext;
 use Salient\Sync\Exception\InvalidFilterException;
 use Salient\Sync\Exception\InvalidFilterSignatureException;
 use Salient\Utility\Arr;

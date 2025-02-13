@@ -9,7 +9,7 @@ use Stringable;
 /**
  * @api
  */
-class PcreErrorException extends AbstractUtilityException
+class PcreErrorException extends UtilityException
 {
     private const ERROR_MESSAGE_MAP = [
         \PREG_NO_ERROR => 'No error',

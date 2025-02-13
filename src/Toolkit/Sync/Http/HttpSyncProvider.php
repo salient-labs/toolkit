@@ -3,7 +3,7 @@
 namespace Salient\Sync\Http;
 
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Curler\Exception\RequestExceptionInterface;
+use Salient\Contract\Curler\Exception\RequestException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -195,7 +195,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
             try {
                 $resource = $this->getHeartbeat();
                 // @codeCoverageIgnoreStart
-            } catch (RequestExceptionInterface $ex) {
+            } catch (RequestException $ex) {
                 throw new UnreachableBackendException(
                     $this,
                     $ex->getMessage(),

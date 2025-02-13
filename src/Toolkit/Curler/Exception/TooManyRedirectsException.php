@@ -2,9 +2,9 @@
 
 namespace Salient\Curler\Exception;
 
-use Salient\Contract\Curler\Exception\TooManyRedirectsExceptionInterface;
+use Salient\Contract\Curler\Exception\TooManyRedirectsException as TooManyRedirectsExceptionInterface;
 
 /**
  * @internal
  */
-class TooManyRedirectsException extends AbstractResponseException implements TooManyRedirectsExceptionInterface {}
+class TooManyRedirectsException extends GenericResponseException implements TooManyRedirectsExceptionInterface {}

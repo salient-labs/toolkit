@@ -2,4 +2,4 @@
 
 namespace Salient\Http\Exception;
 
-class InvalidHeaderException extends AbstractHttpException {}
+class InvalidHeaderException extends HttpException {}

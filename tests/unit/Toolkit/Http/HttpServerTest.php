@@ -8,6 +8,7 @@ use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface as ResponseInterface;
 use Salient\Contract\Http\HttpServerRequestInterface as ServerRequest;
+use Salient\Core\Facade\Console;
 use Salient\Core\Process;
 use Salient\Http\HttpResponse as Response;
 use Salient\Http\HttpServer;
@@ -119,14 +120,14 @@ HTTP/1.1 200 OK
 Content-Type: text/plain
 
 Hello, world!
-EOF, "\r\n"), $client->getText());
+EOF, "\r\n"), $client->getOutputAsText());
         $this->assertSame(<<<'EOF'
 ==> Connected to localhost:3008
 > GET / HTTP/1.1
 > Host: localhost:3008
 > Accept: */*
 >
-EOF, $client->getText(FileDescriptor::ERR));
+EOF, $client->getOutputAsText(FileDescriptor::ERR));
     }
 
     private function getServerWithClient(
@@ -163,5 +164,6 @@ EOF, $client->getText(FileDescriptor::ERR));
                 $this->Server->stop();
             }
         }
+        Console::unload();
     }
 }

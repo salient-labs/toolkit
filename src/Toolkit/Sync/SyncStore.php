@@ -19,7 +19,7 @@ use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Event;
-use Salient\Core\AbstractStore;
+use Salient\Core\Store;
 use Salient\Sync\Event\SyncStoreLoadedEvent;
 use Salient\Sync\Exception\HeartbeatCheckFailedException;
 use Salient\Sync\Exception\SyncStoreException;
@@ -42,7 +42,7 @@ use ReflectionClass;
  * terminated by calling {@see SyncStore::close()}, otherwise a failed run is
  * recorded.
  */
-final class SyncStore extends AbstractStore implements SyncStoreInterface
+final class SyncStore extends Store implements SyncStoreInterface
 {
     private ?int $RunId = null;
     private string $RunUuid;

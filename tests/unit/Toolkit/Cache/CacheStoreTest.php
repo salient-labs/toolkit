@@ -3,7 +3,7 @@
 namespace Salient\Tests\Cache;
 
 use Salient\Cache\CacheStore;
-use Salient\Contract\Cache\CacheCopyFailedExceptionInterface;
+use Salient\Contract\Cache\CacheCopyFailedException;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use DateInterval;
@@ -12,7 +12,7 @@ use stdClass;
 
 /**
  * @covers \Salient\Cache\CacheStore
- * @covers \Salient\Core\AbstractStore
+ * @covers \Salient\Core\Store
  */
 final class CacheStoreTest extends TestCase
 {
@@ -113,7 +113,7 @@ final class CacheStoreTest extends TestCase
     public function testNestedAsOfNow(): void
     {
         $current = $this->Cache->asOfNow();
-        $this->expectException(CacheCopyFailedExceptionInterface::class);
+        $this->expectException(CacheCopyFailedException::class);
         $this->expectExceptionMessage('Calls to ' . CacheStore::class . '::asOfNow() cannot be nested');
         $current->asOfNow();
     }
@@ -121,7 +121,7 @@ final class CacheStoreTest extends TestCase
     public function testMultipleAsOfNow(): void
     {
         $current = $this->Cache->asOfNow();
-        $this->expectException(CacheCopyFailedExceptionInterface::class);
+        $this->expectException(CacheCopyFailedException::class);
         $this->expectExceptionMessage(CacheStore::class . '::asOfNow() cannot be called until the instance returned previously is closed or discarded');
         $current = $this->Cache->asOfNow();
     }

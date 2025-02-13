@@ -12,7 +12,6 @@ use Salient\Contract\Console\ConsoleTargetInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Console\ConsoleTargetTypeFlag;
 use Salient\Contract\Console\ConsoleWriterInterface;
-use Salient\Core\AbstractFacade;
 use Throwable;
 
 /**
@@ -59,11 +58,11 @@ use Throwable;
  *
  * @api
  *
- * @extends AbstractFacade<ConsoleWriterInterface>
+ * @extends Facade<ConsoleWriterInterface>
  *
  * @generated
  */
-final class Console extends AbstractFacade
+final class Console extends Facade
 {
     /**
      * @internal

@@ -2,31 +2,30 @@
 
 namespace Salient\Core;
 
-use Salient\Utility\Exception\InvalidArgumentTypeException;
 use ArrayAccess;
 use OutOfRangeException;
 use ReturnTypeWillChange;
 
 /**
- * Provides a standard interface to an underlying object or array and its values
- *
  * @api
  *
  * @implements ArrayAccess<array-key,mixed>
  */
-class Graph implements GraphInterface, ArrayAccess
+final class Graph implements ArrayAccess
 {
     protected object $Object;
     /** @var mixed[] */
     protected array $Array;
     protected bool $IsObject;
-    protected bool $AddMissingProperties;
     protected bool $AddMissingKeys;
-    /** @var string[] */
+    protected bool $AddMissingProperties;
+    /** @var array-key[] */
     protected array $Path = [];
 
     /**
-     * Creates a new Graph object
+     * @api
+     *
+     * @param mixed[]|object $value
      */
     public function __construct(
         &$value = [],
@@ -36,14 +35,12 @@ class Graph implements GraphInterface, ArrayAccess
         if (is_object($value)) {
             $this->Object = $value;
             $this->IsObject = true;
-        } elseif (is_array($value)) {
+        } else {
             $this->Array = &$value;
             $this->IsObject = false;
-        } else {
-            throw new InvalidArgumentTypeException(1, 'value', 'mixed[]|object', $value);
         }
-        $this->AddMissingProperties = $addMissingProperties;
         $this->AddMissingKeys = $addMissingKeys;
+        $this->AddMissingProperties = $addMissingProperties;
     }
 
     /**
@@ -59,7 +56,7 @@ class Graph implements GraphInterface, ArrayAccess
     /**
      * Get the properties or keys traversed to reach the current value
      *
-     * @return array<array-key>
+     * @return array-key[]
      */
     public function getPath(): array
     {
@@ -99,7 +96,7 @@ class Graph implements GraphInterface, ArrayAccess
             if (!(is_object($this->Object->$offset) || is_array($this->Object->$offset))) {
                 return $this->Object->$offset;
             }
-            $value = new static($this->Object->$offset);
+            $value = new self($this->Object->$offset, $this->AddMissingKeys, $this->AddMissingProperties);
         } else {
             if (!array_key_exists($offset, $this->Array)) {
                 if (!$this->AddMissingKeys) {
@@ -108,14 +105,12 @@ class Graph implements GraphInterface, ArrayAccess
                 $this->Array[$offset] = [];
             }
             if (!(is_object($this->Array[$offset]) || is_array($this->Array[$offset]))) {
-                /** @var int|float|string|bool|null */
+                // @phpstan-ignore return.type
                 return $this->Array[$offset];
             }
-            $value = new static($this->Array[$offset]);
+            $value = new self($this->Array[$offset], $this->AddMissingKeys, $this->AddMissingProperties);
         }
 
-        $value->AddMissingProperties = $this->AddMissingProperties;
-        $value->AddMissingKeys = $this->AddMissingKeys;
         $value->Path = $this->Path;
         $value->Path[] = $offset;
         return $value;
@@ -149,15 +144,4 @@ class Graph implements GraphInterface, ArrayAccess
             unset($this->Array[$offset]);
         }
     }
-}
-
-/**
- * @internal
- */
-interface GraphInterface
-{
-    /**
-     * @param mixed[]|object $value
-     */
-    public function __construct(&$value = []);
 }

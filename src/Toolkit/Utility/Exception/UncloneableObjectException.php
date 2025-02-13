@@ -5,4 +5,4 @@ namespace Salient\Utility\Exception;
 /**
  * @api
  */
-class UncloneableObjectException extends AbstractUtilityException {}
+class UncloneableObjectException extends UtilityException {}

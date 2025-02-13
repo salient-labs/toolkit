@@ -10,7 +10,7 @@ use Salient\Utility\Inflect;
 /**
  * @internal
  */
-class HeartbeatCheckFailedException extends AbstractSyncException implements HeartbeatCheckFailedExceptionInterface
+class HeartbeatCheckFailedException extends SyncException implements HeartbeatCheckFailedExceptionInterface
 {
     /** @var SyncProviderInterface[] */
     protected array $Providers;

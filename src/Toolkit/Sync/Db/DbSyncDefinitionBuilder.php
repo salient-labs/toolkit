@@ -10,7 +10,7 @@ use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Sync\AbstractSyncDefinition;
 use Closure;
@@ -29,11 +29,11 @@ use Closure;
  * @template TEntity of SyncEntityInterface
  * @template TProvider of DbSyncProvider
  *
- * @extends AbstractBuilder<DbSyncDefinition<TEntity,TProvider>>
+ * @extends Builder<DbSyncDefinition<TEntity,TProvider>>
  *
  * @generated
  */
-final class DbSyncDefinitionBuilder extends AbstractBuilder
+final class DbSyncDefinitionBuilder extends Builder
 {
     /**
      * @internal

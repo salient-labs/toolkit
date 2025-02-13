@@ -9,6 +9,7 @@ use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Event;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\Cli\Command\TestOptions;
@@ -112,6 +113,8 @@ final class CliApplicationTest extends TestCase
     {
         Event::removeListener(self::$ListenerId);
         File::pruneDir(self::$BasePath, true);
+        Err::unload();
+        parent::tearDownAfterClass();
     }
 
     public function testGetLastCommand(): void

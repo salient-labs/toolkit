@@ -14,7 +14,7 @@ use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 use Salient\Sync\Support\SyncPipelineArgument;
 use Salient\Sync\AbstractSyncDefinition;
 use Closure;
@@ -43,11 +43,11 @@ use Closure;
  * @template TEntity of SyncEntityInterface
  * @template TProvider of HttpSyncProvider
  *
- * @extends AbstractBuilder<HttpSyncDefinition<TEntity,TProvider>>
+ * @extends Builder<HttpSyncDefinition<TEntity,TProvider>>
  *
  * @generated
  */
-final class HttpSyncDefinitionBuilder extends AbstractBuilder
+final class HttpSyncDefinitionBuilder extends Builder
 {
     /**
      * @internal

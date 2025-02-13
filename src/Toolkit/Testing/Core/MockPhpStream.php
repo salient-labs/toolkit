@@ -2,7 +2,7 @@
 
 namespace Salient\Testing\Core;
 
-use Salient\Core\AbstractStreamWrapper;
+use Salient\Core\StreamWrapper;
 use Salient\Utility\Inflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -12,7 +12,7 @@ use RuntimeException;
 /**
  * @api
  */
-final class MockPhpStream extends AbstractStreamWrapper
+final class MockPhpStream extends StreamWrapper
 {
     /** @var array<string,string> */
     private static array $Data = [];

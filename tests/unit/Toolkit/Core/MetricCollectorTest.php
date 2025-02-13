@@ -161,10 +161,12 @@ final class MetricCollectorTest extends TestCase
         $time2 = hrtime(true) / 1000000;
         $collector->stopTimer('timer1');
         $beforePop = [$collector->getCounters(), $collector->getTimers()];
+        $maxTimersBeforePop = $collector->getMaxTimers();
         // --
 
         $collector->pop();
         $afterPop = [$collector->getCounters(), $collector->getTimers()];
+        $maxTimersAfterPop = $collector->getMaxTimers();
 
         $this->assertSame([
             'general' => ['counter1' => 1],
@@ -178,6 +180,10 @@ final class MetricCollectorTest extends TestCase
         $this->assertSame(2, $beforePop[1]['general']['timer1'][1]);
         $this->assertSame(1, $beforePop[1]['special']['timer2'][1]);
         $this->assertSame(1, $beforePop[1]['special']['timer3'][1]);
+        $this->assertSame([
+            'general' => 1,
+            'special' => 2,
+        ], $maxTimersBeforePop);
 
         $this->assertSame([
             'general' => ['counter1' => 1],
@@ -189,5 +195,9 @@ final class MetricCollectorTest extends TestCase
         $this->assertEqualsWithDelta($time2 - $time0, $afterPop[1]['special']['timer2'][0], 16);
         $this->assertSame(1, $afterPop[1]['general']['timer1'][1]);
         $this->assertSame(1, $afterPop[1]['special']['timer2'][1]);
+        $this->assertSame([
+            'general' => 1,
+            'special' => 1,
+        ], $maxTimersAfterPop);
     }
 }

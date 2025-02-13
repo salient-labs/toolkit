@@ -8,6 +8,8 @@ use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Core\Facade\Config;
+use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Sync;
 use Salient\Tests\Sync\Entity\Provider\PostProvider;
 use Salient\Tests\Sync\Entity\Post;
@@ -28,6 +30,16 @@ final class ApplicationTest extends HttpTestCase
         ],
         'services' => [],
     ];
+
+    /**
+     * @inheritDoc
+     */
+    protected function tearDown(): void
+    {
+        Console::unload();
+        Err::unload();
+        parent::tearDown();
+    }
 
     public function testBindContainer(): void
     {

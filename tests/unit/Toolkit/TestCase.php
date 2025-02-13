@@ -4,6 +4,8 @@ namespace Salient\Tests;
 
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Core\Facade\Event;
+use Salient\Core\Facade\Facade;
 use Salient\Utility\Regex;
 use Closure;
 use Throwable;
@@ -11,6 +13,19 @@ use Throwable;
 abstract class TestCase extends PHPUnitTestCase
 {
     protected const PHP_COMMAND = [\PHP_BINARY, '-ddisplay_startup_errors=0'];
+
+    /**
+     * @inheritDoc
+     */
+    public static function tearDownAfterClass(): void
+    {
+        $instances = self::getFacadeInstances();
+        $facades = array_diff(array_keys($instances), [Event::class]);
+        self::assertEmpty($facades, 'Facades not unloaded: ' . implode(', ', $facades));
+        if ($instances) {
+            Facade::unloadAll();
+        }
+    }
 
     /**
      * Fail if a callback does not throw a given exception
@@ -147,5 +162,17 @@ abstract class TestCase extends PHPUnitTestCase
                 ["\r", "\n"],
                 $output,
             );
+    }
+
+    /**
+     * @return array<class-string,object>
+     */
+    private static function getFacadeInstances(): array
+    {
+        return (static function () {
+            /** @disregard P1014 */
+            // @phpstan-ignore staticProperty.notFound
+            return self::$Instances;
+        })->bindTo(null, Facade::class)();
     }
 }

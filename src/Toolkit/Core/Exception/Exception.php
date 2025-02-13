@@ -8,7 +8,7 @@ use RuntimeException;
 /**
  * @api
  */
-abstract class Exception extends RuntimeException implements ExceptionInterface
+class Exception extends RuntimeException implements ExceptionInterface
 {
     use ExceptionTrait;
 }

@@ -7,15 +7,16 @@ use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Curler\Event\CurlResponseEventInterface;
-use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
-use Salient\Contract\Curler\Exception\HttpErrorExceptionInterface;
-use Salient\Contract\Curler\Exception\TooManyRedirectsExceptionInterface;
+use Salient\Contract\Curler\Exception\CurlErrorException;
+use Salient\Contract\Curler\Exception\HttpErrorException;
+use Salient\Contract\Curler\Exception\TooManyRedirectsException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
@@ -387,7 +388,7 @@ EOF,
 
     public function testCurlError(): void
     {
-        $this->expectException(CurlErrorExceptionInterface::class);
+        $this->expectException(CurlErrorException::class);
         (new Curler('//localhost'))->get();
     }
 
@@ -404,7 +405,7 @@ EOF,
 
         $this->assertCallbackThrowsException(
             fn() => $curler->get(),
-            HttpErrorExceptionInterface::class,
+            HttpErrorException::class,
             'HTTP error 502 Bad Gateway',
         );
         $this->assertNotNull($curler->getLastRequest());
@@ -558,7 +559,7 @@ EOF,
 
         $this->assertCallbackThrowsException(
             fn() => $curler->get(),
-            TooManyRedirectsExceptionInterface::class,
+            TooManyRedirectsException::class,
             'Redirect limit exceeded: 3',
         );
 
@@ -594,7 +595,7 @@ EOF,
         if (isset($this->ListenerId)) {
             Event::removeListener($this->ListenerId);
         }
-
+        Console::unload();
         parent::tearDown();
     }
 

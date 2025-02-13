@@ -3,7 +3,7 @@
 namespace Salient\Cache;
 
 use Salient\Contract\Cache\CacheInterface;
-use Salient\Core\AbstractStore;
+use Salient\Core\Store;
 use Salient\Utility\Date;
 use DateInterval;
 use DateTimeInterface;
@@ -15,7 +15,7 @@ use SQLite3Stmt;
  *
  * @api
  */
-final class CacheStore extends AbstractStore implements CacheInterface
+final class CacheStore extends Store implements CacheInterface
 {
     private ?SQLite3Stmt $Stmt = null;
     private ?int $Now = null;

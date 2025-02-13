@@ -11,7 +11,7 @@ use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\AbstractProvider;
+use Salient\Core\Provider\AbstractProvider;
 use Salient\Core\Pipeline;
 use Salient\Sync\Exception\FilterPolicyViolationException;
 use Salient\Sync\Exception\SyncEntityRecursionException;
@@ -81,7 +81,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      */
     public function getContext(): SyncContextInterface
     {
-        return new SyncContext($this->App, $this);
+        return new SyncContext($this, $this->App);
     }
 
     /**

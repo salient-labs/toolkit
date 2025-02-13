@@ -151,8 +151,8 @@ interface CacheInterface extends PsrCacheInterface, Instantiable
      * @param int|null $now If given, items expire relative to this Unix
      * timestamp instead of the time the method is called.
      * @return static
-     * @throws CacheCopyFailedExceptionInterface if the cache is an instance
-     * returned by {@see asOfNow()}, or if another copy of the cache is open.
+     * @throws CacheCopyFailedException if the cache is an instance returned by
+     * {@see asOfNow()}, or if another copy of the cache is open.
      */
     public function asOfNow(?int $now = null): self;
 

@@ -5,7 +5,7 @@ namespace Salient\Tests\Http;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Jsonable;
 use Salient\Contract\Http\FormDataFlag;
-use Salient\Core\DateFormatter;
+use Salient\Core\Date\DateFormatter;
 use Salient\Http\FormData;
 use Salient\Tests\TestCase;
 use Salient\Utility\Json;

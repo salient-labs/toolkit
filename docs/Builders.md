@@ -7,7 +7,7 @@
 
 use Salient\Contract\Core\Buildable;
 use Salient\Core\Concern\BuildableTrait;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 
 /**
  * @implements Buildable<OptionBuilder>
@@ -52,9 +52,9 @@ class Option implements Buildable
  * @method $this valueType($value)
  * @method $this description($value)
  *
- * @extends AbstractBuilder<Option>
+ * @extends Builder<Option>
  */
-class OptionBuilder extends AbstractBuilder
+class OptionBuilder extends Builder
 {
     protected static function getService(): string
     {

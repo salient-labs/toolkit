@@ -5,4 +5,4 @@ namespace Salient\Sync\Exception;
 /**
  * @internal
  */
-class SyncInvalidContextException extends AbstractSyncException {}
+class SyncInvalidContextException extends SyncException {}

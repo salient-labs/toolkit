@@ -10,7 +10,7 @@ use Salient\Utility\Format;
 /**
  * @internal
  */
-class FilterPolicyViolationException extends AbstractSyncException implements FilterPolicyViolationExceptionInterface
+class FilterPolicyViolationException extends SyncException implements FilterPolicyViolationExceptionInterface
 {
     /** @var array<string,mixed> */
     protected array $Unclaimed;

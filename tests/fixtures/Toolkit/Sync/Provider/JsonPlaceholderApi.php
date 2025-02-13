@@ -8,7 +8,6 @@ use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Facade\Console;
-use Salient\Core\DateFormatter;
 use Salient\Sync\Http\HttpSyncDefinition;
 use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Tests\Sync\CustomEntity\Post as CustomPost;
@@ -108,11 +107,6 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         ));
 
         return $user;
-    }
-
-    protected function createDateFormatter(): DateFormatter
-    {
-        return new DateFormatter();
     }
 
     protected function filterCurler(CurlerInterface $curler, string $path): CurlerInterface

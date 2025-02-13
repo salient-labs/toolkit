@@ -2,4 +2,4 @@
 
 namespace Salient\Http\Exception;
 
-class StreamException extends AbstractHttpException {}
+class StreamException extends HttpException {}

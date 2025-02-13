@@ -343,6 +343,7 @@ final class PackageTest extends TestCase
     public static function tearDownAfterClass(): void
     {
         Event::removeListener(self::$ListenerId);
+        parent::tearDownAfterClass();
     }
 
     protected function setUp(): void

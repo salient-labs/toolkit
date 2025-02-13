@@ -3,12 +3,12 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Curler\Exception\CurlErrorExceptionInterface;
+use Salient\Contract\Curler\Exception\CurlErrorException as CurlErrorExceptionInterface;
 
 /**
  * @internal
  */
-class CurlErrorException extends AbstractRequestException implements CurlErrorExceptionInterface
+class CurlErrorException extends GenericRequestException implements CurlErrorExceptionInterface
 {
     protected int $CurlError;
 

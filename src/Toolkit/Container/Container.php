@@ -23,10 +23,12 @@ use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
 use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\SingletonInterface;
+use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\ChainableTrait;
 use Salient\Core\Concern\FacadeAwareTrait;
+use Salient\Core\Event\EventDispatcher;
 use Salient\Core\Facade\Event;
 use Salient\Sync\SyncStore;
 use Closure;
@@ -58,6 +60,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
 
     private const DEFAULT_SERVICES = [
         CacheInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
+        EventDispatcherInterface::class => [EventDispatcher::class, ServiceLifetime::SINGLETON],
         ConsoleWriterInterface::class => [ConsoleWriter::class, ServiceLifetime::SINGLETON],
         LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::INHERIT],
         SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],

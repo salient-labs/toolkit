@@ -5,4 +5,4 @@ namespace Salient\Utility\Exception;
 /**
  * @api
  */
-class InvalidEnvironmentException extends AbstractUtilityException {}
+class InvalidEnvironmentException extends UtilityException {}

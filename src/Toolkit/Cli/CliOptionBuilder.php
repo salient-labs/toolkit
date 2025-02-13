@@ -6,7 +6,7 @@ use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
 use Salient\Contract\Cli\CliOptionVisibility;
-use Salient\Core\AbstractBuilder;
+use Salient\Core\Builder;
 
 /**
  * @method $this name(string|null $value) The name of the option (ignored if not positional; must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens)
@@ -34,11 +34,11 @@ use Salient\Core\AbstractBuilder;
  *
  * @api
  *
- * @extends AbstractBuilder<CliOption>
+ * @extends Builder<CliOption>
  *
  * @generated
  */
-final class CliOptionBuilder extends AbstractBuilder
+final class CliOptionBuilder extends Builder
 {
     /**
      * @internal

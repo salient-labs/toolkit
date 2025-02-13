@@ -11,7 +11,7 @@ use Salient\Utility\Reflect;
 /**
  * @internal
  */
-class SyncInvalidEntitySourceException extends AbstractSyncException
+class SyncInvalidEntitySourceException extends SyncException
 {
     /**
      * @param class-string<SyncEntityInterface> $entity

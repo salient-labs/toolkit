@@ -6,8 +6,6 @@ use Salient\Contract\Core\Instantiable;
 use LogicException;
 
 /**
- * Collects runtime performance metrics
- *
  * @api
  */
 final class MetricCollector implements Instantiable
@@ -55,11 +53,18 @@ final class MetricCollector implements Instantiable
      */
     private array $ElapsedTime = [];
 
-    /** @var array<array{array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}> */
+    /**
+     * Group => maximum number of timers running simultaneously
+     *
+     * @var array<string,int>
+     */
+    private array $ConcurrentTimers = [];
+
+    /** @var array<array{array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>,array<string,int>}> */
     private array $Stack = [];
 
     /**
-     * Creates a new MetricCollector object
+     * @api
      */
     public function __construct() {}
 
@@ -96,6 +101,9 @@ final class MetricCollector implements Instantiable
         $this->RunningTimers[$group][$timer] = $now;
         $this->TimerRuns[$group][$timer] ??= 0;
         $this->TimerRuns[$group][$timer]++;
+        $count = count($this->RunningTimers[$group]);
+        $this->ConcurrentTimers[$group] ??= $count;
+        $this->ConcurrentTimers[$group] = max($this->ConcurrentTimers[$group], $count);
     }
 
     /**
@@ -126,6 +134,7 @@ final class MetricCollector implements Instantiable
             $this->TimerRuns,
             $this->RunningTimers,
             $this->ElapsedTime,
+            $this->ConcurrentTimers,
         ];
     }
 
@@ -137,7 +146,7 @@ final class MetricCollector implements Instantiable
         $metrics = array_pop($this->Stack);
 
         if (!$metrics) {
-            throw new LogicException('Nothing to pop off the stack');
+            throw new LogicException('Empty stack');
         }
 
         [
@@ -146,6 +155,7 @@ final class MetricCollector implements Instantiable
             $this->TimerRuns,
             $this->RunningTimers,
             $this->ElapsedTime,
+            $this->ConcurrentTimers,
         ] = $metrics;
     }
 
@@ -172,12 +182,10 @@ final class MetricCollector implements Instantiable
      * [ <counter> => <value>, ... ]
      * ```
      *
-     * @template T of string[]|string|null
-     *
-     * @param T $groups If `null` or `["*"]`, all counters are returned,
-     * otherwise only counters in the given groups are returned.
+     * @param string[]|string|null $groups If `null` or `["*"]`, all counters
+     * are returned, otherwise only counters in the given groups are returned.
      * @return array<string,array<string,int>>|array<string,int>
-     * @phpstan-return (T is string ? array<string,int> : array<string,array<string,int>>)
+     * @phpstan-return ($groups is string ? array<string,int> : array<string,array<string,int>>)
      */
     public function getCounters($groups = null): array
     {
@@ -218,12 +226,10 @@ final class MetricCollector implements Instantiable
      * [ <timer> => [ <elapsed_ms>, <start_count> ], ... ]
      * ```
      *
-     * @template T of string[]|string|null
-     *
-     * @param T $groups If `null` or `["*"]`, all timers are returned, otherwise
-     * only timers in the given groups are returned.
+     * @param string[]|string|null $groups If `null` or `["*"]`, all timers are
+     * returned, otherwise only timers in the given groups are returned.
      * @return array<string,array<string,array{float,int}>>|array<string,array{float,int}>
-     * @phpstan-return (T is string ? array<string,array{float,int}> : array<string,array<string,array{float,int}>>)
+     * @phpstan-return ($groups is string ? array<string,array{float,int}> : array<string,array<string,array{float,int}>>)
      */
     public function getTimers(bool $includeRunning = true, $groups = null): array
     {
@@ -236,10 +242,9 @@ final class MetricCollector implements Instantiable
         foreach ($timerRuns as $group => $runs) {
             foreach ($runs as $name => $count) {
                 $timer = $this->doGetTimer($name, $group, $includeRunning, $count, $now);
-                if ($timer === null) {
-                    continue;
+                if ($timer !== null) {
+                    $timers[$group][$name] = $timer;
                 }
-                $timers[$group][$name] = $timer;
             }
         }
 
@@ -249,8 +254,27 @@ final class MetricCollector implements Instantiable
     }
 
     /**
+     * Get the maximum number of timers running simultaneously
+     *
+     * @param string[]|string|null $groups If `null` or `["*"]`, values are
+     * returned for all groups, otherwise only values for the given groups are
+     * returned.
+     * @return array<string,int>|int
+     * @phpstan-return ($groups is string ? int : array<string,int>)
+     */
+    public function getMaxTimers($groups = null)
+    {
+        if ($groups === null || $groups === ['*']) {
+            return $this->ConcurrentTimers;
+        } elseif (is_string($groups)) {
+            return $this->ConcurrentTimers[$groups] ?? 0;
+        } else {
+            return array_intersect_key($this->ConcurrentTimers, array_flip($groups));
+        }
+    }
+
+    /**
      * @param int|float|null $now
-     * @param-out int|float|null $now
      * @return array{float,int}|null
      */
     private function doGetTimer(
@@ -266,6 +290,8 @@ final class MetricCollector implements Instantiable
         }
         $elapsed = $this->ElapsedTime[$group][$timer] ?? 0;
         if ($includeRunning && isset($this->RunningTimers[$group][$timer])) {
+            // Passed by reference so `hrtime()` is called once per call to
+            // `getTimers()` and only if necessary
             $now ??= hrtime(true);
             $elapsed += $now - $this->RunningTimers[$group][$timer];
         }

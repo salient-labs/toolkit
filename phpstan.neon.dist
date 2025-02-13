@@ -39,7 +39,7 @@ parameters:
 			identifier: return.unusedType
 			paths:
 				- src/Toolkit/Core/Facade/*
-				- tests/fixtures/Toolkit/Core/AbstractFacade/*
+				- tests/unit/Toolkit/Core/Facade/*
 		-
 			identifier: salient.needless.coalesce
 			paths:

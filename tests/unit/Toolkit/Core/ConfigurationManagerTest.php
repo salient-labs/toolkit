@@ -101,23 +101,23 @@ final class ConfigurationManagerTest extends TestCase
         $this->assertSame([
             'app.name' => 'My App',
             'services' => ['Vendor\Contract\ServiceInterface' => 'Vendor\Service'],
-        ], $config->getMany([
+        ], $config->getMultiple([
             'app.name',
             'services',
         ]));
         $this->assertSame([
             'app.name' => 'My App',
-            'app.does-not-exist' => 'default',
+            'app.does-not-exist' => null,
             'app.maintenance.does-not-exist.key' => null,
-        ], $config->getMany([
+        ], $config->getMultiple([
             'app.name',
-            'app.does-not-exist' => 'default',
-            'app.maintenance.does-not-exist.key' => null,
-        ]));
+            'app.does-not-exist',
+            'app.maintenance.does-not-exist.key',
+        ], null));
 
         $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Value not found: app.does-not-exist');
-        $config->getMany(['app.name', 'app.does-not-exist']);
+        $config->getMultiple(['app.name', 'app.does-not-exist']);
     }
 
     public function testArrayAccess(): void
@@ -141,7 +141,7 @@ final class ConfigurationManagerTest extends TestCase
     public function testSetThrowsException(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Configuration values cannot be set');
+        $this->expectExceptionMessage('Configuration values cannot be changed at runtime');
         $config = new ConfigurationManager();
         $config['key'] = 'value';
     }
@@ -149,7 +149,7 @@ final class ConfigurationManagerTest extends TestCase
     public function testUnsetThrowsException(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Configuration values cannot be unset');
+        $this->expectExceptionMessage('Configuration values cannot be changed at runtime');
         $config = new ConfigurationManager(self::CONFIG);
         unset($config['app.name']);
     }

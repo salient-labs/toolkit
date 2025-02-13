@@ -10,7 +10,6 @@ use Salient\Contract\Sync\SyncErrorInterface;
 use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
-use Salient\Core\AbstractFacade;
 use Salient\Sync\SyncStore;
 
 /**
@@ -45,11 +44,11 @@ use Salient\Sync\SyncStore;
  * @method static bool runHasStarted() Check if a run of sync operations has started
  * @method static SyncStoreInterface setEntity(int $providerId, class-string<SyncEntityInterface> $entityType, int|string $entityId, SyncEntityInterface $entity) Apply a sync entity retrieved from a provider to the entity store, resolving any matching deferred entities
  *
- * @extends AbstractFacade<SyncStoreInterface>
+ * @extends Facade<SyncStoreInterface>
  *
  * @generated
  */
-final class Sync extends AbstractFacade
+final class Sync extends Facade
 {
     /**
      * @internal
