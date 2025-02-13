@@ -2,7 +2,16 @@
 
 namespace Salient\Tests\Core\Reflection;
 
+use Salient\Contract\Core\Entity\Extensible;
+use Salient\Contract\Core\Entity\Normalisable;
+use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Entity\Relatable;
+use Salient\Contract\Core\Entity\Writable;
+use Salient\Core\Concern\ExtensibleTrait;
+use Salient\Core\Concern\NormalisableTrait;
+use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
+use Salient\Core\Concern\ReadableTrait;
+use Salient\Core\Concern\WritableTrait;
 use Salient\Core\Reflection\ClassReflection;
 use Salient\Core\Reflection\MethodReflection;
 use Salient\Core\Reflection\ParameterIndex;
@@ -16,6 +25,7 @@ use Salient\Tests\Core\Introspector\Y;
 use Salient\Tests\Core\Introspector\Z;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
+use ReflectionException;
 use ReflectionProperty;
 
 /**
@@ -29,9 +39,7 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getConstructorProvider
      *
-     * @template T of object
-     *
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetConstructor(?ParameterIndex $expected, $objectOrClass): void
     {
@@ -132,9 +140,7 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider implementsInterfaceProvider
      *
-     * @template T of object
-     *
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testImplementsInterface(
         $objectOrClass,
@@ -175,9 +181,7 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getPropertyNamesProvider
      *
-     * @template T of object
-     *
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetPropertyNames(
         $objectOrClass,
@@ -208,10 +212,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getDeclaredNamesProvider
      *
-     * @template T of object
-     *
      * @param list<string> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetDeclaredNames(array $expected, $objectOrClass): void
     {
@@ -255,10 +257,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getSerializableNamesProvider
      *
-     * @template T of object
-     *
      * @param list<string> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetSerializableNames(array $expected, $objectOrClass): void
     {
@@ -302,10 +302,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getWritableNamesProvider
      *
-     * @template T of object
-     *
      * @param list<string> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetWritableNames(array $expected, $objectOrClass): void
     {
@@ -349,10 +347,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getReadablePropertyNamesProvider
      *
-     * @template T of object
-     *
      * @param array<string,string> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetAccessiblePropertyNames(array $expected, $objectOrClass): void
     {
@@ -363,10 +359,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getReadablePropertyNamesProvider
      *
-     * @template T of object
-     *
      * @param array<string,string> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetReadablePropertyNames(array $expected, $objectOrClass): void
     {
@@ -421,10 +415,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getWritablePropertyNamesProvider
      *
-     * @template T of object
-     *
      * @param array<string,string> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetWritablePropertyNames(array $expected, $objectOrClass): void
     {
@@ -475,10 +467,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getReadablePropertiesProvider
      *
-     * @template T of object
-     *
      * @param array<string,ReflectionProperty> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetReadableProperties(array $expected, $objectOrClass): void
     {
@@ -506,10 +496,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getWritablePropertiesProvider
      *
-     * @template T of object
-     *
      * @param array<string,ReflectionProperty> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetWritableProperties(array $expected, $objectOrClass): void
     {
@@ -536,10 +524,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getPropertyActionsProvider
      *
-     * @template T of object
-     *
      * @param array<"get"|"isset"|"set"|"unset",array<string,MethodReflection>> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetPropertyActions(array $expected, $objectOrClass): void
     {
@@ -596,10 +582,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getActionPropertiesProvider
      *
-     * @template T of object
-     *
      * @param array<string,array<"get"|"isset"|"set"|"unset",MethodReflection>> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      * @param "get"|"isset"|"set"|"unset" ...$action
      */
     public function testGetActionProperties(array $expected, $objectOrClass, string ...$action): void
@@ -678,10 +662,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getDateNamesProvider
      *
-     * @template T of object
-     *
      * @param list<string> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetDateNames(array $expected, $objectOrClass): void
     {
@@ -717,10 +699,8 @@ final class ClassReflectionTest extends TestCase
     /**
      * @dataProvider getPropertyRelationshipsProvider
      *
-     * @template T of object
-     *
      * @param array<string,PropertyRelationship> $expected
-     * @param T|class-string<T> $objectOrClass
+     * @param object|class-string $objectOrClass
      */
     public function testGetPropertyRelationships(array $expected, $objectOrClass): void
     {
@@ -760,6 +740,110 @@ final class ClassReflectionTest extends TestCase
                     'Children' => new PropertyRelationship('Children', Relatable::ONE_TO_MANY, Z::class),
                 ],
                 Z::class,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidClassesProvider
+     *
+     * @param object|class-string $objectOrClass
+     */
+    public function testInvalidClasses(string $expectedMessage, $objectOrClass): void
+    {
+        $class = new ClassReflection($objectOrClass);
+        $this->maybeExpectException(ReflectionException::class . ",$expectedMessage");
+        $class->getAccessibleProperties();
+        $class->getPropertyActions();
+    }
+
+    /**
+     * @return array<array{string,object|class-string}>
+     */
+    public static function invalidClassesProvider(): array
+    {
+        $tooManyProperties1 = new class implements Readable, Normalisable {
+            use ReadableProtectedPropertiesTrait;
+            use NormalisableTrait;
+
+            protected string $UserName;
+            protected string $User_Name;
+        };
+        $tooManyProperties2 = new class implements Readable, Normalisable, Extensible {
+            use ReadableProtectedPropertiesTrait;
+            use NormalisableTrait;
+            use ExtensibleTrait;
+
+            protected int $Meta_Properties;
+        };
+        $magicReserved1 = new class implements Readable, Extensible {
+            use ReadableTrait;
+            use ExtensibleTrait;
+
+            /**
+             * @return array<string,mixed>
+             */
+            protected function _getMetaProperties(): array
+            {
+                return $this->MetaProperties;
+            }
+        };
+        $magicReserved2 = new class implements Readable, Extensible, Normalisable {
+            use ReadableTrait;
+            use ExtensibleTrait;
+            use NormalisableTrait;
+
+            /**
+             * @return array<string,mixed>
+             */
+            protected function _get_metaProperties(): array
+            {
+                return $this->MetaProperties;
+            }
+        };
+        $tooManyMethods = new class implements Readable, Writable, Normalisable {
+            use ReadableTrait;
+            use WritableTrait;
+            use NormalisableTrait;
+
+            private string $UserName;
+
+            protected function _getUserName(): string
+            {
+                return $this->UserName;
+            }
+
+            protected function _setUserName(string $value): void
+            {
+                $this->UserName = $value;
+            }
+
+            protected function _set_userName(string $value): void
+            {
+                $this->UserName = $value;
+            }
+        };
+
+        return [
+            [
+                sprintf("Too many '%s' properties: %s", 'user_name', get_class($tooManyProperties1)),
+                $tooManyProperties1,
+            ],
+            [
+                sprintf("Too many '%s' properties: %s", 'meta_properties', get_class($tooManyProperties2)),
+                $tooManyProperties2,
+            ],
+            [
+                sprintf("Reserved property '%s' cannot be serviced by %s::%s()", 'MetaProperties', get_class($magicReserved1), '_getMetaProperties'),
+                $magicReserved1,
+            ],
+            [
+                sprintf("Reserved property '%s' cannot be serviced by %s::%s()", 'meta_properties', get_class($magicReserved2), '_get_metaProperties'),
+                $magicReserved2,
+            ],
+            [
+                sprintf("Too many methods for '%s' action on %s property '%s'", 'set', get_class($tooManyMethods), 'user_name'),
+                $tooManyMethods,
             ],
         ];
     }

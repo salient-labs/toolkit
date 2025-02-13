@@ -36,6 +36,8 @@ class ClassReflection extends ReflectionClass
     private Closure $Normaliser;
     /** @var list<string> */
     private array $DeclaredNames;
+    /** @var array<string,true> */
+    private array $ReservedNames;
 
     /**
      * @inheritDoc
@@ -392,26 +394,31 @@ class ClassReflection extends ReflectionClass
             /** @var string[] */
             $list = $this->getMethod($listMethod)->invoke(null);
         }
-        $reserved = array_fill_keys($this->getReservedProperties(), true);
+        $reserved = $this->ReservedNames ??= $this->getReservedNames();
         $normaliser = $this->getNormaliser();
         foreach ($this->getProperties($filter) as $property) {
-            if (
-                !$property->isStatic()
-                && !($reserved[$property->name] ?? null)
-                && (
-                    !$protected
-                    || $list === ['*']
-                    || $property->isPublic()
-                    || in_array($property->name, $list, true)
-                )
-            ) {
+            if (!$property->isStatic() && (
+                !$protected
+                || $list === ['*']
+                || $property->isPublic()
+                || in_array($property->name, $list, true)
+            )) {
                 $name = $normaliser
                     ? $normaliser($property->name, false)
                     : $property->name;
-                $properties[$name] = $property;
+                if (isset($properties[$name])) {
+                    throw new ReflectionException(sprintf(
+                        "Too many '%s' properties: %s",
+                        $name,
+                        $this->name,
+                    ));
+                }
+                $properties[$name] = ($reserved[$name] ?? null)
+                    ? false
+                    : $property;
             }
         }
-        return $properties ?? [];
+        return array_filter($properties ?? []);
     }
 
     /**
@@ -435,9 +442,7 @@ class ClassReflection extends ReflectionClass
         }
         $regex = '/^_(?<action>' . implode('|', $regex) . ')(?<property>.+)$/i';
         $filter = MethodReflection::IS_PUBLIC | MethodReflection::IS_PROTECTED;
-        if ($reserved = $this->getReservedProperties()) {
-            $reserved = array_fill_keys($this->normalise($reserved, false), true);
-        }
+        $reserved = $this->ReservedNames ??= $this->getReservedNames();
         $normaliser = $this->getNormaliser();
         foreach ($this->getMethods($filter) as $method) {
             if (
@@ -447,11 +452,25 @@ class ClassReflection extends ReflectionClass
                 $property = $normaliser
                     ? $normaliser($matches['property'], false)
                     : $matches['property'];
-                if (!($reserved[$property] ?? null)) {
-                    /** @var "get"|"isset"|"set"|"unset" */
-                    $action = Str::lower($matches['action']);
-                    $actions[$action][$property] = $method;
+                if ($reserved[$property] ?? null) {
+                    throw new ReflectionException(sprintf(
+                        "Reserved property '%s' cannot be serviced by %s::%s()",
+                        $property,
+                        $this->name,
+                        $method->name,
+                    ));
                 }
+                /** @var "get"|"isset"|"set"|"unset" */
+                $action = Str::lower($matches['action']);
+                if (isset($actions[$action][$property])) {
+                    throw new ReflectionException(sprintf(
+                        "Too many methods for '%s' action on %s property '%s'",
+                        $action,
+                        $this->name,
+                        $property,
+                    ));
+                }
+                $actions[$action][$property] = $method;
             }
         }
         return $actions ?? [];
@@ -617,14 +636,18 @@ class ClassReflection extends ReflectionClass
     }
 
     /**
-     * @return string[]
+     * @return array<string,true>
      */
-    private function getReservedProperties(): array
+    private function getReservedNames(): array
     {
+        $reserved = [];
         if ($this->isExtensible()) {
             $reserved[] = $this->getDynamicPropertiesProperty();
             $reserved[] = $this->getDynamicPropertyNamesProperty();
         }
-        return $reserved ?? [];
+        /** @disregard P1006 */
+        return $reserved
+            ? array_fill_keys($this->normalise($reserved, false), true)
+            : $reserved;
     }
 }
