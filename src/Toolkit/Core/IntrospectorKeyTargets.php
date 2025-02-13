@@ -9,10 +9,6 @@ use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
 use Closure;
 
 /**
- * How to create or update an instance from an array
- *
- * @see Introspector
- *
  * @property-read array<string,int> $Parameters Key => constructor parameter index
  * @property-read array<string,true> $PassByRefParameters Key => `true`
  * @property-read array<string,true> $NotNullableParameters Key => `true`
@@ -23,6 +19,8 @@ use Closure;
  * @property-read string[] $DateProperties Date keys
  * @property-read array<TIntrospector::*_KEY,string> $CustomKeys Identifier => key
  * @property-read int $LastParameterIndex Index of the last constructor parameter to which array values are mapped
+ *
+ * @internal
  *
  * @template TIntrospector of Introspector
  * @template TClass of object

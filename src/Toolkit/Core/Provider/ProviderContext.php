@@ -41,7 +41,7 @@ class ProviderContext implements ProviderContextInterface
     protected array $Values = [];
 
     /**
-     * @internal
+     * @api
      *
      * @param TProvider $provider
      */

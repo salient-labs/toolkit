@@ -26,8 +26,6 @@ use LogicException;
 use RuntimeException;
 
 /**
- * Generates closures that perform operations on a class
- *
  * @property-read class-string<TClass> $Class The name of the class under introspection
  * @property-read bool $IsReadable True if the class implements Readable
  * @property-read bool $IsWritable True if the class implements Writable
@@ -61,6 +59,8 @@ use RuntimeException;
  * @method string[] getReadableProperties() Get readable properties, including "magic" properties
  * @method string[] getWritableProperties() Get writable properties, including "magic" properties
  * @method bool propertyActionIsAllowed(string $property, IntrospectionClass::ACTION_* $action) True if an action can be performed on a property
+ *
+ * @internal
  *
  * @template TClass of object
  * @template TProvider of ProviderInterface

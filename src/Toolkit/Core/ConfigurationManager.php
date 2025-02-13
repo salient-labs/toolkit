@@ -23,7 +23,7 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
     private array $Items = [];
 
     /**
-     * @api
+     * @internal
      *
      * @param array<string,mixed[]> $items
      */
@@ -66,6 +66,7 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
 
         ksort($items, \SORT_NATURAL);
         $this->Items = $items;
+
         return $this;
     }
 
@@ -113,7 +114,6 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
                 $values[$key] = Arr::get($this->Items, $key);
             }
         }
-
         return $values ?? [];
     }
 

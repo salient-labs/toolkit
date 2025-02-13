@@ -22,7 +22,7 @@ use ReflectionNamedType;
 use ReflectionProperty;
 
 /**
- * Cacheable class data shared between Introspectors
+ * @internal
  *
  * @template TClass of object
  */

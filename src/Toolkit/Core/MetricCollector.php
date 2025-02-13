@@ -64,7 +64,7 @@ final class MetricCollector implements Instantiable
     private array $Stack = [];
 
     /**
-     * @api
+     * @internal
      */
     public function __construct() {}
 

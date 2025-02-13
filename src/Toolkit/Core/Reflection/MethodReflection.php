@@ -19,6 +19,8 @@ class MethodReflection extends ReflectionMethod
     private string $ClassUnderReflection;
 
     /**
+     * @api
+     *
      * @param object|class-string $objectOrClass
      */
     public function __construct($objectOrClass, string $method)

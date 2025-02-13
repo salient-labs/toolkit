@@ -19,7 +19,7 @@ abstract class AbstractProvider implements ProviderInterface
     protected ContainerInterface $App;
 
     /**
-     * @internal
+     * @api
      */
     public function __construct(ContainerInterface $app)
     {
