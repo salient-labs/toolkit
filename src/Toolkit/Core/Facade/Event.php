@@ -7,7 +7,7 @@ use Salient\Contract\Core\Event\EventListenerProviderInterface;
 use Salient\Core\Event\EventDispatcher;
 
 /**
- * A facade for EventDispatcherInterface
+ * A facade for the global event dispatcher
  *
  * @method static object dispatch(object $event) Dispatch a given event to listeners registered for it (see {@see EventDispatcherInterface::dispatch()})
  * @method static iterable<callable(object): mixed> getListenersForEvent(object $event) Get listeners registered for a given event (see {@see EventListenerProviderInterface::getListenersForEvent()})

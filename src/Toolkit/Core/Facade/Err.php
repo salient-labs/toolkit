@@ -17,6 +17,8 @@ use Salient\Core\ErrorHandler;
  * @method static ErrorHandler silencePath(string $path, int $levels = 24576) Silence errors in a file or directory
  * @method static ErrorHandler silencePattern(string $pattern, int $levels = 24576) Silence errors in paths that match a regular expression
  *
+ * @api
+ *
  * @extends Facade<ErrorHandler>
  *
  * @generated

@@ -8,7 +8,7 @@ use DateInterval;
 use DateTimeInterface;
 
 /**
- * A facade for the global cache store
+ * A facade for the global cache
  *
  * @method static CacheInterface asOfNow(int|null $now = null) Get a copy of the cache where items do not expire over time (see {@see CacheInterface::asOfNow()})
  * @method static true clear() Delete all items from the cache (see {@see CacheInterface::clear()})
