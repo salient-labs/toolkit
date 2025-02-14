@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Catalog\FileDescriptor;
+use Salient\Contract\Catalog\HasFileDescriptor;
 use Salient\Core\Exception\ProcessDidNotTerminateException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessFailedException;
@@ -20,7 +20,7 @@ use Throwable;
 /**
  * @api
  */
-final class Process
+final class Process implements HasFileDescriptor
 {
     private const READY = 0;
     private const RUNNING = 1;
@@ -63,7 +63,7 @@ final class Process
     /** @var resource */
     private $Input;
     private bool $RewindOnStart;
-    /** @var (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null */
+    /** @var (Closure(self::OUT|self::ERR, string): mixed)|null */
     private ?Closure $Callback;
     private ?string $Cwd;
     /** @var array<string,string>|null */
@@ -80,19 +80,19 @@ final class Process
     // --
 
     private int $State = self::READY;
-    /** @var (Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): mixed)|null */
+    /** @var (Closure(self::OUT|self::ERR, string): mixed)|null */
     private ?Closure $CurrentCallback = null;
     private ?string $OutputDir = null;
-    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource> */
+    /** @var array<self::OUT|self::ERR,resource> */
     private array $OutputFiles;
-    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>> */
+    /** @var array<self::OUT|self::ERR,int<0,max>> */
     private array $OutputFilePos;
     /** @var int|float|null */
     private $StartTime = null;
     /** @var resource|null */
     private $Process = null;
     private bool $Stopped = false;
-    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource> */
+    /** @var array<self::OUT|self::ERR,resource> */
     private array $Pipes;
     /** @var array{command:string,pid:int,running:bool,signaled:bool,stopped:bool,exitcode:int,termsig:int,stopsig:int} */
     private array $ProcessStatus;
@@ -102,9 +102,9 @@ final class Process
     private $LastPollTime = null;
     /** @var int|float|null */
     private $LastReadTime = null;
-    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,resource> */
+    /** @var array<self::OUT|self::ERR,resource> */
     private array $Output = [];
-    /** @var array<FileDescriptor::OUT|FileDescriptor::ERR,int<0,max>> */
+    /** @var array<self::OUT|self::ERR,int<0,max>> */
     private array $OutputPos = [];
     /** @var array{start_time:float,spawn_interval:float,poll_time:float,poll_count:int,read_time:float,read_count:int,stop_time:float,stop_count:int} */
     private array $Stats = self::DEFAULT_STATS;
@@ -115,7 +115,7 @@ final class Process
      * @param list<string> $command
      * @param resource|string|null $input Copied to a seekable stream if not
      * already seekable, then rewound before each run.
-     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed)|null $callback
+     * @param (Closure(Process::OUT|Process::ERR $fd, string $output): mixed)|null $callback
      * @param array<string,string>|null $env
      */
     public function __construct(
@@ -143,7 +143,7 @@ final class Process
      *
      * @param resource|string|null $input Copied to a seekable stream if not
      * already seekable, then rewound before each run.
-     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed)|null $callback
+     * @param (Closure(Process::OUT|Process::ERR $fd, string $output): mixed)|null $callback
      * @param array<string,string>|null $env
      */
     public static function withShellCommand(
@@ -224,7 +224,7 @@ final class Process
     /**
      * Set the callback that receives output from the process
      *
-     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed)|null $callback
+     * @param (Closure(Process::OUT|Process::ERR $fd, string $output): mixed)|null $callback
      * @return $this
      * @throws LogicException if the process is running.
      */
@@ -319,7 +319,7 @@ final class Process
     /**
      * Run the process and throw an exception if its exit status is non-zero
      *
-     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed)|null $callback
+     * @param (Closure(Process::OUT|Process::ERR $fd, string $output): mixed)|null $callback
      * @return $this
      * @throws LogicException if the process is running.
      * @throws ProcessTimedOutException if the process times out.
@@ -342,7 +342,7 @@ final class Process
     /**
      * Run the process and return its exit status
      *
-     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed)|null $callback
+     * @param (Closure(Process::OUT|Process::ERR $fd, string $output): mixed)|null $callback
      * @throws LogicException if the process is running.
      * @throws ProcessTimedOutException if the process times out.
      * @throws ProcessTerminatedBySignalException if the process is terminated
@@ -356,7 +356,7 @@ final class Process
     /**
      * Start the process in the background
      *
-     * @param (Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed)|null $callback
+     * @param (Closure(Process::OUT|Process::ERR $fd, string $output): mixed)|null $callback
      * @return $this
      * @throws LogicException if the process is running.
      * @throws ProcessTerminatedBySignalException if the process is terminated
@@ -372,7 +372,7 @@ final class Process
         if ($this->RewindOnStart) {
             File::rewind($this->Input);
         }
-        $descriptors = [FileDescriptor::IN => $this->Input];
+        $descriptors = [self::IN => $this->Input];
         $handles = [];
 
         if ($this->UseOutputFiles) {
@@ -381,7 +381,7 @@ final class Process
             // standard output pipes are used, and useful in scenarios where
             // polling for output would be inefficient)
             $this->OutputDir ??= File::createTempDir();
-            foreach ([FileDescriptor::OUT, FileDescriptor::ERR] as $fd) {
+            foreach ([self::OUT, self::ERR] as $fd) {
                 $file = $this->OutputDir . '/' . $fd;
                 $descriptors[$fd] = ['file', $file, 'w'];
                 $stream = $this->OutputFiles[$fd] ?? null;
@@ -403,17 +403,17 @@ final class Process
             }
         } else {
             $descriptors += [
-                FileDescriptor::OUT => ['pipe', 'w'],
-                FileDescriptor::ERR => ['pipe', 'w'],
+                self::OUT => ['pipe', 'w'],
+                self::ERR => ['pipe', 'w'],
             ];
             if ($this->CollectOutput) {
                 $this->Output = [
-                    FileDescriptor::OUT => File::open('php://temp', 'a+'),
-                    FileDescriptor::ERR => File::open('php://temp', 'a+'),
+                    self::OUT => File::open('php://temp', 'a+'),
+                    self::ERR => File::open('php://temp', 'a+'),
                 ];
                 $this->OutputPos = [
-                    FileDescriptor::OUT => 0,
-                    FileDescriptor::ERR => 0,
+                    self::OUT => 0,
+                    self::ERR => 0,
                 ];
             }
         }
@@ -614,11 +614,11 @@ final class Process
     /**
      * Get output written to STDOUT or STDERR by the process
      *
-     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @param Process::OUT|Process::ERR $fd
      * @throws LogicException if the process has not run or if output collection
      * is disabled.
      */
-    public function getOutput(int $fd = FileDescriptor::OUT): string
+    public function getOutput(int $fd = Process::OUT): string
     {
         return $this->doGetOutput($fd, false, false);
     }
@@ -627,11 +627,11 @@ final class Process
      * Get output written to STDOUT or STDERR by the process since it was last
      * read
      *
-     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @param Process::OUT|Process::ERR $fd
      * @throws LogicException if the process has not run or if output collection
      * is disabled.
      */
-    public function getNewOutput(int $fd = FileDescriptor::OUT): string
+    public function getNewOutput(int $fd = Process::OUT): string
     {
         return $this->doGetOutput($fd, false, true);
     }
@@ -639,11 +639,11 @@ final class Process
     /**
      * Get text written to STDOUT or STDERR by the process
      *
-     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @param Process::OUT|Process::ERR $fd
      * @throws LogicException if the process has not run or if output collection
      * is disabled.
      */
-    public function getOutputAsText(int $fd = FileDescriptor::OUT): string
+    public function getOutputAsText(int $fd = Process::OUT): string
     {
         return $this->doGetOutput($fd, true, false);
     }
@@ -652,17 +652,17 @@ final class Process
      * Get text written to STDOUT or STDERR by the process since it was last
      * read
      *
-     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @param Process::OUT|Process::ERR $fd
      * @throws LogicException if the process has not run or if output collection
      * is disabled.
      */
-    public function getNewOutputAsText(int $fd = FileDescriptor::OUT): string
+    public function getNewOutputAsText(int $fd = Process::OUT): string
     {
         return $this->doGetOutput($fd, true, true);
     }
 
     /**
-     * @param FileDescriptor::OUT|FileDescriptor::ERR $fd
+     * @param self::OUT|self::ERR $fd
      */
     private function doGetOutput(int $fd, bool $text, bool $new): string
     {
@@ -698,7 +698,7 @@ final class Process
             return $this;
         }
 
-        foreach ([FileDescriptor::OUT, FileDescriptor::ERR] as $fd) {
+        foreach ([self::OUT, self::ERR] as $fd) {
             $stream = $this->Output[$fd];
             if ($this->UseOutputFiles) {
                 /** @var int<0,max> */

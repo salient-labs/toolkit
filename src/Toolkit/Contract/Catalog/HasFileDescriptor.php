@@ -5,7 +5,7 @@ namespace Salient\Contract\Catalog;
 /**
  * @api
  */
-interface FileDescriptor
+interface HasFileDescriptor
 {
     public const IN = 0;
     public const OUT = 1;

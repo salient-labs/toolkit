@@ -3,7 +3,6 @@
 namespace Salient\Console\Target;
 
 use Salient\Console\Concept\ConsoleStreamTarget;
-use Salient\Contract\Catalog\EscapeSequence;
 use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Core\Facade\Err;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
@@ -233,7 +232,7 @@ final class StreamTarget extends ConsoleStreamTarget
                 return;
             }
             if ($message !== '' && $message[-1] === "\r") {
-                File::write($this->Stream, EscapeSequence::WRAP_OFF . rtrim($message, "\r"));
+                File::write($this->Stream, self::WRAP_OFF . rtrim($message, "\r"));
                 self::$HasPendingClearLine = true;
                 return;
             }
@@ -267,8 +266,8 @@ final class StreamTarget extends ConsoleStreamTarget
         $data = $preserveOutputOnError
             && Err::isLoaded()
             && Err::isShuttingDownOnError()
-                ? EscapeSequence::WRAP_ON . "\n"
-                : "\r" . EscapeSequence::CLEAR_LINE . EscapeSequence::WRAP_ON;
+                ? self::WRAP_ON . "\n"
+                : "\r" . self::CLEAR_LINE . self::WRAP_ON;
         File::write($this->Stream, $data);
         self::$HasPendingClearLine = false;
     }

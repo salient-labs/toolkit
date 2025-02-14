@@ -3,14 +3,14 @@
 namespace Salient\Console\Support;
 
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Catalog\EscapeSequence as Colour;
+use Salient\Contract\Catalog\HasAnsiEscapeSequence;
 use Salient\Contract\Console\ConsoleFormatInterface;
 use Salient\Contract\Console\ConsoleTag as Tag;
 
 /**
  * Applies inline character sequences to console output
  */
-final class ConsoleFormat implements ConsoleFormatInterface
+final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequence
 {
     /** @var string */
     private $Before;
@@ -89,17 +89,17 @@ final class ConsoleFormat implements ConsoleFormatInterface
      * Get an instance that uses terminal control sequences to apply a colour to
      * TTY output
      *
-     * @param Colour::* $colour The terminal control sequence of the desired
-     * colour.
+     * @param ConsoleFormat::* $colour The terminal control sequence of the
+     * desired colour.
      */
     public static function ttyColour(string $colour): self
     {
-        /** @var string&Colour::* $colour */
+        /** @var string&self::* $colour */
         return new self(
             $colour,
-            Colour::DEFAULT,
+            self::DEFAULT,
             [
-                Colour::DEFAULT => $colour,
+                self::DEFAULT => $colour,
             ],
         );
     }
@@ -108,27 +108,27 @@ final class ConsoleFormat implements ConsoleFormatInterface
      * Get an instance that uses terminal control sequences to increase the
      * intensity of TTY output and optionally apply a colour
      *
-     * @param Colour::*|null $colour The terminal control sequence of the
+     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyBold(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(
-                Colour::BOLD . $colour,
-                Colour::DEFAULT . Colour::UNBOLD_UNDIM,
+                self::BOLD . $colour,
+                self::DEFAULT . self::UNBOLD_UNDIM,
                 [
-                    Colour::UNBOLD_UNDIM => Colour::UNDIM_BOLD,
-                    Colour::DEFAULT => $colour,
+                    self::UNBOLD_UNDIM => self::UNDIM_BOLD,
+                    self::DEFAULT => $colour,
                 ],
             );
         }
 
         return new self(
-            Colour::BOLD,
-            Colour::UNBOLD_UNDIM,
+            self::BOLD,
+            self::UNBOLD_UNDIM,
             [
-                Colour::UNBOLD_UNDIM => Colour::UNDIM_BOLD,
+                self::UNBOLD_UNDIM => self::UNDIM_BOLD,
             ],
         );
     }
@@ -137,27 +137,27 @@ final class ConsoleFormat implements ConsoleFormatInterface
      * Get an instance that uses terminal control sequences to decrease the
      * intensity of TTY output and optionally apply a colour
      *
-     * @param Colour::*|null $colour The terminal control sequence of the
+     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyDim(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(
-                Colour::DIM . $colour,
-                Colour::DEFAULT . Colour::UNBOLD_UNDIM,
+                self::DIM . $colour,
+                self::DEFAULT . self::UNBOLD_UNDIM,
                 [
-                    Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM,
-                    Colour::DEFAULT => $colour,
+                    self::UNBOLD_UNDIM => self::UNBOLD_DIM,
+                    self::DEFAULT => $colour,
                 ],
             );
         }
 
         return new self(
-            Colour::DIM,
-            Colour::UNBOLD_UNDIM,
+            self::DIM,
+            self::UNBOLD_UNDIM,
             [
-                Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM,
+                self::UNBOLD_UNDIM => self::UNBOLD_DIM,
             ],
         );
     }
@@ -169,27 +169,27 @@ final class ConsoleFormat implements ConsoleFormatInterface
      * If bold (increased intensity) and dim (decreased intensity) attributes
      * cannot be set simultaneously, output will be dim, not bold.
      *
-     * @param Colour::*|null $colour The terminal control sequence of the
+     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyBoldDim(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(
-                Colour::BOLD . Colour::DIM . $colour,
-                Colour::DEFAULT . Colour::UNBOLD_UNDIM,
+                self::BOLD . self::DIM . $colour,
+                self::DEFAULT . self::UNBOLD_UNDIM,
                 [
-                    Colour::UNBOLD_UNDIM => Colour::BOLD . Colour::DIM,
-                    Colour::DEFAULT => $colour,
+                    self::UNBOLD_UNDIM => self::BOLD . self::DIM,
+                    self::DEFAULT => $colour,
                 ],
             );
         }
 
         return new self(
-            Colour::BOLD . Colour::DIM,
-            Colour::UNBOLD_UNDIM,
+            self::BOLD . self::DIM,
+            self::UNBOLD_UNDIM,
             [
-                Colour::UNBOLD_UNDIM => Colour::BOLD . Colour::DIM,
+                self::UNBOLD_UNDIM => self::BOLD . self::DIM,
             ],
         );
     }
@@ -198,27 +198,27 @@ final class ConsoleFormat implements ConsoleFormatInterface
      * Get an instance that uses terminal control sequences to underline and
      * optionally apply a colour to TTY output
      *
-     * @param Colour::*|null $colour The terminal control sequence of the
+     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyUnderline(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(
-                $colour . Colour::UNDERLINE,
-                Colour::NO_UNDERLINE . Colour::DEFAULT,
+                $colour . self::UNDERLINE,
+                self::NO_UNDERLINE . self::DEFAULT,
                 [
-                    Colour::DEFAULT => $colour,
-                    Colour::NO_UNDERLINE => '',
+                    self::DEFAULT => $colour,
+                    self::NO_UNDERLINE => '',
                 ],
             );
         }
 
         return new self(
-            Colour::UNDERLINE,
-            Colour::NO_UNDERLINE,
+            self::UNDERLINE,
+            self::NO_UNDERLINE,
             [
-                Colour::NO_UNDERLINE => '',
+                self::NO_UNDERLINE => '',
             ],
         );
     }
