@@ -79,10 +79,10 @@ parameters:
 			path: tests/unit/Toolkit/Console/ConsoleWriterTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{array\{onClose\: ''Salient\\\\Tests\\\\Core\\\\EventDispatcher\\\\NamedLoggableEvent''\}\} and array\<array\{string, string\}\|string\> will always evaluate to false\.$#'
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{array\{onClose\: ''Salient\\\\Tests\\\\Core\\\\Event\\\\NamedLoggableEvent''\}\} and array\<array\{string, string\}\|string\> will always evaluate to false\.$#'
 			identifier: method.impossibleType
 			count: 1
-			path: tests/unit/Toolkit/Core/EventDispatcher/EventDispatcherTest.php
+			path: tests/unit/Toolkit/Core/Event/EventDispatcherTest.php
 
 		-
 			message: '#^Parameter \#1 \$iterator of function iterator_to_array expects Traversable, iterable given\.$#'

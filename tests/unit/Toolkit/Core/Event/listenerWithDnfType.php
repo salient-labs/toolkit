@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core\EventDispatcher;
+namespace Salient\Tests\Core\Event;
 
 use Salient\Contract\Core\HasName;
 use Closure;
