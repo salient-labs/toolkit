@@ -5,6 +5,7 @@ namespace Salient\Sli\Command\Generate;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Core\Reflection\MethodReflection;
 use Salient\Core\Builder;
 use Salient\PHPDoc\Tag\ParamTag;
 use Salient\PHPDoc\Tag\TemplateTag;
@@ -16,7 +17,6 @@ use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
 use Closure;
-use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 
@@ -65,7 +65,7 @@ class GenerateBuilder extends AbstractGenerateCommand
      * camelCase name => parameter received by reference, or parameter/method
      * with a generic template type
      *
-     * @var array<string,ReflectionParameter|ReflectionMethod>
+     * @var array<string,ReflectionParameter|MethodReflection>
      */
     private array $ToDeclare = [];
 
@@ -262,7 +262,7 @@ EOF)
             }
 
             // If we end up here, we're dealing with a constructor parameter
-            /** @var ReflectionMethod $_constructor */
+            /** @var MethodReflection $_constructor */
             $maps = $this->getMaps();
             $propertyFile = Str::coalesce($_constructor->getFileName(), null);
             $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
@@ -448,7 +448,7 @@ EOF)
         }
 
         if ($this->Forward !== null) {
-            $_methods = $this->InputClass->getMethods(ReflectionMethod::IS_PUBLIC);
+            $_methods = $this->InputClass->getMethods(MethodReflection::IS_PUBLIC);
 
             foreach ($_methods as $_method) {
                 $name = $_method->getName();
@@ -718,7 +718,7 @@ EOF)
         }
 
         foreach ($this->ToDeclare as $name => $_param) {
-            if ($_param instanceof ReflectionMethod) {
+            if ($_param instanceof MethodReflection) {
                 $_params = $_param->getParameters();
                 $return = $returnsValue[$name] ? 'return ' : '';
                 $code = sprintf(
@@ -795,7 +795,7 @@ EOF)
     }
 
     /**
-     * @param ReflectionProperty|ReflectionMethod|null $member
+     * @param ReflectionProperty|MethodReflection|null $member
      * @param-out string $see
      */
     private function getSummary(
@@ -824,7 +824,7 @@ EOF)
             $name = $member->getName();
             $param = '';
             $see =
-                $member instanceof ReflectionMethod
+                $member instanceof MethodReflection
                     ? $class . '::' . $name . '()'
                     : $class . '::$' . $name;
         } else {
@@ -846,14 +846,14 @@ EOF)
                         ? " ({$defaultPrefix}see {@see $see})"
                         : $defaultSuffix))
             : (($declare
-                ? ($member instanceof ReflectionMethod
+                ? ($member instanceof MethodReflection
                     ? "Call $see on a new instance"
                     : ($byRef
                         ? "Pass a variable to $param$see by reference"
                         : "Pass a value to $param$see"))
                 : ($link
                     ? " See {@see $see}"
-                    : ($member instanceof ReflectionMethod
+                    : ($member instanceof MethodReflection
                         ? " Call $see on a new instance"
                         : ($param !== ''
                             ? " Pass \$value to $param$see"

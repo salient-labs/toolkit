@@ -2,6 +2,8 @@
 
 namespace Salient\Tests\Core;
 
+use Salient\Core\Reflection\ClassReflection;
+use Salient\Core\IntrospectionClass;
 use Salient\Core\Introspector;
 use Salient\Tests\Core\Introspector\A;
 use Salient\Tests\Core\Introspector\B;
@@ -35,8 +37,9 @@ final class IntrospectorTest extends TestCase
     public function testGet(array $expected, string $class): void
     {
         $introspector = Introspector::get($class);
+        $_class = $this->getIntrospectionClass($introspector);
         foreach ($expected as $property => $value) {
-            $this->assertSame($value, $introspector->$property, "Introspector::\${$property}");
+            $this->assertSame($value, $_class->$property, "IntrospectionClass::\${$property}");
         }
     }
 
@@ -336,10 +339,11 @@ final class IntrospectorTest extends TestCase
         string $class
     ): void {
         $introspector = Introspector::get($class);
+        $reflector = new ClassReflection($class);
         $getNameClosure = $introspector->getGetNameClosure();
         $this->assertSame(
             array_values($normalisations),
-            $introspector->maybeNormalise(array_keys($normalisations))
+            $reflector->normalise(array_keys($normalisations))
         );
         $this->assertSame($expected, $getNameClosure(new $class()));
     }
@@ -405,5 +409,20 @@ final class IntrospectorTest extends TestCase
                 ];
             }
         }
+    }
+
+    /**
+     * @template T of object
+     *
+     * @param Introspector<T,*,*,*> $introspector
+     * @return IntrospectionClass<T>
+     */
+    private function getIntrospectionClass(Introspector $introspector): IntrospectionClass
+    {
+        return (function () {
+            /** @var Introspector<T,*,*,*> $this */
+            // @phpstan-ignore property.protected, varTag.nativeType
+            return $this->_Class;
+        })->bindTo($introspector, $introspector)();
     }
 }

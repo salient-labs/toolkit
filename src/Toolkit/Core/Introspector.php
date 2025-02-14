@@ -4,15 +4,12 @@ namespace Salient\Core;
 
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Extensible;
-use Salient\Contract\Core\Entity\Normalisable;
 use Salient\Contract\Core\Entity\Providable;
-use Salient\Contract\Core\Entity\Relatable;
 use Salient\Contract\Core\Entity\SerializeRulesInterface;
 use Salient\Contract\Core\Entity\Treeable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Core\HasName;
 use Salient\Core\Date\DateFormatter;
 use Salient\Core\Exception\InvalidDataException;
 use Salient\Core\Provider\AbstractEntity;
@@ -26,40 +23,6 @@ use LogicException;
 use RuntimeException;
 
 /**
- * @property-read class-string<TClass> $Class The name of the class under introspection
- * @property-read bool $IsReadable True if the class implements Readable
- * @property-read bool $IsWritable True if the class implements Writable
- * @property-read bool $IsExtensible True if the class implements Extensible
- * @property-read bool $IsProvidable True if the class implements Providable
- * @property-read bool $IsRelatable True if the class implements Relatable
- * @property-read bool $IsTreeable True if the class implements Treeable
- * @property-read bool $HasDates True if the class implements Temporal
- * @property-read array<string,string> $Properties Properties (normalised name => declared name)
- * @property-read array<string,string> $PublicProperties Public properties (normalised name => declared name)
- * @property-read array<string,string> $ReadableProperties Readable properties (normalised name => declared name)
- * @property-read array<string,string> $WritableProperties Writable properties (normalised name => declared name)
- * @property-read array<string,array<string,string>> $Actions Action => normalised property name => "magic" property method
- * @property-read array<string,string> $Parameters Constructor parameters (normalised name => declared name)
- * @property-read array<string,string> $RequiredParameters Parameters that aren't nullable and don't have a default value (normalised name => declared name)
- * @property-read array<string,string> $NotNullableParameters Parameters that aren't nullable and have a default value (normalised name => declared name)
- * @property-read array<string,string> $ServiceParameters Required parameters with a declared type that can be resolved by a service container (normalised name => class/interface name)
- * @property-read array<string,string> $PassByRefParameters Parameters to pass by reference (normalised name => declared name)
- * @property-read array<string,string> $DateParameters Parameters with a declared type that implements DateTimeInterface (normalised name => declared name)
- * @property-read mixed[] $DefaultArguments Default values for (all) constructor parameters
- * @property-read int $RequiredArguments Minimum number of arguments required by the constructor
- * @property-read array<string,int> $ParameterIndex Constructor parameter name => index
- * @property-read string[] $SerializableProperties Declared and "magic" properties that are both readable and writable
- * @property-read string[] $NormalisedKeys Normalised properties (declared and "magic" property names)
- * @property-read string|null $ParentProperty The normalised parent property
- * @property-read string|null $ChildrenProperty The normalised children property
- * @property-read array<string,class-string<Relatable>> $OneToOneRelationships One-to-one relationships between the class and others (normalised property name => target class)
- * @property-read array<string,class-string<Relatable>> $OneToManyRelationships One-to-many relationships between the class and others (normalised property name => target class)
- * @property-read string[] $DateKeys Normalised date properties (declared and "magic" property names)
- *
- * @method string[] getReadableProperties() Get readable properties, including "magic" properties
- * @method string[] getWritableProperties() Get writable properties, including "magic" properties
- * @method bool propertyActionIsAllowed(string $property, IntrospectionClass::ACTION_* $action) True if an action can be performed on a property
- *
  * @internal
  *
  * @template TClass of object
@@ -155,48 +118,6 @@ class Introspector
     protected function getIntrospectionClass(string $class): IntrospectionClass
     {
         return new IntrospectionClass($class);
-    }
-
-    /**
-     * @param mixed[] $arguments
-     * @return mixed
-     */
-    final public function __call(string $name, array $arguments)
-    {
-        return $this->_Class->{$name}(...$arguments);
-    }
-
-    /**
-     * @return mixed
-     */
-    final public function __get(string $name)
-    {
-        return $this->_Class->{$name};
-    }
-
-    /**
-     * Normalise strings if the class has a normaliser, otherwise return them
-     * as-is
-     *
-     * @see Normalisable::normalise()
-     *
-     * @template T of string[]|string
-     *
-     * @param T $value
-     * @param int-mask-of<IntrospectionClass::GREEDY|IntrospectionClass::LAZY|IntrospectionClass::CAREFUL> $flags
-     * @return T
-     */
-    final public function maybeNormalise($value, int $flags = IntrospectionClass::GREEDY)
-    {
-        return $this->_Class->maybeNormalise($value, $flags);
-    }
-
-    /**
-     * True if the class has a normaliser
-     */
-    final public function hasNormaliser(): bool
-    {
-        return $this->_Class->Normaliser !== null;
     }
 
     /**
@@ -800,20 +721,7 @@ class Introspector
     }
 
     /**
-     * Check if a property is declared or has a "magic" property method
-     */
-    final public function hasProperty(string $name): bool
-    {
-        $_name = $this->_Class->maybeNormalise($name, IntrospectionClass::CAREFUL);
-
-        return in_array($_name, $this->_Class->NormalisedKeys, true);
-    }
-
-    /**
      * Get a closure that returns the name of an instance on a best-effort basis
-     *
-     * Intended for use in default {@see HasName::getName()} implementations.
-     * Instance names are returned from properties most likely to contain them.
      *
      * @return Closure(TClass): string
      */

@@ -7,8 +7,7 @@ use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Catalog\TextComparisonAlgorithm as Algorithm;
 use Salient\Contract\Catalog\TextComparisonFlag as Flag;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Core\Entity\Readable;
-use Salient\Contract\Core\Entity\Writable;
+use Salient\Contract\Core\Entity\Temporal;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
 use Salient\Contract\Core\DateFormatterInterface;
@@ -26,15 +25,13 @@ use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\ConstructibleTrait;
 use Salient\Core\Concern\ExtensibleTrait;
-use Salient\Core\Concern\NormalisableTrait;
 use Salient\Core\Concern\ProvidableTrait;
 use Salient\Core\Concern\ReadableTrait;
 use Salient\Core\Concern\WritableTrait;
 use Salient\Core\Date\DateFormatter;
 use Salient\Core\Facade\Sync;
-use Salient\Core\Provider\AbstractEntity;
 use Salient\Sync\Exception\SyncEntityNotFoundException;
-use Salient\Sync\Support\SyncIntrospectionClass;
+use Salient\Sync\Reflection\SyncEntityReflection;
 use Salient\Sync\Support\SyncIntrospector;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -46,46 +43,21 @@ use LogicException;
 use ReflectionClass;
 use UnexpectedValueException;
 
-/**
- * Base class for entities serviced by sync providers
- *
- * {@see AbstractSyncEntity} implements {@see Readable} and {@see Writable}, but
- * `protected` properties are not accessible by default. Override
- * {@see AbstractSyncEntity::getReadableProperties()} and/or
- * {@see AbstractSyncEntity::getWritableProperties()} to change this.
- *
- * The following "magic" property methods are discovered automatically and don't
- * need to be returned by {@see AbstractSyncEntity::getReadableProperties()} or
- * {@see AbstractSyncEntity::getWritableProperties()}:
- * - `protected function _get<PropertyName>()`
- * - `protected function _isset<PropertyName>()` (optional; falls back to
- *   `_get<PropertyName>()` if not declared)
- * - `protected function _set<PropertyName>($value)`
- * - `protected function _unset<PropertyName>()` (optional; falls back to
- *   `_set<PropertyName>(null)` if not declared)
- *
- * Accessible properties are mapped to associative arrays with snake_case keys
- * when {@see AbstractSyncEntity} objects are serialized. Override
- * {@see AbstractSyncEntity::buildSerializeRules()} to provide serialization
- * rules for nested entities.
- */
-abstract class AbstractSyncEntity extends AbstractEntity implements
+abstract class AbstractSyncEntity implements
     SyncEntityInterface,
+    Temporal,
     Flushable
 {
     use ConstructibleTrait;
+    use ExtensibleTrait;
     use ReadableTrait;
     use WritableTrait;
-    use ExtensibleTrait;
     /** @use ProvidableTrait<SyncProviderInterface,SyncContextInterface> */
     use ProvidableTrait;
-    use NormalisableTrait;
     use RequiresContainer;
 
     /**
      * The unique identifier assigned to the entity by its provider
-     *
-     * @see SyncEntityInterface::getId()
      *
      * @var int|string|null
      */
@@ -94,11 +66,11 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     /**
      * The unique identifier assigned to the entity by its canonical backend
      *
-     * @see SyncEntityInterface::canonicalId()
-     *
      * @var int|string|null
      */
     public $CanonicalId;
+
+    // --
 
     /** @var SyncProviderInterface|null */
     private ?ProviderInterface $Provider = null;
@@ -115,11 +87,20 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     private static array $RemovablePrefixRegex = [];
 
     /**
-     * Entity => [ property name => normalised property name ]
+     * Entity => [ property name => normalised property name, ... ]
      *
      * @var array<class-string<self>,array<string,string>>
      */
-    private static array $NormalisedPropertyMap = [];
+    private static array $NormalisedNames = [];
+
+    /**
+     * Entity => [ normalised property name | property name, ... ]
+     *
+     * @var array<class-string<self>,string[]>
+     */
+    private static array $SerializableNames;
+
+    // --
 
     /**
      * @inheritDoc
@@ -152,7 +133,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     {
         unset(
             self::$RemovablePrefixRegex[static::class],
-            self::$NormalisedPropertyMap[static::class],
+            self::$NormalisedNames[static::class],
+            self::$SerializableNames[static::class],
         );
     }
 
@@ -239,7 +221,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
      */
     final public static function withDefaultProvider(ContainerInterface $container, ?SyncContextInterface $context = null): SyncEntityProviderInterface
     {
-        return static::getDefaultProvider($container)->with(static::class, $context);
+        return self::getDefaultProvider($container)->with(static::class, $context);
     }
 
     /**
@@ -291,8 +273,8 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
         bool $fromData = true,
         string ...$declaredName
     ): string {
-        if (isset(self::$NormalisedPropertyMap[static::class][$name])) {
-            return self::$NormalisedPropertyMap[static::class][$name];
+        if (isset(self::$NormalisedNames[static::class][$name])) {
+            return self::$NormalisedNames[static::class][$name];
         }
 
         $_name = Str::snake($name);
@@ -306,7 +288,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
             $_name = Regex::replace($regex, '', $_name);
         }
 
-        return self::$NormalisedPropertyMap[static::class][$name] = $_name;
+        return self::$NormalisedNames[static::class][$name] = $_name;
     }
 
     /**
@@ -330,7 +312,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     final public function toArray(?SyncStoreInterface $store = null): array
     {
         /** @var SyncSerializeRulesInterface<self> */
-        $rules = static::getSerializeRules();
+        $rules = self::getSerializeRules();
         return $this->_toArray($rules, $store);
     }
 
@@ -661,10 +643,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
             ->getSerializeClosure($rules)($clone);
 
         if (!$rules->getCanonicalId()) {
-            unset($array[
-                SyncIntrospector::get(static::class)
-                    ->maybeNormalise('CanonicalId', SyncIntrospectionClass::CAREFUL)
-            ]);
+            unset($array[self::normaliseProperty('CanonicalId', false)]);
         }
 
         return $array;
@@ -681,7 +660,7 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     }
 
     /**
-     * @param SyncContextInterface $context
+     * @inheritDoc
      */
     final public static function provide(
         array $data,
@@ -700,14 +679,30 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
     }
 
     /**
-     * @param SyncContextInterface $context
+     * @inheritDoc
      */
     final public static function provideMultiple(
         iterable $data,
         ProviderContextInterface $context,
         int $conformity = ListConformity::NONE
     ): iterable {
-        return self::_provideMultiple($data, $context, $conformity);
+        $provider = $context->getProvider();
+        $container = $context
+            ->getContainer()
+            ->inContextOf(get_class($provider));
+        $context = $context->withContainer($container);
+        $conformity = max($context->getConformity(), $conformity);
+        $introspector = SyncIntrospector::getService($container, static::class);
+
+        foreach ($data as $key => $data) {
+            if (!isset($closure)) {
+                $closure = $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
+                    ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
+                    : $introspector->getCreateSyncEntityFromClosure();
+            }
+
+            yield $key => $closure($data, $provider, $context);
+        }
     }
 
     /**
@@ -767,11 +762,13 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
      */
     public function __serialize(): array
     {
-        foreach ([
-            ...SyncIntrospector::get(static::class)->SerializableProperties,
-            'MetaProperties',
-            'MetaPropertyNames',
-        ] as $property) {
+        $properties = self::$SerializableNames[static::class] ??= [
+            ...(new SyncEntityReflection(static::class))->getSerializableNames(),
+            static::getDynamicPropertiesProperty(),
+            static::getDynamicPropertyNamesProperty(),
+        ];
+
+        foreach ($properties as $property) {
             $data[$property] = $this->{$property};
         }
 
@@ -797,38 +794,6 @@ abstract class AbstractSyncEntity extends AbstractEntity implements
                 }
             }
             $this->{$property} = $value;
-        }
-    }
-
-    /**
-     * @template TKey of array-key
-     *
-     * @param iterable<TKey,mixed[]> $data
-     * @param SyncContextInterface $context
-     * @param ListConformity::* $conformity
-     * @return iterable<TKey,static>
-     */
-    private static function _provideMultiple(
-        iterable $data,
-        ProviderContextInterface $context,
-        int $conformity
-    ): iterable {
-        $provider = $context->getProvider();
-        $container = $context
-            ->getContainer()
-            ->inContextOf(get_class($provider));
-        $context = $context->withContainer($container);
-        $conformity = max($context->getConformity(), $conformity);
-        $introspector = SyncIntrospector::getService($container, static::class);
-
-        foreach ($data as $key => $data) {
-            if (!isset($closure)) {
-                $closure = $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
-                    ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
-                    : $introspector->getCreateSyncEntityFromClosure();
-            }
-
-            yield $key => $closure($data, $provider, $context);
         }
     }
 }

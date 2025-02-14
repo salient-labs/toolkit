@@ -5,11 +5,11 @@ namespace Salient\Sli\Command\Generate;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Core\Facade\Facade;
+use Salient\Core\Reflection\MethodReflection;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
 use Salient\Utility\Arr;
-use ReflectionMethod;
 use ReflectionParameter;
 
 /**
@@ -131,10 +131,10 @@ final class GenerateFacade extends AbstractGenerateCommand
             $classClass,
         );
 
-        $_methods = $this->InputClass->getMethods(ReflectionMethod::IS_PUBLIC);
+        $_methods = $this->InputClass->getMethods(MethodReflection::IS_PUBLIC);
         usort(
             $_methods,
-            fn(ReflectionMethod $a, ReflectionMethod $b) =>
+            fn(MethodReflection $a, MethodReflection $b) =>
                 $a->isConstructor()
                     ? -1
                     : ($b->isConstructor()
@@ -356,7 +356,7 @@ final class GenerateFacade extends AbstractGenerateCommand
             ))
         );
 
-        /** @var ReflectionMethod $_method */
+        /** @var MethodReflection $_method */
         foreach ($toDeclare as [$_method, $docBlock, $return]) {
             $_params = $_method->getParameters();
             $return = $return ? 'return ' : '';

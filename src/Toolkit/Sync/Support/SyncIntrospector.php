@@ -11,7 +11,6 @@ use Salient\Contract\Sync\HydrationPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\Facade\Sync;
 use Salient\Core\Introspector;
 use Salient\Core\IntrospectorKeyTargets;
 use Salient\Sync\Reflection\SyncProviderReflection;

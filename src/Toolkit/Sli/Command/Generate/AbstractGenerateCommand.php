@@ -8,10 +8,7 @@ use Salient\Cli\CliOptionBuilder;
 use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Core\Facade\Console;
-use Salient\Core\Provider\AbstractEntity;
-use Salient\Core\Provider\AbstractProvider;
-use Salient\Core\Provider\ProviderContext;
-use Salient\Core\Introspector;
+use Salient\Core\Reflection\ClassReflection;
 use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\TemplateTag;
 use Salient\PHPDoc\PHPDoc;
@@ -27,7 +24,6 @@ use Salient\Utility\Str;
 use Salient\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
-use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
 use ReflectionType;
@@ -177,8 +173,8 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
     // --
 
-    /** @var ReflectionClass<*> */
-    protected ReflectionClass $InputClass;
+    /** @var ClassReflection<*> */
+    protected ClassReflection $InputClass;
     /** @var class-string */
     protected string $InputClassName;
     protected PHPDoc $InputClassPHPDoc;
@@ -190,8 +186,6 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      */
     protected string $InputClassType;
 
-    /** @var Introspector<object,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
-    protected Introspector $InputIntrospector;
     /** @var array<class-string,string> */
     protected array $InputFiles;
 
@@ -290,7 +284,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected function assertClassIsInstantiable(string $fqcn): void
     {
         try {
-            $class = new ReflectionClass($fqcn);
+            $class = new ClassReflection($fqcn);
             if (!$class->isInstantiable()) {
                 throw new CliInvalidArgumentsException(sprintf('not an instantiable class: %s', $fqcn));
             }
@@ -304,14 +298,13 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      */
     protected function loadInputClass(string $fqcn): void
     {
-        $this->InputClass = new ReflectionClass($fqcn);
+        $this->InputClass = new ClassReflection($fqcn);
         $this->InputClassName = $this->InputClass->getName();
         $this->InputClassPHPDoc = PHPDoc::forClass($this->InputClass);
         $this->InputClassTemplates = $this->InputClassPHPDoc->getTemplates();
         $this->InputClassType = $this->InputClassTemplates
             ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
             : '';
-        $this->InputIntrospector = Introspector::get($fqcn);
 
         $this->InputFiles = [];
         $files = [];
@@ -356,7 +349,6 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         unset($this->InputClassPHPDoc);
         unset($this->InputClassTemplates);
         unset($this->InputClassType);
-        unset($this->InputIntrospector);
         unset($this->InputFiles);
         unset($this->InputFileUseMaps);
         unset($this->InputFileTypeMaps);
@@ -468,7 +460,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 );
                 $type = $template ?? $type;
                 if ($type instanceof AbstractTag && ($class = $type->getClass()) !== null) {
-                    $class = new ReflectionClass($class);
+                    $class = new ClassReflection($class);
                     $namespace = $class->getNamespaceName();
                     $filename = $class->getFileName();
                     if ($filename === false) {
