@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Exception\InvalidDataException;
 use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
@@ -281,7 +280,7 @@ final class PipelineTest extends TestCase
         $out = [];
         $err = [];
 
-        foreach ([ListConformity::COMPLETE, ListConformity::NONE] as $conformity) {
+        foreach ([Pipeline::CONFORMITY_COMPLETE, Pipeline::CONFORMITY_NONE] as $conformity) {
             foreach ([$good, $bad, $ugly] as $i => $in) {
                 $pipeline = Pipeline::create()
                     ->stream($in)
@@ -303,25 +302,25 @@ final class PipelineTest extends TestCase
         }
 
         $this->assertSame([
-            // ListConformity::COMPLETE + good
+            // CONFORMITY_COMPLETE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ListConformity::COMPLETE + bad
+            // CONFORMITY_COMPLETE + bad
             ['Id' => 'Greta', 'Name' => 32, 'Email' => 'greta@domain.test'],
             ['Id' => 'Amir', 'Name' => 'amir@domain.test', 'Email' => 53],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ListConformity::COMPLETE + ugly
+            // CONFORMITY_COMPLETE + ugly
             $err[0] ?? null,
-            // ListConformity::NONE + good
+            // CONFORMITY_NONE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ListConformity::NONE + bad
+            // CONFORMITY_NONE + bad
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-            // ListConformity::NONE + ugly
+            // CONFORMITY_NONE + ugly
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry'],

@@ -2,6 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
+use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Closure;
@@ -13,7 +14,7 @@ use Closure;
  * @template TEntity of SyncEntityInterface
  * @template TProvider of SyncProviderInterface
  */
-interface SyncDefinitionInterface extends Immutable
+interface SyncDefinitionInterface extends Immutable, HasConformity
 {
     /**
      * Get a closure to perform a sync operation on the entity, or null if the

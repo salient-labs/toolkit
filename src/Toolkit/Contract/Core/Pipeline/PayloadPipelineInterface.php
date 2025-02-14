@@ -2,8 +2,6 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
-use Salient\Contract\Catalog\ListConformity;
-
 /**
  * @api
  *
@@ -22,16 +20,17 @@ interface PayloadPipelineInterface extends BasePipelineInterface
      * with {@see BasePipelineInterface::throughKeyMap()}. It has no effect
      * otherwise.
      *
-     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
-     * wherever possible to improve performance.
+     * @param BasePipelineInterface::* $conformity Use
+     * {@see BasePipelineInterface::CONFORMITY_COMPLETE} wherever possible to
+     * improve performance.
      * @return static
      */
-    public function withConformity($conformity);
+    public function withConformity(int $conformity);
 
     /**
      * Get the payload's conformity level
      *
-     * @return ListConformity::*
+     * @return BasePipelineInterface::*
      */
-    public function getConformity();
+    public function getConformity(): int;
 }

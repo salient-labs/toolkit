@@ -21,8 +21,6 @@ final class CacheStore extends Store implements CacheInterface
     private ?int $Now = null;
 
     /**
-     * Creates a new CacheStore object
-     *
      * @api
      */
     public function __construct(string $filename = ':memory:')

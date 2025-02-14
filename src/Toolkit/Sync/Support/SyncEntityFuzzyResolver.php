@@ -57,8 +57,6 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
     private $Cache = [];
 
     /**
-     * Creates a new SyncEntityFuzzyResolver object
-     *
      * @param SyncEntityProviderInterface<TEntity> $entityProvider
      * @param int-mask-of<Algorithm::*|Flag::*> $algorithm
      * @param array<Algorithm::*,float>|float|null $uncertaintyThreshold

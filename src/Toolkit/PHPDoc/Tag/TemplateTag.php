@@ -12,7 +12,7 @@ class TemplateTag extends AbstractTag
     protected bool $IsContravariant;
 
     /**
-     * Creates a new TemplateTag object
+     * @internal
      */
     public function __construct(
         string $name,

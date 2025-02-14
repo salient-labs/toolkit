@@ -23,6 +23,8 @@ final class PackageDataReceivedEvent
     private array $Arguments;
 
     /**
+     * @internal
+     *
      * @param TData $data
      * @param class-string<Installed|Loader> $class
      * @param mixed ...$args

@@ -14,7 +14,7 @@ class MethodTag extends AbstractTag
     protected bool $IsStatic;
 
     /**
-     * Creates a new MethodTag object
+     * @internal
      *
      * @param MethodParam[] $params
      */

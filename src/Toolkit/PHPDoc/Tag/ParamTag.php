@@ -11,7 +11,7 @@ class ParamTag extends AbstractTag
     protected bool $IsVariadic;
 
     /**
-     * Creates a new ParamTag object
+     * @internal
      */
     public function __construct(
         string $name,

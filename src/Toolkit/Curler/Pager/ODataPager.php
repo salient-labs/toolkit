@@ -23,7 +23,7 @@ final class ODataPager implements CurlerPagerInterface
     private ?int $MaxPageSize;
 
     /**
-     * Creates a new ODataPager object
+     * @api
      */
     public function __construct(?int $maxPageSize = null)
     {

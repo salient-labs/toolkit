@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core\Entity;
 
-use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Container\ServiceAwareInterface;
 use Salient\Contract\Core\Exception\InvalidDataException;
 use Salient\Contract\Core\Provider\ProviderAwareInterface;
@@ -22,7 +22,8 @@ use Salient\Contract\Core\Provider\ProviderInterface;
 interface Providable extends
     ProviderAwareInterface,
     ProviderContextAwareInterface,
-    ServiceAwareInterface
+    ServiceAwareInterface,
+    HasConformity
 {
     /**
      * Get an instance from an array on behalf of a provider
@@ -49,7 +50,7 @@ interface Providable extends
      *
      * @param iterable<TKey,mixed[]> $data
      * @param TContext $context
-     * @param ListConformity::* $conformity
+     * @param Providable::* $conformity
      * @return iterable<TKey,static>
      * @throws InvalidDataException if values in `$data` arrays do not satisfy
      * the constructor or cannot be applied to the class.
@@ -57,7 +58,7 @@ interface Providable extends
     public static function provideMultiple(
         iterable $data,
         ProviderContextInterface $context,
-        int $conformity = ListConformity::NONE
+        int $conformity = Providable::CONFORMITY_NONE
     ): iterable;
 
     /**

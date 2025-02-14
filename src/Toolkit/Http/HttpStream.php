@@ -33,8 +33,6 @@ class HttpStream implements HttpStreamInterface
     protected $Stream;
 
     /**
-     * Creates a new HttpStream object
-     *
      * @param resource $stream
      */
     public function __construct($stream)

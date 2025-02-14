@@ -22,8 +22,6 @@ final class DateFormatter implements DateFormatterInterface
     private string $TimezoneName;
 
     /**
-     * Creates a new DateFormatter object
-     *
      * @api
      *
      * @param string $format Passed to {@see DateTimeInterface::format()}. See

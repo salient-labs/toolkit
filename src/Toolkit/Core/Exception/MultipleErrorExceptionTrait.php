@@ -21,6 +21,9 @@ trait MultipleErrorExceptionTrait
     protected array $Errors;
     protected bool $HasUnreportedErrors = true;
 
+    /**
+     * @api
+     */
     public function __construct(string $message = '', string ...$errors)
     {
         $message = rtrim($message, ':');

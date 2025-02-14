@@ -2,7 +2,6 @@
 
 namespace Salient\Sync\Db;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Buildable;
@@ -45,12 +44,12 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations
-     * @param ListConformity::* $conformity
+     * @param DbSyncDefinition::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -60,7 +59,7 @@ final class DbSyncDefinition extends AbstractSyncDefinition implements Buildable
         DbSyncProvider $provider,
         array $operations = [],
         ?string $table = null,
-        int $conformity = ListConformity::PARTIAL,
+        int $conformity = DbSyncDefinition::CONFORMITY_PARTIAL,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,

@@ -2,7 +2,6 @@
 
 namespace Salient\Sync;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
@@ -36,12 +35,12 @@ use LogicException;
  * @property-read class-string<TEntity> $Entity The entity being serviced
  * @property-read TProvider $Provider The provider servicing the entity
  * @property-read array<OP::*> $Operations Supported sync operations
- * @property-read ListConformity::* $Conformity Conformity level of data returned by the provider for this entity
+ * @property-read AbstractSyncDefinition::* $Conformity Conformity level of data returned by the provider for this entity
  * @property-read FilterPolicy::* $FilterPolicy Action to take when filters are not claimed by the provider
  * @property-read array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $Overrides Array that maps sync operations to closures that override other implementations
  * @phpstan-property-read array<OP::*,OverrideClosure> $Overrides
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap Array that maps keys to properties for entity data returned by the provider
- * @property-read int-mask-of<ArrayMapperInterface::*> $KeyMapFlags Array mapper flags used if a key map is provided
+ * @property-read int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $KeyMapFlags Array mapper flags used if a key map is provided
  * @property-read PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $PipelineFromBackend Pipeline that maps provider data to a serialized entity, or `null` if mapping is not required
  * @property-read PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $PipelineToBackend Pipeline that maps a serialized entity to provider data, or `null` if mapping is not required
  * @property-read bool $ReadFromList Perform READ operations by iterating over entities returned by READ_LIST
@@ -109,12 +108,13 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * Conformity level of data returned by the provider for this entity
      *
-     * Use {@see ListConformity::COMPLETE} or {@see ListConformity::PARTIAL}
-     * wherever possible to improve performance.
+     * Use {@see AbstractSyncDefinition::CONFORMITY_COMPLETE} or
+     * {@see AbstractSyncDefinition::CONFORMITY_PARTIAL} wherever possible to
+     * improve performance.
      *
-     * @var ListConformity::*
+     * @var AbstractSyncDefinition::*
      */
-    protected $Conformity;
+    protected int $Conformity;
 
     /**
      * Action to take when filters are not claimed by the provider
@@ -166,7 +166,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * Array mapper flags used if a key map is provided
      *
-     * @var int-mask-of<ArrayMapperInterface::*>
+     * @var int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED>
      */
     protected int $KeyMapFlags;
 
@@ -215,12 +215,12 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<OP::*> $operations
-     * @param ListConformity::* $conformity
+     * @param AbstractSyncDefinition::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -229,7 +229,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         string $entity,
         SyncProviderInterface $provider,
         array $operations = [],
-        int $conformity = ListConformity::NONE,
+        int $conformity = AbstractSyncDefinition::CONFORMITY_NONE,
         ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
@@ -290,10 +290,10 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
     /**
      * Get an instance with the given entity data conformity level
      *
-     * @param ListConformity::* $conformity
+     * @param AbstractSyncDefinition::* $conformity
      * @return static
      */
-    final public function withConformity($conformity)
+    final public function withConformity(int $conformity)
     {
         return $this->with('Conformity', $conformity);
     }
@@ -325,7 +325,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * Get an instance where the given array mapper flags are used if a key map
      * is provided
      *
-     * @param int-mask-of<ArrayMapperInterface::*> $flags
+     * @param int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $flags
      * @return static
      */
     final public function withKeyMapFlags(int $flags)
@@ -548,7 +548,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
                     $ctx = $arg->Context->withConformity($this->Conformity);
                     $closure = in_array(
                         $this->Conformity,
-                        [ListConformity::PARTIAL, ListConformity::COMPLETE]
+                        [self::CONFORMITY_PARTIAL, self::CONFORMITY_COMPLETE]
                     )
                         ? SyncIntrospector::getService($ctx->getContainer(), $this->Entity)
                             ->getCreateSyncEntityFromSignatureClosure(array_keys($data))

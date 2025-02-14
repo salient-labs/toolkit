@@ -27,7 +27,7 @@ final class LinkPager implements CurlerPagerInterface
     private string $PageSizeKey;
 
     /**
-     * Creates a new LinkPager object
+     * @api
      *
      * @param (Closure(mixed): list<mixed>)|array-key|null $entitySelector Entities
      * are returned from:

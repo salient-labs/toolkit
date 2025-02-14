@@ -20,6 +20,8 @@ class ProcessException extends Exception
      *
      * {@see sprintf()} is not called if `$values` is empty or `null`.
      *
+     * @internal
+     *
      * @param array<Process|string|int|bool|float|null>|null $values
      */
     public function __construct(

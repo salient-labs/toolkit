@@ -40,16 +40,16 @@ use Salient\Utility\Str;
 final class CurlerTest extends HttpTestCase
 {
     private const QUERY = ['quux' => 1];
-    private const IN = ['baz' => 'qux'];
-    private const OUT = ['foo' => 'bar'];
+    private const INPUT = ['baz' => 'qux'];
+    private const OUTPUT = ['foo' => 'bar'];
     private const OUT_PAGES = [[['name' => 'foo'], ['name' => 'bar'], ['name' => 'baz']], [['name' => 'qux']]];
 
     private int $ListenerId;
 
     public function testGet(): void
     {
-        $server = $this->getJsonServer(self::OUT);
-        $this->assertSame(self::OUT, $this->getCurler('/foo')->get(self::QUERY));
+        $server = $this->getJsonServer(self::OUTPUT);
+        $this->assertSame(self::OUTPUT, $this->getCurler('/foo')->get(self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
 GET /foo?quux=1 HTTP/1.1
@@ -64,7 +64,7 @@ EOF,
 
     public function testHead(): void
     {
-        $server = $this->getJsonServer(self::OUT);
+        $server = $this->getJsonServer(self::OUTPUT);
         $this->assertSame([
             'content-type' => [MimeType::JSON],
             'content-length' => ['13'],
@@ -103,10 +103,10 @@ EOF,
 
     private function doTestPost(string $method = Method::POST): void
     {
-        $server = $this->getJsonServer(self::OUT, self::OUT, self::OUT);
+        $server = $this->getJsonServer(self::OUTPUT, self::OUTPUT, self::OUTPUT);
         $m = Str::lower($method);
 
-        $this->assertSame(self::OUT, $this->getCurler('/foo')->{$m}(self::IN, self::QUERY));
+        $this->assertSame(self::OUTPUT, $this->getCurler('/foo')->{$m}(self::INPUT, self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
@@ -120,7 +120,7 @@ EOF,
             $server->getOutput(),
         );
 
-        $this->assertSame(self::OUT, $this->getCurler('/foo')->{$m}(null, self::QUERY));
+        $this->assertSame(self::OUTPUT, $this->getCurler('/foo')->{$m}(null, self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
@@ -135,7 +135,7 @@ EOF,
         );
 
         $file = self::getFixturesPath(__CLASS__) . '/profile.gif';
-        $data = self::IN + [
+        $data = self::INPUT + [
             'attachment' => new CurlerFile($file),
         ];
         $curler = $this->getCurler('/foo');
@@ -146,7 +146,7 @@ EOF,
         $boundary = HttpUtil::unquoteString($boundaryParam);
         $content = File::getContents($file);
         $length = 169 + strlen($content) + 3 * strlen($boundary);
-        $this->assertSame(self::OUT, $result);
+        $this->assertSame(self::OUTPUT, $result);
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
@@ -235,7 +235,7 @@ EOF,
             );
 
         $curler = $this->getCurler('/foo')->withPager($pager);
-        $args = $method === Method::GET ? [] : [self::IN];
+        $args = $method === Method::GET ? [] : [self::INPUT];
         $body = $method === Method::GET ? '' : '{"baz":"qux"}';
         $headers = $method === Method::GET ? '' : <<<EOF
 
@@ -284,14 +284,14 @@ EOF,
 
     private function doTestPostR(string $method = Method::POST): void
     {
-        $server = $this->getJsonServer(self::OUT);
+        $server = $this->getJsonServer(self::OUTPUT);
         $m = Str::lower($method) . 'R';
 
         $file = self::getFixturesPath(__CLASS__) . '/profile.gif';
         $content = File::getContents($file);
         $length = strlen($content);
         $curler = $this->getCurler('/foo')->withExpectJson(false);
-        $this->assertSame(self::OUT, $curler->{$m}($content, 'image/gif', self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler->{$m}($content, 'image/gif', self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
 {$method} /foo?quux=1 HTTP/1.1
@@ -308,14 +308,14 @@ EOF,
 
     public function testCaching(): void
     {
-        $server = $this->getJsonServer(self::OUT, [], self::OUT, self::OUT, [], self::OUT);
+        $server = $this->getJsonServer(self::OUTPUT, [], self::OUTPUT, self::OUTPUT, [], self::OUTPUT);
         $cache = new CacheStore();
 
         $curler = $this
             ->getCurler('/foo')
             ->withCacheStore($cache)
             ->withResponseCache();
-        $this->assertSame(self::OUT, $curler->get(self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler->get(self::QUERY));
         $this->assertSameHttpMessage(
             $request = <<<EOF
 GET /foo?quux=1 HTTP/1.1
@@ -326,7 +326,7 @@ Accept: application/json
 EOF,
             $server->getOutput(),
         );
-        $this->assertSame(self::OUT, $curler->get(self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler->get(self::QUERY));
         $this->assertSame('', $server->getNewOutput());
 
         $curler = $curler->withRefreshCache();
@@ -337,14 +337,14 @@ EOF,
         $this->assertSame('', $server->getNewOutput());
 
         $curler2 = $curler->withRefreshCache()->withCacheLifetime(-1);
-        $this->assertSame(self::OUT, $curler2->get(self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler2->get(self::QUERY));
         $this->assertSameHttpMessage($request, $server->getNewOutput());
         $curler2 = $curler2->withRefreshCache(false);
         $this->assertSame([], $curler2->get(self::QUERY));
         $this->assertSame('', $server->getNewOutput());
 
         $this->assertCount(1, $cacheKeys = $cache->getItemKeys());
-        $this->assertSame(self::OUT, $curler->post(self::IN, self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler->post(self::INPUT, self::QUERY));
         $this->assertSameHttpMessage(
             $request = <<<EOF
 POST /foo?quux=1 HTTP/1.1
@@ -360,12 +360,12 @@ EOF,
         $this->assertSame($cacheKeys, $cache->getItemKeys());
 
         $curler = $curler->withPostResponseCache();
-        $this->assertSame([], $curler->post(self::IN, self::QUERY));
+        $this->assertSame([], $curler->post(self::INPUT, self::QUERY));
         $this->assertSameHttpMessage($request, $server->getNewOutput());
-        $this->assertSame([], $curler->post(self::IN, self::QUERY));
+        $this->assertSame([], $curler->post(self::INPUT, self::QUERY));
         $this->assertSame('', $server->getNewOutput());
         // Different data = miss
-        $this->assertSame(self::OUT, $curler->post([], self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler->post([], self::QUERY));
         $this->assertSameHttpMessage(
             <<<EOF
 POST /foo?quux=1 HTTP/1.1
@@ -481,7 +481,7 @@ EOF;
             new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
             new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
             new HttpResponse(302, '', [Header::LOCATION => '/foo/bar?baz=1']),
-            new HttpResponse(200, Json::encode(self::OUT), [Header::CONTENT_TYPE => MimeType::JSON]),
+            new HttpResponse(200, Json::encode(self::OUTPUT), [Header::CONTENT_TYPE => MimeType::JSON]),
         ];
         $server = $this->startHttpServer(...$responses);
         $output = [];
@@ -498,8 +498,8 @@ EOF;
             }
         );
 
-        $this->assertSame(self::OUT, $curler->get(self::QUERY));
-        $this->assertSame(self::OUT, $curler->get(self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler->get(self::QUERY));
+        $this->assertSame(self::OUTPUT, $curler->get(self::QUERY));
 
         // 4 requests are made if every response is cached
         $this->assertSame('', $server->getNewOutput());

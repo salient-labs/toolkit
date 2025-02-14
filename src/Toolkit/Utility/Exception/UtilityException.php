@@ -12,8 +12,6 @@ class UtilityException extends RuntimeException
 {
     /**
      * @api
-     *
-     * @codeCoverageIgnore
      */
     public function __construct(string $message = '', ?Throwable $previous = null)
     {

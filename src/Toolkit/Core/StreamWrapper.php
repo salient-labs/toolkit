@@ -18,7 +18,7 @@ abstract class StreamWrapper extends AbstractStreamWrapper
     private const STAT_KEYS = ['dev', 'ino', 'mode', 'nlink', 'uid', 'gid', 'rdev', 'size', 'atime', 'mtime', 'ctime', 'blksize', 'blocks'];
 
     /**
-     * @inheritDoc
+     * @internal
      */
     public function __construct() {}
 

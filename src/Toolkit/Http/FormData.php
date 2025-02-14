@@ -25,8 +25,6 @@ final class FormData
     private $Data;
 
     /**
-     * Creates a new FormData object from nested arrays and objects
-     *
      * @param mixed[]|object $data
      */
     public function __construct($data)

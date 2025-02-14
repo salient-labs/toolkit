@@ -2,6 +2,7 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
+use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Immutable;
 use Closure;
@@ -13,7 +14,7 @@ use Closure;
  * @template TOutput
  * @template TArgument
  */
-interface BasePipelineInterface extends Chainable, Immutable
+interface BasePipelineInterface extends Chainable, Immutable, HasConformity
 {
     /**
      * Apply a closure to each payload before it is sent
@@ -64,7 +65,7 @@ interface BasePipelineInterface extends Chainable, Immutable
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
      * input keys to one or more output keys.
-     * @param int-mask-of<ArrayMapperInterface::*> $flags
+     * @param int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $flags
      * @return static
      */
     public function throughKeyMap(array $keyMap, int $flags = ArrayMapperInterface::ADD_UNMAPPED);

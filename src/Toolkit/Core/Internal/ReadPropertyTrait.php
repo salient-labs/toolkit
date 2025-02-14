@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Internal;
 
-use Salient\Core\Introspector as IS;
+use Salient\Core\Legacy\Introspector;
 
 /**
  * @internal
@@ -30,6 +30,6 @@ trait ReadPropertyTrait
      */
     private function readProperty(string $action, string $name)
     {
-        return IS::get(static::class)->getPropertyActionClosure($name, $action)($this);
+        return Introspector::get(static::class)->getPropertyActionClosure($name, $action)($this);
     }
 }

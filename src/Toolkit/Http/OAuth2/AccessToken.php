@@ -33,8 +33,6 @@ final class AccessToken implements AccessTokenInterface, Immutable, Readable
     protected array $Claims;
 
     /**
-     * Creates a new AccessToken object
-     *
      * @param DateTimeInterface|int|null $expires `null` if the access token's
      * lifetime is unknown, otherwise a {@see DateTimeInterface} or Unix
      * timestamp representing its expiration time.

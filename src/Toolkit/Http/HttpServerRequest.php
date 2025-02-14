@@ -35,8 +35,6 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     protected array $Attributes = [];
 
     /**
-     * Creates a new HttpServerRequest object
-     *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $serverParams
      * @param StreamInterface|resource|string|null $body

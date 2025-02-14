@@ -3,7 +3,6 @@
 namespace Salient\Tests\Core\Concern\ConstructibleTrait;
 
 use Salient\Container\Container;
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Constructible;
 use Salient\Contract\Core\Entity\Extensible;
@@ -34,14 +33,14 @@ final class ConstructibleTraitTest extends TestCase
      * @param T[]|T|string $expected
      * @param class-string<T> $class
      * @param mixed[] $data
-     * @param ListConformity::* $conformity
+     * @param Constructible::* $conformity
      * @param (Treeable&T)|null $parent
      */
     public function testConstruct(
         $expected,
         string $class,
         array $data,
-        int $conformity = ListConformity::NONE,
+        int $conformity = Constructible::CONFORMITY_NONE,
         ?ContainerInterface $container = null,
         $parent = null
     ): void {
@@ -68,7 +67,7 @@ final class ConstructibleTraitTest extends TestCase
     }
 
     /**
-     * @return array<array{Constructible[]|Constructible|string,class-string<Constructible>,mixed[],3?:ListConformity::*,4?:ContainerInterface|null,5?:Treeable|null}>
+     * @return array<array{Constructible[]|Constructible|string,class-string<Constructible>,mixed[],3?:Constructible::*,4?:ContainerInterface|null,5?:Treeable|null}>
      */
     public static function constructProvider(): array
     {
@@ -120,14 +119,14 @@ final class ConstructibleTraitTest extends TestCase
             [$exC, C::class, $withData],
             [$d, D::class, $withData],
             [[$a, $a2], A::class, [$mixedCase, $mixedCase2]],
-            [[$a, $a2], A::class, [$mixedCase, $mixedCase2], ListConformity::COMPLETE],
+            [[$a, $a2], A::class, [$mixedCase, $mixedCase2], Constructible::CONFORMITY_COMPLETE],
             [$exA, A::class, [$snakeCase, $snakeCase2]],
             [$exB, B::class, [$snakeCase, $snakeCase2]],
             [[$c, $c2], C::class, [$snakeCase, $snakeCase2]],
-            [[$c, $c2], C::class, [$snakeCase, $snakeCase2], ListConformity::COMPLETE],
+            [[$c, $c2], C::class, [$snakeCase, $snakeCase2], Constructible::CONFORMITY_COMPLETE],
             [$exC, C::class, [$withData, $withData2]],
             [[$d, $d2], D::class, [$withData, $withData2]],
-            [[$d, $d2], D::class, [$withData, $withData2], ListConformity::COMPLETE],
+            [[$d, $d2], D::class, [$withData, $withData2], Constructible::CONFORMITY_COMPLETE],
         ];
     }
 }

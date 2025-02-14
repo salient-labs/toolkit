@@ -29,7 +29,7 @@ class PcreErrorException extends UtilityException
     private static array $ErrorNameMap;
 
     /**
-     * @api
+     * @internal
      *
      * @param array<string,callable>|string[]|string $pattern
      * @param array<int|float|string|bool|Stringable|null>|string $subject

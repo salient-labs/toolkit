@@ -17,6 +17,8 @@ final class Indentation
     public int $TabSize;
 
     /**
+     * @api
+     *
      * @param int<1,max> $tabSize
      */
     public function __construct(bool $insertSpaces, int $tabSize)

@@ -3,11 +3,9 @@
 namespace Salient\Contract\Catalog;
 
 /**
- * ANSI escape sequences for terminal output formatting and control
- *
  * @api
  */
-interface EscapeSequence
+interface HasAnsiEscapeSequence
 {
     public const BLACK = "\e[30m";
     public const RED = "\e[31m";

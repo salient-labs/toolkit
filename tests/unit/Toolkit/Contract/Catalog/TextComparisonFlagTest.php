@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Contract\Core;
+namespace Salient\Tests\Contract\Catalog;
 
 use Salient\Contract\Catalog\TextComparisonAlgorithm;
 use Salient\Contract\Catalog\TextComparisonFlag;

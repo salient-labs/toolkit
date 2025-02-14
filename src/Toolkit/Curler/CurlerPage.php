@@ -26,6 +26,8 @@ class CurlerPage implements CurlerPageInterface
      * and {@see CurlerPage::getTotal()}, allow pagers to track progress across
      * responses if necessary.
      *
+     * @api
+     *
      * @param list<mixed> $entities
      * @param mixed[]|null $nextQuery
      */

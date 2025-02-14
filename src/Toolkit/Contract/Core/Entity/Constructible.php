@@ -2,14 +2,14 @@
 
 namespace Salient\Contract\Core\Entity;
 
-use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Exception\InvalidDataException;
 
 /**
  * @api
  */
-interface Constructible
+interface Constructible extends HasConformity
 {
     /**
      * Get an instance from an array
@@ -53,7 +53,7 @@ interface Constructible
      * @template TKey of array-key
      *
      * @param iterable<TKey,mixed[]> $data
-     * @param ListConformity::* $conformity
+     * @param Constructible::* $conformity
      * @param static|null $parent
      * @return iterable<TKey,static>
      * @throws InvalidDataException if values in `$data` arrays do not satisfy
@@ -61,7 +61,7 @@ interface Constructible
      */
     public static function constructMultiple(
         iterable $data,
-        int $conformity = ListConformity::NONE,
+        int $conformity = Constructible::CONFORMITY_NONE,
         ?object $parent = null,
         ?ContainerInterface $container = null
     ): iterable;

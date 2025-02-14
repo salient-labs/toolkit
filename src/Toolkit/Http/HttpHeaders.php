@@ -85,8 +85,6 @@ REGEX;
     protected ?string $Carry = null;
 
     /**
-     * Creates a new HttpHeaders object
-     *
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      */
     public function __construct($items = [])

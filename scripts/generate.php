@@ -76,11 +76,11 @@ $loader->addPsr4('Salient\\Tests\\', ["$dir/tests/unit/Toolkit/", "$dir/tests/fi
 
 $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
-    Cache::class => [CacheInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache store', '--api'],
+    Cache::class => [CacheInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache', '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
     Console::class => [ConsoleWriterInterface::class, [ConsoleWriter::class], '--desc', 'A facade for the global console writer', '--api'],
-    Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException'],
-    Event::class => [EventDispatcherInterface::class, [EventDispatcher::class], '--api'],
+    Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException', '--api'],
+    Event::class => [EventDispatcherInterface::class, [EventDispatcher::class], '--desc', 'A facade for the global event dispatcher', '--api'],
     Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],
     Profile::class => [MetricCollector::class, '--api'],
     // Test fixtures

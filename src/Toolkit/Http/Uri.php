@@ -100,8 +100,6 @@ REGEX;
     protected ?string $Fragment = null;
 
     /**
-     * Creates a new Uri object
-     *
      * @param bool $strict If `false`, unencoded characters are percent-encoded
      * before parsing.
      */

@@ -41,8 +41,8 @@ if (\PHP_VERSION_ID < 80000) {
                     "$dir/tests/fixtures/Toolkit/Reflection/MyBackedEnum.php",
                     "$dir/tests/fixtures/Toolkit/Reflection/MyClassWithDnfTypes.php",
                     "$dir/tests/fixtures/Toolkit/Reflection/MyClassWithUnionsAndIntersections.php",
-                    "$dir/tests/unit/Toolkit/Core/EventDispatcher/listenerWithDnfType.php",
-                    "$dir/tests/unit/Toolkit/Core/EventDispatcher/listenerWithIntersectionType.php",
+                    "$dir/tests/unit/Toolkit/Core/Event/listenerWithDnfType.php",
+                    "$dir/tests/unit/Toolkit/Core/Event/listenerWithIntersectionType.php",
                 ],
             ],
             'ignoreErrors' => array_merge([

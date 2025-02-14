@@ -145,8 +145,6 @@ final class SyncStore extends Store implements SyncStoreInterface
     private array $DeferredEntityTypes = [];
 
     /**
-     * Creates a new SyncStore object
-     *
      * @param string $command The canonical name of the command performing sync
      * operations (e.g. a qualified class and/or method name).
      * @param string[] $arguments Arguments passed to the command.

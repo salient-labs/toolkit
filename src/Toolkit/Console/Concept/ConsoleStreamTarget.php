@@ -6,7 +6,7 @@ use Salient\Console\Support\ConsoleFormat as Format;
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Catalog\EscapeSequence as Colour;
+use Salient\Contract\Catalog\HasAnsiEscapeSequence;
 use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
@@ -17,7 +17,9 @@ use Salient\Contract\Console\ConsoleTargetStreamInterface;
 /**
  * Base class for console output targets with an underlying PHP stream
  */
-abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements ConsoleTargetStreamInterface
+abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
+    ConsoleTargetStreamInterface,
+    HasAnsiEscapeSequence
 {
     /**
      * @inheritDoc
@@ -59,12 +61,12 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
 
         $bold = Format::ttyBold();
         $dim = Format::ttyDim();
-        $boldCyan = Format::ttyBold(Colour::CYAN);
-        $red = Format::ttyColour(Colour::RED);
-        $green = Format::ttyColour(Colour::GREEN);
-        $yellow = Format::ttyColour(Colour::YELLOW);
-        $cyan = Format::ttyColour(Colour::CYAN);
-        $yellowUnderline = Format::ttyUnderline(Colour::YELLOW);
+        $boldCyan = Format::ttyBold(self::CYAN);
+        $red = Format::ttyColour(self::RED);
+        $green = Format::ttyColour(self::GREEN);
+        $yellow = Format::ttyColour(self::YELLOW);
+        $cyan = Format::ttyColour(self::CYAN);
+        $yellowUnderline = Format::ttyUnderline(self::YELLOW);
 
         return (new TagFormats())
             ->withFormat(Tag::HEADING, $boldCyan)
@@ -88,14 +90,14 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements Consol
         $default = Format::getDefaultFormat();
         $bold = Format::ttyBold();
         $dim = Format::ttyDim();
-        $boldRed = Format::ttyBold(Colour::RED);
-        $boldGreen = Format::ttyBold(Colour::GREEN);
-        $boldYellow = Format::ttyBold(Colour::YELLOW);
-        $boldMagenta = Format::ttyBold(Colour::MAGENTA);
-        $boldCyan = Format::ttyBold(Colour::CYAN);
-        $green = Format::ttyColour(Colour::GREEN);
-        $yellow = Format::ttyColour(Colour::YELLOW);
-        $cyan = Format::ttyColour(Colour::CYAN);
+        $boldRed = Format::ttyBold(self::RED);
+        $boldGreen = Format::ttyBold(self::GREEN);
+        $boldYellow = Format::ttyBold(self::YELLOW);
+        $boldMagenta = Format::ttyBold(self::MAGENTA);
+        $boldCyan = Format::ttyBold(self::CYAN);
+        $green = Format::ttyColour(self::GREEN);
+        $yellow = Format::ttyColour(self::YELLOW);
+        $cyan = Format::ttyColour(self::CYAN);
 
         return (new MessageFormats())
             ->set(LevelGroup::ERRORS, MessageTypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))

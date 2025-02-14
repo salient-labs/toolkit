@@ -8,7 +8,7 @@ namespace Salient\PHPDoc\Tag;
 class ReturnTag extends AbstractTag
 {
     /**
-     * Creates a new ReturnTag object
+     * @internal
      */
     public function __construct(
         string $type,

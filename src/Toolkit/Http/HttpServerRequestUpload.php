@@ -35,8 +35,6 @@ class HttpServerRequestUpload implements UploadedFileInterface
     private bool $IsMoved = false;
 
     /**
-     * Creates a new HttpServerRequestUpload object
-     *
      * @param StreamInterface|resource|string $resource
      */
     public function __construct(

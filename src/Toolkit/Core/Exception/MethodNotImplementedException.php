@@ -19,6 +19,8 @@ class MethodNotImplementedException extends LogicException implements MethodNotI
     protected string $PrototypeClass;
 
     /**
+     * @api
+     *
      * @param class-string $class
      * @param class-string|null $prototypeClass
      */

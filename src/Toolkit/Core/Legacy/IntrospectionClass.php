@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Core;
+namespace Salient\Core\Legacy;
 
 use Salient\Contract\Core\Entity\Extensible;
 use Salient\Contract\Core\Entity\Normalisable;
@@ -22,7 +22,7 @@ use ReflectionNamedType;
 use ReflectionProperty;
 
 /**
- * Cacheable class data shared between Introspectors
+ * @internal
  *
  * @template TClass of object
  */

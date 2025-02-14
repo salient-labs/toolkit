@@ -10,8 +10,7 @@ use Salient\Contract\Sync\SyncSerializeRulesInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\Sync\Support\SyncIntrospectionClass;
-use Salient\Sync\Support\SyncIntrospector;
+use Salient\Sync\Reflection\SyncEntityReflection;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use Closure;
@@ -115,8 +114,8 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
     private array $CompileCache;
     /** @var array<string,array<class-string,true>> */
     private array $EntityPathIndex;
-    /** @var SyncIntrospector<TEntity> */
-    private SyncIntrospector $Introspector;
+    /** @var SyncEntityReflection<TEntity> */
+    private SyncEntityReflection $EntityReflector;
 
     /**
      * @internal
@@ -174,7 +173,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         unset($this->FlattenCache);
         unset($this->CompileCache);
         unset($this->EntityPathIndex);
-        unset($this->Introspector);
+        unset($this->EntityReflector);
     }
 
     /**
@@ -269,7 +268,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
      */
     private function flattenRules(array ...$merge): array
     {
-        $this->Introspector ??= SyncIntrospector::get($this->Entity);
+        $this->EntityReflector ??= new SyncEntityReflection($this->Entity);
 
         foreach ($merge as $offset => $array) {
             $entity = $this->EntityIndex[$offset];
@@ -419,7 +418,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         return Regex::replaceCallback(
             '/[^].[]++/',
             fn(array $matches): string =>
-                $this->Introspector->maybeNormalise($matches[0], SyncIntrospectionClass::LAZY),
+                $this->EntityReflector->normalise($matches[0]),
             $target,
         );
     }
@@ -445,7 +444,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
                 $normalised[3] = $value;
                 continue;
             }
-            $normalised[2] = $this->Introspector->maybeNormalise($value, SyncIntrospectionClass::LAZY);
+            $normalised[2] = $this->EntityReflector->normalise($value);
         }
         return $normalised;
     }

@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Catalog\FileDescriptor;
+use Salient\Contract\Catalog\HasFileDescriptor;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Core\Process;
@@ -12,7 +12,7 @@ use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
 
-abstract class HttpTestCase extends TestCase
+abstract class HttpTestCase extends TestCase implements HasFileDescriptor
 {
     protected const HTTP_SERVER_HOST = 'localhost';
     protected const HTTP_SERVER_PORT = '3007';
@@ -123,7 +123,7 @@ abstract class HttpTestCase extends TestCase
 
         while ($process->poll()->isRunning()) {
             if (strpos(
-                $process->getOutput(FileDescriptor::ERR),
+                $process->getOutput(self::ERR),
                 'Server started at ' . self::HTTP_SERVER_URI,
             ) !== false) {
                 return $this->HttpServer = $process;
@@ -134,7 +134,7 @@ abstract class HttpTestCase extends TestCase
             "Error starting HTTP server (status: %d; stdout: '%s'; stderr: '%s')",
             $process->getExitStatus(),
             $process->getOutput(),
-            $process->getOutput(FileDescriptor::ERR),
+            $process->getOutput(self::ERR),
         ));
     }
 

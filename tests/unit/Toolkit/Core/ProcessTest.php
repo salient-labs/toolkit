@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Catalog\FileDescriptor;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessTerminatedBySignalException;
 use Salient\Core\Exception\ProcessTimedOutException;
@@ -61,7 +60,7 @@ final class ProcessTest extends TestCase
     {
         $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo', $this->getCallback($output), null, null, null, false);
         $this->assertSame(0, $process->run());
-        $this->assertSame('foo', $output[FileDescriptor::OUT]);
+        $this->assertSame('foo', $output[Process::OUT]);
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Output collection disabled');
         $process->getOutput();
@@ -72,7 +71,7 @@ final class ProcessTest extends TestCase
         $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo', $this->getCallback($output));
         $process->disableOutputCollection();
         $this->assertSame(0, $process->run());
-        $this->assertSame('foo', $output[FileDescriptor::OUT]);
+        $this->assertSame('foo', $output[Process::OUT]);
         $process->enableOutputCollection();
         $process->clearOutput();
         $this->expectException(LogicException::class);
@@ -157,8 +156,8 @@ final class ProcessTest extends TestCase
         foreach ($processes as $key => $process) {
             [$exitStatus, $stdout, $stderr] = $runs[$key];
             $this->assertSame($exitStatus, $process->getExitStatus(), $key);
-            $this->assertSame($stdout, $process->getOutput(FileDescriptor::OUT), $key);
-            $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR), $key);
+            $this->assertSame($stdout, $process->getOutput(Process::OUT), $key);
+            $this->assertSame($stderr, $process->getOutput(Process::ERR), $key);
         }
     }
 
@@ -190,8 +189,8 @@ final class ProcessTest extends TestCase
 
         $this->assertSame($exitStatus, $result);
         $this->assertSame($exitStatus, $process->getExitStatus());
-        $this->assertSame($stdout, $process->getOutput(FileDescriptor::OUT));
-        $this->assertSame($stderr, $process->getOutput(FileDescriptor::ERR));
+        $this->assertSame($stdout, $process->getOutput(Process::OUT));
+        $this->assertSame($stderr, $process->getOutput(Process::ERR));
         $this->assertTrue($process->isTerminated());
         $this->assertIsInt($pid = $process->getPid());
         $this->assertGreaterThan(0, $pid);
@@ -319,8 +318,8 @@ EOF,
         $result = $process->run();
         $this->assertNotSame(0, $exitStatus = $process->getExitStatus());
         $this->assertSame($exitStatus, $result);
-        $this->assertSame('', $process->getOutput(FileDescriptor::OUT));
-        $this->assertSame('', $process->getOutput(FileDescriptor::ERR));
+        $this->assertSame('', $process->getOutput(Process::OUT));
+        $this->assertSame('', $process->getOutput(Process::ERR));
     }
 
     /**
@@ -417,7 +416,7 @@ EOF,
     }
 
     /**
-     * @param Closure(Closure(FileDescriptor::OUT|FileDescriptor::ERR, string): void): Process $getProcess
+     * @param Closure(Closure(Process::OUT|Process::ERR, string): void): Process $getProcess
      * @param array{1:int,2:int}|null $writes
      * @param-out string $stdout
      * @param-out string $stderr
@@ -436,7 +435,7 @@ EOF,
         return $getProcess(
             static function (int $fd, string $output) use (&$stdout, &$stderr, &$writes): void {
                 $writes[$fd]++;
-                if ($fd === FileDescriptor::ERR) {
+                if ($fd === Process::ERR) {
                     $stderr .= $output;
                     return;
                 }
@@ -475,14 +474,14 @@ EOF,
     }
 
     /**
-     * @param array<FileDescriptor::OUT|FileDescriptor::ERR,string>|null $output
-     * @return Closure(FileDescriptor::OUT|FileDescriptor::ERR $fd, string $output): mixed
+     * @param array<Process::OUT|Process::ERR,string>|null $output
+     * @return Closure(Process::OUT|Process::ERR $fd, string $output): mixed
      */
     private function getCallback(?array &$output): Closure
     {
         $output = [
-            FileDescriptor::OUT => '',
-            FileDescriptor::ERR => '',
+            Process::OUT => '',
+            Process::ERR => '',
         ];
 
         return static function (int $fd, string $data) use (&$output): void {
