@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Core;
+namespace Salient\Tests\Core\Legacy;
 
+use Salient\Core\Legacy\IntrospectionClass;
+use Salient\Core\Legacy\Introspector;
 use Salient\Core\Reflection\ClassReflection;
-use Salient\Core\IntrospectionClass;
-use Salient\Core\Introspector;
 use Salient\Tests\Core\Introspector\A;
 use Salient\Tests\Core\Introspector\B;
 use Salient\Tests\Core\Introspector\C;
@@ -24,7 +24,9 @@ use Salient\Tests\TestCase;
 use Generator;
 
 /**
- * @covers \Salient\Core\Introspector
+ * @covers \Salient\Core\Legacy\Introspector
+ * @covers \Salient\Core\Legacy\IntrospectionClass
+ * @covers \Salient\Core\Legacy\IntrospectorKeyTargets
  */
 final class IntrospectorTest extends TestCase
 {

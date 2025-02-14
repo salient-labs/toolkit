@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Internal;
 
-use Salient\Core\Introspector as IS;
+use Salient\Core\Legacy\Introspector;
 
 /**
  * @internal
@@ -30,6 +30,6 @@ trait WritePropertyTrait
      */
     private function writeProperty(string $action, string $name, ...$params): void
     {
-        IS::get(static::class)->getPropertyActionClosure($name, $action)($this, ...$params);
+        Introspector::get(static::class)->getPropertyActionClosure($name, $action)($this, ...$params);
     }
 }

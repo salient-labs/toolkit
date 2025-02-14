@@ -6,7 +6,7 @@ use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
-use Salient\Core\Introspector;
+use Salient\Core\Legacy\Introspector;
 use LogicException;
 
 /**

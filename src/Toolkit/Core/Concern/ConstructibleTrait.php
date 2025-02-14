@@ -7,7 +7,7 @@ use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Constructible;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Core\Introspector;
+use Salient\Core\Legacy\Introspector;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Generator;
 

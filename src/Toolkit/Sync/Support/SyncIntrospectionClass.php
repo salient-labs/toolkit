@@ -4,7 +4,7 @@ namespace Salient\Sync\Support;
 
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
-use Salient\Core\IntrospectionClass;
+use Salient\Core\Legacy\IntrospectionClass;
 use Closure;
 
 /**
