@@ -2,7 +2,6 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
@@ -36,13 +35,13 @@ final class Pipeline implements
     private $Payload;
     /** @var TArgument */
     private $Arg;
-    /** @var ListConformity::* */
-    private int $Conformity = ListConformity::NONE;
+    /** @var self::* */
+    private int $Conformity = self::CONFORMITY_NONE;
     /** @var (Closure(TInput $payload, static $pipeline, TArgument $arg): (TInput|TOutput))|null */
     private ?Closure $After = null;
     /** @var array<(Closure(TInput $payload, Closure $next, static $pipeline, TArgument $arg): (TInput|TOutput))|(Closure(TOutput $payload, Closure $next, static $pipeline, TArgument $arg): TOutput)> */
     private array $Pipes = [];
-    /** @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapper::*>}> */
+    /** @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapper::REMOVE_NULL|ArrayMapper::ADD_UNMAPPED|ArrayMapper::ADD_MISSING|ArrayMapper::REQUIRE_MAPPED>}> */
     private array $KeyMaps = [];
     /** @var ArrayMapper[] */
     private array $ArrayMappers;
@@ -118,7 +117,7 @@ final class Pipeline implements
     /**
      * @inheritDoc
      */
-    public function withConformity($conformity)
+    public function withConformity(int $conformity)
     {
         $this->assertHasPayload();
 
@@ -128,7 +127,7 @@ final class Pipeline implements
     /**
      * @inheritDoc
      */
-    public function getConformity()
+    public function getConformity(): int
     {
         $this->assertHasPayload();
 

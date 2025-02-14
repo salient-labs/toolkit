@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Concern;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
@@ -104,7 +103,7 @@ trait ProvidableTrait
     public static function provideMultiple(
         iterable $data,
         ProviderContextInterface $context,
-        int $conformity = ListConformity::NONE
+        int $conformity = Providable::CONFORMITY_NONE
     ): iterable {
         $provider = $context->getProvider();
         $container = $context
@@ -115,7 +114,8 @@ trait ProvidableTrait
         $introspector = Introspector::getService($container, static::class);
 
         foreach ($data as $key => $data) {
-            $closure ??= $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
+            /** @disregard P1012 */
+            $closure ??= $conformity === self::CONFORMITY_PARTIAL || $conformity === self::CONFORMITY_COMPLETE
                 ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
                 : $introspector->getCreateProvidableFromClosure();
 

@@ -3,10 +3,10 @@
 namespace Salient\Sync;
 
 use Salient\Container\RequiresContainer;
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Catalog\TextComparisonAlgorithm as Algorithm;
 use Salient\Contract\Catalog\TextComparisonFlag as Flag;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Temporal;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
@@ -684,7 +684,7 @@ abstract class AbstractSyncEntity implements
     final public static function provideMultiple(
         iterable $data,
         ProviderContextInterface $context,
-        int $conformity = ListConformity::NONE
+        int $conformity = Providable::CONFORMITY_NONE
     ): iterable {
         $provider = $context->getProvider();
         $container = $context
@@ -696,7 +696,7 @@ abstract class AbstractSyncEntity implements
 
         foreach ($data as $key => $data) {
             if (!isset($closure)) {
-                $closure = $conformity === ListConformity::PARTIAL || $conformity === ListConformity::COMPLETE
+                $closure = $conformity === self::CONFORMITY_PARTIAL || $conformity === self::CONFORMITY_COMPLETE
                     ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
                     : $introspector->getCreateSyncEntityFromClosure();
             }

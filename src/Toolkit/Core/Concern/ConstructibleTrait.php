@@ -3,7 +3,6 @@
 namespace Salient\Core\Concern;
 
 use Salient\Container\RequiresContainer;
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Constructible;
 use Salient\Contract\Core\Entity\Treeable;
@@ -43,7 +42,7 @@ trait ConstructibleTrait
      */
     public static function constructMultiple(
         iterable $data,
-        int $conformity = ListConformity::NONE,
+        int $conformity = Constructible::CONFORMITY_NONE,
         ?object $parent = null,
         ?ContainerInterface $container = null
     ): Generator {
@@ -52,18 +51,15 @@ trait ConstructibleTrait
         }
 
         $container = self::requireContainer($container);
+        $introspector = Introspector::getService($container, static::class);
 
-        $closure = null;
-        foreach ($data as $key => $array) {
-            if (!$closure) {
-                $builder = Introspector::getService($container, static::class);
-                $closure =
-                    in_array($conformity, [ListConformity::PARTIAL, ListConformity::COMPLETE])
-                        ? $builder->getCreateFromSignatureClosure(array_keys($array), true)
-                        : $builder->getCreateFromClosure(true);
-            }
+        foreach ($data as $key => $data) {
+            /** @disregard P1012 */
+            $closure ??= $conformity === self::CONFORMITY_PARTIAL || $conformity === self::CONFORMITY_COMPLETE
+                ? $introspector->getCreateFromSignatureClosure(array_keys($data), true)
+                : $introspector->getCreateFromClosure(true);
 
-            yield $key => $closure($array, $container, null, $parent);
+            yield $key => $closure($data, $container, null, $parent);
         }
     }
 }

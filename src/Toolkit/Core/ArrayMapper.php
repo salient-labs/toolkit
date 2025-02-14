@@ -2,7 +2,6 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Core\Exception\InvalidDataException;
 use Salient\Utility\Arr;
@@ -37,13 +36,14 @@ final class ArrayMapper implements ArrayMapperInterface
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
      * input keys to one or multiple output keys.
-     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
-     * wherever possible to improve performance.
-     * @param int-mask-of<ArrayMapper::*> $flags
+     * @param ArrayMapper::CONFORMITY_* $conformity Use
+     * {@see ArrayMapper::CONFORMITY_COMPLETE} wherever possible to improve
+     * performance.
+     * @param int-mask-of<ArrayMapper::REMOVE_NULL|ArrayMapper::ADD_UNMAPPED|ArrayMapper::ADD_MISSING|ArrayMapper::REQUIRE_MAPPED> $flags
      */
     public function __construct(
         array $keyMap,
-        int $conformity = ListConformity::NONE,
+        int $conformity = ArrayMapper::CONFORMITY_NONE,
         int $flags = ArrayMapper::ADD_UNMAPPED
     ) {
         $outKeyMap = [];
@@ -56,7 +56,7 @@ final class ArrayMapper implements ArrayMapperInterface
         $this->RemoveNull = (bool) ($flags & self::REMOVE_NULL);
 
         if (
-            $conformity === ListConformity::COMPLETE
+            $conformity === self::CONFORMITY_COMPLETE
             && count($keyMap) === count($outKeyMap)
         ) {
             $this->OutputKeys = array_keys($outKeyMap);

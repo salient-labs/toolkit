@@ -2,7 +2,6 @@
 
 namespace Salient\Sync\Http;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\EntityPipelineInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
@@ -237,7 +236,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param string[]|string|null $path
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param ListConformity::* $conformity
+     * @param HttpSyncDefinition::CONFORMITY_* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param int<-1,max>|null $expiry
      * @param array<OP::*,HttpRequestMethod::*> $methodMap
@@ -245,7 +244,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
-     * @param int-mask-of<ArrayMapperInterface::*> $keyMapFlags
+     * @param int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
@@ -261,7 +260,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
         ?callable $callback = null,
-        int $conformity = ListConformity::NONE,
+        int $conformity = HttpSyncDefinition::CONFORMITY_NONE,
         ?int $filterPolicy = null,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,

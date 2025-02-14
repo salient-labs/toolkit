@@ -2,7 +2,6 @@
 
 namespace Salient\Core\Provider;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Treeable;
@@ -31,8 +30,8 @@ class ProviderContext implements ProviderContextInterface
     protected ContainerInterface $Container;
     /** @var class-string<TEntity>|null */
     protected ?string $EntityType = null;
-    /** @var ListConformity::* */
-    protected int $Conformity = ListConformity::NONE;
+    /** @var self::* */
+    protected int $Conformity = self::CONFORMITY_NONE;
     /** @var TEntity[] */
     protected array $Entities = [];
     /** @var (TEntity&Treeable)|null */

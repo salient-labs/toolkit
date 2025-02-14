@@ -2,7 +2,6 @@
 
 namespace Salient\Sync\Http;
 
-use Salient\Contract\Catalog\ListConformity;
 use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Curler\CurlerInterface;
@@ -27,7 +26,7 @@ use Closure;
  * @method $this pager(?CurlerPagerInterface $value) Pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) Callback applied to the definition before each sync operation (see {@see HttpSyncDefinition::$Callback})
- * @method $this conformity(ListConformity::* $value) Conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
+ * @method $this conformity(HttpSyncDefinition::CONFORMITY_* $value) Conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
  * @method $this filterPolicy(FilterPolicy::*|null $value) Action to take when filters are not claimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
  * @method $this expiry(int<-1,max>|null $value) Seconds before cached responses expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array<OP::*,HttpRequestMethod::*> $value) Array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
@@ -35,7 +34,7 @@ use Closure;
  * @method $this syncOneEntityPerRequest(bool $value = true) Perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)
  * @method $this overrides(array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $value) Array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})
  * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) Array that maps keys to properties for entity data returned by the provider (see {@see AbstractSyncDefinition::$KeyMap})
- * @method $this keyMapFlags(int-mask-of<ArrayMapperInterface::*> $value) Array mapper flags used if a key map is provided
+ * @method $this keyMapFlags(int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $value) Array mapper flags used if a key map is provided
  * @method $this readFromList(bool $value = true) Perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see AbstractSyncDefinition::$ReadFromList})
  * @method $this returnEntitiesFrom(EntitySource::*|null $value) Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  * @method $this args(mixed[]|null $value) Arguments passed to each sync operation

@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core\Provider;
 
-use Salient\Contract\Catalog\ListConformity;
+use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Core\Entity\Providable;
@@ -20,7 +20,8 @@ use Salient\Contract\Core\Immutable;
 interface ProviderContextInterface extends
     HasProvider,
     HasContainer,
-    Immutable
+    Immutable,
+    HasConformity
 {
     /**
      * Get the context's provider
@@ -54,15 +55,16 @@ interface ProviderContextInterface extends
     /**
      * Get the conformity level applied to the context
      *
-     * @return ListConformity::*
+     * @return ProviderContextInterface::*
      */
     public function getConformity(): int;
 
     /**
      * Get an instance with the given conformity level
      *
-     * @param ListConformity::* $conformity Use {@see ListConformity::COMPLETE}
-     * wherever possible to improve performance.
+     * @param ProviderContextInterface::* $conformity Use
+     * {@see ProviderContextInterface::CONFORMITY_COMPLETE} wherever possible to
+     * improve performance.
      * @return static
      */
     public function withConformity(int $conformity);

@@ -2,12 +2,13 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
+use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Core\Exception\InvalidDataException;
 
 /**
  * @api
  */
-interface ArrayMapperInterface
+interface ArrayMapperInterface extends HasConformity
 {
     /**
      * Remove null values from the output array

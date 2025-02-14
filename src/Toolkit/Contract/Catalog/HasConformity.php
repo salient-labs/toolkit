@@ -5,22 +5,22 @@ namespace Salient\Contract\Catalog;
 /**
  * @api
  */
-interface ListConformity
+interface HasConformity
 {
     /**
      * Arrays may have different keys in different orders
      */
-    public const NONE = 0;
+    public const CONFORMITY_NONE = 0;
 
     /**
      * Data arrays always have the same keys in the same order, but the given
      * key map may have different keys in a different order
      */
-    public const PARTIAL = 1;
+    public const CONFORMITY_PARTIAL = 1;
 
     /**
      * Data arrays always have the same keys in the same order as each other and
      * the given key map
      */
-    public const COMPLETE = 2;
+    public const CONFORMITY_COMPLETE = 2;
 }
