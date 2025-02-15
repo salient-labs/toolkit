@@ -19,12 +19,13 @@ use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Get;
 use Salient\Utility\Package;
+use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
-use ReflectionException;
+use ReflectionFunctionAbstract;
 use ReflectionParameter;
 use ReflectionType;
 
@@ -40,17 +41,27 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected const VISIBILITY_PRIVATE = 'private';
     protected const TAB = '    ';
 
-    private const MEMBER_STUB = [
+    private const DEFAULT_MEMBERS = [
         self::VISIBILITY_PUBLIC => [],
         self::VISIBILITY_PROTECTED => [],
         self::VISIBILITY_PRIVATE => [],
     ];
 
+    private const DEFAULT_TAGS = [
+        'property' => [],
+        'method' => [],
+        'api' => [],
+        'template' => [],
+        'extends' => [],
+        'implements' => [],
+        'use' => [],
+        'generated' => ['@generated'],
+    ];
+
     /**
      * The path to the generated file
      *
-     * Set by {@see AbstractGenerateCommand::handleOutput()} unless output is
-     * written to the standard output.
+     * Set by {@see handleOutput()} unless `--stdout` is given.
      *
      * May be relative to the current working directory.
      */
@@ -58,27 +69,21 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
     // --
 
-    /**
-     * The user-supplied description of the generated entity
-     *
-     * Generators should apply a default description if `null`.
-     */
-    protected ?string $Description = null;
-
-    protected bool $ApiTag = false;
+    protected ?string $Desc = null;
+    protected bool $Api = false;
     protected bool $Collapse = false;
-    protected bool $ToStdout = false;
+    protected bool $Stdout = false;
     protected bool $Check = false;
-    protected bool $ReplaceIfExists = false;
+    protected bool $Force = false;
 
     // --
 
     /**
      * The type of entity to generate
      *
-     * @var AbstractGenerateCommand::GENERATE_*
+     * @var self::GENERATE_*
      */
-    protected string $OutputType = AbstractGenerateCommand::GENERATE_CLASS;
+    protected string $OutputType = self::GENERATE_CLASS;
 
     /**
      * The unqualified name of the entity to generate
@@ -120,28 +125,36 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected array $Modifiers = [];
 
     /**
-     * The PHPDoc added before the generated entity
+     * The content of the PHPDoc applied to the generated entity
      *
-     * {@see AbstractGenerateCommand::generate()} combines
-     * {@see AbstractGenerateCommand::$Description} and
-     * {@see AbstractGenerateCommand::$PHPDoc} before applying PHPDoc
-     * delimiters.
+     * The following are combined before PHPDoc delimiters are added:
+     *
+     * - {@see $Desc}
+     * - {@see $PHPDoc}
+     * - {@see $Tags}
      */
     protected string $PHPDoc;
 
     /**
+     * PHPDoc tags applied to the generated entity
+     *
+     * @var array<string,string[]>
+     */
+    protected array $Tags = self::DEFAULT_TAGS;
+
+    /**
      * Declared properties of the generated class
      *
-     * @var array<AbstractGenerateCommand::VISIBILITY_*,string[]>
+     * @var array<self::VISIBILITY_*,string[]>
      */
-    protected array $Properties = self::MEMBER_STUB;
+    protected array $Properties = self::DEFAULT_MEMBERS;
 
     /**
      * Declared methods of the generated entity
      *
-     * @var array<AbstractGenerateCommand::VISIBILITY_*,string[]>
+     * @var array<self::VISIBILITY_*,string[]>
      */
-    protected array $Methods = self::MEMBER_STUB;
+    protected array $Methods = self::DEFAULT_MEMBERS;
 
     /**
      * Lowercase alias => alias
@@ -204,29 +217,27 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected array $InputFileTypeMaps;
 
     /**
-     * @return array<CliOption|CliOptionBuilder>
+     * @return iterable<CliOption|CliOptionBuilder>
      */
     protected function getGlobalOptionList(
         string $outputType,
         bool $withDesc = true
-    ): array {
-        $options = [];
+    ): iterable {
         if ($withDesc) {
-            $options[] = CliOption::build()
+            yield CliOption::build()
                 ->long('desc')
                 ->short('d')
                 ->valueName('description')
                 ->description("A short description of the $outputType")
                 ->optionType(CliOptionType::VALUE)
-                ->bindTo($this->Description);
+                ->bindTo($this->Desc);
         }
-        return [
-            ...$options,
+        yield from [
             CliOption::build()
                 ->long('api')
                 ->short('a')
                 ->description("Add an `@api` tag to the $outputType")
-                ->bindTo($this->ApiTag),
+                ->bindTo($this->Api),
             CliOption::build()
                 ->long('collapse')
                 ->short('C')
@@ -236,7 +247,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 ->long('stdout')
                 ->short('s')
                 ->description('Write to standard output')
-                ->bindTo($this->ToStdout),
+                ->bindTo($this->Stdout),
             CliOption::build()
                 ->long('check')
                 ->description('Fail if the output file should be replaced')
@@ -245,24 +256,28 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                 ->long('force')
                 ->short('f')
                 ->description('Overwrite the output file if it already exists')
-                ->bindTo($this->ReplaceIfExists),
+                ->bindTo($this->Force),
         ];
     }
 
     protected function startRun(): void
     {
         $this->OutputFile = null;
+        $this->OutputType = self::GENERATE_CLASS;
         unset($this->OutputClass);
         unset($this->OutputNamespace);
-        unset($this->PHPDoc);
         $this->Extends = [];
         $this->Implements = [];
         $this->Uses = [];
         $this->Modifiers = [];
-        $this->Properties = self::MEMBER_STUB;
-        $this->Methods = self::MEMBER_STUB;
+        unset($this->PHPDoc);
+        $this->Tags = self::DEFAULT_TAGS;
+        $this->Properties = self::DEFAULT_MEMBERS;
+        $this->Methods = self::DEFAULT_MEMBERS;
+        $this->AliasIndex = [];
         $this->AliasMap = [];
         $this->ImportMap = [];
+        $this->FqcnMap = [];
 
         $this->clearInputClass();
     }
@@ -272,10 +287,28 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      */
     protected function assertClassExists(string $fqcn): void
     {
-        if (class_exists($fqcn) || interface_exists($fqcn)) {
-            return;
+        if (!(class_exists($fqcn) || interface_exists($fqcn))) {
+            throw new CliInvalidArgumentsException(sprintf(
+                'class not found: %s',
+                $fqcn,
+            ));
         }
-        throw new CliInvalidArgumentsException(sprintf('class not found: %s', $fqcn));
+    }
+
+    /**
+     * @param class-string $fqcn
+     * @param class-string $interface
+     */
+    protected function assertClassImplements(string $fqcn, string $interface): void
+    {
+        $this->assertClassExists($fqcn);
+        if (!is_a($fqcn, $interface, true)) {
+            throw new CliInvalidArgumentsException(sprintf(
+                'class does not implement %s: %s',
+                $interface,
+                $fqcn,
+            ));
+        }
     }
 
     /**
@@ -283,13 +316,12 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      */
     protected function assertClassIsInstantiable(string $fqcn): void
     {
-        try {
-            $class = new ClassReflection($fqcn);
-            if (!$class->isInstantiable()) {
-                throw new CliInvalidArgumentsException(sprintf('not an instantiable class: %s', $fqcn));
-            }
-        } catch (ReflectionException $ex) {
-            throw new CliInvalidArgumentsException(sprintf('class not found: %s', $fqcn));
+        $this->assertClassExists($fqcn);
+        if (!(new ClassReflection($fqcn))->isInstantiable()) {
+            throw new CliInvalidArgumentsException(sprintf(
+                'class not instantiable: %s',
+                $fqcn,
+            ));
         }
     }
 
@@ -299,7 +331,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     protected function loadInputClass(string $fqcn): void
     {
         $this->InputClass = new ClassReflection($fqcn);
-        $this->InputClassName = $this->InputClass->getName();
+        $this->InputClassName = $this->InputClass->name;
         $this->InputClassPHPDoc = PHPDoc::forClass($this->InputClass);
         $this->InputClassTemplates = $this->InputClassPHPDoc->getTemplates();
         $this->InputClassType = $this->InputClassTemplates
@@ -313,15 +345,15 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         do {
             $file = $class->getFileName();
             if ($file !== false) {
-                $this->InputFiles[$class->getName()] = $file;
+                $this->InputFiles[$class->name] = $file;
                 $files[$file] = true;
             }
         } while ($class = $class->getParentClass());
 
         foreach ($this->InputClass->getInterfaces() as $interface) {
             $file = $interface->getFileName();
-            if ($file) {
-                $this->InputFiles[$interface->getName()] = $file;
+            if ($file !== false) {
+                $this->InputFiles[$interface->name] = $file;
                 $files[$file] = true;
             }
         }
@@ -369,6 +401,15 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         return ($this->OutputNamespace === '' ? '' : '\\') . $fqcn;
     }
 
+    /**
+     * @return class-string
+     */
+    protected function applyNamespace(string $basename, string $namespace): string
+    {
+        /** @var class-string */
+        return Arr::implode('\\', [$namespace, $basename]);
+    }
+
     protected function getOutputFqcn(): string
     {
         return Arr::implode('\\', [$this->OutputNamespace, $this->OutputClass]);
@@ -390,7 +431,6 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     ): string {
         $seen = [];
         while ($tag = $templates[$type] ?? null) {
-            $template = $tag;
             // Don't resolve templates that will appear in the output
             if ($tag->getClass() === $this->InputClassName) {
                 $member = $tag->getMember();
@@ -410,11 +450,12 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             }
             // Prevent recursion
             $tagType = $tag->getType() ?? 'mixed';
-            if (isset($seen[$tagType])) {
+            if ($tagType === $type || isset($seen[$tagType])) {
                 break;
             }
             $seen[$tagType] = true;
             $type = $tagType;
+            $template = $tag;
         }
         return $type;
     }
@@ -426,7 +467,6 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      * @param AbstractTag|string $type
      * @param array<string,TemplateTag> $templates
      * @param array<string,TemplateTag> $inputClassTemplates
-     * @param-out array<string,TemplateTag> $inputClassTemplates
      */
     protected function getPHPDocTypeAlias(
         $type,
@@ -440,76 +480,81 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             ? $type->getType() ?? ''
             : $type;
 
-        return PHPDocUtil::normaliseType(Regex::replaceCallback(
-            '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
-            function ($matches) use (
-                $type,
+        $callback = function ($matches) use (
+            $type,
+            $templates,
+            $namespace,
+            $filename,
+            &$inputClassTemplates,
+            $resolveMemberTemplates,
+            $subject
+        ) {
+            $t = $this->resolveTemplates(
+                $matches[0][0],
                 $templates,
-                $namespace,
-                $filename,
-                &$inputClassTemplates,
+                $template,
+                $inputClassTemplates,
                 $resolveMemberTemplates,
-                $subject
+            );
+            $type = $template ?? $type;
+            if (
+                $type instanceof AbstractTag
+                && ($class = $type->getClass()) !== null
             ) {
-                $t = $this->resolveTemplates(
-                    $matches[0][0],
-                    $templates,
-                    $template,
-                    $inputClassTemplates,
-                    $resolveMemberTemplates,
+                $t = $this->resolveRelativeTypes(
+                    $t,
+                    $type->getSelf() ?? $class,
+                    $type->getStatic(),
                 );
-                $type = $template ?? $type;
-                if ($type instanceof AbstractTag && ($class = $type->getClass()) !== null) {
-                    $class = new ClassReflection($class);
-                    $namespace = $class->getNamespaceName();
-                    $filename = $class->getFileName();
-                    if ($filename === false) {
-                        $filename = null;
+                $class = new ClassReflection($class);
+                $namespace = $class->getNamespaceName();
+                $filename = Reflect::getFileName($class);
+            }
+            // Recurse if template and/or relative class type expansion occurred
+            if ($t !== $matches[0][0]) {
+                return $this->getPHPDocTypeAlias($t, $templates, $namespace, $filename);
+            }
+            // Leave reserved words, PHPDoc types (e.g. `class-string`) and
+            // template names alone
+            if (
+                Test::isBuiltinType($t)
+                || strpos($t, '-') !== false
+                || isset($inputClassTemplates[$t])
+            ) {
+                return $t;
+            }
+            // Leave `min` and `max` (lowercase) alone if they appear
+            // between angle brackets after `int` (not case sensitive)
+            if ($t === 'min' || $t === 'max') {
+                // - before: `'array < int < 1, max > >'`
+                // - after: `['array', '<', 'int', '<', '1']`
+                /** @disregard P1006 */
+                $before = substr($subject, 0, $matches[0][1]);
+                $before = Regex::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
+                $before = Arr::trim($before);
+                while ($before) {
+                    $last = array_pop($before);
+                    if ($last === 'min' || $last === 'max' || Test::isInteger($last)) {
+                        continue;
                     }
-                }
-                // Recurse if template expansion occurred
-                if ($t !== $matches[0][0]) {
-                    return $this->getPHPDocTypeAlias($t, $templates, $namespace, $filename);
-                }
-                // Leave reserved words, PHPDoc types (e.g. `class-string`) and
-                // template names alone
-                if (
-                    Test::isBuiltinType($t)
-                    || strpos($t, '-') !== false
-                    || isset($inputClassTemplates[$t])
-                ) {
-                    return $t;
-                }
-                // Leave `min` and `max` (lowercase) alone if they appear
-                // between angle brackets after `int` (not case sensitive)
-                if ($t === 'min' || $t === 'max') {
-                    // - before: `'array < int < 1, max > >'`
-                    // - after: `['array', '<', 'int', '<', '1']`
-                    /** @disregard P1006 */
-                    $before = substr($subject, 0, $matches[0][1]);
-                    $before = Regex::split('/(?=(?<![-a-z0-9$\\\\_])int\s*<)|(?=<)|(?<=<)|,/i', $before);
-                    $before = Arr::trim($before);
-                    while ($before) {
-                        $last = array_pop($before);
-                        if ($last === 'min' || $last === 'max' || Test::isInteger($last)) {
-                            continue;
-                        }
-                        if ($last === '<' && $before && Str::lower(array_pop($before)) === 'int') {
-                            return $t;
-                        }
-                        break;
+                    if ($last === '<' && $before && Str::lower(array_pop($before)) === 'int') {
+                        return $t;
                     }
+                    break;
                 }
-                // Don't waste time trying to find a FQCN in $InputFileUseMaps
-                if (($t[0] ?? null) === '\\') {
-                    return $this->getTypeAlias($t);
-                }
-                return $this->getTypeAlias(
+            }
+            return strpos($t, '\\') !== false
+                ? $this->getTypeAlias($t)
+                : $this->getTypeAlias(
                     $this->InputFileUseMaps[$filename][Str::lower($t)]
-                        ?? '\\' . $namespace . '\\' . $t,
-                    $filename
+                        ?? $this->applyNamespace($t, $namespace),
+                    $filename,
                 );
-            },
+        };
+
+        return PHPDocUtil::normaliseType(Regex::replaceCallback(
+            '/(?<!::|[-\\\\$a-z0-9_])(?:\$this|(?:\b[a-z_]+(?:-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . '))\b(?![-\\\\$])/i',
+            $callback,
             $subject,
             -1,
             $count,
@@ -518,15 +563,42 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     }
 
     /**
+     * @param class-string $self
+     * @param class-string|null $static
+     */
+    protected function resolveRelativeTypes(
+        string $type,
+        string $self,
+        ?string $static
+    ): string {
+        switch (Str::lower($type)) {
+            case 'static':
+            case '\static':
+            case '$this':
+                return $static ?? $self;
+            case 'self':
+            case '\self':
+                return $self;
+            case 'parent':
+            case '\parent':
+                $parent = get_parent_class($static ?? $self);
+                if ($parent !== false) {
+                    return $parent;
+                }
+                // No break
+            default:
+                return $type;
+        }
+    }
+
+    /**
      * Convert a built-in or user-defined type to a code-safe identifier, using
      * the same alias as the declaring class if possible
      *
      * Use this method to prepare an arbitrary type for inclusion in a method
-     * declaration or PHPDoc tag. If a type is known to be a FQCN, bypass
-     * {@see AbstractGenerateCommand::getTypeAlias()} and call
-     * {@see AbstractGenerateCommand::getFqcnAlias()} directly instead. Types
-     * that originate from a PHPDoc should be passed to
-     * {@see AbstractGenerateCommand::getPhpDocTypeAlias()}.
+     * declaration or PHPDoc tag. If a type is known to be a FQCN, call
+     * {@see getFqcnAlias()} instead; or if it originates from a PHPDoc, call
+     * {@see getPhpDocTypeAlias()}.
      *
      * @template TReturnFqcn of bool
      *
@@ -596,7 +668,8 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             return $this->ImportMap[$_fqcn];
         }
 
-        $alias ??= Get::basename($fqcn);
+        $alias ??= Arr::flatten(array_reverse($this->InputFileTypeMaps ?? [], true), -1, true)[$_fqcn]
+            ?? Get::basename($fqcn);
         $_alias = Str::lower($alias);
 
         // Normalise $alias to the first capitalisation seen
@@ -673,7 +746,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     }
 
     /**
-     * @param string[] $innerBlocks
+     * @param array<string[]|string> $innerBlocks
      */
     protected function generate(array $innerBlocks = []): string
     {
@@ -690,17 +763,44 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             $blocks[] = implode($line, $this->generateImports());
         }
 
+        $tags = $this->Tags;
+        if ($this->Api) {
+            $tags['api'][] = '@api';
+        }
+        $groups = [];
+        foreach ([
+            ['property'],
+            ['method'],
+            ['api'],
+            ['template'],
+            ['extends', 'implements', 'use'],
+            ['generated'],
+        ] as $groupTags) {
+            $group = [];
+            foreach ($groupTags as $tag) {
+                if (isset($tags[$tag])) {
+                    foreach ($tags[$tag] as $text) {
+                        $group[] = $text;
+                    }
+                    unset($tags[$tag]);
+                }
+            }
+            if ($group) {
+                $groups[] = implode($line, $group);
+            }
+        }
+        if ($tags && ($group = Arr::flatten($tags))) {
+            array_unshift($groups, implode($line, $group));
+        }
         $phpDoc = Arr::implode($blank, [
-            $this->Description ?? '',
+            $this->Desc ?? '',
             $this->PHPDoc ?? '',
-            $this->ApiTag ? '@api' : '',
-            '@generated',
+            implode($blank, $groups),
         ]);
 
-        $lines =
-            $phpDoc === ''
-                ? []
-                : $this->generatePHPDocBlock($phpDoc);
+        $lines = $phpDoc === ''
+            ? []
+            : $this->generatePHPDocBlock($phpDoc);
 
         $lines[] = Arr::implode(' ', [
             ...$this->Modifiers,
@@ -731,8 +831,14 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $innerBlocks = array_merge($members, $innerBlocks);
 
         if ($innerBlocks) {
+            foreach ($innerBlocks as $block) {
+                if (is_array($block)) {
+                    $block = implode($line, $block);
+                }
+                $indented[] = $this->indent($block);
+            }
             $lines[] = '{';
-            $lines[] = implode($blank, $this->indent($innerBlocks));
+            $lines[] = implode($blank, $indented);
             $lines[] = '}';
         } else {
             $lines[array_key_last($lines)] .= ' {}';
@@ -745,8 +851,6 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
     /**
      * Generate a list of `use $fqcn[ as $alias];` statements
-     *
-     * @see AbstractGenerateCommand::getFqcnAlias()
      *
      * @return string[]
      */
@@ -851,7 +955,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         string $valueCode,
         $phpDoc = '@inheritDoc',
         ?string $returnType = 'string',
-        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = self::VISIBILITY_PUBLIC
     ): array {
         return [
             ...$this->generatePHPDocBlock($phpDoc),
@@ -869,13 +973,93 @@ abstract class AbstractGenerateCommand extends AbstractCommand
     }
 
     /**
+     * Add a "magic" method to the generated entity
+     *
+     * @param array<ReflectionParameter|string> $params
+     * @param ReflectionFunctionAbstract|string|null $returnType
+     */
+    protected function addMagicMethod(
+        string $name,
+        array $params = [],
+        $returnType = null,
+        ?string $description = null,
+        ?PHPDoc $phpDoc = null,
+        bool $static = false
+    ): void {
+        /** @var string|null */
+        $filename = null;
+        $callback = function (string $type) use (&$filename) {
+            return $this->getTypeAlias($type, $filename, false);
+        };
+
+        foreach ($params as $param) {
+            if ($param instanceof ReflectionParameter) {
+                $filename = Reflect::getFileName($param);
+                $type = $phpDoc
+                    && ($tag = $phpDoc->getParams()[$param->name] ?? null)
+                    && $tag->getType() !== null
+                        ? $this->getPHPDocTypeAlias(
+                            $tag,
+                            $phpDoc->getTagTemplates($tag),
+                            Reflect::getNamespaceName($param),
+                            $filename,
+                        )
+                        : null;
+                $_params[] = PHPDocUtil::getParameterDeclaration(
+                    $param,
+                    $this->getClassPrefix(),
+                    $callback,
+                    $type,
+                    null,
+                    true,
+                );
+            } else {
+                $_params[] = $param;
+            }
+        }
+
+        if ($returnType instanceof ReflectionFunctionAbstract) {
+            $filename = Reflect::getFileName($returnType);
+            $returnType = $phpDoc && ($tag = $phpDoc->getReturn())
+                ? $this->getPHPDocTypeAlias(
+                    $tag,
+                    $phpDoc->getTagTemplates($tag),
+                    Reflect::getNamespaceName($returnType),
+                    $filename,
+                )
+                : ($returnType->hasReturnType()
+                    ? PHPDocUtil::getTypeDeclaration(
+                        $returnType->getReturnType(),
+                        $this->getClassPrefix(),
+                        $callback,
+                        true,
+                    )
+                    : null);
+        }
+
+        $parts = ['@method'];
+        if ($static) {
+            $parts[] = 'static';
+        }
+        $parts[] = $returnType ?? 'mixed';
+        $parts[] = $name . '(' . implode(', ', $_params ?? []) . ')';
+        if (
+            $description !== null
+            && ($description = trim($description)) !== ''
+        ) {
+            $parts[] = $description;
+        }
+        $this->Tags['method'][$name] = implode(' ', $parts);
+    }
+
+    /**
      * Add a method to the generated entity
      *
      * @param string[]|string|null $code
      * @param array<ReflectionParameter|string> $params
      * @param ReflectionType|string $returnType
      * @param string[]|string $phpDoc
-     * @param AbstractGenerateCommand::VISIBILITY_* $visibility
+     * @param self::VISIBILITY_* $visibility
      */
     protected function addMethod(
         string $name,
@@ -884,7 +1068,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $returnType = null,
         $phpDoc = '',
         bool $static = false,
-        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = self::VISIBILITY_PUBLIC
     ): void {
         $this->Methods[$visibility][] =
             implode(\PHP_EOL, $this->generateMethod(
@@ -905,7 +1089,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
      * @param array<ReflectionParameter|string> $params
      * @param ReflectionType|string $returnType
      * @param string[]|string $phpDoc
-     * @param AbstractGenerateCommand::VISIBILITY_* $visibility
+     * @param self::VISIBILITY_* $visibility
      * @return string[]
      */
     protected function generateMethod(
@@ -915,7 +1099,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
         $returnType = null,
         $phpDoc = '',
         bool $static = true,
-        string $visibility = AbstractGenerateCommand::VISIBILITY_PUBLIC
+        string $visibility = self::VISIBILITY_PUBLIC
     ): array {
         $callback = function (string $name): ?string {
             /** @var class-string $name */
@@ -954,7 +1138,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
         $method = $this->generatePHPDocBlock($phpDoc);
 
-        if ($this->OutputType === AbstractGenerateCommand::GENERATE_INTERFACE) {
+        if ($this->OutputType === self::GENERATE_INTERFACE) {
             $method[] = "$declaration;";
             return $method;
         }
@@ -990,7 +1174,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
 
         $verb = 'Creating';
 
-        if ($this->ToStdout) {
+        if ($this->Stdout) {
             $file = 'php://stdout';
             $verb = null;
         } else {
@@ -1012,7 +1196,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                     Console::log('Nothing to do:', $file);
                     return;
                 }
-                if ($this->Check || !$this->ReplaceIfExists) {
+                if ($this->Check || !$this->Force) {
                     if (class_exists(Differ::class)) {
                         $relative = File::getRelativePath($file, Package::path(), $file);
                         $formatter = Console::getStdoutTarget()->getFormatter();

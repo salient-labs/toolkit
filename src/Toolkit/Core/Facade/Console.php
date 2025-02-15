@@ -62,7 +62,7 @@ use Throwable;
  *
  * @generated
  */
-final class Console extends Facade
+final class Console extends Facade implements Level
 {
     /**
      * @internal
