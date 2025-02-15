@@ -3,25 +3,24 @@
 namespace Salient\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Console\Support\ConsoleWriterState;
+use Salient\Console\Support\ConsoleState;
 use Salient\Console\Target\StreamTarget;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTargetInterface;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
 use Salient\Contract\Console\ConsoleTargetPrefixInterface as TargetPrefix;
 use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
-use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Exception\MultipleErrorException;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Unloadable;
 use Salient\Core\Concern\FacadeAwareInstanceTrait;
-use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidEnvironmentException;
 use Salient\Utility\Arr;
 use Salient\Utility\Debug;
@@ -35,24 +34,18 @@ use Salient\Utility\Sys;
 use Throwable;
 
 /**
- * Logs messages to registered targets
- *
- * {@see ConsoleWriter} methods should generally be called via the
- * {@see Console} facade. If a {@see ConsoleWriter} instance is required, call
- * {@see Console::getInstance()}.
- *
- * @implements FacadeAwareInterface<ConsoleWriterInterface>
+ * @implements FacadeAwareInterface<ConsoleInterface>
  */
-final class ConsoleWriter implements ConsoleWriterInterface, FacadeAwareInterface, Unloadable
+final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadable
 {
-    /** @use FacadeAwareInstanceTrait<ConsoleWriterInterface> */
+    /** @use FacadeAwareInstanceTrait<ConsoleInterface> */
     use FacadeAwareInstanceTrait;
 
-    private ConsoleWriterState $State;
+    private ConsoleState $State;
 
     public function __construct()
     {
-        $this->State = new ConsoleWriterState();
+        $this->State = new ConsoleState();
     }
 
     /**

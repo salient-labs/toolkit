@@ -10,7 +10,7 @@ use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Instantiable;
 use Throwable;
 
-interface ConsoleWriterInterface extends Instantiable
+interface ConsoleInterface extends Instantiable
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the
@@ -94,7 +94,7 @@ interface ConsoleWriterInterface extends Instantiable
      * Get an output formatter for a registered target
      *
      * Returns {@see ConsoleTargetInterface::getFormatter()} from the same
-     * target as {@see ConsoleWriterInterface::getWidth()}.
+     * target as {@see ConsoleInterface::getWidth()}.
      *
      * @param Level::* $level
      */

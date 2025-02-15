@@ -2,7 +2,7 @@
 
 namespace Salient\Sli\Internal\Data;
 
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\PHPDoc\PHPDoc;
 
 /**
@@ -12,7 +12,7 @@ trait HasPHPDoc
 {
     private static function checkPHPDoc(
         PHPDoc $phpDoc,
-        ?ConsoleWriterInterface $console
+        ?ConsoleInterface $console
     ): void {
         if (!$console || !$phpDoc->hasErrors()) {
             return;

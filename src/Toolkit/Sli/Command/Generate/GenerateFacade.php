@@ -10,6 +10,7 @@ use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
 use Salient\Utility\Arr;
+use Salient\Utility\Get;
 use ReflectionParameter;
 
 /**
@@ -118,12 +119,13 @@ final class GenerateFacade extends AbstractGenerateCommand
 
         $classPrefix = $this->getClassPrefix();
 
-        $service = $this->getFqcnAlias($classFqcn, $classClass);
+        $service = $this->getFqcnAlias($classFqcn, $this->getPreferredAlias($classClass));
         $extends = $this->getFqcnAlias(Facade::class);
 
         $alias = [];
         foreach ($aliasFqcn as $aliasFqcn) {
-            $alias[] = $this->getFqcnAlias($aliasFqcn);
+            $aliasClass = Get::basename($aliasFqcn);
+            $alias[] = $this->getFqcnAlias($aliasFqcn, $this->getPreferredAlias($aliasClass));
         }
 
         $this->Description ??= sprintf(
@@ -387,5 +389,12 @@ final class GenerateFacade extends AbstractGenerateCommand
         $lines[] = '}';
 
         $this->handleOutput($lines);
+    }
+
+    private function getPreferredAlias(string $alias, string $suffix = 'Service'): string
+    {
+        return strcasecmp($alias, $this->OutputClass)
+            ? $alias
+            : $alias . $suffix;
     }
 }

@@ -2,25 +2,25 @@
 
 namespace Salient\Tests\Console;
 
-use Salient\Console\Support\ConsoleWriterState;
-use Salient\Console\ConsoleWriter;
+use Salient\Console\Support\ConsoleState;
+use Salient\Console\Console as ConsoleService;
 use Salient\Contract\Catalog\MessageLevel;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;
 
 /**
- * @covers \Salient\Console\ConsoleWriter
+ * @covers \Salient\Console\Console
  * @covers \Salient\Console\ConsoleFormatter
  */
-final class ConsoleWriterTest extends TestCase
+final class ConsoleTest extends TestCase
 {
-    private ConsoleWriter $Writer;
+    private ConsoleService $Writer;
     private MockTarget $Target;
 
     protected function setUp(): void
     {
-        $this->Writer = new ConsoleWriter();
+        $this->Writer = new ConsoleService();
         $this->Target = new MockTarget();
         $this->Writer->registerTarget($this->Target);
 
@@ -58,11 +58,11 @@ final class ConsoleWriterTest extends TestCase
         ], $this->Target->getMessages());
     }
 
-    private function getState(): ConsoleWriterState
+    private function getState(): ConsoleState
     {
         return (function () {
-            /** @var ConsoleWriter $this */
-            // @phpstan-ignore property.private
+            /** @var ConsoleService $this */
+            // @phpstan-ignore property.private, varTag.nativeType
             return $this->State;
         })->bindTo($this->Writer, $this->Writer)();
     }

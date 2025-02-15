@@ -3,7 +3,7 @@
 namespace Salient\Sli\Internal\Data;
 
 use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\PHPDoc\Tag\MethodTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
@@ -74,7 +74,7 @@ class MethodData implements JsonSerializable
         array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
-        ?ConsoleWriterInterface $console = null
+        ?ConsoleInterface $console = null
     ): self {
         $methodName = $method->getName();
         try {

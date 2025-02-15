@@ -5,8 +5,8 @@ namespace Salient\Tests\PsrLog;
 use Psr\Log\Test\LoggerInterfaceTest;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Salient\Console\Console;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Console\ConsoleWriter;
 use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Testing\Console\MockTarget;
 use Salient\Utility\Reflect;
@@ -14,7 +14,7 @@ use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Console\ConsoleLogger
- * @covers \Salient\Console\ConsoleWriter
+ * @covers \Salient\Console\Console
  */
 final class LoggerTest extends LoggerInterfaceTest
 {
@@ -25,7 +25,7 @@ final class LoggerTest extends LoggerInterfaceTest
      */
     public function getLogger(): LoggerInterface
     {
-        return (new ConsoleWriter())
+        return (new Console())
             ->registerTarget($this->Target = new MockTarget(
                 null,
                 true,

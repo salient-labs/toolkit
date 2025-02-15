@@ -9,9 +9,9 @@ use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
 
 /**
- * ConsoleWriter state information
+ * Console state information
  */
-final class ConsoleWriterState
+final class ConsoleState
 {
     /** @var array<Level::*,TargetStream[]> */
     public array $StdioTargetsByLevel = [];

@@ -6,8 +6,8 @@ use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Utility\Format;
 use Throwable;
 
@@ -27,9 +27,9 @@ final class ConsoleLogger implements LoggerInterface
         LogLevel::DEBUG => Level::DEBUG,
     ];
 
-    private ConsoleWriterInterface $Writer;
+    private ConsoleInterface $Writer;
 
-    public function __construct(ConsoleWriterInterface $writer)
+    public function __construct(ConsoleInterface $writer)
     {
         $this->Writer = $writer;
     }

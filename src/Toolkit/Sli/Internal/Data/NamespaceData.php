@@ -2,7 +2,7 @@
 
 namespace Salient\Sli\Internal\Data;
 
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Sli\Internal\NavigableToken;
 use Salient\Sli\Internal\TokenExtractor;
 use Salient\Utility\File;
@@ -58,7 +58,7 @@ class NamespaceData implements JsonSerializable
     public static function fromExtractor(
         TokenExtractor $extractor,
         ?callable $filter = null,
-        ?ConsoleWriterInterface $console = null,
+        ?ConsoleInterface $console = null,
         ?array &$data = null,
         ?array &$index = null
     ): void {

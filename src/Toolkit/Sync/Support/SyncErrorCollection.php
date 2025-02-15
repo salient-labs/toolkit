@@ -5,8 +5,8 @@ namespace Salient\Sync\Support;
 use Salient\Collection\Collection;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
@@ -110,7 +110,7 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
      * @inheritDoc
      */
     public function reportErrors(
-        ?ConsoleWriterInterface $writer = null,
+        ?ConsoleInterface $writer = null,
         string $successText = 'No sync errors recorded'
     ): void {
         $writer ??= Console::getInstance();

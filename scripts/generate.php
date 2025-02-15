@@ -6,11 +6,11 @@ use Salient\Cache\CacheStore;
 use Salient\Cli\CliApplication;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
-use Salient\Console\ConsoleWriter;
+use Salient\Console\Console as ConsoleService;
 use Salient\Container\Container;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
@@ -78,7 +78,7 @@ $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
     Cache::class => [CacheInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache', '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
-    Console::class => [ConsoleWriterInterface::class, [ConsoleWriter::class], '--desc', 'A facade for the global console writer', '--api'],
+    Console::class => [ConsoleInterface::class, [ConsoleService::class], '--desc', 'A facade for the global console service', '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException', '--api'],
     Event::class => [EventDispatcherInterface::class, [EventDispatcher::class], '--desc', 'A facade for the global event dispatcher', '--api'],
     Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],

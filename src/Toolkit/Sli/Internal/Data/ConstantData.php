@@ -3,7 +3,7 @@
 namespace Salient\Sli\Internal\Data;
 
 use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Reflect;
 use JsonSerializable;
@@ -60,7 +60,7 @@ class ConstantData implements JsonSerializable
         array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
-        ?ConsoleWriterInterface $console = null
+        ?ConsoleInterface $console = null
     ): self {
         $constantName = $constant->getName();
         try {

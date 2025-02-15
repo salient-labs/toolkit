@@ -3,7 +3,7 @@
 namespace Salient\Sli\Internal\Data;
 
 use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Sli\Internal\NavigableToken;
 use Salient\Sli\Internal\TokenExtractor;
@@ -94,7 +94,7 @@ class ClassData implements JsonSerializable
         ReflectionClass $class,
         array $aliases = [],
         ?callable $filter = null,
-        ?ConsoleWriterInterface $console = null
+        ?ConsoleInterface $console = null
     ): self {
         if (
             !($nsExtractor = $extractor->getParent())
@@ -224,7 +224,7 @@ class ClassData implements JsonSerializable
     public static function fromReflection(
         ReflectionClass $class,
         ?callable $filter = null,
-        ?ConsoleWriterInterface $console = null
+        ?ConsoleInterface $console = null
     ): self {
         if ($class->isAnonymous()) {
             // @codeCoverageIgnoreStart
