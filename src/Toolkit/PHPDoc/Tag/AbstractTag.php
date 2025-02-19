@@ -28,9 +28,15 @@ abstract class AbstractTag implements Immutable, Stringable
     /** @var class-string|null */
     protected ?string $Class;
     protected ?string $Member;
+    /** @var class-string|null */
+    protected ?string $Static;
+    /** @var class-string|null */
+    protected ?string $Self;
 
     /**
      * @param class-string|null $class
+     * @param class-string|null $static
+     * @param class-string|null $self
      * @param array<string,class-string> $aliases
      */
     protected function __construct(
@@ -40,6 +46,8 @@ abstract class AbstractTag implements Immutable, Stringable
         ?string $description = null,
         ?string $class = null,
         ?string $member = null,
+        ?string $static = null,
+        ?string $self = null,
         array $aliases = []
     ) {
         // Apply values least likely to be invalid--and most likely to be useful
@@ -47,6 +55,8 @@ abstract class AbstractTag implements Immutable, Stringable
         $this->Class = $this->filterClass($class);
         $this->Member = $this->filterMember($member);
         $this->Tag = $this->filterTag($tag);
+        $this->Static = $this->filterClass($static) ?? $this->Class;
+        $this->Self = $this->filterClass($self) ?? $this->Class;
         if ($name !== null) {
             $this->Name = $this->filterString($name, 'name');
         }
@@ -104,6 +114,26 @@ abstract class AbstractTag implements Immutable, Stringable
     public function getMember(): ?string
     {
         return $this->Member;
+    }
+
+    /**
+     * Get the class to which relative types 'static' and '$this' should resolve
+     *
+     * @return class-string|null
+     */
+    public function getStatic(): ?string
+    {
+        return $this->Static;
+    }
+
+    /**
+     * Get the class to which relative type 'self' should resolve
+     *
+     * @return class-string|null
+     */
+    public function getSelf(): ?string
+    {
+        return $this->Self;
     }
 
     /**

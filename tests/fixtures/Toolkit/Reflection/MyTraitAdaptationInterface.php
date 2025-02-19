@@ -8,14 +8,14 @@ namespace Salient\Tests\Reflection;
 interface MyTraitAdaptationInterface
 {
     /**
-     * MyTraitAdaptationInterface::MyDocumentedMethod() PHPDoc
+     * MyTraitAdaptationInterface::MyDocumentedMethod()
      *
      * @return mixed
      */
     public function MyDocumentedMethod();
 
     /**
-     * MyTraitAdaptationInterface::MyAdaptableMethod() PHPDoc
+     * MyTraitAdaptationInterface::MyAdaptableMethod()
      *
      * @return mixed
      */

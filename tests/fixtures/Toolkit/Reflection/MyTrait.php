@@ -10,21 +10,33 @@ trait MyTrait
     use MyBaseTrait;
 
     /**
-     * MyTrait::$MyDocumentedProperty PHPDoc
+     * MyTrait::$MyDocumentedProperty
      *
      * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
-     * MyTrait::MyDocumentedMethod() PHPDoc
+     * MyTrait::$MyPrivateProperty2
+     *
+     * @var mixed
+     */
+    protected $MyPrivateProperty2;
+
+    /**
+     * MyTrait::MyDocumentedMethod()
      *
      * @return mixed
      */
     public function MyDocumentedMethod() {}
 
     /**
-     * MyTrait::MyTraitOnlyMethod() PHPDoc
+     * MyTrait::MyTraitOnlyMethod()
      */
     public function MyTraitOnlyMethod(): void {}
+
+    /**
+     * MyTrait::MyPrivateMethod()
+     */
+    private function MyPrivateMethod(): void {}
 }

@@ -109,7 +109,7 @@ class ClassData implements JsonSerializable
 
         $token = $extractor->getClassToken();
         try {
-            $phpDoc = PHPDoc::forClass($class, true, $aliases);
+            $phpDoc = PHPDoc::forClass($class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);
@@ -241,7 +241,7 @@ class ClassData implements JsonSerializable
                     : \T_CLASS));
 
         try {
-            $phpDoc = PHPDoc::forClass($class, true);
+            $phpDoc = PHPDoc::forClass($class);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
             !$console || $console->exception($ex, Level::WARNING, null);

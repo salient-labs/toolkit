@@ -22,12 +22,14 @@ class TemplateTag extends AbstractTag
         bool $isContravariant = false,
         ?string $class = null,
         ?string $member = null,
+        ?string $static = null,
+        ?string $self = null,
         array $aliases = []
     ) {
         if ($isCovariant && $isContravariant) {
             $this->throw('$isCovariant and $isContravariant cannot both be true');
         }
-        parent::__construct('template', $name, $type, null, $class, $member, $aliases);
+        parent::__construct('template', $name, $type, null, $class, $member, $static, $self, $aliases);
         $this->Default = $this->filterType($default, $aliases);
         $this->IsCovariant = $isCovariant;
         $this->IsContravariant = $isContravariant;

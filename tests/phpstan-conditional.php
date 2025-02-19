@@ -30,12 +30,16 @@ $ignoreErrors = \PHP_VERSION_ID >= 80400 ? [] : [
     ],
 ];
 
+$excludePaths = \PHP_VERSION_ID >= 80200 ? [] : [
+    "$dir/tests/fixtures/Toolkit/Reflection/MyTraitWithConstants.php",
+];
+
 if (\PHP_VERSION_ID < 80000) {
     return [
         'includes' => $includes,
         'parameters' => [
             'excludePaths' => [
-                'analyseAndScan' => [
+                'analyseAndScan' => array_merge([
                     "$dir/tests/fixtures/Toolkit/Reflection/callbacksWithDnfTypes.php",
                     "$dir/tests/fixtures/Toolkit/Reflection/callbacksWithUnionsAndIntersections.php",
                     "$dir/tests/fixtures/Toolkit/Reflection/MyBackedEnum.php",
@@ -43,7 +47,7 @@ if (\PHP_VERSION_ID < 80000) {
                     "$dir/tests/fixtures/Toolkit/Reflection/MyClassWithUnionsAndIntersections.php",
                     "$dir/tests/unit/Toolkit/Core/Event/listenerWithDnfType.php",
                     "$dir/tests/unit/Toolkit/Core/Event/listenerWithIntersectionType.php",
-                ],
+                ], $excludePaths),
             ],
             'ignoreErrors' => array_merge([
                 [

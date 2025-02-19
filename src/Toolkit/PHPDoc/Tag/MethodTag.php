@@ -26,9 +26,11 @@ class MethodTag extends AbstractTag
         ?string $description = null,
         ?string $class = null,
         ?string $member = null,
+        ?string $static = null,
+        ?string $self = null,
         array $aliases = []
     ) {
-        parent::__construct('method', $name, $type, $description, $class, $member, $aliases);
+        parent::__construct('method', $name, $type, $description, $class, $member, $static, $self, $aliases);
         $this->Params = $this->filterParams($params, $aliases);
         $this->IsStatic = $isStatic;
     }

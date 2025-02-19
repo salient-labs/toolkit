@@ -12,14 +12,14 @@ class MyTraitAdaptationClass implements MyTraitAdaptationInterface, MyInterface
     }
 
     /**
-     * MyTraitAdaptationClass::MyDocumentedMethod() PHPDoc
+     * MyTraitAdaptationClass::MyDocumentedMethod()
      *
      * @return mixed
      */
     public function MyDocumentedMethod() {}
 
     /**
-     * MyTraitAdaptationClass::Adaptable() PHPDoc
+     * MyTraitAdaptationClass::Adaptable()
      *
      * @return mixed
      */

@@ -10,28 +10,33 @@ trait MyBaseTrait
     use MyReusedTrait;
 
     /**
-     * MyBaseTrait::$MyDocumentedProperty PHPDoc
+     * MyBaseTrait::$MyDocumentedProperty
      *
      * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
-     * MyBaseTrait::MyDocumentedMethod() PHPDoc
+     * MyBaseTrait::MyDocumentedMethod()
      *
      * @return mixed
      */
     public function MyDocumentedMethod() {}
 
     /**
-     * MyBaseTrait::MySparselyDocumentedMethod() PHPDoc
+     * MyBaseTrait::MySparselyDocumentedMethod()
      *
      * @return mixed
      */
     public function MySparselyDocumentedMethod() {}
 
     /**
-     * MyBaseTrait::Adaptable() PHPDoc
+     * MyBaseTrait::MyPrivateMethod()
+     */
+    private function MyPrivateMethod(): void {}
+
+    /**
+     * MyBaseTrait::Adaptable()
      *
      * @return mixed
      */

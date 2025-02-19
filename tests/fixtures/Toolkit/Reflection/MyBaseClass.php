@@ -8,7 +8,12 @@ namespace Salient\Tests\Reflection;
 abstract class MyBaseClass
 {
     /**
-     * MyBaseClass::$MyDocumentedProperty PHPDoc
+     * MyBaseClass::MY_CONSTANT
+     */
+    public const MY_CONSTANT = 'my constant';
+
+    /**
+     * MyBaseClass::$MyDocumentedProperty
      *
      * @var mixed
      */
@@ -21,15 +26,27 @@ abstract class MyBaseClass
     private $MyPrivateProperty1;
 
     /**
+     * MyBaseClass::$MyPrivateProperty2
+     *
      * @var mixed
-     * @phpstan-ignore property.unused
      */
     private $MyPrivateProperty2;
 
     /**
-     * MyBaseClass::MyDocumentedMethod() PHPDoc
+     * MyBaseClass::MyDocumentedMethod()
      *
      * @return mixed
      */
-    public function MyDocumentedMethod() {}
+    public function MyDocumentedMethod()
+    {
+        if ($this->MyPrivateProperty2) {
+            $this->MyPrivateProperty2 = null;
+        }
+        $this->MyPrivateMethod();
+    }
+
+    /**
+     * MyBaseClass::MyPrivateMethod()
+     */
+    private function MyPrivateMethod(): void {}
 }
