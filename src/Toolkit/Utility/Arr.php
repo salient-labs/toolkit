@@ -159,7 +159,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Get an array comprised of the given keys and values
+     * Get an array by combining the given keys and values
      *
      * @template TKey of array-key
      * @template TValue
@@ -172,9 +172,8 @@ final class Arr extends AbstractUtility
     {
         $array = @array_combine($keys, $values);
         if ($array === false) {
-            throw new ValueError(
-                error_get_last()['message'] ?? 'array_combine() failed',
-            );
+            $error = error_get_last();
+            throw new ValueError($error['message'] ?? 'array_combine() failed');
         }
         return $array;
     }
@@ -1094,7 +1093,7 @@ final class Arr extends AbstractUtility
      * @param T $key
      * @return (T is array-key ? T : int)
      */
-    private static function getKey($key, ?int &$i = null)
+    private static function getKey($key, ?int &$i)
     {
         if (is_int($key)) {
             if ($i === null || $key > $i) {
