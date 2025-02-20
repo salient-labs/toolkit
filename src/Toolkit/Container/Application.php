@@ -5,7 +5,6 @@ namespace Salient\Container;
 use Salient\Cache\CacheStore;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Cache\CacheInterface;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Curler\Event\CurlerEventInterface;
@@ -380,11 +379,11 @@ class Application extends Container implements ApplicationInterface
 
         $name ??= $this->AppName;
         $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
-        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($target, Console::LEVELS_ALL_EXCEPT_DEBUG);
 
         if ($debug || ($debug === null && Env::getDebug())) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, LevelGroup::ALL);
+            Console::registerTarget($target, Console::LEVELS_ALL);
         }
 
         return $this;

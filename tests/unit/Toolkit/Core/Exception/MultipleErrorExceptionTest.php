@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Core\Exception\MultipleErrorException;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
@@ -19,7 +18,7 @@ final class MultipleErrorExceptionTest extends TestCase
     protected function setUp(): void
     {
         $this->ConsoleTarget = new MockTarget();
-        Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($this->ConsoleTarget, Console::LEVELS_ALL_EXCEPT_DEBUG);
     }
 
     protected function tearDown(): void

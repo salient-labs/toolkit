@@ -7,7 +7,6 @@ use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Catalog\HasAnsiEscapeSequence;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
@@ -100,15 +99,15 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
         $cyan = Format::ttyColour(self::CYAN);
 
         return (new MessageFormats())
-            ->set(LevelGroup::ERRORS, MessageTypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))
+            ->set(Console::LEVELS_ERRORS, MessageTypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))
             ->set(Console::LEVEL_WARNING, MessageTypeGroup::ALL, new MessageFormat($yellow, $default, $boldYellow))
             ->set(Console::LEVEL_NOTICE, MessageTypeGroup::ALL, new MessageFormat($bold, $cyan, $boldCyan))
             ->set(Console::LEVEL_INFO, MessageTypeGroup::ALL, new MessageFormat($default, $yellow, $yellow))
             ->set(Console::LEVEL_DEBUG, MessageTypeGroup::ALL, new MessageFormat($dim, $dim, $dim))
-            ->set(LevelGroup::INFO, MessageType::PROGRESS, new MessageFormat($default, $yellow, $yellow))
-            ->set(LevelGroup::INFO, MessageTypeGroup::GROUP, new MessageFormat($boldMagenta, $default, $boldMagenta))
-            ->set(LevelGroup::INFO, MessageType::SUMMARY, new MessageFormat($default, $default, $bold))
-            ->set(LevelGroup::INFO, MessageType::SUCCESS, new MessageFormat($green, $default, $boldGreen))
-            ->set(LevelGroup::ERRORS_AND_WARNINGS, MessageType::FAILURE, new MessageFormat($yellow, $default, $boldYellow));
+            ->set(Console::LEVELS_INFO, MessageType::PROGRESS, new MessageFormat($default, $yellow, $yellow))
+            ->set(Console::LEVELS_INFO, MessageTypeGroup::GROUP, new MessageFormat($boldMagenta, $default, $boldMagenta))
+            ->set(Console::LEVELS_INFO, MessageType::SUMMARY, new MessageFormat($default, $default, $bold))
+            ->set(Console::LEVELS_INFO, MessageType::SUCCESS, new MessageFormat($green, $default, $boldGreen))
+            ->set(Console::LEVELS_ERRORS_AND_WARNINGS, MessageType::FAILURE, new MessageFormat($yellow, $default, $boldYellow));
     }
 }

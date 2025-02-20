@@ -5,7 +5,6 @@ namespace Salient\Tests\Cli;
 use Composer\InstalledVersions;
 use Salient\Cli\CliApplication;
 use Salient\Container\Application;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
@@ -94,7 +93,7 @@ final class CliApplicationTest extends TestCase
         self::$RootPackage = self::PROD_PACKAGE;
 
         $this->ConsoleTarget = new MockTarget();
-        Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($this->ConsoleTarget, Console::LEVELS_ALL_EXCEPT_DEBUG);
 
         $_SERVER['SCRIPT_FILENAME'] = 'app';
 

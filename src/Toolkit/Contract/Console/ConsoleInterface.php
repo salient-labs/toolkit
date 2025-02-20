@@ -4,13 +4,13 @@ namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
 use Salient\Contract\Catalog\HasMessageLevel;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
+use Salient\Contract\Catalog\HasMessageLevels;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Instantiable;
 use Throwable;
 
-interface ConsoleInterface extends Instantiable, HasMessageLevel
+interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLevels
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the
@@ -42,7 +42,7 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel
      */
     public function registerTarget(
         ConsoleTargetInterface $target,
-        array $levels = LevelGroup::ALL
+        array $levels = ConsoleInterface::LEVELS_ALL
     );
 
     /**

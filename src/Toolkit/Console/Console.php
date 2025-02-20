@@ -6,7 +6,6 @@ use Psr\Log\LoggerInterface;
 use Salient\Console\Support\ConsoleState;
 use Salient\Console\Target\StreamTarget;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
@@ -106,12 +105,12 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         }
 
         $stderr = $this->getStderrTarget();
-        $stderrLevels = LevelGroup::ERRORS_AND_WARNINGS;
+        $stderrLevels = self::LEVELS_ERRORS_AND_WARNINGS;
 
         $stdout = $this->getStdoutTarget();
         $stdoutLevels = Env::getDebug()
-            ? LevelGroup::INFO
-            : LevelGroup::INFO_EXCEPT_DEBUG;
+            ? self::LEVELS_INFO
+            : self::LEVELS_INFO_EXCEPT_DEBUG;
 
         return $this
             ->onlyDeregisterStdioTargets()
@@ -138,8 +137,8 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     private function registerStdioTarget(Target $target)
     {
         $levels = Env::getDebug()
-            ? LevelGroup::ALL
-            : LevelGroup::ALL_EXCEPT_DEBUG;
+            ? self::LEVELS_ALL
+            : self::LEVELS_ALL_EXCEPT_DEBUG;
 
         return $this
             ->onlyDeregisterStdioTargets()
@@ -167,7 +166,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function registerTarget(
         Target $target,
-        array $levels = LevelGroup::ALL
+        array $levels = Console::LEVELS_ALL
     ) {
         $type = 0;
 
@@ -930,7 +929,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
                 Get::hash(File::realpath(Sys::getProgramName())),
                 Sys::getUserId(),
             ));
-            $this->registerTarget($logTarget, LevelGroup::ALL);
+            $this->registerTarget($logTarget, self::LEVELS_ALL);
             $this->maybeRegisterStdioTargets();
         }
 

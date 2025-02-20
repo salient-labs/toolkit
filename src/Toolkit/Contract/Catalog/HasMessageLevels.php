@@ -7,12 +7,9 @@ use Salient\Contract\Catalog\HasMessageLevel as Level;
 /**
  * @api
  */
-interface MessageLevelGroup
+interface HasMessageLevels
 {
-    /**
-     * @var list<Level::*>
-     */
-    public const ALL = [
+    public const LEVELS_ALL = [
         Level::LEVEL_EMERGENCY,
         Level::LEVEL_ALERT,
         Level::LEVEL_CRITICAL,
@@ -23,10 +20,7 @@ interface MessageLevelGroup
         Level::LEVEL_DEBUG,
     ];
 
-    /**
-     * @var list<Level::*>
-     */
-    public const ALL_EXCEPT_DEBUG = [
+    public const LEVELS_ALL_EXCEPT_DEBUG = [
         Level::LEVEL_EMERGENCY,
         Level::LEVEL_ALERT,
         Level::LEVEL_CRITICAL,
@@ -36,10 +30,7 @@ interface MessageLevelGroup
         Level::LEVEL_INFO,
     ];
 
-    /**
-     * @var list<Level::*>
-     */
-    public const ERRORS_AND_WARNINGS = [
+    public const LEVELS_ERRORS_AND_WARNINGS = [
         Level::LEVEL_EMERGENCY,
         Level::LEVEL_ALERT,
         Level::LEVEL_CRITICAL,
@@ -47,37 +38,25 @@ interface MessageLevelGroup
         Level::LEVEL_WARNING,
     ];
 
-    /**
-     * @var list<Level::*>
-     */
-    public const ERRORS = [
+    public const LEVELS_ERRORS = [
         Level::LEVEL_EMERGENCY,
         Level::LEVEL_ALERT,
         Level::LEVEL_CRITICAL,
         Level::LEVEL_ERROR,
     ];
 
-    /**
-     * @var list<Level::*>
-     */
-    public const INFO = [
+    public const LEVELS_INFO = [
         Level::LEVEL_NOTICE,
         Level::LEVEL_INFO,
         Level::LEVEL_DEBUG,
     ];
 
-    /**
-     * @var list<Level::*>
-     */
-    public const INFO_EXCEPT_DEBUG = [
+    public const LEVELS_INFO_EXCEPT_DEBUG = [
         Level::LEVEL_NOTICE,
         Level::LEVEL_INFO,
     ];
 
-    /**
-     * @var list<Level::*>
-     */
-    public const INFO_QUIET = [
+    public const LEVELS_INFO_QUIET = [
         Level::LEVEL_NOTICE,
     ];
 }
