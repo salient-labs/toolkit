@@ -3,14 +3,14 @@
 namespace Salient\Console\Support;
 
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Catalog\HasAnsiEscapeSequence;
+use Salient\Contract\Catalog\HasEscapeSequence;
 use Salient\Contract\Console\ConsoleFormatInterface;
 use Salient\Contract\Console\ConsoleTag as Tag;
 
 /**
  * Applies inline character sequences to console output
  */
-final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequence
+final class ConsoleFormat implements ConsoleFormatInterface, HasEscapeSequence
 {
     /** @var string */
     private $Before;

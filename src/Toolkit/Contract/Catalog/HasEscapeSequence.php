@@ -5,7 +5,7 @@ namespace Salient\Contract\Catalog;
 /**
  * @api
  */
-interface HasAnsiEscapeSequence
+interface HasEscapeSequence
 {
     public const BLACK = "\e[30m";
     public const RED = "\e[31m";
