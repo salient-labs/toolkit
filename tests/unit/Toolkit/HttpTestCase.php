@@ -123,7 +123,7 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
 
         while ($process->poll()->isRunning()) {
             if (strpos(
-                $process->getOutput(self::ERR),
+                $process->getOutput(self::STDERR),
                 'Server started at ' . self::HTTP_SERVER_URI,
             ) !== false) {
                 return $this->HttpServer = $process;
@@ -134,7 +134,7 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
             "Error starting HTTP server (status: %d; stdout: '%s'; stderr: '%s')",
             $process->getExitStatus(),
             $process->getOutput(),
-            $process->getOutput(self::ERR),
+            $process->getOutput(self::STDERR),
         ));
     }
 
